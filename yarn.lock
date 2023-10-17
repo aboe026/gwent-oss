@@ -2665,6 +2665,141 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@gwent/api@workspace:svcs/api":
+  version: 0.0.0-use.local
+  resolution: "@gwent/api@workspace:svcs/api"
+  dependencies:
+    "@apollo/server": 4.5.0
+    "@graphql-codegen/cli": 3.2.2
+    "@graphql-codegen/typescript": 3.0.2
+    "@graphql-codegen/typescript-mongodb": 2.4.6
+    "@graphql-codegen/typescript-operations": 3.0.2
+    "@graphql-codegen/typescript-react-apollo": 3.3.7
+    "@graphql-codegen/typescript-resolvers": 3.1.1
+    "@graphql-tools/schema": 10.0.0
+    "@gwent/env": "workspace:*"
+    "@types/body-parser": 1.19.2
+    "@types/cors": 2.8.13
+    "@types/express": 4.17.17
+    "@types/fs-extra": 11.0.1
+    "@types/jest": 29.5.0
+    "@types/semver": 7.3.13
+    body-parser: 1.20.2
+    connection-string: 4.4.0
+    cors: 2.8.5
+    express: 4.18.2
+    fs-extra: 11.1.1
+    graphql: 16.6.0
+    graphql-tag: 2.12.6
+    jest-junit: 15.0.0
+    log4js: 6.9.1
+    mongodb: 5.1.0
+    semver: 7.3.8
+    ts-jest: 29.0.5
+  languageName: unknown
+  linkType: soft
+
+"@gwent/client-env@workspace:*, @gwent/client-env@workspace:svcs/ui/libs/client/libs/env":
+  version: 0.0.0-use.local
+  resolution: "@gwent/client-env@workspace:svcs/ui/libs/client/libs/env"
+  languageName: unknown
+  linkType: soft
+
+"@gwent/client@workspace:*, @gwent/client@workspace:svcs/ui/libs/client":
+  version: 0.0.0-use.local
+  resolution: "@gwent/client@workspace:svcs/ui/libs/client"
+  dependencies:
+    "@apollo/client": 3.7.10
+    "@gwent/client-env": "workspace:*"
+    "@gwent/env": "workspace:*"
+    "@types/node": 18.15.11
+    "@types/react": 18.2.28
+    "@types/react-dom": 18.0.11
+    copy-webpack-plugin: 11.0.0
+    css-loader: 6.7.3
+    graphql: 16.6.0
+    html-webpack-plugin: 5.5.0
+    mini-css-extract-plugin: 2.7.5
+    react: 18.2.0
+    react-dom: 18.2.0
+    react-icons: 4.8.0
+    ts-loader: 9.4.2
+    ts-node: 10.9.1
+    webpack: 5.76.3
+    webpack-cli: 5.0.1
+    webpack-shell-plugin-next: 2.3.1
+  languageName: unknown
+  linkType: soft
+
+"@gwent/core@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@gwent/core@workspace:."
+  dependencies:
+    "@types/fs-extra": 11.0.1
+    "@types/jest": 29.5.0
+    "@types/node": 18.15.11
+    "@typescript-eslint/eslint-plugin": 5.57.0
+    "@typescript-eslint/parser": 5.57.0
+    cross-env: 7.0.3
+    eslint: 8.37.0
+    eslint-config-prettier: 8.8.0
+    eslint-plugin-prettier: 4.2.1
+    fs-extra: 11.1.1
+    jest: 29.5.0
+    jest-environment-jsdom: 29.5.0
+    jest-junit: 15.0.0
+    nodemon: 2.0.22
+    npm-groovy-lint: 11.1.1
+    npm-run-all: 4.1.5
+    open: 8.4.2
+    prettier: 2.8.7
+    replace-in-file: 6.3.5
+    rimraf: 4.4.1
+    ts-jest: 29.0.5
+    ts-node: 10.9.1
+    typescript: 5.0.2
+  languageName: unknown
+  linkType: soft
+
+"@gwent/e2e-tests@workspace:test/e2e":
+  version: 0.0.0-use.local
+  resolution: "@gwent/e2e-tests@workspace:test/e2e"
+  dependencies:
+    "@gwent/env": "workspace:*"
+    graphql: 16.6.0
+    graphql-request: 5.2.0
+    mongodb: 5.1.0
+    testcafe: 2.4.0
+  languageName: unknown
+  linkType: soft
+
+"@gwent/env@workspace:*, @gwent/env@workspace:libs/env":
+  version: 0.0.0-use.local
+  resolution: "@gwent/env@workspace:libs/env"
+  dependencies:
+    "@types/jest": 29.5.0
+    dotenv: 16.0.3
+    envalid: 7.3.1
+    jest-junit: 15.0.0
+    ts-jest: 29.0.5
+  languageName: unknown
+  linkType: soft
+
+"@gwent/ui@workspace:svcs/ui":
+  version: 0.0.0-use.local
+  resolution: "@gwent/ui@workspace:svcs/ui"
+  dependencies:
+    "@gwent/client": "workspace:*"
+    "@gwent/env": "workspace:*"
+    "@types/express": 4.17.17
+    "@types/fs-extra": 11.0.1
+    cross-env: 7.0.3
+    express: 4.18.2
+    fs-extra: 11.1.1
+    replace-in-file: 6.3.5
+  languageName: unknown
+  linkType: soft
+
 "@humanwhocodes/config-array@npm:^0.11.8":
   version: 0.11.11
   resolution: "@humanwhocodes/config-array@npm:0.11.11"
@@ -4224,141 +4359,6 @@ __metadata:
   checksum: d3d7b0a0242c0511c7b666de66d9096fb24ea251426ce76e3a26a8ca17408de5d4d4f81b5aaec840cc7025f0321fb97e06067c53f377c844a5a9473dd76491ae
   languageName: node
   linkType: hard
-
-"@witcher-3-gwent/api@workspace:svcs/api":
-  version: 0.0.0-use.local
-  resolution: "@witcher-3-gwent/api@workspace:svcs/api"
-  dependencies:
-    "@apollo/server": 4.5.0
-    "@graphql-codegen/cli": 3.2.2
-    "@graphql-codegen/typescript": 3.0.2
-    "@graphql-codegen/typescript-mongodb": 2.4.6
-    "@graphql-codegen/typescript-operations": 3.0.2
-    "@graphql-codegen/typescript-react-apollo": 3.3.7
-    "@graphql-codegen/typescript-resolvers": 3.1.1
-    "@graphql-tools/schema": 10.0.0
-    "@types/body-parser": 1.19.2
-    "@types/cors": 2.8.13
-    "@types/express": 4.17.17
-    "@types/fs-extra": 11.0.1
-    "@types/jest": 29.5.0
-    "@types/semver": 7.3.13
-    "@witcher-3-gwent/env": "workspace:*"
-    body-parser: 1.20.2
-    connection-string: 4.4.0
-    cors: 2.8.5
-    express: 4.18.2
-    fs-extra: 11.1.1
-    graphql: 16.6.0
-    graphql-tag: 2.12.6
-    jest-junit: 15.0.0
-    log4js: 6.9.1
-    mongodb: 5.1.0
-    semver: 7.3.8
-    ts-jest: 29.0.5
-  languageName: unknown
-  linkType: soft
-
-"@witcher-3-gwent/client-env@workspace:*, @witcher-3-gwent/client-env@workspace:svcs/ui/libs/client/libs/env":
-  version: 0.0.0-use.local
-  resolution: "@witcher-3-gwent/client-env@workspace:svcs/ui/libs/client/libs/env"
-  languageName: unknown
-  linkType: soft
-
-"@witcher-3-gwent/client@workspace:*, @witcher-3-gwent/client@workspace:svcs/ui/libs/client":
-  version: 0.0.0-use.local
-  resolution: "@witcher-3-gwent/client@workspace:svcs/ui/libs/client"
-  dependencies:
-    "@apollo/client": 3.7.10
-    "@types/node": 18.15.11
-    "@types/react": 18.2.28
-    "@types/react-dom": 18.0.11
-    "@witcher-3-gwent/client-env": "workspace:*"
-    "@witcher-3-gwent/env": "workspace:*"
-    copy-webpack-plugin: 11.0.0
-    css-loader: 6.7.3
-    graphql: 16.6.0
-    html-webpack-plugin: 5.5.0
-    mini-css-extract-plugin: 2.7.5
-    react: 18.2.0
-    react-dom: 18.2.0
-    react-icons: 4.8.0
-    ts-loader: 9.4.2
-    ts-node: 10.9.1
-    webpack: 5.76.3
-    webpack-cli: 5.0.1
-    webpack-shell-plugin-next: 2.3.1
-  languageName: unknown
-  linkType: soft
-
-"@witcher-3-gwent/core@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@witcher-3-gwent/core@workspace:."
-  dependencies:
-    "@types/fs-extra": 11.0.1
-    "@types/jest": 29.5.0
-    "@types/node": 18.15.11
-    "@typescript-eslint/eslint-plugin": 5.57.0
-    "@typescript-eslint/parser": 5.57.0
-    cross-env: 7.0.3
-    eslint: 8.37.0
-    eslint-config-prettier: 8.8.0
-    eslint-plugin-prettier: 4.2.1
-    fs-extra: 11.1.1
-    jest: 29.5.0
-    jest-environment-jsdom: 29.5.0
-    jest-junit: 15.0.0
-    nodemon: 2.0.22
-    npm-groovy-lint: 11.1.1
-    npm-run-all: 4.1.5
-    open: 8.4.2
-    prettier: 2.8.7
-    replace-in-file: 6.3.5
-    rimraf: 4.4.1
-    ts-jest: 29.0.5
-    ts-node: 10.9.1
-    typescript: 5.0.2
-  languageName: unknown
-  linkType: soft
-
-"@witcher-3-gwent/e2e-tests@workspace:test/e2e":
-  version: 0.0.0-use.local
-  resolution: "@witcher-3-gwent/e2e-tests@workspace:test/e2e"
-  dependencies:
-    "@witcher-3-gwent/env": "workspace:*"
-    graphql: 16.6.0
-    graphql-request: 5.2.0
-    mongodb: 5.1.0
-    testcafe: 2.4.0
-  languageName: unknown
-  linkType: soft
-
-"@witcher-3-gwent/env@workspace:*, @witcher-3-gwent/env@workspace:libs/env":
-  version: 0.0.0-use.local
-  resolution: "@witcher-3-gwent/env@workspace:libs/env"
-  dependencies:
-    "@types/jest": 29.5.0
-    dotenv: 16.0.3
-    envalid: 7.3.1
-    jest-junit: 15.0.0
-    ts-jest: 29.0.5
-  languageName: unknown
-  linkType: soft
-
-"@witcher-3-gwent/ui@workspace:svcs/ui":
-  version: 0.0.0-use.local
-  resolution: "@witcher-3-gwent/ui@workspace:svcs/ui"
-  dependencies:
-    "@types/express": 4.17.17
-    "@types/fs-extra": 11.0.1
-    "@witcher-3-gwent/client": "workspace:*"
-    "@witcher-3-gwent/env": "workspace:*"
-    cross-env: 7.0.3
-    express: 4.18.2
-    fs-extra: 11.1.1
-    replace-in-file: 6.3.5
-  languageName: unknown
-  linkType: soft
 
 "@wry/context@npm:^0.7.0":
   version: 0.7.3

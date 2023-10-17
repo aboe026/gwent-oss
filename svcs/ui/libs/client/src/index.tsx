@@ -1,7 +1,7 @@
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client'
 import { createRoot } from 'react-dom/client'
 
-import '@witcher-3-gwent/client-env' // get typings/access to window.env
+import '@gwent/client-env' // get typings/access to window.env
 import './index.css'
 import App from './App'
 

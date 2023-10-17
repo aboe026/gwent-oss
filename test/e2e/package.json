@@ -1,5 +1,5 @@
 {
-  "name": "@witcher-3-gwent/e2e-tests",
+  "name": "@gwent/e2e-tests",
   "version": "0.1.0",
   "author": "Adam Boe",
   "description": "E2E browser testing for Gwent website",
@@ -14,7 +14,7 @@
     "watch": "yarn g:tsc --build --watch"
   },
   "dependencies": {
-    "@witcher-3-gwent/env": "workspace:*",
+    "@gwent/env": "workspace:*",
     "graphql": "16.6.0",
     "graphql-request": "5.2.0",
     "mongodb": "5.1.0",

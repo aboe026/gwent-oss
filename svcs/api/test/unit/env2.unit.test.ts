@@ -2,7 +2,7 @@ import path from 'path'
 
 describe('env', () => {
   it('sets dotEnvFilePath to empty string if NODE_ENV is production', () => {
-    const getEnv = require('@witcher-3-gwent/env') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+    const getEnv = require('@gwent/env') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
     const getEnvSpy = jest.spyOn(getEnv, 'default')
     process.env.NODE_ENV = getEnv.NODE_ENV.Prod
 
@@ -18,7 +18,7 @@ describe('env', () => {
     ])
   })
   it('sets dotEnvFilePath to env file if NODE_ENV is development', () => {
-    const getEnv = require('@witcher-3-gwent/env') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+    const getEnv = require('@gwent/env') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
     const getEnvSpy = jest.spyOn(getEnv, 'default')
     process.env.NODE_ENV = getEnv.NODE_ENV.Dev
 

@@ -1,8 +1,8 @@
 {
-  "name": "@witcher-3-gwent/api",
+  "name": "@gwent/api",
   "version": "0.1.0",
   "author": "Adam Boe",
-  "description": "GraphQL backend to play The Witcher 3: Wild Hunt version of Gwent.",
+  "description": "GraphQL backend to play Gwent.",
   "main": "src/api.ts",
   "scripts": {
     "build": "yarn generate-graphql-typings && yarn build-tsc",
@@ -25,7 +25,7 @@
   "dependencies": {
     "@apollo/server": "4.5.0",
     "@graphql-codegen/typescript-mongodb": "2.4.6",
-    "@witcher-3-gwent/env": "workspace:*",
+    "@gwent/env": "workspace:*",
     "body-parser": "1.20.2",
     "connection-string": "4.4.0",
     "cors": "2.8.5",

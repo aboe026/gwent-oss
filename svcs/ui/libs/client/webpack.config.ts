@@ -5,7 +5,7 @@ import path from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import WebpackShellPluginNext from 'webpack-shell-plugin-next'
 
-import { NODE_ENV } from '@witcher-3-gwent/env'
+import { NODE_ENV } from '@gwent/env'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default (env: any, argv: any) => {

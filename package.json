@@ -1,8 +1,8 @@
 {
-  "name": "@witcher-3-gwent/core",
+  "name": "@gwent/core",
   "version": "0.1.0",
   "author": "Adam Boe",
-  "description": "A recreation of the card game Gwent from the Witcher 3: Wild Hunt",
+  "description": "A recreation of the card game Gwent from The Witcher 3: Wild Hunt",
   "engines": {
     "node": ">=18"
   },
@@ -10,7 +10,7 @@
     "build": "yarn workspaces foreach --parallel --interlaced run build",
     "build-images": "yarn workspaces foreach --parallel --interlaced run build-image",
     "clean": "npm-run-all clean-children clean-root",
-    "clean-children": "yarn workspaces foreach --parallel --interlaced --exclude @witcher-3-gwent/core run clean",
+    "clean-children": "yarn workspaces foreach --parallel --interlaced --exclude @gwent/core run clean",
     "clean-root": "rimraf coverage",
     "compose-build": "cd compose && docker-compose build",
     "compose-up": "cd compose && docker-compose up -d",
@@ -34,7 +34,7 @@
     "g:ts-node": "cd $INIT_CWD && ts-node",
     "g:tsc": "cd $INIT_CWD && tsc",
     "run-built": "yarn workspaces foreach --parallel --interlaced run run-built",
-    "start": "yarn workspaces foreach --parallel --interlaced run start",
+    "start": "yarn workspaces foreach --parallel --interlaced --exclude @gwent/e2e-tests run start",
     "test": "yarn workspaces foreach --parallel --interlaced run test",
     "test-e2e": "cd test/e2e && yarn start",
     "test-func": "yarn g:jest --test-type=func --runInBand",

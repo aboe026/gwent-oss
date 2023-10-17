@@ -1,9 +1,9 @@
-# witcher-3-gwent
+# gwent
 
-![build](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/witcher-3-gwent/main/build.json)
-![coverage](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/witcher-3-gwent/main/coverage.json)
+![build](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent/main/build.json)
+![coverage](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent/main/coverage.json)
 
-A recreation of the card game Gwent from the Witcher 3: Wild Hunt.
+A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
 
 ## Prerequisites
 
@@ -40,7 +40,7 @@ yarn install
 
 ## Start
 
-To run code from non-built source code (packages still need to be [built](#build)), run
+To run code from non-built source code (libraries still need to be [built](#build) first), run
 
 ```sh
 yarn start
@@ -139,7 +139,7 @@ yarn test-unit -t 'test name'
 
 ### E2E
 
-To run End-To-End (E2E) tests, an instance of witcher-3-gwent must first be running (see [start](#start), [run](#run) or [watch](#watch)), then run
+To run End-To-End (E2E) tests, an instance of Gwent must first be running (see [start](#start), [run](#run) or [watch](#watch)), then run
 
 ```sh
 yarn test-e2e
@@ -173,7 +173,6 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
-- Rename repo to be just "gwent"
 - Account for cards with different art per instance (like Havekar Smuggler)
 - Account for "Ballad Heroes" different art
 - Move generate types to lib? So UI can use them as well (especially for shared functions, like "isDeckValid")

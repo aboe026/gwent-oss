@@ -1,5 +1,5 @@
 {
-  "name": "@witcher-3-gwent/client-env",
+  "name": "@gwent/client-env",
   "version": "0.1.0",
   "author": "Adam Boe",
   "description": "Client-side runtime dynamic environment variables",

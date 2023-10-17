@@ -1,6 +1,6 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, port, str, url } from '@witcher-3-gwent/env'
+import getEnv, { NODE_ENV, port, str, url } from '@gwent/env'
 
 export default getEnv({
   dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '../.env') : '',

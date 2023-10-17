@@ -1,4 +1,4 @@
-import getEnv, { port, str, url } from '@witcher-3-gwent/env'
+import getEnv, { port, str, url } from '@gwent/env'
 
 export default getEnv({
   specs: {

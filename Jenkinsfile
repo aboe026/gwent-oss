@@ -17,7 +17,7 @@ node {
             browser: 'chromium --disable-dev-shm-usage --no-sandbox'
         ]
     ]
-    def badges = new ShieldsIoBadges(this, 'witcher-3-gwent')
+    def badges = new ShieldsIoBadges(this, 'gwent')
     def dockerUtil = new DockerUtil(this)
     def upload = env.BRANCH_NAME == 'main'
     def dockerVolumesToDelete = []
