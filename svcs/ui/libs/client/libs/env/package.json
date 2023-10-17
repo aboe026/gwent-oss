@@ -1,0 +1,15 @@
+{
+  "name": "@witcher-3-gwent/client-env",
+  "version": "0.1.0",
+  "author": "Adam Boe",
+  "description": "Client-side runtime dynamic environment variables",
+  "main": "build/src/env.js",
+  "types": "build/src/env.d.ts",
+  "scripts": {
+    "build": "yarn g:tsc --build",
+    "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
+    "lint": "yarn g:lint",
+    "lint:fix": "yarn g:lint-fix",
+    "watch": "yarn g:tsc --build --watch"
+  }
+}

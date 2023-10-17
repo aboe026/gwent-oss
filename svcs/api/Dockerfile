@@ -1,0 +1,38 @@
+ARG APP_DIR=/opt/gwent
+ARG BUILD=0
+
+#########
+# BUILD #
+#########
+FROM node:18-alpine AS build
+
+ARG APP_DIR
+ARG BUILD
+
+COPY . ${APP_DIR}
+
+WORKDIR ${APP_DIR}/svcs/api
+RUN yarn install --immutable
+RUN yarn build
+RUN yarn cache clean --all
+RUN echo "{\"buildNumber\": ${BUILD}}" > app-info.json
+
+###########
+# RUNTIME #
+###########
+FROM node:18-alpine
+
+ARG APP_DIR
+ARG BUILD
+ARG VERSION
+
+LABEL build=${BUILD}
+LABEL version=${VERSION}
+
+COPY --from=build ${APP_DIR} ${APP_DIR}
+
+WORKDIR ${APP_DIR}/svcs/api
+RUN yarn workspaces focus --production
+
+EXPOSE 4000
+CMD yarn node build/src/api.js

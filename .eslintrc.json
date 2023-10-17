@@ -1,0 +1,25 @@
+{
+  "extends": ["plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
+  "ignorePatterns": [
+    ".env",
+    ".pnp.*",
+    ".vscode",
+    ".yarn",
+    "build",
+    "coverage",
+    "svcs/api/src/database/generated-typings.ts",
+    "svcs/api/src/graphql/generated-typings.ts",
+    "svcs/ui/libs/client/src/graphql/generated-typings.tsx",
+    "test-results",
+    "tsconfig.tsbuildinfo"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {}
+}

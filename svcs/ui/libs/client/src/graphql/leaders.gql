@@ -1,0 +1,8 @@
+query GetLeaders {
+  leaders {
+    id
+    name
+    faction
+    dlc
+  }
+}

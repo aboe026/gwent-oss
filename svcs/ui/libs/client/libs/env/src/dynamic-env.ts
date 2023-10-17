@@ -1,0 +1,3 @@
+window.env = {
+  API_URL: 'TO_BE_REPLACED_BY_SERVER_AT_RUNTIME',
+}

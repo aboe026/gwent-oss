@@ -1,0 +1,8 @@
+{
+  "browsers": ["edge"],
+  "screenshots": {
+    "path": "screenshots",
+    "takeOnFails": true
+  },
+  "src": "build/tests"
+}

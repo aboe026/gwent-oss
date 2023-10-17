@@ -1,0 +1,23 @@
+{
+  "name": "@witcher-3-gwent/e2e-tests",
+  "version": "0.1.0",
+  "author": "Adam Boe",
+  "description": "E2E browser testing for Gwent website",
+  "scripts": {
+    "build": "yarn g:tsc --build",
+    "build-image": "docker build --tag=testcafe/testcafe:${IMAGE_TAG:-yarn-pnp} --progress=plain ${BUILD_OPTIONS:-} .",
+    "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
+    "lint": "yarn g:lint",
+    "lint:fix": "yarn g:lint-fix",
+    "start": "testcafe --config-file=.testcaferc.json",
+    "start-docker": "docker run --rm -v $PROJECT_CWD:/gwent -w /gwent/test/e2e -it testcafe/testcafe:yarn-pnp chromium build/tests --config-file=.testcaferc.json",
+    "watch": "yarn g:tsc --build --watch"
+  },
+  "dependencies": {
+    "@witcher-3-gwent/env": "workspace:*",
+    "graphql": "16.6.0",
+    "graphql-request": "5.2.0",
+    "mongodb": "5.1.0",
+    "testcafe": "2.4.0"
+  }
+}
