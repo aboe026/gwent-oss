@@ -10,7 +10,7 @@
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
-    "test-unit": "yarn g:jest --test-type=unit --unit-type=client",
+    "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-webpack",
     "watch-tsc": "yarn g:tsc --build --watch",
     "watch-webpack": "webpack --watch --progress"
