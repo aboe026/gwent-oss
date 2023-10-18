@@ -7,9 +7,7 @@
     ".yarn",
     "build",
     "coverage",
-    "svcs/api/src/database/generated-typings.ts",
-    "svcs/api/src/graphql/generated-typings.ts",
-    "svcs/ui/libs/client/src/graphql/generated-typings.tsx",
+    "*generated-typings*",
     "test-results",
     "tsconfig.tsbuildinfo"
   ],
