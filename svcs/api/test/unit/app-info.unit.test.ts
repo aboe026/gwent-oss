@@ -139,7 +139,7 @@ function testGetPath({ filePath, expectedPath }: { filePath: string; expectedPat
       trace: traceSpy,
     }),
   }))
-  const AppInfo = require('../../src/app-info').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+  const AppInfo = require('../../src/app-info').default // eslint-disable-line @typescript-eslint/no-var-requires
 
   expect(AppInfo.getFile()).toEqual(expectedPath)
 
@@ -180,7 +180,7 @@ async function testGetBuildNumber({
       trace: traceSpy,
     }),
   }))
-  const AppInfo = require('../../src/app-info').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+  const AppInfo = require('../../src/app-info').default // eslint-disable-line @typescript-eslint/no-var-requires
   jest.spyOn(AppInfo, 'getFile').mockReturnValue(filePath)
 
   await expect(AppInfo.getBuildNumber()).resolves.toEqual(expected)

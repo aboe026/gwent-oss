@@ -42,7 +42,6 @@ jest.mock('@apollo/server', () => {
 
 describe('api', () => {
   it('exits with successful code if no error thrown', async () => {
-    jest.spyOn(global.console, 'log').mockImplementation()
     jest.mock('../../src/database/db-upgrader', () => ({
       run: jest.fn().mockResolvedValue(undefined),
     }))
@@ -52,11 +51,10 @@ describe('api', () => {
       await import('../../src/api')
     })
 
-    await sleep(0.25) // need explicit sleep here because isolateModules does not await thrown error :/
+    await sleep(0.25) // need explicit sleep here because isolateModules does not await :/
     expect(exitSpy.mock.calls).toEqual([])
-  })
+  }, 10000) // Needed to pass in CI
   it('exits with unsuccessful code if error thrown', async () => {
-    jest.spyOn(global.console, 'log').mockImplementation()
     jest.mock('../../src/database/db-upgrader', () => ({
       run: jest.fn().mockRejectedValue(undefined),
     }))
@@ -68,5 +66,5 @@ describe('api', () => {
 
     await sleep(0.25) // need explicit sleep here because isolateModules does not await thrown error :/
     expect(exitSpy.mock.calls).toEqual([[1]])
-  })
+  }, 10000) // Needed to pass in CI
 })

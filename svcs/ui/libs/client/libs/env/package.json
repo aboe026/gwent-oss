@@ -8,8 +8,15 @@
   "scripts": {
     "build": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
+    "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
+    "test-unit": "yarn g:jest --test-type=unit --unit-type=client",
     "watch": "yarn g:tsc --build --watch"
+  },
+  "devDependencies": {
+    "@types/jest": "29.5.0",
+    "jest-junit": "15.0.0",
+    "ts-jest": "29.0.5"
   }
 }

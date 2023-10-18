@@ -6,7 +6,7 @@ import { MongoError, ObjectId } from 'mongodb'
 describe('db-upgrader', () => {
   describe('getUpgrades', () => {
     it('returns the same length as there are upgrade scripts', async () => {
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const upgradeFiles = await fs.readdir(path.join(__dirname, '../../src/database/upgrades'))
       const upgradeScripts = upgradeFiles.filter((upgradeFile) => upgradeFile.match(/^upgrade-\d+\.ts$/))
 
@@ -15,7 +15,7 @@ describe('db-upgrader', () => {
   })
   describe('run', () => {
     it('throws error if running is true', async () => {
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       DbUpgrader.running = true
 
       await expect(DbUpgrader.run()).rejects.toThrow('Already attempting to run an upgrade')
@@ -27,10 +27,10 @@ describe('db-upgrader', () => {
           debug: debugSpy,
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       jest.spyOn(UpgradeStore, 'getCurrentVersion').mockResolvedValue(0)
       jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       jest.spyOn(DbUpgrader, 'getUpgrades').mockReturnValue([])
       jest.spyOn(DbUpgrader, 'aquireLock').mockImplementation()
 
@@ -54,15 +54,15 @@ describe('db-upgrader', () => {
           info: infoSpy,
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       jest.spyOn(UpgradeStore, 'getCurrentVersion').mockResolvedValue(0)
       jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
       const addAttemptSpy = jest.spyOn(UpgradeStore, 'addAttempt').mockImplementation()
       const addUpgradeSpy = jest.spyOn(UpgradeStore, 'addUpgrade').mockImplementation()
       const updateLockSpy = jest.spyOn(UpgradeStore, 'updateLock').mockImplementation()
-      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-var-requires
       const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const upgrade = jest.fn().mockImplementation()
       jest.spyOn(DbUpgrader, 'getUpgrades').mockReturnValue([upgrade]) // eslint-disable-line @typescript-eslint/no-empty-function
       jest.spyOn(DbUpgrader, 'aquireLock').mockImplementation()
@@ -118,15 +118,15 @@ describe('db-upgrader', () => {
           info: infoSpy,
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       jest.spyOn(UpgradeStore, 'getCurrentVersion').mockResolvedValue(1)
       jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
       const addAttemptSpy = jest.spyOn(UpgradeStore, 'addAttempt').mockImplementation()
       const addUpgradeSpy = jest.spyOn(UpgradeStore, 'addUpgrade').mockImplementation()
       const updateLockSpy = jest.spyOn(UpgradeStore, 'updateLock').mockImplementation()
-      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-var-requires
       const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const upgrade1 = jest.fn().mockImplementation()
       const upgrade2 = jest.fn().mockImplementation()
       jest.spyOn(DbUpgrader, 'getUpgrades').mockReturnValue([upgrade1, upgrade2]) // eslint-disable-line @typescript-eslint/no-empty-function
@@ -186,15 +186,15 @@ describe('db-upgrader', () => {
           error: errorSpy,
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       jest.spyOn(UpgradeStore, 'getCurrentVersion').mockResolvedValue(0)
       jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
       const addAttemptSpy = jest.spyOn(UpgradeStore, 'addAttempt').mockImplementation()
       const addUpgradeSpy = jest.spyOn(UpgradeStore, 'addUpgrade').mockImplementation()
       const updateLockSpy = jest.spyOn(UpgradeStore, 'updateLock').mockImplementation()
-      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-var-requires
       const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const error = Error('bad upgrade')
       const upgrade = jest.fn().mockRejectedValue(error)
       jest.spyOn(DbUpgrader, 'getUpgrades').mockReturnValue([upgrade]) // eslint-disable-line @typescript-eslint/no-empty-function
@@ -244,16 +244,16 @@ describe('db-upgrader', () => {
           error: errorSpy,
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       jest.spyOn(UpgradeStore, 'getCurrentVersion').mockResolvedValue(0)
       jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
       const addAttemptSpy = jest.spyOn(UpgradeStore, 'addAttempt').mockImplementation()
       const addUpgradeSpy = jest.spyOn(UpgradeStore, 'addUpgrade').mockImplementation()
       const error = Error('document does not exist')
       const updateLockSpy = jest.spyOn(UpgradeStore, 'updateLock').mockRejectedValue(error)
-      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-var-requires
       const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const upgrade1 = jest.fn().mockImplementation()
       const upgrade2 = jest.fn().mockImplementation()
       const upgrade3 = jest.fn().mockImplementation()
@@ -316,13 +316,13 @@ describe('db-upgrader', () => {
           isTraceEnabled: jest.fn().mockReturnValue(false),
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       const lock = {
         _id: new ObjectId(),
         updated: new Date(),
       }
       const addLockSpy = jest.spyOn(UpgradeStore, 'addLock').mockResolvedValue(lock)
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValueOnce(1000).mockReturnValueOnce(1000)
 
       await expect(DbUpgrader.aquireLock()).resolves.toEqual(undefined)
@@ -345,7 +345,7 @@ describe('db-upgrader', () => {
           isTraceEnabled: jest.fn().mockReturnValue(false),
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       const start = Date.now()
       const lock = {
         _id: new ObjectId(),
@@ -355,7 +355,7 @@ describe('db-upgrader', () => {
       jest.spyOn(UpgradeStore, 'isMongoError').mockReturnValue(true)
       const addLockSpy = jest.spyOn(UpgradeStore, 'addLock').mockRejectedValueOnce(error).mockResolvedValue(lock)
       const deleteLockSpy = jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const getLockSpy = jest.spyOn(UpgradeStore, 'getLock').mockResolvedValue({
         updated: new Date(start - DbUpgrader.LOCK_TIMEOUT_SECONDS * 1000 * 2),
       })
@@ -392,7 +392,7 @@ describe('db-upgrader', () => {
           isTraceEnabled: jest.fn().mockReturnValue(false),
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       const start = Date.now()
       const lock = {
         _id: new ObjectId(),
@@ -402,9 +402,9 @@ describe('db-upgrader', () => {
       jest.spyOn(UpgradeStore, 'isMongoError').mockReturnValue(true)
       const addLockSpy = jest.spyOn(UpgradeStore, 'addLock').mockRejectedValueOnce(error).mockResolvedValue(lock)
       const deleteLockSpy = jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
-      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-var-requires
       const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const getLockSpy = jest
         .spyOn(UpgradeStore, 'getLock')
         .mockResolvedValueOnce({
@@ -449,9 +449,9 @@ describe('db-upgrader', () => {
           isTraceEnabled: jest.fn().mockReturnValue(false),
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       const addLockSpy = jest.spyOn(UpgradeStore, 'addLock').mockRejectedValue(Error(error))
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       jest.spyOn(Date, 'now').mockReturnValueOnce(0).mockReturnValueOnce(1000).mockReturnValueOnce(1000)
 
       await expect(DbUpgrader.aquireLock()).rejects.toThrow(error)
@@ -473,15 +473,15 @@ describe('db-upgrader', () => {
           isTraceEnabled: jest.fn().mockReturnValue(false),
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       const start = Date.now()
       const error = new MongoError('MongoError')
       jest.spyOn(UpgradeStore, 'isMongoError').mockReturnValue(true)
       const addLockSpy = jest.spyOn(UpgradeStore, 'addLock').mockRejectedValueOnce(error)
       const deleteLockSpy = jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
-      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-var-requires
       const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const getLockSpy = jest.spyOn(UpgradeStore, 'getLock').mockResolvedValue({
         updated: new Date(start + DbUpgrader.LOCK_TIMEOUT_SECONDS * 1000 - 1),
       })
@@ -518,7 +518,7 @@ describe('db-upgrader', () => {
           isTraceEnabled: jest.fn().mockReturnValue(true),
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       const start = Date.now()
       const lock = {
         _id: new ObjectId(),
@@ -528,9 +528,9 @@ describe('db-upgrader', () => {
       jest.spyOn(UpgradeStore, 'isMongoError').mockReturnValue(true)
       const addLockSpy = jest.spyOn(UpgradeStore, 'addLock').mockRejectedValueOnce(error).mockResolvedValue(lock)
       const deleteLockSpy = jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
-      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-var-requires
       const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const getLock1 = {
         updated: new Date(start + DbUpgrader.LOCK_TIMEOUT_SECONDS * 1000 - 1),
       }
@@ -592,7 +592,7 @@ describe('db-upgrader', () => {
           error: errorSpy,
         }),
       }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       const start = Date.now()
       const lock = {
         _id: new ObjectId(),
@@ -604,9 +604,9 @@ describe('db-upgrader', () => {
       const deleteError = Error()
       deleteError.message = 'does not exist'
       const deleteLockSpy = jest.spyOn(UpgradeStore, 'deleteLock').mockRejectedValue(deleteError)
-      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const sleep = require('../../src/util/sleep') // eslint-disable-line @typescript-eslint/no-var-requires
       const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
-      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
+      const DbUpgrader = require('../../src/database/db-upgrader').default // eslint-disable-line @typescript-eslint/no-var-requires
       const getLockSpy = jest.spyOn(UpgradeStore, 'getLock').mockResolvedValue({
         updated: new Date(start - DbUpgrader.LOCK_TIMEOUT_SECONDS * 1000 * 2),
       })

@@ -195,7 +195,6 @@ async function testDisconnect({
   info: string | undefined
 }) {
   const infoSpy = jest.fn().mockImplementation()
-  const log4js = require('log4js') // eslint-disable-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-var-requires
   jest.mock('log4js', () => ({
     getLogger: jest.fn().mockReturnValue({
       info: infoSpy,

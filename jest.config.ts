@@ -9,17 +9,15 @@ if (process.argv.includes('--test-type=unit')) {
   throw Error(`Must supply --test-type argument with value of either "unit" or "func"`)
 }
 
-const allTestsGlob = `**/*.${testType}.test.ts`
-const clientTestsGlob = `**/client/${allTestsGlob}`
-
 if (testType === 'func') {
   process.env.MONGO_DB = 'gwent-func'
 }
 
 const sharedConfig: Config = {
   clearMocks: true,
-  moduleFileExtensions: ['ts', 'js', 'json', 'node'],
-  modulePathIgnorePatterns: ['build', 'svcs/ui/libs/client/libs/env/src/dynamic-env.ts'], // TODO: figure out why dynamic-env.ts file causes errors with coverage
+  coveragePathIgnorePatterns: ['.*build.*', '.*generated-typings.*'],
+  moduleFileExtensions: ['js', 'json', 'node', 'ts', 'tsx'],
+  modulePathIgnorePatterns: ['build'],
   preset: 'ts-jest',
   resetMocks: true,
   resetModules: true,
@@ -29,7 +27,6 @@ const sharedConfig: Config = {
 
 const config: Config = {
   collectCoverage: true,
-  collectCoverageFrom: ['**/src/**/*', '!**/build/**/*', '!**/generated-typings.ts'],
   coverageDirectory: `<rootDir>/coverage/${testType}`,
   coverageReporters: ['cobertura', 'lcov'],
   reporters: [
@@ -48,13 +45,15 @@ const config: Config = {
   projects: [
     {
       ...sharedConfig,
+      collectCoverageFrom: ['**/src/**/*.ts'],
       testEnvironment: 'node',
-      testMatch: [`!${clientTestsGlob}`, allTestsGlob],
+      testMatch: [`**/*.${testType}.test.ts`],
     },
     {
       ...sharedConfig,
+      collectCoverageFrom: ['**/src/**/*.tsx'],
       testEnvironment: 'jsdom',
-      testMatch: [clientTestsGlob],
+      testMatch: [`**/*.${testType}.test.tsx`],
     },
   ],
 }

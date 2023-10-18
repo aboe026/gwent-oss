@@ -10,10 +10,12 @@
     "build-client": "yarn workspaces foreach --exclude @gwent/ui --parallel --interlaced run build",
     "build-image": "docker build --tag=gwent-ui:${IMAGE_TAG:-latest} --progress=plain --file=Dockerfile --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0} ${BUILD_OPTIONS:-} ../../",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo && yarn workspaces foreach --parallel --interlaced run clean",
+    "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
     "run-built": "cross-env CLIENT_DIR=../../libs/client/build yarn node build/src/server.js",
     "start": "cross-env CLIENT_DIR=../libs/client/build yarn g:ts-node src/server.ts",
+    "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-client watch-built",
     "watch-built": "cross-env CLIENT_DIR=../../libs/client/build yarn g:nodemon --watch build --watch libs/client/build/dynamic-env.js --exec 'yarn node build/src/server.js'",
     "watch-client": "yarn workspaces foreach --exclude @gwent/ui --parallel --interlaced run watch",
@@ -23,13 +25,17 @@
     "@gwent/env": "workspace:*",
     "express": "4.18.2",
     "fs-extra": "11.1.1",
+    "log4js": "6.9.1",
     "replace-in-file": "6.3.5"
   },
   "devDependencies": {
     "@gwent/client": "workspace:*",
     "@types/express": "4.17.17",
     "@types/fs-extra": "11.0.1",
-    "cross-env": "7.0.3"
+    "@types/jest": "29.5.0",
+    "cross-env": "7.0.3",
+    "jest-junit": "15.0.0",
+    "ts-jest": "29.0.5"
   },
   "workspaces": [
     "libs/*"

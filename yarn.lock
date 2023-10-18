@@ -2702,6 +2702,10 @@ __metadata:
 "@gwent/client-env@workspace:*, @gwent/client-env@workspace:svcs/ui/libs/client/libs/env":
   version: 0.0.0-use.local
   resolution: "@gwent/client-env@workspace:svcs/ui/libs/client/libs/env"
+  dependencies:
+    "@types/jest": 29.5.0
+    jest-junit: 15.0.0
+    ts-jest: 29.0.5
   languageName: unknown
   linkType: soft
 
@@ -2712,6 +2716,7 @@ __metadata:
     "@apollo/client": 3.7.10
     "@gwent/client-env": "workspace:*"
     "@gwent/env": "workspace:*"
+    "@types/jest": 29.5.0
     "@types/node": 18.15.11
     "@types/react": 18.2.28
     "@types/react-dom": 18.0.11
@@ -2719,10 +2724,12 @@ __metadata:
     css-loader: 6.7.3
     graphql: 16.6.0
     html-webpack-plugin: 5.5.0
+    jest-junit: 15.0.0
     mini-css-extract-plugin: 2.7.5
     react: 18.2.0
     react-dom: 18.2.0
     react-icons: 4.8.0
+    ts-jest: 29.0.5
     ts-loader: 9.4.2
     ts-node: 10.9.1
     webpack: 5.76.3
@@ -2793,10 +2800,14 @@ __metadata:
     "@gwent/env": "workspace:*"
     "@types/express": 4.17.17
     "@types/fs-extra": 11.0.1
+    "@types/jest": 29.5.0
     cross-env: 7.0.3
     express: 4.18.2
     fs-extra: 11.1.1
+    jest-junit: 15.0.0
+    log4js: 6.9.1
     replace-in-file: 6.3.5
+    ts-jest: 29.0.5
   languageName: unknown
   linkType: soft
 

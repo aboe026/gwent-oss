@@ -1,56 +1,32 @@
 import express from 'express'
-import fs from 'fs-extra'
-import path from 'path'
-import { replaceInFile } from 'replace-in-file'
+import log4js from 'log4js'
 
 import env from './env'
+import ClientUtil from './client-util'
+
+log4js.configure({
+  appenders: { out: { type: 'stdout' } },
+  categories: { default: { appenders: ['out'], level: env.LOG_LEVEL } },
+})
+const logger = log4js.getLogger('server')
 
 //
 ;(async () => {
   try {
-    const clientDir = await getClientDir()
+    const clientDir = await ClientUtil.getDirectory()
 
-    await setClientEnv(clientDir)
+    await ClientUtil.setEnvVars(clientDir)
 
     const app = express()
 
     app.use(express.static(clientDir))
 
+    logger.trace(`env.PORT: "${env.PORT}"`)
     app.listen(env.PORT, () => {
-      console.log(`Serving React app at "http://localhost:${env.PORT}"`)
+      logger.info(`Serving React app at "http://localhost:${env.PORT}"`)
     })
   } catch (err) {
-    console.error(err)
+    logger.error(err)
     process.exit(1)
   }
 })()
-
-async function getClientDir(): Promise<string> {
-  let clientDir = env.CLIENT_DIR
-
-  if (!path.isAbsolute(clientDir)) {
-    clientDir = path.join(__dirname, clientDir)
-  }
-
-  console.log(`Client directory resolved to "${clientDir}"`)
-
-  if (!(await fs.pathExists(clientDir))) {
-    throw Error(
-      `Invalid client directory "${clientDir}", path either does not exist (potentially needs to be built) or is not accessible due to permissions.`
-    )
-  }
-
-  return clientDir
-}
-
-async function setClientEnv(clientDir: string) {
-  const envFile = path.join(clientDir, 'dynamic-env.js')
-  if (!(await fs.pathExists(envFile))) {
-    throw Error(`Client env file "${envFile}" does not exist, ensure it has been built properly.`)
-  }
-  await replaceInFile({
-    files: [envFile],
-    from: /API_URL:(\s*)(['"]).*?(['"])/,
-    to: `API_URL:$1$2${env.API_URL}$3`,
-  })
-}
