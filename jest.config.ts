@@ -1,15 +1,21 @@
 import type { Config } from 'jest'
 
-let testType = ''
-if (process.argv.includes('--test-type=unit')) {
-  testType = 'unit'
-} else if (process.argv.includes('--test-type=func')) {
-  testType = 'func'
-} else {
-  throw Error(`Must supply --test-type argument with value of either "unit" or "func"`)
+enum TEST_TYPE {
+  Unit = 'unit',
+  Func = 'func',
 }
 
-if (testType === 'func') {
+let testType: TEST_TYPE | undefined
+if (process.argv.includes('--test-type=unit')) {
+  testType = TEST_TYPE.Unit
+} else if (process.argv.includes('--test-type=func')) {
+  testType = TEST_TYPE.Func
+}
+if (testType === undefined) {
+  throw Error(`Must supply --test-type argument with value of either "${TEST_TYPE.Unit}" or "${TEST_TYPE.Func}"`)
+}
+
+if (testType === TEST_TYPE.Func) {
   process.env.MONGO_DB = 'gwent-func'
 }
 
@@ -58,7 +64,7 @@ const config: Config = {
   ],
 }
 
-if (testType === 'func') {
+if (testType === TEST_TYPE.Func) {
   config.testTimeout = 30000
 }
 
