@@ -32,7 +32,7 @@ node {
     def mongoImage
     def testcafeVersion
     def testcafeImageTag
-    def e2eDbName // groovylint-disable-line UnusedVariable
+    def e2eDbName
     def services = []
 
     try {
