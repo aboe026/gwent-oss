@@ -17,7 +17,7 @@ import resolver from './graphql/resolvers'
 
 log4js.configure({
   appenders: { out: { type: 'stdout' } },
-  categories: { default: { appenders: ['out'], level: env.LOG_LEVEL } },
+  categories: { default: { appenders: ['out'], level: env().LOG_LEVEL } },
 })
 const logger = log4js.getLogger('api')
 
@@ -41,20 +41,20 @@ const logger = log4js.getLogger('api')
     logger.debug('starting ApolloServer')
     await server.start()
     logger.debug('ApolloServer started')
-    logger.trace(`GRAPHQL_PATH: "${env.GRAPHQL_PATH}"`)
-    logger.trace(`CORS_ORIGIN: "${env.CORS_ORIGIN}"`)
+    logger.trace(`GRAPHQL_PATH: "${env().GRAPHQL_PATH}"`)
+    logger.trace(`CORS_ORIGIN: "${env().CORS_ORIGIN}"`)
     app.use(
-      `/${env.GRAPHQL_PATH}`,
+      `/${env().GRAPHQL_PATH}`,
       cors({
-        origin: [env.CORS_ORIGIN],
+        origin: [env().CORS_ORIGIN],
       }),
       json(),
       expressMiddleware(server as any) // eslint-disable-line @typescript-eslint/no-explicit-any
     )
-    logger.trace(`PORT: "${env.PORT}"`)
-    await new Promise<void>((resolve) => httpServer.listen({ port: env.PORT }, resolve))
-    logger.info(`GraphQL API listening at: "http://localhost:${env.PORT}/${env.GRAPHQL_PATH}"`)
-    logger.info(`CORS accepting requests from "${env.CORS_ORIGIN}"`)
+    logger.trace(`PORT: "${env().PORT}"`)
+    await new Promise<void>((resolve) => httpServer.listen({ port: env().PORT }, resolve))
+    logger.info(`GraphQL API listening at: "http://localhost:${env().PORT}/${env().GRAPHQL_PATH}"`)
+    logger.info(`CORS accepting requests from "${env().CORS_ORIGIN}"`)
   } catch (err) {
     logger.error(err)
     process.exit(1)

@@ -16,14 +16,12 @@ describe('upgrade-2', () => {
     await DbConnector.disconnect()
   })
   it('creates cards', async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([upgrade1])
     await DbUpgrader.run()
 
     await expect(CardStore.getLeaders()).resolves.toEqual([])
     await expect(CardStore.getUnits()).resolves.toEqual([])
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([upgrade1, upgrade2])
     await DbUpgrader.run()
 

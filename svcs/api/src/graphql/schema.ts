@@ -1,6 +1,5 @@
 import gql from 'graphql-tag'
 
-// TODO: change to schema.gql?
 export default gql`
   scalar SemVer
 

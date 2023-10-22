@@ -1,20 +1,21 @@
+import log4js from 'log4js'
+
+import CardStore from '../../src/database/card-store'
+import DbConnector from '../../src/database/db-connector'
+import upgrade1 from '../../src/database/upgrades/upgrade-1'
+
 describe('upgrade-1', () => {
   it('calls to create card collection and indexes', async () => {
     const debugSpy = jest.fn().mockImplementation()
-    jest.mock('log4js', () => ({
-      getLogger: jest.fn().mockReturnValue({
-        debug: debugSpy,
-      }),
-    }))
-    const upgrade1 = require('../../src/database/upgrades/upgrade-1').default // eslint-disable-line @typescript-eslint/no-var-requires
-    const DbConnector = require('../../src/database/db-connector').default // eslint-disable-line @typescript-eslint/no-var-requires
+    jest.spyOn(log4js, 'getLogger').mockReturnValue({
+      debug: debugSpy,
+    } as any)
     const createCollectionSpy = jest.fn().mockImplementation()
     const createIndexSpy = jest.fn().mockImplementation()
-    jest.spyOn(DbConnector, 'connect').mockReturnValue({
+    jest.spyOn(DbConnector, 'connect').mockResolvedValue({
       createCollection: createCollectionSpy,
       createIndex: createIndexSpy,
-    })
-    const CardStore = require('../../src/database/card-store').default // eslint-disable-line @typescript-eslint/no-var-requires
+    } as any)
 
     await expect(upgrade1()).resolves.toEqual(undefined)
 

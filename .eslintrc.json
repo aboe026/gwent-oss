@@ -11,6 +11,15 @@
     "test-results",
     "tsconfig.tsbuildinfo"
   ],
+  "overrides": [
+    {
+      "files": ["*.test.ts", "test/e2e/**/*"],
+      "rules": {
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": 2020,

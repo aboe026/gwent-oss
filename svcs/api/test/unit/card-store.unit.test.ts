@@ -1,18 +1,20 @@
+import { ObjectId } from 'mongodb'
+
+import CardStore, { AddLeaderInput, CARD_TYPE } from '../../src/database/card-store'
 import { Combat, Dlc, Effect, Faction } from '../../src/database/generated-typings'
 
 describe('card-store', () => {
   describe('getLeaders', () => {
     it('calls to read method with type of Leader and projection against type', async () => {
-      const CardStore = require('../../src/database/card-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const readSpy = jest.spyOn(CardStore, 'read').mockImplementation()
+      const readSpy = jest.spyOn(CardStore, 'read').mockResolvedValue([])
 
-      await expect(CardStore.getLeaders()).resolves.toEqual(undefined)
+      await expect(CardStore.getLeaders()).resolves.toEqual([])
 
       expect(readSpy.mock.calls).toEqual([
         [
           {
             filter: {
-              type: 'LEADER',
+              type: CARD_TYPE.Leader,
             },
             options: {
               projection: {
@@ -26,16 +28,15 @@ describe('card-store', () => {
   })
   describe('getUnits', () => {
     it('calls to read method with type of Unit and projection against type', async () => {
-      const CardStore = require('../../src/database/card-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const readSpy = jest.spyOn(CardStore, 'read').mockImplementation()
+      const readSpy = jest.spyOn(CardStore, 'read').mockResolvedValue([])
 
-      await expect(CardStore.getUnits()).resolves.toEqual(undefined)
+      await expect(CardStore.getUnits()).resolves.toEqual([])
 
       expect(readSpy.mock.calls).toEqual([
         [
           {
             filter: {
-              type: 'UNIT',
+              type: CARD_TYPE.Unit,
             },
             options: {
               projection: {
@@ -54,37 +55,48 @@ describe('card-store', () => {
         faction: Faction.Neutral,
         dlc: Dlc.HeartsOfStone,
       }
-      const CardStore = require('../../src/database/card-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const createSpy = jest.spyOn(CardStore, 'create').mockReturnValue(leader)
+      const createSpy = jest.spyOn(CardStore, 'create').mockResolvedValue({
+        _id: new ObjectId(),
+        ...leader,
+      })
 
-      await expect(CardStore.addLeader(leader)).resolves.toEqual(leader)
+      await expect(CardStore.addLeader(leader)).resolves.toEqual({
+        _id: expect.any(ObjectId),
+        ...leader,
+      })
 
       expect(createSpy.mock.calls).toEqual([
         [
           {
-            type: 'LEADER',
+            type: CARD_TYPE.Leader,
             ...leader,
           },
         ],
       ])
     })
     it('logs out card if trace enabled', async () => {
-      const leader = {
+      const leader: AddLeaderInput = {
         name: 'leader-name',
         faction: Faction.Neutral,
-        dlc: Dlc.HeartsOfStone,
+        dlc: Dlc.BloodAndWine,
       }
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(true),
-        }),
-      }))
-      const CardStore = require('../../src/database/card-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const createSpy = jest.spyOn(CardStore, 'create').mockReturnValue(leader)
+      CardStore['logger'] = {
+        isTraceEnabled: jest.fn().mockReturnValue(true),
+        trace: traceSpy,
+      } as any
+      const createSpy = jest.spyOn(CardStore, 'create').mockImplementation((card) =>
+        Promise.resolve({
+          _id: new ObjectId(),
+          ...card,
+        })
+      )
 
-      await expect(CardStore.addLeader(leader)).resolves.toEqual(leader)
+      await expect(CardStore.addLeader(leader)).resolves.toEqual({
+        _id: expect.any(ObjectId),
+        type: CARD_TYPE.Leader,
+        ...leader,
+      })
 
       const convertedLeader = {
         type: 'LEADER',
@@ -109,15 +121,20 @@ describe('card-store', () => {
         scorchMin: 10,
         musterPrefix: 'special',
       }
-      const CardStore = require('../../src/database/card-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const createSpy = jest.spyOn(CardStore, 'create').mockReturnValue(unit)
+      const createSpy = jest.spyOn(CardStore, 'create').mockResolvedValue({
+        _id: new ObjectId(),
+        ...unit,
+      })
 
-      await expect(CardStore.addUnit(unit)).resolves.toEqual(unit)
+      await expect(CardStore.addUnit(unit)).resolves.toEqual({
+        _id: expect.any(ObjectId),
+        ...unit,
+      })
 
       expect(createSpy.mock.calls).toEqual([
         [
           {
-            type: 'UNIT',
+            type: CARD_TYPE.Unit,
             ...unit,
           },
         ],
@@ -138,19 +155,22 @@ describe('card-store', () => {
         musterPrefix: 'special',
       }
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(true),
-        }),
-      }))
-      const CardStore = require('../../src/database/card-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const createSpy = jest.spyOn(CardStore, 'create').mockReturnValue(unit)
+      CardStore['logger'] = {
+        isTraceEnabled: jest.fn().mockReturnValue(true),
+        trace: traceSpy,
+      } as any
+      const createSpy = jest.spyOn(CardStore, 'create').mockResolvedValue({
+        _id: new ObjectId(),
+        ...unit,
+      })
 
-      await expect(CardStore.addUnit(unit)).resolves.toEqual(unit)
+      await expect(CardStore.addUnit(unit)).resolves.toEqual({
+        _id: expect.any(ObjectId),
+        ...unit,
+      })
 
       const convertedUnit = {
-        type: 'UNIT',
+        type: CARD_TYPE.Unit,
         ...unit,
       }
       expect(createSpy.mock.calls).toEqual([[convertedUnit]])

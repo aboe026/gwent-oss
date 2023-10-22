@@ -10,7 +10,6 @@ describe('resolvers', () => {
     it('returns _id as string for id field', () => {
       const id = '000000000000000000000002'
       expect(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (resolvers.Leader as any).id({
           _id: new ObjectId(id),
         })
@@ -21,7 +20,6 @@ describe('resolvers', () => {
     it('returns _id as string for id field', () => {
       const id = '000000000000000000000002'
       expect(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (resolvers.Unit as any).id({
           _id: new ObjectId(id),
         })
@@ -31,10 +29,9 @@ describe('resolvers', () => {
   describe('query', () => {
     describe('leaders', () => {
       it('calls out to card store getLeaders method', async () => {
-        const value: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
+        const value: any[] = []
         const getLeadersSpy = jest.spyOn(CardStore, 'getLeaders').mockResolvedValue(value)
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await expect((resolvers.Query as any).leaders()).resolves.toEqual(value)
 
         expect(getLeadersSpy.mock.calls).toEqual([[]])
@@ -42,10 +39,9 @@ describe('resolvers', () => {
     })
     describe('units', () => {
       it('calls out to card store getUnits method', async () => {
-        const value: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
+        const value: any[] = []
         const getUnitsSpy = jest.spyOn(CardStore, 'getUnits').mockResolvedValue(value)
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await expect((resolvers.Query as any).units()).resolves.toEqual(value)
 
         expect(getUnitsSpy.mock.calls).toEqual([[]])
@@ -53,7 +49,6 @@ describe('resolvers', () => {
     })
     describe('version', () => {
       it('returns package json version', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         expect((resolvers.Query as any).version()).toEqual(version)
       })
     })
@@ -62,7 +57,6 @@ describe('resolvers', () => {
         const value = 1
         const getBuildNumberSpy = jest.spyOn(AppInfo, 'getBuildNumber').mockResolvedValue(value)
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         await expect((resolvers.Query as any).build()).resolves.toEqual(value)
 
         expect(getBuildNumberSpy.mock.calls).toEqual([[]])

@@ -3,9 +3,8 @@ import log4js from 'log4js'
 import CardStore from '../card-store'
 import DbConnector from '../db-connector'
 
-const logger = log4js.getLogger('upgrade-1')
-
 export default async function upgrade1() {
+  const logger = log4js.getLogger('upgrade-1')
   logger.debug('Connecting to database')
   const db = await DbConnector.connect()
   logger.debug(`Creating collection "${CardStore.COLLECTION_NAME}"`)

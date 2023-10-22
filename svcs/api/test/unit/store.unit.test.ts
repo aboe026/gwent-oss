@@ -11,7 +11,7 @@ describe('store', () => {
       const connectSpy = jest.spyOn(DbConnector, 'connect').mockImplementation(() => {
         return {
           collection: collectionSpy,
-        } as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        } as any
       })
       const collectionName = 'unit-test'
 
@@ -30,7 +30,6 @@ describe('store', () => {
       const insertOneSpy = jest.fn().mockResolvedValue({
         insertedId: id,
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         insertOne: insertOneSpy,
       })
@@ -49,7 +48,6 @@ describe('store', () => {
       const findSpy = jest.fn().mockReturnValue({
         toArray: toArraySpy,
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         find: findSpy,
       })
@@ -77,7 +75,6 @@ describe('store', () => {
       const findSpy = jest.fn().mockReturnValue({
         toArray: toArraySpy,
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         find: findSpy,
       })
@@ -107,7 +104,6 @@ describe('store', () => {
       const findOneAndUpdateSpy = jest.fn().mockResolvedValue({
         value,
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         findOneAndUpdate: findOneAndUpdateSpy,
       })
@@ -138,7 +134,6 @@ describe('store', () => {
           n: 0,
         },
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         findOneAndUpdate: findOneAndUpdateSpy,
       })
@@ -167,7 +162,6 @@ describe('store', () => {
       const findOneAndDeleteSpy = jest.fn().mockResolvedValue({
         value,
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         findOneAndDelete: findOneAndDeleteSpy,
       })
@@ -189,7 +183,6 @@ describe('store', () => {
           n: 0,
         },
       })
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         findOneAndDelete: findOneAndDeleteSpy,
       })

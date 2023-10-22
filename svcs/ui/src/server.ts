@@ -6,7 +6,7 @@ import ClientUtil from './client-util'
 
 log4js.configure({
   appenders: { out: { type: 'stdout' } },
-  categories: { default: { appenders: ['out'], level: env.LOG_LEVEL } },
+  categories: { default: { appenders: ['out'], level: env().LOG_LEVEL } },
 })
 const logger = log4js.getLogger('server')
 
@@ -21,9 +21,9 @@ const logger = log4js.getLogger('server')
 
     app.use(express.static(clientDir))
 
-    logger.trace(`env.PORT: "${env.PORT}"`)
-    app.listen(env.PORT, () => {
-      logger.info(`Serving React app at "http://localhost:${env.PORT}"`)
+    logger.trace(`env.PORT: "${env().PORT}"`)
+    app.listen(env().PORT, () => {
+      logger.info(`Serving React app at "http://localhost:${env().PORT}"`)
     })
   } catch (err) {
     logger.error(err)

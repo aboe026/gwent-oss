@@ -1,12 +1,14 @@
 import path from 'path'
 
+import * as getEnv from '@gwent/env'
+import env from '../../src/env'
+
 describe('env', () => {
   it('sets dotEnvFilePath to empty string if NODE_ENV is production', () => {
-    const getEnv = require('@gwent/env') // eslint-disable-line @typescript-eslint/no-var-requires
     const getEnvSpy = jest.spyOn(getEnv, 'default')
     process.env.NODE_ENV = getEnv.NODE_ENV.Prod
 
-    require('../../src/env')
+    env()
 
     expect(getEnvSpy.mock.calls).toEqual([
       [
@@ -18,11 +20,10 @@ describe('env', () => {
     ])
   })
   it('sets dotEnvFilePath to env file if NODE_ENV is development', () => {
-    const getEnv = require('@gwent/env') // eslint-disable-line @typescript-eslint/no-var-requires
     const getEnvSpy = jest.spyOn(getEnv, 'default')
     process.env.NODE_ENV = getEnv.NODE_ENV.Dev
 
-    require('../../src/env')
+    env()
 
     expect(getEnvSpy.mock.calls).toEqual([
       [

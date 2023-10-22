@@ -3,15 +3,14 @@ import { ObjectId } from 'mongodb'
 
 import Store from './store'
 
-const logger = log4js.getLogger('upgrade-store')
-
 export default class UpgradeStore extends Store {
   static readonly COLLECTION_NAME = 'upgrades'
   private static readonly LOCK_ID = new ObjectId('000000000000000000000001')
+  private static logger = log4js.getLogger('upgrade-store')
 
   static async addLock(): Promise<LockDbObject> {
     const updated = new Date()
-    logger.trace(`Adding lock with updated: "${updated}"`)
+    UpgradeStore.logger.trace(`Adding lock with updated: "${updated}"`)
     return UpgradeStore.create<LockDbObject>({
       _id: UpgradeStore.LOCK_ID,
       updated,
@@ -20,7 +19,7 @@ export default class UpgradeStore extends Store {
 
   static async updateLock(): Promise<LockDbObject> {
     const updated = new Date()
-    logger.trace(`Updating lock with updated: "${updated}"`)
+    UpgradeStore.logger.trace(`Updating lock with updated: "${updated}"`)
     return UpgradeStore.update<LockDbObject>({
       _id: UpgradeStore.LOCK_ID,
       updated,
@@ -33,8 +32,8 @@ export default class UpgradeStore extends Store {
         _id: UpgradeStore.LOCK_ID,
       },
     })
-    if (logger.isTraceEnabled()) {
-      logger.trace(`getLock docs: "${JSON.stringify(docs)}"`)
+    if (UpgradeStore.logger.isTraceEnabled()) {
+      UpgradeStore.logger.trace(`getLock docs: "${JSON.stringify(docs)}"`)
     }
     if (docs.length > 1) {
       throw Error(`More than 1 upgrade lock document found: "${JSON.stringify(docs)}"`)
@@ -43,7 +42,7 @@ export default class UpgradeStore extends Store {
   }
 
   static async deleteLock(): Promise<LockDbObject> {
-    logger.trace('Deleting lock')
+    UpgradeStore.logger.trace('Deleting lock')
     return UpgradeStore.delete(UpgradeStore.LOCK_ID)
   }
 
@@ -61,8 +60,8 @@ export default class UpgradeStore extends Store {
         limit: 1,
       },
     })
-    if (logger.isTraceEnabled()) {
-      logger.trace(`getCurrentVersion docs: "${JSON.stringify(docs)}"`)
+    if (UpgradeStore.logger.isTraceEnabled()) {
+      UpgradeStore.logger.trace(`getCurrentVersion docs: "${JSON.stringify(docs)}"`)
     }
     if (docs.length > 1) {
       throw Error(`More than 1 doc returned for current upgrade version: "${JSON.stringify(docs)}"`)
@@ -75,8 +74,8 @@ export default class UpgradeStore extends Store {
       version,
       time,
     }
-    if (logger.isTraceEnabled()) {
-      logger.trace(`addAttempt doc: "${JSON.stringify(doc)}"`)
+    if (UpgradeStore.logger.isTraceEnabled()) {
+      UpgradeStore.logger.trace(`addAttempt doc: "${JSON.stringify(doc)}"`)
     }
     return UpgradeStore.create<AttemptDbObject>(doc)
   }
@@ -110,8 +109,8 @@ export default class UpgradeStore extends Store {
       start,
       end,
     }
-    if (logger.isTraceEnabled()) {
-      logger.trace(`addUpgrade doc: "${JSON.stringify(doc)}"`)
+    if (UpgradeStore.logger.isTraceEnabled()) {
+      UpgradeStore.logger.trace(`addUpgrade doc: "${JSON.stringify(doc)}"`)
     }
     return UpgradeStore.create<UpgradeDbObject>(doc)
   }

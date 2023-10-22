@@ -10,7 +10,7 @@ describe('error-util', () => {
       expect(
         getApolloError({
           message: error,
-        } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+        } as any)
       ).toEqual(error)
     })
     it('returns networkError results if one exists', () => {
@@ -27,7 +27,7 @@ describe('error-util', () => {
             },
           },
           message: 'other error',
-        } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+        } as any)
       ).toEqual(error)
     })
     it('returns networkError results if multiple exist', () => {
@@ -48,7 +48,7 @@ describe('error-util', () => {
             },
           },
           message: 'other error',
-        } as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+        } as any)
       ).toEqual(`${error1}\n${error2}`)
     })
   })

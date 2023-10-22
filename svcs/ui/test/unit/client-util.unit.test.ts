@@ -1,23 +1,24 @@
+import fs from 'fs-extra'
 import path from 'path'
+import replaceInFile from 'replace-in-file'
+
+import ClientUtil from '../../src/client-util'
+import * as env from '../../src/env'
 
 describe('client-util', () => {
   describe('getDirectory', () => {
     it('throws error if client directory does not exist', async () => {
       const clientDir = '/path/to/dir'
-      const fs = require('fs-extra') // eslint-disable-line @typescript-eslint/no-var-requires
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(false))
-      jest.mock('../../src/env', () => ({
+      jest.spyOn(env, 'default').mockReturnValue({
         CLIENT_DIR: clientDir,
-      }))
+      } as any)
       const debugSpy = jest.fn().mockImplementation()
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          debug: debugSpy,
-          trace: traceSpy,
-        }),
-      }))
-      const ClientUtil = require('../../src/client-util').default // eslint-disable-line @typescript-eslint/no-var-requires
+      ClientUtil['logger'] = {
+        debug: debugSpy,
+        trace: traceSpy,
+      } as any
 
       await expect(ClientUtil.getDirectory()).rejects.toThrow(
         `Invalid client directory "${clientDir}", path either does not exist (potentially needs to be built) or is not accessible due to permissions.`
@@ -29,20 +30,16 @@ describe('client-util', () => {
     })
     it('returns client directory if absolute path', async () => {
       const clientDir = '/path/to/dir'
-      const fs = require('fs-extra') // eslint-disable-line @typescript-eslint/no-var-requires
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(true))
-      jest.mock('../../src/env', () => ({
+      jest.spyOn(env, 'default').mockReturnValue({
         CLIENT_DIR: clientDir,
-      }))
+      } as any)
       const debugSpy = jest.fn().mockImplementation()
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          debug: debugSpy,
-          trace: traceSpy,
-        }),
-      }))
-      const ClientUtil = require('../../src/client-util').default // eslint-disable-line @typescript-eslint/no-var-requires
+      ClientUtil['logger'] = {
+        debug: debugSpy,
+        trace: traceSpy,
+      } as any
 
       await expect(ClientUtil.getDirectory()).resolves.toEqual(clientDir)
 
@@ -53,20 +50,16 @@ describe('client-util', () => {
     it('returns client directory if relative path', async () => {
       const clientDir = 'path/to/dir'
       const resolvedDir = path.join(__dirname, '../../src', clientDir)
-      const fs = require('fs-extra') // eslint-disable-line @typescript-eslint/no-var-requires
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(true))
-      jest.mock('../../src/env', () => ({
+      jest.spyOn(env, 'default').mockReturnValue({
         CLIENT_DIR: clientDir,
-      }))
+      } as any)
       const debugSpy = jest.fn().mockImplementation()
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          debug: debugSpy,
-          trace: traceSpy,
-        }),
-      }))
-      const ClientUtil = require('../../src/client-util').default // eslint-disable-line @typescript-eslint/no-var-requires
+      ClientUtil['logger'] = {
+        debug: debugSpy,
+        trace: traceSpy,
+      } as any
 
       await expect(ClientUtil.getDirectory()).resolves.toEqual(resolvedDir)
 
@@ -80,18 +73,14 @@ describe('client-util', () => {
       const clientDir = 'path/to/dir'
       const envFile = path.join(clientDir, 'dynamic-env.js')
       const apiUrl = 'http://localhost:4000'
-      const fs = require('fs-extra') // eslint-disable-line @typescript-eslint/no-var-requires
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(false))
-      jest.mock('../../src/env', () => ({
+      jest.spyOn(env, 'default').mockReturnValue({
         API_URL: apiUrl,
-      }))
+      } as any)
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-        }),
-      }))
-      const ClientUtil = require('../../src/client-util').default // eslint-disable-line @typescript-eslint/no-var-requires
+      ClientUtil['logger'] = {
+        trace: traceSpy,
+      } as any
 
       await expect(ClientUtil.setEnvVars(clientDir)).rejects.toThrow(
         `Client env file "${envFile}" does not exist, ensure it has been built properly.`
@@ -104,20 +93,15 @@ describe('client-util', () => {
       const clientDir = 'path/to/dir'
       const envFile = path.join(clientDir, 'dynamic-env.js')
       const apiUrl = 'http://localhost:4000'
-      const fs = require('fs-extra') // eslint-disable-line @typescript-eslint/no-var-requires
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(true))
-      jest.mock('../../src/env', () => ({
+      jest.spyOn(env, 'default').mockReturnValue({
         API_URL: apiUrl,
-      }))
+      } as any)
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-        }),
-      }))
-      const replaceInFile = require('replace-in-file') // eslint-disable-line @typescript-eslint/no-var-requires
+      ClientUtil['logger'] = {
+        trace: traceSpy,
+      } as any
       const replaceInFileSpy = jest.spyOn(replaceInFile, 'replaceInFile').mockImplementation()
-      const ClientUtil = require('../../src/client-util').default // eslint-disable-line @typescript-eslint/no-var-requires
 
       await expect(ClientUtil.setEnvVars(clientDir)).resolves.toEqual(undefined)
 

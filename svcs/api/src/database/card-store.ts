@@ -2,10 +2,9 @@ import { Combat, Dlc, Effect, Faction, LeaderDbObject, UnitDbObject } from './ge
 import { getLogger } from 'log4js'
 import Store from './store'
 
-const logger = getLogger('card-store')
-
 export default class CardStore extends Store {
   static readonly COLLECTION_NAME = 'cards'
+  private static logger = getLogger('card-store')
 
   static async getLeaders(): Promise<LeaderDbObject[]> {
     return CardStore.read<LeaderDbObject[]>({
@@ -41,8 +40,8 @@ export default class CardStore extends Store {
       faction,
       dlc,
     }
-    if (logger.isTraceEnabled()) {
-      logger.trace(`Adding leader: "${JSON.stringify(leader)}"`)
+    if (CardStore.logger.isTraceEnabled()) {
+      CardStore.logger.trace(`Adding leader: "${JSON.stringify(leader)}"`)
     }
     return CardStore.create<LeaderDbObject>(leader)
   }
@@ -75,8 +74,8 @@ export default class CardStore extends Store {
       scorchMin,
       musterPrefix,
     }
-    if (logger.isTraceEnabled()) {
-      logger.trace(`Adding unit: "${JSON.stringify(unit)}"`)
+    if (CardStore.logger.isTraceEnabled()) {
+      CardStore.logger.trace(`Adding unit: "${JSON.stringify(unit)}"`)
     }
     return CardStore.create<UnitDbObject>(unit)
   }

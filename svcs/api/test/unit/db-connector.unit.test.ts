@@ -1,3 +1,6 @@
+import { MongoClient } from 'mongodb'
+
+import DbConnector from '../../src/database/db-connector'
 import env from '../../src/env'
 
 describe('db-connector', () => {
@@ -84,7 +87,7 @@ describe('db-connector', () => {
       await testDisconnect({
         client: true,
         connected: true,
-        info: `Disconnecting from MongoDB database "${env.MONGO_DB}"`,
+        info: `Disconnecting from MongoDB database "${env().MONGO_DB}"`,
       })
     })
   })
@@ -95,44 +98,33 @@ async function testInitialize() {
   const debugSpy = jest.fn().mockImplementation()
   const infoSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
-  jest.mock('log4js', () => ({
-    getLogger: jest.fn().mockReturnValue({
-      debug: debugSpy,
-      info: infoSpy,
-      warn: warnSpy,
-    }),
-  }))
-  const connectSpy = jest.fn().mockImplementation()
+  DbConnector['logger'] = {
+    debug: debugSpy,
+    info: infoSpy,
+    warn: warnSpy,
+  } as any
   const onSpy = jest.fn().mockImplementation()
-  jest.mock('mongodb', () => {
-    return {
-      MongoClient: jest.fn().mockImplementation(() => {
-        return {
-          on: onSpy,
-          connect: connectSpy,
-        }
-      }),
-    }
-  })
-  const DbConnector = require('../../src/database/db-connector').default // eslint-disable-line @typescript-eslint/no-var-requires
+  const connectSpy = jest.spyOn(MongoClient, 'connect').mockResolvedValue({
+    on: onSpy,
+  } as any)
 
-  expect(DbConnector.connected).toEqual(false)
+  expect(DbConnector['connected']).toEqual(false)
 
-  await expect(DbConnector.initialize()).resolves.toEqual(undefined)
+  await expect(DbConnector['initialize']()).resolves.toEqual(undefined)
 
-  expect(DbConnector.connected).toEqual(true)
-  expect(debugSpy.mock.calls).toEqual([[`MONGO_URL: '${env.MONGO_URL}'`]])
-  expect(infoSpy.mock.calls).toEqual([[`Connecting to MongoDB database "${env.MONGO_DB}"`]])
-  expect(connectSpy.mock.calls).toEqual([[]])
+  expect(DbConnector['connected']).toEqual(true)
+  expect(debugSpy.mock.calls).toEqual([[`MONGO_URL: '${env().MONGO_URL}'`]])
+  expect(infoSpy.mock.calls).toEqual([[`Connecting to MongoDB database "${env().MONGO_DB}"`]])
+  expect(connectSpy.mock.calls).toEqual([[env().MONGO_URL]])
   expect(onSpy.mock.calls).toEqual([['connectionClosed', expect.any(Function)]])
 
   onSpy.mock.calls[0][1]({
     reason: disconnectReason,
   })
   expect(warnSpy.mock.calls).toEqual([
-    [`Lost connection to MongoDB database "${env.MONGO_DB}" due to "${disconnectReason}"`],
+    [`Lost connection to MongoDB database "${env().MONGO_DB}" due to "${disconnectReason}"`],
   ])
-  expect(DbConnector.connected).toEqual(false)
+  expect(DbConnector['connected']).toEqual(false)
 }
 
 async function testConnect({
@@ -152,37 +144,36 @@ async function testConnect({
 }) {
   const traceSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
-  jest.mock('log4js', () => ({
-    getLogger: jest.fn().mockReturnValue({
-      debug: debugSpy,
-      trace: traceSpy,
-      isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    }),
-  }))
-  const DbConnector = require('../../src/database/db-connector').default // eslint-disable-line @typescript-eslint/no-var-requires
+  DbConnector['logger'] = {
+    debug: debugSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
   const dbSpy = jest.fn().mockImplementation()
   if (client) {
-    DbConnector.client = {
+    DbConnector['client'] = {
       db: dbSpy,
-    }
+    } as any
+  } else {
+    DbConnector['client'] = undefined as any
   }
   const initializeSpy = jest.fn().mockImplementation(() => {
     return new Promise((resolve) => {
-      DbConnector.client = {
+      DbConnector['client'] = {
         db: dbSpy,
-      }
+      } as any
       resolve(undefined)
     })
   })
-  DbConnector.initialize = initializeSpy
-  DbConnector.connected = connected
+  DbConnector['initialize'] = initializeSpy
+  DbConnector['connected'] = connected
 
   await expect(DbConnector.connect()).resolves.toEqual(undefined)
 
   expect(debugSpy.mock.calls).toEqual(debugs ? debugs : [])
   expect(traceSpy.mock.calls).toEqual(traces ? traces : [])
   expect(initializeSpy.mock.calls).toEqual(initializeCalled ? [[]] : [])
-  expect(dbSpy.mock.calls).toEqual([[env.MONGO_DB]])
+  expect(dbSpy.mock.calls).toEqual([[env().MONGO_DB]])
 }
 
 async function testDisconnect({
@@ -195,19 +186,18 @@ async function testDisconnect({
   info: string | undefined
 }) {
   const infoSpy = jest.fn().mockImplementation()
-  jest.mock('log4js', () => ({
-    getLogger: jest.fn().mockReturnValue({
-      info: infoSpy,
-    }),
-  }))
-  const DbConnector = require('../../src/database/db-connector').default // eslint-disable-line @typescript-eslint/no-var-requires
-  const closeSpy = jest.fn().mockImplementation()
+  DbConnector['logger'] = {
+    info: infoSpy,
+  } as any
+  const closeSpy = jest.fn().mockImplementation(() => Promise.resolve())
   if (client) {
-    DbConnector.client = {
+    DbConnector['client'] = {
       close: closeSpy,
-    }
+    } as any
+  } else {
+    DbConnector['client'] = undefined as any
   }
-  DbConnector.connected = connected
+  DbConnector['connected'] = connected
 
   await expect(DbConnector.disconnect()).resolves.toEqual(undefined)
 

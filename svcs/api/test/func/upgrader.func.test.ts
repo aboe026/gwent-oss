@@ -18,7 +18,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([])
 
       await expect(DbUpgrader.run()).resolves.toEqual(undefined)
@@ -36,7 +35,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
       const start = Date.now()
 
@@ -80,7 +78,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([
         async () => {
           throw Error(error)
@@ -115,7 +112,6 @@ describe('upgrader', () => {
         const db = await DbConnector.connect()
         await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([])
         DbUpgrader['running'] = true
 
@@ -134,7 +130,6 @@ describe('upgrader', () => {
         const db = await DbConnector.connect()
         await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
         const start = Date.now()
         const expires = new Date(start + 1000 * newTimeout * 2)
@@ -169,7 +164,6 @@ describe('upgrader', () => {
         const db = await DbConnector.connect()
         await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
         const start = Date.now()
 
@@ -217,7 +211,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1), async () => sleep(1)])
       const start = Date.now()
 
@@ -282,7 +275,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([
         async () => {
           throw Error(error)
@@ -318,7 +310,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([
         async () => sleep(1),
         async () => {
@@ -375,7 +366,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([])
 
       await expect(DbUpgrader.run()).resolves.toEqual(undefined)
@@ -404,7 +394,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
       const start = Date.now()
 
@@ -458,7 +447,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
       const start = Date.now()
 
@@ -497,7 +485,6 @@ describe('upgrader', () => {
       expect(upgrades[0].start.getTime()).toBeLessThan(upgrades[0].end.getTime())
       expect(attempts[0].time.getTime()).toEqual(upgrades[0].start.getTime())
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1), async () => sleep(1)])
       const secondStart = Date.now()
 
@@ -566,7 +553,6 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([
         async () => {
           throw Error(error)
@@ -596,7 +582,6 @@ describe('upgrader', () => {
       expect(attempts[0].time.getTime()).toBeGreaterThan(start)
       expect(attempts[0].time.getTime()).toBeLessThan(end)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
       const secondStart = Date.now()
 

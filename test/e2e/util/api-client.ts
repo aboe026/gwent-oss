@@ -6,7 +6,6 @@ export default class ApiClient {
   private static client = new GraphQLClient(env.API_URL)
 
   static async getLeaders() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response: any = await ApiClient.client.request(
       gql`
         query {
@@ -23,7 +22,6 @@ export default class ApiClient {
   }
 
   static async getUnits() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response: any = await ApiClient.client.request(
       gql`
         query {

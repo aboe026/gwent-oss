@@ -16,7 +16,6 @@ describe('upgrade-1', () => {
     const db = await DbConnector.connect()
     await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([upgrade1])
 
     await DbUpgrader.run()

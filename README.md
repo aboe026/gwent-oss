@@ -174,6 +174,7 @@ then [install](#install) to have the change picked up.
 A list of things to be done in the future:
 
 - Get unit test coverage working for .tsx files
+- Change schema.ts to schema.gql
 - Account for cards with different art per instance (like Havekar Smuggler)
 - Account for "Ballad Heroes" different art
 - Move generate types to lib? So UI can use them as well (especially for shared functions, like "isDeckValid")

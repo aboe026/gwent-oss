@@ -1,30 +1,26 @@
 import { ObjectId } from 'mongodb'
 
+import UpgradeStore, { LockDbObject, UpgradeDbObject } from '../../src/database/upgrade-store'
+
 describe('upgrade-store', () => {
   describe('addLock', () => {
     it('calls to create method with hard-coded lock _id', async () => {
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(true),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const createSpy = jest.spyOn(UpgradeStore, 'create').mockImplementation()
+      UpgradeStore['logger'] = {
+        trace: traceSpy,
+        isTraceEnabled: jest.fn().mockReturnValue(true),
+      } as any
       const mockedDate = new Date()
       const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockedDate)
+      const lock = {
+        _id: UpgradeStore['LOCK_ID'],
+        updated: mockedDate,
+      }
+      const createSpy = jest.spyOn(UpgradeStore, 'create').mockResolvedValue(lock)
 
-      await expect(UpgradeStore.addLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.addLock()).resolves.toEqual(lock)
 
-      expect(createSpy.mock.calls).toEqual([
-        [
-          {
-            _id: UpgradeStore.LOCK_ID,
-            updated: mockedDate,
-          },
-        ],
-      ])
+      expect(createSpy.mock.calls).toEqual([[lock]])
       expect(traceSpy.mock.calls).toEqual([[`Adding lock with updated: "${mockedDate}"`]])
       expect(dateSpy.mock.calls).toEqual([[]])
     })
@@ -32,257 +28,113 @@ describe('upgrade-store', () => {
   describe('updateLock', () => {
     it('calls to update method with hard-coded lock _id', async () => {
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(true),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const updateSpy = jest.spyOn(UpgradeStore, 'update').mockImplementation()
+      UpgradeStore['logger'] = {
+        trace: traceSpy,
+        isTraceEnabled: jest.fn().mockReturnValue(true),
+      } as any
       const mockedDate = new Date()
       const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => mockedDate)
+      const lock = {
+        _id: UpgradeStore['LOCK_ID'],
+        updated: mockedDate,
+      }
+      const updateSpy = jest.spyOn(UpgradeStore, 'update').mockResolvedValue(lock)
 
-      await expect(UpgradeStore.updateLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.updateLock()).resolves.toEqual(lock)
 
-      expect(updateSpy.mock.calls).toEqual([
-        [
-          {
-            _id: UpgradeStore.LOCK_ID,
-            updated: mockedDate,
-          },
-        ],
-      ])
+      expect(updateSpy.mock.calls).toEqual([[lock]])
       expect(traceSpy.mock.calls).toEqual([[`Updating lock with updated: "${mockedDate}"`]])
       expect(dateSpy.mock.calls).toEqual([[]])
     })
   })
   describe('getLock', () => {
     it('calls to read method and returns undefined if no locks returned', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(false),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue([])
-
-      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              _id: UpgradeStore.LOCK_ID,
-            },
-          },
-        ],
-      ])
-      expect(traceSpy.mock.calls).toEqual([])
+      await testGetLock({
+        locks: [],
+      })
     })
     it('calls to read method and returns lock if single lock returned', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(false),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const locks = [
-        {
-          _id: UpgradeStore.LOCK_ID,
-          updated: new Date(),
-        },
-      ]
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(locks)
-
-      await expect(UpgradeStore.getLock()).resolves.toEqual(locks[0])
-
-      expect(readSpy.mock.calls).toEqual([
-        [
+      await testGetLock({
+        locks: [
           {
-            filter: {
-              _id: UpgradeStore.LOCK_ID,
-            },
+            _id: UpgradeStore['LOCK_ID'],
+            updated: new Date(),
           },
         ],
-      ])
-      expect(traceSpy.mock.calls).toEqual([])
+      })
     })
     it('calls to read method and throws error if multiple locks returned', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(false),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       const locks = [
         {
-          _id: UpgradeStore.LOCK_ID,
+          _id: UpgradeStore['LOCK_ID'],
           updated: new Date(),
         },
         {
-          _id: UpgradeStore.LOCK_ID,
+          _id: UpgradeStore['LOCK_ID'],
           updated: new Date(),
         },
       ]
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(locks)
-
-      await expect(UpgradeStore.getLock()).rejects.toThrow(
-        `More than 1 upgrade lock document found: "${JSON.stringify(locks)}"`
-      )
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              _id: UpgradeStore.LOCK_ID,
-            },
-          },
-        ],
-      ])
-      expect(traceSpy.mock.calls).toEqual([])
+      await testGetLock({
+        locks,
+        error: `More than 1 upgrade lock document found: "${JSON.stringify(locks)}"`,
+      })
     })
     it('logs out locks if trace enabled', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(true),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
       const locks = [
         {
-          _id: UpgradeStore.LOCK_ID,
+          _id: UpgradeStore['LOCK_ID'],
           updated: new Date(),
         },
       ]
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(locks)
-
-      await expect(UpgradeStore.getLock()).resolves.toEqual(locks[0])
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              _id: UpgradeStore.LOCK_ID,
-            },
-          },
-        ],
-      ])
-      expect(traceSpy.mock.calls).toEqual([[`getLock docs: "${JSON.stringify(locks)}"`]])
+      await testGetLock({
+        locks,
+        traceEnabled: true,
+        traces: [[`getLock docs: "${JSON.stringify(locks)}"`]],
+      })
     })
   })
   describe('deleteLock', () => {
     it('calls to delete method', async () => {
       const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(false),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const deleteSpy = jest.spyOn(UpgradeStore, 'delete').mockResolvedValue(undefined)
+      UpgradeStore['logger'] = {
+        trace: traceSpy,
+        isTraceEnabled: jest.fn().mockReturnValue(true),
+      } as any
+      const lock = {
+        _id: UpgradeStore['LOCK_ID'],
+        updated: new Date(),
+      }
+      const deleteSpy = jest.spyOn(UpgradeStore, 'delete').mockResolvedValue(lock)
 
-      await expect(UpgradeStore.deleteLock()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.deleteLock()).resolves.toEqual(lock)
 
-      expect(deleteSpy.mock.calls).toEqual([[UpgradeStore.LOCK_ID]])
+      expect(deleteSpy.mock.calls).toEqual([[UpgradeStore['LOCK_ID']]])
       expect(traceSpy.mock.calls).toEqual([['Deleting lock']])
     })
   })
   describe('getCurrentVersion', () => {
     it('calls to read method and returns 0 if no upgrades returned', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(false),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const upgrades: any = [] // eslint-disable-line @typescript-eslint/no-explicit-any
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(upgrades)
-
-      await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(0)
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              end: {
-                $exists: true,
-              },
-            },
-            options: {
-              sort: {
-                version: -1,
-              },
-              limit: 1,
-            },
-          },
-        ],
-      ])
-      expect(traceSpy.mock.calls).toEqual([])
+      await testGetCurrentVersion({
+        upgrades: [],
+        expected: 0,
+      })
     })
     it('calls to read method and returns upgrade version if single upgrade returned', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(false),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const upgrades: any = [
-        {
-          _id: new ObjectId(),
-          version: 1,
-          start: new Date(),
-          end: new Date(),
-        },
-      ]
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(upgrades)
-
-      await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(1)
-
-      expect(readSpy.mock.calls).toEqual([
-        [
+      const version = 1
+      await testGetCurrentVersion({
+        upgrades: [
           {
-            filter: {
-              end: {
-                $exists: true,
-              },
-            },
-            options: {
-              sort: {
-                version: -1,
-              },
-              limit: 1,
-            },
+            _id: new ObjectId(),
+            version,
+            start: new Date(),
+            end: new Date(),
           },
         ],
-      ])
-      expect(traceSpy.mock.calls).toEqual([])
+        expected: version,
+      })
     })
     it('calls to read method and throws error if multiple upgrades returned', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(false),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const upgrades: any = [
+      const upgrades = [
         {
           _id: new ObjectId(),
           version: 2,
@@ -296,121 +148,61 @@ describe('upgrade-store', () => {
           end: new Date(),
         },
       ]
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(upgrades)
-
-      await expect(UpgradeStore.getCurrentVersion()).rejects.toThrow(
-        `More than 1 doc returned for current upgrade version: "${JSON.stringify(upgrades)}"`
-      )
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              end: {
-                $exists: true,
-              },
-            },
-            options: {
-              sort: {
-                version: -1,
-              },
-              limit: 1,
-            },
-          },
-        ],
-      ])
-      expect(traceSpy.mock.calls).toEqual([])
+      await testGetCurrentVersion({
+        upgrades,
+        error: `More than 1 doc returned for current upgrade version: "${JSON.stringify(upgrades)}"`,
+      })
     })
     it('logs out upgrade docs if trace enabled', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(true),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const upgrades: any = [
+      const version = 1
+      const upgrades = [
         {
           _id: new ObjectId(),
-          version: 1,
+          version,
           start: new Date(),
           end: new Date(),
         },
       ]
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(upgrades)
-
-      await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(1)
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              end: {
-                $exists: true,
-              },
-            },
-            options: {
-              sort: {
-                version: -1,
-              },
-              limit: 1,
-            },
-          },
-        ],
-      ])
-      expect(traceSpy.mock.calls).toEqual([[`getCurrentVersion docs: "${JSON.stringify(upgrades)}"`]])
+      await testGetCurrentVersion({
+        upgrades,
+        expected: version,
+        traceEnabled: true,
+        traces: [[`getCurrentVersion docs: "${JSON.stringify(upgrades)}"`]],
+      })
     })
   })
   describe('addAttempt', () => {
     it('calls to create method', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(false),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const createSpy = jest.spyOn(UpgradeStore, 'create').mockImplementation()
-      const attempt = {
+      await testAddAttempt({
         version: 1,
         time: new Date(),
-      }
-
-      await expect(UpgradeStore.addAttempt(attempt)).resolves.toEqual(undefined)
-
-      expect(createSpy.mock.calls).toEqual([[attempt]])
-      expect(traceSpy.mock.calls).toEqual([])
+      })
     })
     it('logs out attempt doc if trace enabled', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(true),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const createSpy = jest.spyOn(UpgradeStore, 'create').mockImplementation()
       const attempt = {
         version: 1,
         time: new Date(),
       }
-
-      await expect(UpgradeStore.addAttempt(attempt)).resolves.toEqual(undefined)
-
-      expect(createSpy.mock.calls).toEqual([[attempt]])
-      expect(traceSpy.mock.calls).toEqual([[`addAttempt doc: "${JSON.stringify(attempt)}"`]])
+      await testAddAttempt({
+        version: attempt.version,
+        time: attempt.time,
+        traceEnabled: true,
+        traces: [[`addAttempt doc: "${JSON.stringify(attempt)}"`]],
+      })
     })
   })
   describe('getAttempts', () => {
     it('calls to read method with proper filters and options', async () => {
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockImplementation()
+      const attempts = [
+        {
+          _id: new ObjectId(),
+          version: 1,
+          time: new Date(),
+        },
+      ]
+      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(attempts)
 
-      await expect(UpgradeStore.getAttempts()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getAttempts()).resolves.toEqual(attempts)
 
       expect(readSpy.mock.calls).toEqual([
         [
@@ -432,54 +224,40 @@ describe('upgrade-store', () => {
   })
   describe('addUpgrade', () => {
     it('calls to create method', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(false),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const createSpy = jest.spyOn(UpgradeStore, 'create').mockImplementation()
-      const upgrade = {
+      await testAddUpgrade({
         version: 1,
         start: new Date(),
         end: new Date(),
-      }
-
-      await expect(UpgradeStore.addUpgrade(upgrade)).resolves.toEqual(undefined)
-
-      expect(createSpy.mock.calls).toEqual([[upgrade]])
-      expect(traceSpy.mock.calls).toEqual([])
+      })
     })
     it('logs out attempt doc if trace enabled', async () => {
-      const traceSpy = jest.fn().mockImplementation()
-      jest.mock('log4js', () => ({
-        getLogger: jest.fn().mockReturnValue({
-          trace: traceSpy,
-          isTraceEnabled: jest.fn().mockReturnValue(true),
-        }),
-      }))
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const createSpy = jest.spyOn(UpgradeStore, 'create').mockImplementation()
       const upgrade = {
         version: 1,
         start: new Date(),
         end: new Date(),
       }
-
-      await expect(UpgradeStore.addUpgrade(upgrade)).resolves.toEqual(undefined)
-
-      expect(createSpy.mock.calls).toEqual([[upgrade]])
-      expect(traceSpy.mock.calls).toEqual([[`addUpgrade doc: "${JSON.stringify(upgrade)}"`]])
+      await testAddUpgrade({
+        version: upgrade.version,
+        start: upgrade.start,
+        end: upgrade.end,
+        traceEnabled: true,
+        traces: [[`addUpgrade doc: "${JSON.stringify(upgrade)}"`]],
+      })
     })
   })
   describe('getUpgrades', () => {
     it('calls to read method with proper filters and options', async () => {
-      const UpgradeStore = require('../../src/database/upgrade-store').default // eslint-disable-line @typescript-eslint/no-var-requires
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockImplementation()
+      const upgrades = [
+        {
+          _id: new ObjectId(),
+          version: 1,
+          start: new Date(),
+          end: new Date(),
+        },
+      ]
+      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(upgrades)
 
-      await expect(UpgradeStore.getUpgrades()).resolves.toEqual(undefined)
+      await expect(UpgradeStore.getUpgrades()).resolves.toEqual(upgrades)
 
       expect(readSpy.mock.calls).toEqual([
         [
@@ -500,3 +278,161 @@ describe('upgrade-store', () => {
     })
   })
 })
+
+async function testGetLock({
+  locks,
+  traceEnabled,
+  traces = [],
+  error,
+}: {
+  locks: LockDbObject[]
+  traceEnabled?: boolean
+  traces?: string[][]
+  error?: string
+}) {
+  const traceSpy = jest.fn().mockImplementation()
+  UpgradeStore['logger'] = {
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
+  const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(locks)
+
+  if (error) {
+    await expect(UpgradeStore.getLock()).rejects.toThrow(error)
+  } else {
+    await expect(UpgradeStore.getLock()).resolves.toEqual(locks[0])
+  }
+
+  expect(readSpy.mock.calls).toEqual([
+    [
+      {
+        filter: {
+          _id: UpgradeStore['LOCK_ID'],
+        },
+      },
+    ],
+  ])
+  expect(traceSpy.mock.calls).toEqual(traces)
+}
+
+async function testGetCurrentVersion({
+  upgrades,
+  expected,
+  traceEnabled,
+  traces = [],
+  error,
+}: {
+  upgrades: UpgradeDbObject[]
+  expected?: number
+  traceEnabled?: boolean
+  traces?: string[][]
+  error?: string
+}) {
+  const traceSpy = jest.fn().mockImplementation()
+  UpgradeStore['logger'] = {
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
+  const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(upgrades)
+
+  if (error) {
+    await expect(UpgradeStore.getCurrentVersion()).rejects.toThrow(error)
+  } else {
+    await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(expected)
+  }
+
+  expect(readSpy.mock.calls).toEqual([
+    [
+      {
+        filter: {
+          end: {
+            $exists: true,
+          },
+        },
+        options: {
+          sort: {
+            version: -1,
+          },
+          limit: 1,
+        },
+      },
+    ],
+  ])
+  expect(traceSpy.mock.calls).toEqual(traces)
+}
+
+async function testAddAttempt({
+  version,
+  time,
+  traceEnabled,
+  traces = [],
+}: {
+  version: number
+  time: Date
+  traceEnabled?: boolean
+  traces?: string[][]
+}) {
+  const traceSpy = jest.fn().mockImplementation()
+  UpgradeStore['logger'] = {
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
+  const attempt = {
+    _id: new ObjectId(),
+    version,
+    time,
+  }
+  const createSpy = jest.spyOn(UpgradeStore, 'create').mockResolvedValue(attempt)
+
+  await expect(UpgradeStore.addAttempt(attempt)).resolves.toEqual(attempt)
+
+  expect(createSpy.mock.calls).toEqual([
+    [
+      {
+        version,
+        time,
+      },
+    ],
+  ])
+  expect(traceSpy.mock.calls).toEqual(traces)
+}
+
+async function testAddUpgrade({
+  version,
+  start,
+  end,
+  traceEnabled,
+  traces = [],
+}: {
+  version: number
+  start: Date
+  end: Date
+  traceEnabled?: boolean
+  traces?: string[][]
+}) {
+  const traceSpy = jest.fn().mockImplementation()
+  UpgradeStore['logger'] = {
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
+  const upgrade = {
+    _id: new ObjectId(),
+    version,
+    start,
+    end,
+  }
+  const createSpy = jest.spyOn(UpgradeStore, 'create').mockResolvedValue(upgrade)
+
+  await expect(UpgradeStore.addUpgrade(upgrade)).resolves.toEqual(upgrade)
+
+  expect(createSpy.mock.calls).toEqual([
+    [
+      {
+        version,
+        start,
+        end,
+      },
+    ],
+  ])
+  expect(traceSpy.mock.calls).toEqual(traces)
+}

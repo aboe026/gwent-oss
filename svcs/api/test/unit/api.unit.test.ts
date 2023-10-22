@@ -1,9 +1,3 @@
-import { ApolloServer } from '@apollo/server' // eslint-disable-line @typescript-eslint/no-unused-vars
-import log4js from 'log4js' // eslint-disable-line @typescript-eslint/no-unused-vars
-import express from 'express' // eslint-disable-line @typescript-eslint/no-unused-vars
-import http from 'http' // eslint-disable-line @typescript-eslint/no-unused-vars
-
-import DbUpgrader from '../../src/database/db-upgrader' // eslint-disable-line @typescript-eslint/no-unused-vars
 import sleep from '../../src/util/sleep'
 
 jest.mock('log4js', () => ({

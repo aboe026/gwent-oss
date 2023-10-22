@@ -1,4 +1,8 @@
+import fs from 'fs-extra'
 import path from 'path'
+
+import AppInfo from '../../src/app-info'
+import * as env from '../../src/env'
 
 describe('app-info', () => {
   describe('getFile', () => {
@@ -130,18 +134,16 @@ describe('app-info', () => {
 })
 
 function testGetPath({ filePath, expectedPath }: { filePath: string; expectedPath: string }) {
-  jest.mock('../../src/env', () => ({
+  jest.spyOn(env, 'default').mockReturnValue({
     APP_INFO_FILE_PATH: filePath,
-  }))
+  } as any)
   const traceSpy = jest.fn().mockImplementation()
-  jest.mock('log4js', () => ({
-    getLogger: jest.fn().mockReturnValue({
-      trace: traceSpy,
-    }),
-  }))
-  const AppInfo = require('../../src/app-info').default // eslint-disable-line @typescript-eslint/no-var-requires
+  AppInfo['logger'] = {
+    isTraceEnabled: jest.fn().mockReturnValue(true),
+    trace: traceSpy,
+  } as any
 
-  expect(AppInfo.getFile()).toEqual(expectedPath)
+  expect(AppInfo['getFile']()).toEqual(expectedPath)
 
   expect(traceSpy.mock.calls).toEqual([[`APP_INFO_FILE_PATH: "${filePath}"`]])
 }
@@ -163,28 +165,26 @@ async function testGetBuildNumber({
   traceEnabled?: boolean
   expected?: number
 }) {
-  jest.mock('fs-extra', () => ({
-    pathExists: jest.fn().mockImplementation(() => Promise.resolve(fileExists)),
-    readFile: jest
-      .fn()
-      .mockImplementation(() => (fileReadError ? Promise.reject(fileReadError) : Promise.resolve(fileContents))),
-  }))
+  const getFileSpy = jest.spyOn(AppInfo as any, 'getFile').mockReturnValue(filePath)
+  const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(fileExists))
+  const readFileSpy = jest
+    .spyOn(fs, 'readFile')
+    .mockImplementation(() => (fileReadError ? Promise.reject(fileReadError) : Promise.resolve(fileContents)))
   const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
-  jest.mock('log4js', () => ({
-    getLogger: jest.fn().mockReturnValue({
-      error: errorSpy,
-      debug: debugSpy,
-      isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-      trace: traceSpy,
-    }),
-  }))
-  const AppInfo = require('../../src/app-info').default // eslint-disable-line @typescript-eslint/no-var-requires
-  jest.spyOn(AppInfo, 'getFile').mockReturnValue(filePath)
+  AppInfo['logger'] = {
+    error: errorSpy,
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
 
   await expect(AppInfo.getBuildNumber()).resolves.toEqual(expected)
 
+  expect(pathExistsSpy.mock.calls).toEqual([[filePath]])
+  expect(readFileSpy.mock.calls).toEqual(fileExists ? [[filePath]] : [])
+  expect(getFileSpy.mock.calls).toEqual([[]])
   expect(debugSpy.mock.calls).toEqual([[`filePath: "${filePath}"`]])
   expect(errorSpy.mock.calls).toEqual(errors)
   expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`contents: "${JSON.stringify(fileContents)}"`]] : [])
