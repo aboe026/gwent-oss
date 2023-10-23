@@ -99,46 +99,62 @@ node {
 
                     parallel(
                         'node': {
-                            docker.image(nodeImage).inside {
-                                stage('Install') {
-                                    sh 'node --version'
-                                    sh 'yarn --version'
-                                    sh 'yarn install --immutable'
-                                }
-                                stage('Lint') {
-                                    sh 'yarn lint'
-                                }
-                                stage('Build') {
-                                    sh 'yarn build'
-                                }
-                                stage('Unit Test') {
-                                    try {
-                                        sh 'yarn test-unit'
-                                    } catch (err) {
-                                        exceptionThrown = true
-                                        println 'Exception was caught in try block of unit tests stage.'
-                                        println err
-                                    } finally {
-                                        junit testResults: 'test-results/unit.xml', allowEmptyResults: true
-                                        recordCoverage(
-                                            skipPublishingChecks: true,
-                                            sourceCodeRetention: 'EVERY_BUILD',
-                                            tools: [
-                                                [
-                                                    parser: 'COBERTURA',
-                                                    pattern: 'coverage/unit/cobertura-coverage.xml'
+                            docker.image(mongoImage).withRun("--name=${uniqueName}-mongo --network=${uniqueName}") {
+                                dockerVolumesToDelete.addAll(dockerUtil.getContainerVolumes(containerName: "${uniqueName}-mongo"))
+                                docker.image(nodeImage).inside("--network=${uniqueName}") {
+                                    stage('Install') {
+                                        sh 'node --version'
+                                        sh 'yarn --version'
+                                        sh 'yarn install --immutable'
+                                    }
+                                    stage('Lint') {
+                                        sh 'yarn lint'
+                                    }
+                                    stage('Build') {
+                                        sh 'yarn build'
+                                    }
+                                    stage('Unit Test') {
+                                        try {
+                                            sh 'yarn test-unit'
+                                        } catch (err) {
+                                            exceptionThrown = true
+                                            println 'Exception was caught in try block of unit tests stage.'
+                                            println err
+                                        } finally {
+                                            junit testResults: 'test-results/unit.xml', allowEmptyResults: true
+                                            recordCoverage(
+                                                skipPublishingChecks: true,
+                                                sourceCodeRetention: 'EVERY_BUILD',
+                                                tools: [
+                                                    [
+                                                        parser: 'COBERTURA',
+                                                        pattern: 'coverage/unit/cobertura-coverage.xml'
+                                                    ]
                                                 ]
-                                            ]
-                                        )
-                                        if (upload) {
-                                            badges.uploadCoverageResult(
-                                                branch: env.BRANCH_NAME
                                             )
+                                            if (upload) {
+                                                badges.uploadCoverageResult(
+                                                    branch: env.BRANCH_NAME
+                                                )
+                                            }
                                         }
                                     }
-                                }
-                                stage('Func Test') {
-                                    sh 'yarn test-func'
+                                    stage('Func Test') {
+                                        try {
+                                            withEnv([
+                                                "MONGO_URL=mongodb://${uniqueName}-mongo:27017",
+                                                'MONGO_DB=gwent-func'
+                                            ]) {
+                                                sh 'yarn test-func'
+                                            }
+                                        } catch (err) {
+                                            exceptionThrown = true
+                                            println 'Exception was caught in try block of func tests stage.'
+                                            println err
+                                        } finally {
+                                            junit testResults: 'test-results/func.xml', allowEmptyResults: true
+                                        }
+                                    }
                                 }
                             }
                         },
@@ -212,7 +228,7 @@ node {
                         )
                     }
                     archiveArtifacts artifacts: 'test/e2e/screenshots/**/*', allowEmptyArchive: true
-                    dockerVolumesToDelete = dockerUtil.getContainerVolumes(containerName: "${uniqueName}-database-1")
+                    dockerVolumesToDelete.addAll(dockerUtil.getContainerVolumes(containerName: "${uniqueName}-database-1"))
 
                     if (upload) {
                         stage('Push') {
