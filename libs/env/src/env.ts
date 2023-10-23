@@ -39,7 +39,7 @@ export default function getEnv<T>({
   options?: CleanOptions<T>
 }): Readonly<T & CleanedEnvAccessors> {
   config({
-    path: dotEnvFilePath || process.env.DOT_ENV_FILE_PATH || '.env',
+    path: process.env.DOT_ENV_FILE_PATH || dotEnvFilePath || '.env',
   })
   return cleanEnv(environment || process.env, specs, options)
 }

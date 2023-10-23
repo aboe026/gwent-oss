@@ -15,7 +15,7 @@ describe('env', () => {
     describe('config path', () => {
       it('uses dotEnvFilePath if specified', () => {
         try {
-          process.env.DOT_ENV_FILE_PATH = 'env/var/file/path'
+          process.env.DOT_ENV_FILE_PATH = ''
           const configSpy = jest.spyOn(dotenv, 'config')
           const customPath = 'custom/file/path'
           getEnv({
@@ -39,6 +39,26 @@ describe('env', () => {
           process.env.DOT_ENV_FILE_PATH = customPath
           const configSpy = jest.spyOn(dotenv, 'config')
           getEnv({
+            specs: {},
+          })
+          expect(configSpy.mock.calls).toEqual([
+            [
+              {
+                path: customPath,
+              },
+            ],
+          ])
+        } finally {
+          delete process.env.DOT_ENV_FILE_PATH
+        }
+      })
+      it('uses DOT_ENV_FILE_PATH even if dotEnvFilePath specified', () => {
+        try {
+          const customPath = 'env/var/file/path'
+          process.env.DOT_ENV_FILE_PATH = customPath
+          const configSpy = jest.spyOn(dotenv, 'config')
+          getEnv({
+            dotEnvFilePath: 'should-get-overwritten',
             specs: {},
           })
           expect(configSpy.mock.calls).toEqual([
