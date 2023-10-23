@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "build"
+  },
+  "extends": "../../tsconfig",
+  "include": ["package.json", "src/**/*", "src/database/upgrades/cards.json"],
+  "references": [{ "path": "../../libs/env" }],
+  "watchOptions": {
+    "excludeFiles": ["src/graphql/schema.ts"]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "build",
+    "module": "ESNext",
+    "target": "es5",
+    "resolveJsonModule": false
+  },
+  "extends": "../../../../../../tsconfig",
+  "include": ["src/**/*"]
+}

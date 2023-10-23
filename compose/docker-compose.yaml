@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  database:
+    image: mongo:6.0
+
+  api:
+    image: gwent-api
+    build:
+      context: ../
+      dockerfile: svcs/api/Dockerfile
+    depends_on:
+      - database
+    environment:
+      - MONGO_URL=mongodb://database:27017
+      - CORS_ORIGIN=https://${HOST_NAME}
+
+  ui:
+    image: gwent-ui
+    build:
+      context: ../
+      dockerfile: svcs/ui/Dockerfile
+    depends_on:
+      - api
+    environment:
+      - API_URL=https://${HOST_NAME}/graphql
+
+  router:
+    build: ./nginx
+    depends_on:
+      - api
+      - ui
+    ports:
+      - '443:443'
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf

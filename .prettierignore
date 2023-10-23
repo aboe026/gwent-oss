@@ -1,0 +1,14 @@
+.env
+.vscode
+
+.pnp.*
+.yarn
+.yarnrc.yml
+
+build
+tsconfig.tsbuildinfo
+
+coverage
+test-results
+
+*generated-typings*

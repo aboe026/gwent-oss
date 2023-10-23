@@ -1,0 +1,32 @@
+{
+  "extends": ["plugin:@typescript-eslint/recommended", "plugin:prettier/recommended"],
+  "ignorePatterns": [
+    ".env",
+    ".pnp.*",
+    ".vscode",
+    ".yarn",
+    "build",
+    "coverage",
+    "*generated-typings*",
+    "test-results",
+    "tsconfig.tsbuildinfo"
+  ],
+  "overrides": [
+    {
+      "files": ["*.test.ts", "test/e2e/**/*"],
+      "rules": {
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {}
+}

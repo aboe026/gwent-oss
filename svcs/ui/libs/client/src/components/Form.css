@@ -1,0 +1,17 @@
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin: auto;
+}
+
+.required-field {
+  color: red;
+  margin-left: 2px;
+}
