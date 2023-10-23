@@ -5,9 +5,17 @@ import { replaceInFile } from 'replace-in-file'
 
 import env from './env'
 
+/**
+ * A class for interacting with the browser client bundle
+ */
 export default class ClientUtil {
   private static logger = getLogger('client-util')
 
+  /**
+   * Gets the directory in which the browser client bundle resides. Throws an error if the directory does not exist on the filesystem.
+   *
+   * @returns The absolute directory of the browser client bundle.
+   */
   static async getDirectory(): Promise<string> {
     let clientDir = env().CLIENT_DIR
     ClientUtil.logger.trace(`clientDir: "${clientDir}"`)
@@ -27,6 +35,11 @@ export default class ClientUtil {
     return clientDir
   }
 
+  /**
+   * Sets environment variables in the browser client bundle.
+   *
+   * @param clientDir The directory containing the browser client bundle.
+   */
   static async setEnvVars(clientDir: string) {
     const envFile = path.join(clientDir, 'dynamic-env.js')
     ClientUtil.logger.trace(`envFile: "${envFile}"`)

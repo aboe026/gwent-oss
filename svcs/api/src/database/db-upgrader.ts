@@ -4,16 +4,27 @@ import allUpgrades from './upgrades/all-upgrades'
 import sleep from '../util/sleep'
 import UpgradeStore from './upgrade-store'
 
+/**
+ * A class which handles upgrades to the MongoDB database.
+ */
 export default class DbUpgrader {
   private static LOCK_TIMEOUT_SECONDS = 30
   private static LOCK_REFRESH_SECONDS = 1
   private static running = false
   private static logger = getLogger('upgrader')
 
+  /**
+   * Get all upgrade functions that have been defined for the application.
+   *
+   * @returns An array of upgrade functions.
+   */
   private static getUpgrades(): (() => Promise<void>)[] {
     return allUpgrades
   }
 
+  /**
+   * Attempt to run database upgrades for the application.
+   */
   static async run() {
     if (DbUpgrader.running) {
       throw Error('Already attempting to run an upgrade')
@@ -103,6 +114,9 @@ export default class DbUpgrader {
     }
   }
 
+  /**
+   * Attempt to aquire a lock on the database. This lock ensures no other upgrades are run concurrently, guaranteeing upgrades only run once.
+   */
   private static async aquireLock() {
     const start = Date.now()
     let aquired = false

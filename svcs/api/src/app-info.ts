@@ -7,6 +7,11 @@ import env from './env'
 export default class AppInfo {
   private static logger = getLogger('app-info')
 
+  /**
+   * Gets the path of the file containing information about the application.
+   *
+   * @returns The path to the file containing information about the application.
+   */
   private static getFile(): string {
     AppInfo.logger.trace(`APP_INFO_FILE_PATH: "${env().APP_INFO_FILE_PATH}"`)
     let filePath = env().APP_INFO_FILE_PATH
@@ -16,6 +21,11 @@ export default class AppInfo {
     return filePath
   }
 
+  /**
+   * Gets the build number of the running application.
+   *
+   * @returns The build number which produced the version of the application running. Defaults to "0" if not found in the "APP_INFO_FILE_PATH" file.
+   */
   static async getBuildNumber(): Promise<number> {
     const filePath = AppInfo.getFile()
     AppInfo.logger.debug(`filePath: "${filePath}"`)

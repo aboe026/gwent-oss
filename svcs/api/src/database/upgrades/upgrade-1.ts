@@ -3,6 +3,9 @@ import log4js from 'log4js'
 import CardStore from '../card-store'
 import DbConnector from '../db-connector'
 
+/**
+ * Creates collection and indexes for Leader and Unit cards.
+ */
 export default async function upgrade1() {
   const logger = log4js.getLogger('upgrade-1')
   logger.debug('Connecting to database')

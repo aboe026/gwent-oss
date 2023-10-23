@@ -4,6 +4,9 @@ import cards from './cards.json'
 import CardStore, { AddLeaderInput, AddUnitInput } from '../card-store'
 import { Combat, Dlc, Effect, Faction } from '../generated-typings'
 
+/**
+ * Adds Leader and Unit cards that a user can choose from when creating their own decks.
+ */
 export default async function upgrade2() {
   const logger = log4js.getLogger('upgrade-2')
   if (logger.isTraceEnabled()) {

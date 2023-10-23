@@ -85,37 +85,37 @@ describe('scalars', () => {
         it('throws error if String empty', () => {
           const value = ''
           expect(() => Scalars.SemVer.parseValue(value)).toThrow(
-            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org/".`
+            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org".`
           )
         })
         it('throws error if String letter', () => {
           const value = 'a'
           expect(() => Scalars.SemVer.parseValue(value)).toThrow(
-            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org/".`
+            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org".`
           )
         })
         it('throws error if String word', () => {
           const value = 'hello'
           expect(() => Scalars.SemVer.parseValue(value)).toThrow(
-            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org/".`
+            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org".`
           )
         })
         it('throws error if String integer', () => {
           const value = '1'
           expect(() => Scalars.SemVer.parseValue(value)).toThrow(
-            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org/".`
+            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org".`
           )
         })
         it('throws error if String decimal', () => {
           const value = '1.0'
           expect(() => Scalars.SemVer.parseValue(value)).toThrow(
-            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org/".`
+            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org".`
           )
         })
         it('throws error if String four decimals', () => {
           const value = '1.0.0.0'
           expect(() => Scalars.SemVer.parseValue(value)).toThrow(
-            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org/".`
+            `Invalid SemVer "${value}", must follow specifications found at "https://semver.org".`
           )
         })
       })

@@ -6,7 +6,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "yarn g:tsc --build && webpack --mode=production",
-    "clean": "yarn g:rimraf build tsconfig.tsbuildinfo && yarn workspaces foreach --parallel --interlaced run clean",
+    "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo && yarn workspaces foreach --parallel --interlaced run clean",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",

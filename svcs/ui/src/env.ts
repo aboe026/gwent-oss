@@ -2,6 +2,11 @@ import path from 'path'
 
 import getEnv, { NODE_ENV, port, str, url } from '@gwent/env'
 
+/**
+ * Gets the environment variables that relate to how the UI server operates.
+ *
+ * @returns Environment variables that control how the UI server operates.
+ */
 export default function env() {
   return getEnv({
     dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '../.env') : '',

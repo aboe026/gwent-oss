@@ -3,11 +3,19 @@ import { ObjectId } from 'mongodb'
 
 import Store from './store'
 
+/**
+ * A class for interacting with database documents containing information about database upgrades.
+ */
 export default class UpgradeStore extends Store {
   static readonly COLLECTION_NAME = 'upgrades'
   private static readonly LOCK_ID = new ObjectId('000000000000000000000001')
   private static logger = log4js.getLogger('upgrade-store')
 
+  /**
+   * Attempts to create a lock on the database for upgrades. Throws an error if a lock already exists.
+   *
+   * @returns The database lock document.
+   */
   static async addLock(): Promise<LockDbObject> {
     const updated = new Date()
     UpgradeStore.logger.trace(`Adding lock with updated: "${updated}"`)
@@ -17,6 +25,11 @@ export default class UpgradeStore extends Store {
     })
   }
 
+  /**
+   * Update the "updated" field on the database lock. Needed to prevent the lock from expiring.
+   *
+   * @returns The database lock document with its refreshed "updated" field.
+   */
   static async updateLock(): Promise<LockDbObject> {
     const updated = new Date()
     UpgradeStore.logger.trace(`Updating lock with updated: "${updated}"`)
@@ -26,6 +39,11 @@ export default class UpgradeStore extends Store {
     })
   }
 
+  /**
+   * Get the database lock document. Throws an error if somehow more than 1 exists in the database.
+   *
+   * @returns The database lock document.
+   */
   static async getLock(): Promise<LockDbObject> {
     const docs = await UpgradeStore.read<LockDbObject[]>({
       filter: {
@@ -41,11 +59,21 @@ export default class UpgradeStore extends Store {
     return docs[0]
   }
 
+  /**
+   * Remove the lock document from the database.
+   *
+   * @returns The lock document from the database if it exists.
+   */
   static async deleteLock(): Promise<LockDbObject> {
     UpgradeStore.logger.trace('Deleting lock')
     return UpgradeStore.delete(UpgradeStore.LOCK_ID)
   }
 
+  /**
+   * Gets the current version of the database in terms of how many upgrades has successfully been run.
+   *
+   * @returns The current upgrade version of the database.
+   */
   static async getCurrentVersion(): Promise<number> {
     const docs = await UpgradeStore.read<UpgradeDbObject[]>({
       filter: {
@@ -69,6 +97,13 @@ export default class UpgradeStore extends Store {
     return docs && docs.length ? docs[0]?.version : 0
   }
 
+  /**
+   * Adds an upgrade attempt document to the database.
+   *
+   * @param {Object} attempt The upgrade attempt to add.
+   * @param attempt.version The upgrade version the attempt is trying to run.
+   * @returns The attempt database document.
+   */
   static async addAttempt({ version, time }: { version: number; time: Date }): Promise<AttemptDbObject> {
     const doc = {
       version,
@@ -80,6 +115,11 @@ export default class UpgradeStore extends Store {
     return UpgradeStore.create<AttemptDbObject>(doc)
   }
 
+  /**
+   * Gets all upgrade attempt documents.
+   *
+   * @returns All upgrade attempt documents, sorted by time descending.
+   */
   static async getAttempts(): Promise<AttemptDbObject[]> {
     return UpgradeStore.read<AttemptDbObject[]>({
       filter: {
@@ -95,6 +135,15 @@ export default class UpgradeStore extends Store {
     })
   }
 
+  /**
+   * Adds an upgrade document to the database.
+   *
+   * @param upgrade The upgrade document to add.
+   * @param version The upgrade version the database was successfully upgraded to.
+   * @param start The time the upgrade was started.
+   * @param end The time the upgrade finished.
+   * @returns The upgrade database document.
+   */
   static async addUpgrade({
     version,
     start,
@@ -115,6 +164,11 @@ export default class UpgradeStore extends Store {
     return UpgradeStore.create<UpgradeDbObject>(doc)
   }
 
+  /**
+   * Gets all successful database upgrade documents.
+   *
+   * @returns All successful upgrade documents, sorted by time descending.
+   */
   static async getUpgrades(): Promise<UpgradeDbObject[]> {
     return UpgradeStore.read<UpgradeDbObject[]>({
       filter: {

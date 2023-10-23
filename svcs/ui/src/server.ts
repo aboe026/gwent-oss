@@ -10,7 +10,9 @@ log4js.configure({
 })
 const logger = log4js.getLogger('server')
 
-//
+/**
+ * The entrypoint of the UI Server
+ */
 ;(async () => {
   try {
     const clientDir = await ClientUtil.getDirectory()

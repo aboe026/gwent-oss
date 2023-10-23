@@ -9,7 +9,7 @@
     "build-tsc": "yarn g:tsc --build",
     "build-client": "yarn workspaces foreach --exclude @gwent/ui --parallel --interlaced run build",
     "build-image": "docker build --tag=gwent-ui:${IMAGE_TAG:-latest} --progress=plain --file=Dockerfile --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0} ${BUILD_OPTIONS:-} ../../",
-    "clean": "yarn g:rimraf build tsconfig.tsbuildinfo && yarn workspaces foreach --parallel --interlaced run clean",
+    "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo && yarn workspaces foreach --parallel --interlaced run clean",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",

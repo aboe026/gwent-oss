@@ -4,6 +4,21 @@ import { HTMLInputTypeAttribute, useState } from 'react'
 import { getApolloError } from '../util/error-util'
 import './Form.css'
 
+/**
+ * A dialog containing a form with fields the user can fill out
+ *
+ * @param {Object} config The form configuration.
+ * @param config.id The id to give the HTML form element.
+ * @param config.cancelLabel The text the button which exits out of the form without submitting should have.
+ * @param config.error The potential errors returned from the GraphQL query/mutation the form submission triggered.
+ * @param config.fields The fields to present to the user for input.
+ * @param config.loading Whether or not the form is waiting on data from the form submission.
+ * @param config.onClose A function the form will call when closed by the user without submitting.
+ * @param config.onSubmit A function the form will call when the form is successfully submitted by the user.
+ * @param config.submitLable The text the button which triggers form submission should have.
+ * @param config.title The title the form should display to the user.
+ * @returns A form for the user to fill out.
+ */
 export default function Form({
   id,
   cancelLabel = 'Cancel',

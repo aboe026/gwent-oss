@@ -21,7 +21,9 @@ log4js.configure({
 })
 const logger = log4js.getLogger('api')
 
-//
+/**
+ * The entrypoint of the API Server
+ */
 ;(async () => {
   try {
     logger.info('Starting gwent API server...')
