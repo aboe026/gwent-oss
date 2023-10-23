@@ -68,7 +68,7 @@ node {
                         mountDir = dockerUtil.getHostMountDir(workDir: workDir)
 
                         // get services to build
-                        dir('services') {
+                        dir('svcs') {
                             def serviceFiles = findFiles()
 
                             serviceFiles.each { serviceFile ->
@@ -163,7 +163,7 @@ node {
                                 def dockerBuilds = [:]
                                 services.each { service ->
                                     dockerBuilds[service] = {
-                                        dir("services/${service}") {
+                                        dir("svcs/${service}") {
                                             sh """docker build \
                                                 --tag=${projectName}-${service}:${dockerTag} \
                                                 --build-arg VERSION=${packageJson.version} \
@@ -237,7 +237,7 @@ node {
                                     def dockerPushes = [:]
                                     services.each { service ->
                                         dockerPushes[service] = {
-                                            dir("services/${service}") {
+                                            dir("svcs/${service}") {
                                                 def imageName = "${projectName}-${service}"
                                                 def pushImageName = "${dockerRegistry}/${imageName}"
                                                 sh "docker tag ${imageName}:${dockerTag} ${pushImageName}:${dockerPushTag}"
