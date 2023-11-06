@@ -5,43 +5,21 @@ import env from './env'
 export default class ApiClient {
   private static client = new GraphQLClient(env.API_URL)
 
-  static async getLeaders() {
+  static async addUser(name: string, password: string) {
     const response: any = await ApiClient.client.request(
       gql`
-        query {
-          leaders {
+        mutation AddUser($name: String!, $password: String!) {
+          addUser(name: $name, password: $password) {
             id
             name
-            faction
-            dlc
           }
         }
-      `
+      `,
+      {
+        name,
+        password,
+      }
     )
-    return response.leaders
-  }
-
-  static async getUnits() {
-    const response: any = await ApiClient.client.request(
-      gql`
-        query {
-          units {
-            id
-            name
-            occurrences
-            faction
-            dlc
-            hero
-            combats
-            strength
-            effects
-            scorchScope
-            scorchMin
-            musterPrefix
-          }
-        }
-      `
-    )
-    return response.units
+    return response.addUser
   }
 }

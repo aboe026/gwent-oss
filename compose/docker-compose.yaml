@@ -12,6 +12,7 @@ services:
     depends_on:
       - database
     environment:
+      - LOG_LEVEL=${LOG_LEVEL}
       - MONGO_URL=mongodb://database:27017
       - CORS_ORIGIN=https://${HOST_NAME}
 
@@ -23,6 +24,7 @@ services:
     depends_on:
       - api
     environment:
+      - LOG_LEVEL=${LOG_LEVEL}
       - API_URL=https://${HOST_NAME}/graphql
 
   router:

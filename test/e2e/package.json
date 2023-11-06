@@ -14,10 +14,15 @@
     "watch": "yarn g:tsc --build --watch"
   },
   "dependencies": {
+    "@gwent/constants": "workspace:*",
     "@gwent/env": "workspace:*",
     "graphql": "16.6.0",
     "graphql-request": "5.2.0",
     "mongodb": "5.1.0",
-    "testcafe": "2.4.0"
+    "testcafe": "2.4.0",
+    "url-join": "4.0.1"
+  },
+  "devDependencies": {
+    "@types/url-join": "4.0.2"
   }
 }

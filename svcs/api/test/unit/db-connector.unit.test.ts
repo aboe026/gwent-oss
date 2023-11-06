@@ -4,6 +4,19 @@ import DbConnector from '../../src/database/db-connector'
 import env from '../../src/env'
 
 describe('db-connector', () => {
+  describe('getClient', () => {
+    it('returns undefined if client not initialized', () => {
+      DbConnector['client'] = undefined as any
+
+      expect(DbConnector.getClient()).toEqual(undefined)
+    })
+    it('returns undefined if initialized', () => {
+      const client = new MongoClient('mongodb://localhost')
+      DbConnector['client'] = client
+
+      expect(DbConnector.getClient()).toEqual(client)
+    })
+  })
   describe('initialize', () => {
     it('calls to connect client and sets connected to true', async () => {
       await testInitialize()

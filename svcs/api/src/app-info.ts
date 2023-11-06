@@ -31,12 +31,12 @@ export default class AppInfo {
     AppInfo.logger.debug(`filePath: "${filePath}"`)
     if (await fs.pathExists(filePath)) {
       try {
-        const contents = await fs.readFile(filePath)
+        const contents = await fs.readFile(filePath, 'utf-8')
         if (AppInfo.logger.isTraceEnabled()) {
-          AppInfo.logger.trace(`contents: "${JSON.stringify(contents)}"`)
+          AppInfo.logger.trace(`contents: "${contents}"`)
         }
         try {
-          const json = JSON.parse(contents.toString())
+          const json = JSON.parse(contents)
           if ('buildNumber' in json) {
             const type = typeof json.buildNumber
             if (type === 'number') {

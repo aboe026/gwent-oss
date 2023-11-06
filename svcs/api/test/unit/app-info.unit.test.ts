@@ -183,9 +183,9 @@ async function testGetBuildNumber({
   await expect(AppInfo.getBuildNumber()).resolves.toEqual(expected)
 
   expect(pathExistsSpy.mock.calls).toEqual([[filePath]])
-  expect(readFileSpy.mock.calls).toEqual(fileExists ? [[filePath]] : [])
+  expect(readFileSpy.mock.calls).toEqual(fileExists ? [[filePath, 'utf-8']] : [])
   expect(getFileSpy.mock.calls).toEqual([[]])
   expect(debugSpy.mock.calls).toEqual([[`filePath: "${filePath}"`]])
   expect(errorSpy.mock.calls).toEqual(errors)
-  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`contents: "${JSON.stringify(fileContents)}"`]] : [])
+  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`contents: "${fileContents}"`]] : [])
 }

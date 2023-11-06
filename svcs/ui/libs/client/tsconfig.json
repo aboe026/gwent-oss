@@ -14,5 +14,5 @@
       "module": "CommonJS"
     }
   },
-  "references": [{ "path": "../../../../libs/env" }, { "path": "libs/env" }]
+  "references": [{ "path": "../../../../libs/constants" }, { "path": "../../../../libs/env" }, { "path": "libs/env" }]
 }

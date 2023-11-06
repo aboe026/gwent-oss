@@ -9,6 +9,8 @@ FROM node:18-alpine AS build
 ARG APP_DIR
 ARG BUILD
 
+ENV NODE_ENV=production
+
 COPY . ${APP_DIR}
 
 WORKDIR ${APP_DIR}/svcs/api
@@ -26,6 +28,8 @@ ARG APP_DIR
 ARG BUILD
 ARG VERSION
 
+ENV NODE_ENV=production
+
 LABEL build=${BUILD}
 LABEL version=${VERSION}
 
@@ -35,4 +39,4 @@ WORKDIR ${APP_DIR}/svcs/api
 RUN yarn workspaces focus --production
 
 EXPOSE 4000
-CMD yarn node build/src/api.js
+CMD yarn node build/src/index.js

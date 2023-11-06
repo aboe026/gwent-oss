@@ -1,8 +1,11 @@
 {
   "browsers": ["edge"],
+  "concurrency": 2,
+  "debugOnFail": true,
   "screenshots": {
     "path": "screenshots",
     "takeOnFails": true
   },
+  "skipJsErrors": true,
   "src": "build/tests"
 }

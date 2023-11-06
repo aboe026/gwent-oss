@@ -1,0 +1,227 @@
+import { ObjectId } from 'mongodb'
+
+import PasswordHasher from '../../src/util/password-hasher'
+import UserStore from '../../src/database/user-store'
+import { UserDbObject } from '../../src/database/generated-typings'
+
+describe('user-store', () => {
+  describe('addUser', () => {
+    it('calls to create method with hashed password', async () => {
+      await testAddUser({
+        username: 'username',
+        password: 'password',
+      })
+    })
+    it('logs and throws error if duplicate user', async () => {
+      const username = 'username'
+      await testAddUser({
+        username,
+        password: 'password',
+        createError: Error('Duplicate user'),
+        isMongoError: true,
+        error: `User "${username}" already exists`,
+        errors: [[`User "${username}" already exists`]],
+      })
+    })
+    it('logs and throws error not related to duplicate user', async () => {
+      const error = 'Connection timeout'
+      await testAddUser({
+        username: 'username',
+        password: 'password',
+        createError: Error(error),
+        isMongoError: false,
+        error,
+        errors: [[Error(error)]],
+      })
+    })
+  })
+  describe('validateUser', () => {
+    it('throws error if user does not exist', async () => {
+      const username = 'username'
+      await testValidateUser({
+        username,
+        users: [],
+        error: `Invalid credentials for user "${username}"`,
+        debugs: [[`User "${username}" does not exist`]],
+      })
+    })
+    it('throws error if more than one user exists', async () => {
+      const username = 'username'
+      const users = [
+        {
+          _id: new ObjectId(),
+          name: username,
+        },
+        {
+          _id: new ObjectId(),
+          name: username,
+        },
+      ]
+      await testValidateUser({
+        username,
+        users,
+        error: `More than 1 user exists with name "${username}": "${JSON.stringify(users)}"`,
+        errors: [[`More than 1 user exists with name "${username}": "${JSON.stringify(users)}"`]],
+      })
+    })
+    it('throws error password does not match hash', async () => {
+      const username = 'username'
+      await testValidateUser({
+        username,
+        users: [
+          {
+            _id: new ObjectId(),
+            name: username,
+            password: 'invalid',
+          },
+        ],
+        match: false,
+        error: `Invalid credentials for user "${username}"`,
+        debugs: [[`User "${username}" entered incorrect password`]],
+      })
+    })
+    it('returns user if password matches hash', async () => {
+      const username = 'username'
+      const _id = new ObjectId()
+      await testValidateUser({
+        username,
+        users: [
+          {
+            _id,
+            name: username,
+            password: 'hashedPassword',
+          },
+        ],
+        match: true,
+        expected: {
+          _id,
+          name: username,
+        },
+      })
+    })
+  })
+})
+
+async function testAddUser({
+  username,
+  password,
+  createError,
+  isMongoError,
+  error,
+  errors = [],
+}: {
+  username: string
+  password: string
+  createError?: Error
+  isMongoError?: boolean
+  error?: string
+  errors?: (string | Error)[][]
+}) {
+  const hashedPassword = 'hashedPassword'
+  const _id = new ObjectId()
+  const hashSpy = jest.spyOn(PasswordHasher, 'hash').mockResolvedValue(hashedPassword)
+  const createSpy = jest.spyOn(UserStore, 'create')
+  const isMongoErrorSpy = jest.spyOn(UserStore, 'isMongoError')
+  if (isMongoError !== undefined) {
+    isMongoErrorSpy.mockReturnValue(isMongoError)
+  }
+  if (createError) {
+    createSpy.mockRejectedValue(createError)
+  } else {
+    createSpy.mockResolvedValue({
+      _id,
+      name: username,
+      password: hashedPassword,
+    })
+  }
+  const traceSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  UserStore['logger'] = {
+    trace: traceSpy,
+    error: errorSpy,
+  } as any
+
+  if (error) {
+    await expect(UserStore.addUser(username, password)).rejects.toThrow(error)
+  } else {
+    await expect(UserStore.addUser(username, password)).resolves.toEqual({
+      _id,
+      name: username,
+    })
+  }
+
+  expect(hashSpy.mock.calls).toEqual([[password]])
+  expect(createSpy.mock.calls).toEqual([
+    [
+      {
+        name: username,
+        password: hashedPassword,
+      },
+    ],
+  ])
+  expect(isMongoErrorSpy.mock.calls).toEqual(
+    createError
+      ? [
+          [
+            {
+              error: createError,
+              code: 11000,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(traceSpy.mock.calls).toEqual([[`Adding user "${username}"`]])
+  expect(errorSpy.mock.calls).toEqual(errors)
+}
+
+async function testValidateUser({
+  username,
+  users,
+  match,
+  expected,
+  error,
+  errors = [],
+  debugs = [],
+}: {
+  username: string
+  users: any[]
+  match?: boolean
+  expected?: UserDbObject
+  error?: string
+  errors?: string[][]
+  debugs?: string[][]
+}) {
+  const password = 'password'
+  const expectedPassword = match === undefined ? '' : users[0].password
+  const readSpy = jest.spyOn(UserStore, 'read').mockResolvedValue(users)
+  const matchSpy = jest.spyOn(PasswordHasher, 'match')
+  if (match !== undefined) {
+    matchSpy.mockResolvedValue(match)
+  }
+  const debugSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  UserStore['logger'] = {
+    debug: debugSpy,
+    error: errorSpy,
+  } as any
+
+  if (error) {
+    await expect(UserStore.validateUser(username, password)).rejects.toThrow(error)
+  } else {
+    await expect(UserStore.validateUser(username, password)).resolves.toEqual(expected)
+  }
+
+  expect(readSpy.mock.calls).toEqual([
+    [
+      {
+        filter: {
+          name: username,
+        },
+      },
+    ],
+  ])
+  expect(matchSpy.mock.calls).toEqual(match === undefined ? [] : [[password, expectedPassword]])
+  expect(debugSpy.mock.calls).toEqual(debugs)
+  expect(errorSpy.mock.calls).toEqual(errors)
+}

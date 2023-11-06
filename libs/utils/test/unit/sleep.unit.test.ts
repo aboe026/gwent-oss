@@ -1,4 +1,4 @@
-import sleep from '../../src/util/sleep'
+import sleep from '../../src/sleep'
 
 describe('sleep', () => {
   beforeEach(() => {

@@ -1,0 +1,7 @@
+#usernameContainer {
+  display: flex;
+}
+
+#logoutError {
+  color: red;
+}

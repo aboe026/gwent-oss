@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "build"
+  },
+  "extends": "../../tsconfig",
+  "include": ["src/**/*"]
+}

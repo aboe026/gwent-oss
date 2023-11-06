@@ -24,6 +24,11 @@ export default function env() {
         choices: ['OFF', 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'ALL'],
         default: 'INFO',
       }),
+      NODE_ENV: str({
+        desc: 'What environment the application is running in',
+        choices: [NODE_ENV.Dev, NODE_ENV.Prod, NODE_ENV.Test],
+        default: NODE_ENV.Dev,
+      }),
       PORT: port({
         desc: 'The port to run the WebServer server on',
         default: 3000,

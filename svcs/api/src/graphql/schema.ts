@@ -1,6 +1,12 @@
+import { applyMiddleware } from 'graphql-middleware'
+import { DIRECTIVES } from '@graphql-codegen/typescript-mongodb'
 import gql from 'graphql-tag'
+import { makeExecutableSchema } from '@graphql-tools/schema'
 
-export default gql`
+import permissions from './permissions'
+import resolvers from './resolvers'
+
+const schema = gql`
   scalar SemVer
 
   enum Faction {
@@ -62,6 +68,11 @@ export default gql`
     musterPrefix: String @column
   }
 
+  type User @entity {
+    id: ID! @id
+    name: String! @column
+  }
+
   type Query {
     "Returns all non-leader cards available to build decks with."
     units: [Unit!]!
@@ -69,10 +80,26 @@ export default gql`
     "Returns all leader cards available to build decks with."
     leaders: [Leader!]!
 
+    getCurrentUser: User
+
     "The current version of the application running."
     version: SemVer!
 
     "The current build number of the application running."
     build: Int!
   }
+
+  type Mutation {
+    addUser(name: String!, password: String!): User
+    login(name: String!, password: String!): User
+    logout: Boolean
+  }
 `
+
+export default applyMiddleware(
+  makeExecutableSchema({
+    typeDefs: [DIRECTIVES, schema],
+    resolvers,
+  }),
+  permissions
+)

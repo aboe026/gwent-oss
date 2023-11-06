@@ -58,10 +58,30 @@ export type Leader = {
   name: Scalars['String'];
 };
 
+export type Mutation = {
+  __typename?: 'Mutation';
+  addUser?: Maybe<User>;
+  login?: Maybe<User>;
+  logout?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationAddUserArgs = {
+  name: Scalars['String'];
+  password: Scalars['String'];
+};
+
+
+export type MutationLoginArgs = {
+  name: Scalars['String'];
+  password: Scalars['String'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** The current build number of the application running. */
   build: Scalars['Int'];
+  getCurrentUser?: Maybe<User>;
   /** Returns all leader cards available to build decks with. */
   leaders: Array<Leader>;
   /** Returns all non-leader cards available to build decks with. */
@@ -84,6 +104,12 @@ export type Unit = {
   scorchMin?: Maybe<Scalars['Int']>;
   scorchScope?: Maybe<Combat>;
   strength?: Maybe<Scalars['Int']>;
+};
+
+export type User = {
+  __typename?: 'User';
+  id: Scalars['ID'];
+  name: Scalars['String'];
 };
 
 export type AdditionalEntityFields = {
@@ -112,4 +138,9 @@ export type UnitDbObject = {
   scorchMin?: Maybe<number>,
   scorchScope?: Maybe<string>,
   strength?: Maybe<number>,
+};
+
+export type UserDbObject = {
+  _id: ObjectId,
+  name: string,
 };

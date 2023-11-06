@@ -47,6 +47,7 @@ export default function getEnv<T>({
 export enum NODE_ENV {
   Dev = 'development',
   Prod = 'production',
+  Test = 'test',
 }
 
 export { bool, email, host, json, num, port, str, url }

@@ -3,7 +3,7 @@ import { MongoError, ObjectId } from 'mongodb'
 import path from 'path'
 
 import DbUpgrader from '../../src/database/db-upgrader'
-import * as sleep from '../../src/util/sleep'
+import * as utils from '@gwent/utils'
 import UpgradeStore from '../../src/database/upgrade-store'
 
 describe('db-upgrader', () => {
@@ -639,7 +639,7 @@ async function testDbUpgrader({
   }
   const addAttemptSpy = jest.spyOn(UpgradeStore, 'addAttempt').mockImplementation()
   const addUpgradeSpy = jest.spyOn(UpgradeStore, 'addUpgrade').mockImplementation()
-  const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
+  const sleepSpy = jest.spyOn(utils, 'sleep').mockImplementation()
   const updateLockSpy = jest.spyOn(UpgradeStore, 'updateLock')
   if (updateLockResponses) {
     for (const updateLockResponse of updateLockResponses) {
@@ -729,7 +729,7 @@ async function testAquireLock({
   for (const deleteLockResponse of deleteLockResponses) {
     deleteLockSpy.mockImplementationOnce(deleteLockResponse)
   }
-  const sleepSpy = jest.spyOn(sleep, 'default').mockImplementation()
+  const sleepSpy = jest.spyOn(utils, 'sleep').mockImplementation()
 
   if (error) {
     await expect(DbUpgrader['aquireLock']()).rejects.toThrow(error)
