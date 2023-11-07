@@ -26,7 +26,7 @@ export default function getEnv<T>({
   config({
     path: process.env.DOT_ENV_FILE_PATH || dotEnvFilePath || '.env',
   })
-  return cleanEnv<T>(environment || process.env, specs, options) // eslint-disable-line @typescript-eslint/no-explicit-any
+  return cleanEnv<T>(environment || process.env, specs, options)
 }
 
 export enum NODE_ENV {
