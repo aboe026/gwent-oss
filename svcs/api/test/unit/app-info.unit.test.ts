@@ -41,7 +41,7 @@ describe('app-info', () => {
     })
     it('returns 0 and logs error if file cannot be parsed as JSON', async () => {
       const filePath = 'path/to/app-info.json'
-      const error = SyntaxError('Unexpected token i in JSON at position 0')
+      const error = SyntaxError(`Unexpected token 'i', "invalid json" is not valid JSON`)
       const contents = 'invalid json'
       await testGetBuildNumber({
         filePath,

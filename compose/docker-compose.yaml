@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   database:
-    image: mongo:6.0
+    image: mongo:7.0
 
   api:
     image: gwent-api

@@ -1,19 +1,6 @@
 import { config } from 'dotenv'
 
-import {
-  bool,
-  CleanedEnvAccessors,
-  cleanEnv,
-  CleanOptions,
-  email,
-  host,
-  json,
-  num,
-  port,
-  str,
-  url,
-  ValidatorSpec,
-} from 'envalid'
+import { bool, CleanedEnv, cleanEnv, CleanOptions, email, host, json, num, port, str, url } from 'envalid'
 
 /**
  * Get environment variables while enforcing how values should be parsed
@@ -33,15 +20,13 @@ export default function getEnv<T>({
 }: {
   dotEnvFilePath?: string
   environment?: unknown
-  specs: {
-    [K in keyof T]: ValidatorSpec<T[K]>
-  }
+  specs: T
   options?: CleanOptions<T>
-}): Readonly<T & CleanedEnvAccessors> {
+}): CleanedEnv<T> {
   config({
     path: process.env.DOT_ENV_FILE_PATH || dotEnvFilePath || '.env',
   })
-  return cleanEnv(environment || process.env, specs, options)
+  return cleanEnv<T>(environment || process.env, specs, options) // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export enum NODE_ENV {

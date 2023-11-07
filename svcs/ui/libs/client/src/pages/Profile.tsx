@@ -21,15 +21,6 @@ export default function ProfilePage() {
       setUser(undefined)
       navigate('/')
     },
-    update(cache, {}) {
-      cache.modify({
-        fields: {
-          getCurrentUser() {
-            return undefined
-          },
-        },
-      })
-    },
   })
 
   return (

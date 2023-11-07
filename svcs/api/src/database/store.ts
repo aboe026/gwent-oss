@@ -70,10 +70,10 @@ export default abstract class Store {
         returnDocument: 'after',
       }
     )
-    if (response.lastErrorObject?.n === 0) {
+    if (response === null) {
       throw Error(`Invalid ID "${doc._id.toString()}": Does not exist.`)
     }
-    return response.value as T
+    return response as T
   }
 
   /**
@@ -85,10 +85,10 @@ export default abstract class Store {
   static async delete<T extends WithId<Document>>(_id: ObjectId): Promise<T> {
     const collection = await Store.getCollection<T>(this.COLLECTION_NAME)
     const response = await collection.findOneAndDelete({ _id })
-    if (response.lastErrorObject?.n === 0) {
+    if (response === null) {
       throw Error(`Invalid ID "${_id.toString()}": Does not exist.`)
     }
-    return response.value as T
+    return response as T
   }
 
   /**

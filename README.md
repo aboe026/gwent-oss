@@ -181,6 +181,7 @@ A list of things to be done in the future:
 - Move generate types to lib? So UI can use them as well (especially for shared functions, like "isDeckValid")
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
+- Get apollo cache update working for login/logout to update getCurrentUser in order to just key off of that for whether or not a user is logged in
 
 ## External Bugs
 

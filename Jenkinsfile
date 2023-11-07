@@ -6,8 +6,8 @@ import org.aboe026.Xml
 
 node {
     def workDir = "${WORKSPACE}/${env.BRANCH_NAME}-${env.BUILD_ID}"
-    def nodeImage = 'node:18'
-    def baseImage = 'node:18-alpine'
+    def nodeImage = 'node:20'
+    def baseImage = 'node:20-alpine'
     def composeVersion = '2.14.0'
     def dockerRegistry = 'localhost:5000'
     def composeFileName = 'docker-compose.yaml'

@@ -101,9 +101,7 @@ describe('store', () => {
         name: 'unit-test',
       }
       const value = 'toast'
-      const findOneAndUpdateSpy = jest.fn().mockResolvedValue({
-        value,
-      })
+      const findOneAndUpdateSpy = jest.fn().mockResolvedValue(value)
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         findOneAndUpdate: findOneAndUpdateSpy,
       })
@@ -129,11 +127,7 @@ describe('store', () => {
         _id: new ObjectId(),
         name: 'unit-test',
       }
-      const findOneAndUpdateSpy = jest.fn().mockResolvedValue({
-        lastErrorObject: {
-          n: 0,
-        },
-      })
+      const findOneAndUpdateSpy = jest.fn().mockResolvedValue(null)
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         findOneAndUpdate: findOneAndUpdateSpy,
       })
@@ -159,9 +153,7 @@ describe('store', () => {
     it('calls out to findOneAndDelete with _id', async () => {
       const _id = new ObjectId()
       const value = 'toast'
-      const findOneAndDeleteSpy = jest.fn().mockResolvedValue({
-        value,
-      })
+      const findOneAndDeleteSpy = jest.fn().mockResolvedValue(value)
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         findOneAndDelete: findOneAndDeleteSpy,
       })
@@ -178,11 +170,7 @@ describe('store', () => {
     })
     it('throws error if doc with _id does not exist', async () => {
       const _id = new ObjectId()
-      const findOneAndDeleteSpy = jest.fn().mockResolvedValue({
-        lastErrorObject: {
-          n: 0,
-        },
-      })
+      const findOneAndDeleteSpy = jest.fn().mockResolvedValue(null)
       jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
         findOneAndDelete: findOneAndDeleteSpy,
       })

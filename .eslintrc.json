@@ -8,6 +8,7 @@
     "build",
     "coverage",
     "*generated-typings*",
+    "logback.log",
     "test-results",
     "tsconfig.tsbuildinfo"
   ],

@@ -4,13 +4,13 @@
   "author": "Adam Boe",
   "description": "A recreation of the card game Gwent from The Witcher 3: Wild Hunt",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
-    "build": "yarn workspaces foreach --parallel --interlaced run build",
-    "build-images": "yarn workspaces foreach --parallel --interlaced run build-image",
+    "build": "yarn workspaces foreach --worktree --parallel --interlaced run build",
+    "build-images": "yarn workspaces foreach --worktree --parallel --interlaced run build-image",
     "clean": "npm-run-all clean-children clean-root",
-    "clean-children": "yarn workspaces foreach --parallel --interlaced --exclude @gwent/core run clean",
+    "clean-children": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent/core run clean",
     "clean-root": "rimraf coverage test-results",
     "compose-build": "cd compose && docker compose build",
     "compose-up": "cd compose && docker compose up -d",
@@ -33,44 +33,44 @@
     "g:rimraf": "cd $INIT_CWD && rimraf",
     "g:ts-node": "cd $INIT_CWD && ts-node",
     "g:tsc": "cd $INIT_CWD && tsc",
-    "run-built": "yarn workspaces foreach --parallel --interlaced run run-built",
-    "start": "yarn workspaces foreach --parallel --interlaced --exclude @gwent/e2e-tests run start",
+    "run-built": "yarn workspaces foreach --worktree --parallel --interlaced run run-built",
+    "start": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent/e2e-tests run start",
     "test": "npm-run-all lint test-unit test-func test-e2e",
     "test-e2e": "cd test/e2e && yarn build && yarn start",
     "test-func": "yarn g:jest --test-type=func --runInBand",
     "test-unit": "yarn g:jest --test-type=unit",
     "upgrade-dependencies": "ts-node scripts/upgrade-dependencies",
-    "watch": "yarn workspaces foreach --parallel --interlaced run watch"
+    "watch": "yarn workspaces foreach --worktree --parallel --interlaced run watch"
   },
   "devDependencies": {
-    "@types/fs-extra": "11.0.1",
-    "@types/jest": "29.5.0",
-    "@types/node": "18.15.11",
-    "@typescript-eslint/eslint-plugin": "5.57.0",
-    "@typescript-eslint/parser": "5.57.0",
+    "@types/fs-extra": "11.0.3",
+    "@types/jest": "29.5.7",
+    "@types/node": "20.8.10",
+    "@typescript-eslint/eslint-plugin": "6.10.0",
+    "@typescript-eslint/parser": "6.10.0",
     "cross-env": "7.0.3",
-    "eslint": "8.37.0",
-    "eslint-config-prettier": "8.8.0",
+    "eslint": "8.53.0",
+    "eslint-config-prettier": "9.0.0",
     "eslint-plugin-prettier": "4.2.1",
     "fs-extra": "11.1.1",
-    "jest": "29.5.0",
-    "jest-environment-jsdom": "29.5.0",
-    "jest-junit": "15.0.0",
-    "nodemon": "2.0.22",
-    "npm-groovy-lint": "11.1.1",
+    "jest": "29.7.0",
+    "jest-environment-jsdom": "29.7.0",
+    "jest-junit": "16.0.0",
+    "nodemon": "3.0.1",
+    "npm-groovy-lint": "12.0.1",
     "npm-run-all": "4.1.5",
     "open": "8.4.2",
-    "prettier": "2.8.7",
-    "replace-in-file": "6.3.5",
-    "rimraf": "4.4.1",
-    "ts-jest": "29.0.5",
+    "prettier": "2.8.8",
+    "replace-in-file": "7.0.2",
+    "rimraf": "5.0.5",
+    "ts-jest": "29.1.1",
     "ts-node": "10.9.1",
-    "typescript": "5.0.2"
+    "typescript": "5.2.2"
   },
   "workspaces": [
     "svcs/*",
     "libs/*",
     "test/*"
   ],
-  "packageManager": "yarn@3.6.4"
+  "packageManager": "yarn@4.0.1"
 }

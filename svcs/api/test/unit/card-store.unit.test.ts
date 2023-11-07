@@ -92,17 +92,19 @@ describe('card-store', () => {
         isTraceEnabled: jest.fn().mockReturnValue(true),
         trace: traceSpy,
       } as any
+      const _id = new ObjectId()
       const created = new Date()
+      const dateSpy = jest.spyOn(global, 'Date').mockReturnValue(created)
       const createSpy = jest.spyOn(CardStore, 'create').mockImplementation((card) =>
         Promise.resolve({
-          _id: new ObjectId(),
+          _id,
           created,
           ...card,
         })
       )
 
       await expect(CardStore.addLeader(leader)).resolves.toEqual({
-        _id: expect.any(ObjectId),
+        _id,
         created,
         type: CARD_TYPE.Leader,
         ...leader,
@@ -115,6 +117,7 @@ describe('card-store', () => {
       }
       expect(createSpy.mock.calls).toEqual([[convertedLeader]])
       expect(traceSpy.mock.calls).toEqual([[`Adding leader: "${JSON.stringify(convertedLeader)}"`]])
+      expect(dateSpy.mock.calls).toEqual([[]])
     })
   })
   describe('addUnit', () => {
@@ -134,6 +137,7 @@ describe('card-store', () => {
       }
       const _id = new ObjectId()
       const created = new Date()
+      const dateSpy = jest.spyOn(global, 'Date').mockReturnValue(created)
       const createSpy = jest.spyOn(CardStore, 'create').mockResolvedValue({
         _id,
         created,
@@ -155,6 +159,7 @@ describe('card-store', () => {
           },
         ],
       ])
+      expect(dateSpy.mock.calls).toEqual([[]])
     })
     it('logs out card if trace enabled', async () => {
       const unit = {

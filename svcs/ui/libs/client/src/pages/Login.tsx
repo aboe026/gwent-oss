@@ -33,15 +33,6 @@ export default function LoginPage() {
         navigate('/')
       }
     },
-    update(cache, { data }) {
-      cache.modify({
-        fields: {
-          getCurrentUser() {
-            return data?.login
-          },
-        },
-      })
-    },
   })
   const [addUser, { loading: addUserLoading, error: addUserError }] = useAddUserMutation()
   const addUserAndLogin = async ({ variables }: { variables: AddUserMutationVariables }) => {
