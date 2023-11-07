@@ -31,6 +31,7 @@ describe('upgrade-2', () => {
         .map((card) => {
           return {
             _id: expect.any(ObjectId),
+            created: expect.any(Date),
             ...normalizeLeader(card),
           }
         })
@@ -41,6 +42,7 @@ describe('upgrade-2', () => {
         .map((card) => {
           return {
             _id: expect.any(ObjectId),
+            created: expect.any(Date),
             ...normalizeUnit(card),
           }
         })

@@ -2,6 +2,7 @@ import { ApolloError } from '@apollo/client'
 import { HTMLInputTypeAttribute, useState } from 'react'
 
 import { getApolloError } from '../util/error-util'
+import { HTML_CLASSES } from '@gwent/constants'
 import './Form.css'
 
 /**
@@ -25,6 +26,8 @@ export default function Form({
   error,
   fields,
   loading,
+  closeable = true,
+  closeParams = false,
   onClose,
   onSubmit,
   submitLabel = 'Save',
@@ -51,7 +54,9 @@ export default function Form({
             }
           }
           await onSubmit({ variables: { ...values } })
-          onClose(false)
+          if (onClose) {
+            onClose(closeParams)
+          }
         }}
       >
         <div className="form-title">{title}</div>
@@ -82,12 +87,19 @@ export default function Form({
               )
           )}
         </div>
-        {resolvedError && <span>{resolvedError}</span>}
+        {resolvedError && <span className={HTML_CLASSES.FormErrors}>{resolvedError}</span>}
         <div className="actions">
-          <button className="secondary" type="button" disabled={loading} onClick={() => onClose(false)}>
-            {cancelLabel}
-          </button>
-          <button className="primary" type="submit" disabled={loading}>
+          {closeable && (
+            <button
+              className={HTML_CLASSES.Secondary}
+              type="button"
+              disabled={loading}
+              onClick={onClose ? () => onClose(closeParams) : undefined}
+            >
+              {cancelLabel}
+            </button>
+          )}
+          <button className={HTML_CLASSES.Primary} type="submit" disabled={loading}>
             {submitLabel}
           </button>
         </div>
@@ -99,7 +111,9 @@ export default function Form({
 interface FormProps {
   title: string
   id?: string
-  onClose: (param: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
+  closeable?: boolean
+  closeParams?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose?: (param: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
   onSubmit: (variables: any) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   submitLabel?: string
   cancelLabel?: string

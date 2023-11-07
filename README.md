@@ -80,7 +80,7 @@ or directly with
 
 ```sh
 yarn node services/api/build/api.js
-CLIENT_DIR=../../libs/client/build yarn node services/ui/build/src/server.js
+CLIENT_DIR=../../libs/client/build yarn node services/ui/build/src/index.js
 ```
 
 ## Lint
@@ -173,6 +173,7 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
 - Change schema.ts to schema.gql
 - Account for cards with different art per instance (like Havekar Smuggler)

@@ -1,23 +1,24 @@
-import { MongoClient } from 'mongodb'
+import { ClientFunction, t } from 'testcafe'
+import urlJoin from 'url-join'
 
 import env from './env'
 
 export default class E2eUtil {
-  private static client: MongoClient | undefined = undefined
+  static getCurrentUrl = ClientFunction(() => {
+    let url = document.location.href
+    if (url.endsWith('/')) {
+      url = url.substring(0, url.length - 1)
+    }
+    return url
+  })
 
-  static async setup(): Promise<void> {
-    await E2eUtil.clearDb(env.MONGO_DB)
+  static async verifyCurrentUrl(expectedPath: string) {
+    await t.expect(E2eUtil.getCurrentUrl()).eql(urlJoin(env.BASE_URL, expectedPath))
   }
 
-  static async clearDb(dbName: string): Promise<void> {
-    if (!E2eUtil.client) {
-      E2eUtil.client = new MongoClient(env.MONGO_URL)
-    }
-    await E2eUtil.client.connect()
-    const database = E2eUtil.client.db(dbName)
-    const collections = await database.collections()
-    for (const collection of collections) {
-      await collection.deleteMany({})
-    }
+  static reload = ClientFunction(() => location.reload())
+
+  static async goToPath(path: string) {
+    await t.navigateTo(urlJoin(env.BASE_URL, path))
   }
 }

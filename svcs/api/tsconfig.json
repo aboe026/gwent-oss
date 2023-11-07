@@ -5,7 +5,12 @@
   },
   "extends": "../../tsconfig",
   "include": ["package.json", "src/**/*", "src/database/upgrades/cards.json"],
-  "references": [{ "path": "../../libs/env" }],
+  "references": [
+    { "path": "../../libs/constants" },
+    { "path": "../../libs/env" },
+    { "path": "../../libs/utils" },
+    { "path": "../../libs/validators" }
+  ],
   "watchOptions": {
     "excludeFiles": ["src/graphql/schema.ts"]
   }

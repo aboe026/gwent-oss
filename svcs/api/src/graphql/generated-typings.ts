@@ -1,10 +1,11 @@
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import { LeaderDbObject, UnitDbObject } from '../database/generated-typings';
+import { LeaderDbObject, UnitDbObject, UserDbObject } from '../database/generated-typings';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -12,6 +13,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  DateTime: any;
   SemVer: any;
 };
 
@@ -54,16 +56,37 @@ export enum Faction {
 
 export type Leader = {
   __typename?: 'Leader';
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   faction: Faction;
   id: Scalars['ID'];
   name: Scalars['String'];
 };
 
+export type Mutation = {
+  __typename?: 'Mutation';
+  addUser?: Maybe<User>;
+  login?: Maybe<User>;
+  logout?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationAddUserArgs = {
+  name: Scalars['String'];
+  password: Scalars['String'];
+};
+
+
+export type MutationLoginArgs = {
+  name: Scalars['String'];
+  password: Scalars['String'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** The current build number of the application running. */
   build: Scalars['Int'];
+  getCurrentUser?: Maybe<User>;
   /** Returns all leader cards available to build decks with. */
   leaders: Array<Leader>;
   /** Returns all non-leader cards available to build decks with. */
@@ -75,6 +98,7 @@ export type Query = {
 export type Unit = {
   __typename?: 'Unit';
   combats?: Maybe<Array<Combat>>;
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   effects?: Maybe<Array<Effect>>;
   faction: Faction;
@@ -86,6 +110,13 @@ export type Unit = {
   scorchMin?: Maybe<Scalars['Int']>;
   scorchScope?: Maybe<Combat>;
   strength?: Maybe<Scalars['Int']>;
+};
+
+export type User = {
+  __typename?: 'User';
+  created: Scalars['DateTime'];
+  id: Scalars['ID'];
+  name: Scalars['String'];
 };
 
 
@@ -161,30 +192,41 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Combat: Combat;
   DLC: Dlc;
+  DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   Effect: Effect;
   Faction: Faction;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Leader: ResolverTypeWrapper<LeaderDbObject>;
+  Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   SemVer: ResolverTypeWrapper<Scalars['SemVer']>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Unit: ResolverTypeWrapper<UnitDbObject>;
+  User: ResolverTypeWrapper<UserDbObject>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
+  DateTime: Scalars['DateTime'];
   ID: Scalars['ID'];
   Int: Scalars['Int'];
   Leader: LeaderDbObject;
+  Mutation: {};
   Query: {};
   SemVer: Scalars['SemVer'];
   String: Scalars['String'];
   Unit: UnitDbObject;
+  User: UserDbObject;
 };
 
+export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
+  name: 'DateTime';
+}
+
 export type LeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['Leader'] = ResolversParentTypes['Leader']> = {
+  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dlc?: Resolver<Maybe<ResolversTypes['DLC']>, ParentType, ContextType>;
   faction?: Resolver<ResolversTypes['Faction'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -192,8 +234,15 @@ export type LeaderResolvers<ContextType = any, ParentType extends ResolversParen
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  addUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationAddUserArgs, 'name' | 'password'>>;
+  login?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationLoginArgs, 'name' | 'password'>>;
+  logout?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+};
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   build?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  getCurrentUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   leaders?: Resolver<Array<ResolversTypes['Leader']>, ParentType, ContextType>;
   units?: Resolver<Array<ResolversTypes['Unit']>, ParentType, ContextType>;
   version?: Resolver<ResolversTypes['SemVer'], ParentType, ContextType>;
@@ -205,6 +254,7 @@ export interface SemVerScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 
 export type UnitResolvers<ContextType = any, ParentType extends ResolversParentTypes['Unit'] = ResolversParentTypes['Unit']> = {
   combats?: Resolver<Maybe<Array<ResolversTypes['Combat']>>, ParentType, ContextType>;
+  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dlc?: Resolver<Maybe<ResolversTypes['DLC']>, ParentType, ContextType>;
   effects?: Resolver<Maybe<Array<ResolversTypes['Effect']>>, ParentType, ContextType>;
   faction?: Resolver<ResolversTypes['Faction'], ParentType, ContextType>;
@@ -219,10 +269,20 @@ export type UnitResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type Resolvers<ContextType = any> = {
+  DateTime?: GraphQLScalarType;
   Leader?: LeaderResolvers<ContextType>;
+  Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   SemVer?: GraphQLScalarType;
   Unit?: UnitResolvers<ContextType>;
+  User?: UserResolvers<ContextType>;
 };
 

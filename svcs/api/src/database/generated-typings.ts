@@ -10,6 +10,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  DateTime: any;
   SemVer: any;
 };
 
@@ -52,16 +53,37 @@ export enum Faction {
 
 export type Leader = {
   __typename?: 'Leader';
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   faction: Faction;
   id: Scalars['ID'];
   name: Scalars['String'];
 };
 
+export type Mutation = {
+  __typename?: 'Mutation';
+  addUser?: Maybe<User>;
+  login?: Maybe<User>;
+  logout?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationAddUserArgs = {
+  name: Scalars['String'];
+  password: Scalars['String'];
+};
+
+
+export type MutationLoginArgs = {
+  name: Scalars['String'];
+  password: Scalars['String'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** The current build number of the application running. */
   build: Scalars['Int'];
+  getCurrentUser?: Maybe<User>;
   /** Returns all leader cards available to build decks with. */
   leaders: Array<Leader>;
   /** Returns all non-leader cards available to build decks with. */
@@ -73,6 +95,7 @@ export type Query = {
 export type Unit = {
   __typename?: 'Unit';
   combats?: Maybe<Array<Combat>>;
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   effects?: Maybe<Array<Effect>>;
   faction: Faction;
@@ -86,6 +109,13 @@ export type Unit = {
   strength?: Maybe<Scalars['Int']>;
 };
 
+export type User = {
+  __typename?: 'User';
+  created: Scalars['DateTime'];
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
 export type AdditionalEntityFields = {
   path?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
@@ -93,6 +123,7 @@ export type AdditionalEntityFields = {
 
 import { ObjectId } from 'mongodb';
 export type LeaderDbObject = {
+  created: any,
   dlc?: Maybe<string>,
   faction: string,
   _id: ObjectId,
@@ -101,6 +132,7 @@ export type LeaderDbObject = {
 
 export type UnitDbObject = {
   combats?: Maybe<Array<string>>,
+  created: any,
   dlc?: Maybe<string>,
   effects?: Maybe<Array<string>>,
   faction: string,
@@ -112,4 +144,10 @@ export type UnitDbObject = {
   scorchMin?: Maybe<number>,
   scorchScope?: Maybe<string>,
   strength?: Maybe<number>,
+};
+
+export type UserDbObject = {
+  created: any,
+  _id: ObjectId,
+  name: string,
 };

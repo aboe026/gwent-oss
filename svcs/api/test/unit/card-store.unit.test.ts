@@ -55,13 +55,18 @@ describe('card-store', () => {
         faction: Faction.Neutral,
         dlc: Dlc.HeartsOfStone,
       }
+      const _id = new ObjectId()
+      const created = new Date()
+      const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
       const createSpy = jest.spyOn(CardStore, 'create').mockResolvedValue({
-        _id: new ObjectId(),
+        _id,
+        created,
         ...leader,
       })
 
       await expect(CardStore.addLeader(leader)).resolves.toEqual({
-        _id: expect.any(ObjectId),
+        _id,
+        created,
         ...leader,
       })
 
@@ -69,10 +74,12 @@ describe('card-store', () => {
         [
           {
             type: CARD_TYPE.Leader,
+            created,
             ...leader,
           },
         ],
       ])
+      expect(dateSpy.mock.calls).toEqual([[]])
     })
     it('logs out card if trace enabled', async () => {
       const leader: AddLeaderInput = {
@@ -85,21 +92,25 @@ describe('card-store', () => {
         isTraceEnabled: jest.fn().mockReturnValue(true),
         trace: traceSpy,
       } as any
+      const created = new Date()
       const createSpy = jest.spyOn(CardStore, 'create').mockImplementation((card) =>
         Promise.resolve({
           _id: new ObjectId(),
+          created,
           ...card,
         })
       )
 
       await expect(CardStore.addLeader(leader)).resolves.toEqual({
         _id: expect.any(ObjectId),
+        created,
         type: CARD_TYPE.Leader,
         ...leader,
       })
 
       const convertedLeader = {
         type: 'LEADER',
+        created,
         ...leader,
       }
       expect(createSpy.mock.calls).toEqual([[convertedLeader]])
@@ -121,13 +132,17 @@ describe('card-store', () => {
         scorchMin: 10,
         musterPrefix: 'special',
       }
+      const _id = new ObjectId()
+      const created = new Date()
       const createSpy = jest.spyOn(CardStore, 'create').mockResolvedValue({
-        _id: new ObjectId(),
+        _id,
+        created,
         ...unit,
       })
 
       await expect(CardStore.addUnit(unit)).resolves.toEqual({
-        _id: expect.any(ObjectId),
+        _id,
+        created,
         ...unit,
       })
 
@@ -135,6 +150,7 @@ describe('card-store', () => {
         [
           {
             type: CARD_TYPE.Unit,
+            created,
             ...unit,
           },
         ],
@@ -159,22 +175,29 @@ describe('card-store', () => {
         isTraceEnabled: jest.fn().mockReturnValue(true),
         trace: traceSpy,
       } as any
+      const _id = new ObjectId()
+      const created = new Date()
+      const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
       const createSpy = jest.spyOn(CardStore, 'create').mockResolvedValue({
-        _id: new ObjectId(),
+        _id,
+        created,
         ...unit,
       })
 
       await expect(CardStore.addUnit(unit)).resolves.toEqual({
-        _id: expect.any(ObjectId),
+        _id,
+        created,
         ...unit,
       })
 
       const convertedUnit = {
         type: CARD_TYPE.Unit,
+        created,
         ...unit,
       }
       expect(createSpy.mock.calls).toEqual([[convertedUnit]])
       expect(traceSpy.mock.calls).toEqual([[`Adding unit: "${JSON.stringify(convertedUnit)}"`]])
+      expect(dateSpy.mock.calls).toEqual([[]])
     })
   })
 })

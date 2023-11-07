@@ -1,6 +1,6 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, port, str, url } from '@gwent/env'
+import getEnv, { NODE_ENV, num, port, str, url } from '@gwent/env'
 
 /**
  * Gets the environment variables that relate to how the API operates.
@@ -20,7 +20,7 @@ export default function env() {
         default: 'http://localhost:3000',
       }),
       GRAPHQL_PATH: str({
-        desc: 'The URL path the GraphQL server can be accessed',
+        desc: 'The URL path where the GraphQL server can be accessed',
         default: 'graphql',
       }),
       LOG_LEVEL: str({
@@ -36,9 +36,22 @@ export default function env() {
         desc: 'Connection string for MongoDB instance',
         default: 'mongodb://localhost',
       }),
+      NODE_ENV: str({
+        desc: 'What environment the application is running in',
+        choices: [NODE_ENV.Dev, NODE_ENV.Prod, NODE_ENV.Test],
+        default: NODE_ENV.Dev,
+      }),
       PORT: port({
         desc: 'The port to run the GraphQL server on',
         default: 4000,
+      }),
+      SESSION_SECRET: str({
+        desc: 'The secret to use for securing user sessions',
+        default: 'youshouldreallychangethisforproductionusage',
+      }),
+      SESSION_TIMEOUT_MINUTES: num({
+        desc: 'The time in minutes after which the session for a user expires',
+        default: 30,
       }),
     },
   })

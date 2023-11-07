@@ -5,6 +5,7 @@ const resolverConfig: TypeScriptResolversPluginConfig = {
   mappers: {
     Leader: '../database/generated-typings#LeaderDbObject',
     Unit: '../database/generated-typings#UnitDbObject',
+    User: '../database/generated-typings#UserDbObject',
   },
 }
 

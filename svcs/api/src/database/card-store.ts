@@ -58,6 +58,7 @@ export default class CardStore extends Store {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const leader: any = {
       type: CARD_TYPE.Leader,
+      created: new Date(),
       name,
       faction,
       dlc,
@@ -101,6 +102,7 @@ export default class CardStore extends Store {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const unit: any = {
       type: CARD_TYPE.Unit,
+      created: new Date(),
       name,
       occurrences,
       faction,

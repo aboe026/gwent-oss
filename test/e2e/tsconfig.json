@@ -5,5 +5,5 @@
   },
   "extends": "../../tsconfig",
   "include": ["components/**/*", "package.json", "page-objects/**/*", "tests/**/*", "util/**/*"],
-  "references": [{ "path": "../../libs/env" }]
+  "references": [{ "path": "../../libs/constants" }, { "path": "../../libs/env" }]
 }
