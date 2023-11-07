@@ -49,6 +49,7 @@ export default class ClientUtil {
     }
     await replaceInFile({
       files: [envFile],
+      disableGlobs: true,
       from: /API_URL:(\s*)(['"]).*?(['"])/,
       to: `API_URL:$1$2${env().API_URL}$3`,
     })

@@ -5,6 +5,8 @@
 .yarn
 .yarnrc.yml
 
+logback.log
+
 build
 tsconfig.tsbuildinfo
 

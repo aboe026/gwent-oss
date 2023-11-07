@@ -12,6 +12,8 @@
 #!.yarn/cache
 .pnp.*
 
+logback.log
+
 **/build
 **/tsconfig.tsbuildinfo
 
