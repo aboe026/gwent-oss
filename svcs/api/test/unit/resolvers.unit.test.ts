@@ -142,6 +142,7 @@ describe('resolvers', () => {
           _id: new ObjectId(),
           name: 'name',
           password: 'password',
+          created: new Date(),
         }
         const addUserSpy = jest.spyOn(UserStore, 'addUser').mockResolvedValue(user)
 
@@ -205,6 +206,7 @@ describe('resolvers', () => {
         const user = {
           _id: new ObjectId(),
           name: 'name',
+          created: new Date(),
         }
         const password = 'password'
         const validateUserSpy = jest.spyOn(UserStore, 'validateUser').mockResolvedValue(user)
@@ -227,6 +229,7 @@ describe('resolvers', () => {
         const user = {
           _id: new ObjectId(),
           name: 'name',
+          created: new Date(),
         }
         const password = 'password'
         const validateUserSpy = jest.spyOn(UserStore, 'validateUser').mockResolvedValue(user)
@@ -252,9 +255,13 @@ describe('resolvers', () => {
         expect(validateUserSpy.mock.calls).toEqual([[user.name, password]])
       })
       it('returns user and sets session if user does not exist on context', async () => {
+        const _id = new ObjectId()
+        const created = new Date()
+        const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
         const user = {
-          _id: new ObjectId(),
+          _id,
           name: 'name',
+          created,
         }
         const password = 'password'
         const validateUserSpy = jest.spyOn(UserStore, 'validateUser').mockResolvedValue(user)
@@ -281,6 +288,7 @@ describe('resolvers', () => {
           },
         })
         expect(validateUserSpy.mock.calls).toEqual([[user.name, password]])
+        expect(dateSpy.mock.calls).toEqual([])
       })
     })
     describe('logout', () => {

@@ -19,6 +19,7 @@
     "@apollo/client": "3.7.10",
     "@gwent/constants": "workspace:*",
     "graphql": "16.6.0",
+    "moment": "2.29.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router-dom": "6.17.0"

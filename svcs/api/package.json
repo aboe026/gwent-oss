@@ -29,6 +29,7 @@
     "@gwent/constants": "workspace:*",
     "@gwent/env": "workspace:*",
     "@gwent/utils": "workspace:*",
+    "@gwent/validators": "workspace:*",
     "basic-auth": "2.0.1",
     "body-parser": "1.20.2",
     "connect-mongo": "5.1.0",

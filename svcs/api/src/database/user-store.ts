@@ -25,6 +25,7 @@ export default class UserStore extends Store {
       const user = await UserStore.create<UserDbObject>({
         name,
         password: await PasswordHasher.hash(password),
+        created: new Date(),
       })
       delete (user as any).password // eslint-disable-line @typescript-eslint/no-explicit-any
       return user

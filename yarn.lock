@@ -2756,6 +2756,7 @@ __metadata:
     "@gwent/constants": "workspace:*"
     "@gwent/env": "workspace:*"
     "@gwent/utils": "workspace:*"
+    "@gwent/validators": "workspace:*"
     "@types/basic-auth": 1.1.5
     "@types/body-parser": 1.19.2
     "@types/cors": 2.8.13
@@ -2815,6 +2816,7 @@ __metadata:
     html-webpack-plugin: 5.5.0
     jest-junit: 15.0.0
     mini-css-extract-plugin: 2.7.5
+    moment: 2.29.4
     react: 18.2.0
     react-dom: 18.2.0
     react-router-dom: 6.17.0
@@ -2921,6 +2923,19 @@ __metadata:
     "@types/jest": 29.5.0
     "@types/node": 20.8.10
     jest-junit: 15.0.0
+    ts-jest: 29.0.5
+  languageName: unknown
+  linkType: soft
+
+"@gwent/validators@workspace:*, @gwent/validators@workspace:libs/validators":
+  version: 0.0.0-use.local
+  resolution: "@gwent/validators@workspace:libs/validators"
+  dependencies:
+    "@gwent/constants": "workspace:*"
+    "@types/jest": 29.5.0
+    "@types/node": 20.8.10
+    jest-junit: 15.0.0
+    moment: 2.29.4
     ts-jest: 29.0.5
   languageName: unknown
   linkType: soft
@@ -10919,7 +10934,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"moment@npm:^2.14.1, moment@npm:^2.29.4":
+"moment@npm:2.29.4, moment@npm:^2.14.1, moment@npm:^2.29.4":
   version: 2.29.4
   resolution: "moment@npm:2.29.4"
   checksum: 0ec3f9c2bcba38dc2451b1daed5daded747f17610b92427bebe1d08d48d8b7bdd8d9197500b072d14e326dd0ccf3e326b9e3d07c5895d3d49e39b6803b76e80e

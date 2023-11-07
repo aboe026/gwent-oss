@@ -1,3 +1,4 @@
+import moment from 'moment'
 import { useNavigate } from 'react-router-dom'
 
 import { getApolloError } from '../util/error-util'
@@ -33,9 +34,13 @@ export default function ProfilePage() {
 
   return (
     <div id={HTML_IDS.Profile}>
-      <div id="usernameContainer">
+      <div className="profile-info">
         <div>Username:</div>
         <div id={HTML_IDS.ProfileUsername}>{user?.name}</div>
+      </div>
+      <div className="profile-info">
+        <div>Created:</div>
+        <div id={HTML_IDS.ProfileCreated}>{moment(user?.created).format('MMMM Do, YYYY')}</div>
       </div>
       <button type="button" id={HTML_IDS.ProfileLogout} disabled={logoutLoading} onClick={() => logout()}>
         Logout

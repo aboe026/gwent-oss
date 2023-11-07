@@ -13,6 +13,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  DateTime: any;
   SemVer: any;
 };
 
@@ -55,6 +56,7 @@ export enum Faction {
 
 export type Leader = {
   __typename?: 'Leader';
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   faction: Faction;
   id: Scalars['ID'];
@@ -96,6 +98,7 @@ export type Query = {
 export type Unit = {
   __typename?: 'Unit';
   combats?: Maybe<Array<Combat>>;
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   effects?: Maybe<Array<Effect>>;
   faction: Faction;
@@ -111,6 +114,7 @@ export type Unit = {
 
 export type User = {
   __typename?: 'User';
+  created: Scalars['DateTime'];
   id: Scalars['ID'];
   name: Scalars['String'];
 };
@@ -188,6 +192,7 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Combat: Combat;
   DLC: Dlc;
+  DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
   Effect: Effect;
   Faction: Faction;
   ID: ResolverTypeWrapper<Scalars['ID']>;
@@ -204,6 +209,7 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Boolean: Scalars['Boolean'];
+  DateTime: Scalars['DateTime'];
   ID: Scalars['ID'];
   Int: Scalars['Int'];
   Leader: LeaderDbObject;
@@ -215,7 +221,12 @@ export type ResolversParentTypes = {
   User: UserDbObject;
 };
 
+export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
+  name: 'DateTime';
+}
+
 export type LeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['Leader'] = ResolversParentTypes['Leader']> = {
+  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dlc?: Resolver<Maybe<ResolversTypes['DLC']>, ParentType, ContextType>;
   faction?: Resolver<ResolversTypes['Faction'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -243,6 +254,7 @@ export interface SemVerScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
 
 export type UnitResolvers<ContextType = any, ParentType extends ResolversParentTypes['Unit'] = ResolversParentTypes['Unit']> = {
   combats?: Resolver<Maybe<Array<ResolversTypes['Combat']>>, ParentType, ContextType>;
+  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dlc?: Resolver<Maybe<ResolversTypes['DLC']>, ParentType, ContextType>;
   effects?: Resolver<Maybe<Array<ResolversTypes['Effect']>>, ParentType, ContextType>;
   faction?: Resolver<ResolversTypes['Faction'], ParentType, ContextType>;
@@ -258,12 +270,14 @@ export type UnitResolvers<ContextType = any, ParentType extends ResolversParentT
 };
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
+  DateTime?: GraphQLScalarType;
   Leader?: LeaderResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;

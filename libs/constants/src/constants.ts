@@ -1,9 +1,10 @@
-const HTML_CLASSES = {
+export const DATE_TIME_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ'
+export const HTML_CLASSES = {
   FormErrors: 'form-errors',
   Primary: 'primary',
   Secondary: 'secondary',
 }
-const HTML_IDS = {
+export const HTML_IDS = {
   Banner: 'banner',
   BannerUsername: 'bannerUsername',
   Hamburger: 'hamburger',
@@ -19,7 +20,6 @@ const HTML_IDS = {
   ProfileLogout: 'profileLogout',
   ProfileLogoutError: 'profileLogoutError',
   ProfileUsername: 'profileUsername',
+  ProfileCreated: 'profileCreated',
 }
-const NOT_AUTHENTICATED_MESSAGE = 'Not Authenticated. Login or provide credentials.'
-
-export { HTML_CLASSES, HTML_IDS, NOT_AUTHENTICATED_MESSAGE }
+export const NOT_AUTHENTICATED_MESSAGE = 'Not Authenticated. Login or provide credentials.'

@@ -28,6 +28,7 @@ export default function LoginPage() {
         setUser({
           name: data.login.name,
           id: data.login.id,
+          created: data.login.created,
         })
         navigate('/')
       }

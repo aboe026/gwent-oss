@@ -83,6 +83,7 @@ describe('user-store', () => {
     it('returns user if password matches hash', async () => {
       const username = 'username'
       const _id = new ObjectId()
+      const created = new Date()
       await testValidateUser({
         username,
         users: [
@@ -90,12 +91,14 @@ describe('user-store', () => {
             _id,
             name: username,
             password: 'hashedPassword',
+            created,
           },
         ],
         match: true,
         expected: {
           _id,
           name: username,
+          created,
         },
       })
     })
@@ -119,6 +122,8 @@ async function testAddUser({
 }) {
   const hashedPassword = 'hashedPassword'
   const _id = new ObjectId()
+  const created = new Date()
+  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
   const hashSpy = jest.spyOn(PasswordHasher, 'hash').mockResolvedValue(hashedPassword)
   const createSpy = jest.spyOn(UserStore, 'create')
   const isMongoErrorSpy = jest.spyOn(UserStore, 'isMongoError')
@@ -130,6 +135,7 @@ async function testAddUser({
   } else {
     createSpy.mockResolvedValue({
       _id,
+      created,
       name: username,
       password: hashedPassword,
     })
@@ -146,6 +152,7 @@ async function testAddUser({
   } else {
     await expect(UserStore.addUser(username, password)).resolves.toEqual({
       _id,
+      created,
       name: username,
     })
   }
@@ -156,6 +163,7 @@ async function testAddUser({
       {
         name: username,
         password: hashedPassword,
+        created,
       },
     ],
   ])
@@ -173,6 +181,7 @@ async function testAddUser({
   )
   expect(traceSpy.mock.calls).toEqual([[`Adding user "${username}"`]])
   expect(errorSpy.mock.calls).toEqual(errors)
+  expect(dateSpy.mock.calls).toEqual([[]])
 }
 
 async function testValidateUser({

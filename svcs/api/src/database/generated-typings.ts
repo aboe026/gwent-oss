@@ -10,6 +10,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  DateTime: any;
   SemVer: any;
 };
 
@@ -52,6 +53,7 @@ export enum Faction {
 
 export type Leader = {
   __typename?: 'Leader';
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   faction: Faction;
   id: Scalars['ID'];
@@ -93,6 +95,7 @@ export type Query = {
 export type Unit = {
   __typename?: 'Unit';
   combats?: Maybe<Array<Combat>>;
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   effects?: Maybe<Array<Effect>>;
   faction: Faction;
@@ -108,6 +111,7 @@ export type Unit = {
 
 export type User = {
   __typename?: 'User';
+  created: Scalars['DateTime'];
   id: Scalars['ID'];
   name: Scalars['String'];
 };
@@ -119,6 +123,7 @@ export type AdditionalEntityFields = {
 
 import { ObjectId } from 'mongodb';
 export type LeaderDbObject = {
+  created: any,
   dlc?: Maybe<string>,
   faction: string,
   _id: ObjectId,
@@ -127,6 +132,7 @@ export type LeaderDbObject = {
 
 export type UnitDbObject = {
   combats?: Maybe<Array<string>>,
+  created: any,
   dlc?: Maybe<string>,
   effects?: Maybe<Array<string>>,
   faction: string,
@@ -141,6 +147,7 @@ export type UnitDbObject = {
 };
 
 export type UserDbObject = {
+  created: any,
   _id: ObjectId,
   name: string,
 };

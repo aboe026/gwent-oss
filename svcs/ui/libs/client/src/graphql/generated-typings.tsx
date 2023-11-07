@@ -13,6 +13,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  DateTime: any;
   SemVer: any;
 };
 
@@ -55,6 +56,7 @@ export enum Faction {
 
 export type Leader = {
   __typename?: 'Leader';
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   faction: Faction;
   id: Scalars['ID'];
@@ -96,6 +98,7 @@ export type Query = {
 export type Unit = {
   __typename?: 'Unit';
   combats?: Maybe<Array<Combat>>;
+  created: Scalars['DateTime'];
   dlc?: Maybe<Dlc>;
   effects?: Maybe<Array<Effect>>;
   faction: Faction;
@@ -111,6 +114,7 @@ export type Unit = {
 
 export type User = {
   __typename?: 'User';
+  created: Scalars['DateTime'];
   id: Scalars['ID'];
   name: Scalars['String'];
 };
@@ -126,7 +130,7 @@ export type AddUserMutation = { __typename?: 'Mutation', addUser?: { __typename?
 export type GetCurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCurrentUserQuery = { __typename?: 'Query', getCurrentUser?: { __typename?: 'User', id: string, name: string } | null };
+export type GetCurrentUserQuery = { __typename?: 'Query', getCurrentUser?: { __typename?: 'User', id: string, name: string, created: any } | null };
 
 export type GetLeadersQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -139,7 +143,7 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login?: { __typename?: 'User', id: string, name: string } | null };
+export type LoginMutation = { __typename?: 'Mutation', login?: { __typename?: 'User', id: string, name: string, created: any } | null };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
@@ -187,6 +191,7 @@ export const GetCurrentUserDocument = gql`
   getCurrentUser {
     id
     name
+    created
   }
 }
     `;
@@ -259,6 +264,7 @@ export const LoginDocument = gql`
   login(name: $name, password: $password) {
     id
     name
+    created
   }
 }
     `;

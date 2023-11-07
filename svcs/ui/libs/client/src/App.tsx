@@ -47,6 +47,7 @@ export default function App() {
     setUser({
       id: getCurrentUserData.getCurrentUser?.id,
       name: getCurrentUserData.getCurrentUser?.name,
+      created: getCurrentUserData.getCurrentUser?.created,
     })
   }
 

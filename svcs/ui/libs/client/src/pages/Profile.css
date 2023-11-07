@@ -1,5 +1,11 @@
-#usernameContainer {
+#profile {
   display: flex;
+  flex-direction: column;
+}
+
+.profile-info {
+  display: flex;
+  justify-content: space-between;
 }
 
 #logoutError {

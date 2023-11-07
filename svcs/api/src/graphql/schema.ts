@@ -7,6 +7,7 @@ import permissions from './permissions'
 import resolvers from './resolvers'
 
 const schema = gql`
+  scalar DateTime
   scalar SemVer
 
   enum Faction {
@@ -48,6 +49,7 @@ const schema = gql`
 
   type Leader @entity {
     id: ID! @id @map(path: "_id")
+    created: DateTime! @column
     name: String! @column
     faction: Faction! @column
     dlc: DLC @column
@@ -55,6 +57,7 @@ const schema = gql`
 
   type Unit @entity {
     id: ID! @id @map(path: "_id")
+    created: DateTime! @column
     name: String! @column
     faction: Faction! @column
     occurrences: Int! @column
@@ -70,6 +73,7 @@ const schema = gql`
 
   type User @entity {
     id: ID! @id
+    created: DateTime! @column
     name: String! @column
   }
 

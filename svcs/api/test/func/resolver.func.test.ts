@@ -26,6 +26,7 @@ describe('resolver', () => {
         .map((card) => {
           return {
             id: expect.any(String),
+            created: expect.any(Date),
             ...normalizeLeader(card),
           }
         })
@@ -34,6 +35,7 @@ describe('resolver', () => {
         source: `{
           leaders {
             id
+            created
             name
             faction
             dlc
@@ -66,6 +68,7 @@ describe('resolver', () => {
         .map((card) => {
           return {
             id: expect.any(String),
+            created: expect.any(Date),
             ...normalizeUnit(card),
           }
         })
@@ -74,6 +77,7 @@ describe('resolver', () => {
         source: `{
           units {
             id
+            created
             name
             faction
             occurrences

@@ -36,6 +36,7 @@ describe('basic-auth', () => {
       const user = {
         _id: new ObjectId(),
         name: 'name',
+        created: new Date(),
       }
       await testBasicAuth({
         req: {
@@ -53,6 +54,7 @@ describe('basic-auth', () => {
       const user = {
         _id: new ObjectId(),
         name: 'name',
+        created: new Date(),
       }
       await testBasicAuth({
         req: {
