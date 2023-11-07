@@ -381,7 +381,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                 -e WEBGL_UNSUPPORTED=${browser == 'firefox' ? 'true' : 'false'} \
                 -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
                 -i testcafe/testcafe:${testcafeImageTag} \
-                    \'${browser}\' \
+                    \'${browser} --ignore-certificate-errors\' \
                     build/tests \
                     --reporter spec,xunit:test-results/${suiteName}.xml \
                     --quarantine-mode \
