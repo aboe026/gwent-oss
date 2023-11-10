@@ -1,3 +1,16 @@
+.form-container {
+  padding: 10px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: black;
+}
+
+.form-title {
+  text-align: center;
+  font-size: large;
+  margin-bottom: 10px;
+}
+
 .form-fields {
   display: flex;
   flex-direction: column;
@@ -18,4 +31,12 @@
 
 .form-errors {
   color: red;
+}
+
+.actions {
+  margin-top: 15px;
+}
+
+.actions .primary {
+  margin-left: 5px;
 }

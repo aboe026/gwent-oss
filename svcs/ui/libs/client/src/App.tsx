@@ -2,7 +2,9 @@ import { createContext, useContext, useState } from 'react'
 import { Outlet, useLocation, Navigate } from 'react-router-dom'
 
 import Banner from './components/Banner'
-import insecureRoutes from './insecure-routes'
+import Centered from './components/Centered'
+import routes, { getRouteFromPath } from './routes'
+import Spinner from './components/Spinner'
 import { useGetCurrentUserQuery, User } from './graphql/generated-typings'
 
 const UserContext = createContext<UserContextType>({
@@ -17,26 +19,33 @@ export { useUserContext }
 export default function App() {
   const { pathname } = useLocation()
   const [user, setUser] = useState<User | undefined>()
-  const { loading: getCurrentUserLoading } = useGetCurrentUserQuery({
-    notifyOnNetworkStatusChange: true,
-    onCompleted(data) {
-      if (data.getCurrentUser) {
-        setUser(data.getCurrentUser)
-      }
-    },
-  })
+  const [previousSessionChecked, setPreviousSessionChecked] = useState(false)
+  const { loading: getCurrentUserLoading, data: getCurrentUserData } = useGetCurrentUserQuery()
 
-  if (getCurrentUserLoading) {
-    return <div>Loading...</div>
+  // page is initially loading and has previous session still valid
+  // ensures when user performs "logout" they get properly redirected to "login"
+  const previousSessionValid = !previousSessionChecked && !user && getCurrentUserData?.getCurrentUser
+
+  if (getCurrentUserLoading || previousSessionValid) {
+    if (previousSessionValid && getCurrentUserData.getCurrentUser) {
+      setUser(getCurrentUserData?.getCurrentUser)
+      setPreviousSessionChecked(true)
+    }
+    return (
+      <Centered>
+        <Spinner size="200px" />
+      </Centered>
+    )
   }
 
-  const needsLogin = !user && !getCurrentUserLoading && !insecureRoutes.includes(pathname) && pathname !== '/login'
-  const needsHome = user && pathname === '/login'
+  const route = getRouteFromPath(pathname)
+  const needsLogin = !user && !getCurrentUserLoading && route?.secure && route?.path !== routes.Login.path
+  const needsHome = user && route?.path === routes.Login.path
 
   if (needsHome) {
-    return <Navigate to="/" replace />
+    return <Navigate to={routes.Home.path} replace />
   } else if (needsLogin) {
-    return <Navigate to="/login" replace />
+    return <Navigate to={routes.Login.path} replace />
   }
 
   return (

@@ -14,11 +14,13 @@ export const HTML_IDS = {
   LoginUsername: 'name',
   MenuItems: 'menuItems',
   MenuItemsProfile: 'menuProfile',
+  MenutItemsHome: 'menuHome',
   NotFound: 'notFound',
   NotFoundHomeLink: 'notFoundHomeLink',
   Profile: 'profile',
   ProfileLogout: 'profileLogout',
   ProfileLogoutError: 'profileLogoutError',
+  ProfileLogoutSuccess: 'profileLogoutSuccess',
   ProfileUsername: 'profileUsername',
   ProfileCreated: 'profileCreated',
 }

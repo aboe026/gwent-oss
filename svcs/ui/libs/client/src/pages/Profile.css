@@ -3,11 +3,12 @@
   flex-direction: column;
 }
 
-.profile-info {
-  display: flex;
-  justify-content: space-between;
+#profile table tr td:first-child {
+  text-align: right;
 }
 
-#logoutError {
-  color: red;
+#profileLogout {
+  margin-top: 10px;
+  margin-left: auto;
+  margin-right: auto;
 }

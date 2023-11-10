@@ -7,8 +7,10 @@ import {
   useAddUserMutation,
   useLoginMutation,
 } from '../graphql/generated-typings'
+import Centered from '../components/Centered'
 import Form from '../components/Form'
 import { HTML_IDS } from '@gwent/constants'
+import routes from '../routes'
 import { useUserContext } from '../App'
 
 /**
@@ -30,7 +32,7 @@ export default function LoginPage() {
           id: data.login.id,
           created: data.login.created,
         })
-        navigate('/')
+        navigate(routes.Home.path)
       }
     },
   })
@@ -45,31 +47,33 @@ export default function LoginPage() {
   }
 
   return (
-    <Form
-      title={mode === Mode.LOG_IN ? 'Log In' : 'Sign Up'}
-      id={HTML_IDS.LoginForm}
-      cancelLabel={mode === Mode.LOG_IN ? 'New user? Sign up!' : 'Existing user? Log in!'}
-      submitLabel={mode === Mode.LOG_IN ? 'Log in' : 'Sign up'}
-      onSubmit={mode === Mode.LOG_IN ? login : addUserAndLogin}
-      loading={loginLoading || addUserLoading}
-      error={loginError || addUserError}
-      onClose={setMode}
-      closeParams={mode === Mode.LOG_IN ? Mode.SIGN_UP : Mode.LOG_IN}
-      fields={[
-        {
-          key: HTML_IDS.LoginUsername,
-          label: 'Username',
-          type: 'text',
-          required: true,
-        },
-        {
-          key: HTML_IDS.LoginPassword,
-          label: 'Password',
-          type: 'password',
-          required: true,
-        },
-      ]}
-    />
+    <Centered>
+      <Form
+        title={'Up for a round?'}
+        id={HTML_IDS.LoginForm}
+        cancelLabel={mode === Mode.LOG_IN ? 'New user? Sign up!' : 'Existing user? Log in!'}
+        submitLabel={mode === Mode.LOG_IN ? 'Log in' : 'Sign up'}
+        onSubmit={mode === Mode.LOG_IN ? login : addUserAndLogin}
+        loading={loginLoading || addUserLoading}
+        error={loginError || addUserError}
+        onClose={setMode}
+        closeParams={mode === Mode.LOG_IN ? Mode.SIGN_UP : Mode.LOG_IN}
+        fields={[
+          {
+            key: HTML_IDS.LoginUsername,
+            label: 'Username',
+            type: 'text',
+            required: true,
+          },
+          {
+            key: HTML_IDS.LoginPassword,
+            label: 'Password',
+            type: 'password',
+            required: true,
+          },
+        ]}
+      />
+    </Centered>
   )
 }
 
