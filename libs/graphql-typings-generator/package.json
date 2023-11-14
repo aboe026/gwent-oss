@@ -1,0 +1,26 @@
+{
+  "name": "@gwent/graphql-typings-generator",
+  "version": "0.2.2",
+  "author": "Adam Boe",
+  "description": "Generate GraphQL TypeScript typings from the API schema",
+  "scripts": {
+    "build": "graphql-codegen --config codegen.ts",
+    "lint": "yarn g:lint",
+    "lint:fix": "yarn g:lint-fix",
+    "watch": "yarn build --watch"
+  },
+  "dependencies": {
+    "@graphql-codegen/cli": "5.0.0",
+    "@graphql-codegen/typescript": "4.0.1",
+    "@graphql-codegen/typescript-mongodb": "3.0.0",
+    "@graphql-codegen/typescript-operations": "4.0.1",
+    "@graphql-codegen/typescript-react-apollo": "4.1.0",
+    "@graphql-codegen/typescript-resolvers": "4.0.1",
+    "graphql": "16.8.1",
+    "graphql-tag": "2.12.6"
+  },
+  "devDependencies": {
+    "@parcel/watcher": "2.3.0",
+    "@types/node": "20.8.10"
+  }
+}

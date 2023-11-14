@@ -1,4 +1,4 @@
-import ApiClient from '../util/api-client'
+import ApiClient from '../graphql/api-client'
 import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
 import HomePage from '../page-objects/home-page'
@@ -27,7 +27,10 @@ test('Shows error for nonexistent user', async () => {
 test('Shows error for wrong password', async () => {
   const username = `invalid-credentials-${Date.now()}`
   const password = 'invalid'
-  await ApiClient.addUser(username)
+  await ApiClient.addUser({
+    name: username,
+    password: 'password',
+  })
   await LoginPage.verifyNotLoggedIn({})
 
   await LoginPage.login({
@@ -53,7 +56,10 @@ test('Logs in user after they sign up', async () => {
 test('Logs in existing user', async () => {
   const username = `existing-user-${Date.now()}`
   const password = 'password'
-  await ApiClient.addUser(username, password)
+  await ApiClient.addUser({
+    name: username,
+    password,
+  })
 
   await LoginPage.login({
     username,
@@ -66,7 +72,10 @@ test('Logs in existing user', async () => {
 test('Shows error if signing up for user that already exists', async () => {
   const username = `duplicate-user-${Date.now()}`
   const password = 'password'
-  await ApiClient.addUser(username, password)
+  await ApiClient.addUser({
+    name: username,
+    password,
+  })
   await LoginPage.verifyNotLoggedIn({})
 
   await LoginPage.signUp({
@@ -95,7 +104,10 @@ test('User session persists across refresh after sign up', async () => {
 test('User session persists across refresh after login', async () => {
   const username = `login-persistence-${Date.now()}`
   const password = 'password'
-  await ApiClient.addUser(username, password)
+  await ApiClient.addUser({
+    name: username,
+    password,
+  })
   await LoginPage.login({
     username,
     password,
