@@ -10,8 +10,5 @@
     { "path": "../../libs/env" },
     { "path": "../../libs/utils" },
     { "path": "../../libs/validators" }
-  ],
-  "watchOptions": {
-    "excludeFiles": ["src/graphql/schema.ts"]
-  }
+  ]
 }

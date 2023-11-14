@@ -16,7 +16,7 @@
     "test-func": "yarn g:jest --test-type=func --runInBand",
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",
-    "watch-built": "yarn g:nodemon --watch build --exec 'yarn node build/src/index.js'",
+    "watch-built": "ts-node scripts/wait-for-initial-build.ts && yarn g:nodemon --watch build --exec 'yarn node build/src/index.js'",
     "watch-tsc": "yarn build --watch"
   },
   "dependencies": {
