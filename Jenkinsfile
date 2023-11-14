@@ -382,7 +382,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                 -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
                 -i testcafe/testcafe:${testcafeImageTag} \
                     \'${browser} --ignore-certificate-errors\' \
-                    build/tests \
+                    build/src/tests \
                     --reporter spec,xunit:test-results/${suiteName}.xml \
                     --quarantine-mode \
                     --screenshots path=screenshots/,takeOnFails=true \
