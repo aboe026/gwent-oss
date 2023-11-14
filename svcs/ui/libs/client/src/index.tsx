@@ -10,7 +10,7 @@ import LoginPage from './pages/Login'
 import LogoutPage from './pages/Logout'
 import NotFoundPage from './pages/NotFound'
 import ProfilePage from './pages/Profile'
-import routes from './routes'
+import { ROUTES } from '@gwent/constants'
 
 const router = createBrowserRouter([
   {
@@ -18,19 +18,19 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage />,
     children: [
       {
-        path: routes.Home.path,
+        path: ROUTES.Home.path,
         element: <HomePage />,
       },
       {
-        path: routes.Login.path,
+        path: ROUTES.Login.path,
         element: <LoginPage />,
       },
       {
-        path: routes.Logout.path,
+        path: ROUTES.Logout.path,
         element: <LogoutPage />,
       },
       {
-        path: routes.Profile.path,
+        path: ROUTES.Profile.path,
         element: <ProfilePage />,
       },
     ],

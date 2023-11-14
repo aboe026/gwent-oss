@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 import { HTML_IDS } from '@gwent/constants'
-import routes from '../routes'
+import { ROUTES } from '@gwent/constants'
 import { useUserContext } from '../App'
 import './Banner.css'
 
@@ -35,14 +35,18 @@ export default function Banner() {
             </div>
           )}
         </div>
-        <h1 className={`banner-item ${user && 'pointable'}`} onClick={() => navigate(routes.Home.path)}>
+        <h1
+          id={HTML_IDS.MainTitle}
+          className={`banner-item ${user && 'pointable'}`}
+          onClick={() => navigate(ROUTES.Home.path)}
+        >
           Gwent
         </h1>
         <div className="banner-item">
           <h2
             className="banner-item pointable"
             id={HTML_IDS.BannerUsername}
-            onClick={() => navigate(routes.Profile.path)}
+            onClick={() => navigate(ROUTES.Profile.path)}
           >
             {user?.name}
           </h2>
@@ -50,10 +54,10 @@ export default function Banner() {
       </div>
       {menuOpen && (
         <div id={HTML_IDS.MenuItems}>
-          <div id={HTML_IDS.MenutItemsHome} className="pointable" onClick={() => clickMenuItem(routes.Home.path)}>
+          <div id={HTML_IDS.MenutItemsHome} className="pointable" onClick={() => clickMenuItem(ROUTES.Home.path)}>
             Home
           </div>
-          <div id={HTML_IDS.MenutItemsHome} className="pointable" onClick={() => clickMenuItem(routes.Profile.path)}>
+          <div id={HTML_IDS.MenuItemsProfile} className="pointable" onClick={() => clickMenuItem(ROUTES.Profile.path)}>
             Profile
           </div>
         </div>

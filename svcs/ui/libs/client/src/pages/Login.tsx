@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 import {
@@ -10,7 +9,6 @@ import {
 import Centered from '../components/Centered'
 import Form from '../components/Form'
 import { HTML_IDS } from '@gwent/constants'
-import routes from '../routes'
 import { useUserContext } from '../App'
 
 /**
@@ -20,7 +18,6 @@ import { useUserContext } from '../App'
  */
 export default function LoginPage() {
   const [mode, setMode] = useState(Mode.LOG_IN)
-  const navigate = useNavigate()
   const { setUser } = useUserContext()
   const [login, { loading: loginLoading, error: loginError }] = useLoginMutation({
     onCompleted: async (data: LoginMutation) => {
@@ -32,7 +29,6 @@ export default function LoginPage() {
           id: data.login.id,
           created: data.login.created,
         })
-        navigate(routes.Home.path)
       }
     },
   })
@@ -45,16 +41,18 @@ export default function LoginPage() {
       variables,
     })
   }
+  const loading = loginLoading || addUserLoading
 
   return (
     <Centered>
       <Form
         title={'Up for a round?'}
         id={HTML_IDS.LoginForm}
+        style={loading ? { marginTop: '35px' } : {}}
         cancelLabel={mode === Mode.LOG_IN ? 'New user? Sign up!' : 'Existing user? Log in!'}
         submitLabel={mode === Mode.LOG_IN ? 'Log in' : 'Sign up'}
         onSubmit={mode === Mode.LOG_IN ? login : addUserAndLogin}
-        loading={loginLoading || addUserLoading}
+        loading={loading}
         error={loginError || addUserError}
         onClose={setMode}
         closeParams={mode === Mode.LOG_IN ? Mode.SIGN_UP : Mode.LOG_IN}

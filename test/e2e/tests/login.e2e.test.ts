@@ -1,5 +1,4 @@
 import ApiClient from '../util/api-client'
-import Banner from '../components/banner'
 import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
 import HomePage from '../page-objects/home-page'
@@ -9,89 +8,101 @@ fixture('Login').page(env.BASE_URL)
 
 test('Shows error for nonexistent user', async () => {
   const username = `nonexistent-user-${Date.now()}`
-  await verifyNotLoggedIn()
+  const password = 'password'
+  await LoginPage.verifyNotLoggedIn({})
 
-  await LoginPage.login(username, 'password')
+  await LoginPage.login({
+    username,
+    password,
+    verify: false,
+  })
 
-  await LoginPage.verifyError(`Invalid credentials for user "${username}"`)
-  await verifyNotLoggedIn()
+  await LoginPage.verifyNotLoggedIn({
+    username,
+    password,
+    error: `Invalid credentials for user "${username}"`,
+  })
 })
 
 test('Shows error for wrong password', async () => {
   const username = `invalid-credentials-${Date.now()}`
-  await ApiClient.addUser(username, 'password')
-  await verifyNotLoggedIn()
+  const password = 'invalid'
+  await ApiClient.addUser(username)
+  await LoginPage.verifyNotLoggedIn({})
 
-  await LoginPage.login(username, 'invalid')
+  await LoginPage.login({
+    username,
+    password,
+    verify: false,
+  })
 
-  await LoginPage.verifyError(`Invalid credentials for user "${username}"`)
-  await verifyNotLoggedIn()
+  await LoginPage.verifyNotLoggedIn({
+    username,
+    password,
+    error: `Invalid credentials for user "${username}"`,
+  })
 })
 
 test('Logs in user after they sign up', async () => {
-  const username = `new-user-${Date.now()}`
-  await verifyNotLoggedIn()
-
-  await LoginPage.signUp(username, 'password')
-
-  await verifyLoggedIn(username)
+  await LoginPage.signUp({
+    username: `new-user-${Date.now()}`,
+  })
+  await HomePage.verifyContent()
 })
 
 test('Logs in existing user', async () => {
   const username = `existing-user-${Date.now()}`
   const password = 'password'
   await ApiClient.addUser(username, password)
-  await verifyNotLoggedIn()
 
-  await LoginPage.login(username, password)
+  await LoginPage.login({
+    username,
+    password,
+  })
 
-  await verifyLoggedIn(username)
+  await HomePage.verifyContent()
 })
 
 test('Shows error if signing up for user that already exists', async () => {
   const username = `duplicate-user-${Date.now()}`
   const password = 'password'
   await ApiClient.addUser(username, password)
-  await verifyNotLoggedIn()
+  await LoginPage.verifyNotLoggedIn({})
 
-  await LoginPage.signUp(username, password)
+  await LoginPage.signUp({
+    username,
+    password,
+    verify: false,
+  })
 
-  await LoginPage.verifyError(`User "${username}" already exists`)
-  await verifyNotLoggedIn()
+  await LoginPage.verifyNotLoggedIn({
+    username,
+    password,
+    error: `User "${username}" already exists`,
+  })
 })
 
 test('User session persists across refresh after sign up', async () => {
-  const username = `new-user-${Date.now()}`
-  await verifyNotLoggedIn()
-  await LoginPage.signUp(username, 'password')
-  await verifyLoggedIn(username)
+  await LoginPage.signUp({
+    username: `sign-up-persistence-${Date.now()}`,
+  })
 
   await E2eUtil.reload()
 
-  await verifyLoggedIn(username)
+  await HomePage.verifyContent()
 })
 
 test('User session persists across refresh after login', async () => {
-  const username = `new-user-${Date.now()}`
+  const username = `login-persistence-${Date.now()}`
   const password = 'password'
   await ApiClient.addUser(username, password)
-  await verifyNotLoggedIn()
-  await LoginPage.login(username, password)
-  await verifyLoggedIn(username)
+  await LoginPage.login({
+    username,
+    password,
+  })
 
   await E2eUtil.reload()
 
-  await verifyLoggedIn(username)
-})
-
-export async function verifyNotLoggedIn() {
-  await E2eUtil.verifyCurrentUrl('login')
-  await HomePage.verifyContent(false)
-  await Banner.verifyUsername('')
-}
-
-export async function verifyLoggedIn(username: string) {
-  await E2eUtil.verifyCurrentUrl('')
-  await Banner.verifyUsername(username)
+  await LoginPage.verifyLoggedIn()
   await HomePage.verifyContent()
-}
+})

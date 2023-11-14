@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Centered from '../components/Centered'
 import { getApolloError } from '../util/error-util'
 import { HTML_IDS } from '@gwent/constants'
-import routes from '../routes'
+import { ROUTES } from '@gwent/constants'
 import Spinner from '../components/Spinner'
 import { useUserContext } from '../App'
 import { useLogoutMutation } from '../graphql/generated-typings'
@@ -27,36 +27,36 @@ export default function LogoutPage() {
     logout()
   }
 
+  const message = logoutError ? `Error logging out: ${getApolloError(logoutError)}` : 'Successfully logged out!'
+
   return (
     <Centered>
       {logoutLoading ? (
         <Spinner size="200px" />
       ) : (
         <form
+          id={HTML_IDS.LogoutForm}
           onSubmit={async (event) => {
             event.preventDefault()
-            navigate(routes.Login.path)
+            navigate(ROUTES.Login.path)
           }}
           onReset={async (event) => {
             event.preventDefault()
             logout()
           }}
         >
-          {logoutError ? (
-            <div id={HTML_IDS.ProfileLogoutError} className="logout-message">
-              <span id="logoutError">{`Error logging out: ${getApolloError(logoutError)}`}</span>
+          <div className="logout-container">
+            <span id={HTML_IDS.LogoutMessage}>{message}</span>
+            {logoutError ? (
               <button type="reset" onClick={() => logout} autoFocus={true}>
                 Retry
               </button>
-            </div>
-          ) : (
-            <div id={HTML_IDS.ProfileLogoutSuccess} className="logout-message">
-              <span>Successfully logged out!</span>
-              <button type="submit" autoFocus={true}>
+            ) : (
+              <button id={HTML_IDS.LogoutLogin} type="submit" autoFocus={true}>
                 Log in
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </form>
       )}
     </Centered>

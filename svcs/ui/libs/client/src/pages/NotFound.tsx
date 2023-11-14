@@ -2,7 +2,7 @@ import { isRouteErrorResponse, useRouteError } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 
 import { HTML_IDS } from '@gwent/constants'
-import routes from '../routes'
+import { ROUTES } from '@gwent/constants'
 
 export default function ErrorPage() {
   const error = useRouteError()
@@ -22,7 +22,7 @@ export default function ErrorPage() {
       <p>
         <i>{message}</i>
       </p>
-      <Link to={routes.Home.path} id={HTML_IDS.NotFoundHomeLink}>
+      <Link to={ROUTES.Home.path} id={HTML_IDS.NotFoundHomeLink}>
         Home
       </Link>
     </div>

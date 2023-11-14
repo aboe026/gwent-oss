@@ -3,7 +3,8 @@ import { Outlet, useLocation, Navigate } from 'react-router-dom'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
-import routes, { getRouteFromPath } from './routes'
+import { getRouteFromPath } from './util/route-util'
+import { ROUTES } from '@gwent/constants'
 import Spinner from './components/Spinner'
 import { useGetCurrentUserQuery, User } from './graphql/generated-typings'
 
@@ -19,6 +20,7 @@ export { useUserContext }
 export default function App() {
   const { pathname } = useLocation()
   const [user, setUser] = useState<User | undefined>()
+  const [preLoginPath] = useState(pathname === ROUTES.Logout.path ? ROUTES.Home.path : pathname)
   const [previousSessionChecked, setPreviousSessionChecked] = useState(false)
   const { loading: getCurrentUserLoading, data: getCurrentUserData } = useGetCurrentUserQuery()
 
@@ -39,13 +41,13 @@ export default function App() {
   }
 
   const route = getRouteFromPath(pathname)
-  const needsLogin = !user && !getCurrentUserLoading && route?.secure && route?.path !== routes.Login.path
-  const needsHome = user && route?.path === routes.Login.path
+  const needsLogin = !user && !getCurrentUserLoading && route?.secure && route?.path !== ROUTES.Login.path
+  const needsHome = user && route?.path === ROUTES.Login.path
 
   if (needsHome) {
-    return <Navigate to={routes.Home.path} replace />
+    return <Navigate to={preLoginPath || ROUTES.Home.path} replace />
   } else if (needsLogin) {
-    return <Navigate to={routes.Login.path} replace />
+    return <Navigate to={ROUTES.Login.path} replace />
   }
 
   return (

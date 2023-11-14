@@ -32,6 +32,7 @@ export default function Form({
   onClose,
   onSubmit,
   overlay,
+  style,
   submitLabel = 'Save',
   title,
 }: FormProps) {
@@ -44,7 +45,7 @@ export default function Form({
   const resolvedError = getApolloError(error)
 
   return (
-    <div id={id} className={overlay ? 'whole-screen-overlay' : ''}>
+    <div id={id} className={overlay ? 'whole-screen-overlay' : ''} style={style}>
       <form
         className="form-container"
         onSubmit={async (event) => {
@@ -122,6 +123,7 @@ interface FormProps {
   onClose?: (param: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
   onSubmit: (variables: any) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   overlay?: boolean
+  style?: React.CSSProperties
   submitLabel?: string
   title: string
 }

@@ -1,9 +1,8 @@
-import moment from 'moment'
 import { useNavigate } from 'react-router-dom'
 
 import Centered from '../components/Centered'
 import { HTML_IDS } from '@gwent/constants'
-import routes from '../routes'
+import { ROUTES } from '@gwent/constants'
 import { useUserContext } from '../App'
 
 import './Profile.css'
@@ -17,6 +16,15 @@ export default function ProfilePage() {
   const { user } = useUserContext()
   const navigate = useNavigate()
 
+  let created = ''
+  if (user?.created) {
+    created = new Date(user.created).toLocaleDateString('en-us', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
+
   return (
     <Centered>
       <div id={HTML_IDS.Profile}>
@@ -28,7 +36,7 @@ export default function ProfilePage() {
             </tr>
             <tr>
               <td>Created:</td>
-              <td id={HTML_IDS.ProfileCreated}>{moment(user?.created).format('MMMM Do, YYYY')}</td>
+              <td id={HTML_IDS.ProfileCreated}>{created}</td>
             </tr>
           </tbody>
         </table>
@@ -36,7 +44,7 @@ export default function ProfilePage() {
           type="button"
           id={HTML_IDS.ProfileLogout}
           onClick={() => {
-            navigate(routes.Logout.path)
+            navigate(ROUTES.Logout.path)
           }}
         >
           Logout

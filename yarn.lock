@@ -2878,7 +2878,6 @@ __metadata:
     html-webpack-plugin: "npm:5.5.3"
     jest-junit: "npm:16.0.0"
     mini-css-extract-plugin: "npm:2.7.6"
-    moment: "npm:2.29.4"
     react: "npm:18.2.0"
     react-dom: "npm:18.2.0"
     react-router-dom: "npm:6.18.0"
