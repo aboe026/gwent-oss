@@ -1,3 +1,4 @@
+import Centered from '../components/Centered'
 import { HTML_IDS } from '@gwent/constants'
 
 /**
@@ -6,5 +7,9 @@ import { HTML_IDS } from '@gwent/constants'
  * @returns The application home page
  */
 export default function HomePage() {
-  return <div id={HTML_IDS.Home}>Welcome Home!</div>
+  return (
+    <Centered>
+      <div id={HTML_IDS.Home}>Welcome Home!</div>
+    </Centered>
+  )
 }

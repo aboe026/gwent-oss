@@ -1,9 +1,8 @@
-import moment from 'moment'
 import { useNavigate } from 'react-router-dom'
 
-import { getApolloError } from '../util/error-util'
+import Centered from '../components/Centered'
 import { HTML_IDS } from '@gwent/constants'
-import { useLogoutMutation } from '../graphql/generated-typings'
+import { ROUTES } from '@gwent/constants'
 import { useUserContext } from '../App'
 
 import './Profile.css'
@@ -14,29 +13,43 @@ import './Profile.css'
  * @returns The application home page
  */
 export default function ProfilePage() {
-  const { user, setUser } = useUserContext()
+  const { user } = useUserContext()
   const navigate = useNavigate()
-  const [logout, { loading: logoutLoading, error: logoutError }] = useLogoutMutation({
-    onCompleted: async () => {
-      setUser(undefined)
-      navigate('/')
-    },
-  })
+
+  let created = ''
+  if (user?.created) {
+    created = new Date(user.created).toLocaleDateString('en-us', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric',
+    })
+  }
 
   return (
-    <div id={HTML_IDS.Profile}>
-      <div className="profile-info">
-        <div>Username:</div>
-        <div id={HTML_IDS.ProfileUsername}>{user?.name}</div>
+    <Centered>
+      <div id={HTML_IDS.Profile}>
+        <table>
+          <tbody>
+            <tr>
+              <td>Username:</td>
+              <td id={HTML_IDS.ProfileUsername}>{user?.name}</td>
+            </tr>
+            <tr>
+              <td>Created:</td>
+              <td id={HTML_IDS.ProfileCreated}>{created}</td>
+            </tr>
+          </tbody>
+        </table>
+        <button
+          type="button"
+          id={HTML_IDS.ProfileLogout}
+          onClick={() => {
+            navigate(ROUTES.Logout.path)
+          }}
+        >
+          Logout
+        </button>
       </div>
-      <div className="profile-info">
-        <div>Created:</div>
-        <div id={HTML_IDS.ProfileCreated}>{moment(user?.created).format('MMMM Do, YYYY')}</div>
-      </div>
-      <button type="button" id={HTML_IDS.ProfileLogout} disabled={logoutLoading} onClick={() => logout()}>
-        Logout
-      </button>
-      {logoutError && <div id={HTML_IDS.ProfileLogoutError}>{`Error logging out: ${getApolloError(logoutError)}`}</div>}
-    </div>
+    </Centered>
   )
 }

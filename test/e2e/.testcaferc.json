@@ -7,5 +7,5 @@
     "takeOnFails": true
   },
   "skipJsErrors": true,
-  "src": "build/tests"
+  "src": "build/src/tests"
 }

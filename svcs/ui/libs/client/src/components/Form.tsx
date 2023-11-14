@@ -3,6 +3,7 @@ import { HTMLInputTypeAttribute, useState } from 'react'
 
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'
+import ProgressBar from './ProgressBar'
 import './Form.css'
 
 /**
@@ -21,30 +22,32 @@ import './Form.css'
  * @returns A form for the user to fill out.
  */
 export default function Form({
-  id,
   cancelLabel = 'Cancel',
-  error,
-  fields,
-  loading,
   closeable = true,
   closeParams = false,
+  error,
+  fields,
+  id,
+  loading,
   onClose,
   onSubmit,
+  overlay,
+  style,
   submitLabel = 'Save',
   title,
 }: FormProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const temp = fields.reduce((map: { [k: string]: any }, obj: FormField) => {
+  const valueMap = fields.reduce((map: { [k: string]: any }, obj: FormField) => {
     map[obj.key] = obj.default || ''
     return map
   }, {})
-  const [values, setValues] = useState(temp)
+  const [values, setValues] = useState(valueMap)
   const resolvedError = getApolloError(error)
 
   return (
-    <div className="whole-screen-overlay" id={id}>
+    <div id={id} className={overlay ? 'whole-screen-overlay' : ''} style={style}>
       <form
-        className="whole-screen-dialog"
+        className="form-container"
         onSubmit={async (event) => {
           event.preventDefault()
           for (const key in values) {
@@ -102,6 +105,7 @@ export default function Form({
           <button className={HTML_CLASSES.Primary} type="submit" disabled={loading}>
             {submitLabel}
           </button>
+          {loading && <ProgressBar height="25px" style={{ marginTop: '10px' }} />}
         </div>
       </form>
     </div>
@@ -109,24 +113,26 @@ export default function Form({
 }
 
 interface FormProps {
-  title: string
-  id?: string
+  cancelLabel?: string
   closeable?: boolean
   closeParams?: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClose?: (param: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
-  onSubmit: (variables: any) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  submitLabel?: string
-  cancelLabel?: string
-  loading: boolean
   error: ApolloError | undefined
   fields: FormField[]
+  id?: string
+  loading: boolean
+  onClose?: (param: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSubmit: (variables: any) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  overlay?: boolean
+  style?: React.CSSProperties
+  submitLabel?: string
+  title: string
 }
 
 interface FormField {
-  key: string
-  type: HTMLInputTypeAttribute
-  label?: string
-  required?: boolean
   default?: any // eslint-disable-line @typescript-eslint/no-explicit-any
   hidden?: boolean
+  key: string
+  label?: string
+  required?: boolean
+  type: HTMLInputTypeAttribute
 }

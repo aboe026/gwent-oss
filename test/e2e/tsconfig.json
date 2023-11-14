@@ -4,6 +4,6 @@
     "outDir": "build"
   },
   "extends": "../../tsconfig",
-  "include": ["components/**/*", "package.json", "page-objects/**/*", "tests/**/*", "util/**/*"],
+  "include": ["src/**/*"],
   "references": [{ "path": "../../libs/constants" }, { "path": "../../libs/env" }]
 }

@@ -1,6 +1,6 @@
 {
   "name": "@gwent/client",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "author": "Adam Boe",
   "description": "React bundle for Gwent website",
   "main": "src/index.ts",
@@ -19,7 +19,6 @@
     "@apollo/client": "3.8.7",
     "@gwent/constants": "workspace:*",
     "graphql": "16.8.1",
-    "moment": "2.29.4",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router-dom": "6.18.0"

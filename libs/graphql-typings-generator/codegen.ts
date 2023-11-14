@@ -10,17 +10,24 @@ const resolverConfig: TypeScriptResolversPluginConfig = {
 }
 
 const config: CodegenConfig = {
-  schema: 'src/graphql/schema.ts',
+  schema: '../../svcs/api/src/graphql/schema.ts',
   generates: {
-    'src/graphql/generated-typings.ts': {
+    '../../svcs/api/src/graphql/generated-typings.ts': {
       plugins: ['typescript', 'typescript-resolvers'],
       config: resolverConfig,
     },
-    'src/database/generated-typings.ts': {
+    '../../test/e2e/src/graphql/resolver/generated-typings.ts': {
+      plugins: ['typescript', 'typescript-resolvers'],
+      config: resolverConfig,
+    },
+    '../../svcs/api/src/database/generated-typings.ts': {
       plugins: ['typescript', 'typescript-mongodb'],
     },
-    '../ui/libs/client/src/graphql/generated-typings.tsx': {
-      documents: ['../ui/libs/client/src/graphql/*.gql'],
+    '../../test/e2e/src/graphql/database/generated-typings.ts': {
+      plugins: ['typescript', 'typescript-mongodb'],
+    },
+    '../../svcs/ui/libs/client/src/graphql/generated-typings.tsx': {
+      documents: ['../../svcs/ui/libs/client/src/graphql/*.gql'],
       plugins: ['typescript', 'typescript-operations', 'typescript-react-apollo'],
     },
   },

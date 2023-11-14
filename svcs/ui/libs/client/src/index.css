@@ -1,13 +1,30 @@
-#body {
+html,
+#body,
+#root {
   margin: 0;
+  height: 100%;
 }
 
 #root {
   display: flex;
   flex-direction: column;
+}
+
+.centered {
+  height: 100%;
+  width: 100%;
+  display: flex;
   justify-content: center;
   align-items: center;
-  margin: auto;
+}
+
+.pointable {
+  cursor: pointer;
+}
+
+.right-button {
+  display: block;
+  float: right;
 }
 
 .whole-screen-overlay {
@@ -33,4 +50,24 @@
   text-align: center;
   z-index: 2;
   background-color: white;
+}
+
+.monsters-color {
+  background-color: #970014;
+}
+
+.northern-realms-color {
+  background-color: #0152cc;
+}
+
+.scoiatael-color {
+  background-color: #267402;
+}
+
+.nilfgaardian-color {
+  background-color: #333333;
+}
+
+.skellige-color {
+  background-color: #5e027a;
 }
