@@ -1,0 +1,44 @@
+#loginForm {
+  background-color: lightgray;
+  padding: 20px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#loginFormFields {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#loginFormLower {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+#loginError {
+  text-align: center;
+}
+
+#loginFormActions {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+#loginFormSwitch {
+  display: flex;
+  gap: 2px;
+}
+
+#loginTitle {
+  text-align: center;
+}
+
+.login-form-field {
+  display: flex;
+  flex-direction: column;
+}

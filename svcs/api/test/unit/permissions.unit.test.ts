@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { fallback, isAuthenticated } from '../../src/graphql/permissions'
+import { fallback, isAuthenticated, NO_RULE_DEFINED } from '../../src/graphql/permissions'
 import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 
 describe('permissions', () => {
@@ -11,7 +11,7 @@ describe('permissions', () => {
           name: 'Query',
         },
       }
-      expect(fallback(undefined, undefined, undefined, info)).toEqual(false)
+      expect(fallback(undefined, undefined, undefined, info)).toEqual(Error(NO_RULE_DEFINED))
     })
     it('returns false if parentType is Mutation', () => {
       const info = {
@@ -19,7 +19,7 @@ describe('permissions', () => {
           name: 'Mutation',
         },
       }
-      expect(fallback(undefined, undefined, undefined, info)).toEqual(false)
+      expect(fallback(undefined, undefined, undefined, info)).toEqual(Error(NO_RULE_DEFINED))
     })
     it('returns true if parentType is neither Query or Mutation', () => {
       const info = {

@@ -1,7 +1,7 @@
 import { MongoError, ObjectId } from 'mongodb'
 
 import DbConnector from '../../src/database/db-connector'
-import Store from '../../src/database/store'
+import Store from '../../src/database/stores/store'
 
 describe('store', () => {
   describe('getCollection', () => {
@@ -34,7 +34,7 @@ describe('store', () => {
         insertOne: insertOneSpy,
       })
 
-      await expect(Store.create(doc)).resolves.toEqual({
+      await expect(Store['create'](doc)).resolves.toEqual({
         _id: id,
         ...doc,
       })
@@ -61,7 +61,7 @@ describe('store', () => {
       }
 
       await expect(
-        Store.read({
+        Store['read']({
           filter,
           options,
         })
@@ -85,7 +85,7 @@ describe('store', () => {
       }
 
       await expect(
-        Store.read({
+        Store['read']({
           options,
         })
       ).resolves.toEqual(undefined)
@@ -106,7 +106,7 @@ describe('store', () => {
         findOneAndUpdate: findOneAndUpdateSpy,
       })
 
-      await expect(Store.update(doc)).resolves.toEqual(value)
+      await expect(Store['update'](doc)).resolves.toEqual(value)
 
       expect(findOneAndUpdateSpy.mock.calls).toEqual([
         [
@@ -132,7 +132,7 @@ describe('store', () => {
         findOneAndUpdate: findOneAndUpdateSpy,
       })
 
-      await expect(Store.update(doc)).rejects.toThrow(`Invalid ID "${doc._id.toString()}": Does not exist.`)
+      await expect(Store['update'](doc)).rejects.toThrow(`Invalid ID "${doc._id.toString()}": Does not exist.`)
 
       expect(findOneAndUpdateSpy.mock.calls).toEqual([
         [
@@ -158,7 +158,7 @@ describe('store', () => {
         findOneAndDelete: findOneAndDeleteSpy,
       })
 
-      await expect(Store.delete(_id)).resolves.toEqual(value)
+      await expect(Store['delete'](_id)).resolves.toEqual(value)
 
       expect(findOneAndDeleteSpy.mock.calls).toEqual([
         [
@@ -175,7 +175,7 @@ describe('store', () => {
         findOneAndDelete: findOneAndDeleteSpy,
       })
 
-      await expect(Store.delete(_id)).rejects.toThrow(`Invalid ID "${_id.toString()}": Does not exist.`)
+      await expect(Store['delete'](_id)).rejects.toThrow(`Invalid ID "${_id.toString()}": Does not exist.`)
 
       expect(findOneAndDeleteSpy.mock.calls).toEqual([
         [

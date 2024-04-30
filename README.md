@@ -38,6 +38,20 @@ To install dependencies, run
 yarn install
 ```
 
+## Build
+
+To build the source code into transpiled javascript, run
+
+```sh
+yarn build
+```
+
+To remove any previously built code, run
+
+```sh
+yarn clean
+```
+
 ## Start
 
 To run code from non-built source code (libraries still need to be [built](#build) first), run
@@ -52,20 +66,6 @@ To automatically restart the app on file changes, run
 
 ```sh
 yarn watch
-```
-
-## Build
-
-To build the source code into transpiled javascript, run
-
-```sh
-yarn build
-```
-
-To remove any previously built code, run
-
-```sh
-yarn clean
 ```
 
 ## Run
@@ -139,13 +139,19 @@ yarn test-unit -t 'test name'
 
 ### E2E
 
-To run End-To-End (E2E) tests, an instance of Gwent must first be running (see [start](#start), [run](#run) or [watch](#watch)), then run
+To run End-To-End (E2E) tests, make sure the services and libraries are [built](#build), then run
 
 ```sh
 yarn test-e2e
 ```
 
 _Note_: Source code for e2e tests must first be built with `yarn build` in `test/e2e`
+
+This will start Gwent for you. To only run the tests (without starting Gwent), go to the `test/e2e` directory and run
+
+```sh
+yarn test
+```
 
 ## Upgrade Dependencies
 
@@ -173,15 +179,17 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
+- run index analyzer during func tests?
+- change artStyle to 0 based indexing?
+- Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
 - Change schema.ts to schema.gql
-- Account for cards with different art per instance (like Havekar Smuggler)
-- Account for "Ballad Heroes" different art
-- Move generate types to lib? So UI can use them as well (especially for shared functions, like "isDeckValid")
+- Figure out how to do \_id -> id mapping in automated way. Is @map not working correctly?
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
-- Get apollo cache update working for login/logout to update getCurrentUser in order to just key off of that for whether or not a user is logged in
+- Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 
 ## External Bugs
 

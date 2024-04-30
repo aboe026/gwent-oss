@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import DbConnector from '../../src/database/db-connector'
 import DbUtil from './util/db-util'
-import UpgradeStore from '../../src/database/upgrade-store'
+import UpgradeStore from '../../src/database/stores/upgrade-store'
 
 describe('upgrade-store', () => {
   beforeEach(async () => {

@@ -3,6 +3,7 @@ import env from '../util/env'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import NotFoundPage from '../page-objects/not-found-page'
+import SignupPage from '../page-objects/signup-page'
 
 fixture('Not Found').page(env.BASE_URL)
 
@@ -10,7 +11,7 @@ test('Displays not found page with home link if user navigates to unknown page w
   const unknownPath = 'toast'
   await LoginPage.verifyNotLoggedIn({})
   await NotFoundPage.verifyContent(false)
-  await E2eUtil.goToPath(unknownPath)
+  await E2eUtil.goTo(unknownPath)
   await NotFoundPage.verifyContent(true)
   await E2eUtil.verifyCurrentUrl(unknownPath)
   await NotFoundPage.clickHomeLInk()
@@ -19,13 +20,14 @@ test('Displays not found page with home link if user navigates to unknown page w
 
 test('Displays not found page with home link if user navigates to unknown page after login', async () => {
   const unknownPath = 'toast'
-  await LoginPage.signUp({
-    username: `not-found-after-login-${Date.now()}`,
+  const username = `not-found-after-login-${Date.now()}`
+  await SignupPage.signUp({
+    username,
   })
   await NotFoundPage.verifyContent(false)
-  await E2eUtil.goToPath(unknownPath)
+  await E2eUtil.goTo(unknownPath)
   await NotFoundPage.verifyContent(true)
   await E2eUtil.verifyCurrentUrl(unknownPath)
   await NotFoundPage.clickHomeLInk()
-  await HomePage.verifyContent()
+  await HomePage.verifyContent(username)
 })

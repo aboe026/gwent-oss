@@ -4,7 +4,8 @@ import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
 import { sleep } from '@gwent/utils'
-import UpgradeStore from '../../src/database/upgrade-store'
+import UpgradeStore from '../../src/database/stores/upgrade-store'
+import Upgrade from '../../src/database/upgrades/upgrade'
 
 describe('upgrader', () => {
   beforeEach(async () => {
@@ -35,7 +36,7 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
       const start = Date.now()
 
       await expect(DbUpgrader.run()).resolves.toEqual(undefined)
@@ -78,11 +79,9 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([
-        async () => {
-          throw Error(error)
-        },
-      ])
+      const testUpgrade = new TestUpgrade()
+      jest.spyOn(testUpgrade, 'run').mockRejectedValue(Error(error))
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([testUpgrade])
       const start = Date.now()
 
       await expect(DbUpgrader.run()).rejects.toThrow(error)
@@ -130,7 +129,7 @@ describe('upgrader', () => {
         const db = await DbConnector.connect()
         await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-        jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
+        jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
         const start = Date.now()
         const expires = new Date(start + 1000 * newTimeout * 2)
 
@@ -164,7 +163,7 @@ describe('upgrader', () => {
         const db = await DbConnector.connect()
         await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-        jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
+        jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
         const start = Date.now()
 
         await FuncTestLock.addLockOverride(new Date(start - 1000)) // manually add lock that expired before upgrade is run
@@ -211,7 +210,7 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1), async () => sleep(1)])
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade(), new TestUpgrade()])
       const start = Date.now()
 
       await expect(DbUpgrader.run()).resolves.toEqual(undefined)
@@ -275,12 +274,9 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([
-        async () => {
-          throw Error(error)
-        },
-        async () => sleep(1),
-      ])
+      const testUpgrade = new TestUpgrade()
+      jest.spyOn(testUpgrade, 'run').mockRejectedValue(Error(error))
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([testUpgrade, new TestUpgrade()])
       const start = Date.now()
 
       await expect(DbUpgrader.run()).rejects.toThrow(error)
@@ -310,12 +306,9 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([
-        async () => sleep(1),
-        async () => {
-          throw Error(error)
-        },
-      ])
+      const testUpgrade = new TestUpgrade()
+      jest.spyOn(testUpgrade, 'run').mockRejectedValue(Error(error))
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade(), testUpgrade])
       const start = Date.now()
 
       await expect(DbUpgrader.run()).rejects.toThrow(error)
@@ -394,7 +387,7 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
       const start = Date.now()
 
       await expect(DbUpgrader.run()).resolves.toEqual(undefined)
@@ -447,7 +440,7 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
       const start = Date.now()
 
       await expect(DbUpgrader.run()).resolves.toEqual(undefined)
@@ -485,7 +478,7 @@ describe('upgrader', () => {
       expect(upgrades[0].start.getTime()).toBeLessThan(upgrades[0].end.getTime())
       expect(attempts[0].time.getTime()).toEqual(upgrades[0].start.getTime())
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1), async () => sleep(1)])
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade(), new TestUpgrade()])
       const secondStart = Date.now()
 
       await expect(DbUpgrader.run()).resolves.toEqual(undefined)
@@ -553,11 +546,9 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([
-        async () => {
-          throw Error(error)
-        },
-      ])
+      const testUpgrade = new TestUpgrade()
+      jest.spyOn(testUpgrade, 'run').mockRejectedValue(Error(error))
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([testUpgrade])
       const start = Date.now()
 
       await expect(DbUpgrader.run()).rejects.toThrow(error)
@@ -582,7 +573,7 @@ describe('upgrader', () => {
       expect(attempts[0].time.getTime()).toBeGreaterThan(start)
       expect(attempts[0].time.getTime()).toBeLessThan(end)
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([async () => sleep(1)])
+      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
       const secondStart = Date.now()
 
       await expect(DbUpgrader.run()).resolves.toEqual(undefined)
@@ -630,6 +621,12 @@ describe('upgrader', () => {
     })
   })
 })
+
+class TestUpgrade extends Upgrade {
+  async run() {
+    await sleep(0.1)
+  }
+}
 
 class FuncTestLock extends UpgradeStore {
   static async addLockOverride(time: Date) {

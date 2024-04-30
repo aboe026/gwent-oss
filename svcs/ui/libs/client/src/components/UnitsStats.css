@@ -1,0 +1,60 @@
+#unitsStatsTop {
+  display: flex;
+  justify-content: space-between;
+}
+
+#unitsStatsContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding-left: 10px;
+  padding-right: 10px;
+  overflow-y: auto;
+}
+
+#unitsStatsMains {
+  margin-bottom: 10px;
+}
+
+.units-select-all-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.units-select-all {
+  height: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+}
+
+.units-stats-section {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.units-stat-inline {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.units-stat-inline-icon {
+  width: 30%;
+}
+
+.units-stats-separator {
+  width: 100%;
+  border-bottom: 1px solid;
+}
+
+.units-stats-header {
+  text-align: center;
+  cursor: pointer;
+}

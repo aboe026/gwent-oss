@@ -1,24 +1,26 @@
 import './ProgressBar.css'
 
 /**
- * A progress bar to indicate loading
+ * A progress bar to indicate how far into a process an operation is
  *
- * @returns The loading progress bar
+ * @returns The progress bar
  */
-export default function ProgressBar({ height = '100%', width = '100%', style }: ProgressBarProperties) {
+export default function ProgressBar({
+  percent,
+  height = '100%',
+  completeColor = 'darkgray',
+  remainingColor = 'lightgray',
+}: ProgressBarProps) {
   return (
-    <div className="progress-bar" style={{ ...{ height, width }, ...style }}>
-      <div className="card card-1 northern-realms-color"></div>
-      <div className="card card-2 monsters-color"></div>
-      <div className="card card-3 scoiatael-color"></div>
-      <div className="card card-4 nilfgaardian-color"></div>
-      <div className="card card-5 skellige-color "></div>
+    <div className="progress-bar-container" style={{ height, backgroundColor: remainingColor }}>
+      <div className="progress-bar-complete" style={{ width: `${percent}%`, backgroundColor: completeColor }}></div>
     </div>
   )
 }
 
-interface ProgressBarProperties {
+interface ProgressBarProps {
+  percent: number
   height?: string
-  width?: string
-  style?: React.CSSProperties
+  completeColor?: string
+  remainingColor?: string
 }

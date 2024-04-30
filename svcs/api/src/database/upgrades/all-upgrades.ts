@@ -1,8 +1,9 @@
-import upgrade1 from './upgrade-1'
-import upgrade2 from './upgrade-2'
-import upgrade3 from './upgrade-3'
+import Upgrade1 from './upgrade-1'
+import Upgrade2 from './upgrade-2'
+import Upgrade3 from './upgrade-3'
+import Upgrade4 from './upgrade-4'
 
 /**
- * Return all upgrade script functions
+ * Return all upgrade script functions.
  */
-export default [upgrade1, upgrade2, upgrade3]
+export default [new Upgrade1(), new Upgrade2(), new Upgrade3(), new Upgrade4()]

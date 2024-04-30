@@ -3,7 +3,7 @@ import { HTMLInputTypeAttribute, useState } from 'react'
 
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'
-import ProgressBar from './ProgressBar'
+import LoadingBar from './LoadingBar'
 import './Form.css'
 
 /**
@@ -90,7 +90,7 @@ export default function Form({
               )
           )}
         </div>
-        {resolvedError && <span className={HTML_CLASSES.FormErrors}>{resolvedError}</span>}
+        {resolvedError && <span className={HTML_CLASSES.ErrorText}>{resolvedError}</span>}
         <div className="actions">
           {closeable && (
             <button
@@ -105,7 +105,7 @@ export default function Form({
           <button className={HTML_CLASSES.Primary} type="submit" disabled={loading}>
             {submitLabel}
           </button>
-          {loading && <ProgressBar height="25px" style={{ marginTop: '10px' }} />}
+          {loading && <LoadingBar height="25px" style={{ marginTop: '10px' }} />}
         </div>
       </form>
     </div>

@@ -1,0 +1,129 @@
+#fullCardWrapper {
+  display: flex;
+  background-color: lightgray;
+  border-radius: 5px;
+  padding: 20px;
+  gap: 10px;
+}
+
+#fullCardBackground {
+  background-color: antiquewhite;
+  border-radius: 25px;
+  overflow: hidden;
+}
+
+#fullCardContainer {
+  display: table;
+}
+
+#fullCardUpper {
+  display: flex;
+  flex-direction: column;
+}
+
+#fullCardArtSwitcher {
+  display: flex;
+  justify-content: center;
+  margin-top: -42px;
+}
+
+#fullCardImage {
+  height: 730px;
+  width: 370px;
+  object-fit: cover;
+  object-position: 0 190px;
+  margin-top: -190px;
+}
+
+#fullCardLower {
+  display: table-caption;
+  caption-side: bottom;
+  padding-bottom: 10px;
+}
+
+#fullCardInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+#fullCardInfoUpper {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+#fullCardInfoDlcName {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  align-items: center;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+#fullCardName {
+  font-size: x-large;
+  font-weight: bold;
+  text-align: center;
+}
+
+#fullCardQuote {
+  padding-left: 10px;
+  padding-right: 10px;
+  font-size: larger;
+  font-style: italic;
+  text-align: center;
+}
+
+#fullCardEffects {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.full-card-arrow-container {
+  display: flex;
+  width: 32px;
+  align-items: center;
+  border-radius: 5px;
+}
+
+.full-card-arrow-container-selectable {
+  background-color: darkgray;
+  cursor: pointer;
+}
+
+.full-card-art-switcher {
+  height: 32px;
+  width: 32px;
+  margin-right: 2px;
+  margin-top: 2px;
+  size: 1.5em;
+}
+
+.full-card-art-switcher-arrow {
+  margin-right: 2px;
+  margin-top: 2px;
+  size: 1.5em;
+}
+
+.full-card-dlc {
+  flex-grow: 1;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: bottom;
+  width: 150px;
+  height: 25px;
+  margin-top: -2px;
+}
+
+.full-card-effect-name {
+  text-align: right;
+  vertical-align: top;
+  font-weight: bold;
+}
+
+.full-card-effect-ability {
+  padding-left: 10px;
+}

@@ -7,8 +7,9 @@
     ".yarn",
     "build",
     "coverage",
-    "*generated-typings*",
+    "generated",
     "logback.log",
+    "perf",
     "test-results",
     "tsconfig.tsbuildinfo"
   ],

@@ -21,7 +21,7 @@ if (testType === TEST_TYPE.Func) {
 
 const sharedConfig: Config = {
   clearMocks: true,
-  coveragePathIgnorePatterns: ['.*build.*', '.*generated-typings.*'],
+  coveragePathIgnorePatterns: ['.*build.*', '.*generated.*'],
   moduleFileExtensions: ['js', 'json', 'node', 'ts', 'tsx'],
   modulePathIgnorePatterns: ['build'],
   preset: 'ts-jest',

@@ -11,6 +11,7 @@ build
 tsconfig.tsbuildinfo
 
 coverage
+perf
 test-results
 
-*generated-typings*
+generated

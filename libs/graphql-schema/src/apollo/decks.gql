@@ -1,0 +1,39 @@
+query Decks {
+  decks {
+    id
+    created
+    name
+    faction {
+      key
+      name
+      image
+      ability
+      stats(neutrals: true) {
+        units
+        specials
+        heroes
+        close
+        ranged
+        siege
+        agile
+        strengthTotal
+      }
+    }
+    leader {
+      name
+      ability
+      image
+    }
+    stats {
+      units
+      specials
+      heroes
+      close
+      ranged
+      siege
+      agile
+      strengthTotal
+      strengthAverage
+    }
+  }
+}

@@ -1,0 +1,118 @@
+.loading-bar {
+  position: relative;
+  container-type: inline-size;
+}
+
+.loading-bar .card {
+  position: absolute;
+  height: 100%;
+  aspect-ratio: 7/10;
+  border-radius: 4px;
+  transition: transform 0.2s ease;
+  transition-timing-function: cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.loading-bar .card-1 {
+  z-index: 5;
+  animation-duration: 4s;
+  animation-name: loading-bar-card-1;
+  animation-iteration-count: infinite;
+}
+
+.loading-bar .card-2 {
+  z-index: 4;
+  animation-duration: 4s;
+  animation-name: loading-bar-card-2;
+  animation-iteration-count: infinite;
+}
+
+.loading-bar .card-3 {
+  z-index: 3;
+  animation-duration: 4s;
+  animation-name: loading-bar-card-3;
+  animation-iteration-count: infinite;
+}
+
+.loading-bar .card-4 {
+  z-index: 2;
+  animation-duration: 4s;
+  animation-name: loading-bar-card-4;
+  animation-iteration-count: infinite;
+}
+
+.loading-bar .card-5 {
+  z-index: 1;
+  animation-duration: 4s;
+  animation-name: loading-bar-card-5;
+  animation-iteration-count: infinite;
+}
+
+@keyframes loading-bar-card-1 {
+  0% {
+  }
+  25% {
+    transform: translateX(calc(50cqw - 100%));
+  }
+  50% {
+    transform: translateX(calc(100cqw - 100%));
+  }
+  75% {
+    transform: translateX(calc(50cqw - 100%));
+  }
+}
+
+@keyframes loading-bar-card-2 {
+  0% {
+  }
+  25% {
+    transform: translateX(calc(40cqw - 100%));
+  }
+  50% {
+    transform: translateX(calc(100cqw - 100%));
+  }
+  75% {
+    transform: translateX(calc(60cqw - 100%));
+  }
+}
+
+@keyframes loading-bar-card-3 {
+  0% {
+  }
+  25% {
+    transform: translateX(calc(30cqw - 100%));
+  }
+  50% {
+    transform: translateX(calc(100cqw - 100%));
+  }
+  75% {
+    transform: translateX(calc(70cqw - 100%));
+  }
+}
+
+@keyframes loading-bar-card-4 {
+  0% {
+  }
+  25% {
+    transform: translateX(calc(20cqw - 100%));
+  }
+  50% {
+    transform: translateX(calc(100cqw - 100%));
+  }
+  75% {
+    transform: translateX(calc(80cqw - 100%));
+  }
+}
+
+@keyframes loading-bar-card-5 {
+  0% {
+  }
+  25% {
+    transform: translateX(calc(10cqw - 100%));
+  }
+  50% {
+    transform: translateX(calc(100cqw - 100%));
+  }
+  75% {
+    transform: translateX(calc(90cqw - 100%));
+  }
+}

@@ -3,6 +3,13 @@
   flex-direction: column;
 }
 
+#profile table caption {
+  font-weight: bold;
+  margin-left: -10px;
+  margin-right: -10px;
+  margin-bottom: 10px;
+}
+
 #profile table tr td:first-child {
   text-align: right;
 }

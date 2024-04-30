@@ -13,6 +13,10 @@ export default class ProfilePage {
     Created: container.find(`#${HTML_IDS.ProfileCreated}`),
   }
 
+  static getUrl(): string {
+    return E2eUtil.getUrl(ROUTES.Profile.path)
+  }
+
   static async verifyUsername(expected: string) {
     await t.expect(ProfilePage.elements.Username.innerText).eql(expected)
   }
@@ -32,7 +36,7 @@ export default class ProfilePage {
   }
 
   static async verifyContent({ username, created = new Date() }: { username: string; created?: Date }) {
-    await E2eUtil.verifyCurrentUrl(ROUTES.Profile.path)
+    await E2eUtil.verifyCurrentUrl(ProfilePage.getUrl())
     await ProfilePage.verifyUsername(username)
     await ProfilePage.verifyCreated(created)
     await ProfilePage.verifyLogout()

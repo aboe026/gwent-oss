@@ -9,6 +9,8 @@ export default class Banner {
     Container: container,
     MainTitle: container.find(`#${HTML_IDS.MainTitle}`),
     Menu: container.find(`#${HTML_IDS.Hamburger}`),
+    MenuAbout: Selector(`#${HTML_IDS.MenuItems}`).find(`#${HTML_IDS.MenuItemsAbout}`),
+    MenuDecks: Selector(`#${HTML_IDS.MenuItems}`).find(`#${HTML_IDS.MenuItemsDeck}`),
     MenuProfile: Selector(`#${HTML_IDS.MenuItems}`).find(`#${HTML_IDS.MenuItemsProfile}`),
     MenuHome: Selector(`#${HTML_IDS.MenuItems}`).find(`#${HTML_IDS.MenutItemsHome}`),
     Username: container.find(`#${HTML_IDS.BannerUsername}`),
@@ -35,11 +37,8 @@ export default class Banner {
   }
 
   static async verifyMenu(expectOpen = false) {
-    await t
-      .expect(Banner.elements.MenuProfile.exists)
-      .eql(expectOpen)
-      .expect(Banner.elements.MenuHome.exists)
-      .eql(expectOpen)
+    await t.expect(Banner.elements.MenuProfile.exists).eql(expectOpen)
+    await t.expect(Banner.elements.MenuHome.exists).eql(expectOpen)
     if (expectOpen) {
       await t.expect(Banner.elements.MenuProfile.visible).ok().expect(Banner.elements.MenuHome.visible).ok()
     }
@@ -47,23 +46,14 @@ export default class Banner {
 
   static async verifyContent(username: string) {
     const loggedIn = username !== ''
-    await t
-      .expect(Banner.elements.Container.exists)
-      .ok()
-      .expect(Banner.elements.Container.visible)
-      .ok()
-      .expect(Banner.elements.MainTitle.exists)
-      .ok()
-      .expect(Banner.elements.MainTitle.visible)
-      .ok()
-      .expect(Banner.elements.Menu.exists)
-      .eql(loggedIn)
-      .expect(Banner.elements.Username.exists)
-      .ok()
-      .expect(Banner.elements.Username.visible)
-      .eql(loggedIn)
-      .expect(Banner.elements.Username.innerText)
-      .eql(username)
+    await t.expect(Banner.elements.Container.exists).ok()
+    await t.expect(Banner.elements.Container.visible).ok()
+    await t.expect(Banner.elements.MainTitle.exists).ok()
+    await t.expect(Banner.elements.MainTitle.visible).ok()
+    await t.expect(Banner.elements.Menu.exists).eql(loggedIn)
+    await t.expect(Banner.elements.Username.exists).ok()
+    await t.expect(Banner.elements.Username.visible).eql(loggedIn)
+    await t.expect(Banner.elements.Username.innerText).eql(username)
     if (loggedIn) {
       await t.expect(Banner.elements.Menu.visible).ok()
     }

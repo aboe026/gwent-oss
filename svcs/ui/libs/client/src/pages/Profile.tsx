@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import Centered from '../components/Centered'
 import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'
+import { useTitle } from '../components/TabTitle'
 import { useUserContext } from '../App'
 
 import './Profile.css'
@@ -15,6 +16,7 @@ import './Profile.css'
 export default function ProfilePage() {
   const { user } = useUserContext()
   const navigate = useNavigate()
+  useTitle('Profile | Gwent')
 
   let created = ''
   if (user?.created) {
@@ -29,6 +31,7 @@ export default function ProfilePage() {
     <Centered>
       <div id={HTML_IDS.Profile}>
         <table>
+          <caption>Profile</caption>
           <tbody>
             <tr>
               <td>Username:</td>
@@ -43,6 +46,7 @@ export default function ProfilePage() {
         <button
           type="button"
           id={HTML_IDS.ProfileLogout}
+          className="pointable"
           onClick={() => {
             navigate(ROUTES.Logout.path)
           }}

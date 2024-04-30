@@ -13,12 +13,16 @@ export default class E2eUtil {
   })
 
   static async verifyCurrentUrl(expectedPath: string) {
-    await t.expect(E2eUtil.getCurrentUrl()).eql(urlJoin(env.BASE_URL, expectedPath))
+    await t.expect(E2eUtil.getCurrentUrl()).eql(E2eUtil.getUrl(expectedPath))
   }
 
   static reload = ClientFunction(() => location.reload())
 
-  static async goToPath(path: string) {
-    await t.navigateTo(urlJoin(env.BASE_URL, path))
+  static async goTo(path: string) {
+    await t.navigateTo(E2eUtil.getUrl(path))
+  }
+
+  static getUrl(path: string) {
+    return path.startsWith(env.BASE_URL) ? path : urlJoin(env.BASE_URL, path)
   }
 }

@@ -21,6 +21,7 @@ logback.log
 **/.dockerignore
 
 **/coverage
+**/perf
 **/test-results
 
 compose

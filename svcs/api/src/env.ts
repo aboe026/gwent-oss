@@ -49,9 +49,9 @@ export default function env() {
         desc: 'The secret to use for securing user sessions',
         default: 'youshouldreallychangethisforproductionusage',
       }),
-      SESSION_TIMEOUT_MINUTES: num({
-        desc: 'The time in minutes after which the session for a user expires',
-        default: 30,
+      SESSION_TIMEOUT_SECONDS: num({
+        desc: 'The time in seconds after which the session for a user expires',
+        default: 30 * 60, // 30 minutes
       }),
     },
   })

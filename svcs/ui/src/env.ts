@@ -16,8 +16,12 @@ export default function env() {
         default: 'http://localhost:4000/graphql',
       }),
       CLIENT_DIR: str({
-        desc: 'Path to directory containing client files to server',
-        default: 'client',
+        desc: 'Path to directory containing client files to serve',
+        default: '../libs/client/build',
+      }),
+      IMAGES_DIR: str({
+        desc: 'Path on filesystem to directory containing asset images to serve',
+        default: '../images',
       }),
       LOG_LEVEL: str({
         desc: 'The minimum granularity level of log messages should be output.',

@@ -14,5 +14,12 @@
       "module": "CommonJS"
     }
   },
-  "references": [{ "path": "../../../../libs/constants" }, { "path": "../../../../libs/env" }, { "path": "libs/env" }]
+  "references": [
+    { "path": "../../../../libs/constants" },
+    { "path": "../../../../libs/env" },
+    { "path": "../../../../libs/graphql-schema" },
+    { "path": "../../../../libs/utils" },
+    { "path": "../../../../libs/validators" },
+    { "path": "libs/env" }
+  ]
 }

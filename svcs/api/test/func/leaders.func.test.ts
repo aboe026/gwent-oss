@@ -1,0 +1,317 @@
+import { graphql } from 'graphql'
+import { ObjectId } from 'mongodb'
+
+import DbConnector from '../../src/database/db-connector'
+import DbUpgrader from '../../src/database/db-upgrader'
+import DbUtil from './util/db-util'
+import { expectizeLeaders, verifyMongoIds } from './util/expect-util'
+import { FactionKey } from '@gwent/graphql-schema/database-typings'
+import { getLeaderFragment } from './util/fragment-util'
+import schema from '../../src/graphql/executable-schema'
+
+describe('leaders', () => {
+  beforeEach(async () => {
+    await DbUtil.deleteDatabase()
+    await DbUpgrader.run()
+  })
+  afterAll(async () => {
+    await DbConnector.disconnect()
+  })
+  describe('factions', () => {
+    it('returns no leaders if factions empty', async () => {
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders(factions: []) {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: [],
+        },
+      })
+    })
+    it('returns scoped leaders if monsters faction specified', async () => {
+      const faction = FactionKey.Monsters
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders(factions: [${faction}]) {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+    it('returns no leaders if neutral faction specified', async () => {
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders(factions: [${FactionKey.Neutral}]) {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: [],
+        },
+      })
+    })
+    it('returns scoped leaders if nilfgaardian empire faction specified', async () => {
+      const faction = FactionKey.NilfgaardianEmpire
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders(factions: [${faction}]) {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+    it('returns scoped leaders if northern realms faction specified', async () => {
+      const faction = FactionKey.NorthernRealms
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders(factions: [${faction}]) {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+    it('returns scoped leaders if scoiatael faction specified', async () => {
+      const faction = FactionKey.ScoiaTael
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders(factions: [${faction}]) {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+    it('returns scoped leaders if skellige faction specified', async () => {
+      const faction = FactionKey.Skellige
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders(factions: [${faction}]) {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+    it('returns scoped leaders if monsters and skellige faction specified', async () => {
+      const factions = `[${FactionKey.Monsters}, ${FactionKey.Skellige}]`
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders(factions: ${factions}) {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({}).filter(
+            (leader) => leader.faction?.key === FactionKey.Monsters || leader.faction?.key === FactionKey.Skellige
+          ),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+    it('returns all leaders if all factions specified', async () => {
+      const factions = `[${FactionKey.Monsters}, ${FactionKey.Neutral}, ${FactionKey.NilfgaardianEmpire}, ${FactionKey.NorthernRealms}, ${FactionKey.ScoiaTael}, ${FactionKey.Skellige}]`
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders(factions: ${factions}) {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({}),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+  })
+  describe('stats', () => {
+    it('returns all leaders without neutral stats if no inputs provided', async () => {
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders {
+            ${getLeaderFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({
+            neutrals: false,
+          }),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+    it('returns all leaders without neutral stats if explicit neutrals false provided', async () => {
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders {
+            ${getLeaderFragment({
+              statsModifier: '(neutrals: false)',
+            })}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({
+            neutrals: false,
+          }),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+    it('returns all leaders with neutral stats if explicit neutrals true provided', async () => {
+      const response = await graphql({
+        schema,
+        source: `{
+          leaders {
+            ${getLeaderFragment({
+              statsModifier: '(neutrals: true)',
+            })}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          leaders: expectizeLeaders({
+            neutrals: true,
+          }),
+        },
+      })
+      verifyMongoIds(response?.data?.leaders)
+    })
+  })
+})

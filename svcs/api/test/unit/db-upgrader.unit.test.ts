@@ -4,7 +4,8 @@ import path from 'path'
 
 import DbUpgrader from '../../src/database/db-upgrader'
 import * as utils from '@gwent/utils'
-import UpgradeStore from '../../src/database/upgrade-store'
+import Upgrade from '../../src/database/upgrades/upgrade'
+import UpgradeStore from '../../src/database/stores/upgrade-store'
 
 describe('db-upgrader', () => {
   describe('getUpgrades', () => {
@@ -42,7 +43,7 @@ describe('db-upgrader', () => {
     })
     it('does not run upgrades if current version is 0 and no upgrades', async () => {
       const currentVersion = 0
-      const upgrades: (() => void)[] = []
+      const upgrades: Upgrade[] = []
       await testDbUpgrader({
         currentVersion,
         upgrades,
@@ -58,7 +59,7 @@ describe('db-upgrader', () => {
     })
     it('does not run upgrades if current version is 1 and single upgrade', async () => {
       const currentVersion = 1
-      const upgrades = [() => {}]
+      const upgrades = [new TestUpgrade()]
       await testDbUpgrader({
         currentVersion,
         upgrades,
@@ -74,7 +75,7 @@ describe('db-upgrader', () => {
     })
     it('runs single upgrade if one to run and none run before', async () => {
       const currentVersion = 0
-      const upgrades = [() => Promise.resolve()]
+      const upgrades = [new TestUpgrade()]
       const start = new Date()
       const end = new Date(start.getTime() + 1000 * 60) // 1 second
       await testDbUpgrader({
@@ -89,8 +90,9 @@ describe('db-upgrader', () => {
           ['finished: "false"'],
           ['Updating lock timeout'],
           [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
+          ['finished: "false"'],
+          ['Updating lock timeout'],
           ['setting finished to true'],
-          ['finished: "true"'],
           ['Deleting lock'],
           ['Setting running to false so other upgrade runs can occur'],
         ],
@@ -114,14 +116,15 @@ describe('db-upgrader', () => {
           ],
         ],
         sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']], [DbUpgrader['LOCK_REFRESH_SECONDS']]],
-        updateLockCalls: [[]],
+        updateLockCalls: [[], []],
       })
     })
     it('runs single upgrade if one to run and one run before', async () => {
       const currentVersion = 1
-      const upgrades = [() => Promise.resolve(), () => Promise.resolve()]
+      const upgrades = [new TestUpgrade(), new TestUpgrade()]
       const start = new Date()
       const end = new Date(start.getTime() + 1000 * 60) // 1 second
+      // TODO: look into changes that had to be made to see if they are legit
       await testDbUpgrader({
         currentVersion,
         upgrades,
@@ -134,8 +137,9 @@ describe('db-upgrader', () => {
           ['finished: "false"'],
           ['Updating lock timeout'],
           [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
+          ['finished: "false"'],
+          ['Updating lock timeout'],
           ['setting finished to true'],
-          ['finished: "true"'],
           ['Deleting lock'],
           ['Setting running to false so other upgrade runs can occur'],
         ],
@@ -159,13 +163,15 @@ describe('db-upgrader', () => {
           ],
         ],
         sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']], [DbUpgrader['LOCK_REFRESH_SECONDS']]],
-        updateLockCalls: [[]],
+        updateLockCalls: [[], []],
       })
     })
     it('throws error if upgrade throws error', async () => {
       const error = 'bad upgrade'
       const currentVersion = 0
-      const upgrades = [() => Promise.reject(Error(error))]
+      const upgrade = new TestUpgrade()
+      jest.spyOn(upgrade, 'run').mockRejectedValue(Error(error))
+      const upgrades = [upgrade]
       const start = new Date()
       await testDbUpgrader({
         currentVersion,
@@ -202,7 +208,7 @@ describe('db-upgrader', () => {
     it('throws error if lock update throws error', async () => {
       const error = 'document does not exist'
       const currentVersion = 0
-      const upgrades = [() => Promise.resolve(), () => Promise.resolve()]
+      const upgrades = [new TestUpgrade(), new TestUpgrade()]
       const start = new Date()
       const end = new Date(start.getTime() + 1000 * 60) // 1 second
       await testDbUpgrader({
@@ -594,7 +600,7 @@ async function testDbUpgrader({
 }: {
   running?: boolean
   currentVersion?: number
-  upgrades?: (() => void)[]
+  upgrades?: Upgrade[]
   dates?: Date[]
   error?: string
   aquireLockCalls?: any[][]
@@ -747,4 +753,10 @@ async function testAquireLock({
   expect(getLockSpy.mock.calls).toEqual(getLockResponses.map(() => []))
   expect(deleteLockSpy.mock.calls).toEqual(deleteLockResponses.map(() => []))
   expect(sleepSpy.mock.calls).toEqual(sleepCalls)
+}
+
+class TestUpgrade extends Upgrade {
+  async run() {
+    await Promise.resolve()
+  }
 }

@@ -17,12 +17,12 @@ import BasicAuth from './auth/basic-auth'
 import DbConnector from './database/db-connector'
 import DbUpgrader from './database/db-upgrader'
 import env from './env'
-import schema from './graphql/schema'
+import schema from './graphql/executable-schema'
 import { version } from '../package.json'
 import { NODE_ENV } from '@gwent/env'
 
 /**
- * A class to handle startup and configuration of the API server
+ * A class to handle startup and configuration of the API server.
  */
 export default class Api {
   private static logger = log4js.getLogger('Api')
@@ -31,7 +31,7 @@ export default class Api {
   private static httpServer: Server
 
   /**
-   * Bring up the API server
+   * Bring up the API server.
    */
   static async run() {
     await Api.printStartupInfo()
@@ -48,7 +48,7 @@ export default class Api {
   }
 
   /**
-   * print relevant startup information
+   * print relevant startup information.
    */
   private static async printStartupInfo() {
     Api.logger.info(`\n${figlet.textSync('Gwent', 'Tombstone')}`)
@@ -58,16 +58,17 @@ export default class Api {
   }
 
   /**
-   * Configure the server for user sessions
+   * Configure the server for user sessions.
    */
   private static configureSession() {
     const isProduction = env().NODE_ENV === NODE_ENV.Prod
     const proxy = isProduction
+    Api.logger.trace(`Session timeout: "${env().SESSION_TIMEOUT_SECONDS}" second(s)`)
     const cookie: CookieOptions = {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'strict' : 'lax',
-      maxAge: env().SESSION_TIMEOUT_MINUTES * 1000 * 60, // convert to milliseconds
+      maxAge: env().SESSION_TIMEOUT_SECONDS * 1000, // convert to milliseconds
     }
     Api.logger.trace(`session cookie proxy: "${proxy}"`)
     if (Api.logger.isTraceEnabled()) {
@@ -95,7 +96,7 @@ export default class Api {
   }
 
   /**
-   * Configure an endpoint to disaplay the GraphQL schema in plaintext
+   * Configure an endpoint to disaplay the GraphQL schema in plaintext.
    */
   private static exposePlainSchema() {
     Api.app.use('/schema', (req, res) => {
@@ -106,7 +107,7 @@ export default class Api {
   }
 
   /**
-   * Configure the Apollo Server for UI connections
+   * Configure the Apollo Server for UI connections.
    */
   private static async configureApolloServer() {
     Api.logger.debug('starting ApolloServer')
@@ -122,18 +123,19 @@ export default class Api {
           embed: true,
         }),
       ],
+      introspection: true,
     })
     await Api.apolloServer.start()
     Api.logger.debug('ApolloServer started')
   }
 
   /**
-   * Set context of user on requests
+   * Set context of user on requests.
    *
-   * @param {Object} connection The connection being made
-   * @param connection.req The incoming request
-   * @param connection.res The outgoing response
-   * @returns An object to set as the context
+   * @param {Object} connection The connection being made.
+   * @param connection.req The incoming request.
+   * @param connection.res The outgoing response.
+   * @returns An object to set as the context.
    */
   private static async setContext({ req, res }: { req: Request; res: Response }) {
     await BasicAuth.authenticate(req, res)
@@ -143,7 +145,7 @@ export default class Api {
   }
 
   /**
-   * Set the api to listen for requests
+   * Set the api to listen for requests.
    */
   private static async serve() {
     Api.logger.trace(`GRAPHQL_PATH: "${env().GRAPHQL_PATH}"`)

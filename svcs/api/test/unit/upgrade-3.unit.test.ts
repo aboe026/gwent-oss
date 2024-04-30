@@ -1,15 +1,13 @@
-import log4js from 'log4js'
-
 import DbConnector from '../../src/database/db-connector'
-import upgrade3 from '../../src/database/upgrades/upgrade-3'
-import UserStore from '../../src/database/user-store'
+import Upgrade3 from '../../src/database/upgrades/upgrade-3'
+import UserStore from '../../src/database/stores/user-store'
 
 describe('upgrade-3', () => {
   it('calls to create card collection and indexes', async () => {
     const debugSpy = jest.fn().mockImplementation()
-    jest.spyOn(log4js, 'getLogger').mockReturnValue({
+    Upgrade3.logger = {
       debug: debugSpy,
-    } as any)
+    } as any
     const createCollectionSpy = jest.fn().mockImplementation()
     const createIndexSpy = jest.fn().mockImplementation()
     jest.spyOn(DbConnector, 'connect').mockResolvedValue({
@@ -17,7 +15,7 @@ describe('upgrade-3', () => {
       createIndex: createIndexSpy,
     } as any)
 
-    await expect(upgrade3()).resolves.toEqual(undefined)
+    await expect(new Upgrade3().run()).resolves.toEqual(undefined)
 
     expect(debugSpy.mock.calls).toEqual([
       ['Connecting to database'],

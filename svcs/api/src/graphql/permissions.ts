@@ -4,8 +4,10 @@ import env from '../env'
 import { NODE_ENV } from '@gwent/env'
 import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 
+export const NO_RULE_DEFINED = 'No rule defined.'
+
 /**
- * Check if a user is authenticated (has logged in)
+ * Check if a user is authenticated (has logged in).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
 export function isAuthenticated(parent: any, args: any, context: any, info: any) {
@@ -16,16 +18,17 @@ export function isAuthenticated(parent: any, args: any, context: any, info: any)
 }
 
 /**
- * Throws error if rule is not defined for Query/Mutation
- * to prevent someone for forgetting to explicitly set them
+ * Throws error if rule is not defined for Query/Mutation.
+ * to prevent someone for forgetting to explicitly set them.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
 export function fallback(parent: any, args: any, ctx: any, info: any) {
+  const noRuleDefinedError = Error(NO_RULE_DEFINED)
   switch (info.parentType.name) {
     case 'Query':
-      return false
+      return noRuleDefinedError
     case 'Mutation':
-      return false
+      return noRuleDefinedError
     default:
       return true
   }
@@ -37,13 +40,16 @@ const fallbackRule = rule({ cache: false })(fallback)
 export default shield(
   {
     Query: {
-      build: allow,
-      getCurrentUser: isAuthenticatedRule,
+      application: allow,
+      currentUser: isAuthenticatedRule,
+      decks: isAuthenticatedRule,
+      factions: isAuthenticatedRule,
       leaders: isAuthenticatedRule,
+      settings: isAuthenticatedRule,
       units: isAuthenticatedRule,
-      version: allow,
     },
     Mutation: {
+      addDeck: isAuthenticatedRule,
       addUser: allow,
       login: allow,
       logout: allow,
@@ -53,6 +59,6 @@ export default shield(
     allowExternalErrors: env().NODE_ENV === NODE_ENV.Dev,
     debug: env().NODE_ENV === NODE_ENV.Dev,
     fallbackRule,
-    fallbackError: 'Error!',
+    fallbackError: 'Internal Server Error.',
   }
 )

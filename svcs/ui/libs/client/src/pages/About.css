@@ -1,0 +1,15 @@
+#about {
+  display: flex;
+  flex-direction: column;
+}
+
+#about table caption {
+  font-weight: bold;
+  margin-left: -10px;
+  margin-right: -10px;
+  margin-bottom: 10px;
+}
+
+#about table tr td:first-child {
+  text-align: right;
+}

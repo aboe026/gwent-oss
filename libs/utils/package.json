@@ -1,6 +1,6 @@
 {
   "name": "@gwent/utils",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "author": "Adam Boe",
   "description": "Utility functions",
   "main": "build/src/index.js",
@@ -13,6 +13,9 @@
     "lint:fix": "yarn g:lint-fix",
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:tsc --watch"
+  },
+  "dependencies": {
+    "@gwent/graphql-schema": "workspace:*"
   },
   "devDependencies": {
     "@types/jest": "29.5.7",

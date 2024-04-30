@@ -13,9 +13,9 @@ export default class DbConnector {
   private static logger = getLogger('db-connector')
 
   /**
-   * Gets the MongoClient that has potentially been configured from initialization
+   * Gets the MongoClient that has potentially been configured from initialization.
    *
-   * @returns The MongoClient configured after initialization
+   * @returns The MongoClient configured after initialization.
    */
   static getClient(): MongoClient {
     return DbConnector.client
