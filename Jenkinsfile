@@ -204,6 +204,7 @@ node {
                             }
                             composeYaml.services.router.volumes[0] = "${mountDir}/compose/nginx/nginx.conf:/etc/nginx/nginx.conf"
                             composeYaml.services.api.environment.push("MONGO_DB=${projectName}-e2e")
+                            composeYaml.services.api.environment.push('SESSION_TIMEOUT_SECONDS=20')
                             composeYaml.networks = [
                                 default: [
                                     name: uniqueName
@@ -383,12 +384,9 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                 -i testcafe/testcafe:${testcafeImageTag} \
                     \'${browser} --ignore-certificate-errors\' \
                     build/src/tests \
+                    --config-file=build/.testcaferc.js \
                     --reporter spec,xunit:test-results/${suiteName}.xml \
-                    --quarantine-mode \
-                    --screenshots path=screenshots/,takeOnFails=true \
-                    --selector-timeout 20000 \
-                    --assertion-timeout 20000 \
-                    --page-load-timeout 20000
+                    --quarantine-mode
             """
         } catch (err) {
             exceptionThrown = true

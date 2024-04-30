@@ -1,16 +1,15 @@
 import env from '../util/env'
 import E2eUtil from '../util/e2e-util'
 import LoginPage from '../page-objects/login-page'
-import LogoutPage from '../page-objects/logout-page'
 import ProfilePage from '../page-objects/profile-page'
-import { ROUTES } from '@gwent/constants'
+import SignupPage from '../page-objects/signup-page'
 
 fixture('Profile').page(env.BASE_URL)
 
-test('User redirected to profile page after login', async () => {
+test('Redirects to profile page after login', async () => {
   const username = `profile-redirect-${Date.now()}`
-  await E2eUtil.goToPath(ROUTES.Profile.path)
-  await LoginPage.signUp({
+  await E2eUtil.goTo(ProfilePage.getUrl())
+  await SignupPage.signUp({
     username,
   })
   await ProfilePage.verifyContent({
@@ -18,12 +17,12 @@ test('User redirected to profile page after login', async () => {
   })
 })
 
-test('Page refresh keeps user on profile page', async () => {
+test('Page refresh stays on profile page', async () => {
   const username = `profile-refresh-${Date.now()}`
-  await LoginPage.signUp({
+  await SignupPage.signUp({
     username,
   })
-  await E2eUtil.goToPath(ROUTES.Profile.path)
+  await E2eUtil.goTo(ProfilePage.getUrl())
   await ProfilePage.verifyContent({
     username,
   })
@@ -35,13 +34,13 @@ test('Page refresh keeps user on profile page', async () => {
 
 test('Logout button redirects to logout page', async () => {
   const username = `profile-logout-${Date.now()}`
-  await LoginPage.signUp({
+  await SignupPage.signUp({
     username,
   })
-  await E2eUtil.goToPath(ROUTES.Profile.path)
+  await E2eUtil.goTo(ProfilePage.getUrl())
   await ProfilePage.verifyContent({
     username,
   })
   await ProfilePage.logout()
-  await LogoutPage.verifyContent()
+  await LoginPage.verifyNotLoggedIn({})
 })

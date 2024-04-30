@@ -1,3 +1,7 @@
+body {
+  font-family: 'Segoe UI';
+}
+
 html,
 #body,
 #root {
@@ -8,6 +12,16 @@ html,
 #root {
   display: flex;
   flex-direction: column;
+}
+
+button {
+  padding-left: 10px;
+  padding-right: 10px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  background-color: transparent;
+  border-style: solid;
+  cursor: pointer;
 }
 
 .centered {
@@ -22,9 +36,25 @@ html,
   cursor: pointer;
 }
 
+.error-text {
+  color: red;
+}
+
+.required-field {
+  color: red;
+  margin-left: 2px;
+}
+
 .right-button {
   display: block;
   float: right;
+}
+
+.content-block {
+  background-color: lightgray;
+  margin: 10px;
+  border-radius: 5px;
+  padding: 10px;
 }
 
 .whole-screen-overlay {
@@ -50,6 +80,18 @@ html,
   text-align: center;
   z-index: 2;
   background-color: white;
+}
+
+.icon-container {
+  border-radius: 50%;
+  padding-top: 2px;
+  padding-left: 2px;
+  padding-right: 2px;
+  background-color: rgb(128 128 128 / 50%);
+}
+
+.icon-container:hover {
+  background-color: 'gray';
 }
 
 .monsters-color {

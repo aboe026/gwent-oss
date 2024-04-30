@@ -11,7 +11,7 @@ log4js.configure({
 const logger = log4js.getLogger('index')
 
 /**
- * The entrypoint of the UI Server
+ * The entrypoint of the UI Server.
  */
 ;(async () => {
   try {

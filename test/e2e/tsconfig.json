@@ -4,6 +4,10 @@
     "outDir": "build"
   },
   "extends": "../../tsconfig",
-  "include": ["src/**/*"],
-  "references": [{ "path": "../../libs/constants" }, { "path": "../../libs/env" }]
+  "include": ["src/**/*", "package.json", ".testcaferc.ts"],
+  "references": [
+    { "path": "../../libs/constants" },
+    { "path": "../../libs/env" },
+    { "path": "../../libs/graphql-schema" }
+  ]
 }

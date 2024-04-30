@@ -1,16 +1,23 @@
-import { createContext, useContext, useState } from 'react'
+import { ApolloClient, ApolloConsumer, ApolloError } from '@apollo/client'
+import { createContext, useContext, useEffect, useState } from 'react'
+import { IconContext } from 'react-icons'
 import { Outlet, useLocation, Navigate } from 'react-router-dom'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
+import { getApolloError } from './util/error-util'
 import { getRouteFromPath } from './util/route-util'
-import { ROUTES } from '@gwent/constants'
-import Spinner from './components/Spinner'
-import { useGetCurrentUserQuery, User } from './graphql/generated-typings'
+import { NOT_AUTHENTICATED_MESSAGE, ROUTES } from '@gwent/constants'
+import LoadingSpinner from './components/LoadingSpinner'
+import { CurrentUserDocument, CurrentUserQuery, useCurrentUserQuery, User } from '@gwent/graphql-schema/apollo-typings'
+import WholeScreenDialog from './components/WholeScreenDialog'
+import LoginDialog from './components/LoginDialog'
+
+const AUTH_TIMEOUT_ID = 'AUTH_TIMEOUT_ID'
 
 const UserContext = createContext<UserContextType>({
   user: undefined,
-  setUser: () => undefined,
+  checkAuth: () => undefined,
 })
 
 const useUserContext = () => useContext(UserContext)
@@ -19,46 +26,127 @@ export { useUserContext }
 
 export default function App() {
   const { pathname } = useLocation()
-  const [user, setUser] = useState<User | undefined>()
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  const [reAuthFuncs, setReAuthFuncs] = useState<Function[]>([])
   const [preLoginPath] = useState(pathname === ROUTES.Logout.path ? ROUTES.Home.path : pathname)
-  const [previousSessionChecked, setPreviousSessionChecked] = useState(false)
-  const { loading: getCurrentUserLoading, data: getCurrentUserData } = useGetCurrentUserQuery()
+  const { loading: currentUserLoading, data: currentUserData } = useCurrentUserQuery({
+    notifyOnNetworkStatusChange: true, // makes sure "currentUserData" gets set to "undefined" when cache changed
+    nextFetchPolicy: 'cache-only', // makes sure the query does not immediately run after cache changed
+  })
 
-  // page is initially loading and has previous session still valid
-  // ensures when user performs "logout" they get properly redirected to "login"
-  const previousSessionValid = !previousSessionChecked && !user && getCurrentUserData?.getCurrentUser
-
-  if (getCurrentUserLoading || previousSessionValid) {
-    if (previousSessionValid && getCurrentUserData.getCurrentUser) {
-      setUser(getCurrentUserData?.getCurrentUser)
-      setPreviousSessionChecked(true)
+  useEffect(() => {
+    if (currentUserData?.currentUser?.id !== AUTH_TIMEOUT_ID) {
+      for (const reAuthFunc of reAuthFuncs) {
+        reAuthFunc()
+      }
+      setReAuthFuncs([])
     }
+  }, [currentUserData])
+
+  const user = currentUserData?.currentUser
+  const authTimedOut = currentUserData?.currentUser?.id === AUTH_TIMEOUT_ID
+  const loggedIn = !!currentUserData?.currentUser?.id && !authTimedOut
+
+  if (currentUserLoading) {
     return (
       <Centered>
-        <Spinner size="200px" />
+        <LoadingSpinner size="200px" />
       </Centered>
     )
   }
 
   const route = getRouteFromPath(pathname)
-  const needsLogin = !user && !getCurrentUserLoading && route?.secure && route?.path !== ROUTES.Login.path
-  const needsHome = user && route?.path === ROUTES.Login.path
+
+  const needsLogin =
+    !loggedIn &&
+    !currentUserLoading &&
+    !authTimedOut &&
+    route?.secure &&
+    (route?.path !== ROUTES.Login.path || route?.path !== ROUTES.Signup.path)
+  const needsHome = loggedIn && (route?.path === ROUTES.Login.path || route?.path === ROUTES.Signup.path)
 
   if (needsHome) {
-    return <Navigate to={preLoginPath || ROUTES.Home.path} replace />
+    return (
+      <Navigate
+        to={
+          !preLoginPath || preLoginPath === ROUTES.Login.path || preLoginPath === ROUTES.Signup.path
+            ? ROUTES.Home.path
+            : preLoginPath
+        }
+        replace
+      />
+    )
   } else if (needsLogin) {
-    return <Navigate to={ROUTES.Login.path} replace />
+    return (
+      <ApolloConsumer>
+        {(client: ApolloClient<object>) => {
+          client.resetStore()
+          return <Navigate to={ROUTES.Login.path} replace />
+        }}
+      </ApolloConsumer>
+    )
   }
 
   return (
-    <UserContext.Provider value={{ user, setUser }}>
-      <Banner />
-      <Outlet />
-    </UserContext.Provider>
+    <ApolloConsumer>
+      {(client: ApolloClient<object>) => {
+        // eslint-disable-next-line @typescript-eslint/ban-types
+        function checkAuth(error: ApolloError | undefined, callbackAfterReauth?: Function) {
+          const errors = getApolloError(error)
+          if (errors.includes(NOT_AUTHENTICATED_MESSAGE)) {
+            if (callbackAfterReauth) {
+              setReAuthFuncs((previous) => [...previous, callbackAfterReauth])
+            }
+            const existingUser = client.readQuery<CurrentUserQuery>({ query: CurrentUserDocument })
+            if (existingUser?.currentUser) {
+              client.writeQuery<CurrentUserQuery>({
+                query: CurrentUserDocument,
+                data: {
+                  currentUser: {
+                    ...existingUser.currentUser,
+                    id: AUTH_TIMEOUT_ID,
+                  },
+                },
+                broadcast: true,
+              })
+            }
+            // client.cache.evict({
+            //   fieldName: 'currentUser',
+            //   broadcast: true,
+            // })
+            // client.cache.gc()
+          }
+        }
+
+        return (
+          <UserContext.Provider value={{ user: loggedIn ? user : undefined, checkAuth }}>
+            <IconContext.Provider value={{ color: 'white' }}>
+              <Banner />
+              {authTimedOut && (
+                <WholeScreenDialog>
+                  <Centered>
+                    <LoginDialog
+                      initialUsername={user?.name}
+                      secondaryLinkLabel="Change User"
+                      secondaryLinkPath={ROUTES.Logout.path}
+                      secondaryText="Not You?"
+                      title="Session Timed Out"
+                      usernameDisabled={true}
+                    />
+                  </Centered>
+                </WholeScreenDialog>
+              )}
+              <Outlet />
+            </IconContext.Provider>
+          </UserContext.Provider>
+        )
+      }}
+    </ApolloConsumer>
   )
 }
 
 type UserContextType = {
-  user: User | undefined
-  setUser: (user: User | undefined) => void
+  user: User | undefined | null
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
 }

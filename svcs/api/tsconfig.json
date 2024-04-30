@@ -4,10 +4,11 @@
     "outDir": "build"
   },
   "extends": "../../tsconfig",
-  "include": ["package.json", "src/**/*", "src/database/upgrades/cards.json"],
+  "include": ["package.json", "src/**/*", "src/database/upgrades/resources/*.json"],
   "references": [
     { "path": "../../libs/constants" },
     { "path": "../../libs/env" },
+    { "path": "../../libs/graphql-schema" },
     { "path": "../../libs/utils" },
     { "path": "../../libs/validators" }
   ]

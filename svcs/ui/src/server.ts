@@ -1,4 +1,5 @@
 import express, { Express } from 'express'
+import fs from 'fs-extra'
 import log4js from 'log4js'
 import path from 'path'
 
@@ -6,7 +7,7 @@ import env from './env'
 import ClientUtil from './client-util'
 
 /**
- * A class to handle startup and configuration of the UI server
+ * A class to handle startup and configuration of the UI server.
  */
 export default class Server {
   private static logger = log4js.getLogger('server')
@@ -14,26 +15,39 @@ export default class Server {
   private static app: Express
 
   /**
-   * Bring up the UI server
+   * Bring up the UI server.
    */
   static async run() {
     await Server.configureClientDir()
 
     Server.app = express()
 
+    await Server.configureImages()
+
     await Server.serve()
   }
 
   /**
-   * Gets the client directory and sets environment variables for it
+   * Gets the client directory and sets environment variables for it.
    */
   private static async configureClientDir() {
     Server.clientDir = await ClientUtil.getDirectory()
     await ClientUtil.setEnvVars(Server.clientDir)
   }
 
+  private static async configureImages() {
+    const imagesDir = env().IMAGES_DIR
+    this.logger.trace(`imagesDir: "${imagesDir}"`)
+    const imagesPath = path.isAbsolute(imagesDir) ? imagesDir : path.join(__dirname, imagesDir)
+    this.logger.trace(`imagesPath: "${imagesPath}"`)
+    if (!(await fs.exists(imagesPath))) {
+      throw Error(`IMAGES_DIR "${imagesPath}" does not exist.`)
+    }
+    Server.app.use('/images', express.static(imagesPath))
+  }
+
   /**
-   * Set the api to listen for requests
+   * Set the api to listen for requests.
    */
   private static async serve() {
     Server.app.use(express.static(Server.clientDir))

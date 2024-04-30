@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 
 import BasicAuth from '../../src/auth/basic-auth'
-import UserStore from '../../src/database/user-store'
-import { UserDbObject } from '../../src/database/generated-typings'
+import UserStore from '../../src/database/stores/user-store'
+import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 
 describe('basic-auth', () => {
   describe('authenticate', () => {
@@ -89,7 +89,7 @@ async function testBasicAuth({
   error?: Error
 }) {
   const res = {} as any
-  const validateUserSpy = jest.spyOn(UserStore, 'validateUser')
+  const validateUserSpy = jest.spyOn(UserStore, 'validate')
   if (validateUserError) {
     validateUserSpy.mockRejectedValue(validateUserError)
   } else if (validateUserResponse) {

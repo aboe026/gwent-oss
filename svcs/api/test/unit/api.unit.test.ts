@@ -41,7 +41,7 @@ jest.mock('graphql/utilities', () => {
     printSchema: jest.fn().mockImplementation(),
   }
 })
-jest.mock('../../src/graphql/schema', () => {
+jest.mock('../../src/graphql/executable-schema', () => {
   return jest.fn().mockImplementation(() => {
     return undefined
   })
@@ -122,10 +122,10 @@ describe('Api', () => {
           httpOnly: true,
           secure: false,
           sameSite: 'lax',
-          maxAge: 60000,
+          maxAge: 1000,
         },
         expectedProxy: false,
-        traces: [['session cookie proxy: "false"']],
+        traces: [['Session timeout: "1" second(s)'], ['session cookie proxy: "false"']],
       })
     })
     it('calls to create session on app for production node env', () => {
@@ -135,11 +135,11 @@ describe('Api', () => {
           httpOnly: true,
           secure: true,
           sameSite: 'strict',
-          maxAge: 60000,
+          maxAge: 1000,
         },
         expectedProxy: true,
         setCalls: [['trust proxy', 1]],
-        traces: [['session cookie proxy: "true"'], ['enabling "trust proxy"']],
+        traces: [['Session timeout: "1" second(s)'], ['session cookie proxy: "true"'], ['enabling "trust proxy"']],
       })
     })
     it('calls out to trace if enabled', () => {
@@ -147,14 +147,18 @@ describe('Api', () => {
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
-        maxAge: 60000,
+        maxAge: 1000,
       }
       testConfigureSession({
         nodeEnv: NODE_ENV.Dev,
         expectedCookie: cookie,
         expectedProxy: false,
         traceEnabled: true,
-        traces: [['session cookie proxy: "false"'], [`cookie: "${JSON.stringify(cookie)}"`]],
+        traces: [
+          ['Session timeout: "1" second(s)'],
+          ['session cookie proxy: "false"'],
+          [`cookie: "${JSON.stringify(cookie)}"`],
+        ],
       })
     })
   })
@@ -310,12 +314,12 @@ function testConfigureSession({
   traceEnabled?: boolean
   traces: string[][]
 }) {
-  const sessionTimeoutMinutes = 1
+  const sessionTimeoutSeconds = 1
   const sessionSecret = 'secret'
   const dbName = 'db-name'
   const envSpy = jest.spyOn(env, 'default').mockReturnValue({
     NODE_ENV: nodeEnv,
-    SESSION_TIMEOUT_MINUTES: sessionTimeoutMinutes,
+    SESSION_TIMEOUT_SECONDS: sessionTimeoutSeconds,
     SESSION_SECRET: sessionSecret,
     MONGO_DB: dbName,
   } as any)
@@ -334,7 +338,7 @@ function testConfigureSession({
 
   expect(Api['configureSession']()).toEqual(undefined)
 
-  expect(envSpy.mock.calls).toEqual([[], [], [], []])
+  expect(envSpy.mock.calls).toEqual([[], [], [], [], []])
   expect(useSpy).toHaveBeenCalledTimes(1)
   expect(setSpy.mock.calls).toEqual(setCalls)
   expect((session as any).mock.calls).toEqual([

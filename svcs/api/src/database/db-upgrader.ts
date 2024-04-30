@@ -2,7 +2,8 @@ import { getLogger } from 'log4js'
 
 import allUpgrades from './upgrades/all-upgrades'
 import { sleep } from '@gwent/utils'
-import UpgradeStore from './upgrade-store'
+import Upgrade from './upgrades/upgrade'
+import UpgradeStore from './stores/upgrade-store'
 
 /**
  * A class which handles upgrades to the MongoDB database.
@@ -18,7 +19,7 @@ export default class DbUpgrader {
    *
    * @returns An array of upgrade functions.
    */
-  private static getUpgrades(): (() => Promise<void>)[] {
+  private static getUpgrades(): Upgrade[] {
     return allUpgrades
   }
 
@@ -60,7 +61,7 @@ export default class DbUpgrader {
                     time: start,
                   })
 
-                  await upgrades[i]()
+                  await upgrades[i].run()
 
                   await UpgradeStore.addUpgrade({
                     version,

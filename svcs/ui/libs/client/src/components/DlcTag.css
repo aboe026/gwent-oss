@@ -1,0 +1,20 @@
+.dlc-tag-wrapper-outer {
+  display: table;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.dlc-tag-wrapper-inner {
+  padding: 50% 0;
+  height: 0;
+}
+
+.dlc-tag {
+  display: block;
+  transform-origin: top left;
+  transform: rotate(-90deg) translate(-100%);
+  margin-top: -50%;
+  white-space: nowrap;
+  background-repeat: no-repeat;
+  background-size: contain;
+}

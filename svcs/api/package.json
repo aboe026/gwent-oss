@@ -1,6 +1,6 @@
 {
   "name": "@gwent/api",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "author": "Adam Boe",
   "description": "GraphQL backend to play Gwent.",
   "main": "src/index.ts",
@@ -16,15 +16,15 @@
     "test-func": "yarn g:jest --test-type=func --runInBand",
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",
-    "watch-built": "ts-node scripts/wait-for-initial-build.ts && yarn g:nodemon --watch build --exec 'yarn node build/src/index.js'",
+    "watch-built": "yarn g:ts-node scripts/wait-for-initial-build.ts && yarn g:nodemon --watch build --exec 'yarn node build/src/index.js'",
     "watch-tsc": "yarn build --watch"
   },
   "dependencies": {
     "@apollo/server": "4.9.5",
-    "@graphql-codegen/typescript-mongodb": "3.0.0",
     "@graphql-tools/schema": "10.0.0",
     "@gwent/constants": "workspace:*",
     "@gwent/env": "workspace:*",
+    "@gwent/graphql-schema": "workspace:*",
     "@gwent/utils": "workspace:*",
     "@gwent/validators": "workspace:*",
     "basic-auth": "2.0.1",
@@ -39,10 +39,8 @@
     "graphql": "16.8.1",
     "graphql-middleware": "6.1.35",
     "graphql-shield": "7.6.5",
-    "graphql-tag": "2.12.6",
     "log4js": "6.9.1",
-    "mongodb": "6.2.0",
-    "semver": "7.5.4"
+    "mongodb": "6.2.0"
   },
   "devDependencies": {
     "@types/basic-auth": "1.1.6",

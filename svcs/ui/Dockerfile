@@ -39,4 +39,5 @@ RUN yarn workspaces focus --production
 
 EXPOSE 3000
 ENV CLIENT_DIR=../../libs/client/build
+ENV IMAGES_DIR=../../images
 CMD yarn node build/src/index.js

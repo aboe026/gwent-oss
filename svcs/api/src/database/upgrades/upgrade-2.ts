@@ -1,161 +1,557 @@
 import log4js from 'log4js'
+import { ObjectId } from 'mongodb'
 
-import cards from './cards.json'
-import CardStore, { AddLeaderInput, AddUnitInput } from '../card-store'
-import { Combat, Dlc, Effect, Faction } from '../generated-typings'
+import {
+  Combat,
+  DlcDbObject,
+  DlcKey,
+  EffectDbObject,
+  EffectKey,
+  FactionDbObject,
+  FactionKey,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
+import dlcs from './resources/dlcs.json'
+import DlcStore, { AddDlcInput } from '../stores/dlc-store'
+import effects from './resources/effects.json'
+import EffectStore, { AddEffectInput } from '../stores/effect-store'
+import factions from './resources/factions.json'
+import FactionStore, { AddFactionInput } from '../stores/faction-store'
+import { getDeckStats } from '@gwent/utils'
+import leaders from './resources/leaders.json'
+import LeaderStore, { AddLeaderInput } from '../stores/leader-store'
+import units from './resources/units.json'
+import UnitStore, { AddUnitInput } from '../stores/unit-store'
+import { Unit } from '@gwent/graphql-schema/resolver-typings'
+import Upgrade from './upgrade'
+import { validatePositiveInteger } from '@gwent/validators'
 
 /**
- * Adds Leader and Unit cards that a user can choose from when creating their own decks.
+ * Adds resources required to create decks.
  */
-export default async function upgrade2() {
-  const logger = log4js.getLogger('upgrade-2')
-  if (logger.isTraceEnabled()) {
-    logger.trace(`cards: "${JSON.stringify(cards)}"`)
-  }
-  for (const card of cards) {
-    if (card.Type === 'Leader') {
-      logger.debug(`Adding leader card "${card.Name}"`)
-      await CardStore.addLeader(normalizeLeader(card))
-    } else {
-      logger.debug(`Adding unit card "${card.Name}"`)
-      await CardStore.addUnit(normalizeUnit(card))
+export default class Upgrade2 extends Upgrade {
+  static logger = log4js.getLogger('upgrade-2')
+
+  async run() {
+    const dlcMap = await this.createDlcs({
+      dlcs,
+    })
+    const { effectDocs, effectMap } = await this.createEffects({
+      effects,
+    })
+    const { factionDocs, factionMap } = await this.createFactions({
+      factions,
+      dlcMap,
+    })
+
+    await this.createLeaders({
+      leaders,
+      dlcMap,
+      factionMap,
+    })
+
+    const factionUnits = await this.createUnits({
+      units,
+      dlcMap,
+      effectMap,
+      factionDocs,
+      factionMap,
+    })
+
+    for (const factionId of Object.keys(factionUnits)) {
+      await FactionStore.edit({
+        id: factionId,
+        stats: getDeckStats(
+          factionUnits[factionId].map((unit) => {
+            unit.effects = unit.effects?.map((effectId) =>
+              effectDocs.find((effectDoc) => effectDoc._id.toString() === effectId.toString())
+            ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+            return {
+              unit: unit as any as Unit, // eslint-disable-line @typescript-eslint/no-explicit-any
+              artStyle: 1,
+            }
+          })
+        ),
+      })
     }
   }
-}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeLeader(card: any): AddLeaderInput {
-  return {
-    name: card.Name,
-    faction: normalizeFaction(card),
-    dlc: normalizeDlc(card),
-  }
-}
+  async createDlcs({ dlcs }: { dlcs: DlcJson[] }): Promise<KeyIdMap> {
+    Upgrade2.logger.debug('Adding dlcs')
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeUnit(card: any): AddUnitInput {
-  if (card.Occurrences === undefined) {
-    throw Error(`Card "${card.Name}" has "occurrences" set to "undefined": Must be a positive integer.`)
-  }
-  return {
-    name: card.Name,
-    faction: normalizeFaction(card),
-    occurrences: card.Occurrences,
-    dlc: normalizeDlc(card),
-    combats: normalizeCombats(card),
-    hero: card.Type === 'Hero',
-    strength: card.Strength || null,
-    effects: normalizeEffects(card),
-    scorchScope: normalizeScorchScope(card),
-    scorchMin: card['Scorch Minimum Strength'] || null,
-    musterPrefix: card['Muster Prefix'] || null,
-  }
-}
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`dlcs: "${JSON.stringify(dlcs)}"`)
+    }
+    const dlcDocs: DlcDbObject[] = []
+    for (const dlc of dlcs) {
+      dlcDocs.push(await DlcStore.add(this.normalizeDlc(dlc)))
+    }
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`dlcDocs: "${JSON.stringify(dlcDocs)}"`)
+    }
+    const dlcMap: KeyIdMap = {}
+    for (const createdDlc of dlcDocs) {
+      dlcMap[createdDlc.name] = createdDlc._id
+    }
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`dlcMap: "${JSON.stringify(dlcMap)}"`)
+    }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeFaction(card: any): Faction {
-  if (card.Faction === 'Monsters') {
-    return Faction.Monsters
-  } else if (card.Faction === 'Neutral') {
-    return Faction.Neutral
-  } else if (card.Faction === 'Nilfgaardian Empire') {
-    return Faction.NilfgaardianEmpire
-  } else if (card.Faction === 'Northern Realms') {
-    return Faction.NorthernRealms
-  } else if (card.Faction === "Scoia'tael") {
-    return Faction.ScoiaTael
-  } else if (card.Faction === 'Skellige') {
-    return Faction.Skellige
+    return dlcMap
   }
-  throw Error(`Invalid Faction "${card.Faction}"`)
-}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeDlc(card: any): Dlc | null {
-  if (card.DLC === undefined) {
+  async createEffects({ effects }: { effects: EffectJson[] }): Promise<{
+    effectDocs: EffectDbObject[]
+    effectMap: KeyIdMap
+  }> {
+    Upgrade2.logger.debug('Adding effects')
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`effects: "${JSON.stringify(effects)}"`)
+    }
+    const effectDocs: EffectDbObject[] = []
+    for (const effect of effects) {
+      effectDocs.push(await EffectStore.add(this.normalizeEffect(effect)))
+    }
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`effectDocs: "${JSON.stringify(effectDocs)}"`)
+    }
+    const effectMap: KeyIdMap = {}
+    for (const createdEffect of effectDocs) {
+      effectMap[createdEffect.name] = createdEffect._id
+    }
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`effectMap: "${JSON.stringify(effectMap)}"`)
+    }
+
+    return {
+      effectDocs,
+      effectMap,
+    }
+  }
+
+  async createFactions({ factions, dlcMap }: { factions: FactionJson[]; dlcMap: KeyIdMap }): Promise<{
+    factionDocs: FactionDbObject[]
+    factionMap: KeyIdMap
+  }> {
+    Upgrade2.logger.debug('Adding factions')
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`factions: "${JSON.stringify(factions)}"`)
+    }
+    const factionDocs: FactionDbObject[] = []
+    for (const faction of factions) {
+      factionDocs.push(
+        await FactionStore.add(
+          this.normalizeFaction({
+            dlcMap,
+            faction,
+          })
+        )
+      )
+    }
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`factionDocs: "${JSON.stringify(factionDocs)}"`)
+    }
+    const factionMap: KeyIdMap = {}
+    for (const createdFaction of factionDocs) {
+      factionMap[createdFaction.name] = createdFaction._id
+    }
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`factionMap: "${JSON.stringify(factionMap)}"`)
+    }
+
+    return {
+      factionDocs,
+      factionMap,
+    }
+  }
+
+  async createLeaders({
+    leaders,
+    dlcMap,
+    factionMap,
+  }: {
+    leaders: LeaderJson[]
+    dlcMap: KeyIdMap
+    factionMap: KeyIdMap
+  }) {
+    Upgrade2.logger.debug('Adding leaders')
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`leaders: "${JSON.stringify(leaders)}"`)
+    }
+    for (const leader of leaders) {
+      Upgrade2.logger.debug(`Adding leader "${leader.Name}"`)
+      await LeaderStore.add(
+        this.normalizeLeader({
+          leader,
+          dlcMap,
+          factionMap,
+        })
+      )
+    }
+  }
+
+  async createUnits({
+    units,
+    dlcMap,
+    effectMap,
+    factionDocs,
+    factionMap,
+  }: {
+    units: UnitJson[]
+    dlcMap: KeyIdMap
+    effectMap: KeyIdMap
+    factionDocs: FactionDbObject[]
+    factionMap: KeyIdMap
+  }): Promise<FactionUnits> {
+    Upgrade2.logger.debug('Adding units')
+    if (Upgrade2.logger.isTraceEnabled()) {
+      Upgrade2.logger.trace(`units: "${JSON.stringify(units)}"`)
+    }
+
+    const factionUnits: FactionUnits = {}
+    for (const faction of factionDocs) {
+      factionUnits[faction._id.toString()] = []
+    }
+
+    for (const unit of units) {
+      let occurrences = 0
+      try {
+        occurrences = validatePositiveInteger(unit.Occurrences, {
+          allowZero: false,
+        })
+      } catch (err) {
+        throw Error(`Unit "${unit.Name}" has invalid "Occurrences": ${err}`)
+      }
+      for (let i = 0; i < occurrences; i++) {
+        Upgrade2.logger.debug(`Adding unit "${unit.Name}" ${i + 1}/${occurrences}`)
+        const unitDoc = await UnitStore.add(
+          this.normalizeUnit({
+            unit,
+            dlcMap,
+            effectMap,
+            factionMap,
+          })
+        )
+        factionUnits[unitDoc.faction.toString()].push(unitDoc)
+      }
+    }
+
+    return factionUnits
+  }
+
+  normalizeDlc(dlc: DlcJson): AddDlcInput {
+    if (!dlc.Name) {
+      throw Error(`Invalid dlc "${JSON.stringify(dlc)}": Must have "Name".`)
+    }
+    return {
+      image: this.normalizeImage(dlc, ImageType.Dlc),
+      key: this.normalizeDlcKey(dlc),
+      name: dlc.Name,
+    }
+  }
+
+  normalizeDlcKey(dlc: DlcJson): DlcKey {
+    if (dlc.Name === 'Blood and Wine') {
+      return DlcKey.BloodAndWine
+    } else if (dlc.Name === 'Gwent: The Witcher Card Game') {
+      return DlcKey.GwentTheWitcherCardGame
+    } else if (dlc.Name === 'Hearts of Stone') {
+      return DlcKey.HeartsOfStone
+    }
+    throw Error(`Invalid Dlc "${dlc.Name}"`)
+  }
+
+  normalizeEffect(effect: EffectJson): AddEffectInput {
+    if (!effect.Name) {
+      throw Error(`Invalid effect "${JSON.stringify(effect)}": Must have "Name".`)
+    }
+    if (!effect.Ability) {
+      throw Error(`Invalid effect "${effect.Name}": Must have "Ability".`)
+    }
+    return {
+      ability: effect.Ability,
+      image: this.normalizeImage(effect, ImageType.Effect),
+      key: this.normalizeEffectKey(effect),
+      name: effect.Name,
+    }
+  }
+
+  normalizeFaction({ faction, dlcMap }: { faction: FactionJson; dlcMap: KeyIdMap }): AddFactionInput {
+    if (!faction.Name) {
+      throw Error(`Invalid faction "${JSON.stringify(faction)}": Must have "Name".`)
+    }
+    return {
+      ability: faction.Ability || null,
+      dlc: this.normalizeUnitDlc(faction, dlcMap),
+      image: this.normalizeImage(faction, ImageType.Faction),
+      key: this.normalizeFactionKey(faction),
+      name: faction.Name,
+    }
+  }
+
+  normalizeFactionKey(faction: FactionJson): FactionKey {
+    if (faction.Name === 'Monsters') {
+      return FactionKey.Monsters
+    } else if (faction.Name === 'Neutral') {
+      return FactionKey.Neutral
+    } else if (faction.Name === 'Nilfgaardian Empire') {
+      return FactionKey.NilfgaardianEmpire
+    } else if (faction.Name === 'Northern Realms') {
+      return FactionKey.NorthernRealms
+    } else if (faction.Name === "Scoia'tael") {
+      return FactionKey.ScoiaTael
+    } else if (faction.Name === 'Skellige') {
+      return FactionKey.Skellige
+    }
+    throw Error(`Invalid Faction "${faction.Name}"`)
+  }
+
+  normalizeLeader({
+    leader,
+    dlcMap,
+    factionMap,
+  }: {
+    leader: LeaderJson
+    dlcMap: KeyIdMap
+    factionMap: KeyIdMap
+  }): AddLeaderInput {
+    return {
+      ability: leader.Ability,
+      dlc: this.normalizeUnitDlc(leader, dlcMap),
+      faction: this.normalizeUnitFaction(leader, factionMap),
+      image: this.normalizeImage(leader, ImageType.Leader),
+      name: leader.Name,
+      quote: leader.Quote,
+    }
+  }
+
+  normalizeUnit({
+    unit,
+    dlcMap,
+    effectMap,
+    factionMap,
+  }: {
+    unit: UnitJson
+    dlcMap: KeyIdMap
+    effectMap: KeyIdMap
+    factionMap: KeyIdMap
+  }): AddUnitInput {
+    // TODO: throw error if no name or quote
+    return {
+      combats: this.normalizeCombats(unit),
+      deckable: this.normalizeDeckable(unit),
+      dlc: this.normalizeUnitDlc(unit, dlcMap),
+      effectPrefix: unit['Effect Prefix'] || null,
+      effects: this.normalizeUnitEffects(unit, effectMap),
+      faction: this.normalizeUnitFaction(unit, factionMap),
+      hero: this.normalizeHero(unit),
+      images: this.normalizeImages(unit, ImageType.Unit),
+      name: unit.Name,
+      quote: unit.Quote,
+      scorchMin: unit['Scorch Minimum Strength'] || null,
+      scorchScope: this.normalizeScorchScope(unit),
+      special: this.normalizeSpecial(unit),
+      strength: this.normalizeStrength(unit),
+    }
+  }
+
+  normalizeUnitFaction(card: UnitJson | LeaderJson, factionMap: KeyIdMap): ObjectId {
+    const faction = factionMap[card.Faction]
+    if (!faction) {
+      throw Error(`Invalid Faction "${card.Faction}" for card "${card.Name}"`)
+    }
+    return faction
+  }
+
+  normalizeUnitDlc(item: UnitJson | LeaderJson | FactionJson, dlcMap: KeyIdMap): ObjectId | null {
+    const itemDlc = item.DLC
+    if (itemDlc === undefined) {
+      return null
+    }
+    const dlc = dlcMap[itemDlc]
+    if (!dlc) {
+      throw Error(`Invalid DLC "${itemDlc}" for item "${item.Name}"`)
+    }
+    return dlc
+  }
+
+  normalizeCombats(unit: UnitJson): Combat[] {
+    const combat: Combat[] = []
+    if (unit['Combat 1']) {
+      combat.push(this.normalizeCombat(unit['Combat 1']))
+    }
+    if (unit['Combat 2']) {
+      combat.push(this.normalizeCombat(unit['Combat 2']))
+    }
+    return combat
+  }
+
+  normalizeCombat(combat: string | undefined): Combat {
+    if (combat === 'Close') {
+      return Combat.Close
+    } else if (combat === 'Ranged') {
+      return Combat.Ranged
+    } else if (combat === 'Siege') {
+      return Combat.Siege
+    }
+    throw Error(`Invalid Combat "${combat}"`)
+  }
+
+  normalizeUnitEffects(unit: UnitJson, effectMap: KeyIdMap): ObjectId[] {
+    const effects: ObjectId[] = []
+
+    for (const effect of [unit['Effect 1'], unit['Effect 2']]) {
+      if (effect) {
+        const effectId = effectMap[effect]
+        if (!effectId) {
+          throw Error(`Invalid Effect "${effect}" for unit "${unit.Name}"`)
+        }
+        effects.push(effectId)
+      }
+    }
+    return effects
+  }
+
+  normalizeEffectKey(effect: EffectJson): EffectKey {
+    if (effect.Name === 'Agile') {
+      return EffectKey.Agile
+    } else if (effect.Name === 'Avenger') {
+      return EffectKey.Avenger
+    } else if (effect.Name === 'Berserker') {
+      return EffectKey.Berserker
+    } else if (effect.Name === 'Bond') {
+      return EffectKey.Bond
+    } else if (effect.Name === 'Decoy') {
+      return EffectKey.Decoy
+    } else if (effect.Name === 'Horn') {
+      return EffectKey.Horn
+    } else if (effect.Name === 'Mardroeme') {
+      return EffectKey.Mardroeme
+    } else if (effect.Name === 'Medic') {
+      return EffectKey.Medic
+    } else if (effect.Name === 'Morale') {
+      return EffectKey.Morale
+    } else if (effect.Name === 'Muster') {
+      return EffectKey.Muster
+    } else if (effect.Name === 'Scorch') {
+      return EffectKey.Scorch
+    } else if (effect.Name === 'Spy') {
+      return EffectKey.Spy
+    } else if (effect.Name === 'Weather') {
+      return EffectKey.Weather
+    }
+    throw Error(`Invalid Effect "${JSON.stringify(effect)}"`)
+  }
+
+  normalizeScorchScope(unit: UnitJson): Combat | null {
+    if (unit['Scorch Scope']) {
+      return this.normalizeCombat(unit['Scorch Scope'])
+    }
     return null
-  } else if (card.DLC === 'Hearts of Stone') {
-    return Dlc.HeartsOfStone
-  } else if (card.DLC === 'Blood and Wine') {
-    return Dlc.BloodAndWine
-  } else if (card.DLC === 'Gwent: The Witcher Card Game') {
-    return Dlc.GwentTheWitcherCardGame
   }
-  throw Error(`Invalid DLC "${card.DLC}"`)
+
+  normalizeImage(item: UnitJson | LeaderJson | EffectJson | FactionJson | DlcJson, type: ImageType): string {
+    return this.normalizeImages(item, type)[0]
+  }
+
+  normalizeImages(item: UnitJson | LeaderJson | EffectJson | FactionJson | DlcJson, type: ImageType): string[] {
+    const name: string = item.Name
+    const images: string[] = []
+    const styles: number = type === ImageType.Unit ? (item as UnitJson)['Art Styles'] : 1
+    if (type === ImageType.Unit && !styles) {
+      throw Error(`No "Art Styles" found for unit "${JSON.stringify(item)}"`)
+    }
+    for (let i = 1; i <= styles; i++) {
+      images.push(
+        this.normalizeImagePath({
+          name,
+          type,
+          suffix: styles > 1 ? `--${i}` : '',
+        })
+      )
+    }
+    return images
+  }
+
+  normalizeImagePath({ name, type, suffix = '' }: { type: ImageType; name: string; suffix?: string }) {
+    return `images/${type}/${name.toLowerCase().replaceAll(/\ /g, '_').replaceAll(/:/g, '')}${suffix}.png`
+  }
+
+  normalizeSpecial(unit: UnitJson): boolean {
+    return (
+      ["Commander's Horn", 'Decoy', 'Mardroeme', 'Scorch'].includes(unit.Name) ||
+      [unit['Effect 1'], unit['Effect 2']].includes('Weather')
+    )
+  }
+
+  normalizeStrength(unit: UnitJson): number | null {
+    return unit.Strength !== undefined ? Number(unit.Strength) : null
+  }
+
+  normalizeDeckable(unit: UnitJson): boolean {
+    return unit.Deckable !== 'No'
+  }
+
+  normalizeHero(unit: UnitJson): boolean {
+    return unit.Hero === 'Yes'
+  }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeCombats(card: any): Combat[] {
-  const combat: Combat[] = []
-  if (card['Combat 1']) {
-    combat.push(normalizeCombat(card['Combat 1']))
-  }
-  if (card['Combat 2']) {
-    combat.push(normalizeCombat(card['Combat 2']))
-  }
-  return combat
+export interface DlcJson {
+  Name: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeCombat(combat: any): Combat {
-  if (combat === 'Close') {
-    return Combat.Close
-  } else if (combat === 'Ranged') {
-    return Combat.Ranged
-  } else if (combat === 'Siege') {
-    return Combat.Siege
-  }
-  throw Error(`Invalid Combat "${combat}"`)
+export interface EffectJson {
+  Name: string
+  Ability: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeEffects(card: any): Effect[] {
-  const effects: Effect[] = []
-  if (card['Effect 1']) {
-    effects.push(normalizeEffect(card['Effect 1']))
-  }
-  if (card['Effect 2']) {
-    effects.push(normalizeEffect(card['Effect 2']))
-  }
-  return effects
+export interface FactionJson {
+  Name: string
+  DLC?: string
+  Ability?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeEffect(effect: any): Effect {
-  if (effect === 'Agile') {
-    return Effect.Agile
-  } else if (effect === 'Avenger') {
-    return Effect.Avenger
-  } else if (effect === 'Berserker') {
-    return Effect.Berserker
-  } else if (effect === 'Bond') {
-    return Effect.Bond
-  } else if (effect === 'Decoy') {
-    return Effect.Decoy
-  } else if (effect === 'Horn') {
-    return Effect.Horn
-  } else if (effect === 'Mardroeme') {
-    return Effect.Mardroeme
-  } else if (effect === 'Medic') {
-    return Effect.Medic
-  } else if (effect === 'Morale') {
-    return Effect.Morale
-  } else if (effect === 'Muster') {
-    return Effect.Muster
-  } else if (effect === 'Scorch') {
-    return Effect.Scorch
-  } else if (effect === 'Spy') {
-    return Effect.Spy
-  } else if (effect === 'Weather') {
-    return Effect.Weather
-  }
-  throw Error(`Invalid Effect "${effect}"`)
+export interface LeaderJson {
+  Name: string
+  Faction: string
+  DLC?: string
+  Ability: string
+  Quote: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function normalizeScorchScope(card: any): Combat | null {
-  if (card['Scorch Scope']) {
-    return normalizeCombat(card['Scorch Scope'])
-  }
-  return null
+export interface UnitJson {
+  Name: string
+  Occurrences: number
+  Deckable: string
+  Faction: string
+  Hero: string
+  'Combat 1'?: string
+  'Combat 2'?: string
+  Strength?: number
+  'Effect 1'?: string
+  'Effect 2'?: string
+  DLC?: string
+  'Scorch Scope'?: string
+  'Scorch Minimum Strength'?: number
+  'Effect Prefix'?: string
+  'Art Styles': number
+  Quote: string
+}
+
+export interface KeyIdMap {
+  [name: string]: ObjectId
+}
+
+export interface FactionUnits {
+  [x: string]: UnitDbObject[]
+}
+
+export enum ImageType {
+  Combat = 'combats',
+  Dlc = 'dlcs',
+  Effect = 'effects',
+  Faction = 'factions',
+  Leader = 'leaders',
+  Unit = 'units',
 }

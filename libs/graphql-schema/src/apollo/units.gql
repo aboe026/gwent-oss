@@ -1,0 +1,26 @@
+query Units($deckable: Boolean, $factions: [FactionKey!]) {
+  units(deckable: $deckable, factions: $factions) {
+    combats
+    deckable
+    dlc {
+      name
+      image
+      key
+    }
+    effects {
+      key
+      name
+      ability
+    }
+    faction {
+      key
+    }
+    hero
+    id
+    images
+    name
+    quote
+    special
+    strength
+  }
+}

@@ -1,51 +1,100 @@
 import { ObjectId } from 'mongodb'
 
-import cards from '../../src/database/upgrades/cards.json'
-import CardStore from '../../src/database/card-store'
+import allUpgrades from '../../src/database/upgrades/all-upgrades'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
-import upgrade1 from '../../src/database/upgrades/upgrade-1'
-import upgrade2, { normalizeLeader, normalizeUnit } from '../../src/database/upgrades/upgrade-2'
+import DlcStore from '../../src/database/stores/dlc-store'
+import EffectStore from '../../src/database/stores/effect-store'
+import {
+  expectizeDlcs,
+  expectizeEffects,
+  expectizeFactions,
+  expectizeLeaders,
+  expectizeUnits,
+  verifyMongoIds,
+} from './util/expect-util'
+import FactionStore from '../../src/database/stores/faction-store'
+import LeaderStore from '../../src/database/stores/leader-store'
+import UnitStore from '../../src/database/stores/unit-store'
 
 describe('upgrade-2', () => {
+  const upgradeNumber = 2
   beforeEach(async () => {
     await DbUtil.deleteDatabase()
   })
   afterAll(async () => {
     await DbConnector.disconnect()
   })
-  it('creates cards', async () => {
-    jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([upgrade1])
+  it('creates resources', async () => {
+    jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue(allUpgrades.slice(0, upgradeNumber - 1))
     await DbUpgrader.run()
 
-    await expect(CardStore.getLeaders()).resolves.toEqual([])
-    await expect(CardStore.getUnits()).resolves.toEqual([])
+    await expect(DlcStore.get({})).resolves.toEqual([])
+    await expect(EffectStore.get({})).resolves.toEqual([])
+    await expect(FactionStore.get({})).resolves.toEqual([])
+    await expect(LeaderStore.get({})).resolves.toEqual([])
+    await expect(UnitStore.get({})).resolves.toEqual([])
 
-    jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([upgrade1, upgrade2])
+    jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue(allUpgrades.slice(0, upgradeNumber))
     await DbUpgrader.run()
 
-    await expect(CardStore.getLeaders()).resolves.toEqual(
-      cards
-        .filter((card) => card.Type === 'Leader')
-        .map((card) => {
-          return {
-            _id: expect.any(ObjectId),
-            created: expect.any(Date),
-            ...normalizeLeader(card),
-          }
-        })
+    const dlcs = await DlcStore.get({})
+    expect(dlcs).toEqual(
+      expectizeDlcs().map((dlc: any) => {
+        dlc._id = expect.any(ObjectId)
+        delete dlc.id
+        return dlc
+      })
     )
-    await expect(CardStore.getUnits()).resolves.toEqual(
-      cards
-        .filter((card) => card.Type !== 'Leader')
-        .map((card) => {
-          return {
-            _id: expect.any(ObjectId),
-            created: expect.any(Date),
-            ...normalizeUnit(card),
-          }
-        })
+    verifyMongoIds(dlcs, '_id')
+
+    const effects = await EffectStore.get({})
+    expect(effects).toEqual(
+      expectizeEffects().map((effect: any) => {
+        effect._id = expect.any(ObjectId)
+        delete effect.id
+        return effect
+      })
     )
+    verifyMongoIds(effects, '_id')
+
+    const factions = await FactionStore.get({})
+    expect(factions).toEqual(
+      expectizeFactions({}).map((faction: any) => {
+        faction._id = expect.any(ObjectId)
+        delete faction.id
+        faction.dlc = faction.dlc ? expect.any(ObjectId) : null
+        return faction
+      })
+    )
+    verifyMongoIds(factions, '_id')
+
+    const leaders = await LeaderStore.get({})
+    expect(leaders).toEqual(
+      expectizeLeaders({}).map((leader: any) => {
+        leader._id = expect.any(ObjectId)
+        delete leader.id
+        leader.dlc = leader.dlc ? expect.any(ObjectId) : null
+        leader.faction = expect.any(ObjectId)
+        return leader
+      })
+    )
+    verifyMongoIds(leaders, '_id')
+
+    const units = await UnitStore.get({})
+    expect(units).toEqual(
+      expectizeUnits({}).map((unit: any) => {
+        unit._id = expect.any(ObjectId)
+        delete unit.id
+        unit.dlc = unit.dlc ? expect.any(ObjectId) : null
+        unit.faction = expect.any(ObjectId)
+        if (unit.effects) {
+          unit.effects = unit.effects.map(() => expect.any(ObjectId))
+        }
+        return unit
+      })
+    )
+    verifyMongoIds(units, '_id')
   })
 })

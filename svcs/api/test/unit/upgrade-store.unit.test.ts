@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import UpgradeStore, { LockDbObject, UpgradeDbObject } from '../../src/database/upgrade-store'
+import UpgradeStore, { LockDbObject, UpgradeDbObject } from '../../src/database/stores/upgrade-store'
 
 describe('upgrade-store', () => {
   describe('addLock', () => {
@@ -16,7 +16,7 @@ describe('upgrade-store', () => {
         _id: UpgradeStore['LOCK_ID'],
         updated: mockedDate,
       }
-      const createSpy = jest.spyOn(UpgradeStore, 'create').mockResolvedValue(lock)
+      const createSpy = jest.spyOn(UpgradeStore as any, 'create').mockResolvedValue(lock)
 
       await expect(UpgradeStore.addLock()).resolves.toEqual(lock)
 
@@ -38,7 +38,7 @@ describe('upgrade-store', () => {
         _id: UpgradeStore['LOCK_ID'],
         updated: mockedDate,
       }
-      const updateSpy = jest.spyOn(UpgradeStore, 'update').mockResolvedValue(lock)
+      const updateSpy = jest.spyOn(UpgradeStore as any, 'update').mockResolvedValue(lock)
 
       await expect(UpgradeStore.updateLock()).resolves.toEqual(lock)
 
@@ -104,7 +104,7 @@ describe('upgrade-store', () => {
         _id: UpgradeStore['LOCK_ID'],
         updated: new Date(),
       }
-      const deleteSpy = jest.spyOn(UpgradeStore, 'delete').mockResolvedValue(lock)
+      const deleteSpy = jest.spyOn(UpgradeStore as any, 'delete').mockResolvedValue(lock)
 
       await expect(UpgradeStore.deleteLock()).resolves.toEqual(lock)
 
@@ -200,7 +200,7 @@ describe('upgrade-store', () => {
           time: new Date(),
         },
       ]
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(attempts)
+      const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(attempts)
 
       await expect(UpgradeStore.getAttempts()).resolves.toEqual(attempts)
 
@@ -255,7 +255,7 @@ describe('upgrade-store', () => {
           end: new Date(),
         },
       ]
-      const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(upgrades)
+      const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(upgrades)
 
       await expect(UpgradeStore.getUpgrades()).resolves.toEqual(upgrades)
 
@@ -295,7 +295,7 @@ async function testGetLock({
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
-  const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(locks)
+  const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(locks)
 
   if (error) {
     await expect(UpgradeStore.getLock()).rejects.toThrow(error)
@@ -333,7 +333,7 @@ async function testGetCurrentVersion({
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
-  const readSpy = jest.spyOn(UpgradeStore, 'read').mockResolvedValue(upgrades)
+  const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(upgrades)
 
   if (error) {
     await expect(UpgradeStore.getCurrentVersion()).rejects.toThrow(error)
@@ -382,7 +382,7 @@ async function testAddAttempt({
     version,
     time,
   }
-  const createSpy = jest.spyOn(UpgradeStore, 'create').mockResolvedValue(attempt)
+  const createSpy = jest.spyOn(UpgradeStore as any, 'create').mockResolvedValue(attempt)
 
   await expect(UpgradeStore.addAttempt(attempt)).resolves.toEqual(attempt)
 
@@ -421,7 +421,7 @@ async function testAddUpgrade({
     start,
     end,
   }
-  const createSpy = jest.spyOn(UpgradeStore, 'create').mockResolvedValue(upgrade)
+  const createSpy = jest.spyOn(UpgradeStore as any, 'create').mockResolvedValue(upgrade)
 
   await expect(UpgradeStore.addUpgrade(upgrade)).resolves.toEqual(upgrade)
 

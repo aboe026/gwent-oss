@@ -1,0 +1,13 @@
+query Leaders($factions: [FactionKey!]) {
+  leaders(factions: $factions) {
+    ability
+    dlc {
+      name
+      image
+    }
+    id
+    image
+    name
+    quote
+  }
+}

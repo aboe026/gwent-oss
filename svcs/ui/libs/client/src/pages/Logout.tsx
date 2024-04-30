@@ -1,12 +1,11 @@
 import { useNavigate } from 'react-router-dom'
 
 import Centered from '../components/Centered'
+import { CurrentUserDocument, CurrentUserQuery, useLogoutMutation } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from '../util/error-util'
-import { HTML_IDS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import LoadingSpinner from '../components/LoadingSpinner'
 import { ROUTES } from '@gwent/constants'
-import Spinner from '../components/Spinner'
-import { useUserContext } from '../App'
-import { useLogoutMutation } from '../graphql/generated-typings'
 import './Logout.css'
 
 /**
@@ -15,11 +14,22 @@ import './Logout.css'
  * @returns The application logout page
  */
 export default function LogoutPage() {
-  const { setUser } = useUserContext()
   const navigate = useNavigate()
   const [logout, { loading: logoutLoading, error: logoutError, data: logoutData }] = useLogoutMutation({
-    onCompleted: async () => {
-      setUser(undefined)
+    update(cache, {}) {
+      const existingUser = cache.readQuery<CurrentUserQuery>({ query: CurrentUserDocument })
+      if (existingUser?.currentUser) {
+        cache.writeQuery<CurrentUserQuery>({
+          query: CurrentUserDocument,
+          data: {
+            currentUser: {
+              ...existingUser.currentUser,
+              id: '',
+            },
+          },
+          broadcast: true,
+        })
+      }
     },
   })
 
@@ -27,12 +37,10 @@ export default function LogoutPage() {
     logout()
   }
 
-  const message = logoutError ? `Error logging out: ${getApolloError(logoutError)}` : 'Successfully logged out!'
-
   return (
     <Centered>
       {logoutLoading ? (
-        <Spinner size="200px" />
+        <LoadingSpinner size="200px" />
       ) : (
         <form
           id={HTML_IDS.LogoutForm}
@@ -46,16 +54,12 @@ export default function LogoutPage() {
           }}
         >
           <div className="logout-container">
-            <span id={HTML_IDS.LogoutMessage}>{message}</span>
-            {logoutError ? (
-              <button type="reset" onClick={() => logout} autoFocus={true}>
-                Retry
-              </button>
-            ) : (
-              <button id={HTML_IDS.LogoutLogin} type="submit" autoFocus={true}>
-                Log in
-              </button>
-            )}
+            <span id={HTML_IDS.LogoutMessage} className={logoutError ? HTML_CLASSES.ErrorText : ''}>
+              {`Error logging out: ${getApolloError(logoutError)}`}
+            </span>
+            <button className="pointable" type="reset" onClick={() => logout} autoFocus={true}>
+              Retry
+            </button>
           </div>
         </form>
       )}

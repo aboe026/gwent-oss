@@ -1,0 +1,173 @@
+#decksContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  align-items: center;
+  overflow: hidden;
+  padding-left: 5%;
+  padding-right: 5%;
+}
+
+#decksHeader {
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#decksHeaderUpper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+#deckFilterSort {
+  display: flex;
+  gap: 10px;
+}
+
+#deckFilterName {
+  margin-right: 10px;
+}
+
+#deckFilterCount {
+  margin-left: 5px;
+}
+
+#deckList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: auto;
+  width: 100%;
+}
+
+#decksList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.decks-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.deck-header-button {
+  margin-left: 2px;
+  margin-top: 2px;
+  margin-bottom: -2px;
+}
+
+.deck-header-filter-values {
+  display: flex;
+  gap: 10px;
+}
+
+.deck-filter-sort-group {
+  display: flex;
+  align-items: center;
+}
+
+.deck-list-deck {
+  display: flex;
+  justify-content: space-between;
+  width: calc(100% - 20px);
+  gap: 10px;
+  padding: 10px;
+  background-color: lightgray;
+  border-radius: 5px;
+}
+
+.deck-non-stats {
+  display: flex;
+  flex-direction: column;
+  width: 60%;
+  gap: 10px;
+}
+
+.deck-name-created {
+  display: flex;
+  justify-content: space-between;
+  background-color: darkgray;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.deck-faction-leader {
+  display: flex;
+  flex-grow: 1;
+  gap: 10px;
+}
+
+.deck-faction {
+  width: 40%;
+  background-color: darkgray;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.deck-faction-image {
+  float: left;
+  height: 60px;
+  width: 60px;
+  margin-right: 10px;
+}
+
+.deck-faction-name {
+  display: block;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.deck-faction-ability {
+  display: block;
+  margin-top: 10px;
+}
+
+.deck-leader {
+  width: 60%;
+  background-color: darkgray;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.deck-leader-image {
+  float: left;
+  height: 200px;
+  object-fit: cover;
+  object-position: 0 55px;
+  border-radius: 5px;
+  margin-top: -55px;
+  margin-right: 10px;
+}
+
+.deck-leader-name {
+  margin-top: 0;
+  margin-bottom: 0;
+  display: block;
+}
+
+.deck-leader-ability {
+  margin-top: 10px;
+  display: block;
+}
+
+.deck-stats {
+  display: flex;
+  gap: 10px;
+  width: 40%;
+  background-color: darkgray;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.deck-stats-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 50%;
+}

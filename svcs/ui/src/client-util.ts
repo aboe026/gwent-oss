@@ -6,7 +6,7 @@ import { replaceInFile } from 'replace-in-file'
 import env from './env'
 
 /**
- * A class for interacting with the browser client bundle
+ * A class for interacting with the browser client bundle.
  */
 export default class ClientUtil {
   private static logger = getLogger('client-util')

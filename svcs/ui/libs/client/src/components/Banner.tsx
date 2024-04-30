@@ -43,13 +43,13 @@ export default function Banner() {
           Gwent
         </h1>
         <div className="banner-item">
-          <h2
+          <h3
             className="banner-item pointable"
             id={HTML_IDS.BannerUsername}
             onClick={() => navigate(ROUTES.Profile.path)}
           >
             {user?.name}
-          </h2>
+          </h3>
         </div>
       </div>
       {menuOpen && (
@@ -57,8 +57,14 @@ export default function Banner() {
           <div id={HTML_IDS.MenutItemsHome} className="pointable" onClick={() => clickMenuItem(ROUTES.Home.path)}>
             Home
           </div>
+          <div id={HTML_IDS.MenuItemsDeck} className="pointable" onClick={() => clickMenuItem(ROUTES.Decks.path)}>
+            Decks
+          </div>
           <div id={HTML_IDS.MenuItemsProfile} className="pointable" onClick={() => clickMenuItem(ROUTES.Profile.path)}>
             Profile
+          </div>
+          <div id={HTML_IDS.MenuItemsAbout} className="pointable" onClick={() => clickMenuItem(ROUTES.About.path)}>
+            About
           </div>
         </div>
       )}

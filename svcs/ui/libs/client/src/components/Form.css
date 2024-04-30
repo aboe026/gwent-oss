@@ -32,8 +32,9 @@
   margin-left: 2px;
 }
 
-.form-errors {
-  color: red;
+.actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .actions .primary {

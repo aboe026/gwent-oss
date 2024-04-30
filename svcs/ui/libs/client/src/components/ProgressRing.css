@@ -1,0 +1,42 @@
+.progress-ring-container {
+  position: relative;
+  aspect-ratio: 1;
+}
+
+.progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.progress-ring-inner {
+  fill: transparent;
+}
+
+.progress-ring-outer {
+  fill: transparent;
+  stroke-dasharray: 0 100;
+  transition: stroke-dasharray 0.2s;
+}
+
+.progress-ring-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.progress-ring-center-text > img {
+  height: 100%;
+  width: 100%;
+  margin-top: 3px;
+}
+
+.progress-ring-bottom-text {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}

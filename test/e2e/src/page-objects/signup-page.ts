@@ -1,0 +1,61 @@
+import { t } from 'testcafe'
+
+import E2eUtil from '../util/e2e-util'
+import { ROUTES } from '@gwent/constants'
+import LoginForm from '../components/login-form'
+
+export default class SignupPage {
+  static getUrl(): string {
+    return E2eUtil.getUrl(ROUTES.Signup.path)
+  }
+
+  static async signUp({
+    username,
+    password = 'password',
+    verify = true,
+  }: {
+    username: string
+    password?: string
+    verify?: boolean
+  }) {
+    const currentUrl = await E2eUtil.getCurrentUrl()
+    if (currentUrl !== SignupPage.getUrl()) {
+      await t.click(LoginForm.elements.Mode)
+    }
+    if (verify) {
+      await SignupPage.verifyNotLoggedIn({})
+    }
+    await LoginForm.fillIn({
+      username,
+      password,
+      title: 'Welcome!',
+      verify,
+    })
+    if (verify) {
+      await SignupPage.verifyLoggedIn()
+    }
+  }
+
+  static async verifyNotLoggedIn({
+    username = '',
+    password = '',
+    error = '',
+  }: {
+    username?: string
+    password?: string
+    error?: string
+  }) {
+    await E2eUtil.verifyCurrentUrl(SignupPage.getUrl())
+    await LoginForm.verifyPresence({
+      username,
+      password,
+      error,
+      title: 'Welcome!',
+    })
+  }
+
+  static async verifyLoggedIn() {
+    await t.expect(E2eUtil.getCurrentUrl()).notEql(SignupPage.getUrl())
+    await LoginForm.verifyAbscence()
+  }
+}

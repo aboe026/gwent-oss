@@ -3,20 +3,32 @@ import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import '@gwent/client-env' // get typings/access to window.env
-import './index.css'
+import AboutPage from './pages/About'
 import App from './App'
+import DeckPage from './pages/Deck'
+import DecksPage from './pages/Decks'
 import HomePage from './pages/Home'
 import LoginPage from './pages/Login'
 import LogoutPage from './pages/Logout'
 import NotFoundPage from './pages/NotFound'
 import ProfilePage from './pages/Profile'
 import { ROUTES } from '@gwent/constants'
+import SignupPage from './pages/Signup'
+import './index.css'
 
 const router = createBrowserRouter([
   {
     element: <App />,
     errorElement: <NotFoundPage />,
     children: [
+      {
+        path: ROUTES.Deck.path,
+        element: <DeckPage />,
+      },
+      {
+        path: ROUTES.Decks.path,
+        element: <DecksPage />,
+      },
       {
         path: ROUTES.Home.path,
         element: <HomePage />,
@@ -26,12 +38,20 @@ const router = createBrowserRouter([
         element: <LoginPage />,
       },
       {
+        path: ROUTES.Signup.path,
+        element: <SignupPage />,
+      },
+      {
         path: ROUTES.Logout.path,
         element: <LogoutPage />,
       },
       {
         path: ROUTES.Profile.path,
         element: <ProfilePage />,
+      },
+      {
+        path: ROUTES.About.path,
+        element: <AboutPage />,
       },
     ],
   },

@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb'
 
 import PasswordHasher from '../../src/util/password-hasher'
-import UserStore from '../../src/database/user-store'
-import { UserDbObject } from '../../src/database/generated-typings'
+import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import UserStore from '../../src/database/stores/user-store'
 
 describe('user-store', () => {
-  describe('addUser', () => {
+  describe('add', () => {
     it('calls to create method with hashed password', async () => {
       await testAddUser({
         username: 'username',
@@ -35,7 +35,31 @@ describe('user-store', () => {
       })
     })
   })
-  describe('validateUser', () => {
+  describe('get', () => {
+    it('throws error if read response empty', async () => {
+      const id = new ObjectId()
+      await testGet({
+        id,
+        readResponse: [],
+        error: true,
+        errorCalls: [[`User with ID "${id}" does not exist`]],
+      })
+    })
+    it('returns read response if not empty', async () => {
+      const id = new ObjectId()
+      await testGet({
+        id,
+        readResponse: [
+          {
+            _id: id,
+            created: new Date(),
+            name: 'name',
+          },
+        ],
+      })
+    })
+  })
+  describe('validate', () => {
     it('throws error if user does not exist', async () => {
       const username = 'username'
       await testValidateUser({
@@ -125,7 +149,7 @@ async function testAddUser({
   const created = new Date()
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
   const hashSpy = jest.spyOn(PasswordHasher, 'hash').mockResolvedValue(hashedPassword)
-  const createSpy = jest.spyOn(UserStore, 'create')
+  const createSpy = jest.spyOn(UserStore as any, 'create')
   const isMongoErrorSpy = jest.spyOn(UserStore, 'isMongoError')
   if (isMongoError !== undefined) {
     isMongoErrorSpy.mockReturnValue(isMongoError)
@@ -148,9 +172,9 @@ async function testAddUser({
   } as any
 
   if (error) {
-    await expect(UserStore.addUser(username, password)).rejects.toThrow(error)
+    await expect(UserStore.add(username, password)).rejects.toThrow(error)
   } else {
-    await expect(UserStore.addUser(username, password)).resolves.toEqual({
+    await expect(UserStore.add(username, password)).resolves.toEqual({
       _id,
       created,
       name: username,
@@ -184,6 +208,44 @@ async function testAddUser({
   expect(dateSpy.mock.calls).toEqual([[]])
 }
 
+async function testGet({
+  id,
+  error,
+  errorCalls = [],
+  readResponse,
+}: {
+  id: string | ObjectId
+  readResponse: UserDbObject[]
+  error?: boolean
+  errorCalls?: string[][]
+}) {
+  const traceSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  UserStore['logger'] = {
+    trace: traceSpy,
+    error: errorSpy,
+  } as any
+  const readSpy = jest.spyOn(UserStore as any, 'read').mockResolvedValue(readResponse)
+
+  if (error) {
+    await expect(UserStore.get(id)).rejects.toThrow(`User with ID "${id}" does not exist`)
+  } else {
+    await expect(UserStore.get(id)).resolves.toEqual(readResponse[0])
+  }
+
+  expect(readSpy.mock.calls).toEqual([
+    [
+      {
+        filter: {
+          _id: id,
+        },
+      },
+    ],
+  ])
+  expect(traceSpy.mock.calls).toEqual([[`Getting user with ID "${id}"`]])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
 async function testValidateUser({
   username,
   users,
@@ -203,7 +265,7 @@ async function testValidateUser({
 }) {
   const password = 'password'
   const expectedPassword = match === undefined ? '' : users[0].password
-  const readSpy = jest.spyOn(UserStore, 'read').mockResolvedValue(users)
+  const readSpy = jest.spyOn(UserStore as any, 'read').mockResolvedValue(users)
   const matchSpy = jest.spyOn(PasswordHasher, 'match')
   if (match !== undefined) {
     matchSpy.mockResolvedValue(match)
@@ -216,9 +278,9 @@ async function testValidateUser({
   } as any
 
   if (error) {
-    await expect(UserStore.validateUser(username, password)).rejects.toThrow(error)
+    await expect(UserStore.validate(username, password)).rejects.toThrow(error)
   } else {
-    await expect(UserStore.validateUser(username, password)).resolves.toEqual(expected)
+    await expect(UserStore.validate(username, password)).resolves.toEqual(expected)
   }
 
   expect(readSpy.mock.calls).toEqual([
