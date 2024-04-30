@@ -386,7 +386,8 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                     build/src/tests \
                     --config-file=build/.testcaferc.js \
                     --reporter spec,xunit:test-results/${suiteName}.xml \
-                    --quarantine-mode
+                    --quarantine-mode \
+                    --screenshots path=screenshots/,takeOnFails=true
             """
         } catch (err) {
             exceptionThrown = true

@@ -110,11 +110,6 @@ export default function App() {
                 broadcast: true,
               })
             }
-            // client.cache.evict({
-            //   fieldName: 'currentUser',
-            //   broadcast: true,
-            // })
-            // client.cache.gc()
           }
         }
 
