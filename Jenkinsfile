@@ -36,7 +36,7 @@ node {
     def services = []
 
     try {
-        timeout(time: 15, unit: 'MINUTES') {
+        timeout(time: 20, unit: 'MINUTES') {
             ansiColor('xterm') {
                 dir(workDir) {
                     stage('Prep') {
@@ -379,6 +379,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                 -e API_URL=https://${uniqueName}-router-1/graphql \
                 -e MONGO_URL=mongodb://${uniqueName}-database-1:27017 \
                 -e MONGO_DB=${dbName} \
+                -e BUILD=${env.BUILD_ID} \
                 -e WEBGL_UNSUPPORTED=${browser == 'firefox' ? 'true' : 'false'} \
                 -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
                 -i testcafe/testcafe:${testcafeImageTag} \
