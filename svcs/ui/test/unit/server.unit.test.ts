@@ -65,7 +65,7 @@ describe('server', () => {
       await expect(Server['configureImages']()).rejects.toThrow(`IMAGES_DIR "${imagesDir}" does not exist.`)
 
       expect(envSpy.mock.calls).toEqual([[]])
-      expect(isAbsoluteSpy.mock.calls).toEqual([expect.arrayContaining([imagesDir])]) // for some reason CI has more calls
+      expect(isAbsoluteSpy.mock.calls[0]).toEqual([imagesDir]) // for some reason CI has more calls
       expect(joinSpy.mock.calls).toEqual([[expect.any(String), imagesDir]])
       expect(existsSpy.mock.calls).toEqual([[imagesPath]])
       expect(staticSpy.mock.calls).toEqual([])

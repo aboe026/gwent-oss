@@ -61,6 +61,8 @@ node {
                             sh 'chmod -R 777 test-results'
                             sh 'mkdir screenshots'
                             sh 'chmod -R 777 screenshots'
+                            sh 'mkdir perf'
+                            sh 'chmod -R 777 perf'
                         }
                         e2eDbName = "${projectName}-e2e"
 
