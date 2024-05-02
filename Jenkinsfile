@@ -53,7 +53,6 @@ node {
                         dir('test/e2e') {
                             def e2ePackageJson = readJSON file: packageJsonName
                             testcafeVersion = e2ePackageJson.dependencies.testcafe
-                            // testcafeImageTag = e2ePackageJson.dependencies.testcafe
                             testcafeImageTag = "${e2ePackageJson.dependencies.testcafe}--${uniqueName}"
 
                             // explicitly create directories to avoid EACCES: permission denied from testcafe/testcafe container

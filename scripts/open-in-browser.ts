@@ -1,4 +1,6 @@
 import open from 'open'
+
+//
 ;(async () => {
   await open(process.argv[2], {
     wait: false,

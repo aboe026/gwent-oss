@@ -9,6 +9,7 @@ const DENY_LIST: string[] = [
   'url-join', // 5.0 switched to ESM, need to switch to ESM to be able to use
   'prettier', // 3.0 broke auto pretty on save (TypeError: Invalid host defined options)
   'eslint-plugin-prettier', // 5.0 breaks if using 2.0 of prettier (TypeError: prettier.resolveConfig is not a function)
+  'eslint', // 9.0 breaks with TypeError: [ERR_IMPORT_ASSERTION_TYPE_MISSING]: Module "file:///.eslintrc.json?mtime=1714512618315" needs an import assertion of type "json"
 ]
 
 //
@@ -58,6 +59,7 @@ async function upgradePackages(
               files: packageJsonFile,
               from: `"${packageName}": "${packageversion}"`,
               to: `"${packageName}": "${latestVersion}"`,
+              disableGlobs: true,
             })
           }
         }

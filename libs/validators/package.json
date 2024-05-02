@@ -1,6 +1,6 @@
 {
   "name": "@gwent/validators",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "Adam Boe",
   "description": "Validator functions",
   "main": "build/src/index.js",
@@ -19,9 +19,9 @@
     "@gwent/graphql-schema": "workspace:*"
   },
   "devDependencies": {
-    "@types/jest": "29.5.7",
-    "@types/node": "20.8.10",
+    "@types/jest": "29.5.12",
+    "@types/node": "20.12.7",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.1.1"
+    "ts-jest": "29.1.2"
   }
 }

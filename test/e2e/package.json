@@ -1,6 +1,6 @@
 {
   "name": "@gwent/e2e-tests",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "Adam Boe",
   "description": "E2E browser testing for Gwent website",
   "scripts": {
@@ -25,11 +25,11 @@
     "cross-env": "7.0.3",
     "graphql": "16.8.1",
     "graphql-request": "6.1.0",
-    "mongodb": "6.2.0",
-    "testcafe": "3.3.0",
+    "mongodb": "6.5.0",
+    "testcafe": "3.6.0",
     "url-join": "4.0.1"
   },
   "devDependencies": {
-    "@types/url-join": "4.0.2"
+    "@types/url-join": "4.0.3"
   }
 }

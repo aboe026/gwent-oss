@@ -1,6 +1,6 @@
 {
   "name": "@gwent/env",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "author": "Adam Boe",
   "description": "Parse process.env",
   "main": "build/src/env.js",
@@ -15,12 +15,12 @@
     "watch": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "dotenv": "16.3.1",
+    "dotenv": "16.4.5",
     "envalid": "8.0.0"
   },
   "devDependencies": {
-    "@types/jest": "29.5.7",
+    "@types/jest": "29.5.12",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.1.1"
+    "ts-jest": "29.1.2"
   }
 }
