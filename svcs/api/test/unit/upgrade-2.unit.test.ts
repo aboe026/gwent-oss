@@ -809,9 +809,20 @@ describe('upgrade-2', () => {
     })
   })
   describe('normalizeUnitFaction', () => {
-    it('throws error if faction not in map', () => {
+    it('throws error if faction not in map for unit', () => {
       expect(() => new Upgrade2().normalizeUnitFaction(unitRequired, {})).toThrow(
         `Invalid Faction "${unitRequired.Faction}" for Unit "${unitRequired.Name}"`
+      )
+    })
+    it('throws error if faction not in map for leader', () => {
+      const leader: LeaderJson = {
+        Ability: 'ability',
+        Faction: 'Northern Realms',
+        Name: 'name',
+        Quote: 'quote',
+      }
+      expect(() => new Upgrade2().normalizeUnitFaction(leader, {})).toThrow(
+        `Invalid Faction "${leader.Faction}" for Leader "${leader.Name}"`
       )
     })
     it('returns id if faction in map', () => {
