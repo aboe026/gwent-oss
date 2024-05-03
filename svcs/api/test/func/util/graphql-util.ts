@@ -1,7 +1,7 @@
 import { graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
-import { Deck, DeckCard, FactionKey, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, DeckUnit, FactionKey, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { getDeckFragment, getLeaderFragment, getUnitFragment } from './fragment-util'
 import schema from '../../../src/graphql/executable-schema'
 
@@ -97,7 +97,7 @@ export async function getUnits({ factions }: { factions: FactionKey[] }): Promis
   return units
 }
 
-export async function getStrengthUnits(faction: FactionKey): Promise<DeckCard[]> {
+export async function getStrengthUnits(faction: FactionKey): Promise<DeckUnit[]> {
   const units = await getUnits({
     factions: [faction],
   })
@@ -112,12 +112,12 @@ export async function getStrengthUnits(faction: FactionKey): Promise<DeckCard[]>
 }
 
 export async function getUnitsInput(faction: FactionKey): Promise<string> {
-  const deckCards = await getStrengthUnits(faction)
+  const deckUnits = await getStrengthUnits(faction)
 
-  return deckCards
+  return deckUnits
     .map(
-      (deckCard) => `{
-        id: "${deckCard.unit.id}"
+      (deckUnit) => `{
+        id: "${deckUnit.unit.id}"
       }`
     )
     .join(',')

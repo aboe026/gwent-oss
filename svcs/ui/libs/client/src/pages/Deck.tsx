@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 import Centered from '../components/Centered'
-import { DeckCard, EffectKey } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 import {
   DecksQuery,
   DecksDocument,
@@ -26,7 +26,6 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/deck-filter'
-import FullCard from '../components/FullCard'
 import { getApolloError } from '../util/error-util'
 import { getRouteFromPath } from '../util/route-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
@@ -35,6 +34,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import ProgressBar from '../components/ProgressBar'
 import { sortObjectArray } from '@gwent/utils'
 import UnitCard from '../components/UnitCard'
+import UnitFull from '../components/UnitFull'
 import UnitsHeader from '../components/UnitsHeader'
 import UnitsStats from '../components/UnitsStats'
 import { useTitle } from '../components/TabTitle'
@@ -54,8 +54,8 @@ export default function DeckPage() {
   const [faction, setFaction] = useState<Faction | undefined>()
   const [factionStats, setFactionStats] = useState<UnitStats | undefined>()
   const [leaderId, setLeaderId] = useState<string | undefined>()
-  const [selectedCards, setSelectedCards] = useState<DeckCard[]>([])
-  const [cards, setCards] = useState<DeckCard[]>([])
+  const [selectedUnits, setSelectedUnits] = useState<DeckUnit[]>([])
+  const [deckUnits, setDeckUnits] = useState<DeckUnit[]>([])
   const { pathname } = useLocation()
   const { checkAuth } = useUserContext()
   const navigate = useNavigate()
@@ -64,10 +64,10 @@ export default function DeckPage() {
       faction: faction?.key as FactionKey,
       leader: leaderId as string,
       name,
-      units: selectedCards.map((card) => {
+      units: selectedUnits.map((deckUnit) => {
         return {
-          id: card.unit.id,
-          artStyle: card.artStyle,
+          id: deckUnit.unit.id,
+          artStyle: deckUnit.artStyle,
         }
       }),
     },
@@ -94,7 +94,7 @@ export default function DeckPage() {
   if (
     faction &&
     validateDeck({
-      cards: selectedCards,
+      deckUnits: selectedUnits,
       faction: faction.key,
     }).length === 0
   ) {
@@ -118,8 +118,8 @@ export default function DeckPage() {
             faction,
             setFaction,
             setLeaderId,
-            setCards,
-            setSelectedCards,
+            setDeckUnits,
+            setSelectedUnits,
             factionStats,
             setFactionStats,
             disabledOverride: loading,
@@ -137,10 +137,10 @@ export default function DeckPage() {
       <div id="deckLower" className="content-block">
         {renderUnits({
           faction,
-          cards,
-          setCards,
-          selectedCards: selectedCards,
-          setSelectedCards,
+          deckUnits,
+          setDeckUnits,
+          selectedUnits,
+          setSelectedUnits,
           factionStats,
           disabledOverride: loading,
         })}
@@ -174,8 +174,8 @@ function renderNameAndFaction({
   faction,
   setFaction,
   setLeaderId,
-  setCards,
-  setSelectedCards,
+  setDeckUnits,
+  setSelectedUnits,
   factionStats,
   setFactionStats,
   disabledOverride,
@@ -185,8 +185,8 @@ function renderNameAndFaction({
   faction: Faction | undefined
   setFaction: Dispatch<SetStateAction<Faction | undefined>>
   setLeaderId: Dispatch<SetStateAction<string | undefined>>
-  setCards: Dispatch<SetStateAction<DeckCard[]>>
-  setSelectedCards: Dispatch<SetStateAction<DeckCard[]>>
+  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
   factionStats: UnitStats | undefined
   setFactionStats: Dispatch<SetStateAction<UnitStats | undefined>>
   disabledOverride: boolean
@@ -261,11 +261,11 @@ function renderNameAndFaction({
                 value={faction === undefined ? '' : faction.key}
                 onChange={(event) => {
                   const newFactionKey = event.target.value as FactionKey
-                  setCards((previous: DeckCard[]) =>
-                    previous.filter((card) => card.unit.faction.key === FactionKey.Neutral)
+                  setDeckUnits((previous: DeckUnit[]) =>
+                    previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
                   )
-                  setSelectedCards((previous: DeckCard[]) =>
-                    previous.filter((card) => card.unit.faction.key === FactionKey.Neutral)
+                  setSelectedUnits((previous: DeckUnit[]) =>
+                    previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
                   )
                   setFaction(
                     factionsData?.factions.find((availableFaction) => availableFaction.key === newFactionKey) as Faction
@@ -491,18 +491,18 @@ function renderLeader({
 
 function renderUnits({
   faction,
-  cards,
-  setCards,
-  selectedCards,
-  setSelectedCards,
+  deckUnits,
+  setDeckUnits,
+  selectedUnits,
+  setSelectedUnits,
   factionStats,
   disabledOverride,
 }: {
   faction: Faction | undefined
-  cards: DeckCard[]
-  setCards: Dispatch<SetStateAction<DeckCard[]>>
-  selectedCards: DeckCard[]
-  setSelectedCards: Dispatch<SetStateAction<DeckCard[]>>
+  deckUnits: DeckUnit[]
+  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  selectedUnits: DeckUnit[]
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
   factionStats: UnitStats | undefined
   disabledOverride: boolean
 }) {
@@ -519,7 +519,7 @@ function renderUnits({
   const [sortFilterLocked, setSortFilterLocked] = useState(true)
   const [combatsExpanded, setCombatsExpanded] = useState(false)
   const [effectsExpanded, setEffectsExpanded] = useState(false)
-  const [fullCard, setFullCard] = useState<DeckCard | undefined>()
+  const [fullUnit, setFullUnit] = useState<DeckUnit | undefined>()
   const { checkAuth } = useUserContext()
   const {
     loading: factionUnitsLoading,
@@ -534,8 +534,8 @@ function renderUnits({
       checkAuth(error, factionUnitsRefetch)
     },
     onCompleted: (data) => {
-      setCards((previous: DeckCard[]) => [
-        ...previous.filter((card) => card.unit.faction.key === FactionKey.Neutral),
+      setDeckUnits((previous: DeckUnit[]) => [
+        ...previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral),
         ...data.units.map((unit) => {
           return {
             artStyle: 1,
@@ -559,7 +559,7 @@ function renderUnits({
       checkAuth(error, neutralUnitsRefetch)
     },
     onCompleted: (data) => {
-      setCards((previous: DeckCard[]) => [
+      setDeckUnits((previous: DeckUnit[]) => [
         ...previous,
         ...data.units.map((unit) => {
           return {
@@ -576,21 +576,21 @@ function renderUnits({
   if (availableSortField === SORT_FIELD.Strength) {
     availableSortFields = [`unit.${SORT_FIELD.Strength}`, ...availableSortFields]
   }
-  const sortedCards = sortObjectArray({
-    array: cards,
+  const sortedUnits = sortObjectArray({
+    array: deckUnits,
     sortProperties: availableSortFields,
     reverse: availableSortOrder === SORT_ORDER.Desc,
   })
-  const filteredAvailableCards: DeckCard[] = []
-  let filteredSelectedCards: DeckCard[] = []
-  const selectedIds = selectedCards.map((card) => card.unit.id)
-  for (const card of sortedCards) {
-    if (selectedIds.includes(card.unit.id)) {
-      if (isFilteredIn(card, selectedFilterFields, selectedNameFilter)) {
-        filteredSelectedCards.push(card)
+  const filteredAvailableUnits: DeckUnit[] = []
+  let filteredSelectedUnits: DeckUnit[] = []
+  const selectedIds = selectedUnits.map((deckUnit) => deckUnit.unit.id)
+  for (const deckUnit of sortedUnits) {
+    if (selectedIds.includes(deckUnit.unit.id)) {
+      if (isFilteredIn(deckUnit, selectedFilterFields, selectedNameFilter)) {
+        filteredSelectedUnits.push(deckUnit)
       }
-    } else if (isFilteredIn(card, availableFilterFields, availableNameFilter)) {
-      filteredAvailableCards.push(card)
+    } else if (isFilteredIn(deckUnit, availableFilterFields, availableNameFilter)) {
+      filteredAvailableUnits.push(deckUnit)
     }
   }
   if (selectedSortField !== availableSortField || selectedSortOrder !== availableSortOrder) {
@@ -598,8 +598,8 @@ function renderUnits({
     if (selectedSortField === SORT_FIELD.Strength) {
       selectedSortFields = [`unit.${SORT_FIELD.Strength}`, ...selectedSortFields]
     }
-    filteredSelectedCards = sortObjectArray({
-      array: filteredSelectedCards,
+    filteredSelectedUnits = sortObjectArray({
+      array: filteredSelectedUnits,
       sortProperties: selectedSortFields,
       reverse: selectedSortOrder === SORT_ORDER.Desc,
     })
@@ -612,15 +612,15 @@ function renderUnits({
 
   return (
     <>
-      <FullCard
+      <UnitFull
         disabled={disabled}
-        filteredAvailableCards={filteredAvailableCards}
-        filteredSelectedCards={filteredSelectedCards}
-        fullCard={fullCard}
+        filteredAvailableUnits={filteredAvailableUnits}
+        filteredSelectedUnits={filteredSelectedUnits}
+        fullUnit={fullUnit}
         selectedIds={selectedIds}
-        setCards={setCards}
-        setFullCard={setFullCard}
-        setSelectedCards={setSelectedCards}
+        setUnits={setDeckUnits}
+        setFullUnit={setFullUnit}
+        setSelectedUnits={setSelectedUnits}
       />
       {faction === undefined ? (
         <span className="deck-container-placeholder">Units</span>
@@ -630,13 +630,13 @@ function renderUnits({
             <span
               id={HTML_IDS.DeckUnitsFactionError}
               className="error-text"
-            >{`Error getting faction cards: ${resolvedFactionUnitsError}`}</span>
+            >{`Error getting faction units: ${resolvedFactionUnitsError}`}</span>
           )}
           {resolvedNeutralUnitsError && (
             <span
               id={HTML_IDS.DeckUnitsNeutralError}
               className="error-text"
-            >{`Error getting neutral cards: ${resolvedNeutralUnitsError}`}</span>
+            >{`Error getting neutral units: ${resolvedNeutralUnitsError}`}</span>
           )}
         </div>
       ) : (
@@ -673,14 +673,14 @@ function renderUnits({
             ) : (
               <div id={HTML_IDS.DeckUnitsAvailableContainer} className="deck-unit-border">
                 <div className="deck-unit-container">
-                  {filteredAvailableCards.map((card) => (
+                  {filteredAvailableUnits.map((deckUnit) => (
                     <UnitCard
-                      key={card.unit.id}
-                      card={card}
+                      key={deckUnit.unit.id}
+                      deckUnit={deckUnit}
                       disabled={disabled}
-                      setCards={setCards}
-                      setFullCard={setFullCard}
-                      setSelectedCards={setSelectedCards}
+                      setUnits={setDeckUnits}
+                      setFullUnit={setFullUnit}
+                      setSelectedUnits={setSelectedUnits}
                     />
                   ))}
                 </div>
@@ -695,9 +695,9 @@ function renderUnits({
               availableSortField={availableSortField}
               availableSortOrder={availableSortOrder}
               disabled={disabled}
-              filteredAvailableCards={filteredAvailableCards}
-              filteredSelectedCards={filteredSelectedCards}
-              setSelectedCards={setSelectedCards}
+              filteredAvailableUnits={filteredAvailableUnits}
+              filteredSelectedUnits={filteredSelectedUnits}
+              setSelectedUnits={setSelectedUnits}
               setSelectedFiltersExpanded={setSelectedFiltersExpanded}
               setSelectedNameFilter={setSelectedNameFilter}
               setSelectedSortField={setSelectedSortField}
@@ -707,7 +707,7 @@ function renderUnits({
               combatsExpanded={combatsExpanded}
               effectsExpanded={effectsExpanded}
               factionStats={factionStats}
-              selectedCards={selectedCards}
+              selectedUnits={selectedUnits}
               setAvailableFilterFields={setAvailableFilterFields}
               setCombatsExpanded={setCombatsExpanded}
               setEffectsExpanded={setEffectsExpanded}
@@ -746,14 +746,14 @@ function renderUnits({
             ) : (
               <div id={HTML_IDS.DeckUnitsSelectedContainer} className="deck-unit-border">
                 <div className="deck-unit-container">
-                  {filteredSelectedCards.map((card) => (
+                  {filteredSelectedUnits.map((deckUnit) => (
                     <UnitCard
-                      key={card.unit.id}
-                      card={card}
+                      key={deckUnit.unit.id}
+                      deckUnit={deckUnit}
                       disabled={disabled}
-                      setCards={setCards}
-                      setFullCard={setFullCard}
-                      setSelectedCards={setSelectedCards}
+                      setUnits={setDeckUnits}
+                      setFullUnit={setFullUnit}
+                      setSelectedUnits={setSelectedUnits}
                     />
                   ))}
                 </div>
@@ -774,7 +774,7 @@ function renderUnitsLoading() {
   )
 }
 
-function isFilteredIn(card: DeckCard, fields: FILTER_FIELD[], name: string): boolean {
+function isFilteredIn(deckUnit: DeckUnit, fields: FILTER_FIELD[], name: string): boolean {
   const selected: FilterField[] = []
   for (const field of fields) {
     if (FILTERS[field]) {
@@ -789,31 +789,34 @@ function isFilteredIn(card: DeckCard, fields: FILTER_FIELD[], name: string): boo
 
   const combatIncluded =
     combatFilters.length === 0 ||
-    combatFilters.some((filter) => card.unit.combats?.includes(filter.value as any as Combat)) // eslint-disable-line @typescript-eslint/no-explicit-any
+    combatFilters.some((filter) => deckUnit.unit.combats?.includes(filter.value as any as Combat)) // eslint-disable-line @typescript-eslint/no-explicit-any
   const dlcIncluded =
-    dlcFilters.length === 0 || dlcFilters.some((filter) => card.unit.dlc?.key === (filter.value as any as DlcKey)) // eslint-disable-line @typescript-eslint/no-explicit-any
+    dlcFilters.length === 0 || dlcFilters.some((filter) => deckUnit.unit.dlc?.key === (filter.value as any as DlcKey)) // eslint-disable-line @typescript-eslint/no-explicit-any
   const effectIncluded =
     effectFilters.length === 0 ||
     effectFilters.some(
-      (filter) => card.unit.effects?.map((effect) => effect.key).includes(filter.value as any as EffectKey) // eslint-disable-line @typescript-eslint/no-explicit-any
+      (filter) => deckUnit.unit.effects?.map((effect) => effect.key).includes(filter.value as any as EffectKey) // eslint-disable-line @typescript-eslint/no-explicit-any
     )
   const factionIncluded =
     factionFilters.length === 0 ||
     factionFilters.some(
       (filter) =>
-        (card.unit.faction.key === FactionKey.Neutral && (filter.value as any as FactionKey) === FactionKey.Neutral) || // eslint-disable-line @typescript-eslint/no-explicit-any
-        (card.unit.faction.key !== FactionKey.Neutral && (filter.value as any as FactionKey) !== FactionKey.Neutral) // eslint-disable-line @typescript-eslint/no-explicit-any
+        (deckUnit.unit.faction.key === FactionKey.Neutral &&
+          (filter.value as any as FactionKey) === FactionKey.Neutral) || // eslint-disable-line @typescript-eslint/no-explicit-any
+        (deckUnit.unit.faction.key !== FactionKey.Neutral && (filter.value as any as FactionKey) !== FactionKey.Neutral) // eslint-disable-line @typescript-eslint/no-explicit-any
     )
   const otherIncluded =
     otherFilters.length === 0 ||
     otherFilters.some(
       (filter) =>
-        (filter.value === FILTER_FIELD.Hero && card.unit.hero) ||
-        (filter.value === FILTER_FIELD.Special && card.unit.special) ||
-        (filter.value === FILTER_FIELD.Strength && card.unit.strength !== undefined && card.unit.strength !== null) ||
-        (filter.value === FILTER_FIELD.Art && card.unit.images.length > 1)
+        (filter.value === FILTER_FIELD.Hero && deckUnit.unit.hero) ||
+        (filter.value === FILTER_FIELD.Special && deckUnit.unit.special) ||
+        (filter.value === FILTER_FIELD.Strength &&
+          deckUnit.unit.strength !== undefined &&
+          deckUnit.unit.strength !== null) ||
+        (filter.value === FILTER_FIELD.Art && deckUnit.unit.images.length > 1)
     )
-  const nameIncluded = !name || card.unit.name.toLowerCase().includes(name.toLowerCase())
+  const nameIncluded = !name || deckUnit.unit.name.toLowerCase().includes(name.toLowerCase())
 
   return combatIncluded && dlcIncluded && effectIncluded && factionIncluded && otherIncluded && nameIncluded
 }

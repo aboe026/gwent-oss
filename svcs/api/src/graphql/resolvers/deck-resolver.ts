@@ -35,23 +35,23 @@ const DeckResolver: DeckResolvers<any, DeckDbObject> = {
     return deck.leader as any as LeaderDbObject // eslint-disable-line @typescript-eslint/no-explicit-any
   },
   units: async (deck: DeckDbObject) => {
-    const cards: {
+    const deckUnits: {
       artStyle: number
       unit: UnitDbObject
     }[] = []
 
     const unitIdsToGet: ObjectId[] = []
-    for (const card of deck.units) {
+    for (const deckUnit of deck.units) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (!(card as any).unit) {
-        const id = (card as any).id.toString() // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (!(deckUnit as any).unit) {
+        const id = (deckUnit as any).id.toString() // eslint-disable-line @typescript-eslint/no-explicit-any
         if (!unitIdsToGet.includes(id)) {
           unitIdsToGet.push(id)
         }
       } else {
-        cards.push({
-          artStyle: (card as any).artStyle, // eslint-disable-line @typescript-eslint/no-explicit-any
-          unit: card.unit as any as UnitDbObject, // eslint-disable-line @typescript-eslint/no-explicit-any
+        deckUnits.push({
+          artStyle: (deckUnit as any).artStyle, // eslint-disable-line @typescript-eslint/no-explicit-any
+          unit: deckUnit.unit as any as UnitDbObject, // eslint-disable-line @typescript-eslint/no-explicit-any
         })
       }
     }
@@ -60,25 +60,25 @@ const DeckResolver: DeckResolvers<any, DeckDbObject> = {
       const units = await UnitStore.get({
         ids: unitIdsToGet,
       })
-      for (const card of deck.units) {
+      for (const deckUnit of deck.units) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!(card as any).unit) {
+        if (!(deckUnit as any).unit) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const id = (card as any).id.toString()
+          const id = (deckUnit as any).id.toString()
           const dbUnit = units.find((unit) => unit._id.toString() === id)
           if (!dbUnit) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             throw Error(`Could not find unit with ID "${id}".`)
           }
-          cards.push({
-            artStyle: card.artStyle as number,
+          deckUnits.push({
+            artStyle: deckUnit.artStyle as number,
             unit: dbUnit,
           })
         }
       }
     }
 
-    return cards
+    return deckUnits
   },
   user: async (deck: DeckDbObject) => {
     if (ObjectId.isValid(deck.user)) {

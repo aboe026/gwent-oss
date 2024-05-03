@@ -1,12 +1,12 @@
-import { Combat, DeckCard, UnitStats, EffectKey } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, DeckUnit, UnitStats, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 
 /**
- * Returns the statistics for the set of cards.
+ * Returns the statistics for the set of Deck Units.
  *
- * @param cards The set of cards to get statistics for.
- * @returns The statistics for the set of cards.
+ * @param deckUnits The set of Deck Units to get statistics for.
+ * @returns The statistics for the set of Deck Units.
  */
-export default function getUnitStats(cards: DeckCard[]): UnitStats {
+export default function getUnitStats(deckUnits: DeckUnit[]): UnitStats {
   let agile = 0
   let avenger = 0
   let berserker = 0
@@ -31,66 +31,66 @@ export default function getUnitStats(cards: DeckCard[]): UnitStats {
   let strengthTotal = 0
   let units = 0
 
-  for (const card of cards) {
-    if (card.unit.deckable) {
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Agile)) {
+  for (const deckUnit of deckUnits) {
+    if (deckUnit.unit.deckable) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Agile)) {
         agile++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Avenger)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Avenger)) {
         avenger++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Berserker)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Berserker)) {
         berserker++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Bond)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Bond)) {
         bond++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Decoy)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Decoy)) {
         decoy++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Horn)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Horn)) {
         horn++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Mardroeme)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Mardroeme)) {
         mardroeme++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Medic)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Medic)) {
         medic++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Morale)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Morale)) {
         morale++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Muster)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Muster)) {
         muster++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Scorch)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Scorch)) {
         scorch++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Spy)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Spy)) {
         spy++
       }
-      if (card.unit.effects?.map((effect) => effect.key).includes(EffectKey.Weather)) {
+      if (deckUnit.unit.effects?.map((effect) => effect.key).includes(EffectKey.Weather)) {
         weather++
       }
 
-      if (card.unit.combats && card.unit.combats.includes(Combat.Close) && !card.unit.special) {
+      if (deckUnit.unit.combats && deckUnit.unit.combats.includes(Combat.Close) && !deckUnit.unit.special) {
         close++
       }
-      if (card.unit.combats && card.unit.combats.includes(Combat.Ranged) && !card.unit.special) {
+      if (deckUnit.unit.combats && deckUnit.unit.combats.includes(Combat.Ranged) && !deckUnit.unit.special) {
         ranged++
       }
-      if (card.unit.combats && card.unit.combats.includes(Combat.Siege) && !card.unit.special) {
+      if (deckUnit.unit.combats && deckUnit.unit.combats.includes(Combat.Siege) && !deckUnit.unit.special) {
         siege++
       }
 
-      if (card.unit.hero) {
+      if (deckUnit.unit.hero) {
         heroes++
       }
-      if (card.unit.special) {
+      if (deckUnit.unit.special) {
         specials++
       }
-      if (card.unit.strength !== undefined && card.unit.strength !== null) {
-        strengthTotal += card.unit.strength
+      if (deckUnit.unit.strength !== undefined && deckUnit.unit.strength !== null) {
+        strengthTotal += deckUnit.unit.strength
         strengths++
       }
       units++

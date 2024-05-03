@@ -41,17 +41,17 @@ export type Deck = {
   leader: Leader;
   name: Scalars['String']['output'];
   stats: UnitStats;
-  units: Array<DeckCard>;
+  units: Array<DeckUnit>;
   user: User;
 };
 
-export type DeckCard = {
-  __typename?: 'DeckCard';
+export type DeckUnit = {
+  __typename?: 'DeckUnit';
   artStyle: Scalars['Int']['output'];
   unit: Unit;
 };
 
-export type DeckCardInput = {
+export type DeckUnitInput = {
   /** For units with multiple art styles, the art style to use (1-based indexing). */
   artStyle?: InputMaybe<Scalars['Int']['input']>;
   id: Scalars['ID']['input'];
@@ -153,7 +153,7 @@ export type MutationAddDeckArgs = {
   faction: FactionKey;
   leader: Scalars['ID']['input'];
   name: Scalars['String']['input'];
-  units: Array<DeckCardInput>;
+  units: Array<DeckUnitInput>;
 };
 
 
@@ -270,7 +270,7 @@ export type AddDeckMutationVariables = Exact<{
   name: Scalars['String']['input'];
   faction: FactionKey;
   leader: Scalars['ID']['input'];
-  units: Array<DeckCardInput> | DeckCardInput;
+  units: Array<DeckUnitInput> | DeckUnitInput;
 }>;
 
 
@@ -334,7 +334,7 @@ export type UnitsQuery = { __typename?: 'Query', units: Array<{ __typename?: 'Un
 
 
 export const AddDeckDocument = gql`
-    mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckCardInput!]!) {
+    mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckUnitInput!]!) {
   addDeck(name: $name, faction: $faction, leader: $leader, units: $units) {
     id
   }

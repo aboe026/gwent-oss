@@ -252,7 +252,7 @@ describe('mutation-resolver', () => {
       expect(validateDeckSpy.mock.calls).toEqual([
         [
           {
-            cards: [
+            deckUnits: [
               {
                 artStyle: 1,
                 unit: {
@@ -337,7 +337,7 @@ describe('mutation-resolver', () => {
       expect(validateDeckSpy.mock.calls).toEqual([
         [
           {
-            cards: [],
+            deckUnits: [],
             faction: args.faction,
           },
         ],
@@ -419,7 +419,7 @@ describe('mutation-resolver', () => {
       expect(validateDeckSpy.mock.calls).toEqual([
         [
           {
-            cards: [],
+            deckUnits: [],
             faction: args.faction,
           },
         ],
@@ -510,7 +510,7 @@ describe('mutation-resolver', () => {
       expect(validateDeckSpy.mock.calls).toEqual([
         [
           {
-            cards: [],
+            deckUnits: [],
             faction: args.faction,
           },
         ],
@@ -798,7 +798,7 @@ async function testAddDeckWithArtStyle({ input, expected }: { input: any; expect
     name: 'name',
     quote: 'quote',
   }
-  const cards = [
+  const deckUnits = [
     {
       artStyle: expected,
       unit: {
@@ -865,7 +865,7 @@ async function testAddDeckWithArtStyle({ input, expected }: { input: any; expect
   expect(validateDeckSpy.mock.calls).toEqual([
     [
       {
-        cards,
+        deckUnits: deckUnits,
         faction: args.faction,
       },
     ],
@@ -887,5 +887,5 @@ async function testAddDeckWithArtStyle({ input, expected }: { input: any; expect
       },
     ],
   ])
-  expect(getDeckStatsSpy.mock.calls).toEqual([[cards]])
+  expect(getDeckStatsSpy.mock.calls).toEqual([[deckUnits]])
 }

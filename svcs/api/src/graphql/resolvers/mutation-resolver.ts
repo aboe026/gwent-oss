@@ -1,6 +1,6 @@
 import {
   Combat,
-  DeckCard,
+  DeckUnit,
   Dlc,
   Effect,
   Faction,
@@ -48,16 +48,16 @@ const MutationResolver: MutationResolvers<any, any> = {
       )
     }
     const units = await UnitStore.get({
-      ids: args.units.map((card) => card.id),
+      ids: args.units.map((unit) => unit.id),
     })
     let errors: string[] = []
-    const cards: DeckCard[] = []
+    const deckUnits: DeckUnit[] = []
     for (const unit of args.units) {
       const dbUnit = units.find((dbUnit) => dbUnit._id.toString() === unit.id)
       if (!dbUnit) {
         errors.push(`Invalid unit ID "${unit.id}": Does not exist.`)
       } else {
-        cards.push({
+        deckUnits.push({
           artStyle: unit.artStyle === undefined || unit.artStyle === null ? 1 : unit.artStyle,
           unit: {
             id: unit.id,
@@ -75,7 +75,7 @@ const MutationResolver: MutationResolvers<any, any> = {
       return Error(errors.join('\n')) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     errors = validateDeck({
-      cards,
+      deckUnits: deckUnits,
       faction: args.faction,
     })
     if (errors.length > 0) {
@@ -87,11 +87,11 @@ const MutationResolver: MutationResolvers<any, any> = {
         factionId: faction?._id,
         leaderId: args.leader,
         name: args.name,
-        stats: getDeckStats(cards),
-        units: cards.map((card) => {
+        stats: getDeckStats(deckUnits),
+        units: deckUnits.map((deckUnit) => {
           return {
-            id: card.unit.id,
-            artStyle: card.artStyle,
+            id: deckUnit.unit.id,
+            artStyle: deckUnit.artStyle,
           }
         }),
         userId,

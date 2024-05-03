@@ -3,7 +3,7 @@ import Upgrade3 from '../../src/database/upgrades/upgrade-3'
 import UserStore from '../../src/database/stores/user-store'
 
 describe('upgrade-3', () => {
-  it('calls to create card collection and indexes', async () => {
+  it('calls to create user collection and indexes', async () => {
     const debugSpy = jest.fn().mockImplementation()
     Upgrade3.logger = {
       debug: debugSpy,

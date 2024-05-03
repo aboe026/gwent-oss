@@ -38,17 +38,17 @@ export type Deck = {
   leader: Leader;
   name: Scalars['String']['output'];
   stats: UnitStats;
-  units: Array<DeckCard>;
+  units: Array<DeckUnit>;
   user: User;
 };
 
-export type DeckCard = {
-  __typename?: 'DeckCard';
+export type DeckUnit = {
+  __typename?: 'DeckUnit';
   artStyle: Scalars['Int']['output'];
   unit: Unit;
 };
 
-export type DeckCardInput = {
+export type DeckUnitInput = {
   /** For units with multiple art styles, the art style to use (1-based indexing). */
   artStyle?: InputMaybe<Scalars['Int']['input']>;
   id: Scalars['ID']['input'];
@@ -150,7 +150,7 @@ export type MutationAddDeckArgs = {
   faction: FactionKey;
   leader: Scalars['ID']['input'];
   name: Scalars['String']['input'];
-  units: Array<DeckCardInput>;
+  units: Array<DeckUnitInput>;
 };
 
 
@@ -276,7 +276,7 @@ export type DeckDbObject = {
   leader: ObjectId,
   name: string,
   stats: UnitStats,
-  units: Array<DeckCard>,
+  units: Array<DeckUnit>,
   user: ObjectId,
 };
 

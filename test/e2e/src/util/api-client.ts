@@ -232,7 +232,7 @@ export default class ApiClient {
     }
     const response: any = await this._client.request(
       gql`
-        mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckCardInput!]!) {
+        mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckUnitInput!]!) {
           addDeck(name: $name, faction: $faction, leader: $leader, units: $units) {
             created
             faction {

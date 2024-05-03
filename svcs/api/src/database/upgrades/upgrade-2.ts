@@ -355,10 +355,13 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
-  normalizeUnitFaction(card: UnitJson | LeaderJson, factionMap: KeyIdMap): ObjectId {
-    const faction = factionMap[card.Faction]
+  normalizeUnitFaction(unitOrLeader: UnitJson | LeaderJson, factionMap: KeyIdMap): ObjectId {
+    const faction = factionMap[unitOrLeader.Faction]
     if (!faction) {
-      throw Error(`Invalid Faction "${card.Faction}" for card "${card.Name}"`)
+      const isLeader = (unitOrLeader as any).Ability // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw Error(
+        `Invalid Faction "${unitOrLeader.Faction}" for ${isLeader ? 'Leader' : 'Unit'} "${unitOrLeader.Name}"`
+      )
     }
     return faction
   }

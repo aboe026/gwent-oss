@@ -5,7 +5,7 @@ import { DlcDbObject, DlcKey } from '@gwent/graphql-schema/database-typings'
 import Store from './store'
 
 /**
- * Factory for possible DLCs that Gwent cards can belong to.
+ * Factory for possible DLCs that Gwent resources can belong to.
  */
 export default class DlcStore extends Store {
   static readonly COLLECTION_NAME = 'dlcs'

@@ -9,7 +9,7 @@ import UnitStore from '../stores/unit-store'
 import Upgrade from './upgrade'
 
 /**
- * Creates collection and indexes for card resources.
+ * Creates collection and indexes for resources.
  */
 export default class Upgrade1 extends Upgrade {
   static logger = log4js.getLogger('upgrade-1')

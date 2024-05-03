@@ -4,19 +4,16 @@ export default gql`
   scalar DateTime
   scalar SemVer
 
-  enum FactionKey {
-    MONSTERS
-    NEUTRAL
-    NILFGAARDIAN_EMPIRE
-    NORTHERN_REALMS
-    SCOIA_TAEL
-    SKELLIGE
-  }
-
   enum Combat {
     CLOSE
     RANGED
     SIEGE
+  }
+
+  enum DlcKey {
+    BLOOD_AND_WINE
+    GWENT_THE_WITCHER_CARD_GAME
+    HEARTS_OF_STONE
   }
 
   enum EffectKey {
@@ -35,10 +32,44 @@ export default gql`
     WEATHER
   }
 
-  enum DlcKey {
-    BLOOD_AND_WINE
-    GWENT_THE_WITCHER_CARD_GAME
-    HEARTS_OF_STONE
+  enum FactionKey {
+    MONSTERS
+    NEUTRAL
+    NILFGAARDIAN_EMPIRE
+    NORTHERN_REALMS
+    SCOIA_TAEL
+    SKELLIGE
+  }
+
+  enum SettingKey {
+    SESSION_TIMEOUT_SECONDS
+  }
+
+  enum SettingType {
+    NUMBER
+  }
+
+  type Application {
+    "The current build number of the application running."
+    build: Int!
+    "The current version of the application running."
+    version: SemVer!
+  }
+
+  type Deck @entity {
+    created: DateTime! @column
+    faction: Faction! @column(overrideType: "ObjectId")
+    id: ID! @id @map(path: "_id")
+    leader: Leader! @column(overrideType: "ObjectId")
+    name: String! @column
+    stats: UnitStats! @column
+    units: [DeckUnit!]! @column
+    user: User! @column(overrideType: "ObjectId")
+  }
+
+  type DeckUnit {
+    artStyle: Int!
+    unit: Unit!
   }
 
   type Dlc @entity {
@@ -80,6 +111,13 @@ export default gql`
     quote: String! @column
   }
 
+  type Setting {
+    key: SettingKey!
+    label: String!
+    type: SettingType!
+    value: String!
+  }
+
   type Unit @entity {
     combats: [Combat!] @column
     created: DateTime! @column
@@ -97,11 +135,6 @@ export default gql`
     scorchScope: Combat @column
     special: Boolean @column
     strength: Int @column
-  }
-
-  type DeckCard {
-    artStyle: Int!
-    unit: Unit!
   }
 
   type UnitStats {
@@ -129,49 +162,16 @@ export default gql`
     weather: Int!
   }
 
-  type Deck @entity {
-    created: DateTime! @column
-    faction: Faction! @column(overrideType: "ObjectId")
-    id: ID! @id @map(path: "_id")
-    leader: Leader! @column(overrideType: "ObjectId")
-    name: String! @column
-    stats: UnitStats! @column
-    units: [DeckCard!]! @column
-    user: User! @column(overrideType: "ObjectId")
-  }
-
   type User @entity {
     created: DateTime! @column
     id: ID! @id
     name: String! @column
   }
 
-  input DeckCardInput {
+  input DeckUnitInput {
     "For units with multiple art styles, the art style to use (1-based indexing)."
     artStyle: Int = 1
     id: ID!
-  }
-
-  enum SettingKey {
-    SESSION_TIMEOUT_SECONDS
-  }
-
-  enum SettingType {
-    NUMBER
-  }
-
-  type Setting {
-    key: SettingKey!
-    label: String!
-    type: SettingType!
-    value: String!
-  }
-
-  type Application {
-    "The current build number of the application running."
-    build: Int!
-    "The current version of the application running."
-    version: SemVer!
   }
 
   type Query {
@@ -199,7 +199,7 @@ export default gql`
 
   type Mutation {
     "Create a user-defined deck."
-    addDeck(name: String!, faction: FactionKey!, leader: ID!, units: [DeckCardInput!]!): Deck
+    addDeck(name: String!, faction: FactionKey!, leader: ID!, units: [DeckUnitInput!]!): Deck
 
     "Create a user."
     addUser(name: String!, password: String!): User

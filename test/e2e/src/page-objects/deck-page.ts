@@ -114,11 +114,11 @@ export default class DeckPage {
   }
 
   private static async getUnits(container: Selector): Promise<string[]> {
-    const selectedCards = container.find(`.${HTML_CLASSES.UnitCardContainer}`)
-    const totalSelected = await selectedCards.count
+    const selectedUnits = container.find(`.${HTML_CLASSES.DeckUnitCard}`)
+    const totalSelected = await selectedUnits.count
     const names: string[] = []
     for (let i = 0; i < totalSelected; i++) {
-      names.push(await selectedCards.nth(i).find(`.${HTML_CLASSES.UnitCardName}`).innerText)
+      names.push(await selectedUnits.nth(i).find(`.${HTML_CLASSES.DeckUnitName}`).innerText)
     }
     return names
   }
@@ -224,9 +224,9 @@ export default class DeckPage {
       if (index < 0) {
         unitsToAdd.push(name) // unit has not been selected yet
       }
-      current.splice(index, 1) // remove from current selected cards to account for duplicate names
+      current.splice(index, 1) // remove from current selected units to account for duplicate names
     }
-    const unitsToRemove = current // any currently selected cards that were not in the "names" list need to be removed
+    const unitsToRemove = current // any currently selected units that were not in the "names" list need to be removed
     await DeckPage.addUnits(unitsToAdd)
     await DeckPage.removeUnits(unitsToRemove)
   }
@@ -234,10 +234,7 @@ export default class DeckPage {
   static async addUnits(names: string[]) {
     for (const name of names) {
       await t.click(
-        DeckPage.elements.UnitsAvailableContainer.find(`.${HTML_CLASSES.UnitCardContainer}`).withAttribute(
-          'title',
-          name
-        )
+        DeckPage.elements.UnitsAvailableContainer.find(`.${HTML_CLASSES.DeckUnitCard}`).withAttribute('title', name)
       )
     }
   }
@@ -245,7 +242,7 @@ export default class DeckPage {
   static async removeUnits(names: string[]) {
     for (const name of names) {
       await t.click(
-        DeckPage.elements.UnitsSelectedContainer.find(`.${HTML_CLASSES.UnitCardContainer}`).withAttribute('title', name)
+        DeckPage.elements.UnitsSelectedContainer.find(`.${HTML_CLASSES.DeckUnitCard}`).withAttribute('title', name)
       )
     }
   }
