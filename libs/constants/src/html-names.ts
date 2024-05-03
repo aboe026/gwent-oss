@@ -10,8 +10,8 @@ export const HTML_CLASSES = {
   ErrorText: 'error-text',
   Primary: 'primary',
   Secondary: 'secondary',
-  UnitCardContainer: 'unit-card-container',
-  UnitCardName: 'unit-card-name',
+  DeckUnitCard: 'unit-card-container',
+  DeckUnitName: 'unit-card-name',
   FactionPickerName: 'faction-picker-name',
   LeaderPickerName: 'leader-picker-name',
 }

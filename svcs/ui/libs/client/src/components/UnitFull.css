@@ -1,4 +1,4 @@
-#fullCardWrapper {
+#fullUnitWrapper {
   display: flex;
   background-color: lightgray;
   border-radius: 5px;
@@ -6,28 +6,28 @@
   gap: 10px;
 }
 
-#fullCardBackground {
+#fullUnitBackground {
   background-color: antiquewhite;
   border-radius: 25px;
   overflow: hidden;
 }
 
-#fullCardContainer {
+#fullUnitContainer {
   display: table;
 }
 
-#fullCardUpper {
+#fullUnitUpper {
   display: flex;
   flex-direction: column;
 }
 
-#fullCardArtSwitcher {
+#fullUnitArtSwitcher {
   display: flex;
   justify-content: center;
   margin-top: -42px;
 }
 
-#fullCardImage {
+#fullUnitImage {
   height: 730px;
   width: 370px;
   object-fit: cover;
@@ -35,26 +35,26 @@
   margin-top: -190px;
 }
 
-#fullCardLower {
+#fullUnitLower {
   display: table-caption;
   caption-side: bottom;
   padding-bottom: 10px;
 }
 
-#fullCardInfo {
+#fullUnitInfo {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
 }
 
-#fullCardInfoUpper {
+#fullUnitInfoUpper {
   display: flex;
   width: 100%;
   justify-content: space-between;
 }
 
-#fullCardInfoDlcName {
+#fullUnitInfoDlcName {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -63,13 +63,13 @@
   padding-right: 10px;
 }
 
-#fullCardName {
+#fullUnitName {
   font-size: x-large;
   font-weight: bold;
   text-align: center;
 }
 
-#fullCardQuote {
+#fullUnitQuote {
   padding-left: 10px;
   padding-right: 10px;
   font-size: larger;
@@ -77,24 +77,24 @@
   text-align: center;
 }
 
-#fullCardEffects {
+#fullUnitEffects {
   padding-left: 10px;
   padding-right: 10px;
 }
 
-.full-card-arrow-container {
+.full-unit-arrow-container {
   display: flex;
   width: 32px;
   align-items: center;
   border-radius: 5px;
 }
 
-.full-card-arrow-container-selectable {
+.full-unit-arrow-container-selectable {
   background-color: darkgray;
   cursor: pointer;
 }
 
-.full-card-art-switcher {
+.full-unit-art-switcher {
   height: 32px;
   width: 32px;
   margin-right: 2px;
@@ -102,13 +102,13 @@
   size: 1.5em;
 }
 
-.full-card-art-switcher-arrow {
+.full-unit-art-switcher-arrow {
   margin-right: 2px;
   margin-top: 2px;
   size: 1.5em;
 }
 
-.full-card-dlc {
+.full-unit-dlc {
   flex-grow: 1;
   background-repeat: no-repeat;
   background-size: contain;
@@ -118,12 +118,12 @@
   margin-top: -2px;
 }
 
-.full-card-effect-name {
+.full-unit-effect-name {
   text-align: right;
   vertical-align: top;
   font-weight: bold;
 }
 
-.full-card-effect-ability {
+.full-unit-effect-ability {
   padding-left: 10px;
 }

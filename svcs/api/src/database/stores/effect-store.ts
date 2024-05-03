@@ -6,7 +6,7 @@ import { prettyPrintList, toTitleCase } from '../../util/string-util'
 import Store from './store'
 
 /**
- * Factory for possible effects Gwent cards can have.
+ * Factory for possible effects Gwent units can have.
  */
 export default class EffectStore extends Store {
   static readonly COLLECTION_NAME = 'effects'
@@ -37,12 +37,12 @@ export default class EffectStore extends Store {
   }
 
   /**
-   * Get all possible Effects a Card can have.
+   * Get all possible Effects a Unit can have.
    *
    * @param options The options to scope Effects to.
    * @param options.ids The ObjectIds to scope Effects to.
    * @param options.keys The keys to scope Effects to.
-   * @returns Effects for cards.
+   * @returns Effects for Units.
    */
   static async get({ ids, keys }: GetEffectsInput): Promise<EffectDbObject[]> {
     const filter: Filter<Document> = {}

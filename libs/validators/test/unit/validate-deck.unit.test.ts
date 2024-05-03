@@ -1,4 +1,4 @@
-import { DeckCard, FactionKey, UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, FactionKey, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import validateDeck from '../../src/validate-deck'
 import * as validatePositiveInteger from '../../src/validate-positive-integer'
 
@@ -27,7 +27,7 @@ describe('validateDeck', () => {
     units: 21,
     weather: 22,
   }
-  const card: DeckCard = {
+  const deckUnit: DeckUnit = {
     artStyle: 1,
     unit: {
       created: new Date(),
@@ -46,20 +46,20 @@ describe('validateDeck', () => {
       quote: 'quote',
     },
   }
-  const cards: DeckCard[] = new Array(22).fill(card)
+  const deckUnits: DeckUnit[] = new Array(22).fill(deckUnit)
   it('returns empty array if deck is valid', () => {
-    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(card.artStyle)
+    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(deckUnit.artStyle)
 
     expect(
       validateDeck({
-        cards,
-        faction: card.unit.faction.key,
+        deckUnits,
+        faction: deckUnit.unit.faction.key,
       })
     ).toEqual([])
 
     expect(validatePositiveIntegerSpy.mock.calls).toEqual([
-      ...new Array(cards.length).fill([
-        card.artStyle,
+      ...new Array(deckUnits.length).fill([
+        deckUnit.artStyle,
         {
           allowZero: false,
         },
@@ -67,13 +67,13 @@ describe('validateDeck', () => {
     ])
   })
   it('returns error if unit faction does not equal faction or neutral', () => {
-    const invalidCard: DeckCard = {
-      ...card,
+    const invalidUnit: DeckUnit = {
+      ...deckUnit,
       unit: {
-        ...card.unit,
-        id: 'invalid-card-id',
+        ...deckUnit.unit,
+        id: 'invalid-unit-id',
         faction: {
-          ...card.unit.faction,
+          ...deckUnit.unit.faction,
           key: FactionKey.Skellige,
         },
       },
@@ -81,24 +81,24 @@ describe('validateDeck', () => {
 
     expect(
       validateDeck({
-        cards: [...cards, invalidCard],
-        faction: card.unit.faction.key,
+        deckUnits: [...deckUnits, invalidUnit],
+        faction: deckUnit.unit.faction.key,
       })
     ).toEqual([
-      `Invalid faction "${invalidCard.unit.faction.key}" for card "${invalidCard.unit.id}", must be either "${card.unit.faction.key}" or "${FactionKey.Neutral}".`,
+      `Invalid faction "${invalidUnit.unit.faction.key}" for unit "${invalidUnit.unit.id}", must be either "${deckUnit.unit.faction.key}" or "${FactionKey.Neutral}".`,
     ])
   })
   it('returns error if unit artstyle is not positive integer', () => {
-    const invalidCard: DeckCard = {
+    const invalidUnit: DeckUnit = {
       unit: {
-        ...card.unit,
-        id: 'invalid-card-id',
+        ...deckUnit.unit,
+        id: 'invalid-unit-id',
       },
       artStyle: 0,
     }
     const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default')
-    for (let i = 0; i < cards.length; i++) {
-      validatePositiveIntegerSpy.mockReturnValueOnce(card.artStyle)
+    for (let i = 0; i < deckUnits.length; i++) {
+      validatePositiveIntegerSpy.mockReturnValueOnce(deckUnit.artStyle)
     }
     validatePositiveIntegerSpy.mockImplementationOnce(() => {
       throw Error('invalid')
@@ -106,56 +106,56 @@ describe('validateDeck', () => {
 
     expect(
       validateDeck({
-        cards: [...cards, invalidCard],
-        faction: card.unit.faction.key,
+        deckUnits: [...deckUnits, invalidUnit],
+        faction: deckUnit.unit.faction.key,
       })
     ).toEqual([
-      `Invalid artStyle "${invalidCard.artStyle}" for card "${invalidCard.unit.id}", must be positive integer greater than zero.`,
+      `Invalid artStyle "${invalidUnit.artStyle}" for unit "${invalidUnit.unit.id}", must be positive integer greater than zero.`,
     ])
 
     expect(validatePositiveIntegerSpy.mock.calls).toEqual([
-      ...new Array(cards.length).fill([
-        card.artStyle,
+      ...new Array(deckUnits.length).fill([
+        deckUnit.artStyle,
         {
           allowZero: false,
         },
       ]),
       [
-        invalidCard.artStyle,
+        invalidUnit.artStyle,
         {
           allowZero: false,
         },
       ],
     ])
   })
-  it('returns error if unit artstyle is greater than images for card', () => {
-    const invalidCard: DeckCard = {
+  it('returns error if unit artstyle is greater than images for unit', () => {
+    const invalidUnit: DeckUnit = {
       unit: {
-        ...card.unit,
-        id: 'invalid-card-id',
+        ...deckUnit.unit,
+        id: 'invalid-unit-id',
       },
-      artStyle: card.unit.images.length + 1,
+      artStyle: deckUnit.unit.images.length + 1,
     }
-    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(card.artStyle)
+    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(deckUnit.artStyle)
 
     expect(
       validateDeck({
-        cards: [...cards, invalidCard],
-        faction: card.unit.faction.key,
+        deckUnits: [...deckUnits, invalidUnit],
+        faction: deckUnit.unit.faction.key,
       })
     ).toEqual([
-      `Invalid artStyle "${invalidCard.artStyle}" for card "${invalidCard.unit.id}", only "${invalidCard.unit.images.length}" art styles available for card.`,
+      `Invalid artStyle "${invalidUnit.artStyle}" for unit "${invalidUnit.unit.id}", only "${invalidUnit.unit.images.length}" art styles available for unit.`,
     ])
 
     expect(validatePositiveIntegerSpy.mock.calls).toEqual([
-      ...new Array(cards.length).fill([
-        card.artStyle,
+      ...new Array(deckUnits.length).fill([
+        deckUnit.artStyle,
         {
           allowZero: false,
         },
       ]),
       [
-        invalidCard.artStyle,
+        invalidUnit.artStyle,
         {
           allowZero: false,
         },
@@ -163,48 +163,48 @@ describe('validateDeck', () => {
     ])
   })
   it('returns error if more than 10 specials', () => {
-    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(card.artStyle)
+    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(deckUnit.artStyle)
 
     expect(
       validateDeck({
-        cards: [
-          ...cards.map((deckCard) => {
+        deckUnits: [
+          ...deckUnits.map((deckUnit) => {
             return {
-              artStyle: deckCard.artStyle,
+              artStyle: deckUnit.artStyle,
               unit: {
-                ...deckCard.unit,
+                ...deckUnit.unit,
                 special: true,
               },
             }
           }),
         ],
-        faction: card.unit.faction.key,
+        faction: deckUnit.unit.faction.key,
       })
-    ).toEqual([`Invalid number of special cards at "${cards.length}", maximum is "10".`])
+    ).toEqual([`Invalid number of special units at "${deckUnits.length}", maximum is "10".`])
 
     expect(validatePositiveIntegerSpy.mock.calls).toEqual([
-      ...new Array(cards.length).fill([
-        card.artStyle,
+      ...new Array(deckUnits.length).fill([
+        deckUnit.artStyle,
         {
           allowZero: false,
         },
       ]),
     ])
   })
-  it('returns error if less than 22 cards', () => {
-    const belowMinCards = 21
-    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(card.artStyle)
+  it('returns error if less than 22 units', () => {
+    const belowMinUnits = 21
+    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(deckUnit.artStyle)
 
     expect(
       validateDeck({
-        cards: cards.slice(0, belowMinCards),
-        faction: card.unit.faction.key,
+        deckUnits: deckUnits.slice(0, belowMinUnits),
+        faction: deckUnit.unit.faction.key,
       })
-    ).toEqual([`Invalid number of cards at "${belowMinCards}", minimum is "22".`])
+    ).toEqual([`Invalid number of units at "${belowMinUnits}", minimum is "22".`])
 
     expect(validatePositiveIntegerSpy.mock.calls).toEqual([
-      ...new Array(belowMinCards).fill([
-        card.artStyle,
+      ...new Array(belowMinUnits).fill([
+        deckUnit.artStyle,
         {
           allowZero: false,
         },
@@ -212,89 +212,89 @@ describe('validateDeck', () => {
     ])
   })
   it('returns errors if all rules violated', () => {
-    const belowMinCards = 21
-    const invalidFactionCard: DeckCard = {
-      ...card,
+    const belowMinUnits = 21
+    const invalidFactionUnit: DeckUnit = {
+      ...deckUnit,
       unit: {
-        ...card.unit,
-        id: 'invalid-card-faction-id',
+        ...deckUnit.unit,
+        id: 'invalid-unit-faction-id',
         faction: {
-          ...card.unit.faction,
+          ...deckUnit.unit.faction,
           key: FactionKey.Skellige,
         },
       },
     }
-    const invalidImageSmallCard: DeckCard = {
+    const invalidImageSmallUnit: DeckUnit = {
       unit: {
-        ...card.unit,
-        id: 'invalid-card-images-small-id',
+        ...deckUnit.unit,
+        id: 'invalid-unit-images-small-id',
       },
       artStyle: 0,
     }
-    const invalidImageLargeCard: DeckCard = {
+    const invalidImageLargeUnit: DeckUnit = {
       unit: {
-        ...card.unit,
-        id: 'invalid-card-iamges-large-id',
+        ...deckUnit.unit,
+        id: 'invalid-unit-iamges-large-id',
       },
-      artStyle: card.unit.images.length + 1,
+      artStyle: deckUnit.unit.images.length + 1,
     }
     const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default')
-    validatePositiveIntegerSpy.mockReturnValueOnce(card.artStyle)
+    validatePositiveIntegerSpy.mockReturnValueOnce(deckUnit.artStyle)
     validatePositiveIntegerSpy.mockImplementationOnce(() => {
       throw Error('invalid')
     })
-    validatePositiveIntegerSpy.mockReturnValueOnce(card.artStyle)
-    for (let i = 0; i < belowMinCards; i++) {
-      validatePositiveIntegerSpy.mockReturnValueOnce(card.artStyle)
+    validatePositiveIntegerSpy.mockReturnValueOnce(deckUnit.artStyle)
+    for (let i = 0; i < belowMinUnits; i++) {
+      validatePositiveIntegerSpy.mockReturnValueOnce(deckUnit.artStyle)
     }
 
     expect(
       validateDeck({
-        cards: [
-          invalidFactionCard,
-          invalidImageSmallCard,
-          invalidImageLargeCard,
-          ...cards.slice(0, belowMinCards - 3).map((deckCard) => {
+        deckUnits: [
+          invalidFactionUnit,
+          invalidImageSmallUnit,
+          invalidImageLargeUnit,
+          ...deckUnits.slice(0, belowMinUnits - 3).map((deckUnit) => {
             return {
-              artStyle: deckCard.artStyle,
+              artStyle: deckUnit.artStyle,
               unit: {
-                ...deckCard.unit,
+                ...deckUnit.unit,
                 special: true,
               },
             }
           }),
         ],
-        faction: card.unit.faction.key,
+        faction: deckUnit.unit.faction.key,
       })
     ).toEqual([
-      `Invalid faction "${invalidFactionCard.unit.faction.key}" for card "${invalidFactionCard.unit.id}", must be either "${card.unit.faction.key}" or "${FactionKey.Neutral}".`,
-      `Invalid artStyle "${invalidImageSmallCard.artStyle}" for card "${invalidImageSmallCard.unit.id}", must be positive integer greater than zero.`,
-      `Invalid artStyle "${invalidImageLargeCard.artStyle}" for card "${invalidImageLargeCard.unit.id}", only "${invalidImageLargeCard.unit.images.length}" art styles available for card.`,
-      `Invalid number of special cards at "${belowMinCards - 3}", maximum is "10".`,
-      `Invalid number of cards at "${belowMinCards}", minimum is "22".`,
+      `Invalid faction "${invalidFactionUnit.unit.faction.key}" for unit "${invalidFactionUnit.unit.id}", must be either "${deckUnit.unit.faction.key}" or "${FactionKey.Neutral}".`,
+      `Invalid artStyle "${invalidImageSmallUnit.artStyle}" for unit "${invalidImageSmallUnit.unit.id}", must be positive integer greater than zero.`,
+      `Invalid artStyle "${invalidImageLargeUnit.artStyle}" for unit "${invalidImageLargeUnit.unit.id}", only "${invalidImageLargeUnit.unit.images.length}" art styles available for unit.`,
+      `Invalid number of special units at "${belowMinUnits - 3}", maximum is "10".`,
+      `Invalid number of units at "${belowMinUnits}", minimum is "22".`,
     ])
 
     expect(validatePositiveIntegerSpy.mock.calls).toEqual([
       [
-        invalidFactionCard.artStyle,
+        invalidFactionUnit.artStyle,
         {
           allowZero: false,
         },
       ],
       [
-        invalidImageSmallCard.artStyle,
+        invalidImageSmallUnit.artStyle,
         {
           allowZero: false,
         },
       ],
       [
-        invalidImageLargeCard.artStyle,
+        invalidImageLargeUnit.artStyle,
         {
           allowZero: false,
         },
       ],
-      ...new Array(belowMinCards - 3).fill([
-        card.artStyle,
+      ...new Array(belowMinUnits - 3).fill([
+        deckUnit.artStyle,
         {
           allowZero: false,
         },

@@ -5,31 +5,31 @@ import { getLogger } from 'log4js'
 import Store from './store'
 
 /**
- * Factory for Gwent unit cards a user can add to their deck.
+ * Factory for Gwent Units a user can add to their deck.
  */
 export default class UnitStore extends Store {
   static readonly COLLECTION_NAME = 'units'
   private static logger = getLogger('unit-store')
 
   /**
-   * Add a Unit card to the database.
+   * Add a Unit to the database.
    *
-   * @param unit The Unit card to add.
-   * @param unit.combats The combat types the Unit card is eligible to perform.
-   * @param unit.deckable Whether or not the Unit card can be added to a users created deck.
-   * @param unit.dlc The potential DLC that the Unit card was added in.
-   * @param unit.effectPrefix The prefix of cards the Unit card can summon if it has the muster effect. Defaults to the name of the Unit card if not defined.
-   * @param unit.effects The ID's of potential additional effects the Unit card has on the battlefield.
-   * @param unit.faction The ID of the faction the Unit card belongs to.
-   * @param unit.hero Whether or not the Unit card is a Hero.
-   * @param unit.images Paths to images of the Unit card.
-   * @param unit.name The name of the Unit card.
-   * @param unit.quote The quote of the Unit card.
-   * @param unit.scorchMin The minimum strength card the Unit card can scorch.
-   * @param unit.scorchScope The combat types that the Unit card's scorch effect is limited to.
-   * @param unit.special Whether or not the Unit card counts towards the limit of special cards a deck can contain.
-   * @param unit.strength The strength of attacks of the Unit card.
-   * @returns The Unit card databased document.
+   * @param unit The Unit to add.
+   * @param unit.combats The combat types the Unit is eligible to perform.
+   * @param unit.deckable Whether or not the Unit can be added to a users created deck.
+   * @param unit.dlc The potential DLC that the Unit was added in.
+   * @param unit.effectPrefix The prefix of units the Unit can summon if it has the muster effect. Defaults to the name of the Unit if not defined.
+   * @param unit.effects The ID's of potential additional effects the Unit has on the battlefield.
+   * @param unit.faction The ID of the faction the Unit belongs to.
+   * @param unit.hero Whether or not the Unit is a Hero.
+   * @param unit.images Paths to images of the Unit.
+   * @param unit.name The name of the Unit.
+   * @param unit.quote The quote of the Unit.
+   * @param unit.scorchMin The minimum strength the Unit can scorch.
+   * @param unit.scorchScope The combat types that the Unit's scorch effect is limited to.
+   * @param unit.special Whether or not the Unit counts towards the limit of special Units a deck can contain.
+   * @param unit.strength The strength of attacks of the Unit.
+   * @returns The Unit databased document.
    */
   static async add({
     combats,
@@ -77,7 +77,7 @@ export default class UnitStore extends Store {
    * @param options.deckable Whether or not the Unit is allowed to be added to a Deck.
    * @param options.factions The Faction ObjectIds to scope Units to.
    * @param options.ids The ObjectIds to scope Units to.
-   * @returns Unit cards matching criteria.
+   * @returns Units matching criteria.
    */
   static async get({ deckable, factionIds, ids }: GetUnitsInput): Promise<UnitDbObject[]> {
     const filter: Filter<Document> = {}

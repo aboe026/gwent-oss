@@ -7,7 +7,7 @@ import UnitStore from '../../src/database/stores/unit-store'
 import Upgrade1 from '../../src/database/upgrades/upgrade-1'
 
 describe('upgrade-1', () => {
-  it('calls to create card collection and indexes', async () => {
+  it('calls to create resource collection and indexes', async () => {
     const debugSpy = jest.fn().mockImplementation()
     Upgrade1.logger = {
       debug: debugSpy,

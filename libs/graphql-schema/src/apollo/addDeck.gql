@@ -1,4 +1,4 @@
-mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckCardInput!]!) {
+mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckUnitInput!]!) {
   addDeck(name: $name, faction: $faction, leader: $leader, units: $units) {
     id
   }

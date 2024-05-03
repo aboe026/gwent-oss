@@ -13,9 +13,9 @@ import {
 import './UnitsHeader.css'
 
 /**
- * A Header for Deck units cards
+ * A Header for Deck Units
  *
- * @returns The deck unit cards header
+ * @returns The deck Units header
  */
 export default function UnitsHeader({
   isAvailable,

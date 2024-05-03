@@ -1,6 +1,6 @@
 import { Db, ObjectId } from 'mongodb'
 
-import { DeckCard, FactionKey, Unit, UnitStats, User } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, FactionKey, Unit, UnitStats, User } from '@gwent/graphql-schema/resolver-typings'
 import dlcs from '../../../src/database/upgrades/resources/dlcs.json'
 import effects from '../../../src/database/upgrades/resources/effects.json'
 import EffectStore from '../../../src/database/stores/effect-store'
@@ -179,7 +179,7 @@ export function expectizeDeck({
   maxArtStyle?: boolean
 }) {
   const allUnits = expectizeUnits({ neutrals })
-  const expectedUnits: DeckCard[] = []
+  const expectedUnits: DeckUnit[] = []
   for (const unitName of unitNames) {
     const unit = allUnits.find((expectedUnit) => expectedUnit.name === unitName)
     if (!unit) {
@@ -265,7 +265,7 @@ export function getFactionUnitStats(factionKey: FactionKey, neutrals = false): U
     agile: 0,
     avenger: 0,
     berserker: 0,
-    bond: 6,
+    bond: 9,
     close: 18,
     decoy: 0,
     heroes: 4,

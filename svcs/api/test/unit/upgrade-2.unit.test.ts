@@ -811,7 +811,7 @@ describe('upgrade-2', () => {
   describe('normalizeUnitFaction', () => {
     it('throws error if faction not in map', () => {
       expect(() => new Upgrade2().normalizeUnitFaction(unitRequired, {})).toThrow(
-        `Invalid Faction "${unitRequired.Faction}" for card "${unitRequired.Name}"`
+        `Invalid Faction "${unitRequired.Faction}" for Unit "${unitRequired.Name}"`
       )
     })
     it('returns id if faction in map', () => {

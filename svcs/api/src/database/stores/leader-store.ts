@@ -12,16 +12,16 @@ export default class LeaderStore extends Store {
   private static logger = getLogger('leader-store')
 
   /**
-   * Add a Leader card to the database.
+   * Add a Leader to the database.
    *
-   * @param leader The Leader card to add.
-   * @param leader.ability The ability the Leader card has during gameplay.
-   * @param leader.dlc The potential DLC that the Leader card was added in.
-   * @param leader.faction The faction the Leader card belongs to.
-   * @param leader.image The image path of the Leader card.
-   * @param leader.name The name of the Leader card.
-   * @param leader.quote The quote of the Leader card.
-   * @returns The Leader card database document.
+   * @param leader The Leader to add.
+   * @param leader.ability The ability the Leader has during gameplay.
+   * @param leader.dlc The potential DLC that the Leader was added in.
+   * @param leader.faction The faction the Leader belongs to.
+   * @param leader.image The image path of the Leader.
+   * @param leader.name The name of the Leader.
+   * @param leader.quote The quote of the Leader.
+   * @returns The Leader database document.
    */
   static async add({ ability, dlc, faction, image, name, quote }: AddLeaderInput): Promise<LeaderDbObject> {
     const leader: Document = {

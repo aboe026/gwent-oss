@@ -170,12 +170,12 @@ describe('decks', () => {
         const leader = 'Eredin Bringer of Death'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const deckCards = await getStrengthUnits(wrongFaction)
+        const deckUnits = await getStrengthUnits(wrongFaction)
 
-        const unitsInput = deckCards
+        const unitsInput = deckUnits
           .map(
-            (deckCard) => `{
-              id: "${deckCard.unit.id}"
+            (deckUnit) => `{
+              id: "${deckUnit.unit.id}"
             }`
           )
           .join(',')
@@ -206,10 +206,10 @@ describe('decks', () => {
           },
           errors: [
             new GraphQLError(
-              deckCards
+              deckUnits
                 .map(
-                  (deckCard) =>
-                    `Invalid faction "${wrongFaction}" for card "${deckCard.unit.id}", must be either "${faction}" or "${FactionKey.Neutral}".`
+                  (deckUnit) =>
+                    `Invalid faction "${wrongFaction}" for unit "${deckUnit.unit.id}", must be either "${faction}" or "${FactionKey.Neutral}".`
                 )
                 .join('\n')
             ),
@@ -221,13 +221,13 @@ describe('decks', () => {
         const leader = 'Eredin Bringer of Death'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const deckCards = await getStrengthUnits(faction)
+        const deckUnits = await getStrengthUnits(faction)
         const length = 21
-        const unitsInput = deckCards
+        const unitsInput = deckUnits
           .slice(0, length)
           .map(
-            (deckCard) => `{
-              id: "${deckCard.unit.id}"
+            (deckUnit) => `{
+              id: "${deckUnit.unit.id}"
             }`
           )
           .join(',')
@@ -256,7 +256,7 @@ describe('decks', () => {
           data: {
             addDeck: null,
           },
-          errors: [new GraphQLError(`Invalid number of cards at "${length}", minimum is "22".`)],
+          errors: [new GraphQLError(`Invalid number of units at "${length}", minimum is "22".`)],
         })
       })
       it('throws error if too many specials', async () => {
@@ -300,7 +300,7 @@ describe('decks', () => {
           data: {
             addDeck: null,
           },
-          errors: [new GraphQLError(`Invalid number of special cards at "${specials}", maximum is "10".`)],
+          errors: [new GraphQLError(`Invalid number of special units at "${specials}", maximum is "10".`)],
         })
       })
       it('throws error if art style is negative', async () => {
@@ -345,7 +345,7 @@ describe('decks', () => {
           },
           errors: [
             new GraphQLError(
-              `Invalid artStyle "${units[0].artStyle}" for card "${units[0].unit.id}", must be positive integer greater than zero.`
+              `Invalid artStyle "${units[0].artStyle}" for unit "${units[0].unit.id}", must be positive integer greater than zero.`
             ),
           ],
         })
@@ -392,7 +392,7 @@ describe('decks', () => {
           },
           errors: [
             new GraphQLError(
-              `Invalid artStyle "${units[0].artStyle}" for card "${units[0].unit.id}", must be positive integer greater than zero.`
+              `Invalid artStyle "${units[0].artStyle}" for unit "${units[0].unit.id}", must be positive integer greater than zero.`
             ),
           ],
         })
@@ -439,7 +439,7 @@ describe('decks', () => {
           },
           errors: [
             new GraphQLError(
-              `Invalid artStyle "${units[0].artStyle}" for card "${units[0].unit.id}", only "${units[0].unit.images.length}" art styles available for card.`
+              `Invalid artStyle "${units[0].artStyle}" for unit "${units[0].unit.id}", only "${units[0].unit.images.length}" art styles available for unit.`
             ),
           ],
         })
@@ -680,13 +680,13 @@ describe('decks', () => {
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const deckCards = await getStrengthUnits(faction)
+        const deckUnits = await getStrengthUnits(faction)
 
-        const unitsInput = deckCards
+        const unitsInput = deckUnits
           .map(
-            (deckCard) => `{
+            (deckUnit) => `{
               artStyle: 1,
-              id: "${deckCard.unit.id}"
+              id: "${deckUnit.unit.id}"
             }`
           )
           .join(',')
@@ -728,13 +728,13 @@ describe('decks', () => {
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const deckCards = await getStrengthUnits(faction)
+        const deckUnits = await getStrengthUnits(faction)
 
-        const unitsInput = deckCards
+        const unitsInput = deckUnits
           .map(
-            (deckCard) => `{
-              artStyle: ${deckCard.unit.images.length},
-              id: "${deckCard.unit.id}"
+            (deckUnit) => `{
+              artStyle: ${deckUnit.unit.images.length},
+              id: "${deckUnit.unit.id}"
             }`
           )
           .join(',')

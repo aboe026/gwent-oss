@@ -173,8 +173,8 @@ test('Login dialog shown selecting new deck faction after session expires', asyn
   await E2eUtil.verifyCurrentUrl(DeckPage.getUrl())
   await DeckPage.verifyLeaderError(`Error getting leaders: ${NOT_AUTHENTICATED_MESSAGE}`)
   await DeckPage.verifyUnitsError({
-    factionsError: `Error getting faction cards: ${NOT_AUTHENTICATED_MESSAGE}`,
-    neutralError: `Error getting neutral cards: ${NOT_AUTHENTICATED_MESSAGE}`,
+    factionsError: `Error getting faction units: ${NOT_AUTHENTICATED_MESSAGE}`,
+    neutralError: `Error getting neutral units: ${NOT_AUTHENTICATED_MESSAGE}`,
   })
   for (const char of 'password') {
     await t.pressKey(char)
@@ -255,7 +255,7 @@ test('Login dialog shown changing new deck faction after session expires', async
   await E2eUtil.verifyCurrentUrl(DeckPage.getUrl())
   await DeckPage.verifyLeaderError(`Error getting leaders: ${NOT_AUTHENTICATED_MESSAGE}`)
   await DeckPage.verifyUnitsError({
-    factionsError: `Error getting faction cards: ${NOT_AUTHENTICATED_MESSAGE}`,
+    factionsError: `Error getting faction units: ${NOT_AUTHENTICATED_MESSAGE}`,
   })
   for (const char of 'password') {
     await t.pressKey(char)

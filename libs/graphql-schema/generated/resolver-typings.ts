@@ -42,17 +42,17 @@ export type Deck = {
   leader: Leader;
   name: Scalars['String']['output'];
   stats: UnitStats;
-  units: Array<DeckCard>;
+  units: Array<DeckUnit>;
   user: User;
 };
 
-export type DeckCard = {
-  __typename?: 'DeckCard';
+export type DeckUnit = {
+  __typename?: 'DeckUnit';
   artStyle: Scalars['Int']['output'];
   unit: Unit;
 };
 
-export type DeckCardInput = {
+export type DeckUnitInput = {
   /** For units with multiple art styles, the art style to use (1-based indexing). */
   artStyle?: InputMaybe<Scalars['Int']['input']>;
   id: Scalars['ID']['input'];
@@ -154,7 +154,7 @@ export type MutationAddDeckArgs = {
   faction: FactionKey;
   leader: Scalars['ID']['input'];
   name: Scalars['String']['input'];
-  units: Array<DeckCardInput>;
+  units: Array<DeckUnitInput>;
 };
 
 
@@ -343,8 +343,8 @@ export type ResolversTypes = {
   Combat: Combat;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']['output']>;
   Deck: ResolverTypeWrapper<DeckDbObject>;
-  DeckCard: ResolverTypeWrapper<Omit<DeckCard, 'unit'> & { unit: ResolversTypes['Unit'] }>;
-  DeckCardInput: DeckCardInput;
+  DeckUnit: ResolverTypeWrapper<Omit<DeckUnit, 'unit'> & { unit: ResolversTypes['Unit'] }>;
+  DeckUnitInput: DeckUnitInput;
   Dlc: ResolverTypeWrapper<DlcDbObject>;
   DlcKey: DlcKey;
   Effect: ResolverTypeWrapper<EffectDbObject>;
@@ -373,8 +373,8 @@ export type ResolversParentTypes = {
   Boolean: Scalars['Boolean']['output'];
   DateTime: Scalars['DateTime']['output'];
   Deck: DeckDbObject;
-  DeckCard: Omit<DeckCard, 'unit'> & { unit: ResolversParentTypes['Unit'] };
-  DeckCardInput: DeckCardInput;
+  DeckUnit: Omit<DeckUnit, 'unit'> & { unit: ResolversParentTypes['Unit'] };
+  DeckUnitInput: DeckUnitInput;
   Dlc: DlcDbObject;
   Effect: EffectDbObject;
   Faction: FactionDbObject;
@@ -409,12 +409,12 @@ export type DeckResolvers<ContextType = any, ParentType extends ResolversParentT
   leader?: Resolver<ResolversTypes['Leader'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   stats?: Resolver<ResolversTypes['UnitStats'], ParentType, ContextType>;
-  units?: Resolver<Array<ResolversTypes['DeckCard']>, ParentType, ContextType>;
+  units?: Resolver<Array<ResolversTypes['DeckUnit']>, ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type DeckCardResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeckCard'] = ResolversParentTypes['DeckCard']> = {
+export type DeckUnitResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeckUnit'] = ResolversParentTypes['DeckUnit']> = {
   artStyle?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   unit?: Resolver<ResolversTypes['Unit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -549,7 +549,7 @@ export type Resolvers<ContextType = any> = {
   Application?: ApplicationResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
   Deck?: DeckResolvers<ContextType>;
-  DeckCard?: DeckCardResolvers<ContextType>;
+  DeckUnit?: DeckUnitResolvers<ContextType>;
   Dlc?: DlcResolvers<ContextType>;
   Effect?: EffectResolvers<ContextType>;
   Faction?: FactionResolvers<ContextType>;

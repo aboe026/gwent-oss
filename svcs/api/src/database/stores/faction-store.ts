@@ -5,7 +5,7 @@ import { FactionDbObject, FactionKey, UnitStats } from '@gwent/graphql-schema/da
 import Store from './store'
 
 /**
- * Factory for possible factions Gwent cards can belong to.
+ * Factory for possible factions Gwent resources can belong to.
  */
 export default class FactionStore extends Store {
   static readonly COLLECTION_NAME = 'factions'
@@ -53,12 +53,12 @@ export default class FactionStore extends Store {
   }
 
   /**
-   * Get possible Factions a Card can be apart of.
+   * Get possible Factions a resource can be apart of.
    *
    * @param options The options to scope the Factions to.
    * @param options.ids The ObjectIds to scope the Factions to.
    * @param options.keys The keys to scope the Factions to.
-   * @returns Factions for Cards.
+   * @returns Factions for resources.
    */
   static async get({ ids, keys }: GetFactionsInput): Promise<FactionDbObject[]> {
     const filter: Filter<Document> = {}

@@ -1,33 +1,33 @@
 import { CgChevronLeft, CgChevronRight, CgMaximizeAlt } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { DeckCard } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
 import { HTML_CLASSES } from '@gwent/constants'
 import './UnitCard.css'
 
 /**
- * A unit card of a deck
+ * A Unit of a deck
  *
- * @returns The unit card in the deck
+ * @returns The Unit in the deck
  */
-export default function UnitCard({ card, setSelectedCards, setCards, setFullCard, disabled }: UnitCardProps) {
+export default function UnitCard({ deckUnit, setSelectedUnits, setUnits, setFullUnit, disabled }: UnitCardProps) {
   function selectUnit(event: React.MouseEvent<HTMLImageElement>) {
     event.preventDefault()
 
     if (!disabled) {
-      setSelectedCards((previous: DeckCard[]) => {
-        const alreadySelected = previous.some((selectedCard) => selectedCard.unit.id === card.unit.id)
+      setSelectedUnits((previous: DeckUnit[]) => {
+        const alreadySelected = previous.some((selectedCard) => selectedCard.unit.id === deckUnit.unit.id)
         if (alreadySelected) {
-          return previous.filter((selectedCard) => selectedCard.unit.id !== card.unit.id)
+          return previous.filter((selectedCard) => selectedCard.unit.id !== deckUnit.unit.id)
         }
-        return [...previous, card]
+        return [...previous, deckUnit]
       })
     }
   }
   function changeArtStyle(change: number) {
-    setCards((previous: DeckCard[]) =>
+    setUnits((previous: DeckUnit[]) =>
       previous.map((newCard) => {
-        if (newCard.unit.id === card.unit.id && newCard.artStyle !== undefined && newCard.artStyle !== null) {
+        if (newCard.unit.id === deckUnit.unit.id && newCard.artStyle !== undefined && newCard.artStyle !== null) {
           newCard.artStyle = newCard.artStyle + change
         }
         return newCard
@@ -38,7 +38,7 @@ export default function UnitCard({ card, setSelectedCards, setCards, setFullCard
     event.preventDefault()
     event.stopPropagation()
 
-    if (!disabled && card.artStyle && card.artStyle < card.unit.images.length) {
+    if (!disabled && deckUnit.artStyle && deckUnit.artStyle < deckUnit.unit.images.length) {
       changeArtStyle(1)
     }
   }
@@ -46,14 +46,14 @@ export default function UnitCard({ card, setSelectedCards, setCards, setFullCard
     event.preventDefault()
     event.stopPropagation()
 
-    if (!disabled && card.artStyle && card.artStyle > 1) {
+    if (!disabled && deckUnit.artStyle && deckUnit.artStyle > 1) {
       changeArtStyle(-1)
     }
   }
   function openFullscreen(event: React.MouseEvent<SVGElement>) {
     event.preventDefault()
     event.stopPropagation()
-    setFullCard(card)
+    setFullUnit(deckUnit)
   }
   function nameSelect(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
@@ -62,70 +62,70 @@ export default function UnitCard({ card, setSelectedCards, setCards, setFullCard
 
   return (
     <div
-      className={`${HTML_CLASSES.UnitCardContainer} ${!disabled ? 'pointable' : ''}`}
-      title={card.unit.name}
+      className={`${HTML_CLASSES.DeckUnitCard} ${!disabled ? 'pointable' : ''}`}
+      title={deckUnit.unit.name}
       onClick={selectUnit}
     >
       <div className="unit-card-actions-upper">
         <CgMaximizeAlt
           className="unit-card-maximize icon-container pointable"
-          style={{ marginTop: card.unit.hero ? '6px' : '1px' }}
+          style={{ marginTop: deckUnit.unit.hero ? '6px' : '1px' }}
           onClick={openFullscreen}
         />
       </div>
       <img
-        src={card.unit.images[(card.artStyle || 1) - 1]}
-        className={`unit-card-image ${card.unit.hero ? 'unit-card-image-hero' : ''}`}
+        src={deckUnit.unit.images[(deckUnit.artStyle || 1) - 1]}
+        className={`unit-card-image ${deckUnit.unit.hero ? 'unit-card-image-hero' : ''}`}
       />
-      {((card.artStyle && card.unit.images.length > 1) || card.unit.dlc) && (
+      {((deckUnit.artStyle && deckUnit.unit.images.length > 1) || deckUnit.unit.dlc) && (
         <div className="unit-card-actions-lower">
-          {card.artStyle && (
+          {deckUnit.artStyle && (
             <div
-              className={`unit-card-art-switcher ${card.unit.images.length > 1 ? 'icon-container' : ''}  ${
-                card.artStyle < card.unit.images.length ? 'pointable' : ''
+              className={`unit-card-art-switcher ${deckUnit.unit.images.length > 1 ? 'icon-container' : ''}  ${
+                deckUnit.artStyle < deckUnit.unit.images.length ? 'pointable' : ''
               }`}
-              style={{ marginLeft: card.unit.hero ? '8px' : '0' }}
+              style={{ marginLeft: deckUnit.unit.hero ? '8px' : '0' }}
               onClick={decrementArtStyle}
             >
-              {card.artStyle > 1 && <CgChevronLeft className="unit-card-art-switcher-arrow" size="1.5em" />}
+              {deckUnit.artStyle > 1 && <CgChevronLeft className="unit-card-art-switcher-arrow" size="1.5em" />}
             </div>
           )}
-          {card.unit.dlc && (
+          {deckUnit.unit.dlc && (
             <div
               className="unit-card-dlc"
-              title={card.unit.dlc.name}
+              title={deckUnit.unit.dlc.name}
               style={{
-                backgroundImage: `url(${card.unit.dlc.image})`,
-                marginBottom: card.unit.images.length > 1 ? '-1px' : '-3px',
+                backgroundImage: `url(${deckUnit.unit.dlc.image})`,
+                marginBottom: deckUnit.unit.images.length > 1 ? '-1px' : '-3px',
               }}
             ></div>
           )}
-          {card.artStyle && (
+          {deckUnit.artStyle && (
             <div
-              className={`unit-card-art-switcher ${card.unit.images.length > 1 ? 'icon-container' : ''}  ${
-                card.artStyle < card.unit.images.length ? 'pointable' : ''
+              className={`unit-card-art-switcher ${deckUnit.unit.images.length > 1 ? 'icon-container' : ''}  ${
+                deckUnit.artStyle < deckUnit.unit.images.length ? 'pointable' : ''
               }`}
               onClick={incrementArtStyle}
             >
-              {card.artStyle < card.unit.images.length && (
+              {deckUnit.artStyle < deckUnit.unit.images.length && (
                 <CgChevronRight className="unit-card-art-switcher-arrow" size="1.5em" />
               )}
             </div>
           )}
         </div>
       )}
-      <span className={HTML_CLASSES.UnitCardName} onClick={nameSelect}>
-        {card.unit.name}
+      <span className={HTML_CLASSES.DeckUnitName} onClick={nameSelect}>
+        {deckUnit.unit.name}
       </span>
     </div>
   )
 }
 
 interface UnitCardProps {
-  card: DeckCard
+  deckUnit: DeckUnit
   key: string
-  setSelectedCards: Dispatch<SetStateAction<DeckCard[]>>
-  setCards: Dispatch<SetStateAction<DeckCard[]>>
-  setFullCard: Dispatch<SetStateAction<DeckCard | undefined>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
   disabled: boolean
 }

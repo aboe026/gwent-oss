@@ -107,7 +107,7 @@ describe('deck-resolver', () => {
       quote: 'quote',
     }
     it('does not call out to UnitStore if all units resolved', async () => {
-      const card = {
+      const deckUnit = {
         artStyle: 1,
         unit,
       }
@@ -115,14 +115,14 @@ describe('deck-resolver', () => {
 
       await expect(
         (DeckResolver.units as any)({
-          units: [card],
+          units: [deckUnit],
         })
-      ).resolves.toEqual([card])
+      ).resolves.toEqual([deckUnit])
 
       expect(getSpy.mock.calls).toEqual([])
     })
     it('calls out to UnitStore if unit unresolved', async () => {
-      const card = {
+      const deckUnit = {
         artStyle: 1,
         unit,
       }
@@ -133,11 +133,11 @@ describe('deck-resolver', () => {
           units: [
             {
               id: unit._id,
-              artStyle: card.artStyle,
+              artStyle: deckUnit.artStyle,
             },
           ],
         })
-      ).resolves.toEqual([card])
+      ).resolves.toEqual([deckUnit])
 
       expect(getSpy.mock.calls).toEqual([
         [
@@ -148,7 +148,7 @@ describe('deck-resolver', () => {
       ])
     })
     it('only adds unit once when calling to UnitStore if duplicate units unresolved', async () => {
-      const card = {
+      const deckUnit = {
         artStyle: 1,
         unit,
       }
@@ -159,15 +159,15 @@ describe('deck-resolver', () => {
           units: [
             {
               id: unit._id,
-              artStyle: card.artStyle,
+              artStyle: deckUnit.artStyle,
             },
             {
               id: unit._id,
-              artStyle: card.artStyle,
+              artStyle: deckUnit.artStyle,
             },
           ],
         })
-      ).resolves.toEqual([card, card])
+      ).resolves.toEqual([deckUnit, deckUnit])
 
       expect(getSpy.mock.calls).toEqual([
         [
@@ -178,7 +178,7 @@ describe('deck-resolver', () => {
       ])
     })
     it('throws error if unit id does not exist in database', async () => {
-      const card = {
+      const deckUnit = {
         artStyle: 1,
         unit,
       }
@@ -194,7 +194,7 @@ describe('deck-resolver', () => {
           units: [
             {
               id: unit._id,
-              artStyle: card.artStyle,
+              artStyle: deckUnit.artStyle,
             },
           ],
         })

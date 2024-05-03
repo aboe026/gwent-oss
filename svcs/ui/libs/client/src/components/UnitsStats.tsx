@@ -1,7 +1,7 @@
 import { CgChevronDoubleLeft, CgChevronDoubleRight, CgLock, CgLockUnlock } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { DeckCard } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
 import { getDeckStats } from '@gwent/utils'
 import ProgressRing from '../components/ProgressRing'
@@ -24,13 +24,13 @@ export default function UnitsStats({
   disabled,
   effectsExpanded,
   factionStats,
-  filteredAvailableCards,
-  filteredSelectedCards,
-  selectedCards,
+  filteredAvailableUnits,
+  filteredSelectedUnits,
+  selectedUnits,
   setAvailableFilterFields,
   setCombatsExpanded,
   setEffectsExpanded,
-  setSelectedCards,
+  setSelectedUnits,
   setSelectedFilterFields,
   setSelectedFiltersExpanded,
   setSelectedNameFilter,
@@ -39,21 +39,21 @@ export default function UnitsStats({
   setSortFilterLocked,
   sortFilterLocked,
 }: UnitsStatsProps) {
-  const selectedStats = getDeckStats(selectedCards)
+  const selectedStats = getDeckStats(selectedUnits)
   const buttonColor = disabled ? 'gray' : 'black'
 
   return (
     <>
       <div id="unitsStatsTop">
         <div className="units-select-all-container">
-          <span>{filteredAvailableCards.length}</span>
+          <span>{filteredAvailableUnits.length}</span>
           <div
             id={HTML_IDS.DeckUnitSelectAll}
             className={`units-select-all ${!disabled ? 'pointable' : ''}`}
             title="Add All"
             onClick={() => {
               if (!disabled) {
-                setSelectedCards((previous: DeckCard[]) => [...previous, ...filteredAvailableCards])
+                setSelectedUnits((previous: DeckUnit[]) => [...previous, ...filteredAvailableUnits])
               }
             }}
           >
@@ -83,16 +83,17 @@ export default function UnitsStats({
           {sortFilterLocked ? <CgLock color="black" /> : <CgLockUnlock color="black" />}
         </div>
         <div className="units-select-all-container">
-          <span>{filteredSelectedCards.length}</span>
+          <span>{filteredSelectedUnits.length}</span>
           <div
             id={HTML_IDS.DeckUnitRemoveAll}
             className={`units-select-all ${!disabled ? 'pointable' : ''}`}
             title="Remove All"
             onClick={() => {
               if (!disabled) {
-                setSelectedCards((previous: DeckCard[]) =>
+                setSelectedUnits((previous: DeckUnit[]) =>
                   previous.filter(
-                    (card) => !filteredSelectedCards.some((selectedCard) => selectedCard.unit.id === card.unit.id)
+                    (deckUnit) =>
+                      !filteredSelectedUnits.some((selectedUnit) => selectedUnit.unit.id === deckUnit.unit.id)
                   )
                 )
               }
@@ -399,13 +400,13 @@ interface UnitsStatsProps {
   disabled: boolean
   effectsExpanded: boolean
   factionStats: UnitStats | undefined
-  filteredAvailableCards: DeckCard[]
-  filteredSelectedCards: DeckCard[]
-  selectedCards: DeckCard[]
+  filteredAvailableUnits: DeckUnit[]
+  filteredSelectedUnits: DeckUnit[]
+  selectedUnits: DeckUnit[]
   setAvailableFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setCombatsExpanded: Dispatch<SetStateAction<boolean>>
   setEffectsExpanded: Dispatch<SetStateAction<boolean>>
-  setSelectedCards: Dispatch<SetStateAction<DeckCard[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
   setSelectedFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setSelectedFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setSelectedNameFilter: Dispatch<SetStateAction<string>>
