@@ -5,7 +5,7 @@ import env from '../util/env'
 import { HTML_IDS, ROUTES } from '@gwent/constants'
 import { version } from '../../package.json'
 
-const container = Selector(`#${HTML_IDS.About}`)
+const container = Selector(`#${HTML_IDS.AboutContainer}`)
 
 export default class AboutPage {
   static elements = {
@@ -26,7 +26,7 @@ export default class AboutPage {
     await t.expect(AboutPage.elements.Version.innerText).eql(version)
   }
 
-  static async verifyContent() {
+  static async verify() {
     await E2eUtil.verifyCurrentUrl(AboutPage.getUrl())
     await AboutPage.verifyBuild()
     await AboutPage.verifyVersion()

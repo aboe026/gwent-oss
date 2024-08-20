@@ -25,8 +25,11 @@ export type Application = {
 };
 
 export enum Combat {
+  /** Close */
   Close = 'CLOSE',
+  /** Ranged */
   Ranged = 'RANGED',
+  /** Siege */
   Siege = 'SIEGE'
 }
 
@@ -40,6 +43,11 @@ export type Deck = {
   stats: UnitStats;
   units: Array<DeckUnit>;
   user: User;
+};
+
+
+export type DeckStatsArgs = {
+  neutrals?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type DeckUnit = {
@@ -64,8 +72,11 @@ export type Dlc = {
 };
 
 export enum DlcKey {
+  /** Blood and Wine */
   BloodAndWine = 'BLOOD_AND_WINE',
+  /** Gwent: The Witcher Card Game */
   GwentTheWitcherCardGame = 'GWENT_THE_WITCHER_CARD_GAME',
+  /** Hearts of Stone */
   HeartsOfStone = 'HEARTS_OF_STONE'
 }
 
@@ -80,18 +91,31 @@ export type Effect = {
 };
 
 export enum EffectKey {
+  /** Agile */
   Agile = 'AGILE',
+  /** Summon Avenger */
   Avenger = 'AVENGER',
+  /** Berserker */
   Berserker = 'BERSERKER',
+  /** Tight Bond */
   Bond = 'BOND',
+  /** Decoy */
   Decoy = 'DECOY',
+  /** Commander's Horn */
   Horn = 'HORN',
+  /** Mardroeme */
   Mardroeme = 'MARDROEME',
+  /** Medic */
   Medic = 'MEDIC',
+  /** Morale Boost */
   Morale = 'MORALE',
+  /** Muster */
   Muster = 'MUSTER',
+  /** Scorch */
   Scorch = 'SCORCH',
+  /** Spy */
   Spy = 'SPY',
+  /** Weather */
   Weather = 'WEATHER'
 }
 
@@ -113,12 +137,94 @@ export type FactionStatsArgs = {
 };
 
 export enum FactionKey {
+  /** Monsters */
   Monsters = 'MONSTERS',
+  /** Neutral */
   Neutral = 'NEUTRAL',
+  /** Nilfgaardian Empire */
   NilfgaardianEmpire = 'NILFGAARDIAN_EMPIRE',
+  /** Northern Realms */
   NorthernRealms = 'NORTHERN_REALMS',
+  /** Scoia'tael */
   ScoiaTael = 'SCOIA_TAEL',
+  /** Skellige */
   Skellige = 'SKELLIGE'
+}
+
+export type Game = {
+  __typename?: 'Game';
+  created: Scalars['DateTime']['output'];
+  creator: User;
+  id: Scalars['ID']['output'];
+  players: Array<GamePlayer>;
+  round: GameRound;
+  status: GameStatus;
+  updated: Scalars['DateTime']['output'];
+  victors: Array<User>;
+};
+
+export type GameDeck = {
+  __typename?: 'GameDeck';
+  /** The units which have been sent to the graveyard */
+  discard: Array<DeckUnit>;
+  /** A snapshot of the user deck when it was selected for the game */
+  from?: Maybe<Deck>;
+  /** The currently playable units */
+  hand: Array<DeckUnit>;
+  /** Units which the player has chosen to redraw to be replaced by a different random undrawn unit. */
+  redraws: Array<Redraw>;
+  /** The units which have not yet been drawn */
+  undrawn: Array<DeckUnit>;
+};
+
+export enum GameDeckStatus {
+  /** Player is choosing their deck to use for the game. */
+  Choosing = 'CHOOSING',
+  /** Player is optionally selecting units to redraw from their selected deck. */
+  Redrawing = 'REDRAWING',
+  /** Player game deck is finalized and ready to play. */
+  Set = 'SET'
+}
+
+export type GamePlayer = {
+  __typename?: 'GamePlayer';
+  /** The number of cards in the game deck of the player. Only visible once all players are ready. */
+  counts?: Maybe<GamePlayerUnitCounts>;
+  /** The faction the player chose for the game. Only visible once all players are ready. */
+  faction?: Maybe<Faction>;
+  /** The leader the player chose for the game. Only visible once all players are ready. */
+  leader?: Maybe<Leader>;
+  /** Whether or not a user has their game deck set to play the game. */
+  ready: Scalars['Boolean']['output'];
+  rounds: Array<PlayerRound>;
+  user: User;
+};
+
+export type GamePlayerInput = {
+  deck: Scalars['ID']['input'];
+  user: Scalars['ID']['input'];
+};
+
+export type GamePlayerUnitCounts = {
+  __typename?: 'GamePlayerUnitCounts';
+  discard: Scalars['Int']['output'];
+  hand: Scalars['Int']['output'];
+  undrawn: Scalars['Int']['output'];
+};
+
+export type GameRound = {
+  __typename?: 'GameRound';
+  current: Scalars['Int']['output'];
+  maximum: Scalars['Int']['output'];
+};
+
+export enum GameStatus {
+  /** Players are choosing the decks and hand to use for the game. */
+  Decking = 'DECKING',
+  /** Play has ended. */
+  Done = 'DONE',
+  /** Players are playing rounds of the game. */
+  Playing = 'PLAYING'
 }
 
 export type Leader = {
@@ -136,13 +242,21 @@ export type Leader = {
 export type Mutation = {
   __typename?: 'Mutation';
   /** Create a user-defined deck. */
-  addDeck?: Maybe<Deck>;
+  addDeck: Deck;
+  /** Create a game of Gwent between the authenticated user and another player. */
+  addGame: Game;
   /** Create a user. */
-  addUser?: Maybe<User>;
+  addUser: User;
   /** Authenticate a user. */
-  login?: Maybe<User>;
+  login: User;
   /** De-authenticate a user. */
-  logout?: Maybe<Scalars['Boolean']['output']>;
+  logout: Scalars['Boolean']['output'];
+  /** Mark player as ready to play the game, no more deck modifications allowed. */
+  ready: Game;
+  /** Replace a card in hand with a random one from the deck, before a game starts. */
+  redraw: DeckUnit;
+  /** Choose which deck will be used for the game. */
+  setDeck: GameDeck;
 };
 
 
@@ -151,6 +265,11 @@ export type MutationAddDeckArgs = {
   leader: Scalars['ID']['input'];
   name: Scalars['String']['input'];
   units: Array<DeckUnitInput>;
+};
+
+
+export type MutationAddGameArgs = {
+  opponentNames: Array<Scalars['String']['input']>;
 };
 
 
@@ -165,6 +284,29 @@ export type MutationLoginArgs = {
   password: Scalars['String']['input'];
 };
 
+
+export type MutationReadyArgs = {
+  game: Scalars['ID']['input'];
+};
+
+
+export type MutationRedrawArgs = {
+  game: Scalars['ID']['input'];
+  unit: Scalars['ID']['input'];
+};
+
+
+export type MutationSetDeckArgs = {
+  deck: Scalars['ID']['input'];
+  game: Scalars['ID']['input'];
+};
+
+export type PlayerRound = {
+  __typename?: 'PlayerRound';
+  score: Scalars['Int']['output'];
+  won: Scalars['Boolean']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** Information about the application running. */
@@ -172,15 +314,31 @@ export type Query = {
   /** The current user on the session if they are authenticated. */
   currentUser?: Maybe<User>;
   /** All decks created by the authenticated user. */
-  decks?: Maybe<Array<Deck>>;
+  decks: Array<Deck>;
   /** All factions which a leader, unit or deck can belong to. */
   factions: Array<Faction>;
+  /** A game by its ID. */
+  game: Game;
+  /** The deck selected to be played for the given game. */
+  gameDeck?: Maybe<GameDeck>;
+  /** All games which a user created or is part of. */
+  games: Array<Game>;
   /** All leaders available to build decks with. */
   leaders: Array<Leader>;
   /** The settings configured for the application. */
   settings: Array<Setting>;
   /** All units available to build decks with. */
   units: Array<Unit>;
+};
+
+
+export type QueryGameArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGameDeckArgs = {
+  game: Scalars['ID']['input'];
 };
 
 
@@ -192,6 +350,12 @@ export type QueryLeadersArgs = {
 export type QueryUnitsArgs = {
   deckable?: InputMaybe<Scalars['Boolean']['input']>;
   factions?: InputMaybe<Array<FactionKey>>;
+};
+
+export type Redraw = {
+  __typename?: 'Redraw';
+  from: DeckUnit;
+  to: DeckUnit;
 };
 
 export type Setting = {
@@ -276,8 +440,13 @@ export type DeckDbObject = {
   leader: ObjectId,
   name: string,
   stats: UnitStats,
-  units: Array<DeckUnit>,
+  units: Array<DeckUnitDbObject>,
   user: ObjectId,
+};
+
+export type DeckUnitDbObject = {
+  artStyle: number,
+  unit: ObjectId,
 };
 
 export type DlcDbObject = {
@@ -308,6 +477,31 @@ export type FactionDbObject = {
   stats: UnitStats,
 };
 
+export type GameDbObject = {
+  created: any,
+  creator: ObjectId,
+  _id: ObjectId,
+  players: Array<GamePlayerDbObject>,
+  round: GameRound,
+  updated: any,
+  victors: Array<User>,
+};
+
+export type GameDeckDbObject = {
+  discard: Array<DeckUnitDbObject>,
+  from?: DeckDbObject,
+  hand: Array<DeckUnitDbObject>,
+  redraws: Array<RedrawDbObject>,
+  undrawn: Array<DeckUnitDbObject>,
+};
+
+export type GamePlayerDbObject = {
+  ready: boolean,
+  rounds: Array<PlayerRound>,
+  user: ObjectId,
+  deck: GameDeckDbObject,
+};
+
 export type LeaderDbObject = {
   ability: string,
   created: any,
@@ -317,6 +511,11 @@ export type LeaderDbObject = {
   image: string,
   name: string,
   quote: string,
+};
+
+export type RedrawDbObject = {
+  from: DeckUnitDbObject,
+  to: DeckUnitDbObject,
 };
 
 export type UnitDbObject = {
@@ -339,7 +538,8 @@ export type UnitDbObject = {
 };
 
 export type UserDbObject = {
-  created: any,
+  created: Date,
   _id: ObjectId,
   name: string,
+  password: string,
 };

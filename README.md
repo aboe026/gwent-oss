@@ -2,6 +2,7 @@
 
 ![build](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent/main/build.json)
 ![coverage](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent/main/coverage.json)
+[![Common Changelog](https://common-changelog.org/badge.svg)](https://common-changelog.org)
 
 A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
 
@@ -147,6 +148,8 @@ yarn test-e2e
 
 _Note_: Source code for e2e tests must first be built with `yarn build` in `test/e2e`
 
+_Note_: To run a specific test, place a `.only` after the test/fixture
+
 This will start Gwent for you. To only run the tests (without starting Gwent), go to the `test/e2e` directory and run
 
 ```sh
@@ -179,6 +182,24 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- replace `stats: {} as any` with constant value in tests
+- add ability to resolve neutrals on gameDeck (undrawn, hand, discard, redraws (from/to))
+- Change "ready" mutation to "readyGame"
+- get icon for neutral faction
+- Remove @map directive for ID types?
+- Figure out why mutation resolvers don't show typescript error when returning Db object instead of resolved object
+- have Graphql context be typed: https://the-guild.dev/graphql/codegen/plugins/typescript/typescript-resolvers#contexttype
+- Switch DeckUnit to be same as Unit but single image instead of array
+  - Have Unit interface with AvailableUnit and DeckUnit implementations
+  - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
+  - change schema input to be just an optional image instead of artStyle
+- more accurately type front-end results based on their return fragments
+  type Game = GameQuery['game']
+  this seems to mess up nested objects though :/
+- Have "DateTime" on resolver object map to javascript Date object?
+- add Error to returns types for all queries/mutations?
+- Make Combat a type (because of image)
+- Deck name (and "as of" date) somewhere on game? So user can know which deck they picked for the game (and when it was last updated at time of game)
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?

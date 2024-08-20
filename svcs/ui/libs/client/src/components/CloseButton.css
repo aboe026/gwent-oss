@@ -1,0 +1,10 @@
+.close-button {
+  display: flex;
+  height: 32px;
+  width: 32px;
+  justify-content: center;
+  align-items: center;
+  background-color: darkgray;
+  border-radius: 5px;
+  cursor: pointer;
+}

@@ -42,7 +42,20 @@ describe('upgrade-store', () => {
 
       await expect(UpgradeStore.updateLock()).resolves.toEqual(lock)
 
-      expect(updateSpy.mock.calls).toEqual([[lock]])
+      expect(updateSpy.mock.calls).toEqual([
+        [
+          {
+            filter: {
+              _id: lock._id,
+            },
+            update: {
+              $set: {
+                updated: lock.updated,
+              },
+            },
+          },
+        ],
+      ])
       expect(traceSpy.mock.calls).toEqual([[`Updating lock with updated: "${mockedDate}"`]])
       expect(dateSpy.mock.calls).toEqual([[]])
     })

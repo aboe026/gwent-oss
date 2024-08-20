@@ -53,8 +53,14 @@ describe('faction-store', () => {
       expect(updateSpy.mock.calls).toEqual([
         [
           {
-            _id: id,
-            stats,
+            filter: {
+              _id: id,
+            },
+            update: {
+              $set: {
+                stats,
+              },
+            },
           },
         ],
       ])

@@ -34,8 +34,14 @@ export default class UpgradeStore extends Store {
     const updated = new Date()
     UpgradeStore.logger.trace(`Updating lock with updated: "${updated}"`)
     return UpgradeStore.update<LockDbObject>({
-      _id: UpgradeStore.LOCK_ID,
-      updated,
+      filter: {
+        _id: UpgradeStore.LOCK_ID,
+      },
+      update: {
+        $set: {
+          updated,
+        },
+      },
     })
   }
 

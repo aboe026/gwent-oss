@@ -29,7 +29,7 @@ export default function ProfilePage() {
 
   return (
     <Centered>
-      <div id={HTML_IDS.Profile}>
+      <div id={HTML_IDS.ProfileContainer}>
         <table>
           <caption>Profile</caption>
           <tbody>

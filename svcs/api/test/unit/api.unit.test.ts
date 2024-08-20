@@ -90,10 +90,12 @@ describe('Api', () => {
       const text = 'Gwent'
       const buildNumber = 0
       const nodeEnv = 'development'
+      const logLevel = 'INFO'
       const textSyncSpy = jest.spyOn(figlet, 'textSync').mockReturnValue(text)
       const getBuildNumberSpy = jest.spyOn(AppInfo, 'getBuildNumber').mockResolvedValue(0)
       const envSpy = jest.spyOn(env, 'default').mockReturnValue({
         NODE_ENV: nodeEnv,
+        LOG_LEVEL: logLevel,
       } as any)
       const infoSpy = jest.fn().mockImplementation()
       const debugSpy = jest.fn().mockImplementation()
@@ -108,8 +110,8 @@ describe('Api', () => {
 
       expect(textSyncSpy.mock.calls).toEqual([['Gwent', 'Tombstone']])
       expect(getBuildNumberSpy.mock.calls).toEqual([[]])
-      expect(envSpy.mock.calls).toEqual([[]])
-      expect(infoSpy.mock.calls).toEqual([[`\n${text}`], [`Version: "${version}"`]])
+      expect(envSpy.mock.calls).toEqual([[], []])
+      expect(infoSpy.mock.calls).toEqual([[`\n${text}`], [`Version: "${version}"`], [`LOG_LEVEL: "${logLevel}"`]])
       expect(debugSpy.mock.calls).toEqual([[`Build: "${buildNumber}"`]])
       expect(traceSpy.mock.calls).toEqual([[`NODE_ENV: "${nodeEnv}"`]])
     })

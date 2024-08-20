@@ -1,23 +1,118 @@
-import { ObjectId } from 'mongodb'
-
 import { FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
-import FactionStore from '../../database/stores/faction-store'
-import { LeaderResolvers } from '@gwent/graphql-schema/resolver-typings'
-import { resolveDlc } from './resolver-util'
+import { Dlc, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
+import FactionResolver from './faction-resolver'
+import { DlcResolver } from './dlc-resolver'
+import { ObjectId } from 'mongodb'
+import LeaderStore from '../../database/stores/leader-store'
+import { getUniqueItems } from '@gwent/utils'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const LeaderResolver: LeaderResolvers<any, LeaderDbObject> = {
-  dlc: async (leader: LeaderDbObject) => resolveDlc(leader),
-  faction: async (leader: LeaderDbObject) => {
-    if (ObjectId.isValid(leader.faction)) {
-      const factions = await FactionStore.get({
-        ids: [leader.faction],
-      })
-      return factions[0]
+export default class LeaderResolver {
+  static async resolveFromObject({
+    dlc,
+    faction,
+    leader,
+    neutralStats,
+  }: {
+    dlc?: Dlc
+    faction?: Faction
+    leader: LeaderDbObject
+    neutralStats?: boolean
+  }): Promise<Leader> {
+    return {
+      ability: leader.ability,
+      created: leader.created,
+      dlc: dlc || (await DlcResolver.resolveFromId(leader.dlc)),
+      faction:
+        faction ||
+        (await FactionResolver.resolveFromId({
+          id: leader.faction,
+          neutrals: neutralStats,
+        })),
+      id: leader._id.toString(),
+      image: leader.image,
+      name: leader.name,
+      quote: leader.quote,
     }
-    return leader.faction as any as FactionDbObject // eslint-disable-line @typescript-eslint/no-explicit-any
-  },
-  id: (leader: LeaderDbObject) => leader._id.toString(),
-}
+  }
 
-export default LeaderResolver
+  static async resolveFromId({ id, neutralStats }: { id: string | ObjectId; neutralStats?: boolean }): Promise<Leader> {
+    return (
+      await LeaderResolver.resolveFromIds({
+        ids: [id],
+        neutralStats,
+      })
+    )[0]
+  }
+
+  static async resolveFromIds({
+    ids,
+    factions,
+    resolvedFactions,
+    neutralStats,
+  }: {
+    ids: (ObjectId | string)[]
+    factions?: FactionDbObject[]
+    resolvedFactions?: Faction[]
+    neutralStats?: boolean
+  }): Promise<Leader[]> {
+    const leaders = await LeaderStore.get({
+      ids: ids,
+    })
+
+    return LeaderResolver.resolveFromArray({
+      leaders,
+      factions,
+      resolvedFactions,
+      neutralStats,
+    })
+  }
+
+  static async resolveFromArray({
+    factions,
+    leaders,
+    resolvedFactions,
+    neutralStats,
+  }: {
+    factions?: FactionDbObject[]
+    resolvedFactions?: Faction[]
+    leaders: LeaderDbObject[]
+    neutralStats?: boolean
+  }): Promise<Leader[]> {
+    const dlcIds = getUniqueItems<ObjectId>(leaders.map((leader) => leader.dlc).filter((dlc) => dlc !== undefined))
+    const dlcs = await DlcResolver.resolveFromIds(dlcIds)
+
+    if (!resolvedFactions) {
+      if (factions) {
+        resolvedFactions = await FactionResolver.resolveFromArray({
+          factions,
+          neutralStats,
+        })
+      } else {
+        const factionIds = getUniqueItems<ObjectId>(leaders.map((leader) => leader.faction))
+        resolvedFactions = await FactionResolver.resolveFromIds({
+          ids: factionIds,
+          neutralStats,
+        })
+      }
+    }
+
+    const resolvedLeaders: Leader[] = []
+    for (const leader of leaders) {
+      const faction = resolvedFactions.find((faction) => faction.id.toString() === leader.faction.toString())
+      let dlc: Dlc | undefined
+      if (leader.dlc) {
+        dlc = dlcs.find((dlc) => dlc.id.toString() === leader.dlc?.toString())
+      }
+      resolvedLeaders.push(
+        await LeaderResolver.resolveFromObject({
+          leader,
+          dlc,
+          faction,
+          neutralStats,
+        })
+      )
+    }
+
+    return resolvedLeaders
+  }
+}

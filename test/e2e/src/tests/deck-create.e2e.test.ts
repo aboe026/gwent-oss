@@ -6,6 +6,7 @@ import LoginPage from '../page-objects/login-page'
 import DecksPage from '../page-objects/decks-page'
 import { sortObjectArray } from '@gwent/utils'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
+import DeckEditor from '../components/deck-editor'
 
 fixture('Deck Create').page(DeckPage.getUrl())
 
@@ -161,36 +162,36 @@ test('Create disabled if invalid', async () => {
     username,
     password,
   })
-  await DeckPage.verifyContent({})
-  await DeckPage.verifyValid(false)
+  await DeckPage.verify({})
+  await DeckEditor.verifyValid(false)
 
   // name only
-  await DeckPage.setName(name)
-  await DeckPage.verifyValid(false)
+  await DeckEditor.setName(name)
+  await DeckEditor.verifyValid(false)
 
   // name and faction
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
-  await DeckPage.verifyValid(false)
+  await DeckEditor.verifyValid(false)
 
   // name, faction, leader
-  await DeckPage.setLeader({
+  await DeckEditor.setLeader({
     leader,
   })
-  await DeckPage.verifyValid(false)
+  await DeckEditor.verifyValid(false)
 
   // invalid units
-  await DeckPage.setUnits(units)
-  await DeckPage.verifyValid(false)
+  await DeckEditor.setUnits(units)
+  await DeckEditor.verifyValid(false)
 
   // valid everything
-  await DeckPage.addUnits(['Vattier de Rideaux', 'Young Emmisary', 'Young Emmisary', 'Zerrikanian Fire Scorpion'])
-  await DeckPage.verifyValid(true)
+  await DeckEditor.addUnits(['Vattier de Rideaux', 'Young Emissary', 'Young Emissary', 'Zerrikanian Fire Scorpion'])
+  await DeckEditor.verifyValid(true)
 
   // invalid name
-  await DeckPage.setName('')
-  await DeckPage.verifyValid(false)
+  await DeckEditor.setName('')
+  await DeckEditor.verifyValid(false)
 })
 
 test('Change leader', async () => {
@@ -245,21 +246,21 @@ test('Change leader', async () => {
     password,
   })
 
-  await DeckPage.setName(name)
-  await DeckPage.setFaction({
+  await DeckEditor.setName(name)
+  await DeckEditor.setFaction({
     faction,
   })
-  await DeckPage.setLeader({
+  await DeckEditor.setLeader({
     leader: leader1,
   })
-  await DeckPage.setUnits(units)
-  await DeckPage.verifyValid(true)
+  await DeckEditor.setUnits(units)
+  await DeckEditor.verifyValid(true)
 
-  await DeckPage.setLeader({
+  await DeckEditor.setLeader({
     leader: leader2,
   })
-  await DeckPage.verifyValid(true)
-  await DeckPage.save()
+  await DeckEditor.verifyValid(true)
+  await DeckEditor.save()
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
 })
 
@@ -344,25 +345,25 @@ test('Change faction', async () => {
     password,
   })
 
-  await DeckPage.setName(name)
-  await DeckPage.setFaction({
+  await DeckEditor.setName(name)
+  await DeckEditor.setFaction({
     faction: faction1,
   })
-  await DeckPage.setLeader({
+  await DeckEditor.setLeader({
     leader: leader1,
   })
-  await DeckPage.setUnits(units1)
-  await DeckPage.verifyValid(true)
+  await DeckEditor.setUnits(units1)
+  await DeckEditor.verifyValid(true)
 
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction: faction2,
   })
-  await DeckPage.setLeader({
+  await DeckEditor.setLeader({
     leader: leader2,
   })
-  await DeckPage.setUnits(units2)
-  await DeckPage.verifyValid(true)
-  await DeckPage.save()
+  await DeckEditor.setUnits(units2)
+  await DeckEditor.verifyValid(true)
+  await DeckEditor.save()
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
 })
 
@@ -393,18 +394,18 @@ test('Create deck with Select All button', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setName(name)
-  await DeckPage.setFaction({
+  await DeckEditor.setName(name)
+  await DeckEditor.setFaction({
     faction: faction,
   })
-  await DeckPage.setLeader({
+  await DeckEditor.setLeader({
     leader,
   })
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatStrength)
-  await DeckPage.selectAll()
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatStrength)
+  await DeckEditor.selectAll()
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
 
-  await DeckPage.verifyContent({
+  await DeckPage.verify({
     name,
     faction,
     leader,
@@ -416,8 +417,8 @@ test('Create deck with Select All button', async () => {
       .map((unit) => unit.name),
   })
 
-  await DeckPage.verifyValid(true)
-  await DeckPage.save()
+  await DeckEditor.verifyValid(true)
+  await DeckEditor.save()
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
 })
 
@@ -468,5 +469,22 @@ test('Cannot create deck with existing name', async () => {
   })
 
   await E2eUtil.verifyCurrentUrl(DeckPage.getUrl())
-  await DeckPage.verifyCreateError(`Error creating deck: Deck with name "${name}" already exists`)
+  await DeckEditor.verifyCreateError(`Error creating deck: Deck with name "${name}" already exists`)
+})
+
+test('Cancel brings user to decks list', async () => {
+  const username = `deck-create-cancel-${Date.now()}`
+  await new ApiClient({}).addUser({
+    name: username,
+  })
+  await LoginPage.login({
+    username,
+  })
+  await DeckPage.verify({})
+
+  await DeckEditor.cancel()
+
+  await DecksPage.verify({
+    decks: [],
+  })
 })

@@ -1,0 +1,331 @@
+#deckEditorContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#deckEditorUpper {
+  display: flex;
+}
+
+#deckEditorLower {
+  height: 100%;
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#deckEditorNameFaction {
+  display: flex;
+  flex-direction: column;
+  margin-right: 5px;
+}
+
+#deckEditorName {
+  width: calc(100% - 5px);
+}
+
+#deckEditorFaction {
+  width: 100%;
+}
+
+#deckEditorFactionSelected {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+#deckEditorFactionSelectedContainer {
+  display: flex;
+  width: 100%;
+  padding: 5px;
+}
+
+#deckEditorFactionChange {
+  margin-left: 10px;
+}
+
+#deckEditorFactionSelectedImage {
+  height: 60px;
+}
+
+#deckEditorFactionSelectedDetails {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-left: 5px;
+}
+
+#deckEditorfactionSelectedName {
+  font-weight: bold;
+}
+
+#deckEditorFactionPicker {
+  display: flex;
+  flex-direction: column;
+  max-height: 90%;
+  padding: 20px;
+  border-radius: 5px;
+  gap: 20px;
+  align-items: center;
+  margin: 20px;
+  overflow: hidden;
+  background-color: lightgray;
+}
+
+#deckEditorFactionPickerList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+
+#deckEditorLeaderContainer {
+  display: flex;
+  margin-left: 5px;
+}
+
+#deckEditorLeaderIcon {
+  height: 50px;
+  width: 50px;
+  opacity: 50%;
+}
+
+#deckEditorUnitsIcon {
+  height: 100px;
+  opacity: 50%;
+}
+
+#deckEditorLeader {
+  width: 100%;
+  margin-left: 3px;
+}
+
+#deckEditorLeaderDetailsContainer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  gap: 10px;
+  margin: 0;
+}
+
+#deckEditorLeaderDetails {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+#deckEditorLeaderNameAbilityQuoteDlc {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  gap: 10px;
+}
+
+#deckEditorLeaderNameAbilityQuote {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex-grow: 1;
+  height: 100%;
+}
+
+#deckEditorLeaderNameAbility {
+  display: flex;
+  flex-direction: column;
+}
+
+#deckEditorLeaderSelect {
+  width: 100%;
+  display: flex;
+}
+
+#deckEditorLeaderChange {
+  margin-left: 10px;
+}
+
+#deckEditorLeaderImage {
+  height: 150px;
+  border-radius: 5px;
+}
+
+#deckEditorLeaderName {
+  font-weight: bold;
+}
+
+#deckEditorLeaderQuote {
+  text-align: right;
+  font-style: italic;
+}
+
+#deckEditorLeaderPicker {
+  display: flex;
+  flex-direction: column;
+  background-color: lightgray;
+  padding: 20px;
+  border-radius: 5px;
+  gap: 20px;
+  align-items: center;
+  margin: 20px;
+  max-height: 90%;
+  overflow: hidden;
+  overflow-x: auto;
+}
+
+#deckEditorLeaderPickerList {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  overflow: auto;
+}
+
+#deckEditorUnitsContainer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+#deckEditorUnitsErrors {
+  display: flex;
+  flex-direction: column;
+}
+
+#deckEditorUnitsContainerMiddle {
+  display: flex;
+  flex-direction: column;
+  max-width: 130px;
+}
+
+#deckEditorActions {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+}
+
+#deckEditorError {
+  height: auto;
+  padding-top: 10px;
+}
+
+.deck-editor-picker-header {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.deck-editor-picker-title {
+  width: 100%;
+  text-align: center;
+  margin-left: 32px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.deck-editor-quarter {
+  width: 50%;
+}
+
+.deck-editor-table-label {
+  float: right;
+}
+
+.deck-editor-table-value {
+  width: 100%;
+}
+
+.deck-editor-table-value-faction {
+  display: flex;
+}
+
+.deck-editor-faction-picker-faction {
+  display: flex;
+  gap: 10px;
+  background-color: darkgray;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.deck-editor-faction-picker-image {
+  width: 100px;
+}
+
+.deck-editor-faction-picker-name-ability {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+
+.deck-editor-faction-picker-name {
+  font-weight: bold;
+}
+
+.deck-editor-leader-picker-leader {
+  display: flex;
+  width: 500px;
+  gap: 10px;
+  background-color: darkgray;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.deck-editor-leader-picker-image {
+  height: 100%;
+  width: 50%;
+  border-radius: 20px;
+}
+
+.deck-editor-leader-picker-name-ability-quote {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: space-between;
+}
+
+.deck-editor-leader-picker-name {
+  font-weight: bold;
+}
+
+.deck-editor-leader-picker-quote {
+  font-style: italic;
+}
+
+.deck-editor-unit-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  width: 0;
+}
+
+.deck-editor-unit-border {
+  flex-grow: 1;
+  width: 100%;
+  border-radius: 5px;
+  background-color: darkgray;
+  overflow: hidden;
+}
+
+.deck-editor-card-container {
+  display: flex;
+  flex-wrap: wrap;
+  width: calc(100% - 10px);
+  height: calc(100% - 20px);
+  overflow: auto;
+  gap: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+  justify-content: flex-start;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}

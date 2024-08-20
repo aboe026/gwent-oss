@@ -8,17 +8,6 @@ const config: CodegenConfig = {
     },
     './generated/resolver-typings.ts': {
       plugins: ['typescript', 'typescript-resolvers'],
-      config: {
-        mappers: {
-          Deck: './database-typings#DeckDbObject',
-          Dlc: './database-typings#DlcDbObject',
-          Effect: './database-typings#EffectDbObject',
-          Faction: './database-typings#FactionDbObject',
-          Leader: './database-typings#LeaderDbObject',
-          Unit: './database-typings#UnitDbObject',
-          User: './database-typings#UserDbObject',
-        },
-      },
     },
     './generated/apollo-typings.tsx': {
       documents: ['./src/apollo/*.gql'],

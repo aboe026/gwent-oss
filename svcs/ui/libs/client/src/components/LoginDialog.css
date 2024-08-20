@@ -1,4 +1,4 @@
-#loginForm {
+#loginDialogContainer {
   background-color: lightgray;
   padding: 20px;
   border-radius: 5px;
@@ -7,38 +7,34 @@
   gap: 20px;
 }
 
-#loginFormFields {
+#loginDialogFields {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-#loginFormLower {
+#loginDialogLower {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
 
-#loginError {
-  text-align: center;
-}
-
-#loginFormActions {
+#loginDialogActions {
   display: flex;
   gap: 10px;
   align-items: flex-start;
 }
 
-#loginFormSwitch {
+#loginDialogSwitch {
   display: flex;
   gap: 2px;
 }
 
-#loginTitle {
+#loginDialogTitle {
   text-align: center;
 }
 
-.login-form-field {
+.login-dialog-field {
   display: flex;
   flex-direction: column;
 }

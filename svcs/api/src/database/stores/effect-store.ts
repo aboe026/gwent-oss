@@ -1,8 +1,7 @@
 import { Document, Filter, ObjectId } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import { EffectDbObject, EffectKey, UnitDbObject } from '@gwent/graphql-schema/database-typings'
-import { prettyPrintList, toTitleCase } from '../../util/string-util'
+import { EffectDbObject, EffectKey } from '@gwent/graphql-schema/database-typings'
 import Store from './store'
 
 /**
@@ -57,35 +56,6 @@ export default class EffectStore extends Store {
       }
     }
     return EffectStore.read<EffectDbObject[]>({ filter })
-  }
-
-  /**
-   * Resolves the abilities on effects for a unit to be more specific.
-   *
-   * @param unit The unit containing the effects.
-   * @param effects The effects whose abilities will be resolved for specificity.
-   * @returns The effect with more specific abilities.
-   */
-  static resolveAbilitiesForUnit(unit: UnitDbObject, effects: EffectDbObject[]): EffectDbObject[] {
-    return effects.map((effect) => {
-      let ability = effect.ability
-      if (effect.key === EffectKey.Weather && unit.combats && unit.combats.length > 0) {
-        ability = effect.ability.replace(
-          'given row(s)',
-          prettyPrintList({
-            items: unit.combats.map((combat) => toTitleCase(combat)),
-            labelPlural: 'rows',
-            labelSingular: 'row',
-          })
-        )
-      } else if (effect.key === EffectKey.Muster && unit.effectPrefix) {
-        ability = effect.ability.replace('same name', `"${unit.effectPrefix}" prefix`)
-      }
-      return {
-        ...effect,
-        ability,
-      }
-    })
   }
 }
 

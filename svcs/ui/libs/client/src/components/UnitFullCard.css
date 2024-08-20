@@ -1,0 +1,173 @@
+#unitFullCardContainer {
+  position: absolute;
+  margin: auto;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  max-width: 90%;
+  max-height: 90%;
+  aspect-ratio: 930 / 632;
+}
+
+#unitFullCardDialog {
+  display: flex;
+  justify-content: space-between;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  padding: 10px;
+  background-color: lightgray;
+  border-radius: 5px;
+}
+
+#unitFullCardContentWrapper {
+  height: 100%;
+  flex-grow: 1;
+  position: relative;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+#unitFullCardContents {
+  display: flex;
+  position: absolute;
+  margin: auto;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 880 / 632;
+}
+
+#unitFullCardArt {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#unitFullCardImage {
+  height: 100%;
+  width: 50%;
+  border-radius: 25px;
+}
+
+#unitFullCardInfo {
+  display: flex;
+  height: calc(100% - 20px);
+  width: 50%;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  gap: 10px;
+  border-radius: 25px;
+  background-color: antiquewhite;
+  overflow-y: auto;
+}
+
+#unitFullCardUpper {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+#unitFullCardArtSwitcher {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#unitFullCardName {
+  display: flex;
+  justify-content: center;
+  font-size: x-large;
+  font-weight: bold;
+  text-align: center;
+}
+
+#unitFullCardQuote {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+  font-size: larger;
+  font-style: italic;
+  text-align: center;
+}
+
+#unitFullCardEffects {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+}
+
+#unitFullCardRightContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.unit-full-card-arrow-container {
+  display: flex;
+  width: 32px;
+  height: 100%;
+  align-items: center;
+  border-radius: 5px;
+}
+
+.unit-full-card-arrow-selectable-container {
+  background-color: darkgray;
+  cursor: pointer;
+}
+
+.unit-full-card-art-switcher {
+  height: 32px;
+  width: 32px;
+  margin-right: 2px;
+  margin-top: 2px;
+  size: 1.5em;
+}
+
+.unit-full-card-art-switcher-arrow {
+  margin-right: 2px;
+  margin-left: 2px;
+  margin-top: 2px;
+  size: 1.5em;
+}
+
+.unit-full-card-info-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+}
+
+.unit-full-card-info-image-container {
+  display: flex;
+  height: 50px;
+  width: 50px;
+  flex-shrink: 0;
+  justify-content: center;
+  align-items: center;
+}
+
+.unit-full-card-info-image {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+.unit-full-card-info-image-special {
+  height: auto;
+  aspect-ratio: 392 / 262;
+}
+
+.unit-full-card-info-image-dlc {
+  width: 150px;
+  height: auto;
+}

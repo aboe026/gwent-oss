@@ -11,6 +11,14 @@ export const ROUTES: AppRoutes = {
     path: '/decks',
     secure: true,
   },
+  Game: {
+    path: '/games/:gameId',
+    secure: true,
+  },
+  Games: {
+    path: '/games',
+    secure: true,
+  },
   Home: {
     path: '/',
     secure: true,
@@ -37,6 +45,8 @@ interface AppRoutes {
   About: AppRoute
   Deck: AppRoute
   Decks: AppRoute
+  Game: AppRoute
+  Games: AppRoute
   Home: AppRoute
   Login: AppRoute
   Logout: AppRoute

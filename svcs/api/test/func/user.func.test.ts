@@ -49,9 +49,7 @@ describe('user', () => {
           },
         })
       ).resolves.toEqual({
-        data: {
-          addUser: null,
-        },
+        data: null,
         errors: [new GraphQLError(`User "${name}" already exists`)],
       })
 
@@ -136,9 +134,7 @@ describe('user', () => {
           },
         })
       ).resolves.toEqual({
-        data: {
-          login: null,
-        },
+        data: null,
         errors: [new GraphQLError(`Invalid credentials for user "${name}"`)],
       })
     })
@@ -161,9 +157,7 @@ describe('user', () => {
           },
         })
       ).resolves.toEqual({
-        data: {
-          login: null,
-        },
+        data: null,
         errors: [new GraphQLError(`Invalid credentials for user "${name}"`)],
       })
     })
@@ -223,9 +217,7 @@ async function verifyUserDoesNotExist(name: string, password: string) {
       },
     })
   ).resolves.toEqual({
-    data: {
-      login: null,
-    },
+    data: null,
     errors: [new GraphQLError(`Invalid credentials for user "${name}"`)],
   })
 }

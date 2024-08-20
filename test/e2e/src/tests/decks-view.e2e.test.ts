@@ -3,6 +3,11 @@ import DecksPage from '../page-objects/decks-page'
 import LoginPage from '../page-objects/login-page'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import DeckPage from '../page-objects/deck-page'
+import Banner from '../components/banner'
+import GamesPage from '../page-objects/games-page'
+import GamePage from '../page-objects/game-page'
+import DeckEditor from '../components/deck-editor'
+import DeckList from '../components/deck-list'
 
 fixture('Decks View').page(DecksPage.getUrl())
 
@@ -14,7 +19,7 @@ test('Shows message if no decks', async () => {
   await LoginPage.login({
     username,
   })
-  await DecksPage.verifyContent({
+  await DecksPage.verify({
     decks: [],
   })
 })
@@ -62,7 +67,7 @@ test('Displays single deck', async () => {
     username,
   })
 
-  await DecksPage.verifyContent({
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(),
@@ -134,8 +139,8 @@ test('Displays two decks', async () => {
     'Shilard Fitz-Oesterlen',
     'Siege Engineer',
     'Siege Technician',
-    'Young Emmisary',
-    'Young Emmisary',
+    'Young Emissary',
+    'Young Emissary',
   ]
   await new ApiClient({}).addUser({
     name: username,
@@ -157,7 +162,7 @@ test('Displays two decks', async () => {
     username,
   })
 
-  await DecksPage.verifyContent({
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(),
@@ -189,8 +194,8 @@ test('Displays two decks', async () => {
   })
 })
 
-test('List gets updated after deck created', async () => {
-  const username = `decks-list-updated-on-create-${Date.now()}`
+test('List gets updated after deck created from deck page', async () => {
+  const username = `decks-list-updated-on-create-deck-page-${Date.now()}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -198,7 +203,7 @@ test('List gets updated after deck created', async () => {
   await LoginPage.login({
     username,
   })
-  await DecksPage.verifyContent({
+  await DecksPage.verify({
     decks: [],
   })
   await DecksPage.clickCreate()
@@ -237,11 +242,90 @@ test('List gets updated after deck created', async () => {
       'Nausicaa Cavalry Rider',
       'Nausicaa Cavalry Rider',
       'Nausicaa Cavalry Rider',
-      'Young Emmisary',
-      'Young Emmisary',
+      'Young Emissary',
+      'Young Emissary',
     ],
   })
-  await DecksPage.verifyContent({
+  await DecksPage.verify({
+    decks: [
+      {
+        created: new Date(),
+        faction,
+        leader,
+        name,
+        stats: (await client.getDeck(name)).stats,
+      },
+    ],
+  })
+})
+
+test('List gets updated after deck created from game page', async () => {
+  const scenario = 'decks-list-updated-on-create-game-page'
+  const username = `${scenario}-user-${Date.now()}`
+  const opponent = `${scenario}-opponent-${Date.now()}`
+  await new ApiClient({}).addUser({
+    name: username,
+  })
+  await new ApiClient({}).addUser({
+    name: opponent,
+  })
+  const client = new ApiClient({ username })
+  await LoginPage.login({
+    username,
+  })
+  await DecksPage.verify({
+    decks: [],
+  })
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.clickCreateNone()
+  await GamePage.createGame({
+    creator: username,
+    opponents: [opponent],
+  })
+  await GamePage.clickSetDeck()
+  await DeckList.clickCreateNone()
+  const name = 'list-updated-on-create'
+  const factionKey = FactionKey.NilfgaardianEmpire
+  const faction = await client.getFaction({
+    key: factionKey,
+    neutrals: true,
+  })
+  const leader = await client.getLeader({
+    faction: factionKey,
+    name: 'Emhyr var Emreis the White Flame',
+  })
+  await DeckEditor.createDeck({
+    faction,
+    leader,
+    name,
+    units: [
+      'Biting Frost',
+      'Biting Frost',
+      'Biting Frost',
+      'Clear Weather',
+      'Clear Weather',
+      'Decoy',
+      'Decoy',
+      'Decoy',
+      "Gaunter O'Dimm Darkness",
+      "Gaunter O'Dimm Darkness",
+      "Gaunter O'Dimm Darkness",
+      'Impenetrable Fog',
+      'Impenetrable Fog',
+      'Impera Brigade Guard',
+      'Impera Brigade Guard',
+      'Impera Brigade Guard',
+      'Impera Brigade Guard',
+      'Nausicaa Cavalry Rider',
+      'Nausicaa Cavalry Rider',
+      'Nausicaa Cavalry Rider',
+      'Young Emissary',
+      'Young Emissary',
+    ],
+    verify: false,
+  })
+  await Banner.goTo(Banner.elements.MenuDecks)
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(),

@@ -35,25 +35,127 @@ describe('user-store', () => {
       })
     })
   })
-  describe('get', () => {
-    it('throws error if read response empty', async () => {
+  describe('getById', () => {
+    it('throws error if getByIds response empty', async () => {
       const id = new ObjectId()
-      await testGet({
+      await testGetById({
         id,
-        readResponse: [],
-        error: true,
-        errorCalls: [[`User with ID "${id}" does not exist`]],
+        getByIdResponse: [],
+        error: `User with ID "${id}" does not exist`,
+      })
+    })
+    it('throws error if getByIds response multiple', async () => {
+      const id = new ObjectId()
+      await testGetById({
+        id,
+        getByIdResponse: [
+          {
+            _id: id,
+            created: new Date(),
+            name: 'name-1',
+            password: 'password',
+          },
+          {
+            _id: id,
+            created: new Date(),
+            name: 'name-2',
+            password: 'password',
+          },
+        ],
+        error: `Multiple users with ID "${id}" exist`,
       })
     })
     it('returns read response if not empty', async () => {
       const id = new ObjectId()
-      await testGet({
+      await testGetById({
         id,
-        readResponse: [
+        getByIdResponse: [
           {
             _id: id,
             created: new Date(),
             name: 'name',
+            password: 'password',
+          },
+        ],
+      })
+    })
+  })
+  describe('getByIds', () => {
+    it('returns empty array if no ids provided', async () => {
+      await testGetByIds({
+        ids: [],
+        readResponse: [],
+      })
+    })
+    it('calls to read if ids are strings', async () => {
+      const id = new ObjectId()
+      await testGetByIds({
+        ids: [id],
+        readResponse: [
+          {
+            _id: id,
+            created: new Date(),
+            name: 'user-name',
+            password: 'user-password',
+          },
+        ],
+      })
+    })
+    it('calls to read if ids are ObjectIds', async () => {
+      const id = new ObjectId()
+      await testGetByIds({
+        ids: [id.toString()],
+        readResponse: [
+          {
+            _id: id,
+            created: new Date(),
+            name: 'user-name',
+            password: 'user-password',
+          },
+        ],
+      })
+    })
+  })
+  describe('getByName', () => {
+    it('throws error if user does not exist', async () => {
+      const name = 'user-name'
+      await testGetByName({
+        name,
+        readResponse: [],
+        error: `User with name "${name}" does not exist`,
+      })
+    })
+    it('throws error if multiple users with name exist', async () => {
+      const name = 'user-name'
+      await testGetByName({
+        name,
+        readResponse: [
+          {
+            _id: new ObjectId(),
+            created: new Date(),
+            name,
+            password: 'user-password',
+          },
+          {
+            _id: new ObjectId(),
+            created: new Date(),
+            name,
+            password: 'user-password',
+          },
+        ],
+        error: `Multiple users found with name "${name}"`,
+      })
+    })
+    it('returns user without password if one exists', async () => {
+      const name = 'user-name'
+      await testGetByName({
+        name,
+        readResponse: [
+          {
+            _id: new ObjectId(),
+            created: new Date(),
+            name,
+            password: 'user-password',
           },
         ],
       })
@@ -62,7 +164,7 @@ describe('user-store', () => {
   describe('validate', () => {
     it('throws error if user does not exist', async () => {
       const username = 'username'
-      await testValidateUser({
+      await testValidate({
         username,
         users: [],
         error: `Invalid credentials for user "${username}"`,
@@ -81,7 +183,7 @@ describe('user-store', () => {
           name: username,
         },
       ]
-      await testValidateUser({
+      await testValidate({
         username,
         users,
         error: `More than 1 user exists with name "${username}": "${JSON.stringify(users)}"`,
@@ -90,7 +192,7 @@ describe('user-store', () => {
     })
     it('throws error password does not match hash', async () => {
       const username = 'username'
-      await testValidateUser({
+      await testValidate({
         username,
         users: [
           {
@@ -108,7 +210,7 @@ describe('user-store', () => {
       const username = 'username'
       const _id = new ObjectId()
       const created = new Date()
-      await testValidateUser({
+      await testValidate({
         username,
         users: [
           {
@@ -123,6 +225,7 @@ describe('user-store', () => {
           _id,
           name: username,
           created,
+          password: '',
         },
       })
     })
@@ -178,6 +281,7 @@ async function testAddUser({
       _id,
       created,
       name: username,
+      password: '',
     })
   }
 
@@ -208,16 +312,69 @@ async function testAddUser({
   expect(dateSpy.mock.calls).toEqual([[]])
 }
 
-async function testGet({
+async function testGetById({
   id,
   error,
-  errorCalls = [],
-  readResponse,
+  getByIdResponse,
 }: {
   id: string | ObjectId
+  getByIdResponse: UserDbObject[]
+  error?: string
+}) {
+  const errorSpy = jest.fn().mockImplementation()
+  UserStore['logger'] = {
+    error: errorSpy,
+  } as any
+  const getByIdsSpy = jest.spyOn(UserStore, 'getByIds').mockResolvedValue(getByIdResponse)
+
+  if (error) {
+    await expect(UserStore.getById(id)).rejects.toThrow(Error(error))
+  } else {
+    await expect(UserStore.getById(id)).resolves.toEqual(getByIdResponse[0])
+  }
+
+  expect(getByIdsSpy.mock.calls).toEqual([[[id]]])
+  expect(errorSpy.mock.calls).toEqual(error ? [[error]] : [])
+}
+
+async function testGetByIds({ ids, readResponse }: { ids: (string | ObjectId)[]; readResponse: UserDbObject[] }) {
+  const traceSpy = jest.fn().mockImplementation()
+  UserStore['logger'] = {
+    trace: traceSpy,
+  } as any
+  const getByIdsSpy = jest.spyOn(UserStore as any, 'read').mockResolvedValue(readResponse)
+
+  await expect(UserStore.getByIds(ids)).resolves.toEqual(
+    readResponse.map((user) => {
+      return {
+        ...user,
+        password: '',
+      }
+    })
+  )
+
+  expect(getByIdsSpy.mock.calls).toEqual([
+    [
+      {
+        filter: {
+          _id: {
+            $in: ids.map((id) => new ObjectId(id)),
+          },
+        },
+      },
+    ],
+  ])
+  expect(traceSpy.mock.calls).toEqual([[`Getting users with IDs "${JSON.stringify(ids)}"`]])
+}
+
+async function testGetByName({
+  name,
+  readResponse,
+  error,
+}: {
+  name: string
   readResponse: UserDbObject[]
-  error?: boolean
-  errorCalls?: string[][]
+  error?: string
 }) {
   const traceSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
@@ -228,25 +385,28 @@ async function testGet({
   const readSpy = jest.spyOn(UserStore as any, 'read').mockResolvedValue(readResponse)
 
   if (error) {
-    await expect(UserStore.get(id)).rejects.toThrow(`User with ID "${id}" does not exist`)
+    await expect(UserStore.getByName(name)).rejects.toThrow(Error(error))
   } else {
-    await expect(UserStore.get(id)).resolves.toEqual(readResponse[0])
+    await expect(UserStore.getByName(name)).resolves.toEqual({
+      ...readResponse[0],
+      password: '',
+    })
   }
 
   expect(readSpy.mock.calls).toEqual([
     [
       {
         filter: {
-          _id: id,
+          name,
         },
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual([[`Getting user with ID "${id}"`]])
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(traceSpy.mock.calls).toEqual([[`Getting user with name "${name}"`]])
+  expect(errorSpy.mock.calls).toEqual(error ? [[error]] : [])
 }
 
-async function testValidateUser({
+async function testValidate({
   username,
   users,
   match,

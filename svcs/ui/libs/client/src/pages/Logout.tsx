@@ -53,11 +53,11 @@ export default function LogoutPage() {
             logout()
           }}
         >
-          <div className="logout-container">
+          <div id="logoutContainer">
             <span id={HTML_IDS.LogoutMessage} className={logoutError ? HTML_CLASSES.ErrorText : ''}>
               {`Error logging out: ${getApolloError(logoutError)}`}
             </span>
-            <button className="pointable" type="reset" onClick={() => logout} autoFocus={true}>
+            <button id="logoutRetry" type="reset" onClick={() => logout} autoFocus={true}>
               Retry
             </button>
           </div>

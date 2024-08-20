@@ -33,6 +33,19 @@ export default function HomePage() {
             </button>
           </div>
           <div className="home-category">
+            <span className="home-category-header">Games</span>
+            <button id={HTML_IDS.HomeOptionsViewGames} type="button" onClick={() => navigate(ROUTES.Games.path)}>
+              View Games
+            </button>
+            <button
+              id={HTML_IDS.HomeOptionsCreateGame}
+              type="button"
+              onClick={() => navigate(ROUTES.Game.path.replace(':gameId', 'new'))}
+            >
+              Create Game
+            </button>
+          </div>
+          <div className="home-category">
             <span className="home-category-header">Profile</span>
             <button id={HTML_IDS.HomeOptionsViewProfile} type="button" onClick={() => navigate(ROUTES.Profile.path)}>
               View Profile

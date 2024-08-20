@@ -641,6 +641,66 @@ describe('upgrade-2', () => {
     })
   })
   describe('normalizeUnit', () => {
+    it('throws error if unit does not have name', () => {
+      const unit = {
+        'Art Styles': 1,
+        Deckable: 'Yes',
+        Hero: 'No',
+        Faction: 'faction-name',
+        Occurrences: 1,
+        Quote: 'quote',
+      }
+      const faction = new ObjectId()
+      const dlcMap = {
+        'dlc-name': new ObjectId(),
+      }
+      const effectMap = {
+        'effect-name': new ObjectId(),
+      }
+      const factionMap = {
+        [unit.Faction]: faction,
+      }
+      const upgrade2 = new Upgrade2()
+
+      expect(() =>
+        upgrade2.normalizeUnit({
+          unit: unit as any,
+          dlcMap,
+          effectMap,
+          factionMap,
+        })
+      ).toThrow(`Invalid unit "${JSON.stringify(unit)}": Must have "Name".`)
+    })
+    it('throws error if unit does not have quote', () => {
+      const unit = {
+        'Art Styles': 1,
+        Deckable: 'Yes',
+        Hero: 'No',
+        Faction: 'faction-name',
+        Occurrences: 1,
+        Name: 'name',
+      }
+      const faction = new ObjectId()
+      const dlcMap = {
+        'dlc-name': new ObjectId(),
+      }
+      const effectMap = {
+        'effect-name': new ObjectId(),
+      }
+      const factionMap = {
+        [unit.Faction]: faction,
+      }
+      const upgrade2 = new Upgrade2()
+
+      expect(() =>
+        upgrade2.normalizeUnit({
+          unit: unit as any,
+          dlcMap,
+          effectMap,
+          factionMap,
+        })
+      ).toThrow(`Invalid unit "${unit.Name}": Must have "Quote".`)
+    })
     // TODO: refactor these into shared method?
     it('calls to other normalize functions if only required fields', () => {
       const unit: UnitJson = {

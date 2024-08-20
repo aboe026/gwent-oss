@@ -44,8 +44,9 @@ export default function App() {
   }, [currentUserData])
 
   const user = currentUserData?.currentUser
-  const authTimedOut = currentUserData?.currentUser?.id === AUTH_TIMEOUT_ID
-  const loggedIn = !!currentUserData?.currentUser?.id && !authTimedOut
+  const authTimedOut = user?.id === AUTH_TIMEOUT_ID
+  const loggedIn = !!user?.id && !authTimedOut
+  const loginOrSignup = [ROUTES.Login.path, ROUTES.Signup.path].includes(pathname)
 
   if (currentUserLoading) {
     return (
@@ -56,14 +57,8 @@ export default function App() {
   }
 
   const route = getRouteFromPath(pathname)
-
-  const needsLogin =
-    !loggedIn &&
-    !currentUserLoading &&
-    !authTimedOut &&
-    route?.secure &&
-    (route?.path !== ROUTES.Login.path || route?.path !== ROUTES.Signup.path)
-  const needsHome = loggedIn && (route?.path === ROUTES.Login.path || route?.path === ROUTES.Signup.path)
+  const needsLogin = !loggedIn && !currentUserLoading && !authTimedOut && route?.secure && !loginOrSignup
+  const needsHome = loggedIn && loginOrSignup
 
   if (needsHome) {
     return (
@@ -92,8 +87,8 @@ export default function App() {
       {(client: ApolloClient<object>) => {
         // eslint-disable-next-line @typescript-eslint/ban-types
         function checkAuth(error: ApolloError | undefined, callbackAfterReauth?: Function) {
-          const errors = getApolloError(error)
-          if (errors.includes(NOT_AUTHENTICATED_MESSAGE)) {
+          const resolvedError = getApolloError(error)
+          if (resolvedError.includes(NOT_AUTHENTICATED_MESSAGE)) {
             if (callbackAfterReauth) {
               setReAuthFuncs((previous) => [...previous, callbackAfterReauth])
             }
@@ -111,14 +106,15 @@ export default function App() {
               })
             }
           }
+          throw Error(resolvedError)
         }
 
         return (
-          <UserContext.Provider value={{ user: loggedIn ? user : undefined, checkAuth }}>
+          <UserContext.Provider value={{ user: loggedIn || authTimedOut ? user : undefined, checkAuth }}>
             <IconContext.Provider value={{ color: 'white' }}>
               <Banner />
               {authTimedOut && (
-                <WholeScreenDialog>
+                <WholeScreenDialog style={{ zIndex: 200 }}>
                   <Centered>
                     <LoginDialog
                       initialUsername={user?.name}

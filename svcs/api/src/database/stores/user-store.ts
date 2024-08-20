@@ -1,5 +1,5 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
+import { FindOptions, ObjectId } from 'mongodb'
 
 import PasswordHasher from '../../util/password-hasher'
 import Store from './store'
@@ -28,7 +28,7 @@ export default class UserStore extends Store {
         password: await PasswordHasher.hash(password),
         created: new Date(),
       })
-      delete (user as any).password // eslint-disable-line @typescript-eslint/no-explicit-any
+      user.password = '' // for security, ensure password isn't exposed
       return user
     } catch (err: unknown) {
       if (
@@ -48,25 +48,76 @@ export default class UserStore extends Store {
   }
 
   /**
-   * Retrieve a user from the database.
+   * Retrieve a user from the database by their ObjectId.
    *
    * @param id The ObjectId of the user to retrieve.
    * @returns The User database object.
-   * @throws Error if the user with given ID does not exist
+   * @throws Error if the user with given ID does not exist.
    */
-  static async get(id: string | ObjectId): Promise<UserDbObject> {
-    UserStore.logger.trace(`Getting user with ID "${id}"`)
-    const response = await UserStore.read<UserDbObject[]>({
-      filter: {
-        _id: new ObjectId(id),
-      },
-    })
-    if (!response || response.length === 0) {
+  static async getById(id: string | ObjectId): Promise<UserDbObject> {
+    const users = await UserStore.getByIds([id])
+    if (!users || users.length === 0) {
       const message = `User with ID "${id}" does not exist`
       UserStore.logger.error(message)
       throw Error(message)
+    } else if (users && users.length > 1) {
+      const message = `Multiple users with ID "${id}" exist`
+      UserStore.logger.error(message)
+      throw Error(message)
     }
-    return response[0]
+    const user = users[0]
+    user.password = '' // for security, ensure password isn't exposed
+    return user
+  }
+
+  /**
+   * Retrieve users from the database by their ObjectIds.
+   *
+   * @param ids The ObjectIds of the users to retrieve.
+   * @returns The User database object.
+   */
+  static async getByIds(ids: (string | ObjectId)[]): Promise<UserDbObject[]> {
+    UserStore.logger.trace(`Getting users with IDs "${JSON.stringify(ids)}"`)
+    const users = await UserStore.read<UserDbObject[]>({
+      filter: {
+        _id: {
+          $in: ids.map((id) => new ObjectId(id)),
+        },
+      },
+    })
+    return users.map((user) => {
+      user.password = '' // for security, ensure password isn't exposed
+      return user
+    })
+  }
+
+  /**
+   * Retrieve a user from the database by their name.
+   *
+   * @param name The name of the user to retrieve.
+   * @returns The User database object.
+   * @throws Error if the user with given name does not exist.
+   */
+  static async getByName(name: string, options?: FindOptions<Document>): Promise<UserDbObject> {
+    UserStore.logger.trace(`Getting user with name "${name}"`)
+    const response = await UserStore.read<UserDbObject[]>({
+      filter: {
+        name,
+      },
+      options,
+    })
+    if (!response || response.length === 0) {
+      const message = `User with name "${name}" does not exist`
+      UserStore.logger.error(message)
+      throw Error(message)
+    } else if (response && response.length > 1) {
+      const message = `Multiple users found with name "${name}"`
+      UserStore.logger.error(message)
+      throw Error(message)
+    }
+    const user = response[0]
+    user.password = '' // for security, ensure password isn't exposed
+    return user
   }
 
   /**
@@ -92,9 +143,9 @@ export default class UserStore extends Store {
       throw Error(message)
     }
     const user = users[0]
-    const passwordCorrect = await PasswordHasher.match(password, (user as any).password) // eslint-disable-line @typescript-eslint/no-explicit-any
+    const passwordCorrect = await PasswordHasher.match(password, user.password)
     if (passwordCorrect) {
-      delete (user as any).password // eslint-disable-line @typescript-eslint/no-explicit-any
+      user.password = '' // for security, ensure password isn't exposed
       return user
     }
     UserStore.logger.debug(`User "${name}" entered incorrect password`)

@@ -55,6 +55,7 @@ export default class Api {
     Api.logger.info(`Version: "${version}"`)
     Api.logger.debug(`Build: "${await AppInfo.getBuildNumber()}"`)
     Api.logger.trace(`NODE_ENV: "${env().NODE_ENV}"`)
+    Api.logger.info(`LOG_LEVEL: "${env().LOG_LEVEL}"`)
   }
 
   /**

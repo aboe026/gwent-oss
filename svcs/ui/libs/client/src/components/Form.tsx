@@ -22,10 +22,14 @@ import './Form.css'
  * @returns A form for the user to fill out.
  */
 export default function Form({
+  autoFocusIndex = 0,
   cancelLabel = 'Cancel',
+  cancelId,
   closeable = true,
   closeParams = false,
   error,
+  errorId,
+  errorPrefix,
   fields,
   id,
   loading,
@@ -34,6 +38,7 @@ export default function Form({
   overlay,
   style,
   submitLabel = 'Save',
+  submitId,
   title,
 }: FormProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,9 +62,6 @@ export default function Form({
             }
           }
           await onSubmit({ variables: { ...values } })
-          if (onClose) {
-            onClose(closeParams)
-          }
         }}
       >
         <div className="form-title">{title}</div>
@@ -73,12 +75,15 @@ export default function Form({
                     {field.required && <span className="required-field">*</span>}
                   </label>
                   <input
+                    className="form-field-text-input"
                     type={field.type}
-                    autoFocus={index === 0}
+                    autoFocus={index === autoFocusIndex}
                     id={field.key}
                     name={field.key}
                     value={values[field.key]}
                     required={field.required}
+                    disabled={field.disabled || loading}
+                    placeholder={field.placeholder}
                     onChange={(e) =>
                       setValues((prev) => ({
                         ...prev,
@@ -86,14 +91,20 @@ export default function Form({
                       }))
                     }
                   />
+                  {field.description && <span className="help-text">{field.description}</span>}
                 </div>
               )
           )}
         </div>
-        {resolvedError && <span className={HTML_CLASSES.ErrorText}>{resolvedError}</span>}
+        {resolvedError && (
+          <span id={errorId || undefined} className={HTML_CLASSES.ErrorText}>
+            {`${errorPrefix ? `${errorPrefix}: ` : ''}${resolvedError}`}
+          </span>
+        )}
         <div className="actions">
           {closeable && (
             <button
+              id={cancelId || undefined}
               className={HTML_CLASSES.Secondary}
               type="button"
               disabled={loading}
@@ -102,7 +113,7 @@ export default function Form({
               {cancelLabel}
             </button>
           )}
-          <button className={HTML_CLASSES.Primary} type="submit" disabled={loading}>
+          <button id={submitId || undefined} className={HTML_CLASSES.Primary} type="submit" disabled={loading}>
             {submitLabel}
           </button>
           {loading && <LoadingBar height="25px" style={{ marginTop: '10px' }} />}
@@ -113,10 +124,14 @@ export default function Form({
 }
 
 interface FormProps {
+  autoFocusIndex?: number
   cancelLabel?: string
+  cancelId?: string
   closeable?: boolean
   closeParams?: any // eslint-disable-line @typescript-eslint/no-explicit-any
   error: ApolloError | undefined
+  errorPrefix?: string
+  errorId?: string
   fields: FormField[]
   id?: string
   loading: boolean
@@ -125,14 +140,18 @@ interface FormProps {
   overlay?: boolean
   style?: React.CSSProperties
   submitLabel?: string
+  submitId?: string
   title: string
 }
 
-interface FormField {
+export interface FormField {
   default?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  description?: string
   hidden?: boolean
   key: string
   label?: string
+  placeholder?: string
   required?: boolean
+  disabled?: boolean
   type: HTMLInputTypeAttribute
 }

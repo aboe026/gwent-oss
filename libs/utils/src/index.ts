@@ -1,5 +1,22 @@
+import { formatDay, formatTime } from './format-date'
+import getCombatImage from './get-combat-image'
+import getRandomSubset from './get-random-subset'
+import getUniqueItems from './get-unique-items'
 import getUnitStats from './get-unit-stats'
+import getWeatherImage from './get-weather-image'
 import sleep from './sleep'
 import sortObjectArray from './sort'
+import toTitleCase from './to-title-case'
 
-export { getUnitStats as getDeckStats, sleep, sortObjectArray }
+export {
+  formatDay,
+  formatTime,
+  getCombatImage,
+  getRandomSubset,
+  getUniqueItems,
+  getUnitStats as getDeckStats,
+  getWeatherImage,
+  sleep,
+  sortObjectArray,
+  toTitleCase,
+}

@@ -4,6 +4,7 @@ import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
+import DeckEditor from '../components/deck-editor'
 
 fixture('Deck Units Sort').page(DeckPage.getUrl())
 
@@ -19,7 +20,7 @@ test('Available sorts selected by name ascending when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -33,10 +34,10 @@ test('Available sorts selected by name ascending when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits)
+  await DeckEditor.setUnits(sortedSelectedUnits)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits)
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits)
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits)
 })
 
 test('Available sorts selected by strength ascending when locked', async () => {
@@ -51,7 +52,7 @@ test('Available sorts selected by strength ascending when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -65,11 +66,11 @@ test('Available sorts selected by strength ascending when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setAvailableSortField(SORT_FIELD.Strength)
-  await DeckPage.setUnits(sortedSelectedUnits)
+  await DeckEditor.setAvailableSortField(SORT_FIELD.Strength)
+  await DeckEditor.setUnits(sortedSelectedUnits)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits)
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits)
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits)
 })
 
 test('Available sorts selected by name descending when locked', async () => {
@@ -84,7 +85,7 @@ test('Available sorts selected by name descending when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -99,11 +100,11 @@ test('Available sorts selected by name descending when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits)
-  await DeckPage.changeAvailableSortOrder()
+  await DeckEditor.setUnits(sortedSelectedUnits)
+  await DeckEditor.changeAvailableSortOrder()
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits)
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits)
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits)
 })
 
 test('Available sorts selected by strength descending when locked', async () => {
@@ -118,7 +119,7 @@ test('Available sorts selected by strength descending when locked', async () => 
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -133,12 +134,12 @@ test('Available sorts selected by strength descending when locked', async () => 
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setAvailableSortField(SORT_FIELD.Strength)
-  await DeckPage.setUnits(sortedSelectedUnits)
-  await DeckPage.changeAvailableSortOrder()
+  await DeckEditor.setAvailableSortField(SORT_FIELD.Strength)
+  await DeckEditor.setUnits(sortedSelectedUnits)
+  await DeckEditor.changeAvailableSortOrder()
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits)
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits)
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits)
 })
 
 test('Selected independently sorts by name ascending when unlocked', async () => {
@@ -153,7 +154,7 @@ test('Selected independently sorts by name ascending when unlocked', async () =>
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -170,12 +171,12 @@ test('Selected independently sorts by name ascending when unlocked', async () =>
     sortProperties: [SORT_FIELD.Name, SORT_FIELD.Id],
     array: units.slice(halfway, units.length),
   }).map((unit) => unit.name)
-  await DeckPage.setUnits(sortedSelectedUnits)
-  await DeckPage.toggleUnitsLock()
-  await DeckPage.setAvailableSortField(SORT_FIELD.Strength)
-  await DeckPage.changeAvailableSortOrder()
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits)
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits)
+  await DeckEditor.setUnits(sortedSelectedUnits)
+  await DeckEditor.toggleUnitsLock()
+  await DeckEditor.setAvailableSortField(SORT_FIELD.Strength)
+  await DeckEditor.changeAvailableSortOrder()
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits)
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits)
 })
 
 test('Selected independently sorts by strength ascending when unlocked', async () => {
@@ -190,7 +191,7 @@ test('Selected independently sorts by strength ascending when unlocked', async (
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -207,12 +208,12 @@ test('Selected independently sorts by strength ascending when unlocked', async (
     sortProperties: [SORT_FIELD.Strength, SORT_FIELD.Name, SORT_FIELD.Id],
     array: units.slice(halfway, units.length),
   }).map((unit) => unit.name)
-  await DeckPage.setUnits(sortedSelectedUnits)
-  await DeckPage.toggleUnitsLock()
-  await DeckPage.changeAvailableSortOrder()
-  await DeckPage.setSelectedSortField(SORT_FIELD.Strength)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits)
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits)
+  await DeckEditor.setUnits(sortedSelectedUnits)
+  await DeckEditor.toggleUnitsLock()
+  await DeckEditor.changeAvailableSortOrder()
+  await DeckEditor.setSelectedSortField(SORT_FIELD.Strength)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits)
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits)
 })
 
 test('Selected independently sorts by name descending when unlocked', async () => {
@@ -227,7 +228,7 @@ test('Selected independently sorts by name descending when unlocked', async () =
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -244,12 +245,12 @@ test('Selected independently sorts by name descending when unlocked', async () =
     array: units.slice(halfway, units.length),
     reverse: true,
   }).map((unit) => unit.name)
-  await DeckPage.setUnits(sortedSelectedUnits)
-  await DeckPage.toggleUnitsLock()
-  await DeckPage.setAvailableSortField(SORT_FIELD.Strength)
-  await DeckPage.changeSelectedSortOrder()
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits)
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits)
+  await DeckEditor.setUnits(sortedSelectedUnits)
+  await DeckEditor.toggleUnitsLock()
+  await DeckEditor.setAvailableSortField(SORT_FIELD.Strength)
+  await DeckEditor.changeSelectedSortOrder()
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits)
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits)
 })
 
 test('Selected independently sorts by strength descending when unlocked', async () => {
@@ -264,7 +265,7 @@ test('Selected independently sorts by strength descending when unlocked', async 
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -281,10 +282,10 @@ test('Selected independently sorts by strength descending when unlocked', async 
     array: units.slice(halfway, units.length),
     reverse: true,
   }).map((unit) => unit.name)
-  await DeckPage.setUnits(sortedSelectedUnits)
-  await DeckPage.toggleUnitsLock()
-  await DeckPage.changeSelectedSortOrder()
-  await DeckPage.setSelectedSortField(SORT_FIELD.Strength)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits)
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits)
+  await DeckEditor.setUnits(sortedSelectedUnits)
+  await DeckEditor.toggleUnitsLock()
+  await DeckEditor.changeSelectedSortOrder()
+  await DeckEditor.setSelectedSortField(SORT_FIELD.Strength)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits)
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits)
 })

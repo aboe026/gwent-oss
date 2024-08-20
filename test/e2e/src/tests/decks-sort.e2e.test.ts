@@ -5,6 +5,7 @@ import DecksPage from '../page-objects/decks-page'
 import LoginPage from '../page-objects/login-page'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { SORT_FIELD } from '@gwent/graphql-schema/decks-filter'
+import DeckList from '../components/deck-list'
 
 fixture('Decks Sort')
   .page(DecksPage.getUrl())
@@ -63,8 +64,8 @@ fixture('Decks Sort')
       'Shilard Fitz-Oesterlen',
       'Siege Engineer',
       'Siege Technician',
-      'Young Emmisary',
-      'Young Emmisary',
+      'Young Emissary',
+      'Young Emissary',
     ]
     await new ApiClient({}).addUser({
       name: t.ctx.username,
@@ -106,46 +107,46 @@ fixture('Decks Sort')
   })
 
 test('Sorts by agile descending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Agile)
+  await DeckList.setSortField(SORT_FIELD.Agile)
   await verifySortOrder(false)
 })
 
 test('Sorts by agile ascending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Agile)
-  await DecksPage.changeSortOrder()
+  await DeckList.setSortField(SORT_FIELD.Agile)
+  await DeckList.changeSortOrder()
   await verifySortOrder(true)
 })
 
 test('Sorts by close descending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Close)
+  await DeckList.setSortField(SORT_FIELD.Close)
   await verifySortOrder(false)
 })
 
 test('Sorts by close ascending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Close)
-  await DecksPage.changeSortOrder()
+  await DeckList.setSortField(SORT_FIELD.Close)
+  await DeckList.changeSortOrder()
   await verifySortOrder(true)
 })
 
 test('Sorts by created descending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Created)
+  await DeckList.setSortField(SORT_FIELD.Created)
   await verifySortOrder(true)
 })
 
 test('Sorts by created ascending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Created)
-  await DecksPage.changeSortOrder()
+  await DeckList.setSortField(SORT_FIELD.Created)
+  await DeckList.changeSortOrder()
   await verifySortOrder(false)
 })
 
 test('Sorts by heroes descending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Heroes)
+  await DeckList.setSortField(SORT_FIELD.Heroes)
   await verifySortOrder(false)
 })
 
 test('Sorts by heroes ascending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Heroes)
-  await DecksPage.changeSortOrder()
+  await DeckList.setSortField(SORT_FIELD.Heroes)
+  await DeckList.changeSortOrder()
   await verifySortOrder(true)
 })
 
@@ -154,62 +155,62 @@ test('Sorts by name descending by default', async () => {
 })
 
 test('Sorts by name ascending', async () => {
-  await DecksPage.changeSortOrder()
+  await DeckList.changeSortOrder()
   await verifySortOrder(false)
 })
 
 test('Sorts by ranged descending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Ranged)
+  await DeckList.setSortField(SORT_FIELD.Ranged)
   await verifySortOrder(false)
 })
 
 test('Sorts by ranged ascending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Ranged)
-  await DecksPage.changeSortOrder()
+  await DeckList.setSortField(SORT_FIELD.Ranged)
+  await DeckList.changeSortOrder()
   await verifySortOrder(true)
 })
 
 test('Sorts by siege descending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Siege)
+  await DeckList.setSortField(SORT_FIELD.Siege)
   await verifySortOrder(true)
 })
 
 test('Sorts by siege ascending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Siege)
-  await DecksPage.changeSortOrder()
+  await DeckList.setSortField(SORT_FIELD.Siege)
+  await DeckList.changeSortOrder()
   await verifySortOrder(false)
 })
 
 test('Sorts by specials descending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Specials)
+  await DeckList.setSortField(SORT_FIELD.Specials)
   await verifySortOrder(false)
 })
 
 test('Sorts by specials ascending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Specials)
-  await DecksPage.changeSortOrder()
+  await DeckList.setSortField(SORT_FIELD.Specials)
+  await DeckList.changeSortOrder()
   await verifySortOrder(true)
 })
 
 test('Sorts by strength average descending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.StrengthAverage)
+  await DeckList.setSortField(SORT_FIELD.StrengthAverage)
   await verifySortOrder(true)
 })
 
 test('Sorts by strength total ascending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.StrengthAverage)
-  await DecksPage.changeSortOrder()
+  await DeckList.setSortField(SORT_FIELD.StrengthAverage)
+  await DeckList.changeSortOrder()
   await verifySortOrder(false)
 })
 
 test('Sorts by units descending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Units)
+  await DeckList.setSortField(SORT_FIELD.Units)
   await verifySortOrder(false)
 })
 
 test('Sorts by units ascending', async () => {
-  await DecksPage.setSortField(SORT_FIELD.Units)
-  await DecksPage.changeSortOrder()
+  await DeckList.setSortField(SORT_FIELD.Units)
+  await DeckList.changeSortOrder()
   await verifySortOrder(true)
 })
 
@@ -231,7 +232,7 @@ async function verifySortOrder(first: boolean) {
   }
   decks.push(first ? deck1 : deck2)
   decks.push(first ? deck2 : deck1)
-  await DecksPage.verifyContent({
+  await DecksPage.verify({
     decks,
   })
 }

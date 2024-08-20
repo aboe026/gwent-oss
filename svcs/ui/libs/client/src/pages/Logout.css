@@ -1,10 +1,10 @@
-.logout-container {
+#logoutContainer {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
 }
 
-.logout-container button {
+#logoutRetry {
   margin-top: 10px;
 }
 

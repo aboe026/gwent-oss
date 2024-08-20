@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
+import { Button } from '../util/keyboard-listener'
 import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'
 import { useUserContext } from '../App'
@@ -23,22 +24,27 @@ export default function Banner() {
 
   return (
     <>
-      <div id={HTML_IDS.Banner}>
+      <div id={HTML_IDS.BannerContainer}>
         <div className="banner-item">
           {user && (
-            <div id={HTML_IDS.Hamburger} onClick={() => toggleMenu(!menuOpen)}>
-              <div id="bun">
-                <div className="patty" />
-                <div className="patty" />
-                <div className="patty" />
+            <div id={HTML_IDS.BannerHamburger} onClick={() => toggleMenu(!menuOpen)}>
+              <div id="bannerBun">
+                <div className="banner-patty" />
+                <div className="banner-patty" />
+                <div className="banner-patty" />
               </div>
             </div>
           )}
         </div>
         <h1
-          id={HTML_IDS.MainTitle}
+          id={HTML_IDS.BannerMainTitle}
           className={`banner-item ${user && 'pointable'}`}
           onClick={() => navigate(ROUTES.Home.path)}
+          onMouseDown={(event) => {
+            if (event.button === Button.Wheel) {
+              window.open(ROUTES.Home.path, '_blank')
+            }
+          }}
         >
           Gwent
         </h1>
@@ -47,23 +53,76 @@ export default function Banner() {
             className="banner-item pointable"
             id={HTML_IDS.BannerUsername}
             onClick={() => navigate(ROUTES.Profile.path)}
+            onMouseDown={(event) => {
+              if (event.button === Button.Wheel) {
+                window.open(ROUTES.Profile.path, '_blank')
+              }
+            }}
           >
             {user?.name}
           </h3>
         </div>
       </div>
       {menuOpen && (
-        <div id={HTML_IDS.MenuItems}>
-          <div id={HTML_IDS.MenutItemsHome} className="pointable" onClick={() => clickMenuItem(ROUTES.Home.path)}>
+        <div id={HTML_IDS.BannerMenuItems}>
+          <div
+            id={HTML_IDS.BannerMenutItemsHome}
+            className="pointable"
+            onClick={() => clickMenuItem(ROUTES.Home.path)}
+            onMouseDown={(event) => {
+              if (event.button === Button.Wheel) {
+                window.open(ROUTES.Home.path, '_blank')
+              }
+            }}
+          >
             Home
           </div>
-          <div id={HTML_IDS.MenuItemsDeck} className="pointable" onClick={() => clickMenuItem(ROUTES.Decks.path)}>
+          <div
+            id={HTML_IDS.BannerMenuItemsDeck}
+            className="pointable"
+            onClick={() => clickMenuItem(ROUTES.Decks.path)}
+            onMouseDown={(event) => {
+              if (event.button === Button.Wheel) {
+                window.open(ROUTES.Decks.path, '_blank')
+              }
+            }}
+          >
             Decks
           </div>
-          <div id={HTML_IDS.MenuItemsProfile} className="pointable" onClick={() => clickMenuItem(ROUTES.Profile.path)}>
+          <div
+            id={HTML_IDS.BannerMenuItemsGames}
+            className="pointable"
+            onClick={() => clickMenuItem(ROUTES.Games.path)}
+            onMouseDown={(event) => {
+              if (event.button === Button.Wheel) {
+                window.open(ROUTES.Games.path, '_blank')
+              }
+            }}
+          >
+            Games
+          </div>
+          <div
+            id={HTML_IDS.BannerMenuItemsProfile}
+            className="pointable"
+            onClick={() => clickMenuItem(ROUTES.Profile.path)}
+            onMouseDown={(event) => {
+              if (event.button === Button.Wheel) {
+                window.open(ROUTES.Profile.path, '_blank')
+              }
+            }}
+          >
             Profile
           </div>
-          <div id={HTML_IDS.MenuItemsAbout} className="pointable" onClick={() => clickMenuItem(ROUTES.About.path)}>
+          <div
+            id={HTML_IDS.BannerMenuItemsAbout}
+            className="pointable"
+            onClick={() => clickMenuItem(ROUTES.About.path)}
+            onMouseDown={(event) => {
+              if (event.button === Button.Wheel) {
+                window.open(ROUTES.About.path, '_blank')
+              }
+            }}
+          >
             About
           </div>
         </div>

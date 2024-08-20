@@ -336,7 +336,12 @@ export default class Upgrade2 extends Upgrade {
     effectMap: KeyIdMap
     factionMap: KeyIdMap
   }): AddUnitInput {
-    // TODO: throw error if no name or quote
+    if (!unit.Name) {
+      throw Error(`Invalid unit "${JSON.stringify(unit)}": Must have "Name".`)
+    }
+    if (!unit.Quote) {
+      throw Error(`Invalid unit "${unit.Name}": Must have "Quote".`)
+    }
     return {
       combats: this.normalizeCombats(unit),
       deckable: this.normalizeDeckable(unit),

@@ -16,7 +16,7 @@ export default function ErrorPage() {
   }
 
   return (
-    <div id={HTML_IDS.NotFound}>
+    <div id={HTML_IDS.NotFoundContainer}>
       <h1>Page Not Found</h1>
       <p>It appears the page you are trying to access does not exist.</p>
       <p>

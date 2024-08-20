@@ -19,7 +19,7 @@ export default function AboutPage() {
 
   return (
     <Centered>
-      <div id={HTML_IDS.About}>
+      <div id={HTML_IDS.AboutContainer}>
         {loading ? (
           <LoadingSpinner size="50px" />
         ) : error ? (

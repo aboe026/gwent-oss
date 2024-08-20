@@ -33,7 +33,7 @@ describe('deck-store', () => {
         userId,
         error: Error(error),
         isMongoError: false,
-        errorCalls: [[Error(error)]],
+        errorCalls: [[`Error adding deck for user "${userId}": ${Error(error)}`]],
       })
     })
     it('logs to trace if enabled', async () => {
@@ -72,6 +72,63 @@ describe('deck-store', () => {
           {
             filter: {
               user: userId,
+            },
+          },
+        ],
+      ])
+    })
+  })
+  describe('getByIds', () => {
+    it('calls to read with empty array if ids empty', async () => {
+      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([])
+
+      await expect(DeckStore.getByIds([])).resolves.toEqual([])
+
+      expect(readSpy.mock.calls).toEqual([
+        [
+          {
+            filter: {
+              _id: {
+                $in: [],
+              },
+            },
+          },
+        ],
+      ])
+    })
+    it('calls to read with id string', async () => {
+      const id = new ObjectId()
+
+      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([])
+
+      await expect(DeckStore.getByIds([id.toString()])).resolves.toEqual([])
+
+      expect(readSpy.mock.calls).toEqual([
+        [
+          {
+            filter: {
+              _id: {
+                $in: [id],
+              },
+            },
+          },
+        ],
+      ])
+    })
+    it('calls to read with id ObjectId', async () => {
+      const id = new ObjectId()
+
+      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([])
+
+      await expect(DeckStore.getByIds([id])).resolves.toEqual([])
+
+      expect(readSpy.mock.calls).toEqual([
+        [
+          {
+            filter: {
+              _id: {
+                $in: [id],
+              },
             },
           },
         ],
@@ -121,9 +178,9 @@ async function testAdd({
     units: 21,
     weather: 22,
   }
-  const unit: AddDeckUnitInput = {
+  const deckUnit: AddDeckUnitInput = {
     artStyle: 1,
-    id: new ObjectId(),
+    unit: new ObjectId(),
   }
   const created = new Date()
   const expected: DeckDbObject = {
@@ -133,7 +190,7 @@ async function testAdd({
     leader: leaderId,
     name,
     stats,
-    units: [unit as any],
+    units: [deckUnit as any],
     user: userId,
   }
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
@@ -161,8 +218,8 @@ async function testAdd({
         stats,
         units: [
           {
-            artStyle: unit.artStyle,
-            id: unit.id.toString(),
+            artStyle: deckUnit.artStyle,
+            unit: deckUnit.unit.toString(),
           },
         ],
         userId: userId.toString(),
@@ -177,8 +234,8 @@ async function testAdd({
         stats,
         units: [
           {
-            artStyle: unit.artStyle,
-            id: unit.id.toString(),
+            artStyle: deckUnit.artStyle,
+            unit: deckUnit.unit.toString(),
           },
         ],
         userId: userId.toString(),
@@ -195,7 +252,7 @@ async function testAdd({
         leader: leaderId,
         name,
         stats,
-        units: [unit as any],
+        units: [deckUnit as any],
         user: userId,
       },
     ],
@@ -222,7 +279,7 @@ async function testAdd({
               leader: leaderId,
               name,
               stats,
-              units: [unit as any],
+              units: [deckUnit as any],
               user: userId,
             })}"`,
           ],

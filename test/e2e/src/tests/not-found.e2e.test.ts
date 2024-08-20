@@ -10,9 +10,9 @@ fixture('Not Found').page(env.BASE_URL)
 test('Displays not found page with home link if user navigates to unknown page without loggin in', async () => {
   const unknownPath = 'toast'
   await LoginPage.verifyNotLoggedIn({})
-  await NotFoundPage.verifyContent(false)
+  await NotFoundPage.verify(false)
   await E2eUtil.goTo(unknownPath)
-  await NotFoundPage.verifyContent(true)
+  await NotFoundPage.verify(true)
   await E2eUtil.verifyCurrentUrl(unknownPath)
   await NotFoundPage.clickHomeLInk()
   await LoginPage.verifyNotLoggedIn({})
@@ -24,10 +24,10 @@ test('Displays not found page with home link if user navigates to unknown page a
   await SignupPage.signUp({
     username,
   })
-  await NotFoundPage.verifyContent(false)
+  await NotFoundPage.verify(false)
   await E2eUtil.goTo(unknownPath)
-  await NotFoundPage.verifyContent(true)
+  await NotFoundPage.verify(true)
   await E2eUtil.verifyCurrentUrl(unknownPath)
   await NotFoundPage.clickHomeLInk()
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 })

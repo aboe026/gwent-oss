@@ -7,6 +7,8 @@ import AboutPage from './pages/About'
 import App from './App'
 import DeckPage from './pages/Deck'
 import DecksPage from './pages/Decks'
+import Game from './pages/Game'
+import Games from './pages/Games'
 import HomePage from './pages/Home'
 import LoginPage from './pages/Login'
 import LogoutPage from './pages/Logout'
@@ -21,6 +23,14 @@ const router = createBrowserRouter([
     element: <App />,
     errorElement: <NotFoundPage />,
     children: [
+      {
+        path: ROUTES.Game.path,
+        element: <Game />,
+      },
+      {
+        path: ROUTES.Games.path,
+        element: <Games />,
+      },
       {
         path: ROUTES.Deck.path,
         element: <DeckPage />,

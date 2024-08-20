@@ -37,6 +37,7 @@ describe('upgrade-1', () => {
       [`Creating index on collection "${LeaderStore.COLLECTION_NAME}" for faction:1`],
       [`Creating collection "${UnitStore.COLLECTION_NAME}"`],
       [`Creating index on collection "${UnitStore.COLLECTION_NAME}" for faction:1,deckable:1`],
+      [`Creating index on collection "${UnitStore.COLLECTION_NAME}" for name:1,_id:1 with collation locale:en`],
     ])
     expect(createCollectionSpy.mock.calls).toEqual([
       [DlcStore.COLLECTION_NAME],
@@ -120,6 +121,18 @@ describe('upgrade-1', () => {
         {
           faction: 1,
           deckable: 1,
+        },
+      ],
+      [
+        UnitStore.COLLECTION_NAME,
+        {
+          _id: 1,
+          name: 1,
+        },
+        {
+          collation: {
+            locale: 'en',
+          },
         },
       ],
     ])

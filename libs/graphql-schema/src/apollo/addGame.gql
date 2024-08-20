@@ -1,0 +1,5 @@
+mutation AddGame($opponentNames: [String!]!) {
+  addGame(opponentNames: $opponentNames) {
+    ...GameFragment
+  }
+}

@@ -33,7 +33,7 @@ export default class DeckStore extends Store {
       units: units.map((unit) => {
         return {
           artStyle: unit.artStyle,
-          id: new ObjectId(unit.id),
+          unit: new ObjectId(unit.unit),
         }
       }),
       user: new ObjectId(userId),
@@ -54,7 +54,7 @@ export default class DeckStore extends Store {
         DeckStore.logger.error(message)
         throw Error(message)
       } else {
-        DeckStore.logger.error(err)
+        DeckStore.logger.error(`Error adding deck for user "${userId}": ${err}`)
         throw err
       }
     }
@@ -73,6 +73,22 @@ export default class DeckStore extends Store {
       },
     })
   }
+
+  /**
+   * Get decks for the given IDs
+   *
+   * @param ids The ObjectIds of the decks to retrieve
+   * @returns The decks of the given IDs
+   */
+  static async getByIds(ids: (ObjectId | string)[]): Promise<DeckDbObject[]> {
+    return DeckStore.read<DeckDbObject[]>({
+      filter: {
+        _id: {
+          $in: ids.map((id) => new ObjectId(id)),
+        },
+      },
+    })
+  }
 }
 
 export interface AddDeckInput {
@@ -86,5 +102,5 @@ export interface AddDeckInput {
 
 export interface AddDeckUnitInput {
   artStyle: number
-  id: string | ObjectId
+  unit: string | ObjectId
 }

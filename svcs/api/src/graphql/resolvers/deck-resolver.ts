@@ -1,91 +1,124 @@
+import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import FactionResolver from './faction-resolver'
+import LeaderResolver from './leader-resolver'
+import UserResolver from './user-resolver'
+import DeckUnitResolver from './deck-unit-resolver'
+import { getUniqueItems } from '@gwent/utils'
 import { ObjectId } from 'mongodb'
-
-import {
-  DeckDbObject,
-  FactionDbObject,
-  LeaderDbObject,
-  UnitDbObject,
-  UserDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import { DeckResolvers } from '@gwent/graphql-schema/resolver-typings'
+import UnitResolver from './unit-resolver'
 import FactionStore from '../../database/stores/faction-store'
-import LeaderStore from '../../database/stores/leader-store'
-import UnitStore from '../../database/stores/unit-store'
-import UserStore from '../../database/stores/user-store'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const DeckResolver: DeckResolvers<any, DeckDbObject> = {
-  faction: async (deck: DeckDbObject) => {
-    if (ObjectId.isValid(deck.faction)) {
-      const factions = await FactionStore.get({
-        ids: [deck.faction],
-      })
-      return factions[0]
+export default class DeckResolver {
+  static async resolveFromObject({
+    deck,
+    faction,
+    leader,
+    units,
+    user,
+    neutralDeckStats,
+    neutralLeaderStats,
+    neutralUnitStats,
+  }: {
+    deck: DeckDbObject
+    faction?: Faction
+    leader?: Leader
+    units?: DeckUnit[]
+    user?: User
+    neutralDeckStats?: boolean
+    neutralLeaderStats?: boolean
+    neutralUnitStats?: boolean
+  }): Promise<Deck> {
+    return {
+      created: deck.created,
+      faction:
+        faction ||
+        (await FactionResolver.resolveFromId({
+          id: deck.faction,
+          neutrals: neutralDeckStats,
+        })),
+      id: deck._id.toString(),
+      leader:
+        leader ||
+        (await LeaderResolver.resolveFromId({
+          id: deck.leader,
+          neutralStats: neutralLeaderStats,
+        })),
+      name: deck.name,
+      stats: deck.stats,
+      units:
+        units ||
+        (await DeckUnitResolver.resolveFromArray({
+          deckUnits: deck.units,
+          neutralStats: neutralUnitStats,
+        })),
+      user: user || (await UserResolver.resolveById(deck.user)),
     }
-    return deck.faction as any as FactionDbObject // eslint-disable-line @typescript-eslint/no-explicit-any
-  },
-  id: (deck: DeckDbObject) => deck._id.toString(),
-  leader: async (deck: DeckDbObject) => {
-    if (ObjectId.isValid(deck.leader)) {
-      const leaders = await LeaderStore.get({
-        ids: [deck.leader],
-      })
-      return leaders[0]
-    }
-    return deck.leader as any as LeaderDbObject // eslint-disable-line @typescript-eslint/no-explicit-any
-  },
-  units: async (deck: DeckDbObject) => {
-    const deckUnits: {
-      artStyle: number
-      unit: UnitDbObject
-    }[] = []
+  }
 
-    const unitIdsToGet: ObjectId[] = []
-    for (const deckUnit of deck.units) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (!(deckUnit as any).unit) {
-        const id = (deckUnit as any).id.toString() // eslint-disable-line @typescript-eslint/no-explicit-any
-        if (!unitIdsToGet.includes(id)) {
-          unitIdsToGet.push(id)
-        }
-      } else {
-        deckUnits.push({
-          artStyle: (deckUnit as any).artStyle, // eslint-disable-line @typescript-eslint/no-explicit-any
-          unit: deckUnit.unit as any as UnitDbObject, // eslint-disable-line @typescript-eslint/no-explicit-any
+  static async resolveFromArray({
+    decks,
+    neutralDeckStats,
+    neutralLeaderStats,
+    neutralUnitStats,
+  }: {
+    decks: DeckDbObject[]
+    neutralDeckStats?: boolean
+    neutralLeaderStats?: boolean
+    neutralUnitStats?: boolean
+  }): Promise<Deck[]> {
+    const factionIds = getUniqueItems<ObjectId>(decks.map((deck) => deck.faction))
+    const leaderIds = getUniqueItems<ObjectId>(decks.map((deck) => deck.leader))
+    const unitIds: ObjectId[] = []
+    for (const deck of decks) {
+      for (const unit of deck.units) {
+        unitIds.push(unit.unit)
+      }
+    }
+    const userIds = getUniqueItems<ObjectId>(decks.map((deck) => deck.user))
+
+    const factions = await FactionStore.get({
+      ids: factionIds,
+    })
+    const resolvedFactions = await FactionResolver.resolveFromArray({
+      factions,
+      neutralStats: neutralDeckStats,
+    })
+    const leaders = await LeaderResolver.resolveFromIds({
+      ids: leaderIds,
+      factions,
+      neutralStats: neutralLeaderStats,
+    })
+    const units = await UnitResolver.resolveFromIds({
+      ids: unitIds,
+      factions,
+      neutralStats: neutralUnitStats,
+    })
+    const users = await UserResolver.resolveByIds(userIds)
+
+    const resolvedDecks: Deck[] = []
+    for (const deck of decks) {
+      const faction = resolvedFactions.find((faction) => faction.id.toString() === deck.faction.toString()) as Faction
+      const leader = leaders.find((leader) => leader.id.toString() === deck.leader.toString()) as Leader
+      const resolvedUnits: DeckUnit[] = []
+      for (const deckUnit of deck.units) {
+        resolvedUnits.push({
+          artStyle: deckUnit.artStyle,
+          unit: units.find((unit) => unit.id.toString() === deckUnit.unit.toString()) as Unit,
         })
       }
+      const user = users.find((user) => user.id.toString() === deck.user.toString()) as User
+      resolvedDecks.push(
+        await DeckResolver.resolveFromObject({
+          deck,
+          faction,
+          leader,
+          units: resolvedUnits,
+          user,
+        })
+      )
     }
 
-    if (unitIdsToGet.length > 0) {
-      const units = await UnitStore.get({
-        ids: unitIdsToGet,
-      })
-      for (const deckUnit of deck.units) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        if (!(deckUnit as any).unit) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const id = (deckUnit as any).id.toString()
-          const dbUnit = units.find((unit) => unit._id.toString() === id)
-          if (!dbUnit) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            throw Error(`Could not find unit with ID "${id}".`)
-          }
-          deckUnits.push({
-            artStyle: deckUnit.artStyle as number,
-            unit: dbUnit,
-          })
-        }
-      }
-    }
-
-    return deckUnits
-  },
-  user: async (deck: DeckDbObject) => {
-    if (ObjectId.isValid(deck.user)) {
-      return UserStore.get(deck.user)
-    }
-    return deck.user as any as UserDbObject // eslint-disable-line @typescript-eslint/no-explicit-any
-  },
+    return resolvedDecks
+  }
 }
-
-export default DeckResolver

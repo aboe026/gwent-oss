@@ -37,6 +37,7 @@ describe('basic-auth', () => {
         _id: new ObjectId(),
         name: 'name',
         created: new Date(),
+        password: '',
       }
       await testBasicAuth({
         req: {
@@ -55,6 +56,7 @@ describe('basic-auth', () => {
         _id: new ObjectId(),
         name: 'name',
         created: new Date(),
+        password: '',
       }
       await testBasicAuth({
         req: {

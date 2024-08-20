@@ -71,6 +71,10 @@ describe('upgrade-1', () => {
         ['faction', 1],
         ['deckable', 1],
       ],
+      name_1__id_1: [
+        ['name', 1],
+        ['_id', 1],
+      ],
     })
   })
 })

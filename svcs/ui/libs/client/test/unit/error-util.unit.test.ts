@@ -1,4 +1,5 @@
-import { getApolloError } from '../../src/util/error-util'
+import { ApolloError } from '@apollo/client'
+import { getApolloError, retryCheckingAuth } from '../../src/util/error-util'
 
 describe('error-util', () => {
   describe('getApolloError', () => {
@@ -242,6 +243,38 @@ describe('error-util', () => {
           message: error,
         } as any)
       ).toEqual(error)
+    })
+  })
+  describe('retryCheckingAuth', () => {
+    it('calls checkAuth with method if error is ApolloError', async () => {
+      const error = new ApolloError({})
+      const method = jest.fn().mockImplementation().mockRejectedValue(error)
+      const checkAuth = jest.fn().mockImplementation()
+
+      await expect(
+        retryCheckingAuth({
+          checkAuth,
+          method,
+        })
+      ).resolves.toEqual(undefined)
+
+      expect(method.mock.calls).toEqual([[]])
+      expect(checkAuth.mock.calls).toEqual([[error, method]])
+    })
+    it('throws error if it is not ApolloError', async () => {
+      const error = new Error('network timeout')
+      const method = jest.fn().mockImplementation().mockRejectedValue(error)
+      const checkAuth = jest.fn().mockImplementation()
+
+      await expect(
+        retryCheckingAuth({
+          checkAuth,
+          method,
+        })
+      ).rejects.toThrow(error)
+
+      expect(method.mock.calls).toEqual([[]])
+      expect(checkAuth.mock.calls).toEqual([])
     })
   })
 })

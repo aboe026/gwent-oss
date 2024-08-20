@@ -5,9 +5,9 @@ import './LoadingSpinner.css'
  *
  * @returns The loading spinner
  */
-export default function LoadingSpinner({ size = '100%' }: LoadingSpinnerProps) {
+export default function LoadingSpinner({ size = '100%', title }: LoadingSpinnerProps) {
   return (
-    <div className="loading-spinner" style={{ height: size, width: size }}>
+    <div className="loading-spinner" style={{ height: size, width: size }} title={title}>
       <div className="card card-1 northern-realms-color"></div>
       <div className="card card-2 monsters-color"></div>
       <div className="card card-3 scoiatael-color"></div>
@@ -19,4 +19,5 @@ export default function LoadingSpinner({ size = '100%' }: LoadingSpinnerProps) {
 
 interface LoadingSpinnerProps {
   size?: string
+  title?: string
 }

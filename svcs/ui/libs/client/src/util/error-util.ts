@@ -37,3 +37,22 @@ export function getApolloError(error: ApolloError | undefined): string {
   }
   return resolvedErrors.join('\n')
 }
+
+export async function retryCheckingAuth({
+  checkAuth,
+  method,
+}: {
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  method: () => Promise<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+}) {
+  try {
+    await method()
+  } catch (error: unknown) {
+    if (error instanceof ApolloError) {
+      checkAuth(error, method)
+    } else {
+      throw error
+    }
+  }
+}

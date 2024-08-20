@@ -22,22 +22,22 @@ test('Main title redirects to home page when logged in', async () => {
     username,
   })
   await E2eUtil.goTo(ProfilePage.getUrl())
-  await ProfilePage.verifyContent({
+  await ProfilePage.verify({
     username: username,
   })
   await Banner.clickMainTitle()
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 })
 
 test('Main page does not show menu or username when not logged in', async () => {
   await LoginPage.verifyNotLoggedIn({})
-  await Banner.verifyContent('')
+  await Banner.verify('')
 })
 
 test('About page does not show menu or username when not logged in', async () => {
   await LoginPage.verifyNotLoggedIn({})
   await E2eUtil.goTo(AboutPage.getUrl())
-  await Banner.verifyContent('')
+  await Banner.verify('')
 })
 
 test('Main page shows menu and username when logged in', async () => {
@@ -45,7 +45,7 @@ test('Main page shows menu and username when logged in', async () => {
   await SignupPage.signUp({
     username,
   })
-  await Banner.verifyContent(username)
+  await Banner.verify(username)
 })
 
 test('Username redirects to profile when logged in', async () => {
@@ -53,10 +53,10 @@ test('Username redirects to profile when logged in', async () => {
   await SignupPage.signUp({
     username,
   })
-  await HomePage.verifyContent(username)
-  await Banner.verifyContent(username)
+  await HomePage.verify(username)
+  await Banner.verify(username)
   await Banner.clickUsername()
-  await ProfilePage.verifyContent({
+  await ProfilePage.verify({
     username,
   })
 })
@@ -66,24 +66,24 @@ test('Menu navigates to correct pages', async () => {
   await SignupPage.signUp({
     username,
   })
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 
   await Banner.goTo(Banner.elements.MenuDecks)
-  await DecksPage.verifyContent({
+  await DecksPage.verify({
     decks: [],
   })
 
   await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verifyContent({
+  await ProfilePage.verify({
     username,
   })
 
   await Banner.goTo(Banner.elements.MenuHome)
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 
   await Banner.goTo(Banner.elements.MenuAbout)
-  await AboutPage.verifyContent()
+  await AboutPage.verify()
 
   await Banner.goTo(Banner.elements.MenuHome)
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 })

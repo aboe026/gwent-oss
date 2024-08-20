@@ -1,8 +1,15 @@
 import { graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
-import { Deck, DeckUnit, FactionKey, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
-import { getDeckFragment, getLeaderFragment, getUnitFragment } from './fragment-util'
+import { Deck, DeckUnit, FactionKey, Game, GameDeck, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import {
+  getDeckFragment,
+  getDeckUnitFragment,
+  getGameDeckFragment,
+  getGameFragment,
+  getLeaderFragment,
+  getUnitFragment,
+} from './fragment-util'
 import schema from '../../../src/graphql/executable-schema'
 
 export async function addUser(name: string, password = 'password'): Promise<User> {
@@ -20,6 +27,9 @@ export async function addUser(name: string, password = 'password'): Promise<User
       password,
     },
   })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
   expect(response).toEqual({
     data: {
       addUser: {
@@ -36,7 +46,7 @@ export async function addUser(name: string, password = 'password'): Promise<User
 }
 
 export async function getLeaderId({ name, faction }: { name?: string; faction?: FactionKey }): Promise<string> {
-  const leadersResponse = await graphql({
+  const response = await graphql({
     schema,
     source: `{
       leaders {
@@ -51,20 +61,23 @@ export async function getLeaderId({ name, faction }: { name?: string; faction?: 
       },
     },
   })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
   let leader: Leader | undefined = undefined
   if (name) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    leader = (leadersResponse.data?.leaders as any).find((leader: any) => leader.name === name)
+    leader = (response.data?.leaders as any).find((leader: any) => leader.name === name)
   } else if (faction) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    leader = (leadersResponse.data?.leaders as any).find((leader: any) => leader.faction.key === faction)
+    leader = (response.data?.leaders as any).find((leader: any) => leader.faction.key === faction)
   } else {
     throw Error('No leader or faction specified to scope leader to')
   }
   if (!leader) {
     throw Error(
       `Could not find leader with ${name ? `name "${name}"` : `faction "${faction}"`} in response "${JSON.stringify(
-        leadersResponse
+        response
       )}"`
     )
   }
@@ -72,7 +85,7 @@ export async function getLeaderId({ name, faction }: { name?: string; faction?: 
 }
 
 export async function getUnits({ factions }: { factions: FactionKey[] }): Promise<Unit[]> {
-  const unitsResponse = await graphql({
+  const response = await graphql({
     schema,
     source: `{
       units(factions: [${factions.join(',')}], deckable: true) {
@@ -87,12 +100,15 @@ export async function getUnits({ factions }: { factions: FactionKey[] }): Promis
       },
     },
   })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
   let units: Unit[] | undefined = undefined
-  if (unitsResponse.data?.units && Array.isArray(unitsResponse.data.units)) {
-    units = unitsResponse.data.units
+  if (response.data?.units && Array.isArray(response.data.units)) {
+    units = response.data.units
   }
   if (!units || units.length < 1) {
-    throw Error(`Could not get units from response: "${JSON.stringify(unitsResponse)}"`)
+    throw Error(`Could not get units from response: "${JSON.stringify(response)}"`)
   }
   return units
 }
@@ -128,14 +144,16 @@ export async function addDeck({
   name,
   leader,
   userId,
+  statsModifier,
 }: {
   name: string
   faction: FactionKey
   leader?: string
   userId?: string
+  statsModifier?: string
 }): Promise<Deck> {
   if (!userId) {
-    userId = (await addUser(`create-deck-${Date.now()}`)).id
+    userId = (await addUser(`addDeck-${Date.now()}`)).id
   }
   const response = await graphql({
     schema,
@@ -149,7 +167,9 @@ export async function addDeck({
         })}",
         units: [${await getUnitsInput(faction)}]
       ) {
-        ${getDeckFragment({})}
+        ${getDeckFragment({
+          statsModifier,
+        })}
       }
     }`,
     contextValue: {
@@ -160,5 +180,198 @@ export async function addDeck({
       },
     },
   })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
   return response.data?.addDeck as Deck
+}
+
+export async function addGame({ opponentNames, userId }: { opponentNames: string[]; userId?: string }): Promise<Game> {
+  if (!userId) {
+    userId = (await addUser(`addGame-${Date.now()}`)).id
+  }
+  const response = await graphql({
+    schema,
+    source: `mutation {
+      addGame(
+        opponentNames: ["${opponentNames.join('","')}"]
+      ) {
+        ${getGameFragment({})}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.addGame as Game
+}
+
+export async function getGame({
+  gameId,
+  userId,
+}: {
+  gameId: string | ObjectId
+  userId: string | ObjectId
+}): Promise<Game> {
+  const response = await graphql({
+    schema,
+    source: `{
+      game(id: "${gameId}") {
+        ${getGameFragment({})}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.game as Game
+}
+
+export async function setDeck({
+  deckId,
+  gameId,
+  userId,
+  statsModifier,
+}: {
+  deckId: string | ObjectId
+  gameId: string | ObjectId
+  userId?: string
+  statsModifier?: string
+}): Promise<GameDeck> {
+  if (!userId) {
+    userId = (await addUser(`setDeck-${Date.now()}`)).id
+  }
+  const response = await graphql({
+    schema,
+    source: `mutation {
+      setDeck(
+        deck: "${deckId}"
+        game: "${gameId}"
+      ) {
+        ${getGameDeckFragment({
+          statsModifier,
+        })}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.setDeck as GameDeck
+}
+
+export async function getGameDeck({
+  gameId,
+  userId,
+  statsModifier,
+}: {
+  gameId: string | ObjectId
+  userId: string | ObjectId
+  statsModifier?: string
+}): Promise<GameDeck> {
+  const response = await graphql({
+    schema,
+    source: `{
+      gameDeck(game: "${gameId}") {
+        ${getGameDeckFragment({
+          statsModifier,
+        })}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.gameDeck as GameDeck
+}
+
+export async function redraw({
+  gameId,
+  unitId,
+  userId,
+}: {
+  gameId: string | ObjectId
+  unitId: string | object
+  userId: string | ObjectId
+}): Promise<DeckUnit> {
+  const response = await graphql({
+    schema,
+    source: `mutation {
+      redraw(
+        game: "${gameId}"
+        unit: "${unitId}"
+      ) {
+        ${getDeckUnitFragment({})}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.redraw as DeckUnit
+}
+
+export async function ready({
+  gameId,
+  userId,
+}: {
+  gameId: string | ObjectId
+  userId: string | ObjectId
+}): Promise<Game> {
+  const response = await graphql({
+    schema,
+    source: `mutation {
+      ready(
+        game: "${gameId}"
+      ) {
+        ${getGameFragment({})}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.ready as Game
 }
