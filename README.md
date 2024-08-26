@@ -98,6 +98,10 @@ To automatically fix problems, run
 yarn lint-fix
 ```
 
+## Containerization
+
+TODO: fill out
+
 ## Test
 
 ### Unit
@@ -182,6 +186,7 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- have game page display nicely for small screens (have player infos vertically scrollable)
 - replace `stats: {} as any` with constant value in tests
 - add ability to resolve neutrals on gameDeck (undrawn, hand, discard, redraws (from/to))
 - Change "ready" mutation to "readyGame"

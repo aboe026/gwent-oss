@@ -140,20 +140,14 @@ const MutationResolver: MutationResolvers<any, any> = {
     const opponentNames = args.opponentNames.filter((name) => name !== context.session.user.name)
     if (opponentNames.length < PLAYER_COUNTS.Min - 1) {
       logger.debug(`addGame failed for user ${creatorId}": Not enough opponents for game at "${opponentNames.length}".`)
-      return Error(
-        `Not enough opponents for game at "${opponentNames.length}". Need at least "${PLAYER_COUNTS.Min - 1}" opponent${
-          PLAYER_COUNTS.Min - 1 > 1 ? 's' : ''
-        }.`
-      )
+      return Error(`Not enough opponents for game at "${opponentNames.length}", minimum is "${PLAYER_COUNTS.Min - 1}".`)
     }
     if (opponentNames.length > PLAYER_COUNTS.Max - 1) {
       logger.debug(
         `addGame failed for user ${creatorId}": Excessive number of opponents for game at "${opponentNames.length}".`
       )
       return Error(
-        `Excessive number of opponents for game at "${opponentNames.length}". Cannot have more than "${
-          PLAYER_COUNTS.Max - 1
-        }" opponent${PLAYER_COUNTS.Max - 1 > 1 ? 's' : ''}.`
+        `Excessive number of opponents for game at "${opponentNames.length}", maximum is "${PLAYER_COUNTS.Max - 1}".`
       )
     }
     const opponents: User[] = []

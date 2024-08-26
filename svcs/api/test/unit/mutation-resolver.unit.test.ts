@@ -221,7 +221,13 @@ describe('mutation-resolver', () => {
     it('returns error if not enough opponents', async () => {
       await testAddGame({
         opponentNames: [],
-        expected: Error(`Not enough opponents for game at "0". Need at least "${PLAYER_COUNTS.Min - 1}" opponent.`),
+        expected: Error(`Not enough opponents for game at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`),
+      })
+    })
+    it('returns error if too many opponents', async () => {
+      await testAddGame({
+        opponentNames: ['one', 'two'],
+        expected: Error(`Excessive number of opponents for game at "2", maximum is "${PLAYER_COUNTS.Min - 1}".`),
       })
     })
   })
