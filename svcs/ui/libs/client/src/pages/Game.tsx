@@ -519,80 +519,83 @@ function renderGameInfo({
 }) {
   return (
     <div id="gameInfoContainer" className="game-edge-container">
-      <div id={HTML_IDS.GameInfoOpponentContainer} className="game-section game-info-player-container">
-        {game.status === GameStatus.Decking ? (
-          <Centered classname="game-deck-container">
-            <img src="images/stats/deck.png" className={HTML_CLASSES.GameDeckIcon} title="Deck" />
-          </Centered>
-        ) : (
-          <>
-            <div className="game-deck-section">
-              {renderDeckInfo({
-                player: opponent,
-              })}
-            </div>
-            <div className="game-sub-section game-info-section">
-              {renderLeader({
-                player: opponent,
-              })}
-            </div>
-            <div className="game-sub-section game-info-section">
-              {renderFaction({
-                player: opponent,
-              })}
-            </div>
-          </>
-        )}
-        <div className="game-sub-section game-info-section game-player-section">
-          {renderPlayerInfo({
-            game,
-            player: opponent,
-          })}
-        </div>
-      </div>
+      {renderPlayerInfo({
+        game,
+        gameDeck,
+        id: HTML_IDS.GameInfoOpponentContainer,
+        player: opponent,
+        reverse: true,
+      })}
       <div id="gameInfoWeatherContainer" className="game-section">
         <img id="gameWeatherIcon" src="images/effects/weather.png" title="Weather" />
         <div className="game-sub-section"></div>
       </div>
-      <div id={HTML_IDS.GameInfoSelfContainer} className="game-section game-info-player-container">
-        <div className="game-sub-section game-info-section game-player-section">
-          {renderPlayerInfo({
-            game,
-            player: self,
-          })}
-        </div>
-        {!gameDeck ? (
-          <Centered classname="game-deck-container">
-            <img src="images/stats/deck.png" className={HTML_CLASSES.GameDeckIcon} title="Deck" />
-          </Centered>
-        ) : (
-          <>
-            <div className="game-sub-section game-info-section">
-              {renderFaction({
-                player: self,
-                gameDeck,
-              })}
-            </div>
-            <div className="game-sub-section game-info-section">
-              {renderLeader({
-                player: self,
-                gameDeck,
-              })}
-            </div>
-            <div className="game-deck-section">
-              {renderDeckInfo({
-                player: self,
-                gameDeck,
-              })}
-            </div>
-          </>
-        )}
-      </div>
+      {renderPlayerInfo({
+        game,
+        gameDeck,
+        id: HTML_IDS.GameInfoSelfContainer,
+        player: self,
+      })}
     </div>
   )
 }
 
-function renderPlayerInfo({ player, game }: { player: GamePlayer; game: Game }) {
+function renderPlayerInfo({
+  id,
+  player,
+  game,
+  gameDeck,
+  reverse,
+}: {
+  id: string
+  player: GamePlayer
+  game: Game
+  gameDeck: GameDeck | undefined
+  reverse?: boolean
+}) {
+  return (
+    <div
+      id={id}
+      className="game-section game-info-player-container"
+      style={{ flexDirection: reverse ? 'column-reverse' : 'column' }}
+    >
+      <div className="game-sub-section game-info-section game-player-section">
+        {renderScore({
+          game,
+          player,
+        })}
+      </div>
+      {!gameDeck ? (
+        <Centered classname="game-deck-container">
+          <img src="images/stats/deck.png" className={HTML_CLASSES.GameDeckIcon} title="Deck" />
+        </Centered>
+      ) : (
+        <>
+          <div className="game-deck-section">
+            {renderDeckInfo({
+              player,
+              gameDeck,
+            })}
+          </div>
+          <div className="game-sub-section game-info-section">
+            {renderFaction({
+              player,
+              gameDeck,
+            })}
+          </div>
+          <div className="game-sub-section game-info-section">
+            {renderLeader({
+              player,
+              gameDeck,
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function renderScore({ player, game }: { player: GamePlayer; game: Game }) {
   const playerRound = player.rounds[game.round.current]
   const roundsCanLose = Math.ceil(game.round.maximum / 2)
   return (

@@ -11,7 +11,7 @@
 #gameContainerUpper {
   display: flex;
   gap: 10px;
-  flex-grow: 1;
+  height: 80%;
   width: 100%;
 }
 
@@ -28,11 +28,19 @@
   gap: 10px;
 }
 
+#gameCenterContainer > .game-section {
+  height: 100%;
+}
+
 #gameInfoWeatherContainer {
   display: flex;
   height: 10%;
   gap: 10px;
   padding: 10px;
+}
+
+#gameInfoOpponentContainer {
+  flex-direction: column-reverse;
 }
 
 #gameUnitsBoardContainer {
@@ -43,6 +51,7 @@
 
 #gameDeckRedrawInstructions {
   text-align: center;
+  text-wrap: balance;
 }
 
 #gameRedrawContainer {
@@ -152,10 +161,10 @@
 .game-info-player-container {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
-  flex: 1 1 0px;
+  height: 45%;
   gap: 10px;
   padding: 10px;
+  overflow-y: auto;
 }
 
 .game-player-round-score {
@@ -163,7 +172,6 @@
 }
 
 .game-section {
-  height: 100%;
   background-color: lightgray;
   border-radius: 5px;
 }
@@ -316,7 +324,6 @@
 
 .game-deck-section {
   display: flex;
-  flex: 1 1 0px;
   gap: 10px;
 }
 
