@@ -58,11 +58,10 @@ const QueryResolver: QueryResolvers<any, any> = {
   factions: async (parent, args, context, info) => {
     const factions = await FactionStore.get({})
     const neutrals = RequestedFields.getArgument<boolean>(info, 'factions.stats.neutrals')
-    const resolvedFaction = await FactionResolver.resolveFromArray({
+    return FactionResolver.resolveFromArray({
       factions,
       neutralStats: neutrals,
     })
-    return resolvedFaction
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   game: async (parent, args, context, info) => {

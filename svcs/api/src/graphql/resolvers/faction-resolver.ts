@@ -72,9 +72,7 @@ export default class FactionResolver {
     factions: FactionDbObject[]
     neutralStats?: boolean
   }): Promise<Faction[]> {
-    const dlcIds = getUniqueItems<ObjectId>(
-      factions.map((faction) => faction.dlc).filter((dlc) => dlc !== undefined) as ObjectId[]
-    )
+    const dlcIds = getUniqueItems<ObjectId>(factions.map((faction) => faction.dlc))
     const dlcs = await DlcResolver.resolveFromIds(dlcIds)
 
     let neutral: FactionDbObject | undefined = undefined

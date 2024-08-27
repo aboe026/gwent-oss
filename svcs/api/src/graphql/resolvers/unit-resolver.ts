@@ -105,9 +105,7 @@ export default class UnitResolver {
     units: UnitDbObject[]
     neutralStats?: boolean
   }): Promise<Unit[]> {
-    const dlcIds = getUniqueItems<ObjectId>(
-      units.map((unit) => unit.dlc).filter((dlc) => dlc !== undefined) as ObjectId[]
-    )
+    const dlcIds = getUniqueItems<ObjectId>(units.map((unit) => unit.dlc))
     const effectIds: ObjectId[] = []
     for (const unit of units) {
       if (unit.effects) {

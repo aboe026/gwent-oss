@@ -69,10 +69,12 @@ export default class DeckResolver {
   }): Promise<Deck[]> {
     const factionIds = getUniqueItems<ObjectId>(decks.map((deck) => deck.faction))
     const leaderIds = getUniqueItems<ObjectId>(decks.map((deck) => deck.leader))
-    const unitIds: ObjectId[] = []
+    const unitIds: string[] = []
     for (const deck of decks) {
       for (const unit of deck.units) {
-        unitIds.push(unit.unit)
+        if (!unitIds.includes(unit.unit.toString())) {
+          unitIds.push(unit.unit.toString())
+        }
       }
     }
     const userIds = getUniqueItems<ObjectId>(decks.map((deck) => deck.user))

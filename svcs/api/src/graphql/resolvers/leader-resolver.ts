@@ -78,7 +78,7 @@ export default class LeaderResolver {
     leaders: LeaderDbObject[]
     neutralStats?: boolean
   }): Promise<Leader[]> {
-    const dlcIds = getUniqueItems<ObjectId>(leaders.map((leader) => leader.dlc).filter((dlc) => dlc !== undefined))
+    const dlcIds = getUniqueItems<ObjectId>(leaders.map((leader) => leader.dlc))
     const dlcs = await DlcResolver.resolveFromIds(dlcIds)
 
     if (!resolvedFactions) {

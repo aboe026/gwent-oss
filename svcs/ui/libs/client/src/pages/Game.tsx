@@ -32,6 +32,8 @@ import {
   GameStatus,
   useReadyMutation,
   ReadyMutation,
+  Faction,
+  Leader,
 } from '@gwent/graphql-schema/apollo-typings'
 import { useUserContext } from '../App'
 import './Game.css'
@@ -521,10 +523,14 @@ function renderGameInfo({
     <div id="gameInfoContainer" className="game-edge-container">
       {renderPlayerInfo({
         game,
-        gameDeck,
         id: HTML_IDS.GameInfoOpponentContainer,
         player: opponent,
         reverse: true,
+        faction: opponent.faction,
+        discard: opponent.counts?.discard,
+        hand: opponent.counts?.hand,
+        undrawn: opponent.counts?.undrawn,
+        leader: opponent.leader,
       })}
       <div id="gameInfoWeatherContainer" className="game-section">
         <img id="gameWeatherIcon" src="images/effects/weather.png" title="Weather" />
@@ -532,9 +538,13 @@ function renderGameInfo({
       </div>
       {renderPlayerInfo({
         game,
-        gameDeck,
         id: HTML_IDS.GameInfoSelfContainer,
         player: self,
+        faction: gameDeck?.from?.faction,
+        leader: gameDeck?.from?.leader,
+        discard: gameDeck?.discard.length,
+        hand: gameDeck?.hand.length,
+        undrawn: gameDeck?.undrawn.length,
       })}
     </div>
   )
@@ -544,14 +554,22 @@ function renderPlayerInfo({
   id,
   player,
   game,
-  gameDeck,
   reverse,
+  faction,
+  undrawn,
+  hand,
+  discard,
+  leader,
 }: {
   id: string
   player: GamePlayer
   game: Game
-  gameDeck: GameDeck | undefined
   reverse?: boolean
+  faction?: Faction | null
+  undrawn?: number
+  hand?: number
+  discard?: number
+  leader?: Leader | null
 }) {
   return (
     <div
@@ -565,7 +583,7 @@ function renderPlayerInfo({
           player,
         })}
       </div>
-      {!gameDeck ? (
+      {!faction ? (
         <Centered classname="game-deck-container">
           <img src="images/stats/deck.png" className={HTML_CLASSES.GameDeckIcon} title="Deck" />
         </Centered>
@@ -573,20 +591,19 @@ function renderPlayerInfo({
         <>
           <div className="game-deck-section">
             {renderDeckInfo({
-              player,
-              gameDeck,
+              discard,
+              hand,
+              undrawn,
             })}
           </div>
           <div className="game-sub-section game-info-section">
             {renderFaction({
-              player,
-              gameDeck,
+              faction,
             })}
           </div>
           <div className="game-sub-section game-info-section">
             {renderLeader({
-              player,
-              gameDeck,
+              leader,
             })}
           </div>
         </>
@@ -626,8 +643,7 @@ function renderScore({ player, game }: { player: GamePlayer; game: Game }) {
   )
 }
 
-function renderFaction({ player, gameDeck }: { player: GamePlayer; gameDeck?: GameDeck | undefined }) {
-  const faction = player.faction || gameDeck?.from?.faction
+function renderFaction({ faction }: { faction?: Faction | null }) {
   return (
     <div className="game-player-faction">
       {faction && (
@@ -640,8 +656,7 @@ function renderFaction({ player, gameDeck }: { player: GamePlayer; gameDeck?: Ga
   )
 }
 
-function renderLeader({ player, gameDeck }: { player: GamePlayer; gameDeck?: GameDeck | undefined }) {
-  const leader = player.leader || gameDeck?.from?.leader
+function renderLeader({ leader }: { leader?: Leader | null }) {
   return (
     <div className="game-player-leader">
       {leader && (
@@ -654,10 +669,7 @@ function renderLeader({ player, gameDeck }: { player: GamePlayer; gameDeck?: Gam
   )
 }
 
-function renderDeckInfo({ gameDeck, player }: { gameDeck?: GameDeck | undefined; player: GamePlayer }) {
-  const undrawn = player.counts ? player.counts.undrawn : gameDeck?.undrawn.length
-  const hand = player.counts ? player.counts.hand : gameDeck?.hand.length
-  const discard = player.counts ? player.counts.discard : gameDeck?.discard.length
+function renderDeckInfo({ undrawn, hand, discard }: { undrawn?: number; hand?: number; discard?: number }) {
   return (
     <>
       <div className="game-player-deck-section" title="Cards remaining in deck to draw">
