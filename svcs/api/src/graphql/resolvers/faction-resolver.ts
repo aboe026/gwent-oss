@@ -39,13 +39,20 @@ export default class FactionResolver {
     }
   }
 
-  static async resolveFromId({ id, neutrals }: { id: ObjectId | string; neutrals?: boolean }): Promise<Faction> {
-    return (
-      await FactionResolver.resolveFromIds({
-        ids: [id],
-        neutralStats: neutrals,
-      })
-    )[0]
+  static async resolveFromId({
+    id,
+    neutrals,
+  }: {
+    id: ObjectId | string
+    neutrals?: boolean
+  }): Promise<Faction | undefined> {
+    const factions = await FactionResolver.resolveFromIds({
+      ids: [id],
+      neutralStats: neutrals,
+    })
+    if (factions && factions.length > 0) {
+      return factions[0]
+    }
   }
 
   static async resolveFromIds({
@@ -55,6 +62,9 @@ export default class FactionResolver {
     ids: (ObjectId | string)[]
     neutralStats?: boolean
   }): Promise<Faction[]> {
+    if (ids.length === 0) {
+      return []
+    }
     const factions = await FactionStore.get({
       ids: ids,
     })

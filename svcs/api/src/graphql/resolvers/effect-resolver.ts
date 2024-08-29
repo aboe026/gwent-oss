@@ -17,6 +17,9 @@ export default class EffectResolver {
 
   static async resolveFromIds(effectIds?: (string | ObjectId)[]): Promise<Effect[] | null> {
     if (effectIds) {
+      if (effectIds.length === 0) {
+        return []
+      }
       const effects = await EffectStore.get({
         ids: effectIds,
       })

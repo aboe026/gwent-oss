@@ -48,6 +48,9 @@ export default class UnitResolver {
           id: unit.faction,
           neutrals: neutralStats,
         })
+    if (!resolvedFaction) {
+      throw Error(`Could not resolve faction "${unit.faction}" on unit "${unit._id}"`)
+    }
     return {
       combats: unit.combats as Combat[],
       created: unit.created,
@@ -86,6 +89,9 @@ export default class UnitResolver {
     factions?: FactionDbObject[]
     neutralStats?: boolean
   }): Promise<Unit[]> {
+    if (ids.length === 0) {
+      return []
+    }
     const units = await UnitStore.get({
       ids: ids,
     })

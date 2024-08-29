@@ -25,6 +25,9 @@ export class DlcResolver {
   }
 
   static async resolveFromIds(ids: (ObjectId | string)[]): Promise<Dlc[]> {
+    if (ids.length === 0) {
+      return []
+    }
     const dlcs = await DlcStore.get({
       ids,
     })

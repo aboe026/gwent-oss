@@ -21,6 +21,9 @@ export default class GameResolver {
     neutralLeaderStats?: boolean
   }): Promise<Game> {
     const resolvedCreator = creator || (await UserResolver.resolveById(game.creator))
+    if (!resolvedCreator) {
+      throw Error(`Could not resolve creator "${game.creator}" for game "${game._id}"`)
+    }
     return {
       created: game.created,
       creator: resolvedCreator,

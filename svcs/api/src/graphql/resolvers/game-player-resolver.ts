@@ -1,3 +1,5 @@
+import { getLogger } from 'log4js'
+
 import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
 import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, User } from '@gwent/graphql-schema/resolver-typings'
 import UserResolver from './user-resolver'
@@ -7,6 +9,8 @@ import FactionResolver from './faction-resolver'
 import LeaderResolver from './leader-resolver'
 
 export default class GamePlayerResolver {
+  private static logger = getLogger('game-player-resolver')
+
   static async resolveFromObject({
     player,
     user,
@@ -31,12 +35,22 @@ export default class GamePlayerResolver {
           id: player.deck.from.faction,
           neutrals: neutralFactionStats,
         })
+        if (!faction) {
+          const message = `Could not resolve faction "${player.deck.from.faction}" for game player "${player.user}"`
+          GamePlayerResolver.logger.error(message)
+          throw Error(message)
+        }
       }
       if (!leader && player.deck.from?.leader) {
         leader = await LeaderResolver.resolveFromId({
           id: player.deck.from.leader,
           neutralStats: neutralLeaderStats,
         })
+        if (!leader) {
+          const message = `Could not resolve leader "${player.deck.from.leader}" for game player "${player.user}"`
+          GamePlayerResolver.logger.error(message)
+          throw Error(message)
+        }
       }
       counts = {
         discard: player.deck.discard.length,
@@ -44,13 +58,19 @@ export default class GamePlayerResolver {
         undrawn: player.deck.undrawn.length,
       }
     }
+    const resolvedUser = user || (await UserResolver.resolveById(player.user))
+    if (!resolvedUser) {
+      const message = `Could not resolve user "${player.user}" for game player "${player.user}"`
+      GamePlayerResolver.logger.error(message)
+      throw Error(message)
+    }
     return {
       counts,
       faction: everyoneReady ? faction : undefined,
       leader: everyoneReady ? leader : undefined,
       ready: player.ready,
       rounds: player.rounds,
-      user: user || (await UserResolver.resolveById(player.user)),
+      user: resolvedUser,
     }
   }
 

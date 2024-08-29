@@ -1,3 +1,5 @@
+import { getLogger } from 'log4js'
+
 import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
 import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
@@ -10,6 +12,8 @@ import UnitResolver from './unit-resolver'
 import FactionStore from '../../database/stores/faction-store'
 
 export default class DeckResolver {
+  private static logger = getLogger('deck-resolver')
+
   static async resolveFromObject({
     deck,
     faction,
@@ -29,21 +33,40 @@ export default class DeckResolver {
     neutralLeaderStats?: boolean
     neutralUnitStats?: boolean
   }): Promise<Deck> {
+    const resolvedUser = user || (await UserResolver.resolveById(deck.user))
+    if (!resolvedUser) {
+      const message = `Could not resolve user "${deck.user}" for deck "${deck._id}"`
+      DeckResolver.logger.error(message)
+      throw Error(message)
+    }
+    // TODO: validate error logged in unit tests
+    const resolvedFaction =
+      faction ||
+      (await FactionResolver.resolveFromId({
+        id: deck.faction,
+        neutrals: neutralDeckStats,
+      }))
+    if (!resolvedFaction) {
+      const message = `Could not resolve faction "${deck.faction}" for deck "${deck._id}"`
+      DeckResolver.logger.error(message)
+      throw Error(message)
+    }
+    const resolvedLeader =
+      leader ||
+      (await LeaderResolver.resolveFromId({
+        id: deck.leader,
+        neutralStats: neutralLeaderStats,
+      }))
+    if (!resolvedLeader) {
+      const message = `Could not resolve leader "${deck.leader}" for deck "${deck._id}"`
+      DeckResolver.logger.error(message)
+      throw Error(message)
+    }
     return {
       created: deck.created,
-      faction:
-        faction ||
-        (await FactionResolver.resolveFromId({
-          id: deck.faction,
-          neutrals: neutralDeckStats,
-        })),
+      faction: resolvedFaction,
       id: deck._id.toString(),
-      leader:
-        leader ||
-        (await LeaderResolver.resolveFromId({
-          id: deck.leader,
-          neutralStats: neutralLeaderStats,
-        })),
+      leader: resolvedLeader,
       name: deck.name,
       stats: deck.stats,
       units:
@@ -52,7 +75,7 @@ export default class DeckResolver {
           deckUnits: deck.units,
           neutralStats: neutralUnitStats,
         })),
-      user: user || (await UserResolver.resolveById(deck.user)),
+      user: resolvedUser,
     }
   }
 
