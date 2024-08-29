@@ -22,6 +22,7 @@ logback.log
 
 **/coverage
 **/perf
+**/test
 **/test-results
 
 compose

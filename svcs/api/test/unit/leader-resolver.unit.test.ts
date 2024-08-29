@@ -1,5 +1,5 @@
 import { FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
-import { DlcResolver } from '../../src/graphql/resolvers/dlc-resolver'
+import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
 import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import { Dlc, DlcKey, Faction, FactionKey, Leader, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'

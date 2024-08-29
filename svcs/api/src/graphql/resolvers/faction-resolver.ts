@@ -1,11 +1,15 @@
+import { getLogger } from 'log4js'
+
 import { FactionDbObject, UnitStats } from '@gwent/graphql-schema/database-typings'
 import { Dlc, Faction, FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import { DlcResolver } from './dlc-resolver'
+import DlcResolver from './dlc-resolver'
 import FactionStore from '../../database/stores/faction-store'
 import { ObjectId } from 'mongodb'
 import { getUniqueItems } from '@gwent/utils'
 
 export default class FactionResolver {
+  private static logger = getLogger('faction-resolver')
+
   static async resolveFromObject({
     dlc,
     faction,
@@ -18,11 +22,24 @@ export default class FactionResolver {
     neutralStats?: boolean
   }): Promise<Faction> {
     if (neutralStats && !neutral) {
-      neutral = (
-        await FactionStore.get({
-          keys: [FactionKey.Neutral],
-        })
-      )[0]
+      const factions = await FactionStore.get({
+        keys: [FactionKey.Neutral],
+      })
+      if (factions.length < 1) {
+        const message = `Could not resolve faction "${FactionKey.Neutral}" on faction "${faction._id}".`
+        FactionResolver.logger.error(message)
+        throw Error(message)
+      }
+      neutral = factions[0]
+    }
+    let resolvedDlc: Dlc | null = null
+    if (faction.dlc) {
+      resolvedDlc = dlc || (await DlcResolver.resolveFromId(faction.dlc))
+      if (!resolvedDlc) {
+        const message = `Could not resolve dlc "${faction.dlc}" on faction "${faction._id}".`
+        FactionResolver.logger.error(message)
+        throw Error(message)
+      }
     }
     return {
       created: faction.created,
@@ -35,7 +52,7 @@ export default class FactionResolver {
         neutral: neutralStats ? neutral : undefined,
       }),
       ability: faction.ability,
-      dlc: dlc || (await DlcResolver.resolveFromId(faction.dlc)),
+      dlc: resolvedDlc,
     }
   }
 
@@ -50,7 +67,7 @@ export default class FactionResolver {
       ids: [id],
       neutralStats: neutrals,
     })
-    if (factions && factions.length > 0) {
+    if (factions.length > 0) {
       return factions[0]
     }
   }
@@ -89,11 +106,15 @@ export default class FactionResolver {
     if (neutralStats) {
       neutral = factions.find((faction) => faction.key === FactionKey.Neutral)
       if (!neutral) {
-        neutral = (
-          await FactionStore.get({
-            keys: [FactionKey.Neutral],
-          })
-        )[0]
+        const neutralFactions = await FactionStore.get({
+          keys: [FactionKey.Neutral],
+        })
+        if (neutralFactions.length < 1) {
+          const message = `Could not resolve neutral faction "${FactionKey.Neutral}" for factions array.`
+          FactionResolver.logger.error(message)
+          throw Error(message)
+        }
+        neutral = neutralFactions[0]
       }
     }
 
@@ -102,6 +123,11 @@ export default class FactionResolver {
       let dlc: Dlc | undefined
       if (faction.dlc) {
         dlc = dlcs.find((dlc) => dlc.id.toString() === faction.dlc?.toString())
+        if (!dlc) {
+          const message = `Could not resolve dlc "${faction.dlc}" for faction ${faction._id} in array.`
+          FactionResolver.logger.error(message)
+          throw Error(message)
+        }
       }
       resolvedFactions.push(
         await FactionResolver.resolveFromObject({

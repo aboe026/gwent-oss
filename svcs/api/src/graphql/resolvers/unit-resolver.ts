@@ -8,7 +8,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import { Combat, Effect, Unit } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
-import { DlcResolver } from './dlc-resolver'
+import DlcResolver from './dlc-resolver'
 import EffectResolver from './effect-resolver'
 import { ObjectId } from 'mongodb'
 import UnitStore from '../../database/stores/unit-store'

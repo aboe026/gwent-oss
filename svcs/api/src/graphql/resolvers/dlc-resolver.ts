@@ -3,7 +3,7 @@ import { Dlc, DlcKey } from '@gwent/graphql-schema/resolver-typings'
 import { ObjectId } from 'mongodb'
 import DlcStore from '../../database/stores/dlc-store'
 
-export class DlcResolver {
+export default class DlcResolver {
   static resolveFromObject(dlc?: DlcDbObject): Dlc | null {
     if (dlc) {
       return {
