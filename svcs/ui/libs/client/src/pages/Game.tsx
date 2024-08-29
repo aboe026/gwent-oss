@@ -992,7 +992,7 @@ function renderHand({
                 onClick={() => {
                   setCardSelected(selected ? undefined : deckUnit)
                 }}
-                style={index === sortedUnits.length - 1 ? { paddingRight: '20px' } : {}}
+                style={index === sortedUnits.length - 1 ? { marginRight: '-25px' } : {}}
               >
                 <UnitGameCard
                   deckUnit={deckUnit}
