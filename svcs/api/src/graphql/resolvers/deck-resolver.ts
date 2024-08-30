@@ -33,12 +33,6 @@ export default class DeckResolver {
     neutralLeaderStats?: boolean
     neutralUnitStats?: boolean
   }): Promise<Deck> {
-    const resolvedUser = user || (await UserResolver.resolveById(deck.user))
-    if (!resolvedUser) {
-      const message = `Could not resolve user "${deck.user}" for deck "${deck._id}"`
-      DeckResolver.logger.error(message)
-      throw Error(message)
-    }
     // TODO: validate error logged in unit tests
     const resolvedFaction =
       faction ||
@@ -47,7 +41,7 @@ export default class DeckResolver {
         neutrals: neutralDeckStats,
       }))
     if (!resolvedFaction) {
-      const message = `Could not resolve faction "${deck.faction}" for deck "${deck._id}"`
+      const message = `Could not resolve faction "${deck.faction}" for deck "${deck._id}".`
       DeckResolver.logger.error(message)
       throw Error(message)
     }
@@ -58,7 +52,13 @@ export default class DeckResolver {
         neutralStats: neutralLeaderStats,
       }))
     if (!resolvedLeader) {
-      const message = `Could not resolve leader "${deck.leader}" for deck "${deck._id}"`
+      const message = `Could not resolve leader "${deck.leader}" for deck "${deck._id}".`
+      DeckResolver.logger.error(message)
+      throw Error(message)
+    }
+    const resolvedUser = user || (await UserResolver.resolveById(deck.user))
+    if (!resolvedUser) {
+      const message = `Could not resolve user "${deck.user}" for deck "${deck._id}".`
       DeckResolver.logger.error(message)
       throw Error(message)
     }

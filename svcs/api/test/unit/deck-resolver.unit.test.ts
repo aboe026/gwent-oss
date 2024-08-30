@@ -35,11 +35,28 @@ describe('deck-resolver', () => {
       ],
       user: new ObjectId(),
     }
+    it('throws error if faction cannot be resolved', async () => {
+      await testResolveFromObject({
+        deck,
+        factionResolved: false,
+        error: `Could not resolve faction "${deck.faction}" for deck "${deck._id}".`,
+        leaderResolverCalled: false,
+        userResolverCalled: false,
+      })
+    })
+    it('throws error if leader cannot be resolved', async () => {
+      await testResolveFromObject({
+        deck,
+        leaderResolved: false,
+        error: `Could not resolve leader "${deck.leader}" for deck "${deck._id}".`,
+        userResolverCalled: false,
+      })
+    })
     it('throws error if user cannot be resolved', async () => {
       await testResolveFromObject({
         deck,
         userResolved: false,
-        error: `Could not resolve user "${deck.user}" for deck "${deck._id}"`,
+        error: `Could not resolve user "${deck.user}" for deck "${deck._id}".`,
       })
     })
     it('does not call to external resolvers if fields provided', async () => {
@@ -82,6 +99,9 @@ describe('deck-resolver', () => {
           id: deck.user.toString(),
           name: 'user-name',
         },
+        factionResolverCalled: false,
+        leaderResolverCalled: false,
+        userResolverCalled: false,
       })
     })
     it('calls to external resolvers without neutral stats if only deck provided', async () => {
@@ -136,8 +156,13 @@ async function testResolveFromObject({
   neutralUnitStats,
   units,
   user,
+  factionResolved = true,
+  leaderResolved = true,
   userResolved = true,
   error,
+  factionResolverCalled = true,
+  leaderResolverCalled = true,
+  userResolverCalled = true,
 }: {
   deck: DeckDbObject
   faction?: Faction
@@ -147,8 +172,13 @@ async function testResolveFromObject({
   neutralDeckStats?: boolean
   neutralLeaderStats?: boolean
   neutralUnitStats?: boolean
+  factionResolved?: boolean
+  leaderResolved?: boolean
   userResolved?: boolean
   error?: string
+  factionResolverCalled?: boolean
+  leaderResolverCalled?: boolean
+  userResolverCalled?: boolean
 }) {
   const retrievedFaction: Faction = {
     created: new Date(),
@@ -158,7 +188,9 @@ async function testResolveFromObject({
     name: 'faction-retreived-name',
     stats: {} as UnitStats,
   }
-  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromId').mockResolvedValue(retrievedFaction)
+  const factionResolverSpy = jest
+    .spyOn(FactionResolver, 'resolveFromId')
+    .mockResolvedValue(factionResolved ? retrievedFaction : undefined)
   const retrievedLeader: Leader = {
     ability: 'leader-ability',
     created: new Date(),
@@ -168,7 +200,9 @@ async function testResolveFromObject({
     name: 'leader-retreived-name',
     quote: 'leader-quote',
   }
-  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromId').mockResolvedValue(retrievedLeader)
+  const leaderResolverSpy = jest
+    .spyOn(LeaderResolver, 'resolveFromId')
+    .mockResolvedValue(leaderResolved ? retrievedLeader : undefined)
   const retrievedUnits: DeckUnit[] = deck.units.map((deckUnit, index) => {
     return {
       artStyle: 1,
@@ -233,9 +267,8 @@ async function testResolveFromObject({
   }
 
   expect(factionResolverSpy.mock.calls).toEqual(
-    faction || error
-      ? []
-      : [
+    factionResolverCalled
+      ? [
           [
             {
               id: deck.faction,
@@ -243,11 +276,11 @@ async function testResolveFromObject({
             },
           ],
         ]
+      : []
   )
   expect(leaderResolverSpy.mock.calls).toEqual(
-    leader || error
-      ? []
-      : [
+    leaderResolverCalled
+      ? [
           [
             {
               id: deck.leader,
@@ -255,6 +288,7 @@ async function testResolveFromObject({
             },
           ],
         ]
+      : []
   )
   expect(deckUnitResolverSpy.mock.calls).toEqual(
     units || error
@@ -268,7 +302,7 @@ async function testResolveFromObject({
           ],
         ]
   )
-  expect(userResolverSpy.mock.calls).toEqual(user ? [] : [[deck.user]])
+  expect(userResolverSpy.mock.calls).toEqual(userResolverCalled ? [[deck.user]] : [])
 }
 
 async function testResolveFromArray({
