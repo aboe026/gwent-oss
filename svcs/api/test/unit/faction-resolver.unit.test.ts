@@ -126,62 +126,77 @@ describe('faction-resolver', () => {
       })
     })
   })
-})
-
-async function testResolveFromIds({ ids }: { ids: (ObjectId | string)[] }) {
-  const factions: FactionDbObject[] = ids.map((id, index) => {
-    return {
-      _id: new ObjectId(id),
-      created: new Date(),
-      image: `faction-${index}-image`,
-      key: FactionKey.Monsters,
-      name: `faction-${index}-name`,
-      stats: TestUtil.getStats(index),
-    }
-  })
-  const resolvedFactions: Faction[] = factions.map((faction) => {
-    return {
-      created: faction.created,
-      id: faction._id.toString(),
-      image: faction.image,
-      key: faction.key as FactionKey,
-      name: faction.name,
-      stats: faction.stats,
-    }
-  })
-  const getSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factions)
-  const resolveSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue(resolvedFactions)
-
-  await expect(
-    FactionResolver.resolveFromIds({
-      ids,
+  describe('resolveFromArray', () => {
+    it('throws error if neutral faction not found', async () => {
+      await testResolveFromArray({
+        factions: [
+          {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-image',
+            key: FactionKey.Monsters,
+            name: 'faction-name',
+            stats: TestUtil.getStats(),
+          },
+        ],
+        neutralStats: true,
+        factionGetResponse: [],
+        error: `Could not resolve neutral faction "${FactionKey.Neutral}" for factions array: None found.`,
+        factionGetCalls: [
+          [
+            {
+              keys: [FactionKey.Neutral],
+            },
+          ],
+        ],
+      })
     })
-  ).resolves.toEqual(resolvedFactions)
-
-  expect(getSpy.mock.calls).toEqual(
-    ids.length > 0
-      ? [
+    it('throws error if multiple neutral factions found', async () => {
+      const neutralFactions: FactionDbObject[] = [
+        {
+          _id: new ObjectId(),
+          created: new Date(),
+          image: 'neutral-faction-image-1',
+          key: FactionKey.Neutral,
+          name: 'neutral-faction-name-1',
+          stats: TestUtil.getStats(1),
+        },
+        {
+          _id: new ObjectId(),
+          created: new Date(),
+          image: 'neutral-faction-image-2',
+          key: FactionKey.Neutral,
+          name: 'neutral-faction-name-2',
+          stats: TestUtil.getStats(2),
+        },
+      ]
+      await testResolveFromArray({
+        factions: [
+          {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-image',
+            key: FactionKey.Monsters,
+            name: 'faction-name',
+            stats: TestUtil.getStats(),
+          },
+        ],
+        neutralStats: true,
+        factionGetResponse: neutralFactions,
+        error: `Could not resolve neutral faction "${
+          FactionKey.Neutral
+        }" for factions array: Found more than one: "${JSON.stringify(neutralFactions)}".`,
+        factionGetCalls: [
           [
             {
-              ids,
+              keys: [FactionKey.Neutral],
             },
           ],
-        ]
-      : []
-  )
-  expect(resolveSpy.mock.calls).toEqual(
-    ids.length > 0
-      ? [
-          [
-            {
-              factions,
-              neutralStats: undefined,
-            },
-          ],
-        ]
-      : []
-  )
-}
+        ],
+      })
+    })
+  })
+})
 
 async function testResolveFromObject({
   faction,
@@ -270,4 +285,99 @@ async function testResolveFromObject({
           ],
         ]
   )
+}
+
+async function testResolveFromIds({ ids }: { ids: (ObjectId | string)[] }) {
+  const factions: FactionDbObject[] = ids.map((id, index) => {
+    return {
+      _id: new ObjectId(id),
+      created: new Date(),
+      image: `faction-${index}-image`,
+      key: FactionKey.Monsters,
+      name: `faction-${index}-name`,
+      stats: TestUtil.getStats(index),
+    }
+  })
+  const resolvedFactions: Faction[] = factions.map((faction) => {
+    return {
+      created: faction.created,
+      id: faction._id.toString(),
+      image: faction.image,
+      key: faction.key as FactionKey,
+      name: faction.name,
+      stats: faction.stats,
+    }
+  })
+  const getSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factions)
+  const resolveSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue(resolvedFactions)
+
+  await expect(
+    FactionResolver.resolveFromIds({
+      ids,
+    })
+  ).resolves.toEqual(resolvedFactions)
+
+  expect(getSpy.mock.calls).toEqual(
+    ids.length > 0
+      ? [
+          [
+            {
+              ids,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(resolveSpy.mock.calls).toEqual(
+    ids.length > 0
+      ? [
+          [
+            {
+              factions,
+              neutralStats: undefined,
+            },
+          ],
+        ]
+      : []
+  )
+}
+
+async function testResolveFromArray({
+  factions,
+  neutralStats,
+  dlcResolveResponse = [],
+  factionGetResponse = [],
+  factionResolveResponse,
+  error,
+  dlcResolveCalls = [[[]]],
+  factionGetCalls = [],
+}: {
+  factions: FactionDbObject[]
+  neutralStats?: boolean
+  dlcResolveResponse?: Dlc[]
+  factionGetResponse?: FactionDbObject[]
+  factionResolveResponse?: Faction
+  error?: string
+  dlcResolveCalls?: any[][]
+  factionGetCalls?: any[][]
+}) {
+  const dlcResolveSpy = jest.spyOn(DlcResolver, 'resolveFromIds').mockResolvedValue(dlcResolveResponse)
+  const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse)
+  const resolveFromObjectSpy = jest.spyOn(FactionResolver, 'resolveFromObject')
+  if (factionResolveResponse) {
+    resolveFromObjectSpy.mockResolvedValue(factionResolveResponse)
+  }
+
+  const promise = FactionResolver.resolveFromArray({
+    factions,
+    neutralStats,
+  })
+  if (error) {
+    await expect(promise).rejects.toThrow(Error(error))
+  } else {
+    await expect(promise).resolves.toEqual(factionResolveResponse)
+  }
+
+  expect(dlcResolveSpy.mock.calls).toEqual(dlcResolveCalls)
+  expect(factionGetSpy.mock.calls).toEqual(factionGetCalls)
 }

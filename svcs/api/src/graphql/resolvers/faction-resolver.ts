@@ -110,7 +110,14 @@ export default class FactionResolver {
           keys: [FactionKey.Neutral],
         })
         if (neutralFactions.length < 1) {
-          const message = `Could not resolve neutral faction "${FactionKey.Neutral}" for factions array.`
+          const message = `Could not resolve neutral faction "${FactionKey.Neutral}" for factions array: None found.`
+          FactionResolver.logger.error(message)
+          throw Error(message)
+        } else if (neutralFactions.length > 1) {
+          // TODO: add >1 check to other resolvers
+          const message = `Could not resolve neutral faction "${
+            FactionKey.Neutral
+          }" for factions array: Found more than one: "${JSON.stringify(neutralFactions)}".`
           FactionResolver.logger.error(message)
           throw Error(message)
         }
