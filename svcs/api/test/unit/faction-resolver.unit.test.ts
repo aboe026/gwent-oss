@@ -195,6 +195,214 @@ describe('faction-resolver', () => {
         ],
       })
     })
+    it('throws error if dlc not found', async () => {
+      const factionId = new ObjectId()
+      const dlcId = new ObjectId()
+      await testResolveFromArray({
+        factions: [
+          {
+            _id: factionId,
+            created: new Date(),
+            image: 'faction-image',
+            key: FactionKey.Monsters,
+            name: 'faction-name',
+            stats: TestUtil.getStats(),
+            dlc: dlcId,
+          },
+        ],
+        error: `Could not resolve dlc "${dlcId}" for faction ${factionId} in array.`,
+        dlcResolveCalls: [[[dlcId]]],
+      })
+    })
+    it('calls to resolveFromObject without neutrals or dlc', async () => {
+      const faction: FactionDbObject = {
+        _id: new ObjectId(),
+        created: new Date(),
+        image: 'faction-image',
+        key: FactionKey.Monsters,
+        name: 'faction-name',
+        stats: TestUtil.getStats(),
+      }
+      await testResolveFromArray({
+        factions: [faction],
+        factionResolveResponse: {
+          created: faction.created,
+          id: faction._id.toString(),
+          image: faction.image,
+          key: faction.key as FactionKey,
+          name: faction.name,
+          stats: faction.stats,
+        },
+      })
+    })
+    it('calls to resolveFromObject requesting neutrals without providing', async () => {
+      const faction: FactionDbObject = {
+        _id: new ObjectId(),
+        created: new Date(),
+        image: 'faction-image',
+        key: FactionKey.Monsters,
+        name: 'faction-name',
+        stats: TestUtil.getStats(),
+      }
+      await testResolveFromArray({
+        factions: [faction],
+        factionResolveResponse: {
+          created: faction.created,
+          id: faction._id.toString(),
+          image: faction.image,
+          key: faction.key as FactionKey,
+          name: faction.name,
+          stats: faction.stats,
+        },
+        neutralStats: true,
+        factionGetResponse: [
+          {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-neutral-image',
+            key: FactionKey.Neutral,
+            name: 'faction-neutral-name',
+            stats: TestUtil.getStats(1),
+          },
+        ],
+        factionGetCalls: [
+          [
+            {
+              keys: [FactionKey.Neutral],
+            },
+          ],
+        ],
+      })
+    })
+    it('calls to resolveFromObject with dlc without providing', async () => {
+      const dlc: Dlc = {
+        created: new Date(),
+        id: new ObjectId().toString(),
+        image: 'dlc-image',
+        key: DlcKey.BloodAndWine,
+        name: 'dlc-name',
+      }
+      const faction: FactionDbObject = {
+        _id: new ObjectId(),
+        created: new Date(),
+        image: 'faction-image',
+        key: FactionKey.Monsters,
+        name: 'faction-name',
+        stats: TestUtil.getStats(),
+        dlc: new ObjectId(dlc.id),
+      }
+      await testResolveFromArray({
+        factions: [faction],
+        factionResolveResponse: {
+          created: faction.created,
+          id: faction._id.toString(),
+          image: faction.image,
+          key: faction.key as FactionKey,
+          name: faction.name,
+          stats: faction.stats,
+          dlc,
+        },
+        dlcResolveCalls: [[[new ObjectId(dlc.id)]]],
+        dlcResolveResponse: [dlc],
+      })
+    })
+  })
+  describe('resolveStats', () => {
+    it('returns faction stats if not neutral and no neutral requested', () => {
+      expect(
+        FactionResolver.resolveStats({
+          faction: {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-image',
+            key: FactionKey.Monsters,
+            name: 'faction-name',
+            stats: TestUtil.getStats(),
+          },
+        })
+      ).toEqual(TestUtil.getStats())
+    })
+    it('returns faction stats if neutral and no neutral requested', () => {
+      expect(
+        FactionResolver.resolveStats({
+          faction: {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-image',
+            key: FactionKey.Neutral,
+            name: 'faction-name',
+            stats: TestUtil.getStats(),
+          },
+        })
+      ).toEqual(TestUtil.getStats())
+    })
+    it('returns faction stats if neutral and neutral requested', () => {
+      expect(
+        FactionResolver.resolveStats({
+          faction: {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-image',
+            key: FactionKey.Neutral,
+            name: 'faction-name',
+            stats: TestUtil.getStats(),
+          },
+          neutral: {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-neutral-image',
+            key: FactionKey.Neutral,
+            name: 'faction-neutral-image',
+            stats: TestUtil.getStats(1),
+          },
+        })
+      ).toEqual(TestUtil.getStats())
+    })
+    it('returns combined faction stats if not neutral and neutral requested', () => {
+      expect(
+        FactionResolver.resolveStats({
+          faction: {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-image',
+            key: FactionKey.Monsters,
+            name: 'faction-name',
+            stats: TestUtil.getStats(),
+          },
+          neutral: {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-neutral-image',
+            key: FactionKey.Neutral,
+            name: 'faction-neutral-image',
+            stats: TestUtil.getStats(1),
+          },
+        })
+      ).toEqual({
+        agile: 3,
+        avenger: 5,
+        berserker: 7,
+        bond: 9,
+        close: 11,
+        decoy: 13,
+        heroes: 15,
+        horn: 17,
+        mardroeme: 19,
+        medic: 21,
+        morale: 23,
+        muster: 25,
+        ranged: 27,
+        scorch: 29,
+        siege: 31,
+        specials: 33,
+        spy: 35,
+        strengthAverage: 18.511627906976745,
+        strengthTotal: 41,
+        strengths: 39,
+        units: 43,
+        weather: 45,
+      })
+    })
   })
 })
 
@@ -375,7 +583,7 @@ async function testResolveFromArray({
   if (error) {
     await expect(promise).rejects.toThrow(Error(error))
   } else {
-    await expect(promise).resolves.toEqual(factionResolveResponse)
+    await expect(promise).resolves.toEqual([factionResolveResponse])
   }
 
   expect(dlcResolveSpy.mock.calls).toEqual(dlcResolveCalls)

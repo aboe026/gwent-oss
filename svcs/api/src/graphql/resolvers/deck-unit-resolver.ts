@@ -35,6 +35,7 @@ export default class DeckUnitResolver {
     })
     return deckUnits.map((deckUnit) => {
       const unit = resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString()) as Unit
+      // TODO: throw error if not found
       return {
         artStyle: deckUnit.artStyle,
         unit,
