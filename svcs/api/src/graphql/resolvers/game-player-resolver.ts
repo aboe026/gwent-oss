@@ -36,7 +36,7 @@ export default class GamePlayerResolver {
           neutrals: neutralFactionStats,
         })
         if (!faction) {
-          const message = `Could not resolve faction "${player.deck.from.faction}" for game player "${player.user}"`
+          const message = `Could not resolve faction "${player.deck.from.faction}" for game player "${player.user}".`
           GamePlayerResolver.logger.error(message)
           throw Error(message)
         }
@@ -47,7 +47,7 @@ export default class GamePlayerResolver {
           neutralStats: neutralLeaderStats,
         })
         if (!leader) {
-          const message = `Could not resolve leader "${player.deck.from.leader}" for game player "${player.user}"`
+          const message = `Could not resolve leader "${player.deck.from.leader}" for game player "${player.user}".`
           GamePlayerResolver.logger.error(message)
           throw Error(message)
         }
@@ -60,7 +60,7 @@ export default class GamePlayerResolver {
     }
     const resolvedUser = user || (await UserResolver.resolveById(player.user))
     if (!resolvedUser) {
-      const message = `Could not resolve user "${player.user}" for game player "${player.user}"`
+      const message = `Could not resolve user "${player.user}" as game player.`
       GamePlayerResolver.logger.error(message)
       throw Error(message)
     }
