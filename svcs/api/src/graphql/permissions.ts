@@ -123,21 +123,22 @@ export class Permissions {
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     try {
-      const decks = await DeckStore.getByIds([deckId])
-      if (!decks || decks.length === 0) {
+      // TODO: have other "greater than 1" for unique constraints throw error instead of debug
+      const deck = await DeckStore.getById({
+        id: deckId,
+        options: {
+          projection: {
+            _id: 0,
+            user: 1,
+          },
+        },
+      })
+      if (!deck) {
         Permissions.logger.debug(
           `ownsDeck check failed operation "${info.fieldName}" due to deck with ID "${deckId}" not existing.`
         )
         return Error(NOT_AUTHORIZED_MESSAGE)
       }
-      if (decks && decks.length > 1) {
-        // TODO: have other "greater than 1" for unique constraints throw error instead of debug
-        Permissions.logger.error(
-          `ownsDeck check failed operation "${info.fieldName}" due to deck with ID "${deckId}" existing more than once.`
-        )
-        return Error(NOT_AUTHORIZED_MESSAGE)
-      }
-      const deck = decks[0]
       if (deck.user.toString() !== userId.toString()) {
         Permissions.logger.debug(
           `ownsDeck check failed operation "${info.fieldName}" due to deck with ID "${deckId}" not being owned by user "${userId}".`

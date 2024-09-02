@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import { DeckDbObject, UnitStats } from '@gwent/graphql-schema/database-typings'
 import DeckStore, { AddDeckUnitInput } from '../../src/database/stores/deck-store'
 import Store from '../../src/database/stores/store'
+import TestUtil from '../test-util'
 
 describe('deck-store', () => {
   describe('add', () => {
@@ -78,57 +79,43 @@ describe('deck-store', () => {
       ])
     })
   })
-  describe('getByIds', () => {
-    it('calls to read with empty array if ids empty', async () => {
+  describe('getById', () => {
+    it('returns undefined if deck not found', async () => {
+      const deckId = new ObjectId()
       const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([])
 
-      await expect(DeckStore.getByIds([])).resolves.toEqual([])
+      await expect(
+        DeckStore.getById({
+          id: deckId,
+        })
+      ).resolves.toEqual(undefined)
 
       expect(readSpy.mock.calls).toEqual([
         [
           {
             filter: {
-              _id: {
-                $in: [],
-              },
+              _id: deckId,
             },
           },
         ],
       ])
     })
-    it('calls to read with id string', async () => {
-      const id = new ObjectId()
+    it('returns deck if found', async () => {
+      const deck = TestUtil.getDbDeck()
 
-      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([])
+      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([deck])
 
-      await expect(DeckStore.getByIds([id.toString()])).resolves.toEqual([])
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              _id: {
-                $in: [id],
-              },
-            },
-          },
-        ],
-      ])
-    })
-    it('calls to read with id ObjectId', async () => {
-      const id = new ObjectId()
-
-      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([])
-
-      await expect(DeckStore.getByIds([id])).resolves.toEqual([])
+      await expect(
+        DeckStore.getById({
+          id: deck._id,
+        })
+      ).resolves.toEqual(deck)
 
       expect(readSpy.mock.calls).toEqual([
         [
           {
             filter: {
-              _id: {
-                $in: [id],
-              },
+              _id: deck._id,
             },
           },
         ],

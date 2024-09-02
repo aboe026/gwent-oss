@@ -3,8 +3,11 @@ import { DeckUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
 import UnitResolver from './unit-resolver'
 import { getUniqueItems } from '@gwent/utils'
 import { ObjectId } from 'mongodb'
+import { getLogger } from 'log4js'
 
 export default class DeckUnitResolver {
+  private static logger = getLogger('deck-unit-resolver')
+
   static async resolveFromObject({
     deckUnit,
     neutralStats,
@@ -12,12 +15,18 @@ export default class DeckUnitResolver {
     deckUnit: DeckUnitDbObject
     neutralStats?: boolean
   }): Promise<DeckUnit> {
+    const unit = await UnitResolver.resolveFromId({
+      id: deckUnit.unit,
+      neutralStats,
+    })
+    if (!unit) {
+      const message = `Could not resolve unit "${deckUnit.unit}" as deckUnit.`
+      DeckUnitResolver.logger.error(message)
+      throw Error(message)
+    }
     return {
       artStyle: deckUnit.artStyle,
-      unit: await UnitResolver.resolveFromId({
-        id: deckUnit.unit,
-        neutralStats,
-      }),
+      unit,
     }
   }
 

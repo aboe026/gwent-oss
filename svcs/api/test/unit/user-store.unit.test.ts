@@ -116,39 +116,17 @@ describe('user-store', () => {
       })
     })
   })
-  describe('getByName', () => {
-    it('throws error if user does not exist', async () => {
+  describe('getByNames', () => {
+    it('returns empty array if user does not exist', async () => {
       const name = 'user-name'
-      await testGetByName({
+      await testGetByNames({
         name,
         readResponse: [],
-        error: `User with name "${name}" does not exist`,
       })
     })
-    it('throws error if multiple users with name exist', async () => {
+    it('returns users without password if one exists', async () => {
       const name = 'user-name'
-      await testGetByName({
-        name,
-        readResponse: [
-          {
-            _id: new ObjectId(),
-            created: new Date(),
-            name,
-            password: 'user-password',
-          },
-          {
-            _id: new ObjectId(),
-            created: new Date(),
-            name,
-            password: 'user-password',
-          },
-        ],
-        error: `Multiple users found with name "${name}"`,
-      })
-    })
-    it('returns user without password if one exists', async () => {
-      const name = 'user-name'
-      await testGetByName({
+      await testGetByNames({
         name,
         readResponse: [
           {
@@ -367,43 +345,38 @@ async function testGetByIds({ ids, readResponse }: { ids: (string | ObjectId)[];
   expect(traceSpy.mock.calls).toEqual([[`Getting users with IDs "${JSON.stringify(ids)}"`]])
 }
 
-async function testGetByName({
-  name,
-  readResponse,
-  error,
-}: {
-  name: string
-  readResponse: UserDbObject[]
-  error?: string
-}) {
+async function testGetByNames({ name, readResponse }: { name: string; readResponse: UserDbObject[] }) {
   const traceSpy = jest.fn().mockImplementation()
-  const errorSpy = jest.fn().mockImplementation()
   UserStore['logger'] = {
+    isTraceEnabled: jest.fn().mockReturnValue(true),
     trace: traceSpy,
-    error: errorSpy,
   } as any
   const readSpy = jest.spyOn(UserStore as any, 'read').mockResolvedValue(readResponse)
 
-  if (error) {
-    await expect(UserStore.getByName(name)).rejects.toThrow(Error(error))
-  } else {
-    await expect(UserStore.getByName(name)).resolves.toEqual({
-      ...readResponse[0],
-      password: '',
-    })
-  }
+  await expect(UserStore.getByNames([name])).resolves.toEqual(
+    readResponse.length > 0
+      ? [
+          {
+            ...readResponse[0],
+            password: '',
+          },
+        ]
+      : []
+  )
 
   expect(readSpy.mock.calls).toEqual([
     [
       {
         filter: {
-          name,
+          name: {
+            $in: [name],
+          },
         },
+        options: undefined,
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual([[`Getting user with name "${name}"`]])
-  expect(errorSpy.mock.calls).toEqual(error ? [[error]] : [])
+  expect(traceSpy.mock.calls).toEqual([[`Getting users with names "["${name}"]"`]])
 }
 
 async function testValidate({

@@ -1,4 +1,4 @@
-import { Document, ObjectId } from 'mongodb'
+import { Document, FindOptions, ObjectId } from 'mongodb'
 
 import { DeckDbObject, UnitStats } from '@gwent/graphql-schema/database-typings'
 import { getLogger } from 'log4js'
@@ -80,14 +80,23 @@ export default class DeckStore extends Store {
    * @param ids The ObjectIds of the decks to retrieve
    * @returns The decks of the given IDs
    */
-  static async getByIds(ids: (ObjectId | string)[]): Promise<DeckDbObject[]> {
-    return DeckStore.read<DeckDbObject[]>({
+  static async getById({
+    id,
+    options,
+  }: {
+    id: ObjectId | string
+    options?: FindOptions
+  }): Promise<DeckDbObject | undefined> {
+    const decks = await DeckStore.read<DeckDbObject[]>({
       filter: {
-        _id: {
-          $in: ids.map((id) => new ObjectId(id)),
-        },
+        _id: new ObjectId(id),
       },
+      options,
     })
+    // TODO: throw error if multiple returned?
+    if (decks && decks.length > 0) {
+      return decks[0]
+    }
   }
 }
 

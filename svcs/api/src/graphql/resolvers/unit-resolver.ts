@@ -17,8 +17,11 @@ import EffectStore from '../../database/stores/effect-store'
 import FactionStore from '../../database/stores/faction-store'
 import { prettyPrintList } from '../../util/string-util'
 import { getUniqueItems, toTitleCase } from '@gwent/utils'
+import { getLogger } from 'log4js'
 
 export default class UnitResolver {
+  private static logger = getLogger('unit-resolver')
+
   static async resolveFromObject({
     dlc,
     effects,
@@ -49,7 +52,9 @@ export default class UnitResolver {
           neutrals: neutralStats,
         })
     if (!resolvedFaction) {
-      throw Error(`Could not resolve faction "${unit.faction}" on unit "${unit._id}"`)
+      const message = `Could not resolve faction "${unit.faction}" on unit "${unit._id}".`
+      UnitResolver.logger.error(message)
+      throw Error(message)
     }
     return {
       combats: unit.combats as Combat[],
@@ -71,13 +76,24 @@ export default class UnitResolver {
     }
   }
 
-  static async resolveFromId({ id, neutralStats }: { id: ObjectId | string; neutralStats?: boolean }): Promise<Unit> {
-    return (
-      await UnitResolver.resolveFromIds({
-        ids: [id],
-        neutralStats,
-      })
-    )[0]
+  static async resolveFromId({
+    id,
+    neutralStats,
+  }: {
+    id: ObjectId | string
+    neutralStats?: boolean
+  }): Promise<Unit | undefined> {
+    const units = await UnitResolver.resolveFromIds({
+      ids: [id],
+      neutralStats,
+    })
+    if (units.length > 1) {
+      const message = `More than one unit resolved for "${id}".`
+      UnitResolver.logger.error(message)
+      throw Error(message)
+    } else if (units.length === 1) {
+      return units[0]
+    }
   }
 
   static async resolveFromIds({
@@ -93,8 +109,31 @@ export default class UnitResolver {
       return []
     }
     const units = await UnitStore.get({
-      ids: ids,
+      ids: getUniqueItems(ids),
     })
+    const missingUnits: string[] = []
+    for (const id of ids) {
+      if (!units.find((unit) => unit._id.toString() === id.toString())) {
+        missingUnits.push(id.toString())
+      }
+    }
+    if (missingUnits.length > 0) {
+      const message = `Could not resolved units "${missingUnits.join(',')}".`
+      UnitResolver.logger.error(message)
+      throw Error(message)
+    }
+    if (units.length !== ids.length) {
+      const extraIds = units.map((unit) => unit._id.toString())
+      for (const id of ids) {
+        const index = extraIds.indexOf(id.toString())
+        if (index >= 0) {
+          extraIds.splice(index, 1)
+        }
+      }
+      const message = `Received more units "${extraIds.join(',')}" than ids to resolve: "${ids.join(',')}".`
+      UnitResolver.logger.error(message)
+      throw Error(message)
+    }
     return UnitResolver.resolveFromArray({
       units,
       factions,
@@ -111,17 +150,6 @@ export default class UnitResolver {
     units: UnitDbObject[]
     neutralStats?: boolean
   }): Promise<Unit[]> {
-    const dlcIds = getUniqueItems<ObjectId>(units.map((unit) => unit.dlc))
-    const effectIds: ObjectId[] = []
-    for (const unit of units) {
-      if (unit.effects) {
-        for (const effect of unit.effects) {
-          if (!effectIds.includes(effect)) {
-            effectIds.push(effect)
-          }
-        }
-      }
-    }
     const factionIds = getUniqueItems<ObjectId>(units.map((unit) => unit.faction))
     let resolvedFactionIds: string[] = []
     if (factions) {
@@ -134,18 +162,23 @@ export default class UnitResolver {
       }
     }
 
-    const dlcs =
-      dlcIds.length > 0
-        ? await DlcStore.get({
-            ids: dlcIds,
-          })
-        : []
-    const effects =
-      effectIds.length > 0
-        ? await EffectStore.get({
-            ids: effectIds,
-          })
-        : []
+    const effectIds: string[] = []
+    for (const unit of units) {
+      if (unit.effects) {
+        for (const effect of unit.effects) {
+          if (!effectIds.includes(effect.toString())) {
+            effectIds.push(effect.toString())
+          }
+        }
+      }
+    }
+
+    const dlcs = await DlcStore.get({
+      ids: getUniqueItems<ObjectId>(units.map((unit) => unit.dlc)),
+    })
+    const effects = await EffectStore.get({
+      ids: effectIds,
+    })
     const dbFactions: FactionDbObject[] = []
     if (factions) {
       dbFactions.push(...factions)
@@ -159,21 +192,64 @@ export default class UnitResolver {
     }
 
     const resolvedUnits: Unit[] = []
+    let neutralFaction: FactionDbObject | undefined = undefined
+    if (neutralStats) {
+      neutralFaction = dbFactions.find((faction) => faction.key === FactionKey.Neutral)
+      if (!neutralFaction) {
+        const neutralFactions = await FactionStore.get({
+          keys: [FactionKey.Neutral],
+        })
+        if (neutralFactions.length === 0) {
+          const message = `Could not resolve neutral faction "${FactionKey.Neutral}" for units in array.`
+          UnitResolver.logger.error(message)
+          throw Error(message)
+        } else if (neutralFactions.length > 1) {
+          const message = `More than 1 neutral faction for units in array: "${JSON.stringify(neutralFactions)}".`
+          UnitResolver.logger.error(message)
+          throw Error(message)
+        }
+        neutralFaction = neutralFactions[0]
+      }
+    }
+
     for (const unit of units) {
-      const unitDlc = unit.dlc && dlcs.find((dlc) => dlc._id.toString() === unit.dlc?.toString())
-      const unitEffects =
-        unit.effects &&
-        (unit.effects
-          .map((unitEffect) => effects.find((effect) => effect._id.toString() === unitEffect.toString()))
-          .filter((effect) => effect !== undefined) as EffectDbObject[])
       const unitFaction = dbFactions.find((faction) => faction._id.toString() === unit.faction.toString())
+      if (!unitFaction) {
+        const message = `Could not resolve faction "${unit.faction}" for unit "${unit._id}" in array.`
+        UnitResolver.logger.error(message)
+        throw Error(message)
+      }
+
+      let unitDlc: DlcDbObject | undefined = undefined
+      if (unit.dlc) {
+        unitDlc = dlcs.find((dlc) => dlc._id.toString() === unit.dlc?.toString())
+        if (!unitDlc) {
+          const message = `Could not resolve dlc "${unit.dlc}" for unit "${unit._id}" in array.`
+          UnitResolver.logger.error(message)
+          throw Error(message)
+        }
+      }
+
+      const unitEffects: EffectDbObject[] = []
+      if (unit.effects) {
+        for (const unitEffect of unit.effects) {
+          const matchedEffect = effects.find((effect) => effect._id.toString() === unitEffect.toString())
+          if (!matchedEffect) {
+            const message = `Could not resolve effect "${unitEffect}" for unit "${unit._id}" in array.`
+            UnitResolver.logger.error(message)
+            throw Error(message)
+          }
+          unitEffects.push(matchedEffect)
+        }
+      }
+
       resolvedUnits.push(
         await UnitResolver.resolveFromObject({
           unit,
           dlc: unitDlc,
           effects: unitEffects,
           faction: unitFaction,
-          neutral: dbFactions.find((faction) => faction.key === FactionKey.Neutral),
+          neutral: neutralFaction,
           neutralStats,
         })
       )

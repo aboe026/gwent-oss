@@ -94,30 +94,26 @@ export default class UserStore extends Store {
   /**
    * Retrieve a user from the database by their name.
    *
-   * @param name The name of the user to retrieve.
+   * @param names The name of the user to retrieve.
    * @returns The User database object.
    * @throws Error if the user with given name does not exist.
    */
-  static async getByName(name: string, options?: FindOptions<Document>): Promise<UserDbObject> {
-    UserStore.logger.trace(`Getting user with name "${name}"`)
+  static async getByNames(names: string[], options?: FindOptions<Document>): Promise<UserDbObject[]> {
+    if (UserStore.logger.isTraceEnabled()) {
+      UserStore.logger.trace(`Getting users with names "${JSON.stringify(names)}"`)
+    }
     const response = await UserStore.read<UserDbObject[]>({
       filter: {
-        name,
+        name: {
+          $in: names,
+        },
       },
       options,
     })
-    if (!response || response.length === 0) {
-      const message = `User with name "${name}" does not exist`
-      UserStore.logger.error(message)
-      throw Error(message)
-    } else if (response && response.length > 1) {
-      const message = `Multiple users found with name "${name}"`
-      UserStore.logger.error(message)
-      throw Error(message)
-    }
-    const user = response[0]
-    user.password = '' // for security, ensure password isn't exposed
-    return user
+    return response.map((user) => {
+      user.password = '' // for security, ensure password isn't exposed
+      return user
+    })
   }
 
   /**

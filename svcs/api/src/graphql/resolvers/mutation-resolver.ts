@@ -4,7 +4,7 @@ import { Faction, FactionKey, MutationResolvers, User } from '@gwent/graphql-sch
 import DeckStore from '../../database/stores/deck-store'
 import FactionStore from '../../database/stores/faction-store'
 import GameStore from '../../database/stores/game-store'
-import { getDeckStats } from '@gwent/utils'
+import { getDeckStats, getUniqueItems } from '@gwent/utils'
 import { getRandomSubset } from '@gwent/utils'
 import LeaderStore from '../../database/stores/leader-store'
 import UnitStore from '../../database/stores/unit-store'
@@ -137,7 +137,9 @@ const MutationResolver: MutationResolvers<any, any> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   addGame: async (parent, args, context, info) => {
     const creatorId = context.session.user._id
-    const opponentNames = args.opponentNames.filter((name) => name !== context.session.user.name)
+    const opponentNames = getUniqueItems<string>(
+      args.opponentNames.filter((name) => name !== context.session.user.name)
+    )
     if (opponentNames.length < PLAYER_COUNTS.Min - 1) {
       logger.debug(`addGame failed for user ${creatorId}": Not enough opponents for game at "${opponentNames.length}".`)
       return Error(`Not enough opponents for game at "${opponentNames.length}", minimum is "${PLAYER_COUNTS.Min - 1}".`)
@@ -150,34 +152,31 @@ const MutationResolver: MutationResolvers<any, any> = {
         `Excessive number of opponents for game at "${opponentNames.length}", maximum is "${PLAYER_COUNTS.Max - 1}".`
       )
     }
-    const opponents: User[] = []
+    const opponents = await UserStore.getByNames(opponentNames)
+    const resolvedOpponents: User[] = []
     const errors = []
     for (const opponentName of opponentNames) {
-      try {
-        const user = await UserStore.getByName(opponentName)
-        opponents.push(UserResolver.resolveByObject(user))
-      } catch (err: unknown) {
-        if (err instanceof Error && err.message === `User with name "${opponentName}" does not exist`) {
-          logger.debug(`addGame failed for user ${creatorId}": User with name "${opponentName}" does not exist.`)
-          // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
-          errors.push(err.message)
-        } else {
-          throw err
-        }
+      const opponent = opponents.find((opponent) => opponent.name === opponentName)
+      if (!opponent) {
+        errors.push(`User with name "${opponentName}" does not exist`)
+      } else {
+        resolvedOpponents.push(UserResolver.resolveByObject(opponent))
       }
     }
     if (errors.length > 0) {
-      return Error(errors.join(', ')) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      const message = `${errors.join(',')}.`
+      logger.debug(`addGame failed for user ${creatorId}": "${message}"`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const game = await GameStore.add({
       creatorId,
-      opponentIds: opponents.map((opponent) => opponent.id),
+      opponentIds: resolvedOpponents.map((opponent) => opponent.id),
     })
     // neutral stats resolving not really needed here (since no decks are set when game initially created)
     // but left in for good measure
     return GameResolver.resolveFromObject({
       game,
-      users: opponents,
+      users: resolvedOpponents,
       neutralFactionStats: RequestedFields.getArgument(info, 'addGame.players.faction.stats.neutrals'),
       neutralLeaderStats: RequestedFields.getArgument(info, 'addGame.players.leader.faction.stats.neutrals'),
     })
@@ -370,36 +369,32 @@ const MutationResolver: MutationResolvers<any, any> = {
     const userId = context.session.user._id
     const gameId = args.game
     const deckId = args.deck
-    const decks = await DeckStore.getByIds([deckId])
-    if (!decks || decks.length === 0) {
+    const deck = await DeckStore.getById({
+      id: deckId,
+    })
+    if (!deck) {
       const message = `Deck with ID "${deckId}" does not exist`
-      logger.error(message)
+      logger.error(`Cannot set deck for user "${userId}": ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    if (decks.length > 1) {
-      const message = `Too many decks at "${decks.length}" with ID "${deckId}"`
-      logger.error(`Cannot set deck: ${message}`)
-      return Error(message)
-    }
-    const deck = decks[0]
 
     const game = await GameStore.getById({
       id: gameId,
     })
     if (!game) {
       const message = `Game with ID "${gameId}" does not exist`
-      logger.error(`Cannot set deck: ${message}`)
+      logger.error(`Cannot set deck for user "${userId}": ${message}`)
       return Error(message)
     }
 
     const player = game.players.find((player) => player.user.toString() === userId.toString())
     if (!player) {
       const message = `User "${userId}" is not a player on game "${gameId}"`
-      logger.error(`Cannot set deck: ${message}`)
+      logger.error(`Cannot set deck on game "${gameId}" for user "${userId}": ${message}`)
       return Error(message)
     }
-    if (player.deck.from !== null) {
-      logger.error(`Cannot set deck: User "${userId}" has already chosen deck "${player.deck.from}"`)
+    if (player.deck.from !== null && player.deck.from !== undefined) {
+      logger.error(`Cannot set deck on game "${gameId}" for user "${userId}": already chose deck "${player.deck.from}"`)
       return Error('Deck already set')
     }
 
@@ -412,23 +407,20 @@ const MutationResolver: MutationResolvers<any, any> = {
 
     const updatedGame = await GameStore.setDeck({
       deck,
-      gameId: gameId,
+      gameId,
       hand,
       undrawn,
       userId,
     })
     if (!updatedGame) {
-      logger.error(
-        `Could not set deck "${gameId}" on game "${gameId}" for player "${userId}": game updated underneath operation in probable race condition collision`
-      )
-      return Error(
-        `Could not set deck "${deckId}" on game "${gameId}": game updated underneath operation in probable race condition collision`
-      ) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      const message = 'Game updated underneath operation in probable race condition collision.'
+      logger.error(`Could not set deck "${gameId}" on game "${gameId}" for player "${userId}": ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const updatedPlayer = updatedGame.players.find((gamePlayer) => gamePlayer.user.toString() === userId.toString())
     if (!updatedPlayer) {
-      logger.error(`Could not get player "${userId}" after setting deck on game "${gameId}"`)
-      return Error('Could not get player after setting deck on game')
+      logger.error(`Could not get player "${userId}" after setting deck on game "${gameId}".`)
+      return Error('Could not get player after setting deck on game.')
     }
     return GameDeckResolver.resolveFromObject({
       gameDeck: updatedPlayer.deck,

@@ -383,44 +383,19 @@ describe('permissions', () => {
       await testOwnsDeck({
         fieldName,
         deckId,
-        decksResponse: undefined,
+        deckResponse: undefined,
         error: NOT_AUTHORIZED_MESSAGE,
         debugCalls: [[`ownsDeck check failed operation "${fieldName}" due to deck with ID "${deckId}" not existing.`]],
       })
     })
-    it('returns error if DeckStore getByIds returns empty array', async () => {
+    it('returns error if DeckStore getById returns undefined', async () => {
       const deckId = new ObjectId().toString()
       await testOwnsDeck({
         fieldName,
         deckId,
-        decksResponse: [],
+        deckResponse: undefined,
         error: NOT_AUTHORIZED_MESSAGE,
         debugCalls: [[`ownsDeck check failed operation "${fieldName}" due to deck with ID "${deckId}" not existing.`]],
-      })
-    })
-    it('returns error if DeckStore getByIds returns more than 1 in array', async () => {
-      const userId = new ObjectId()
-      const deckId = new ObjectId().toString()
-      const deck: DeckDbObject = {
-        _id: new ObjectId(deckId),
-        created: new Date(),
-        faction: new ObjectId(),
-        leader: new ObjectId(),
-        name: 'deck-name',
-        // have "getFakeStats" method
-        stats: {} as UnitStats,
-        units: [],
-        user: userId,
-      }
-      await testOwnsDeck({
-        fieldName,
-        userId,
-        deckId,
-        decksResponse: [deck, deck],
-        error: NOT_AUTHORIZED_MESSAGE,
-        errorCalls: [
-          [`ownsDeck check failed operation "${fieldName}" due to deck with ID "${deckId}" existing more than once.`],
-        ],
       })
     })
     it('returns error if deck user does not match context user', async () => {
@@ -441,7 +416,7 @@ describe('permissions', () => {
         fieldName,
         userId,
         deckId,
-        decksResponse: [deck],
+        deckResponse: deck,
         error: NOT_AUTHORIZED_MESSAGE,
         debugCalls: [
           [
@@ -468,7 +443,7 @@ describe('permissions', () => {
         fieldName,
         userId,
         deckId,
-        decksResponse: [deck],
+        deckResponse: deck,
       })
     })
   })
@@ -592,7 +567,7 @@ async function testOwnsDeck({
   deckId,
   fieldName,
   decksError,
-  decksResponse,
+  deckResponse,
   error,
   getByIdsCalls,
   debugCalls = [],
@@ -602,7 +577,7 @@ async function testOwnsDeck({
   deckId?: string
   fieldName: string
   decksError?: string
-  decksResponse?: DeckDbObject[]
+  deckResponse?: DeckDbObject
   error?: string
   getByIdsCalls?: any[][]
   debugCalls?: any[][]
@@ -624,11 +599,11 @@ async function testOwnsDeck({
   const info = {
     fieldName,
   }
-  const getByIdsSpy = jest.spyOn(DeckStore, 'getByIds')
+  const getByIdSpy = jest.spyOn(DeckStore, 'getById')
   if (decksError) {
-    getByIdsSpy.mockRejectedValue(Error(decksError))
+    getByIdSpy.mockRejectedValue(Error(decksError))
   } else {
-    getByIdsSpy.mockResolvedValue(decksResponse as any)
+    getByIdSpy.mockResolvedValue(deckResponse as any)
   }
   const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
@@ -641,7 +616,21 @@ async function testOwnsDeck({
     error ? Error(error) : true
   )
 
-  expect(getByIdsSpy.mock.calls).toEqual(getByIdsCalls || [[[deckId]]])
+  expect(getByIdSpy.mock.calls).toEqual(
+    getByIdsCalls || [
+      [
+        {
+          id: deckId,
+          options: {
+            projection: {
+              _id: 0,
+              user: 1,
+            },
+          },
+        },
+      ],
+    ]
+  )
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
