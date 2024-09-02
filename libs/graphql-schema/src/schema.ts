@@ -152,7 +152,7 @@ export default gql`
     round: GameRound! @column
     status: GameStatus!
     updated: DateTime! @column
-    victors: [User!]! @column
+    victors: [User!]! @column(overrideType: "Array<ObjectId>")
   }
 
   type GameDeck @entity {

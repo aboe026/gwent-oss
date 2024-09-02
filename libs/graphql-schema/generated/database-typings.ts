@@ -484,7 +484,7 @@ export type GameDbObject = {
   players: Array<GamePlayerDbObject>,
   round: GameRound,
   updated: any,
-  victors: Array<User>,
+  victors: Array<ObjectId>,
 };
 
 export type GameDeckDbObject = {
