@@ -17,6 +17,9 @@ import {
   Effect,
   Faction,
   FactionKey,
+  Game,
+  GamePlayer,
+  GameStatus,
   Leader,
   Unit,
   UnitStats,
@@ -78,11 +81,21 @@ export default class TestUtil {
     }
   }
 
-  static getUnit({ id }: { id?: ObjectId | string }): Unit {
+  static getUnit({
+    id,
+    created,
+    faction,
+  }: {
+    id?: ObjectId | string
+    created?: Date
+    faction?: ObjectId | string
+  }): Unit {
     return {
-      created: new ObjectId(),
+      created: created || new Date(),
       deckable: true,
-      faction: TestUtil.getFaction({}),
+      faction: TestUtil.getFaction({
+        id: faction,
+      }),
       id: (id || new ObjectId()).toString(),
       images: ['unit-image'],
       name: 'unit-name',
@@ -228,15 +241,19 @@ export default class TestUtil {
   }
 
   static getDbGame({
+    id,
+    created,
     creator,
     players,
   }: {
+    id?: ObjectId | string
+    created?: Date
     creator?: ObjectId | string
     players?: GamePlayerDbObject[]
   }): GameDbObject {
     return {
-      _id: new ObjectId(),
-      created: new Date(),
+      _id: id ? new ObjectId(id) : new ObjectId(),
+      created: created || new Date(),
       creator: creator ? new ObjectId(creator) : new ObjectId(),
       players: players || [
         {
@@ -266,6 +283,28 @@ export default class TestUtil {
         current: 0,
         maximum: MAX_ROUNDS,
       },
+      updated: new Date(),
+      victors: [],
+    }
+  }
+
+  static getGame({ id, players }: { id?: ObjectId | string; players?: GamePlayer[] }): Game {
+    return {
+      created: new Date(),
+      creator: TestUtil.getUser({}),
+      id: (id || new ObjectId()).toString(),
+      players: players || [
+        {
+          ready: false,
+          rounds: [],
+          user: TestUtil.getUser({}),
+        },
+      ],
+      round: {
+        current: 0,
+        maximum: MAX_ROUNDS,
+      },
+      status: GameStatus.Decking,
       updated: new Date(),
       victors: [],
     }

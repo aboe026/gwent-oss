@@ -269,11 +269,11 @@ const MutationResolver: MutationResolvers<any, any> = {
     }
 
     const updatedGame = await GameStore.setReady({
-      gameId: gameId,
+      gameId,
       userId,
     })
     if (!updatedGame) {
-      const message = 'Could not set player as ready in probably race condition collision'
+      const message = 'Could not set player as ready in probably race condition collision.'
       logger.error(`${logPrefix} ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
@@ -323,7 +323,7 @@ const MutationResolver: MutationResolvers<any, any> = {
     const redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
     const cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
     if (!cardToRedraw) {
-      const message = 'Unit does not exist in hand.'
+      const message = 'Invalid unit, does not exist in hand.'
       logger.error(`${logPrefix} ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
@@ -347,7 +347,7 @@ const MutationResolver: MutationResolvers<any, any> = {
 
     const updatedGame = await GameStore.redraw({
       currentRedraws: player.deck.redraws,
-      gameId: gameId,
+      gameId,
       newHand,
       newRedraws,
       newUndrawn,
@@ -355,7 +355,7 @@ const MutationResolver: MutationResolvers<any, any> = {
     })
 
     if (!updatedGame) {
-      const message = 'Could not update game with new card in probably race condition collision'
+      const message = 'Could not update game with new card in probably race condition collision.'
       logger.error(`${logPrefix} ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }

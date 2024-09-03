@@ -6,6 +6,7 @@ import {
   FactionDbObject,
   GameDbObject,
   LeaderDbObject,
+  RedrawDbObject,
   UnitDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -33,7 +34,7 @@ import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import DeckResolver from '../../src/graphql/resolvers/deck-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import { MAX_ROUNDS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
+import { MAX_REDRAWS, MAX_ROUNDS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
 import GameResolver from '../../src/graphql/resolvers/game-resolver'
 import TestUtil from '../test-util'
 import * as getRandomSubset from '@gwent/utils'
@@ -494,6 +495,592 @@ describe('mutation-resolver', () => {
       expect(context).toEqual(undefined)
     })
   })
+  describe('ready', () => {
+    it('returns error if game does not exist', async () => {
+      const gameId = new ObjectId().toString()
+      await testReady({
+        gameId,
+        expected: Error('Game does not exist.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if not a player on the game', async () => {
+      const gameId = new ObjectId().toString()
+      await testReady({
+        gameId,
+        gameGetResponse: TestUtil.getDbGame({}),
+        expected: Error('Not a player on this game.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if deck not yet set', async () => {
+      const userId = new ObjectId()
+      const gameId = new ObjectId().toString()
+      await testReady({
+        userId,
+        gameId,
+        gameGetResponse: TestUtil.getDbGame({
+          creator: userId,
+        }),
+        expected: Error('Must set deck first.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if already marked as ready', async () => {
+      const userId = new ObjectId()
+      const gameId = new ObjectId().toString()
+      await testReady({
+        userId,
+        gameId,
+        gameGetResponse: TestUtil.getDbGame({
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [],
+                redraws: [],
+                undrawn: [],
+                from: TestUtil.getDbDeck(),
+              },
+              ready: true,
+              rounds: [],
+              user: userId,
+            },
+          ],
+        }),
+        expected: Error('Already marked as ready.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if setReady response is undefined', async () => {
+      const userId = new ObjectId()
+      const gameId = new ObjectId().toString()
+      await testReady({
+        userId,
+        gameId,
+        gameGetResponse: TestUtil.getDbGame({
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [],
+                redraws: [],
+                undrawn: [],
+                from: TestUtil.getDbDeck(),
+              },
+              ready: false,
+              rounds: [],
+              user: userId,
+            },
+          ],
+        }),
+        setReadyResponse: undefined,
+        expected: Error('Could not set player as ready in probably race condition collision.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+        setReadyCalls: [
+          [
+            {
+              gameId,
+              userId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns resolved game if no errors', async () => {
+      const userId = new ObjectId()
+      const gameId = new ObjectId().toString()
+      const game = TestUtil.getDbGame({
+        players: [
+          {
+            deck: {
+              discard: [],
+              hand: [],
+              redraws: [],
+              undrawn: [],
+              from: TestUtil.getDbDeck(),
+            },
+            ready: false,
+            rounds: [],
+            user: userId,
+          },
+        ],
+      })
+      const updatedGame: GameDbObject = {
+        ...game,
+        players: [
+          {
+            ...game.players[0],
+            ready: true,
+          },
+        ],
+      }
+      const resolvedGame = TestUtil.getGame({
+        id: game._id,
+        players: [
+          {
+            ready: true,
+            rounds: [],
+            user: TestUtil.getUser({
+              id: userId,
+            }),
+          },
+        ],
+      })
+      await testReady({
+        userId,
+        gameId,
+        gameGetResponse: game,
+        setReadyResponse: updatedGame,
+        resolvedGame: resolvedGame,
+        expected: resolvedGame,
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+        setReadyCalls: [
+          [
+            {
+              gameId,
+              userId,
+            },
+          ],
+        ],
+        gameResolveCalls: [
+          [
+            {
+              game: updatedGame,
+              neutralFactionStats: undefined,
+              neutralLeaderStats: undefined,
+            },
+          ],
+        ],
+      })
+    })
+  })
+  describe('redraw', () => {
+    it('returns error if game does not exist', async () => {
+      const gameId = new ObjectId().toString()
+      await testRedraw({
+        userId: new ObjectId().toString(),
+        gameId: gameId,
+        expected: Error('Game does not exist.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if not a player on game', async () => {
+      const gameId = new ObjectId().toString()
+      await testRedraw({
+        userId: new ObjectId().toString(),
+        gameId: gameId,
+        gameGetResponse: TestUtil.getDbGame({}),
+        expected: Error('Not a player on this game.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if game marked as ready', async () => {
+      const userId = new ObjectId().toString()
+      const gameId = new ObjectId().toString()
+      await testRedraw({
+        userId: userId,
+        gameId: gameId,
+        gameGetResponse: TestUtil.getDbGame({
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [],
+                redraws: [],
+                undrawn: [],
+              },
+              ready: true,
+              rounds: [],
+              user: new ObjectId(userId),
+            },
+          ],
+        }),
+        expected: Error('Cannot redraw after game is marked as ready.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if deck not set', async () => {
+      const userId = new ObjectId().toString()
+      const gameId = new ObjectId().toString()
+      await testRedraw({
+        userId: userId,
+        gameId: gameId,
+        gameGetResponse: TestUtil.getDbGame({
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [],
+                redraws: [],
+                undrawn: [],
+              },
+              ready: false,
+              rounds: [],
+              user: new ObjectId(userId),
+            },
+          ],
+        }),
+        expected: Error('Cannot redraw before deck is set.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if max redraws already taken', async () => {
+      const userId = new ObjectId().toString()
+      const gameId = new ObjectId().toString()
+      await testRedraw({
+        userId: userId,
+        gameId: gameId,
+        gameGetResponse: TestUtil.getDbGame({
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [],
+                redraws: [{} as RedrawDbObject, {} as RedrawDbObject],
+                undrawn: [],
+                from: TestUtil.getDbDeck(),
+              },
+              ready: false,
+              rounds: [],
+              user: new ObjectId(userId),
+            },
+          ],
+        }),
+        expected: Error(`Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if unit not in hand', async () => {
+      const userId = new ObjectId().toString()
+      const gameId = new ObjectId().toString()
+      await testRedraw({
+        userId: userId,
+        gameId: gameId,
+        unitId: new ObjectId().toString(),
+        gameGetResponse: TestUtil.getDbGame({
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [],
+                redraws: [],
+                undrawn: [],
+                from: TestUtil.getDbDeck(),
+              },
+              ready: false,
+              rounds: [],
+              user: new ObjectId(userId),
+            },
+          ],
+        }),
+        expected: Error('Invalid unit, does not exist in hand.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns error if updated game undefined', async () => {
+      const userId = new ObjectId().toString()
+      const gameId = new ObjectId().toString()
+      const unit1 = TestUtil.getDbUnit({})
+      const unit2 = TestUtil.getDbUnit({})
+      await testRedraw({
+        userId: userId,
+        gameId: gameId,
+        unitId: unit1._id.toString(),
+        gameGetResponse: TestUtil.getDbGame({
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [
+                  {
+                    artStyle: 1,
+                    unit: unit1._id,
+                  },
+                ],
+                redraws: [],
+                undrawn: [
+                  {
+                    artStyle: 1,
+                    unit: unit2._id,
+                  },
+                ],
+                from: TestUtil.getDbDeck(),
+              },
+              ready: false,
+              rounds: [],
+              user: new ObjectId(userId),
+            },
+          ],
+        }),
+        gameRedrawResponse: undefined,
+        expected: Error('Could not update game with new card in probably race condition collision.'),
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+        gameRedrawCalls: [
+          [
+            {
+              currentRedraws: [],
+              gameId,
+              newHand: [
+                {
+                  artStyle: 1,
+                  unit: unit2._id,
+                },
+              ],
+              newRedraws: [
+                {
+                  from: {
+                    artStyle: 1,
+                    unit: unit1._id,
+                  },
+                  to: {
+                    artStyle: 1,
+                    unit: unit2._id,
+                  },
+                },
+              ],
+              newUndrawn: [
+                {
+                  artStyle: 1,
+                  unit: unit1._id,
+                },
+              ],
+              userId,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns resolved DeckUnit if no errors', async () => {
+      const userId = new ObjectId().toString()
+      const gameId = new ObjectId().toString()
+      const unit1 = TestUtil.getDbUnit({})
+      const unit2 = TestUtil.getDbUnit({})
+      const previousRedraw: RedrawDbObject = {
+        from: {
+          artStyle: 1,
+          unit: new ObjectId(),
+        },
+        to: {
+          artStyle: 1,
+          unit: new ObjectId(),
+        },
+      }
+      const game: GameDbObject = TestUtil.getDbGame({
+        players: [
+          {
+            deck: {
+              discard: [],
+              hand: [
+                {
+                  artStyle: 1,
+                  unit: unit1._id,
+                },
+              ],
+              redraws: [previousRedraw],
+              undrawn: [
+                {
+                  artStyle: 1,
+                  unit: unit2._id,
+                },
+              ],
+              from: TestUtil.getDbDeck(),
+            },
+            ready: false,
+            rounds: [],
+            user: new ObjectId(userId),
+          },
+        ],
+      })
+      const newDeckUnit: DeckUnit = {
+        artStyle: 1,
+        unit: TestUtil.getUnit({
+          id: unit2._id,
+          created: unit2.created,
+          faction: unit2.faction,
+        }),
+      }
+
+      await testRedraw({
+        userId: userId,
+        gameId: gameId,
+        unitId: unit1._id.toString(),
+        gameGetResponse: game,
+        gameRedrawResponse: TestUtil.getDbGame({
+          created: game.created,
+          id: game._id,
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [
+                  {
+                    artStyle: 1,
+                    unit: unit2._id,
+                  },
+                ],
+                redraws: [
+                  previousRedraw,
+                  {
+                    from: {
+                      artStyle: 1,
+                      unit: unit1._id,
+                    },
+                    to: {
+                      artStyle: 1,
+                      unit: unit2._id,
+                    },
+                  },
+                ],
+                undrawn: [
+                  {
+                    artStyle: 1,
+                    unit: unit1._id,
+                  },
+                ],
+                from: TestUtil.getDbDeck(),
+              },
+              ready: false,
+              rounds: [],
+              user: new ObjectId(userId),
+            },
+          ],
+        }),
+        resolveDeckUnitResponse: newDeckUnit,
+        expected: newDeckUnit,
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+        gameRedrawCalls: [
+          [
+            {
+              currentRedraws: [previousRedraw],
+              gameId,
+              newHand: [
+                {
+                  artStyle: 1,
+                  unit: unit2._id,
+                },
+              ],
+              newRedraws: [
+                previousRedraw,
+                {
+                  from: {
+                    artStyle: 1,
+                    unit: unit1._id,
+                  },
+                  to: {
+                    artStyle: 1,
+                    unit: unit2._id,
+                  },
+                },
+              ],
+              newUndrawn: [
+                {
+                  artStyle: 1,
+                  unit: unit1._id,
+                },
+              ],
+              userId,
+            },
+          ],
+        ],
+        resolveDeckUnitCalls: [
+          [
+            {
+              deckUnit: {
+                artStyle: 1,
+                unit: unit2._id,
+              },
+              neutralStats: undefined,
+            },
+          ],
+        ],
+      })
+    })
+  })
   describe('setDeck', () => {
     it('returns error if deck does not exist', async () => {
       const deckId = new ObjectId()
@@ -762,60 +1349,7 @@ describe('mutation-resolver', () => {
   })
 })
 
-async function testSetDeck({
-  userId,
-  gameId,
-  deckId,
-  getDeckResponse,
-  getGameResponse,
-  randomSubset = [],
-  setDeckResponse,
-  expected,
-  getDeckCalls = [],
-  getGameCalls = [],
-  getRandomSubsetCalls = [],
-  setDeckCalls = [],
-}: {
-  userId?: ObjectId
-  gameId?: ObjectId
-  deckId?: ObjectId
-  getDeckResponse?: DeckDbObject
-  getGameResponse?: GameDbObject
-  randomSubset?: DeckUnitDbObject[]
-  setDeckResponse?: GameDbObject
-  expected: Error | GameDeck
-  getDeckCalls?: any[][]
-  getGameCalls?: any[][]
-  getRandomSubsetCalls?: any[][]
-  setDeckCalls?: any[][]
-}) {
-  const context = {
-    session: {
-      user: {
-        _id: userId,
-      },
-    },
-  }
-  const args = {
-    game: gameId,
-    deck: deckId,
-  }
-  const getDeckSpy = jest.spyOn(DeckStore, 'getById').mockResolvedValue(getDeckResponse)
-  const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
-  const getRandomSubsetSpy = jest.spyOn(getRandomSubset, 'getRandomSubset').mockReturnValue(randomSubset)
-  const setDeckSpy = jest.spyOn(GameStore, 'setDeck').mockResolvedValue(setDeckResponse as any as GameDbObject)
-  const resolveFromObjectSpy = jest.spyOn(GameDeckResolver, 'resolveFromObject')
-  if (!(expected instanceof Error)) {
-    resolveFromObjectSpy.mockResolvedValue(expected)
-  }
-
-  await expect((MutationResolver.setDeck as any)(null, args, context, null)).resolves.toEqual(expected)
-
-  expect(getDeckSpy.mock.calls).toEqual(getDeckCalls)
-  expect(getGameSpy.mock.calls).toEqual(getGameCalls)
-  expect(getRandomSubsetSpy.mock.calls).toEqual(getRandomSubsetCalls)
-  expect(setDeckSpy.mock.calls).toEqual(setDeckCalls)
-}
+// TODO: make other mutation/query inputs strings, not ObjectId
 
 async function testAddDeck({
   inputArtStyle = 1,
@@ -1185,4 +1719,152 @@ async function testAddGame({
         ]
       : []
   )
+}
+
+async function testReady({
+  userId = new ObjectId(),
+  gameId = new ObjectId().toString(),
+  gameGetResponse,
+  setReadyResponse,
+  resolvedGame,
+  expected,
+  gameGetCalls = [],
+  gameResolveCalls = [],
+  setReadyCalls = [],
+}: {
+  userId?: ObjectId
+  gameId?: string
+  gameGetResponse?: GameDbObject
+  setReadyResponse?: GameDbObject
+  resolvedGame?: Game
+  expected?: Error | Game
+  gameGetCalls?: any[][]
+  setReadyCalls?: any[][]
+  gameResolveCalls?: any[][]
+}) {
+  const context = {
+    session: {
+      user: {
+        _id: userId,
+      },
+    },
+  }
+  const args = {
+    game: gameId,
+  }
+  const gameGetSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(gameGetResponse)
+  const setReadySpy = jest.spyOn(GameStore, 'setReady').mockResolvedValue(setReadyResponse)
+  const gameResolveSpy = jest.spyOn(GameResolver, 'resolveFromObject')
+  if (resolvedGame) {
+    gameResolveSpy.mockResolvedValue(resolvedGame)
+  }
+
+  await expect((MutationResolver.ready as any)(null, args, context, null)).resolves.toEqual(expected)
+
+  expect(gameGetSpy.mock.calls).toEqual(gameGetCalls)
+  expect(setReadySpy.mock.calls).toEqual(setReadyCalls)
+  expect(gameResolveSpy.mock.calls).toEqual(gameResolveCalls)
+}
+
+async function testRedraw({
+  userId,
+  gameId,
+  unitId,
+  gameGetResponse,
+  gameRedrawResponse,
+  resolveDeckUnitResponse,
+  expected,
+  gameGetCalls = [],
+  gameRedrawCalls = [],
+  resolveDeckUnitCalls = [],
+}: {
+  userId?: string
+  gameId?: string
+  unitId?: string
+  gameGetResponse?: GameDbObject
+  gameRedrawResponse?: GameDbObject
+  resolveDeckUnitResponse?: DeckUnit
+  expected?: Error | DeckUnit
+  gameGetCalls?: any[][]
+  gameRedrawCalls?: any[][]
+  resolveDeckUnitCalls?: any[][]
+}) {
+  const context = {
+    session: {
+      user: {
+        _id: userId,
+      },
+    },
+  }
+  const args = {
+    game: gameId,
+    unit: unitId,
+  }
+  const gameGetSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(gameGetResponse)
+  const gameRedrawSpy = jest.spyOn(GameStore, 'redraw').mockResolvedValue(gameRedrawResponse)
+  const resolveDeckUnitSpy = jest.spyOn(DeckUnitResolver, 'resolveFromObject')
+  if (resolveDeckUnitResponse) {
+    resolveDeckUnitSpy.mockResolvedValue(resolveDeckUnitResponse)
+  }
+
+  await expect((MutationResolver.redraw as any)(null, args, context, null)).resolves.toEqual(expected)
+
+  expect(gameGetSpy.mock.calls).toEqual(gameGetCalls)
+  expect(gameRedrawSpy.mock.calls).toEqual(gameRedrawCalls)
+  expect(resolveDeckUnitSpy.mock.calls).toEqual(resolveDeckUnitCalls)
+}
+
+async function testSetDeck({
+  userId,
+  gameId,
+  deckId,
+  getDeckResponse,
+  getGameResponse,
+  randomSubset = [],
+  setDeckResponse,
+  expected,
+  getDeckCalls = [],
+  getGameCalls = [],
+  getRandomSubsetCalls = [],
+  setDeckCalls = [],
+}: {
+  userId?: ObjectId
+  gameId?: ObjectId
+  deckId?: ObjectId
+  getDeckResponse?: DeckDbObject
+  getGameResponse?: GameDbObject
+  randomSubset?: DeckUnitDbObject[]
+  setDeckResponse?: GameDbObject
+  expected: Error | GameDeck
+  getDeckCalls?: any[][]
+  getGameCalls?: any[][]
+  getRandomSubsetCalls?: any[][]
+  setDeckCalls?: any[][]
+}) {
+  const context = {
+    session: {
+      user: {
+        _id: userId,
+      },
+    },
+  }
+  const args = {
+    game: gameId,
+    deck: deckId,
+  }
+  const getDeckSpy = jest.spyOn(DeckStore, 'getById').mockResolvedValue(getDeckResponse)
+  const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
+  const getRandomSubsetSpy = jest.spyOn(getRandomSubset, 'getRandomSubset').mockReturnValue(randomSubset)
+  const setDeckSpy = jest.spyOn(GameStore, 'setDeck').mockResolvedValue(setDeckResponse as any as GameDbObject)
+  const resolveFromObjectSpy = jest.spyOn(GameDeckResolver, 'resolveFromObject')
+  if (!(expected instanceof Error)) {
+    resolveFromObjectSpy.mockResolvedValue(expected)
+  }
+
+  await expect((MutationResolver.setDeck as any)(null, args, context, null)).resolves.toEqual(expected)
+
+  expect(getDeckSpy.mock.calls).toEqual(getDeckCalls)
+  expect(getGameSpy.mock.calls).toEqual(getGameCalls)
+  expect(getRandomSubsetSpy.mock.calls).toEqual(getRandomSubsetCalls)
+  expect(setDeckSpy.mock.calls).toEqual(setDeckCalls)
 }
