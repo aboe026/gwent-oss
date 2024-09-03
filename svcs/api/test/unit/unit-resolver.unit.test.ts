@@ -363,7 +363,7 @@ describe('unit-resolver', () => {
     it('throws error if effect not found', async () => {
       const faction = TestUtil.getDbFaction({})
       const dlc = TestUtil.getDbDlc()
-      const effect = TestUtil.getDbEffect()
+      const effect = TestUtil.getDbEffect({})
       const unit = TestUtil.getDbUnit({
         faction: faction._id,
         dlc: dlc._id,
@@ -531,7 +531,7 @@ describe('unit-resolver', () => {
     })
     it('resolves unit with effects', async () => {
       const faction = TestUtil.getDbFaction({})
-      const effect = TestUtil.getDbEffect()
+      const effect = TestUtil.getDbEffect({})
       const unit = TestUtil.getDbUnit({
         faction: faction._id,
         effects: [effect._id],

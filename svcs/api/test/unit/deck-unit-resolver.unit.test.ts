@@ -3,20 +3,56 @@ import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
 import { ObjectId } from 'mongodb'
 import DeckUnitResolver from '../../src/graphql/resolvers/deck-unit-resolver'
 import { Faction, Unit } from '@gwent/graphql-schema/resolver-typings'
+import TestUtil from '../test-util'
 
 describe('deck-unit-resolver', () => {
   describe('resolveFromObject', () => {
+    it('throws error if unit not found', async () => {
+      const unitId = new ObjectId()
+      await testResolveFromObject({
+        deckUnit: {
+          artStyle: 1,
+          unit: unitId,
+        },
+        error: `Could not resolve unit "${unitId}" as deckUnit.`,
+      })
+    })
     it('calls to UnitResolver with undefined neutralStats', async () => {
-      await testResolveFromObject({})
+      const unitId = new ObjectId()
+      await testResolveFromObject({
+        deckUnit: {
+          artStyle: 1,
+          unit: unitId,
+        },
+        unitResolverResponse: TestUtil.getUnit({
+          id: unitId,
+        }),
+      })
     })
     it('calls to UnitResolver with explicit false neutralStats', async () => {
+      const unitId = new ObjectId()
       await testResolveFromObject({
+        deckUnit: {
+          artStyle: 1,
+          unit: unitId,
+        },
         neutralStats: false,
+        unitResolverResponse: TestUtil.getUnit({
+          id: unitId,
+        }),
       })
     })
     it('calls to UnitResolver with explicit true neutralStats', async () => {
+      const unitId = new ObjectId()
       await testResolveFromObject({
+        deckUnit: {
+          artStyle: 1,
+          unit: unitId,
+        },
         neutralStats: true,
+        unitResolverResponse: TestUtil.getUnit({
+          id: unitId,
+        }),
       })
     })
   })
@@ -37,31 +73,31 @@ describe('deck-unit-resolver', () => {
   })
 })
 
-async function testResolveFromObject({ neutralStats }: { neutralStats?: boolean }) {
-  const deckUnit: DeckUnitDbObject = {
-    artStyle: 1,
-    unit: new ObjectId(),
-  }
-  const unit: Unit = {
-    created: new Date(),
-    deckable: true,
-    faction: {} as Faction,
-    id: deckUnit.unit.toString(),
-    images: ['unit-image'],
-    name: 'unit-name',
-    quote: 'unit-quote',
-  }
-  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromId').mockResolvedValue(unit)
+async function testResolveFromObject({
+  deckUnit,
+  neutralStats,
+  unitResolverResponse,
+  error,
+}: {
+  deckUnit: DeckUnitDbObject
+  neutralStats?: boolean
+  unitResolverResponse?: Unit
+  error?: string
+}) {
+  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromId').mockResolvedValue(unitResolverResponse)
 
-  await expect(
-    DeckUnitResolver.resolveFromObject({
-      deckUnit,
-      neutralStats,
-    })
-  ).resolves.toEqual({
-    artStyle: 1,
-    unit,
+  const promise = DeckUnitResolver.resolveFromObject({
+    deckUnit,
+    neutralStats,
   })
+  if (error) {
+    await expect(promise).rejects.toThrow(Error(error))
+  } else {
+    await expect(promise).resolves.toEqual({
+      artStyle: deckUnit.artStyle,
+      unit: unitResolverResponse,
+    })
+  }
 
   expect(unitResolverSpy.mock.calls).toEqual([
     [

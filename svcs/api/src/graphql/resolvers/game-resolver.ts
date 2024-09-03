@@ -57,7 +57,7 @@ export default class GameResolver {
     for (const player of game.players) {
       const resolvedPlayer = resolvedUsers.find((user) => user.id === player.user.toString())
       if (!resolvedPlayer) {
-        const message = `Could not resolve player "${player}" for game "${game._id}".`
+        const message = `Could not resolve player "${player.user}" for game "${game._id}".`
         GameResolver.logger.error(message)
         throw Error(message)
       }

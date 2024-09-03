@@ -6,6 +6,7 @@ import { GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-t
 import { ObjectId } from 'mongodb'
 import { MAX_ROUNDS } from '@gwent/constants'
 import GameStore from '../../src/database/stores/game-store'
+import TestUtil from '../test-util'
 
 describe('game-resolver', () => {
   describe('resolveFromObject', () => {
@@ -30,13 +31,79 @@ describe('game-resolver', () => {
         userResolverCalls: [[[userId.toString()]]],
       })
     })
+    it('throws error if player not found', async () => {
+      const gameId = new ObjectId()
+      const creator = TestUtil.getUser({})
+      const playerId = new ObjectId()
+      await testResolveFromObject({
+        game: {
+          _id: gameId,
+          created: new Date(),
+          creator: new ObjectId(creator.id),
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [],
+                redraws: [],
+                undrawn: [],
+              },
+              ready: false,
+              rounds: [],
+              user: playerId,
+            },
+          ],
+          round: {
+            current: 0,
+            maximum: MAX_ROUNDS,
+          },
+          updated: new Date(),
+          victors: [],
+        },
+        users: [creator],
+        resolvedUsers: [],
+        error: `Could not resolve player "${playerId}" for game "${gameId}".`,
+        userResolverCalls: [[[playerId.toString()]]],
+      })
+    })
+    it('throws error if victor not found', async () => {
+      const gameId = new ObjectId()
+      const creator = TestUtil.getUser({})
+      const playerId = new ObjectId()
+      await testResolveFromObject({
+        game: {
+          _id: gameId,
+          created: new Date(),
+          creator: new ObjectId(creator.id),
+          players: [
+            {
+              deck: {
+                discard: [],
+                hand: [],
+                redraws: [],
+                undrawn: [],
+              },
+              ready: false,
+              rounds: [],
+              user: new ObjectId(creator.id),
+            },
+          ],
+          round: {
+            current: 0,
+            maximum: MAX_ROUNDS,
+          },
+          updated: new Date(),
+          victors: [playerId],
+        },
+        resolvedUsers: [creator],
+        error: `Could not resolve victor "${playerId}" for game "${gameId}".`,
+        userResolverCalls: [[[creator.id, playerId.toString()]]],
+      })
+    })
     it('returns resolved object if no errors', async () => {
       const gameId = new ObjectId()
-      const user: User = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        name: 'user-name',
-      }
+      const user = TestUtil.getUser({})
+      const victor = TestUtil.getUser({})
       await testResolveFromObject({
         game: {
           _id: gameId,
@@ -48,9 +115,11 @@ describe('game-resolver', () => {
             maximum: MAX_ROUNDS,
           },
           updated: new Date(),
-          victors: [],
+          victors: [new ObjectId(victor.id)],
         },
         creator: user,
+        resolvedUsers: [victor],
+        resolvedVictors: [victor],
         resolvedGamePlayers: [
           {
             ready: false,
@@ -58,11 +127,12 @@ describe('game-resolver', () => {
             user,
           },
         ],
+        userResolverCalls: [[[victor.id]]],
         gamePlayerResolverCalls: [
           [
             {
               players: [],
-              users: [user],
+              users: [user, victor],
               everyoneReady: false,
               neutralFactionStats: undefined,
               neutralLeaderStats: undefined,
@@ -407,6 +477,7 @@ async function testResolveFromObject({
   neutralLeaderStats,
   resolvedUsers = [],
   resolvedGamePlayers = [],
+  resolvedVictors,
   error,
   userResolverCalls = [[[]]],
   gamePlayerResolverCalls = [],
@@ -418,6 +489,7 @@ async function testResolveFromObject({
   neutralLeaderStats?: boolean
   resolvedUsers?: User[]
   resolvedGamePlayers?: GamePlayer[]
+  resolvedVictors?: User[]
   error?: string
   userResolverCalls?: any[][]
   gamePlayerResolverCalls?: any[][]
@@ -445,7 +517,7 @@ async function testResolveFromObject({
       round: game.round,
       status: GameResolver.getStatus(game),
       updated: game.updated,
-      victors: game.victors,
+      victors: resolvedVictors || game.victors,
     })
   }
 

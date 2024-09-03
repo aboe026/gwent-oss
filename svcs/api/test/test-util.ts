@@ -103,9 +103,9 @@ export default class TestUtil {
     }
   }
 
-  static getDbEffect(): EffectDbObject {
+  static getDbEffect({ id }: { id?: ObjectId | string }): EffectDbObject {
     return {
-      _id: new ObjectId(),
+      _id: id ? new ObjectId(id) : new ObjectId(),
       ability: 'effect-ability',
       created: new Date(),
       image: 'effect-image',
