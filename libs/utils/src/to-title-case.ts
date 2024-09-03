@@ -5,6 +5,9 @@
  * @returns The words with the first letter of every word capitalized.
  */
 export default function toTitleCase(words: string): string {
+  if (words === '') {
+    return words
+  }
   return words
     .split(' ')
     .map((word) => `${word[0].toUpperCase()}${word.substring(1, word.length + 1).toLowerCase()}`)

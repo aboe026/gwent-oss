@@ -11,9 +11,8 @@ export function getRouteFromPath(path: string): AppRoute | undefined {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const route = (ROUTES as any)[key] as AppRoute
     let matchesDynamicPath = false
-    if (route.path.includes('/:') || route.path.endsWith('/new')) {
-      const endIndex = route.path.indexOf(route.path.includes(':/') ? '/:' : '/new')
-      const routeStaticPath = route.path.substring(0, endIndex)
+    if (route.path.includes('/:')) {
+      const routeStaticPath = route.path.substring(0, route.path.indexOf('/:'))
       matchesDynamicPath = path.startsWith(routeStaticPath)
     }
     if (route.path === path || matchesDynamicPath) {
