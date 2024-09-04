@@ -22,7 +22,7 @@ test('Errors if opponent does not exist', async () => {
   await GamePage.createGame({
     creator: username,
     opponents: [opponent],
-    error: `Error adding game: User with name "${opponent}" does not exist`,
+    error: `Error adding game: User with name "${opponent}" does not exist.`,
   })
 })
 
