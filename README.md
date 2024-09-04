@@ -6,11 +6,142 @@
 
 A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
 
-## Prerequisites
+## Containerization
+
+The fastest way to utilize the project is by running it in a containerized environment.
+
+To run the project "locally" (i.e. not in containers) or to develop on the project, see [Running Locally](#running-locally).
+
+Note that all compose commands have equivalent [script](./package.json) targets for node/yarn.
+
+### Prereqs
+
+- [Docker](https://www.docker.com/)
+
+### Build
+
+To build the docker images, run
+
+```sh
+cd compose
+docker compose build
+```
+
+### Up
+
+To bring up the containers for the first time (or if the existing containers have been deleted), run
+
+```sh
+cd compose
+docker compose up -d
+```
+
+### Stop
+
+To stop the running containers, run
+
+```sh
+cd compose
+docker compose stop
+```
+
+This will perserve the containers in a stopped state
+
+### Start
+
+To start containers in a stopped state, run
+
+```sh
+cd compose
+docker compose start
+```
+
+### Down
+
+To delete the containers, run
+
+```sh
+cd compose
+docker compose down -v
+```
+
+This will stop and remove all containers for the project and any data associated with them
+
+## Running Locally
+
+This project can be run with Node.js locally (without containerization).
+
+This is less secure (as it runs HTTP instead of HTTPS) but is easier for development.
+
+### Prereqs
 
 - [NodeJS](https://nodejs.org/)
 - [Yarn](https://yarnpkg.com/)
 - [MongoDB](https://www.mongodb.com/)
+
+### Install
+
+To install dependencies, run
+
+```sh
+yarn install
+```
+
+### Build
+
+To build the source code into transpiled javascript, run
+
+```sh
+yarn build
+```
+
+To remove any previously built code, run
+
+```sh
+yarn clean
+```
+
+### Start
+
+To run code from non-built source code (libraries still need to be [built](#build) first), run
+
+```sh
+yarn start
+```
+
+### Watch
+
+To automatically restart the app on file changes, run
+
+```sh
+yarn watch
+```
+
+### Run
+
+To run transpiled javascript bundles, run:
+
+```sh
+yarn run-built
+```
+
+or directly with
+
+```sh
+yarn node services/api/build/api.js
+CLIENT_DIR=../../libs/client/build yarn node services/ui/build/src/index.js
+```
+
+## Development
+
+In order to develop on the project, ensure the [Install](#install) and [Build](#build-1) steps have been performed.
+
+For quick cycle time on changes, it is recommended to run the project in [Watch](#watch) mode while developing.
+
+### Prereqs
+
+All the [Local Prereqs](#prereqs-1) apply, along with:
+
 - [VSCode](https://code.visualstudio.com/)
 
   - To enable [Editor SDK](https://yarnpkg.com/getting-started/editor-sdks), run
@@ -31,60 +162,7 @@ A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
 
     `Use Workspace Version`
 
-## Install
-
-To install dependencies, run
-
-```sh
-yarn install
-```
-
-## Build
-
-To build the source code into transpiled javascript, run
-
-```sh
-yarn build
-```
-
-To remove any previously built code, run
-
-```sh
-yarn clean
-```
-
-## Start
-
-To run code from non-built source code (libraries still need to be [built](#build) first), run
-
-```sh
-yarn start
-```
-
-## Watch
-
-To automatically restart the app on file changes, run
-
-```sh
-yarn watch
-```
-
-## Run
-
-To run transpiled javascript bundles, run:
-
-```sh
-yarn run-built
-```
-
-or directly with
-
-```sh
-yarn node services/api/build/api.js
-CLIENT_DIR=../../libs/client/build yarn node services/ui/build/src/index.js
-```
-
-## Lint
+### Lint
 
 to check code for programmatic or stylistic problems, run
 
@@ -98,13 +176,9 @@ To automatically fix problems, run
 yarn lint-fix
 ```
 
-## Containerization
+### Test
 
-TODO: fill out
-
-## Test
-
-### Unit
+#### Unit
 
 To run unit tests, run
 
@@ -124,7 +198,7 @@ To view test code coverage, run
 yarn coverage-view
 ```
 
-### Functional
+#### Functional
 
 Functional tests require a running instance of [MongoDB](https://www.mongodb.com/) they can connect to in order to run tests against a functional database (rather than mocking out responses).
 
@@ -142,7 +216,7 @@ _Note_: To run a specific test, execute
 yarn test-unit -t 'test name'
 ```
 
-### E2E
+#### E2E
 
 To run End-To-End (E2E) tests, make sure the services and libraries are [built](#build), then run
 
@@ -160,7 +234,7 @@ This will start Gwent for you. To only run the tests (without starting Gwent), g
 yarn test
 ```
 
-## Upgrade Dependencies
+### Upgrade Dependencies
 
 To upgrade dependencies, run
 
@@ -172,7 +246,7 @@ then run `yarn install` to apply package updates
 
 _Note_: Might need to [upgrade yarn](#upgrade-yarn) if upgrading TypeScript as it has some dependency on Yarn integrating with it.
 
-## Upgrade Yarn
+### Upgrade Yarn
 
 To upgrade the version of yarn used in the project, run
 
@@ -182,7 +256,7 @@ yarn set version latest
 
 then [install](#install) to have the change picked up.
 
-## ToDo
+### ToDo
 
 A list of things to be done in the future:
 
@@ -217,7 +291,7 @@ A list of things to be done in the future:
 - Have api and ui use same Dockerfile (just with different build args)
 - Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 
-## External Bugs
+### External Bugs
 
 Bugs found in external dependencies that have not been resolved (and require workarounds):
 
