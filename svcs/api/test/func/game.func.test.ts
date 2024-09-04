@@ -1477,7 +1477,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Unit does not exist in hand.')],
+          errors: [new GraphQLError('Invalid unit, does not exist in hand.')],
         })
       })
       it('throws error if try to redraw same card twice', async () => {
@@ -1526,7 +1526,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Unit does not exist in hand.')],
+          errors: [new GraphQLError('Invalid unit, does not exist in hand.')],
         })
       })
     })

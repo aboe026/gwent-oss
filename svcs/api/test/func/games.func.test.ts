@@ -64,7 +64,7 @@ describe('games', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Not enough opponents for game at "0". Need at least "1" opponent.`)],
+          errors: [new GraphQLError(`Not enough opponents for game at "0", minimum is "1".`)],
         })
       })
       it('throws error if 2 opponents', async () => {
@@ -97,9 +97,7 @@ describe('games', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [
-            new GraphQLError(`Excessive number of opponents for game at "2". Cannot have more than "1" opponent.`),
-          ],
+          errors: [new GraphQLError(`Excessive number of opponents for game at "2", maximum is "1".`)],
         })
       })
       it('throws error if opponent does not exist', async () => {
@@ -126,7 +124,7 @@ describe('games', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`User with name "${name2}" does not exist`)],
+          errors: [new GraphQLError(`User with name "${name2}" does not exist.`)],
         })
       })
     })
