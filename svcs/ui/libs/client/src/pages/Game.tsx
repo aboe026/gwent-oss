@@ -43,7 +43,7 @@ import { getApolloError, retryCheckingAuth } from '../util/error-util'
 import LoadingSpinner from '../components/LoadingSpinner'
 import WholeScreenDialog from '../components/WholeScreenDialog'
 import UnitGameCard from '../components/UnitGameCard'
-import { sortObjectArray } from '@gwent/utils'
+import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
 import LoadingBar from '../components/LoadingBar'
 import UnitFullCard from '../components/UnitFullCard'
 import DeckEditor from '../components/DeckEditor'
@@ -545,6 +545,8 @@ function renderGameInfo({
         discard: gameDeck?.discard.length,
         hand: gameDeck?.hand.length,
         undrawn: gameDeck?.undrawn.length,
+        deckName: gameDeck?.from?.name,
+        deckUpdated: gameDeck?.from?.created,
       })}
     </div>
   )
@@ -560,6 +562,8 @@ function renderPlayerInfo({
   hand,
   discard,
   leader,
+  deckName,
+  deckUpdated,
 }: {
   id: string
   player: GamePlayer
@@ -570,6 +574,8 @@ function renderPlayerInfo({
   hand?: number
   discard?: number
   leader?: Leader | null
+  deckName?: string
+  deckUpdated?: Date
 }) {
   return (
     <div
@@ -606,6 +612,14 @@ function renderPlayerInfo({
               leader,
             })}
           </div>
+          {deckName && deckUpdated && (
+            <div className="game-sub-section game-info-section">
+              {renderDeckFrom({
+                name: deckName,
+                updated: deckUpdated,
+              })}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -649,7 +663,9 @@ function renderFaction({ faction }: { faction?: Faction | null }) {
       {faction && (
         <>
           <img src={faction.image} title={faction.name} className={HTML_CLASSES.GamePlayerFactionImage} />
-          <div className={HTML_CLASSES.GamePlayerFactionAbility}>{faction.ability}</div>
+          <div title="Faction Ability" className={HTML_CLASSES.GamePlayerFactionAbility}>
+            {faction.ability}
+          </div>
         </>
       )}
     </div>
@@ -662,7 +678,9 @@ function renderLeader({ leader }: { leader?: Leader | null }) {
       {leader && (
         <>
           <img src={leader.image} title={leader.name} className={HTML_CLASSES.GamePlayerLeaderImage} />
-          <div className={HTML_CLASSES.GamePlayerLeaderAbility}>{leader.ability}</div>
+          <div title="Leader Ability" className={HTML_CLASSES.GamePlayerLeaderAbility}>
+            {leader.ability}
+          </div>
         </>
       )}
     </div>
@@ -685,6 +703,18 @@ function renderDeckInfo({ undrawn, hand, discard }: { undrawn?: number; hand?: n
         <span>Lost</span>
       </div>
     </>
+  )
+}
+
+function renderDeckFrom({ name, updated }: { name: string; updated: Date }) {
+  const isoString = new Date(updated).toISOString()
+  return (
+    <div className="game-player-deck-from">
+      <div title="Name of deck chosen">{name}</div>
+      <div title="When deck was last updated before choosing" className="game-player-deck-from-date">{`${formatDay(
+        isoString
+      )} @ ${formatTime(isoString)}`}</div>
+    </div>
   )
 }
 

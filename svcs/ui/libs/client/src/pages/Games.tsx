@@ -111,9 +111,9 @@ export default function GamesPage() {
             if (game.status === GameStatus.Decking) {
               status = 'Choosing Decks'
             } else if (game.status === GameStatus.Playing) {
-              status = 'In Progress'
+              status = 'Playing'
             } else if (game.status === GameStatus.Done) {
-              status = 'Complete'
+              status = 'Finished'
             }
             const rowUrl = ROUTES.Game.path.replace(':gameId', game.id)
 

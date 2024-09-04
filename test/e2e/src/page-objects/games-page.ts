@@ -86,8 +86,8 @@ export default class GamesPage {
           game.status === GameStatus.Decking
             ? 'Choosing Decks'
             : game.status === GameStatus.Done
-            ? 'Complete'
-            : 'In Progress'
+            ? 'Finished'
+            : 'Playing'
         await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowStatus}`).innerText).eql(expectedStatus)
         const victorsCount = await gameRow.find(`.${HTML_CLASSES.GameRowVictor}`).count
         const actualVictors: string[] = []

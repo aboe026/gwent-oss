@@ -327,6 +327,10 @@
   gap: 10px;
 }
 
+.game-player-deck-from-date {
+  font-size: small;
+}
+
 .game-player-deck-section {
   display: flex;
   flex-grow: 1;
