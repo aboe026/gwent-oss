@@ -1,8 +1,7 @@
-import { ObjectId } from 'mongodb'
-
 import BasicAuth from '../../src/auth/basic-auth'
 import UserStore from '../../src/database/stores/user-store'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import TestUtil from '../test-util'
 
 describe('basic-auth', () => {
   describe('authenticate', () => {
@@ -33,12 +32,9 @@ describe('basic-auth', () => {
     })
     it('sets user on session if validate user passes and session does not exist', async () => {
       const password = 'password'
-      const user = {
-        _id: new ObjectId(),
-        name: 'name',
-        created: new Date(),
+      const user = TestUtil.getDbUser({
         password: '',
-      }
+      })
       await testBasicAuth({
         req: {
           headers: {
@@ -52,12 +48,9 @@ describe('basic-auth', () => {
     })
     it('sets user on session if validate user passes and session not exists', async () => {
       const password = 'password'
-      const user = {
-        _id: new ObjectId(),
-        name: 'name',
-        created: new Date(),
+      const user = TestUtil.getDbUser({
         password: '',
-      }
+      })
       await testBasicAuth({
         req: {
           headers: {

@@ -1,6 +1,7 @@
 import { MAX_ROUNDS, STARTING_HAND_SIZE } from '@gwent/constants'
 import {
   DeckDbObject,
+  DeckUnitDbObject,
   DlcDbObject,
   EffectDbObject,
   EffectKey,
@@ -84,18 +85,22 @@ export default class TestUtil {
   static getUnit({
     id,
     created,
+    factionId,
     faction,
   }: {
     id?: ObjectId | string
     created?: Date
-    faction?: ObjectId | string
+    factionId?: ObjectId | string
+    faction?: Faction
   }): Unit {
     return {
       created: created || new Date(),
       deckable: true,
-      faction: TestUtil.getFaction({
-        id: faction,
-      }),
+      faction:
+        faction ||
+        TestUtil.getFaction({
+          id: factionId,
+        }),
       id: (id || new ObjectId()).toString(),
       images: ['unit-image'],
       name: 'unit-name',
@@ -155,6 +160,23 @@ export default class TestUtil {
     }
   }
 
+  static getFactionFromDbFaction(dbFaction: FactionDbObject): Faction {
+    return {
+      created: dbFaction.created,
+      id: dbFaction._id.toString(),
+      image: dbFaction.image,
+      key: dbFaction.key as FactionKey,
+      name: dbFaction.name,
+      stats: dbFaction.stats,
+      ability: dbFaction.ability,
+      dlc: dbFaction.dlc
+        ? TestUtil.getDlc({
+            id: dbFaction.dlc,
+          })
+        : null,
+    }
+  }
+
   static getFaction({ id }: { id?: ObjectId | string }): Faction {
     return {
       created: new Date(),
@@ -166,11 +188,11 @@ export default class TestUtil {
     }
   }
 
-  static getLeader({ id }: { id?: ObjectId | string }): Leader {
+  static getLeader({ id, faction }: { id?: ObjectId | string; faction?: Faction }): Leader {
     return {
       ability: 'leader-ability',
       created: new Date(),
-      faction: TestUtil.getFaction({}),
+      faction: faction || TestUtil.getFaction({}),
       id: (id || new ObjectId()).toString(),
       image: 'leader-image',
       name: 'leader-name',
@@ -188,29 +210,43 @@ export default class TestUtil {
     }
   }
 
-  static getDlc(): Dlc {
+  static getDlc({ id }: { id?: ObjectId | string }): Dlc {
     return {
       created: new Date(),
-      id: new ObjectId().toString(),
+      id: (id || new ObjectId()).toString(),
       image: 'dlc-image',
       key: DlcKey.BloodAndWine,
       name: 'dlc-name',
     }
   }
 
-  static getDbDeck(): DeckDbObject {
+  static getDbDeck({
+    id,
+    faction,
+    leader,
+    user,
+    units,
+  }: {
+    id?: ObjectId | string
+    faction?: ObjectId | string
+    leader?: ObjectId | string
+    user?: ObjectId | string
+    units?: DeckUnitDbObject[]
+  }): DeckDbObject {
     return {
-      _id: new ObjectId(),
+      _id: id ? new ObjectId(id) : new ObjectId(),
       created: new Date(),
-      faction: new ObjectId(),
-      leader: new ObjectId(),
+      faction: faction ? new ObjectId(faction) : new ObjectId(),
+      leader: leader ? new ObjectId(leader) : new ObjectId(),
       name: 'deck-name',
       stats: TestUtil.getStats(),
-      units: Array(STARTING_HAND_SIZE).fill({
-        artStyle: 1,
-        unit: new ObjectId(),
-      }),
-      user: new ObjectId(),
+      units:
+        units ||
+        Array(STARTING_HAND_SIZE).fill({
+          artStyle: 1,
+          unit: new ObjectId(),
+        }),
+      user: user ? new ObjectId(user) : new ObjectId(),
     }
   }
 
@@ -337,12 +373,20 @@ export default class TestUtil {
     }
   }
 
-  static getDbUser({ name = 'user-name' }: { name?: string }): UserDbObject {
+  static getDbUser({
+    id,
+    name = 'user-name',
+    password = 'user-password',
+  }: {
+    id?: ObjectId | string
+    name?: string
+    password?: string
+  }): UserDbObject {
     return {
-      _id: new ObjectId(),
+      _id: id ? new ObjectId(id) : new ObjectId(),
       created: new Date(),
       name,
-      password: 'user-password',
+      password,
     }
   }
 

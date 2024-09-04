@@ -260,6 +260,8 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- organize imports
+- add comments to methods
 - have game page display nicely for small screens (have player infos vertically scrollable)
 - replace `stats: {} as any` with constant value in tests
 - add ability to resolve neutrals on gameDeck (undrawn, hand, discard, redraws (from/to))

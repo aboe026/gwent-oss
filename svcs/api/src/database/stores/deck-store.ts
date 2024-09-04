@@ -93,10 +93,12 @@ export default class DeckStore extends Store {
       },
       options,
     })
-    // TODO: throw error if multiple returned?
-    if (decks && decks.length > 0) {
-      return decks[0]
+    if (decks.length > 1) {
+      const message = `Multiple decks with ID "${id}" found.`
+      DeckStore.logger.error(message)
+      throw Error(message)
     }
+    return decks && decks[0]
   }
 }
 

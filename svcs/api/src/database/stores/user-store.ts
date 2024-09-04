@@ -54,20 +54,18 @@ export default class UserStore extends Store {
    * @returns The User database object.
    * @throws Error if the user with given ID does not exist.
    */
-  static async getById(id: string | ObjectId): Promise<UserDbObject> {
+  static async getById(id: string | ObjectId): Promise<UserDbObject | undefined> {
     const users = await UserStore.getByIds([id])
-    if (!users || users.length === 0) {
-      const message = `User with ID "${id}" does not exist`
-      UserStore.logger.error(message)
-      throw Error(message)
-    } else if (users && users.length > 1) {
-      const message = `Multiple users with ID "${id}" exist`
+    if (users.length > 1) {
+      const message = `Multiple users with ID "${id}" found.`
       UserStore.logger.error(message)
       throw Error(message)
     }
-    const user = users[0]
-    user.password = '' // for security, ensure password isn't exposed
-    return user
+    if (users.length === 1) {
+      const user = users[0]
+      user.password = '' // for security, ensure password isn't exposed
+      return user
+    }
   }
 
   /**

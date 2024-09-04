@@ -558,7 +558,7 @@ describe('mutation-resolver', () => {
                 hand: [],
                 redraws: [],
                 undrawn: [],
-                from: TestUtil.getDbDeck(),
+                from: TestUtil.getDbDeck({}),
               },
               ready: true,
               rounds: [],
@@ -590,7 +590,7 @@ describe('mutation-resolver', () => {
                 hand: [],
                 redraws: [],
                 undrawn: [],
-                from: TestUtil.getDbDeck(),
+                from: TestUtil.getDbDeck({}),
               },
               ready: false,
               rounds: [],
@@ -628,7 +628,7 @@ describe('mutation-resolver', () => {
               hand: [],
               redraws: [],
               undrawn: [],
-              from: TestUtil.getDbDeck(),
+              from: TestUtil.getDbDeck({}),
             },
             ready: false,
             rounds: [],
@@ -799,7 +799,7 @@ describe('mutation-resolver', () => {
                 hand: [],
                 redraws: [{} as RedrawDbObject, {} as RedrawDbObject],
                 undrawn: [],
-                from: TestUtil.getDbDeck(),
+                from: TestUtil.getDbDeck({}),
               },
               ready: false,
               rounds: [],
@@ -832,7 +832,7 @@ describe('mutation-resolver', () => {
                 hand: [],
                 redraws: [],
                 undrawn: [],
-                from: TestUtil.getDbDeck(),
+                from: TestUtil.getDbDeck({}),
               },
               ready: false,
               rounds: [],
@@ -877,7 +877,7 @@ describe('mutation-resolver', () => {
                     unit: unit2._id,
                   },
                 ],
-                from: TestUtil.getDbDeck(),
+                from: TestUtil.getDbDeck({}),
               },
               ready: false,
               rounds: [],
@@ -962,7 +962,7 @@ describe('mutation-resolver', () => {
                   unit: unit2._id,
                 },
               ],
-              from: TestUtil.getDbDeck(),
+              from: TestUtil.getDbDeck({}),
             },
             ready: false,
             rounds: [],
@@ -975,7 +975,7 @@ describe('mutation-resolver', () => {
         unit: TestUtil.getUnit({
           id: unit2._id,
           created: unit2.created,
-          faction: unit2.faction,
+          factionId: unit2.faction,
         }),
       }
 
@@ -1016,7 +1016,7 @@ describe('mutation-resolver', () => {
                     unit: unit1._id,
                   },
                 ],
-                from: TestUtil.getDbDeck(),
+                from: TestUtil.getDbDeck({}),
               },
               ready: false,
               rounds: [],
@@ -1097,7 +1097,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if game does not exist', async () => {
-      const deck = TestUtil.getDbDeck()
+      const deck = TestUtil.getDbDeck({})
       const gameId = new ObjectId()
       await testSetDeck({
         deckId: deck._id,
@@ -1122,7 +1122,7 @@ describe('mutation-resolver', () => {
     })
     it('returns error if not a player on game', async () => {
       const userId = new ObjectId()
-      const deck = TestUtil.getDbDeck()
+      const deck = TestUtil.getDbDeck({})
       const game = TestUtil.getDbGame({})
       await testSetDeck({
         userId,
@@ -1149,7 +1149,7 @@ describe('mutation-resolver', () => {
     })
     it('returns error if deck is already set', async () => {
       const userId = new ObjectId()
-      const deck = TestUtil.getDbDeck()
+      const deck = TestUtil.getDbDeck({})
       const game = TestUtil.getDbGame({
         players: [
           {
@@ -1158,7 +1158,7 @@ describe('mutation-resolver', () => {
               hand: [],
               redraws: [],
               undrawn: [],
-              from: TestUtil.getDbDeck(),
+              from: TestUtil.getDbDeck({}),
             },
             ready: false,
             rounds: [],
@@ -1191,7 +1191,7 @@ describe('mutation-resolver', () => {
     })
     it('returns error if updated game is undefined', async () => {
       const userId = new ObjectId()
-      const deck = TestUtil.getDbDeck()
+      const deck = TestUtil.getDbDeck({})
       const game = TestUtil.getDbGame({
         creator: userId,
       })
@@ -1241,7 +1241,7 @@ describe('mutation-resolver', () => {
     })
     it('returns error if player not on updated game', async () => {
       const userId = new ObjectId()
-      const deck = TestUtil.getDbDeck()
+      const deck = TestUtil.getDbDeck({})
       const game = TestUtil.getDbGame({
         creator: userId,
       })
@@ -1291,7 +1291,7 @@ describe('mutation-resolver', () => {
     })
     it('returns resolved deck if no errors', async () => {
       const userId = new ObjectId()
-      const deck = TestUtil.getDbDeck()
+      const deck = TestUtil.getDbDeck({})
       const game = TestUtil.getDbGame({
         creator: userId,
       })

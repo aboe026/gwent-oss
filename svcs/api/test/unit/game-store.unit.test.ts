@@ -52,7 +52,7 @@ describe('game-store', () => {
       await testGetById({
         id,
         readResponse: [game, game],
-        error: `Multiple games with ID "${id}" exist`,
+        error: `Multiple games with ID "${id}" found.`,
       })
     })
   })

@@ -1,18 +1,16 @@
-import { ObjectId } from 'mongodb'
+import { FindOptions, ObjectId } from 'mongodb'
 
-import { DeckDbObject, UnitStats } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckStore, { AddDeckUnitInput } from '../../src/database/stores/deck-store'
 import Store from '../../src/database/stores/store'
 import TestUtil from '../test-util'
 
+// TODO: keep going through unit tests and improving them
+// use TestUtil methods for creating objects
+// make sure to use promise object instead of duplicate code if error/reject/resolve
+
 describe('deck-store', () => {
   describe('add', () => {
-    it('calls out to create method with deck information', async () => {
-      await testAdd({
-        name: 'success',
-        userId: new ObjectId(),
-      })
-    })
     it('throws special error if duplicate deck', async () => {
       const name = 'duplicate-error'
       const userId = new ObjectId()
@@ -37,10 +35,11 @@ describe('deck-store', () => {
         errorCalls: [[`Error adding deck for user "${userId}": ${Error(error)}`]],
       })
     })
+    it('calls out to create method with deck information if no error', async () => {
+      await testAdd({})
+    })
     it('logs to trace if enabled', async () => {
       await testAdd({
-        name: 'success',
-        userId: new ObjectId(),
         traceEnabled: true,
       })
     })
@@ -48,144 +47,98 @@ describe('deck-store', () => {
   describe('get', () => {
     it('calls to read with user id string', async () => {
       const userId = new ObjectId().toString()
-      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([])
-
-      await expect(DeckStore.get(userId)).resolves.toEqual([])
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              user: new ObjectId(userId),
-            },
-          },
+      await testGet({
+        userId,
+        deckReadResponse: [
+          TestUtil.getDbDeck({
+            user: userId,
+          }),
         ],
-      ])
+      })
     })
     it('calls to read with user id ObjectId', async () => {
       const userId = new ObjectId()
-      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([])
-
-      await expect(DeckStore.get(userId)).resolves.toEqual([])
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              user: userId,
-            },
-          },
+      await testGet({
+        userId,
+        deckReadResponse: [
+          TestUtil.getDbDeck({
+            user: userId,
+          }),
         ],
-      ])
+      })
     })
   })
   describe('getById', () => {
-    it('returns undefined if deck not found', async () => {
+    it('throws error if multiple decks found', async () => {
       const deckId = new ObjectId()
-      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([])
-
-      await expect(
-        DeckStore.getById({
-          id: deckId,
-        })
-      ).resolves.toEqual(undefined)
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              _id: deckId,
-            },
-          },
+      await testGetById({
+        id: deckId,
+        deckReadResponse: [
+          TestUtil.getDbDeck({
+            id: deckId,
+          }),
+          TestUtil.getDbDeck({
+            id: deckId,
+          }),
         ],
-      ])
+        expected: Error(`Multiple decks with ID "${deckId}" found.`),
+      })
     })
-    it('returns deck if found', async () => {
-      const deck = TestUtil.getDbDeck()
-
-      const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue([deck])
-
-      await expect(
-        DeckStore.getById({
-          id: deck._id,
-        })
-      ).resolves.toEqual(deck)
-
-      expect(readSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              _id: deck._id,
-            },
-          },
-        ],
-      ])
+    it('returns undefined if deck not found', async () => {
+      await testGetById({
+        deckReadResponse: [],
+        expected: undefined,
+      })
+    })
+    it('returns deck if found with ObjectId', async () => {
+      const deck = TestUtil.getDbDeck({})
+      await testGetById({
+        id: deck._id,
+        deckReadResponse: [deck],
+        expected: deck,
+      })
+    })
+    it('returns deck if found with string', async () => {
+      const deck = TestUtil.getDbDeck({})
+      await testGetById({
+        id: deck._id.toString(),
+        deckReadResponse: [deck],
+        expected: deck,
+      })
     })
   })
 })
 
 async function testAdd({
-  name,
-  userId,
+  name = 'deck-name',
+  userId = new ObjectId(),
   error,
   traceEnabled,
   isMongoError = false,
   errorCalls = [],
 }: {
-  name: string
-  userId: ObjectId
+  name?: string
+  userId?: ObjectId
   error?: Error
   traceEnabled?: boolean
   isMongoError?: boolean
   errorCalls?: (string | Error)[][]
 }) {
-  const factionId = new ObjectId()
-  const leaderId = new ObjectId()
-  const stats: UnitStats = {
-    agile: 1,
-    avenger: 2,
-    berserker: 3,
-    bond: 4,
-    close: 5,
-    decoy: 6,
-    heroes: 7,
-    horn: 8,
-    mardroeme: 9,
-    medic: 10,
-    morale: 11,
-    muster: 12,
-    ranged: 13,
-    scorch: 14,
-    siege: 15,
-    specials: 16,
-    spy: 17,
-    strengthAverage: 18,
-    strengths: 19,
-    strengthTotal: 20,
-    units: 21,
-    weather: 22,
-  }
+  const deck = TestUtil.getDbDeck({
+    user: userId,
+  })
+  const stats = TestUtil.getStats()
   const deckUnit: AddDeckUnitInput = {
     artStyle: 1,
     unit: new ObjectId(),
   }
   const created = new Date()
-  const expected: DeckDbObject = {
-    _id: new ObjectId(),
-    created,
-    faction: factionId,
-    leader: leaderId,
-    name,
-    stats,
-    units: [deckUnit as any],
-    user: userId,
-  }
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
   const createSpy = jest.spyOn(Store as any, 'create')
   if (error) {
     createSpy.mockRejectedValue(error)
   } else {
-    createSpy.mockResolvedValue(expected)
+    createSpy.mockResolvedValue(deck)
   }
   const isMongoErrorSpy = jest.spyOn(DeckStore, 'isMongoError').mockReturnValue(isMongoError)
   const traceSpy = jest.fn().mockImplementation()
@@ -196,38 +149,23 @@ async function testAdd({
     error: errorSpy,
   } as any
 
+  const promise = DeckStore.add({
+    factionId: deck.faction.toString(),
+    leaderId: deck.leader.toString(),
+    name,
+    stats,
+    units: [
+      {
+        artStyle: deckUnit.artStyle,
+        unit: deckUnit.unit.toString(),
+      },
+    ],
+    userId: userId.toString(),
+  })
   if (error) {
-    await expect(
-      DeckStore.add({
-        factionId: factionId.toString(),
-        leaderId: leaderId.toString(),
-        name,
-        stats,
-        units: [
-          {
-            artStyle: deckUnit.artStyle,
-            unit: deckUnit.unit.toString(),
-          },
-        ],
-        userId: userId.toString(),
-      })
-    ).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(
-      DeckStore.add({
-        factionId: factionId.toString(),
-        leaderId: leaderId.toString(),
-        name,
-        stats,
-        units: [
-          {
-            artStyle: deckUnit.artStyle,
-            unit: deckUnit.unit.toString(),
-          },
-        ],
-        userId: userId.toString(),
-      })
-    ).resolves.toEqual(expected)
+    await expect(promise).resolves.toEqual(deck)
   }
 
   expect(dateSpy.mock.calls).toEqual([[]])
@@ -235,8 +173,8 @@ async function testAdd({
     [
       {
         created,
-        faction: factionId,
-        leader: leaderId,
+        faction: deck.faction,
+        leader: deck.leader,
         name,
         stats,
         units: [deckUnit as any],
@@ -262,8 +200,8 @@ async function testAdd({
           [
             `Adding deck: "${JSON.stringify({
               created,
-              faction: factionId,
-              leader: leaderId,
+              faction: deck.faction,
+              leader: deck.leader,
               name,
               stats,
               units: [deckUnit as any],
@@ -274,4 +212,61 @@ async function testAdd({
       : []
   )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
+async function testGet({
+  userId,
+  deckReadResponse = [],
+}: {
+  userId: string | ObjectId
+  deckReadResponse?: DeckDbObject[]
+}) {
+  const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue(deckReadResponse)
+
+  await expect(DeckStore.get(userId)).resolves.toEqual(deckReadResponse)
+
+  expect(readSpy.mock.calls).toEqual([
+    [
+      {
+        filter: {
+          user: new ObjectId(userId),
+        },
+      },
+    ],
+  ])
+}
+
+async function testGetById({
+  id = new ObjectId(),
+  options,
+  deckReadResponse = [],
+  expected,
+}: {
+  id?: ObjectId | string
+  options?: FindOptions
+  deckReadResponse?: DeckDbObject[]
+  expected: Error | DeckDbObject | undefined
+}) {
+  const deckReadSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue(deckReadResponse)
+
+  const promise = DeckStore.getById({
+    id,
+    options,
+  })
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
+
+  expect(deckReadSpy.mock.calls).toEqual([
+    [
+      {
+        filter: {
+          _id: new ObjectId(id),
+        },
+        options,
+      },
+    ],
+  ])
 }

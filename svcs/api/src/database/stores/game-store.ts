@@ -67,7 +67,7 @@ export default class GameStore extends Store {
       options,
     })
     if (result && result.length > 1) {
-      const message = `Multiple games with ID "${id}" exist`
+      const message = `Multiple games with ID "${id}" found.`
       GameStore.logger.error(message)
       throw Error(message)
     }
