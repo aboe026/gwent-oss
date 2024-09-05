@@ -310,10 +310,11 @@ async function testGetLock({
   } as any
   const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(locks)
 
+  const promise = UpgradeStore.getLock()
   if (error) {
-    await expect(UpgradeStore.getLock()).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(UpgradeStore.getLock()).resolves.toEqual(locks[0])
+    await expect(promise).resolves.toEqual(locks[0])
   }
 
   expect(readSpy.mock.calls).toEqual([
@@ -348,10 +349,11 @@ async function testGetCurrentVersion({
   } as any
   const readSpy = jest.spyOn(UpgradeStore as any, 'read').mockResolvedValue(upgrades)
 
+  const promise = UpgradeStore.getCurrentVersion()
   if (error) {
-    await expect(UpgradeStore.getCurrentVersion()).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(expected)
+    await expect(promise).resolves.toEqual(expected)
   }
 
   expect(readSpy.mock.calls).toEqual([

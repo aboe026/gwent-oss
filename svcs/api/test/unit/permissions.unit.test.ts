@@ -1,11 +1,12 @@
 import { ObjectId } from 'mongodb'
 
 import { NO_RULE_DEFINED, Permissions } from '../../src/graphql/permissions'
-import { MAX_ROUNDS, NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import { GraphQLResolveInfo } from 'graphql'
 import GameStore from '../../src/database/stores/game-store'
-import { DeckDbObject, GameDbObject, UnitStats } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckStore from '../../src/database/stores/deck-store'
+import TestUtil from '../test-util'
 
 describe('permissions', () => {
   describe('fallback', () => {
@@ -191,41 +192,18 @@ describe('permissions', () => {
       const gameId = new ObjectId().toString()
       const player1 = new ObjectId()
       const player2 = new ObjectId()
-      const game: GameDbObject = {
-        _id: new ObjectId(gameId),
-        created: new Date(),
+      const game = TestUtil.getDbGame({
+        id: gameId,
         creator: player1,
         players: [
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
+          TestUtil.getDbGamePlayer({
             user: player1,
-          },
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
+          }),
+          TestUtil.getDbGamePlayer({
             user: player2,
-          },
+          }),
         ],
-        round: {
-          current: 0,
-          maximum: MAX_ROUNDS,
-        },
-        updated: new Date(),
-        victors: [],
-      }
+      })
       await testIsPlayer({
         fieldName,
         userId,
@@ -242,41 +220,16 @@ describe('permissions', () => {
     it('returns true if user is creator of game', async () => {
       const userId = new ObjectId()
       const gameId = new ObjectId().toString()
-      const game: GameDbObject = {
-        _id: new ObjectId(gameId),
-        created: new Date(),
+      const game = TestUtil.getDbGame({
+        id: gameId,
         creator: userId,
         players: [
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
+          TestUtil.getDbGamePlayer({
             user: userId,
-          },
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
-            user: new ObjectId(),
-          },
+          }),
+          TestUtil.getDbGamePlayer({}),
         ],
-        round: {
-          current: 0,
-          maximum: MAX_ROUNDS,
-        },
-        updated: new Date(),
-        victors: [],
-      }
+      })
       await testIsPlayer({
         fieldName,
         userId,
@@ -287,41 +240,15 @@ describe('permissions', () => {
     it('returns true if user is participant on game', async () => {
       const userId = new ObjectId()
       const gameId = new ObjectId().toString()
-      const game: GameDbObject = {
-        _id: new ObjectId(gameId),
-        created: new Date(),
-        creator: new ObjectId(),
+      const game = TestUtil.getDbGame({
+        id: gameId,
         players: [
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
-            user: new ObjectId(),
-          },
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
+          TestUtil.getDbGamePlayer({}),
+          TestUtil.getDbGamePlayer({
             user: userId,
-          },
+          }),
         ],
-        round: {
-          current: 0,
-          maximum: MAX_ROUNDS,
-        },
-        updated: new Date(),
-        victors: [],
-      }
+      })
       await testIsPlayer({
         fieldName,
         userId,
@@ -401,17 +328,9 @@ describe('permissions', () => {
     it('returns error if deck user does not match context user', async () => {
       const userId = new ObjectId()
       const deckId = new ObjectId().toString()
-      const deck: DeckDbObject = {
-        _id: new ObjectId(deckId),
-        created: new Date(),
-        faction: new ObjectId(),
-        leader: new ObjectId(),
-        name: 'deck-name',
-        // have "getFakeStats" method
-        stats: {} as UnitStats,
-        units: [],
-        user: new ObjectId(),
-      }
+      const deck = TestUtil.getDbDeck({
+        id: deckId,
+      })
       await testOwnsDeck({
         fieldName,
         userId,
@@ -428,17 +347,10 @@ describe('permissions', () => {
     it('returns true if deck user matches context user', async () => {
       const userId = new ObjectId()
       const deckId = new ObjectId().toString()
-      const deck: DeckDbObject = {
-        _id: new ObjectId(deckId),
-        created: new Date(),
-        faction: new ObjectId(),
-        leader: new ObjectId(),
-        name: 'deck-name',
-        // have "getFakeStats" method
-        stats: {} as UnitStats,
-        units: [],
+      const deck = TestUtil.getDbDeck({
+        id: deckId,
         user: userId,
-      }
+      })
       await testOwnsDeck({
         fieldName,
         userId,

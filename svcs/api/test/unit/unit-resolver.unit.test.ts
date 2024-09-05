@@ -5,7 +5,6 @@ import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
 import {
   DlcDbObject,
-  DlcKey,
   EffectDbObject,
   EffectKey,
   FactionDbObject,
@@ -24,15 +23,10 @@ describe('unit-resolver', () => {
       const unitId = new ObjectId()
       const factionId = new ObjectId()
       await testResolveFromObject({
-        unit: {
-          _id: unitId,
-          created: new Date(),
-          deckable: true,
+        unit: TestUtil.getDbUnit({
+          id: unitId,
           faction: factionId,
-          images: ['unit-image'],
-          name: 'unit-name',
-          quote: 'unit-quote',
-        },
+        }),
         error: `Could not resolve faction "${factionId}" on unit "${unitId}".`,
         dlcResolveIdCalls: [[undefined]],
         effectResolveIdCalls: [[undefined]],
@@ -47,14 +41,7 @@ describe('unit-resolver', () => {
       })
     })
     it('returns resolved unit if no db objects provided', async () => {
-      const faction: Faction = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
+      const faction = TestUtil.getFaction({})
       await testResolveFromObject({
         unit: {
           _id: new ObjectId(),
@@ -79,29 +66,9 @@ describe('unit-resolver', () => {
       })
     })
     it('returns resolved unit if all db objects provided', async () => {
-      const dlc: DlcDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'dlc-image',
-        key: DlcKey.BloodAndWine,
-        name: 'dlc-name',
-      }
-      const effect: EffectDbObject = {
-        _id: new ObjectId(),
-        ability: 'effect-ability',
-        created: new Date(),
-        image: 'effect-image',
-        key: EffectKey.Agile,
-        name: 'effect-name',
-      }
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
+      const dlc = TestUtil.getDbDlc()
+      const effect = TestUtil.getDbEffect({})
+      const faction = TestUtil.getDbFaction({})
       await testResolveFromObject({
         unit: {
           _id: new ObjectId(),
@@ -117,31 +84,9 @@ describe('unit-resolver', () => {
         dlc,
         effects: [effect],
         faction,
-        resolvedDlc: {
-          created: dlc.created,
-          id: dlc._id.toString(),
-          image: dlc.image,
-          key: dlc.key as DlcKey,
-          name: dlc.name,
-        },
-        resolvedEffects: [
-          {
-            ability: effect.ability,
-            created: effect.created,
-            id: effect._id.toString(),
-            image: effect.image,
-            key: effect.key as EffectKey,
-            name: effect.name,
-          },
-        ],
-        resolvedFaction: {
-          created: faction.created,
-          id: faction._id.toString(),
-          image: faction.image,
-          key: faction.key as FactionKey,
-          name: faction.name,
-          stats: faction.stats,
-        },
+        resolvedDlc: TestUtil.getDlcFromDbDlc(dlc),
+        resolvedEffects: [TestUtil.getEffectFromDbEffect(effect)],
+        resolvedFaction: TestUtil.getFactionFromDbFaction(faction),
         dlcResolveObjectCalls: [[dlc]],
         effectResolveObjectCalls: [[effect]],
         factionResolveObjectCalls: [
@@ -161,7 +106,7 @@ describe('unit-resolver', () => {
       const unitId = new ObjectId()
       await testResolveFromId({
         id: unitId,
-        resolvedUnits: [{} as Unit, {} as Unit],
+        resolvedUnits: [TestUtil.getUnit({}), TestUtil.getUnit({})],
         error: `More than one unit resolved for "${unitId}".`,
       })
     })
@@ -177,15 +122,9 @@ describe('unit-resolver', () => {
       await testResolveFromId({
         id: unitId,
         resolvedUnits: [
-          {
-            created: new Date(),
-            deckable: true,
-            faction: {} as Faction,
-            id: unitId.toString(),
-            images: ['unit-image'],
-            name: 'unit-name',
-            quote: 'unit-quote',
-          },
+          TestUtil.getUnit({
+            id: unitId,
+          }),
         ],
       })
     })

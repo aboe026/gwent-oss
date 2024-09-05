@@ -92,10 +92,11 @@ async function testBasicAuth({
   }
   const nextSpy = jest.fn().mockImplementation()
 
+  const promise = BasicAuth.authenticate(req, res, nextSpy)
   if (error) {
-    await expect(BasicAuth.authenticate(req, res, nextSpy)).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(BasicAuth.authenticate(req, res, nextSpy)).resolves.toEqual(undefined)
+    await expect(promise).resolves.toEqual(undefined)
   }
 
   expect(validateUserSpy.mock.calls).toEqual(validateUserCalls)

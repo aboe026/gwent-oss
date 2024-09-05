@@ -1,4 +1,4 @@
-import { EffectDbObject, EffectKey } from '@gwent/graphql-schema/database-typings'
+import { EffectDbObject } from '@gwent/graphql-schema/database-typings'
 import EffectResolver from '../../src/graphql/resolvers/effect-resolver'
 import { ObjectId } from 'mongodb'
 import EffectStore from '../../src/database/stores/effect-store'
@@ -8,14 +8,7 @@ import TestUtil from '../test-util'
 describe('effect-resolver', () => {
   describe('resolveFromObject', () => {
     it('returns transformed object', () => {
-      const effect: EffectDbObject = {
-        _id: new ObjectId(),
-        ability: 'effect-ability',
-        created: new Date(),
-        image: 'effect-image',
-        key: EffectKey.Agile,
-        name: 'effect-name',
-      }
+      const effect = TestUtil.getDbEffect({})
       expect(EffectResolver.resolveFromObject(effect)).toEqual({
         ability: effect.ability,
         created: effect.created,
@@ -60,23 +53,15 @@ describe('effect-resolver', () => {
       })
     })
     it('calls to effect store and returns resolved objects if effectIds are ObjectIds', async () => {
-      const effectId = new ObjectId()
+      const effect = TestUtil.getDbEffect({})
       await testResolveFromIds({
-        ids: [effectId],
-        effectGetResponse: [
-          TestUtil.getDbEffect({
-            id: effectId,
-          }),
-        ],
-        expected: [
-          TestUtil.getEffect({
-            id: effectId,
-          }),
-        ],
+        ids: [effect._id],
+        effectGetResponse: [effect],
+        expected: [TestUtil.getEffectFromDbEffect(effect)],
         effectGetCalls: [
           [
             {
-              ids: [effectId],
+              ids: [effect._id],
             },
           ],
         ],

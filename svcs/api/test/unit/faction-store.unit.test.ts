@@ -1,7 +1,8 @@
 import { ObjectId } from 'mongodb'
 
-import { FactionDbObject, FactionKey, UnitStats } from '@gwent/graphql-schema/database-typings'
+import { FactionDbObject, FactionKey } from '@gwent/graphql-schema/database-typings'
 import FactionStore, { GetFactionsInput } from '../../src/database/stores/faction-store'
+import TestUtil from '../test-util'
 
 describe('faction-store', () => {
   describe('add', () => {
@@ -17,30 +18,7 @@ describe('faction-store', () => {
   describe('edit', () => {
     it('calls to update', async () => {
       const id = new ObjectId()
-      const stats: UnitStats = {
-        agile: 1,
-        avenger: 2,
-        berserker: 3,
-        bond: 4,
-        close: 5,
-        decoy: 6,
-        heroes: 7,
-        horn: 8,
-        mardroeme: 9,
-        medic: 10,
-        morale: 11,
-        muster: 12,
-        ranged: 13,
-        scorch: 14,
-        siege: 15,
-        specials: 16,
-        spy: 17,
-        strengthAverage: 18,
-        strengths: 19,
-        strengthTotal: 20,
-        units: 21,
-        weather: 22,
-      }
+      const stats = TestUtil.getStats()
       const updateSpy = jest.spyOn(FactionStore as any, 'update').mockResolvedValue({ _id: id })
 
       await expect(

@@ -2,20 +2,13 @@ import { Faction, FactionDbObject } from '@gwent/graphql-schema/database-typings
 import FactionStore from '../../src/database/stores/faction-store'
 import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
 import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
-import { Dlc, DlcKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Dlc, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
 import { ObjectId } from 'mongodb'
 
 describe('faction-resolver', () => {
   describe('resolveFromObject', () => {
-    const faction: FactionDbObject = {
-      _id: new ObjectId(),
-      created: new Date(),
-      image: 'faction-image',
-      key: FactionKey.Monsters,
-      name: 'faction-name',
-      stats: TestUtil.getStats(),
-    }
+    const faction = TestUtil.getDbFaction({})
     it('throws error if request neutral stats and neutral faction not found', async () => {
       await testResolveFromObject({
         faction,
@@ -50,14 +43,9 @@ describe('faction-resolver', () => {
       await testResolveFromObject({
         faction,
         neutralStats: true,
-        neutral: {
-          _id: new ObjectId(),
-          created: new Date(),
-          image: 'faction-neutral-image',
+        neutral: TestUtil.getDbFaction({
           key: FactionKey.Neutral,
-          name: 'faction-neutral-name',
-          stats: TestUtil.getStats(2),
-        },
+        }),
       })
     })
   })
@@ -83,14 +71,9 @@ describe('faction-resolver', () => {
     })
     it('returns faction if found', async () => {
       const id = new ObjectId()
-      const faction: Faction = {
-        created: new Date(),
-        id: id.toString(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
+      const faction = TestUtil.getFaction({
+        id,
+      })
       const resolveFromIdsSpy = jest.spyOn(FactionResolver, 'resolveFromIds').mockResolvedValue([faction])
 
       await expect(
@@ -129,16 +112,7 @@ describe('faction-resolver', () => {
   describe('resolveFromArray', () => {
     it('throws error if neutral faction not found', async () => {
       await testResolveFromArray({
-        factions: [
-          {
-            _id: new ObjectId(),
-            created: new Date(),
-            image: 'faction-image',
-            key: FactionKey.Monsters,
-            name: 'faction-name',
-            stats: TestUtil.getStats(),
-          },
-        ],
+        factions: [TestUtil.getDbFaction({})],
         neutralStats: true,
         factionGetResponse: [],
         error: `Could not resolve neutral faction "${FactionKey.Neutral}" for factions array: None found.`,
@@ -153,34 +127,15 @@ describe('faction-resolver', () => {
     })
     it('throws error if multiple neutral factions found', async () => {
       const neutralFactions: FactionDbObject[] = [
-        {
-          _id: new ObjectId(),
-          created: new Date(),
-          image: 'neutral-faction-image-1',
+        TestUtil.getDbFaction({
           key: FactionKey.Neutral,
-          name: 'neutral-faction-name-1',
-          stats: TestUtil.getStats(1),
-        },
-        {
-          _id: new ObjectId(),
-          created: new Date(),
-          image: 'neutral-faction-image-2',
+        }),
+        TestUtil.getDbFaction({
           key: FactionKey.Neutral,
-          name: 'neutral-faction-name-2',
-          stats: TestUtil.getStats(2),
-        },
+        }),
       ]
       await testResolveFromArray({
-        factions: [
-          {
-            _id: new ObjectId(),
-            created: new Date(),
-            image: 'faction-image',
-            key: FactionKey.Monsters,
-            name: 'faction-name',
-            stats: TestUtil.getStats(),
-          },
-        ],
+        factions: [TestUtil.getDbFaction({})],
         neutralStats: true,
         factionGetResponse: neutralFactions,
         error: `Could not resolve neutral faction "${
@@ -200,29 +155,17 @@ describe('faction-resolver', () => {
       const dlcId = new ObjectId()
       await testResolveFromArray({
         factions: [
-          {
-            _id: factionId,
-            created: new Date(),
-            image: 'faction-image',
-            key: FactionKey.Monsters,
-            name: 'faction-name',
-            stats: TestUtil.getStats(),
+          TestUtil.getDbFaction({
+            id: factionId,
             dlc: dlcId,
-          },
+          }),
         ],
         error: `Could not resolve dlc "${dlcId}" for faction ${factionId} in array.`,
         dlcResolveCalls: [[[dlcId]]],
       })
     })
     it('calls to resolveFromObject without neutrals or dlc', async () => {
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
+      const faction = TestUtil.getDbFaction({})
       await testResolveFromArray({
         factions: [faction],
         factionResolveResponse: {
@@ -236,14 +179,7 @@ describe('faction-resolver', () => {
       })
     })
     it('calls to resolveFromObject requesting neutrals without providing', async () => {
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
+      const faction = TestUtil.getDbFaction({})
       await testResolveFromArray({
         factions: [faction],
         factionResolveResponse: {
@@ -275,22 +211,10 @@ describe('faction-resolver', () => {
       })
     })
     it('calls to resolveFromObject with dlc without providing', async () => {
-      const dlc: Dlc = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        image: 'dlc-image',
-        key: DlcKey.BloodAndWine,
-        name: 'dlc-name',
-      }
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-        dlc: new ObjectId(dlc.id),
-      }
+      const dlc = TestUtil.getDlc({})
+      const faction = TestUtil.getDbFaction({
+        dlc: dlc.id,
+      })
       await testResolveFromArray({
         factions: [faction],
         factionResolveResponse: {
@@ -311,96 +235,62 @@ describe('faction-resolver', () => {
     it('returns faction stats if not neutral and no neutral requested', () => {
       expect(
         FactionResolver.resolveStats({
-          faction: {
-            _id: new ObjectId(),
-            created: new Date(),
-            image: 'faction-image',
-            key: FactionKey.Monsters,
-            name: 'faction-name',
-            stats: TestUtil.getStats(),
-          },
+          faction: TestUtil.getDbFaction({}),
         })
       ).toEqual(TestUtil.getStats())
     })
     it('returns faction stats if neutral and no neutral requested', () => {
       expect(
         FactionResolver.resolveStats({
-          faction: {
-            _id: new ObjectId(),
-            created: new Date(),
-            image: 'faction-image',
+          faction: TestUtil.getDbFaction({
             key: FactionKey.Neutral,
-            name: 'faction-name',
-            stats: TestUtil.getStats(),
-          },
+          }),
         })
       ).toEqual(TestUtil.getStats())
     })
     it('returns faction stats if neutral and neutral requested', () => {
       expect(
         FactionResolver.resolveStats({
-          faction: {
-            _id: new ObjectId(),
-            created: new Date(),
-            image: 'faction-image',
+          faction: TestUtil.getDbFaction({
             key: FactionKey.Neutral,
-            name: 'faction-name',
-            stats: TestUtil.getStats(),
-          },
-          neutral: {
-            _id: new ObjectId(),
-            created: new Date(),
-            image: 'faction-neutral-image',
+          }),
+          neutral: TestUtil.getDbFaction({
             key: FactionKey.Neutral,
-            name: 'faction-neutral-image',
-            stats: TestUtil.getStats(1),
-          },
+          }),
         })
       ).toEqual(TestUtil.getStats())
     })
     it('returns combined faction stats if not neutral and neutral requested', () => {
       expect(
         FactionResolver.resolveStats({
-          faction: {
-            _id: new ObjectId(),
-            created: new Date(),
-            image: 'faction-image',
-            key: FactionKey.Monsters,
-            name: 'faction-name',
-            stats: TestUtil.getStats(),
-          },
-          neutral: {
-            _id: new ObjectId(),
-            created: new Date(),
-            image: 'faction-neutral-image',
+          faction: TestUtil.getDbFaction({}),
+          neutral: TestUtil.getDbFaction({
             key: FactionKey.Neutral,
-            name: 'faction-neutral-image',
-            stats: TestUtil.getStats(1),
-          },
+          }),
         })
       ).toEqual({
-        agile: 3,
-        avenger: 5,
-        berserker: 7,
-        bond: 9,
-        close: 11,
-        decoy: 13,
-        heroes: 15,
-        horn: 17,
-        mardroeme: 19,
-        medic: 21,
-        morale: 23,
-        muster: 25,
-        ranged: 27,
-        scorch: 29,
-        siege: 31,
-        specials: 33,
-        spy: 35,
-        strengthAverage: 18.511627906976745,
-        strengthTotal: 41,
-        strengths: 39,
-        units: 43,
-        weather: 45,
+        agile: 2,
+        avenger: 4,
+        berserker: 6,
+        bond: 8,
+        close: 10,
+        decoy: 12,
+        heroes: 14,
+        horn: 16,
+        mardroeme: 18,
+        medic: 20,
+        morale: 22,
+        muster: 24,
+        ranged: 26,
+        scorch: 28,
+        siege: 30,
+        specials: 32,
+        spy: 34,
+        strengthAverage: 18,
+        strengthTotal: 40,
+        strengths: 38,
+        units: 42,
+        weather: 44,
       })
     })
   })
@@ -412,14 +302,9 @@ async function testResolveFromObject({
   neutral,
   neutralStats,
   neutralFactions = [
-    {
-      _id: new ObjectId(),
-      created: new Date(),
-      image: 'faction-neutral-image',
+    TestUtil.getDbFaction({
       key: FactionKey.Neutral,
-      name: 'faction-neutral-name',
-      stats: TestUtil.getStats(),
-    },
+    }),
   ],
   resolveDlc = true,
   error,
@@ -434,13 +319,11 @@ async function testResolveFromObject({
 }) {
   let resolvedDlc: Dlc | null = null
   if (faction.dlc) {
-    resolvedDlc = dlc || {
-      created: new Date(),
-      id: faction.dlc?.toString(),
-      image: 'dlc-image',
-      key: DlcKey.BloodAndWine,
-      name: 'dlc-name',
-    }
+    resolvedDlc =
+      dlc ||
+      TestUtil.getDlc({
+        id: faction.dlc,
+      })
   }
   const resolvedStats = TestUtil.getStats(1)
   const resolvedFaction: Faction = {
@@ -496,26 +379,12 @@ async function testResolveFromObject({
 }
 
 async function testResolveFromIds({ ids }: { ids: (ObjectId | string)[] }) {
-  const factions: FactionDbObject[] = ids.map((id, index) => {
-    return {
-      _id: new ObjectId(id),
-      created: new Date(),
-      image: `faction-${index}-image`,
-      key: FactionKey.Monsters,
-      name: `faction-${index}-name`,
-      stats: TestUtil.getStats(index),
-    }
-  })
-  const resolvedFactions: Faction[] = factions.map((faction) => {
-    return {
-      created: faction.created,
-      id: faction._id.toString(),
-      image: faction.image,
-      key: faction.key as FactionKey,
-      name: faction.name,
-      stats: faction.stats,
-    }
-  })
+  const factions = ids.map((id) =>
+    TestUtil.getDbFaction({
+      id,
+    })
+  )
+  const resolvedFactions: Faction[] = factions.map((faction) => TestUtil.getFactionFromDbFaction(faction))
   const getSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factions)
   const resolveSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue(resolvedFactions)
 

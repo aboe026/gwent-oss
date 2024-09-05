@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import GameStore from '../../src/database/stores/game-store'
 import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import { MAX_ROUNDS } from '@gwent/constants'
+import TestUtil from '../test-util'
 
 describe('game-store', () => {
   describe('add', () => {
@@ -34,25 +35,19 @@ describe('game-store', () => {
       })
     })
     it('calls out to read method and returns game if one exists', async () => {
-      const id = new ObjectId()
-      const game = getFakeGame({
-        id,
-      })
+      const game = TestUtil.getDbGame({})
       await testGetById({
-        id,
+        id: game._id,
         readResponse: [game],
         expected: game,
       })
     })
     it('calls out to read method and throws error if more than 1 game exists', async () => {
-      const id = new ObjectId()
-      const game = getFakeGame({
-        id,
-      })
+      const game = TestUtil.getDbGame({})
       await testGetById({
-        id,
+        id: game._id,
         readResponse: [game, game],
-        error: `Multiple games with ID "${id}" found.`,
+        error: `Multiple games with ID "${game._id}" found.`,
       })
     })
   })
@@ -134,49 +129,6 @@ describe('game-store', () => {
   })
 })
 
-function getFakeGame({ creatorId, id }: { id?: ObjectId; creatorId?: ObjectId }): GameDbObject {
-  if (!creatorId) {
-    creatorId = new ObjectId()
-  }
-  return {
-    _id: id || new ObjectId(),
-    created: new Date(),
-    creator: creatorId,
-    players: [
-      {
-        deck: {
-          discard: [],
-          from: null as any as undefined,
-          hand: [],
-          redraws: [],
-          undrawn: [],
-        },
-        ready: false,
-        rounds: [],
-        user: creatorId,
-      },
-      {
-        deck: {
-          discard: [],
-          from: null as any as undefined,
-          hand: [],
-          redraws: [],
-          undrawn: [],
-        },
-        ready: false,
-        rounds: [],
-        user: new ObjectId(),
-      },
-    ],
-    round: {
-      current: 0,
-      maximum: MAX_ROUNDS,
-    },
-    updated: new Date(),
-    victors: [],
-  }
-}
-
 async function testAddGame({
   creatorId,
   opponentIds,
@@ -191,20 +143,14 @@ async function testAddGame({
     _id: new ObjectId(),
     created,
     creator: new ObjectId(creatorId),
-    players: [creatorId, ...opponentIds].map((playerId) => {
-      return {
-        deck: {
-          discard: [],
-          from: null as any as undefined,
-          hand: [],
-          redraws: [],
-          undrawn: [],
-        },
-        ready: false,
-        rounds: [],
-        user: new ObjectId(playerId),
-      }
-    }),
+    players: [creatorId, ...opponentIds].map((playerId) =>
+      TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: null as any,
+        }),
+        user: playerId,
+      })
+    ),
     round: {
       current: 0,
       maximum: MAX_ROUNDS,
@@ -256,18 +202,13 @@ async function testGetById({
     error: errorSpy,
   } as any
 
+  const promise = GameStore.getById({
+    id,
+  })
   if (error) {
-    await expect(
-      GameStore.getById({
-        id,
-      })
-    ).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(
-      GameStore.getById({
-        id,
-      })
-    ).resolves.toEqual(expected)
+    await expect(promise).resolves.toEqual(expected)
   }
 
   expect(readSpy.mock.calls).toEqual([
@@ -284,7 +225,7 @@ async function testGetById({
 }
 
 async function testGetByUserId({ userId }: { userId: ObjectId | string }) {
-  const game = getFakeGame({})
+  const game = TestUtil.getDbGame({})
   const readSpy = jest.spyOn(GameStore as any, 'read').mockResolvedValue([game])
 
   await expect(GameStore.getByUserId(userId)).resolves.toEqual([game])
@@ -309,45 +250,20 @@ async function testSetDeck({
   userId: string | ObjectId
   traceEnabled?: boolean
 }) {
-  const deck: DeckDbObject = {
-    _id: new ObjectId(),
-    created: new Date(),
-    faction: new ObjectId(),
-    leader: new ObjectId(),
-    name: 'deck-name',
-    stats: {} as any,
-    units: [],
-    user: new ObjectId(userId),
-  }
-  const hand: DeckUnitDbObject[] = [
-    {
-      artStyle: 1,
-      unit: new ObjectId(),
-    },
-  ]
-  const undrawn: DeckUnitDbObject[] = [
-    {
-      artStyle: 1,
-      unit: new ObjectId(),
-    },
-    {
-      artStyle: 1,
-      unit: new ObjectId(),
-    },
-  ]
-  const updatedGame = getFakeGame({
-    id: new ObjectId(gameId),
-    creatorId: new ObjectId(userId),
+  const deck = TestUtil.getDbDeck({
+    user: userId,
+  })
+  const hand: DeckUnitDbObject[] = [TestUtil.getDbDeckUnit({})]
+  const undrawn: DeckUnitDbObject[] = [TestUtil.getDbDeckUnit({}), TestUtil.getDbDeckUnit({})]
+  const updatedGame = TestUtil.getDbGame({
+    id: gameId,
+    creator: userId,
   })
   updatedGame.players = updatedGame.players.map((player) => {
     if (player.user === updatedGame.creator) {
-      player.deck = {
-        discard: [],
-        hand,
-        redraws: [],
-        undrawn,
+      player.deck = TestUtil.getDbGameDeck({
         from: deck,
-      }
+      })
     }
     return player
   })
@@ -407,20 +323,15 @@ async function testRedraw({
   userId: string | ObjectId
   traceEnabled?: boolean
 }) {
-  const from: DeckUnitDbObject = {
-    artStyle: 1,
-    unit: new ObjectId(),
-  }
-  const to: DeckUnitDbObject = {
+  const from: DeckUnitDbObject = TestUtil.getDbDeckUnit({})
+  const to: DeckUnitDbObject = TestUtil.getDbDeckUnit({
     artStyle: 2,
-    unit: new ObjectId(),
-  }
+  })
   const currentRedraws: RedrawDbObject[] = []
   const newHand: DeckUnitDbObject[] = [
-    {
+    TestUtil.getDbDeckUnit({
       artStyle: 3,
-      unit: new ObjectId(),
-    },
+    }),
     to,
   ]
   const newRedraws: RedrawDbObject[] = [
@@ -430,10 +341,9 @@ async function testRedraw({
     },
   ]
   const newUndrawn: DeckUnitDbObject[] = [
-    {
+    TestUtil.getDbDeckUnit({
       artStyle: 4,
-      unit: new ObjectId(),
-    },
+    }),
   ]
 
   const deck: DeckDbObject = {
@@ -446,19 +356,17 @@ async function testRedraw({
     units: [],
     user: new ObjectId(userId),
   }
-  const updatedGame = getFakeGame({
-    id: new ObjectId(gameId),
-    creatorId: new ObjectId(userId),
+  const updatedGame = TestUtil.getDbGame({
+    id: gameId,
+    creator: userId,
   })
   updatedGame.players = updatedGame.players.map((player) => {
     if (player.user === updatedGame.creator) {
-      player.deck = {
-        discard: [],
-        hand: newHand,
-        redraws: [],
-        undrawn: newUndrawn,
+      player.deck = TestUtil.getDbGameDeck({
         from: deck,
-      }
+        hand: newHand,
+        undrawn: newUndrawn,
+      })
     }
     return player
   })
@@ -520,45 +428,18 @@ async function testReady({
   userId: string | ObjectId
   traceEnabled?: boolean
 }) {
-  const deck: DeckDbObject = {
-    _id: new ObjectId(),
-    created: new Date(),
-    faction: new ObjectId(),
-    leader: new ObjectId(),
-    name: 'deck-name',
-    stats: {} as any,
-    units: [],
-    user: new ObjectId(userId),
-  }
-  const hand: DeckUnitDbObject[] = [
-    {
-      artStyle: 1,
-      unit: new ObjectId(),
-    },
-  ]
-  const undrawn: DeckUnitDbObject[] = [
-    {
-      artStyle: 1,
-      unit: new ObjectId(),
-    },
-    {
-      artStyle: 1,
-      unit: new ObjectId(),
-    },
-  ]
-  const updatedGame = getFakeGame({
-    id: new ObjectId(gameId),
-    creatorId: new ObjectId(userId),
+  const deck = TestUtil.getDbDeck({
+    user: userId,
+  })
+  const updatedGame = TestUtil.getDbGame({
+    id: gameId,
+    creator: userId,
   })
   updatedGame.players = updatedGame.players.map((player) => {
     if (player.user === updatedGame.creator) {
-      player.deck = {
-        discard: [],
-        hand,
-        redraws: [],
-        undrawn,
+      player.deck = TestUtil.getDbGameDeck({
         from: deck,
-      }
+      })
       player.ready = true
     }
     return player

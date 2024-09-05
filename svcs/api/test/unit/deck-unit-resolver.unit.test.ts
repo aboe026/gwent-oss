@@ -2,7 +2,7 @@ import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
 import { ObjectId } from 'mongodb'
 import DeckUnitResolver from '../../src/graphql/resolvers/deck-unit-resolver'
-import { Faction, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Unit } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
 
 describe('deck-unit-resolver', () => {
@@ -118,15 +118,9 @@ async function testResolveFromArray({ neutralStats }: { neutralStats?: boolean }
     artStyle: 2,
     unit: deckUnit1.unit,
   }
-  const unit: Unit = {
-    created: new Date(),
-    deckable: true,
-    faction: {} as Faction,
-    id: deckUnit1.unit.toString(),
-    images: ['unit-image'],
-    name: 'unit-name',
-    quote: 'unit-quote',
-  }
+  const unit = TestUtil.getUnit({
+    id: deckUnit1.unit,
+  })
   const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue([unit])
 
   await expect(

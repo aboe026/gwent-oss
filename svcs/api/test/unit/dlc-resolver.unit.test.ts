@@ -1,8 +1,8 @@
-import { DlcDbObject, DlcKey } from '@gwent/graphql-schema/database-typings'
+import { DlcKey } from '@gwent/graphql-schema/database-typings'
 import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
 import { ObjectId } from 'mongodb'
-import { Dlc } from '@gwent/graphql-schema/resolver-typings'
 import DlcStore from '../../src/database/stores/dlc-store'
+import TestUtil from '../test-util'
 
 describe('dlc-resolver', () => {
   describe('resolveFromObject', () => {
@@ -16,13 +16,7 @@ describe('dlc-resolver', () => {
       expect(DlcResolver.resolveFromObject(undefined)).toEqual(null)
     })
     it('returns dlc object if defined', () => {
-      const dlc: DlcDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'dlc-image',
-        key: DlcKey.BloodAndWine.toString(),
-        name: 'dlc-name',
-      }
+      const dlc = TestUtil.getDbDlc()
       expect(DlcResolver.resolveFromObject(dlc)).toEqual({
         created: dlc.created,
         id: dlc._id.toString(),
@@ -66,13 +60,7 @@ describe('dlc-resolver', () => {
       expect(dlcGetSpy.mock.calls).toEqual([])
     })
     it('returns single dlc if single id', async () => {
-      const dlc: DlcDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'dlc-iamge',
-        key: DlcKey.BloodAndWine,
-        name: 'dlc-name',
-      }
+      const dlc = TestUtil.getDbDlc()
       const dlcGetSpy = jest.spyOn(DlcStore, 'get').mockResolvedValue([dlc])
 
       await expect(DlcResolver.resolveFromIds([dlc._id])).resolves.toEqual([
@@ -107,13 +95,9 @@ async function testResolveFromId({
   expected?: boolean
   resolveFromIdsCalls?: any[][]
 }) {
-  const dlc: Dlc = {
-    created: new Date(),
-    id: (id || '').toString(),
-    image: 'dlc-image',
-    key: DlcKey.BloodAndWine,
-    name: 'dlc-name',
-  }
+  const dlc = TestUtil.getDlc({
+    id,
+  })
   const dlcResolverSpy = jest.spyOn(DlcResolver, 'resolveFromIds').mockResolvedValue([dlc])
 
   await expect(passId ? DlcResolver.resolveFromId(id) : DlcResolver.resolveFromId()).resolves.toEqual(

@@ -3,32 +3,14 @@ import { ObjectId } from 'mongodb'
 import AppInfo from '../../src/app-info'
 import DeckStore from '../../src/database/stores/deck-store'
 import * as env from '../../src/env'
-import {
-  Faction,
-  FactionKey,
-  Game,
-  GameDeck,
-  GameStatus,
-  Leader,
-  SettingKey,
-  SettingType,
-  User,
-} from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, GameDeck, SettingKey, SettingType, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import LeaderStore from '../../src/database/stores/leader-store'
 import QueryResolver from '../../src/graphql/resolvers/query-resolver'
 import UnitStore from '../../src/database/stores/unit-store'
 import { version } from '../../package.json'
 import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
-import {
-  DeckDbObject,
-  FactionDbObject,
-  GameDbObject,
-  GameDeckDbObject,
-  LeaderDbObject,
-  UnitDbObject,
-  UnitStats,
-} from '@gwent/graphql-schema/database-typings'
+import { FactionDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
 import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import UserResolver from '../../src/graphql/resolvers/user-resolver'
 import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
@@ -37,6 +19,7 @@ import GameResolver from '../../src/graphql/resolvers/game-resolver'
 import { MAX_ROUNDS } from '@gwent/constants'
 import GameStore from '../../src/database/stores/game-store'
 import GameDeckResolver from '../../src/graphql/resolvers/game-deck-resolver'
+import TestUtil from '../test-util'
 
 describe('query-resolver', () => {
   describe('application', () => {
@@ -113,16 +96,7 @@ describe('query-resolver', () => {
           },
         },
       }
-      const deck: DeckDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        faction: new ObjectId(),
-        leader: new ObjectId(),
-        name: 'deck-name',
-        stats: {} as any,
-        units: [],
-        user: new ObjectId(),
-      }
+      const deck = TestUtil.getDbDeck({})
       const getSpy = jest.spyOn(DeckStore, 'get').mockResolvedValue([deck])
       const deckResolverSpy = jest.spyOn(DeckResolver, 'resolveFromArray').mockResolvedValue([])
 
@@ -143,22 +117,8 @@ describe('query-resolver', () => {
   })
   describe('factions', () => {
     it('reaches out to FactionStore', async () => {
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'faction-image',
-        key: FactionKey.NorthernRealms,
-        name: 'faction-name',
-        stats: {} as any,
-      }
-      const resolvedFaction: Faction = {
-        created: faction.created,
-        id: faction._id.toString(),
-        image: faction.image,
-        key: FactionKey.NorthernRealms,
-        name: faction.name,
-        stats: faction.stats,
-      }
+      const faction = TestUtil.getDbFaction({})
+      const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
       const getSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue([faction])
       const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue([resolvedFaction])
 
@@ -195,23 +155,9 @@ describe('query-resolver', () => {
     })
     it('returns resolved game if found', async () => {
       const gameId = new ObjectId().toString()
-      const game: Game = {
-        created: new Date(),
-        creator: {
-          created: new Date(),
-          id: new ObjectId().toString(),
-          name: 'user-name',
-        },
-        id: new ObjectId().toString(),
-        players: [],
-        round: {
-          current: 0,
-          maximum: MAX_ROUNDS,
-        },
-        status: GameStatus.Decking,
-        updated: new Date(),
-        victors: [],
-      }
+      const game = TestUtil.getGame({
+        id: gameId,
+      })
       const resolveByIdSpy = jest.spyOn(GameResolver, 'resolveById').mockResolvedValue(game)
 
       await expect(
@@ -269,17 +215,9 @@ describe('query-resolver', () => {
           created: new Date(),
           creator: userId,
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [],
-                undrawn: [],
-              },
-              ready: false,
-              rounds: [],
+            TestUtil.getDbGamePlayer({
               user: userId,
-            },
+            }),
           ],
           round: {
             current: 0,
@@ -294,47 +232,17 @@ describe('query-resolver', () => {
     it('returns game deck if player deck is set', async () => {
       const userId = new ObjectId()
       const gameId = new ObjectId()
-      const deck: DeckDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        faction: new ObjectId(),
-        leader: new ObjectId(),
-        name: 'deck-name',
-        stats: {} as UnitStats,
-        units: [],
+      const deck = TestUtil.getDbDeck({
         user: userId,
-      }
-      const playerDeck: GameDeckDbObject = {
-        discard: [],
-        hand: [],
-        redraws: [],
-        undrawn: [],
+      })
+      const playerDeck = TestUtil.getDbGameDeck({
         from: deck,
-      }
-      const gameDeck: GameDeck = {
-        discard: [],
-        hand: [],
-        redraws: [],
-        undrawn: [],
-        from: {
-          created: deck.created,
-          faction: {
-            id: deck.faction.toString(),
-          } as Faction,
-          id: deck._id.toString(),
-          leader: {
-            id: deck.leader.toString(),
-          } as Leader,
-          name: deck.name,
-          stats: deck.stats,
-          units: [],
-          user: {
-            created: new Date(),
-            id: userId.toString(),
-            name: 'user-name',
-          },
-        },
-      }
+      })
+      const gameDeck = TestUtil.getGameDeck({
+        from: TestUtil.getDeckFromDbDeck({
+          deck,
+        }),
+      })
       await testGameDeck({
         userId: userId,
         gameId: gameId.toString(),
@@ -415,14 +323,9 @@ describe('query-resolver', () => {
           ],
         ],
         factionGetResponse: [
-          {
-            _id: factionId,
-            created: new Date(),
-            image: 'faction-image',
-            key: factionKey,
-            name: 'faction-name',
-            stats: {} as any,
-          },
+          TestUtil.getDbFaction({
+            id: factionId,
+          }),
         ],
         leaderGetCalls: [
           [
@@ -480,14 +383,10 @@ describe('query-resolver', () => {
           ],
         ],
         factionGetResponse: [
-          {
-            _id: factionId,
-            created: new Date(),
-            image: 'faction-image',
+          TestUtil.getDbFaction({
+            id: factionId,
             key: factionKey,
-            name: 'faction-name',
-            stats: {} as any,
-          },
+          }),
         ],
         unitGetCalls: [
           [
@@ -583,10 +482,11 @@ async function testGameDeck({
     .spyOn(GameDeckResolver, 'resolveFromObject')
     .mockResolvedValue(expected as any as GameDeck)
 
+  const promise = (QueryResolver.gameDeck as any)(null, args, context, null)
   if (error) {
-    await expect((QueryResolver.gameDeck as any)(null, args, context, null)).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect((QueryResolver.gameDeck as any)(null, args, context, null)).resolves.toEqual(expected)
+    await expect(promise).resolves.toEqual(expected)
   }
 
   expect(getByIdSpy.mock.calls).toEqual([
@@ -613,17 +513,7 @@ async function testLeaders({
   const args = {
     factions: factionKeys,
   }
-  const leaders: LeaderDbObject[] = [
-    {
-      _id: new ObjectId(),
-      ability: 'leader-ability',
-      created: new Date(),
-      faction: new ObjectId(),
-      image: 'leader-image',
-      name: 'leader-name',
-      quote: 'leader-quote',
-    },
-  ]
+  const leaders = [TestUtil.getDbLeader({})]
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse || [])
   const leaderGetSpy = jest.spyOn(LeaderStore, 'get').mockResolvedValue(leaders)
   const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromArray').mockResolvedValue([])
@@ -660,16 +550,10 @@ async function testUnits({
     factions: factionKeys,
     deckable,
   }
-  const units: UnitDbObject[] = [
-    {
-      _id: new ObjectId(),
-      created: new Date(),
-      deckable: true,
-      faction: factionGetResponse ? factionGetResponse[0]._id : new ObjectId(),
-      images: ['unit-image'],
-      name: 'unit-name',
-      quote: 'unit-quote',
-    },
+  const units = [
+    TestUtil.getDbUnit({
+      faction: factionGetResponse && factionGetResponse[0]._id,
+    }),
   ]
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse || [])
   const unitGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(units)

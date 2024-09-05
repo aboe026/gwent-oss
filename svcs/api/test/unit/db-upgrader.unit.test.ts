@@ -655,10 +655,11 @@ async function testDbUpgrader({
     updateLockSpy.mockImplementation()
   }
 
+  const promise = DbUpgrader.run()
   if (error) {
-    await expect(DbUpgrader.run()).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+    await expect(promise).resolves.toEqual(undefined)
   }
 
   expect(debugSpy.mock.calls).toEqual(debugs)
@@ -737,10 +738,11 @@ async function testAquireLock({
   }
   const sleepSpy = jest.spyOn(utils, 'sleep').mockImplementation()
 
+  const promise = DbUpgrader['aquireLock']()
   if (error) {
-    await expect(DbUpgrader['aquireLock']()).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(DbUpgrader['aquireLock']()).resolves.toEqual(undefined)
+    await expect(promise).resolves.toEqual(undefined)
   }
 
   expect(debugSpy.mock.calls).toEqual(debugs)

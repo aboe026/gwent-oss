@@ -5,10 +5,6 @@ import DeckStore, { AddDeckUnitInput } from '../../src/database/stores/deck-stor
 import Store from '../../src/database/stores/store'
 import TestUtil from '../test-util'
 
-// TODO: keep going through unit tests and improving them
-// use TestUtil methods for creating objects
-// make sure to use promise object instead of duplicate code if error/reject/resolve
-
 describe('deck-store', () => {
   describe('add', () => {
     it('throws special error if duplicate deck', async () => {

@@ -276,8 +276,12 @@ async function testResolveFromArray({
       },
     ],
   })
-  const resolvedDeck1 = TestUtil.getDeckFromDbDeck(deck1)
-  const resolvedDeck2 = TestUtil.getDeckFromDbDeck(deck2)
+  const resolvedDeck1 = TestUtil.getDeckFromDbDeck({
+    deck: deck1,
+  })
+  const resolvedDeck2 = TestUtil.getDeckFromDbDeck({
+    deck: deck2,
+  })
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue([faction])
   const factionResolveSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue([resolvedFaction])
   const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromIds').mockResolvedValue([leader])

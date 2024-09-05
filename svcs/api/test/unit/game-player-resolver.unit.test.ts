@@ -1,9 +1,9 @@
-import { Faction, FactionKey, GamePlayer, Leader, User } from '@gwent/graphql-schema/resolver-typings'
+import { Faction, GamePlayer, Leader, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import UserResolver from '../../src/graphql/resolvers/user-resolver'
 import GamePlayerResolver from '../../src/graphql/resolvers/game-player-resolver'
-import { DeckDbObject, GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
+import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
 import { ObjectId } from 'mongodb'
 import TestUtil from '../test-util'
 
@@ -14,20 +14,15 @@ describe('game-player-resolver', () => {
       const factionId = new ObjectId()
       await testResolveFromObject({
         everyoneReady: true,
-        player: {
-          deck: {
-            from: {
+        player: TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            from: TestUtil.getDbDeck({
               faction: factionId,
-            } as DeckDbObject,
-            discard: [],
-            hand: [],
-            redraws: [],
-            undrawn: [],
-          },
+            }),
+          }),
           ready: true,
-          rounds: [],
           user: userId,
-        },
+        }),
         error: `Could not resolve faction "${factionId}" for game player "${userId}".`,
         factionResolverCalls: [
           [
@@ -45,29 +40,19 @@ describe('game-player-resolver', () => {
       const leaderId = new ObjectId()
       await testResolveFromObject({
         everyoneReady: true,
-        player: {
-          deck: {
-            from: {
+        player: TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            from: TestUtil.getDbDeck({
               faction: factionId,
               leader: leaderId,
-            } as DeckDbObject,
-            discard: [],
-            hand: [],
-            redraws: [],
-            undrawn: [],
-          },
+            }),
+          }),
           ready: true,
-          rounds: [],
           user: userId,
-        },
-        faction: {
-          created: new Date(),
-          id: factionId.toString(),
-          image: 'faction-image',
-          key: FactionKey.Monsters,
-          name: 'faction-name',
-          stats: TestUtil.getStats(),
-        },
+        }),
+        faction: TestUtil.getFaction({
+          id: factionId,
+        }),
         error: `Could not resolve leader "${leaderId}" for game player "${userId}".`,
         leaderResolverCalls: [
           [
@@ -83,99 +68,44 @@ describe('game-player-resolver', () => {
       const userId = new ObjectId()
       await testResolveFromObject({
         everyoneReady: false,
-        player: {
-          deck: {
-            discard: [],
-            hand: [],
-            redraws: [],
-            undrawn: [],
-          },
+        player: TestUtil.getDbGamePlayer({
           ready: true,
-          rounds: [],
           user: userId,
-        },
+        }),
         resolvedUser: undefined,
         error: `Could not resolve user "${userId}" as game player.`,
         userResolverCalls: [[userId]],
       })
     })
     it('returns without faction, leader or counts if everybody not ready', async () => {
-      const user: User = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        name: 'user-name',
-      }
-      const faction: Faction = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
+      const user = TestUtil.getUser({})
+      const faction = TestUtil.getFaction({})
       await testResolveFromObject({
         everyoneReady: false,
-        player: {
-          deck: {
-            discard: [],
-            hand: [],
-            redraws: [],
-            undrawn: [],
-          },
+        player: TestUtil.getDbGamePlayer({
           ready: true,
-          rounds: [],
-          user: new ObjectId(user.id),
-        },
+          user: user.id,
+        }),
         faction,
-        leader: {
-          ability: 'leader-ability',
-          created: new Date(),
+        leader: TestUtil.getLeader({
           faction,
-          id: new ObjectId().toString(),
-          image: 'leader-image',
-          name: 'leader-name',
-          quote: 'leader-quote',
-        },
+        }),
         user,
       })
     })
     it('returns faction, leader and counts if everybody ready', async () => {
-      const user: User = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        name: 'user-name',
-      }
-      const faction: Faction = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
+      const user = TestUtil.getUser({})
+      const faction = TestUtil.getFaction({})
       await testResolveFromObject({
         everyoneReady: true,
-        player: {
-          deck: {
-            discard: [],
-            hand: [],
-            redraws: [],
-            undrawn: [],
-          },
+        player: TestUtil.getDbGamePlayer({
           ready: true,
-          rounds: [],
-          user: new ObjectId(user.id),
-        },
+          user: user.id,
+        }),
         faction,
-        leader: {
-          ability: 'leader-ability',
-          created: new Date(),
+        leader: TestUtil.getLeader({
           faction,
-          id: new ObjectId().toString(),
-          image: 'leader-image',
-          name: 'leader-name',
-          quote: 'leader-quote',
-        },
+        }),
         user,
       })
     })
@@ -186,17 +116,9 @@ describe('game-player-resolver', () => {
       await testResolveFromArray({
         everyoneReady: false,
         players: [
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
+          TestUtil.getDbGamePlayer({
             user: userId,
-          },
+          }),
         ],
         resolvedUsers: [],
         error: `Could not resolve user "${userId}" as game player in array.`,
@@ -204,37 +126,22 @@ describe('game-player-resolver', () => {
       })
     })
     it('throws error if faction not found', async () => {
-      const user: User = {
-        created: new ObjectId(),
-        id: new ObjectId().toString(),
-        name: 'user-name',
-      }
+      const user = TestUtil.getUser({})
       const factionId = new ObjectId()
       const leaderId = new ObjectId()
       await testResolveFromArray({
         everyoneReady: false,
         players: [
-          {
-            deck: {
-              from: {
-                _id: new ObjectId(),
-                created: new Date(),
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({
                 faction: factionId,
                 leader: leaderId,
-                name: 'deck-name',
-                stats: TestUtil.getStats(),
-                units: [],
-                user: new ObjectId(user.id),
-              },
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
-            user: new ObjectId(user.id),
-          },
+                user: user.id,
+              }),
+            }),
+            user: user.id,
+          }),
         ],
         resolvedUsers: [user],
         resolvedFactions: [],
@@ -260,44 +167,22 @@ describe('game-player-resolver', () => {
       })
     })
     it('throws error if leader not found', async () => {
-      const user: User = {
-        created: new ObjectId(),
-        id: new ObjectId().toString(),
-        name: 'user-name',
-      }
-      const faction: Faction = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
+      const user = TestUtil.getUser({})
+      const faction = TestUtil.getFaction({})
       const leaderId = new ObjectId()
       await testResolveFromArray({
         everyoneReady: false,
         players: [
-          {
-            deck: {
-              from: {
-                _id: new ObjectId(),
-                created: new Date(),
-                faction: new ObjectId(faction.id),
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({
+                faction: faction.id,
                 leader: leaderId,
-                name: 'deck-name',
-                stats: TestUtil.getStats(),
-                units: [],
-                user: new ObjectId(user.id),
-              },
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
-            user: new ObjectId(user.id),
-          },
+                user: user.id,
+              }),
+            }),
+            user: user.id,
+          }),
         ],
         resolvedUsers: [user],
         resolvedFactions: [faction],
@@ -323,49 +208,21 @@ describe('game-player-resolver', () => {
       })
     })
     it('returns resolved objects if none provided', async () => {
-      const user: User = {
-        created: new ObjectId(),
-        id: new ObjectId().toString(),
-        name: 'user-name',
-      }
-      const faction: Faction = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
-      const leader: Leader = {
-        ability: 'leader-ability',
-        created: new Date(),
-        faction: faction,
-        id: new ObjectId().toString(),
-        image: 'leader-image',
-        name: 'leader-name',
-        quote: 'leader-quote',
-      }
-      const player: GamePlayerDbObject = {
-        deck: {
-          from: {
-            _id: new ObjectId(),
-            created: new Date(),
-            faction: new ObjectId(faction.id),
-            leader: new ObjectId(leader.id),
-            name: 'deck-name',
-            stats: TestUtil.getStats(),
-            units: [],
-            user: new ObjectId(user.id),
-          },
-          discard: [],
-          hand: [],
-          redraws: [],
-          undrawn: [],
-        },
-        ready: false,
-        rounds: [],
-        user: new ObjectId(user.id),
-      }
+      const user = TestUtil.getUser({})
+      const faction = TestUtil.getFaction({})
+      const leader = TestUtil.getLeader({
+        faction,
+      })
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({
+            faction: faction.id,
+            leader: leader.id,
+            user: user.id,
+          }),
+        }),
+        user: user.id,
+      })
       await testResolveFromArray({
         everyoneReady: false,
         players: [player],
@@ -413,49 +270,21 @@ describe('game-player-resolver', () => {
       })
     })
     it('returns resolved objects if all provided', async () => {
-      const user: User = {
-        created: new ObjectId(),
-        id: new ObjectId().toString(),
-        name: 'user-name',
-      }
-      const faction: Faction = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        image: 'faction-image',
-        key: FactionKey.Monsters,
-        name: 'faction-name',
-        stats: TestUtil.getStats(),
-      }
-      const leader: Leader = {
-        ability: 'leader-ability',
-        created: new Date(),
-        faction: faction,
-        id: new ObjectId().toString(),
-        image: 'leader-image',
-        name: 'leader-name',
-        quote: 'leader-quote',
-      }
-      const player: GamePlayerDbObject = {
-        deck: {
-          from: {
-            _id: new ObjectId(),
-            created: new Date(),
-            faction: new ObjectId(faction.id),
-            leader: new ObjectId(leader.id),
-            name: 'deck-name',
-            stats: TestUtil.getStats(),
-            units: [],
-            user: new ObjectId(user.id),
-          },
-          discard: [],
-          hand: [],
-          redraws: [],
-          undrawn: [],
-        },
-        ready: false,
-        rounds: [],
-        user: new ObjectId(user.id),
-      }
+      const user = TestUtil.getUser({})
+      const faction = TestUtil.getFaction({})
+      const leader = TestUtil.getLeader({
+        faction,
+      })
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({
+            faction: faction.id,
+            leader: leader.id,
+            user: user.id,
+          }),
+        }),
+        user: user.id,
+      })
       await testResolveFromArray({
         everyoneReady: false,
         players: [player],

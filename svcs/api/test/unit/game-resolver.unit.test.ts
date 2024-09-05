@@ -2,7 +2,7 @@ import { Game, GamePlayer, GameStatus, User } from '@gwent/graphql-schema/resolv
 import GamePlayerResolver from '../../src/graphql/resolvers/game-player-resolver'
 import UserResolver from '../../src/graphql/resolvers/user-resolver'
 import GameResolver from '../../src/graphql/resolvers/game-resolver'
-import { GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import { ObjectId } from 'mongodb'
 import { MAX_ROUNDS } from '@gwent/constants'
 import GameStore from '../../src/database/stores/game-store'
@@ -41,17 +41,9 @@ describe('game-resolver', () => {
           created: new Date(),
           creator: new ObjectId(creator.id),
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [],
-                undrawn: [],
-              },
-              ready: false,
-              rounds: [],
+            TestUtil.getDbGamePlayer({
               user: playerId,
-            },
+            }),
           ],
           round: {
             current: 0,
@@ -76,17 +68,9 @@ describe('game-resolver', () => {
           created: new Date(),
           creator: new ObjectId(creator.id),
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [],
-                undrawn: [],
-              },
-              ready: false,
-              rounds: [],
-              user: new ObjectId(creator.id),
-            },
+            TestUtil.getDbGamePlayer({
+              user: creator.id,
+            }),
           ],
           round: {
             current: 0,
@@ -168,11 +152,7 @@ describe('game-resolver', () => {
     })
     it('throws error if player not found', async () => {
       const gameId = new ObjectId()
-      const creator: User = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        name: 'creator-name',
-      }
+      const creator = TestUtil.getUser({})
       const playerId = new ObjectId()
       await testResolveFromArray({
         games: [
@@ -181,17 +161,9 @@ describe('game-resolver', () => {
             created: new ObjectId(),
             creator: new ObjectId(creator.id),
             players: [
-              {
-                deck: {
-                  discard: [],
-                  hand: [],
-                  redraws: [],
-                  undrawn: [],
-                },
-                ready: false,
-                rounds: [],
+              TestUtil.getDbGamePlayer({
                 user: playerId,
-              },
+              }),
             ],
             round: {
               current: 0,
@@ -208,32 +180,16 @@ describe('game-resolver', () => {
     })
     it('calls to resolveFromObject if no errors thrown', async () => {
       const gameId = new ObjectId()
-      const creator: User = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        name: 'creator-name',
-      }
-      const player: User = {
-        created: new Date(),
-        id: new ObjectId().toString(),
-        name: 'player-name',
-      }
+      const creator = TestUtil.getUser({})
+      const player = TestUtil.getUser({})
       const game: GameDbObject = {
         _id: gameId,
         created: new ObjectId(),
         creator: new ObjectId(creator.id),
         players: [
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
-            },
-            ready: false,
-            rounds: [],
-            user: new ObjectId(player.id),
-          },
+          TestUtil.getDbGamePlayer({
+            user: player.id,
+          }),
         ],
         round: {
           current: 0,
@@ -288,18 +244,7 @@ describe('game-resolver', () => {
       })
     })
     it('returns resolved game if getById returns game', async () => {
-      const game: GameDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        creator: new ObjectId(),
-        players: [],
-        round: {
-          current: 0,
-          maximum: MAX_ROUNDS,
-        },
-        updated: new Date(),
-        victors: [],
-      }
+      const game = TestUtil.getDbGame({})
       await testResolveById({
         game,
         resolvedGame: {
@@ -320,24 +265,7 @@ describe('game-resolver', () => {
     })
   })
   describe('isEveryoneReady', () => {
-    const game: GameDbObject = {
-      _id: new ObjectId(),
-      created: new Date(),
-      creator: new ObjectId(),
-      players: [],
-      round: {
-        current: 0,
-        maximum: MAX_ROUNDS,
-      },
-      updated: new Date(),
-      victors: [],
-    }
-    const gameDeck: GameDeckDbObject = {
-      discard: [],
-      hand: [],
-      redraws: [],
-      undrawn: [],
-    }
+    const game = TestUtil.getDbGame({})
     it('returns false if game players empty array', () => {
       expect(GameResolver.isEveryoneReady(game)).toEqual(false)
     })
@@ -345,14 +273,7 @@ describe('game-resolver', () => {
       expect(
         GameResolver.isEveryoneReady({
           ...game,
-          players: [
-            {
-              deck: gameDeck,
-              ready: false,
-              rounds: [],
-              user: new ObjectId(),
-            },
-          ],
+          players: [TestUtil.getDbGamePlayer({})],
         })
       ).toEqual(false)
     })
@@ -361,18 +282,10 @@ describe('game-resolver', () => {
         GameResolver.isEveryoneReady({
           ...game,
           players: [
-            {
-              deck: gameDeck,
+            TestUtil.getDbGamePlayer({
               ready: true,
-              rounds: [],
-              user: new ObjectId(),
-            },
-            {
-              deck: gameDeck,
-              ready: false,
-              rounds: [],
-              user: new ObjectId(),
-            },
+            }),
+            TestUtil.getDbGamePlayer({}),
           ],
         })
       ).toEqual(false)
@@ -382,18 +295,12 @@ describe('game-resolver', () => {
         GameResolver.isEveryoneReady({
           ...game,
           players: [
-            {
-              deck: gameDeck,
+            TestUtil.getDbGamePlayer({
               ready: true,
-              rounds: [],
-              user: new ObjectId(),
-            },
-            {
-              deck: gameDeck,
+            }),
+            TestUtil.getDbGamePlayer({
               ready: true,
-              rounds: [],
-              user: new ObjectId(),
-            },
+            }),
           ],
         })
       ).toEqual(true)
@@ -403,30 +310,16 @@ describe('game-resolver', () => {
         GameResolver.isEveryoneReady({
           ...game,
           players: [
-            {
-              deck: gameDeck,
+            TestUtil.getDbGamePlayer({
               ready: true,
-              rounds: [],
-              user: new ObjectId(),
-            },
+            }),
           ],
         })
       ).toEqual(true)
     })
   })
   describe('getStatus', () => {
-    const game: GameDbObject = {
-      _id: new ObjectId(),
-      created: new Date(),
-      creator: new ObjectId(),
-      players: [],
-      round: {
-        current: 0,
-        maximum: MAX_ROUNDS,
-      },
-      updated: new Date(),
-      victors: [],
-    }
+    const game = TestUtil.getDbGame({})
     it('returns Done if there is a single victor', () => {
       expect(
         GameResolver.getStatus({
@@ -451,17 +344,9 @@ describe('game-resolver', () => {
         GameResolver.getStatus({
           ...game,
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [],
-                undrawn: [],
-              },
+            TestUtil.getDbGamePlayer({
               ready: true,
-              rounds: [],
-              user: new ObjectId(),
-            },
+            }),
           ],
         })
       ).toEqual(GameStatus.Playing)

@@ -11,17 +11,7 @@ import {
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import DeckStore from '../../src/database/stores/deck-store'
-import {
-  Deck,
-  DeckUnit,
-  Faction,
-  FactionKey,
-  Game,
-  GameDeck,
-  GameStatus,
-  Leader,
-  User,
-} from '@gwent/graphql-schema/resolver-typings'
+import { Deck, DeckUnit, FactionKey, Game, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import * as gwentUtils from '@gwent/utils'
 import LeaderStore from '../../src/database/stores/leader-store'
@@ -34,11 +24,15 @@ import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import DeckResolver from '../../src/graphql/resolvers/deck-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import { MAX_REDRAWS, MAX_ROUNDS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
+import { MAX_REDRAWS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
 import GameResolver from '../../src/graphql/resolvers/game-resolver'
 import TestUtil from '../test-util'
 import * as getRandomSubset from '@gwent/utils'
 import GameDeckResolver from '../../src/graphql/resolvers/game-deck-resolver'
+
+// TODO: keep going through unit tests and improving them
+// use TestUtil methods for creating objects
+// make sure to use promise object instead of duplicate code if error/reject/resolve
 
 describe('mutation-resolver', () => {
   describe('addDeck', () => {
@@ -89,34 +83,20 @@ describe('mutation-resolver', () => {
       await testAddDeck({
         factionKey: FactionKey.Monsters,
         factionGetResponse: [
-          {
-            _id: new ObjectId(),
-            created: new Date(),
-            image: 'faction-1-image',
+          TestUtil.getDbFaction({
             key: FactionKey.Monsters,
-            name: 'faction-1-name',
-            stats: {} as any,
-          },
-          {
-            _id: factionId,
-            created: new Date(),
-            image: 'faction-2-image',
+          }),
+          TestUtil.getDbFaction({
+            id: factionId,
             key: FactionKey.NorthernRealms,
-            name: 'faction-2-name',
-            stats: {} as any,
-          },
+          }),
         ],
         leaderId,
         leaderGetResponse: [
-          {
-            _id: leaderId,
-            ability: 'leader-ability',
-            created: new Date(),
+          TestUtil.getDbLeader({
+            id: leaderId,
             faction: factionId,
-            image: 'leader-image',
-            name: 'leader-name',
-            quote: 'leader-quote',
-          },
+          }),
         ],
         errorReturned: `Invalid leader ID "${leaderId}": Faction "${FactionKey.NorthernRealms}" does not match deck faction of "${FactionKey.Monsters}".`,
         unitGetCalls: [],
@@ -297,12 +277,9 @@ describe('mutation-resolver', () => {
         name: 'james.bond@mi6.com',
         password: 'secret',
       }
-      const user: UserDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
+      const user = TestUtil.getDbUser({
         name: args.name,
-        password: '',
-      }
+      })
       const addSpy = jest.spyOn(UserStore, 'add').mockResolvedValue(user)
 
       await expect((MutationResolver.addUser as any)(null, args, null, null)).resolves.toEqual({
@@ -347,12 +324,9 @@ describe('mutation-resolver', () => {
         password: 'secret',
       }
       const context = undefined
-      const user: UserDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
+      const user = TestUtil.getDbUser({
         name: args.name,
-        password: '',
-      }
+      })
       const validateSpy = jest.spyOn(UserStore, 'validate').mockResolvedValue(user)
 
       await expect((MutationResolver.login as any)(null, args, context, null)).resolves.toEqual({
@@ -369,12 +343,9 @@ describe('mutation-resolver', () => {
         password: 'secret',
       }
       const context = {}
-      const user: UserDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
+      const user = TestUtil.getDbUser({
         name: args.name,
-        password: '',
-      }
+      })
       const validateSpy = jest.spyOn(UserStore, 'validate').mockResolvedValue(user)
 
       await expect((MutationResolver.login as any)(null, args, context, null)).resolves.toEqual({
@@ -398,12 +369,9 @@ describe('mutation-resolver', () => {
       const context = {
         session: {},
       }
-      const user: UserDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
+      const user = TestUtil.getDbUser({
         name: args.name,
-        password: '',
-      }
+      })
       const validateSpy = jest.spyOn(UserStore, 'validate').mockResolvedValue(user)
 
       await expect((MutationResolver.login as any)(null, args, context, null)).resolves.toEqual({
@@ -433,12 +401,9 @@ describe('mutation-resolver', () => {
           },
         },
       }
-      const user = {
-        _id: new ObjectId(),
-        created: new Date(),
+      const user = TestUtil.getDbUser({
         name: args.name,
-        password: '',
-      }
+      })
       const validateSpy = jest.spyOn(UserStore, 'validate').mockResolvedValue(user)
 
       await expect((MutationResolver.login as any)(null, args, context, null)).resolves.toEqual({
@@ -552,18 +517,13 @@ describe('mutation-resolver', () => {
         gameId,
         gameGetResponse: TestUtil.getDbGame({
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [],
-                undrawn: [],
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({}),
-              },
+              }),
               ready: true,
-              rounds: [],
               user: userId,
-            },
+            }),
           ],
         }),
         expected: Error('Already marked as ready.'),
@@ -584,18 +544,12 @@ describe('mutation-resolver', () => {
         gameId,
         gameGetResponse: TestUtil.getDbGame({
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [],
-                undrawn: [],
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({}),
-              },
-              ready: false,
-              rounds: [],
+              }),
               user: userId,
-            },
+            }),
           ],
         }),
         setReadyResponse: undefined,
@@ -622,18 +576,12 @@ describe('mutation-resolver', () => {
       const gameId = new ObjectId().toString()
       const game = TestUtil.getDbGame({
         players: [
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
               from: TestUtil.getDbDeck({}),
-            },
-            ready: false,
-            rounds: [],
+            }),
             user: userId,
-          },
+          }),
         ],
       })
       const updatedGame: GameDbObject = {
@@ -731,17 +679,10 @@ describe('mutation-resolver', () => {
         gameId: gameId,
         gameGetResponse: TestUtil.getDbGame({
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [],
-                undrawn: [],
-              },
+            TestUtil.getDbGamePlayer({
               ready: true,
-              rounds: [],
-              user: new ObjectId(userId),
-            },
+              user: userId,
+            }),
           ],
         }),
         expected: Error('Cannot redraw after game is marked as ready.'),
@@ -762,17 +703,9 @@ describe('mutation-resolver', () => {
         gameId: gameId,
         gameGetResponse: TestUtil.getDbGame({
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [],
-                undrawn: [],
-              },
-              ready: false,
-              rounds: [],
-              user: new ObjectId(userId),
-            },
+            TestUtil.getDbGamePlayer({
+              user: userId,
+            }),
           ],
         }),
         expected: Error('Cannot redraw before deck is set.'),
@@ -793,18 +726,22 @@ describe('mutation-resolver', () => {
         gameId: gameId,
         gameGetResponse: TestUtil.getDbGame({
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [{} as RedrawDbObject, {} as RedrawDbObject],
-                undrawn: [],
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({}),
-              },
-              ready: false,
-              rounds: [],
+                redraws: [
+                  {
+                    from: TestUtil.getDbDeckUnit({}),
+                    to: TestUtil.getDbDeckUnit({}),
+                  },
+                  {
+                    from: TestUtil.getDbDeckUnit({}),
+                    to: TestUtil.getDbDeckUnit({}),
+                  },
+                ],
+              }),
               user: new ObjectId(userId),
-            },
+            }),
           ],
         }),
         expected: Error(`Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`),
@@ -826,18 +763,12 @@ describe('mutation-resolver', () => {
         unitId: new ObjectId().toString(),
         gameGetResponse: TestUtil.getDbGame({
           players: [
-            {
-              deck: {
-                discard: [],
-                hand: [],
-                redraws: [],
-                undrawn: [],
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({}),
-              },
-              ready: false,
-              rounds: [],
-              user: new ObjectId(userId),
-            },
+              }),
+              user: userId,
+            }),
           ],
         }),
         expected: Error('Invalid unit, does not exist in hand.'),
@@ -861,28 +792,24 @@ describe('mutation-resolver', () => {
         unitId: unit1._id.toString(),
         gameGetResponse: TestUtil.getDbGame({
           players: [
-            {
-              deck: {
-                discard: [],
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                from: TestUtil.getDbDeck({}),
                 hand: [
                   {
                     artStyle: 1,
                     unit: unit1._id,
                   },
                 ],
-                redraws: [],
                 undrawn: [
                   {
                     artStyle: 1,
                     unit: unit2._id,
                   },
                 ],
-                from: TestUtil.getDbDeck({}),
-              },
-              ready: false,
-              rounds: [],
-              user: new ObjectId(userId),
-            },
+              }),
+              user: userId,
+            }),
           ],
         }),
         gameRedrawResponse: undefined,
@@ -935,20 +862,14 @@ describe('mutation-resolver', () => {
       const unit1 = TestUtil.getDbUnit({})
       const unit2 = TestUtil.getDbUnit({})
       const previousRedraw: RedrawDbObject = {
-        from: {
-          artStyle: 1,
-          unit: new ObjectId(),
-        },
-        to: {
-          artStyle: 1,
-          unit: new ObjectId(),
-        },
+        from: TestUtil.getDbDeckUnit({}),
+        to: TestUtil.getDbDeckUnit({}),
       }
-      const game: GameDbObject = TestUtil.getDbGame({
+      const game = TestUtil.getDbGame({
         players: [
-          {
-            deck: {
-              discard: [],
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({}),
               hand: [
                 {
                   artStyle: 1,
@@ -962,12 +883,9 @@ describe('mutation-resolver', () => {
                   unit: unit2._id,
                 },
               ],
-              from: TestUtil.getDbDeck({}),
-            },
-            ready: false,
-            rounds: [],
-            user: new ObjectId(userId),
-          },
+            }),
+            user: userId,
+          }),
         ],
       })
       const newDeckUnit: DeckUnit = {
@@ -988,9 +906,9 @@ describe('mutation-resolver', () => {
           created: game.created,
           id: game._id,
           players: [
-            {
-              deck: {
-                discard: [],
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                from: TestUtil.getDbDeck({}),
                 hand: [
                   {
                     artStyle: 1,
@@ -1016,12 +934,9 @@ describe('mutation-resolver', () => {
                     unit: unit1._id,
                   },
                 ],
-                from: TestUtil.getDbDeck({}),
-              },
-              ready: false,
-              rounds: [],
-              user: new ObjectId(userId),
-            },
+              }),
+              user: userId,
+            }),
           ],
         }),
         resolveDeckUnitResponse: newDeckUnit,
@@ -1152,18 +1067,12 @@ describe('mutation-resolver', () => {
       const deck = TestUtil.getDbDeck({})
       const game = TestUtil.getDbGame({
         players: [
-          {
-            deck: {
-              discard: [],
-              hand: [],
-              redraws: [],
-              undrawn: [],
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
               from: TestUtil.getDbDeck({}),
-            },
-            ready: false,
-            rounds: [],
+            }),
             user: userId,
-          },
+          }),
         ],
       })
       await testSetDeck({
@@ -1309,7 +1218,9 @@ describe('mutation-resolver', () => {
           name: deck.name,
           redraws: [],
           undrawn: [],
-          from: TestUtil.getDeckFromDbDeck(deck),
+          from: TestUtil.getDeckFromDbDeck({
+            deck,
+          }),
         },
         getDeckCalls: [
           [
@@ -1424,55 +1335,22 @@ async function testAddDeck({
       },
     },
   }
-  const resolvedUser: User = {
-    id: userId.toString(),
-    name: 'test-add-deck-user',
-    created: new Date(),
-  }
-  const factionId = new ObjectId()
-  const faction: FactionDbObject = {
-    _id: factionId,
-    created: new Date(),
-    image: 'image',
+  const resolvedUser = TestUtil.getUser({
+    id: userId,
+  })
+  const faction = TestUtil.getDbFaction({
     key: args.faction,
-    name: 'name',
-    stats: {} as any,
-  }
-  const resolvedFaction: Faction = {
-    id: faction._id.toString(),
-    created: faction.created,
-    image: faction.image,
-    key: factionKey,
-    name: faction.name,
-    stats: faction.stats,
-  }
-  const leader: LeaderDbObject = {
-    _id: new ObjectId(args.leader),
-    ability: 'ability',
-    created: new Date(),
-    faction: factionId,
-    image: 'image',
-    name: 'name',
-    quote: 'quote',
-  }
-  const resolvedLeader: Leader = {
-    id: leader._id.toString(),
-    ability: leader.ability,
-    created: leader.created,
-    faction: resolvedFaction,
-    image: leader.image,
-    name: leader.name,
-    quote: leader.quote,
-  }
-  const unit: UnitDbObject = {
-    _id: unitIds[0],
-    created: new Date(),
-    deckable: true,
-    faction: factionId,
-    images: [],
-    name: 'name',
-    quote: 'quote',
-  }
+  })
+  const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
+  const leader = TestUtil.getDbLeader({
+    faction: faction._id,
+    id: args.leader,
+  })
+  const resolvedLeader = TestUtil.getLeaderFromDbLeader(leader)
+  const unit = TestUtil.getDbUnit({
+    id: unitIds[0],
+    faction: faction._id,
+  })
   const deckUnits: DeckUnit[] = [
     {
       artStyle: expectedArtStyle,
@@ -1487,32 +1365,23 @@ async function testAddDeck({
       },
     },
   ]
-  const deckStats = {} as any
-  const deck: DeckDbObject = {
-    _id: new ObjectId(),
-    created: new Date(),
-    faction: factionId,
-    leader: new ObjectId(args.leader),
+  const deckStats = TestUtil.getStats()
+  const deck = TestUtil.getDbDeck({
+    faction: faction._id,
+    leader: args.leader,
     name: args.name,
-    stats: {} as any,
-    units: [
-      {
+    units: unitIds.map((unitId) =>
+      TestUtil.getDbDeckUnit({
         artStyle: expectedArtStyle,
-        unit: unitIds as any,
-      },
-    ],
+        id: unitId,
+      })
+    ),
     user: userId,
-  }
-  const resolvedDeck: Deck = {
-    id: deck._id.toString(),
-    created: deck.created,
-    faction: resolvedFaction,
-    leader: resolvedLeader,
-    name: deck.name,
-    stats: deck.stats,
-    units: deckUnits,
+  })
+  const resolvedDeck = TestUtil.getDeckFromDbDeck({
+    deck,
     user: resolvedUser,
-  }
+  })
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse || [faction])
   const leaderGetSpy = jest.spyOn(LeaderStore, 'get').mockResolvedValue(leaderGetResponse || [leader])
   const unitGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(unitGetResponse || [unit])
@@ -1529,12 +1398,11 @@ async function testAddDeck({
   const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromObject').mockResolvedValue(resolvedLeader)
   const deckResolverSpy = jest.spyOn(DeckResolver, 'resolveFromObject').mockResolvedValue(resolvedDeck)
 
+  const promise = (MutationResolver.addDeck as any)(null, args, context, null)
   if (errorThrown) {
-    await expect((MutationResolver.addDeck as any)(null, args, context, null)).rejects.toEqual(Error(errorThrown))
+    await expect(promise).rejects.toEqual(Error(errorThrown))
   } else {
-    await expect((MutationResolver.addDeck as any)(null, args, context, null)).resolves.toEqual(
-      errorReturned ? Error(errorReturned) : resolvedDeck
-    )
+    await expect(promise).resolves.toEqual(errorReturned ? Error(errorReturned) : resolvedDeck)
   }
 
   expect(factionGetSpy.mock.calls).toEqual(factionGetCalls)
@@ -1585,7 +1453,7 @@ async function testAddDeck({
     deckAddCalls || [
       [
         {
-          factionId,
+          factionId: faction._id,
           leaderId: args.leader,
           name: args.name,
           stats: deckStats,
@@ -1670,33 +1538,16 @@ async function testAddGame({
   const args = {
     opponentNames,
   }
-  const user: User = {
-    created: new Date(),
-    id: creatorId.toString(),
-    name: 'user-name',
-  }
-  const game: GameDbObject = {
-    _id: new ObjectId(),
-    created: new Date(),
+  const user = TestUtil.getUser({
+    id: creatorId,
+  })
+  const game = TestUtil.getDbGame({
     creator: creatorId,
-    players: [],
-    round: {
-      current: 0,
-      maximum: MAX_ROUNDS,
-    },
-    updated: new Date(),
-    victors: [],
-  }
-  const resolvedGame: Game = {
-    created: game.created,
+  })
+  const resolvedGame = TestUtil.getGameFromDbGame({
+    game,
     creator: user,
-    id: game._id.toString(),
-    players: [],
-    round: game.round,
-    updated: game.updated,
-    status: GameStatus.Decking,
-    victors: [],
-  }
+  })
   const getByNamesSpy = jest.spyOn(UserStore, 'getByNames').mockResolvedValue(getUserByNamesResponse)
   const addSpy = jest.spyOn(GameStore, 'add').mockResolvedValue(game)
   const resolveFromObjectSpy = jest.spyOn(GameResolver, 'resolveFromObject').mockResolvedValue(resolvedGame)
