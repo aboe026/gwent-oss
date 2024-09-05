@@ -1,13 +1,13 @@
-import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject, FactionDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
-import { DeckUnit, Faction, Leader, User } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import DeckUnitResolver from '../../src/graphql/resolvers/deck-unit-resolver'
 import UserResolver from '../../src/graphql/resolvers/user-resolver'
 import DeckResolver from '../../src/graphql/resolvers/deck-resolver'
-import { ObjectId } from 'mongodb'
 import FactionStore from '../../src/database/stores/faction-store'
 import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
+import { getUniqueItems } from '@gwent/utils'
 import TestUtil from '../test-util'
 
 describe('deck-resolver', () => {
@@ -87,23 +87,194 @@ describe('deck-resolver', () => {
     })
   })
   describe('resolveFromArray', () => {
-    it('calls to other resolvers with unique ids and undefined for stats', async () => {
-      await testResolveFromArray({})
+    const deck = TestUtil.getDbDeck({})
+    const faction = TestUtil.getDbFaction({
+      id: deck.faction,
     })
-    it('calls to other resolvers with unique ids and explicit false for stats', async () => {
+    const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
+    const leader = TestUtil.getLeader({
+      id: deck.leader,
+    })
+    const units = deck.units.map((deckUnit) =>
+      TestUtil.getUnit({
+        id: deckUnit.unit,
+        faction: resolvedFaction,
+      })
+    )
+    const user = TestUtil.getUser({
+      id: deck.user,
+    })
+    const deckUnits = units.map((unit) => {
+      return {
+        artStyle: 1,
+        unit,
+      }
+    })
+    it('throws error if faction not found', async () => {
       await testResolveFromArray({
+        decks: [deck],
+        factionsGetResponse: [
+          TestUtil.getDbFaction({
+            id: deck.faction,
+          }),
+        ],
+        factionsResolveResponse: [],
+        error: `Could not resolve faction "${deck.faction}" for deck "${deck._id}" in array.`,
+      })
+    })
+    it('throws error if leader not found', async () => {
+      await testResolveFromArray({
+        decks: [deck],
+        factionsGetResponse: [faction],
+        factionsResolveResponse: [TestUtil.getFactionFromDbFaction(faction)],
+        leadersResolveResponse: [],
+        error: `Could not resolve leader "${deck.leader}" for deck "${deck._id}" in array.`,
+      })
+    })
+    it('throws error if unit not found', async () => {
+      await testResolveFromArray({
+        decks: [deck],
+        factionsGetResponse: [faction],
+        factionsResolveResponse: [TestUtil.getFactionFromDbFaction(faction)],
+        leadersResolveResponse: [
+          TestUtil.getLeader({
+            id: deck.leader,
+          }),
+        ],
+        error: `Could not resolve unit "${deck.units[0].unit}" for deck "${deck._id}" in array.`,
+      })
+    })
+    it('throws error if user not found', async () => {
+      await testResolveFromArray({
+        decks: [deck],
+        factionsGetResponse: [faction],
+        factionsResolveResponse: [TestUtil.getFactionFromDbFaction(faction)],
+        leadersResolveResponse: [
+          TestUtil.getLeader({
+            id: deck.leader,
+          }),
+        ],
+        unitsResolveResponse: deck.units.map((deckUnit) =>
+          TestUtil.getUnit({
+            id: deckUnit.unit,
+          })
+        ),
+        error: `Could not resolve user "${deck.user}" for deck "${deck._id}" in array.`,
+      })
+    })
+    it('returns resolved deck if no errors and implicit neutral stats', async () => {
+      await testResolveFromArray({
+        decks: [deck],
+        factionsGetResponse: [faction],
+        factionsResolveResponse: [resolvedFaction],
+        leadersResolveResponse: [leader],
+        unitsResolveResponse: units,
+        userResolveResponse: [user],
+        resolvedDecks: [
+          TestUtil.getDeckFromDbDeck({
+            deck,
+            faction: resolvedFaction,
+            leader,
+            units: deckUnits,
+            user,
+          }),
+        ],
+        deckResolveCalls: [
+          [
+            {
+              deck,
+              faction: resolvedFaction,
+              leader,
+              units: deckUnits,
+              user,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns resolved deck if no errors and explicit false neutral stats', async () => {
+      await testResolveFromArray({
+        decks: [deck],
         neutralDeckStats: false,
         neutralLeaderStats: false,
         neutralUnitStats: false,
+        factionsGetResponse: [faction],
+        factionsResolveResponse: [resolvedFaction],
+        leadersResolveResponse: [leader],
+        unitsResolveResponse: units,
+        userResolveResponse: [user],
+        resolvedDecks: [
+          TestUtil.getDeckFromDbDeck({
+            deck,
+            faction: resolvedFaction,
+            leader,
+            units: deckUnits,
+            user,
+          }),
+        ],
+        deckResolveCalls: [
+          [
+            {
+              deck,
+              faction: resolvedFaction,
+              leader,
+              units: deckUnits,
+              user,
+            },
+          ],
+        ],
       })
     })
-    it('calls to other resolvers with unique ids and explicit true for stats', async () => {
+    it('returns resolved deck if no errors and explicit true neutral stats', async () => {
       await testResolveFromArray({
+        decks: [deck],
         neutralDeckStats: true,
         neutralLeaderStats: true,
         neutralUnitStats: true,
+        factionsGetResponse: [faction],
+        factionsResolveResponse: [resolvedFaction],
+        leadersResolveResponse: [leader],
+        unitsResolveResponse: units,
+        userResolveResponse: [user],
+        resolvedDecks: [
+          TestUtil.getDeckFromDbDeck({
+            deck,
+            faction: resolvedFaction,
+            leader,
+            units: deckUnits,
+            user,
+          }),
+        ],
+        deckResolveCalls: [
+          [
+            {
+              deck,
+              faction: resolvedFaction,
+              leader,
+              units: deckUnits,
+              user,
+            },
+          ],
+        ],
       })
     })
+    // it('calls to other resolvers with unique ids and undefined for stats', async () => {
+    //   await testResolveFromArray({})
+    // })
+    // it('calls to other resolvers with unique ids and explicit false for stats', async () => {
+    //   await testResolveFromArray({
+    //     neutralDeckStats: false,
+    //     neutralLeaderStats: false,
+    //     neutralUnitStats: false,
+    //   })
+    // })
+    // it('calls to other resolvers with unique ids and explicit true for stats', async () => {
+    //   await testResolveFromArray({
+    //     neutralDeckStats: true,
+    //     neutralLeaderStats: true,
+    //     neutralUnitStats: true,
+    //   })
+    // })
   })
 })
 
@@ -237,81 +408,67 @@ async function testResolveFromObject({
 }
 
 async function testResolveFromArray({
+  decks,
   neutralDeckStats,
   neutralLeaderStats,
   neutralUnitStats,
+  factionsGetResponse = [],
+  factionsResolveResponse = [],
+  leadersResolveResponse = [],
+  unitsResolveResponse = [],
+  userResolveResponse = [],
+  resolvedDecks = [],
+  error,
+  deckResolveCalls = [],
 }: {
+  decks: DeckDbObject[]
   neutralDeckStats?: boolean
   neutralLeaderStats?: boolean
   neutralUnitStats?: boolean
+  factionsGetResponse?: FactionDbObject[]
+  factionsResolveResponse?: Faction[]
+  leadersResolveResponse?: Leader[]
+  unitsResolveResponse?: Unit[]
+  userResolveResponse?: User[]
+  resolvedDecks?: Deck[]
+  error?: string
+  deckResolveCalls?: any[][]
 }) {
-  const user = TestUtil.getUser({})
-  const faction = TestUtil.getDbFaction({})
-  const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
-  const leader = TestUtil.getLeader({
-    faction: resolvedFaction,
-  })
-  const unit = TestUtil.getUnit({
-    faction: resolvedFaction,
-  })
-  const deck1 = TestUtil.getDbDeck({
-    user: user.id,
-    faction: faction._id,
-    leader: leader.id,
-    units: [
-      {
-        artStyle: 1,
-        unit: new ObjectId(unit.id),
-      },
-    ],
-  })
-  const deck2 = TestUtil.getDbDeck({
-    user: user.id,
-    faction: faction._id,
-    leader: leader.id,
-    units: [
-      {
-        artStyle: 1,
-        unit: new ObjectId(unit.id),
-      },
-    ],
-  })
-  const resolvedDeck1 = TestUtil.getDeckFromDbDeck({
-    deck: deck1,
-  })
-  const resolvedDeck2 = TestUtil.getDeckFromDbDeck({
-    deck: deck2,
-  })
-  const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue([faction])
-  const factionResolveSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue([resolvedFaction])
-  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromIds').mockResolvedValue([leader])
-  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue([unit])
-  const userResolverSpy = jest.spyOn(UserResolver, 'resolveByIds').mockResolvedValue([user])
-  const deckResolverSpy = jest
-    .spyOn(DeckResolver, 'resolveFromObject')
-    .mockResolvedValueOnce(resolvedDeck1)
-    .mockResolvedValueOnce(resolvedDeck2)
+  const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionsGetResponse)
+  const factionResolveSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue(factionsResolveResponse)
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromIds').mockResolvedValue(leadersResolveResponse)
+  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue(unitsResolveResponse)
+  const userResolverSpy = jest.spyOn(UserResolver, 'resolveByIds').mockResolvedValue(userResolveResponse)
+  const deckResolverSpy = jest.spyOn(DeckResolver, 'resolveFromObject')
+  if (resolvedDecks) {
+    for (const resolvedDeck of resolvedDecks) {
+      deckResolverSpy.mockResolvedValueOnce(resolvedDeck)
+    }
+  }
 
-  await expect(
-    DeckResolver.resolveFromArray({
-      decks: [deck1, deck2],
-      neutralDeckStats,
-      neutralLeaderStats,
-      neutralUnitStats,
-    })
-  ).resolves.toEqual([resolvedDeck1, resolvedDeck2])
+  const promise = DeckResolver.resolveFromArray({
+    decks,
+    neutralDeckStats,
+    neutralLeaderStats,
+    neutralUnitStats,
+  })
+  if (error) {
+    await expect(promise).rejects.toThrow(Error(error))
+  } else {
+    await expect(promise).resolves.toEqual(resolvedDecks)
+  }
 
   expect(factionGetSpy.mock.calls).toEqual([
     [
       {
-        ids: [faction._id],
+        ids: decks.map((deck) => deck.faction),
       },
     ],
   ])
   expect(factionResolveSpy.mock.calls).toEqual([
     [
       {
-        factions: [faction],
+        factions: factionsGetResponse,
         neutralStats: neutralDeckStats,
       },
     ],
@@ -319,50 +476,25 @@ async function testResolveFromArray({
   expect(leaderResolverSpy.mock.calls).toEqual([
     [
       {
-        ids: [new ObjectId(leader.id)],
-        factions: [faction],
+        ids: decks.map((deck) => deck.leader),
+        factions: factionsGetResponse,
         neutralStats: neutralLeaderStats,
       },
     ],
   ])
+  const unitIds: string[] = []
+  for (const deck of decks) {
+    unitIds.push(...deck.units.map((unit) => unit.unit.toString()))
+  }
   expect(unitResolverSpy.mock.calls).toEqual([
     [
       {
-        ids: [unit.id],
-        factions: [faction],
+        ids: getUniqueItems<string>(unitIds),
+        factions: factionsGetResponse,
         neutralStats: neutralUnitStats,
       },
     ],
   ])
-  expect(userResolverSpy.mock.calls).toEqual([[[new ObjectId(user.id)]]])
-  expect(deckResolverSpy.mock.calls).toEqual([
-    [
-      {
-        deck: deck1,
-        faction: resolvedFaction,
-        leader,
-        units: [
-          {
-            artStyle: 1,
-            unit,
-          },
-        ],
-        user,
-      },
-    ],
-    [
-      {
-        deck: deck2,
-        faction: resolvedFaction,
-        leader,
-        units: [
-          {
-            artStyle: 1,
-            unit,
-          },
-        ],
-        user,
-      },
-    ],
-  ])
+  expect(userResolverSpy.mock.calls).toEqual([[decks.map((deck) => deck.user)]])
+  expect(deckResolverSpy.mock.calls).toEqual(deckResolveCalls)
 }

@@ -122,6 +122,15 @@ export default class TestUtil {
     }
   }
 
+  static getDeckUnitFromDbDeckUnit(deckUnit: DeckUnitDbObject): DeckUnit {
+    return {
+      artStyle: deckUnit.artStyle,
+      unit: TestUtil.getUnit({
+        id: deckUnit.unit,
+      }),
+    }
+  }
+
   static getDeckUnit({ id }: { id?: ObjectId | string }): DeckUnit {
     return {
       artStyle: 1,
@@ -336,26 +345,44 @@ export default class TestUtil {
     }
   }
 
-  static getDeckFromDbDeck({ deck, user }: { deck: DeckDbObject; user?: User }): Deck {
+  static getDeckFromDbDeck({
+    deck,
+    faction,
+    leader,
+    units,
+    user,
+  }: {
+    deck: DeckDbObject
+    faction?: Faction
+    leader?: Leader
+    units?: DeckUnit[]
+    user?: User
+  }): Deck {
     return {
       created: deck.created,
-      faction: TestUtil.getFaction({
-        id: deck.faction,
-      }),
+      faction:
+        faction ||
+        TestUtil.getFaction({
+          id: deck.faction,
+        }),
       id: deck._id.toString(),
-      leader: TestUtil.getLeader({
-        id: deck.leader,
-      }),
+      leader:
+        leader ||
+        TestUtil.getLeader({
+          id: deck.leader,
+        }),
       name: deck.name,
       stats: deck.stats,
-      units: deck.units.map((dbUnit) => {
-        return {
-          artStyle: dbUnit.artStyle,
-          unit: TestUtil.getUnit({
-            id: dbUnit.unit,
-          }),
-        }
-      }),
+      units:
+        units ||
+        deck.units.map((dbUnit) => {
+          return {
+            artStyle: dbUnit.artStyle,
+            unit: TestUtil.getUnit({
+              id: dbUnit.unit,
+            }),
+          }
+        }),
       user:
         user ||
         TestUtil.getUser({

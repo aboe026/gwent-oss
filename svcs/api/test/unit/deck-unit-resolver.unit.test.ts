@@ -57,17 +57,79 @@ describe('deck-unit-resolver', () => {
     })
   })
   describe('resolveFromArray', () => {
+    it('throws error if deck unit not found', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      await testResolveFromArray({
+        deckUnits: [deckUnit],
+        resolvedUnits: [],
+        error: `Could not resolved deck unit "${deckUnit.unit}" in array.`,
+        unitResolverCalls: [
+          [
+            {
+              ids: [deckUnit.unit],
+              neutralStats: undefined,
+            },
+          ],
+        ],
+      })
+    })
     it('calls to resolvers with unique unit ids if undefined neutralStats', async () => {
-      await testResolveFromArray({})
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      await testResolveFromArray({
+        deckUnits: [deckUnit],
+        resolvedUnits: [
+          TestUtil.getUnit({
+            id: deckUnit.unit,
+          }),
+        ],
+        unitResolverCalls: [
+          [
+            {
+              ids: [deckUnit.unit],
+              neutralStats: undefined,
+            },
+          ],
+        ],
+      })
     })
     it('calls to resolvers with unique unit ids if explicit false neutralStats', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
       await testResolveFromArray({
+        deckUnits: [deckUnit],
         neutralStats: false,
+        resolvedUnits: [
+          TestUtil.getUnit({
+            id: deckUnit.unit,
+          }),
+        ],
+        unitResolverCalls: [
+          [
+            {
+              ids: [deckUnit.unit],
+              neutralStats: false,
+            },
+          ],
+        ],
       })
     })
     it('calls to resolvers with unique unit ids if explicit true neutralStats', async () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
       await testResolveFromArray({
+        deckUnits: [deckUnit],
         neutralStats: true,
+        resolvedUnits: [
+          TestUtil.getUnit({
+            id: deckUnit.unit,
+          }),
+        ],
+        unitResolverCalls: [
+          [
+            {
+              ids: [deckUnit.unit],
+              neutralStats: true,
+            },
+          ],
+        ],
       })
     })
   })
@@ -109,42 +171,37 @@ async function testResolveFromObject({
   ])
 }
 
-async function testResolveFromArray({ neutralStats }: { neutralStats?: boolean }) {
-  const deckUnit1: DeckUnitDbObject = {
-    artStyle: 1,
-    unit: new ObjectId(),
-  }
-  const deckUnit2: DeckUnitDbObject = {
-    artStyle: 2,
-    unit: deckUnit1.unit,
-  }
-  const unit = TestUtil.getUnit({
-    id: deckUnit1.unit,
+async function testResolveFromArray({
+  deckUnits = [],
+  neutralStats,
+  resolvedUnits = [],
+  error,
+  unitResolverCalls = [],
+}: {
+  deckUnits?: DeckUnitDbObject[]
+  neutralStats?: boolean
+  resolvedUnits?: Unit[]
+  error?: string
+  unitResolverCalls?: any[][]
+}) {
+  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue(resolvedUnits)
+
+  const promise = DeckUnitResolver.resolveFromArray({
+    deckUnits,
+    neutralStats,
   })
-  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue([unit])
+  if (error) {
+    await expect(promise).rejects.toThrow(Error(error))
+  } else {
+    await expect(promise).resolves.toEqual(
+      deckUnits?.map((deckUnit) => {
+        return {
+          artStyle: deckUnit.artStyle,
+          unit: resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString()),
+        }
+      })
+    )
+  }
 
-  await expect(
-    DeckUnitResolver.resolveFromArray({
-      deckUnits: [deckUnit1, deckUnit2],
-      neutralStats,
-    })
-  ).resolves.toEqual([
-    {
-      artStyle: 1,
-      unit,
-    },
-    {
-      artStyle: 2,
-      unit,
-    },
-  ])
-
-  expect(unitResolverSpy.mock.calls).toEqual([
-    [
-      {
-        ids: [deckUnit1.unit],
-        neutralStats,
-      },
-    ],
-  ])
+  expect(unitResolverSpy.mock.calls).toEqual(unitResolverCalls)
 }

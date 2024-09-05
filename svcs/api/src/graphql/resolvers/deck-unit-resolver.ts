@@ -1,5 +1,5 @@
 import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
-import { DeckUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
 import UnitResolver from './unit-resolver'
 import { getUniqueItems } from '@gwent/utils'
 import { ObjectId } from 'mongodb'
@@ -43,8 +43,12 @@ export default class DeckUnitResolver {
       neutralStats,
     })
     return deckUnits.map((deckUnit) => {
-      const unit = resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString()) as Unit
-      // TODO: throw error if not found
+      const unit = resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString())
+      if (!unit) {
+        const message = `Could not resolved deck unit "${deckUnit.unit}" in array.`
+        DeckUnitResolver.logger.error(message)
+        throw Error(message)
+      }
       return {
         artStyle: deckUnit.artStyle,
         unit,

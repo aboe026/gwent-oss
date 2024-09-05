@@ -123,7 +123,6 @@ export class Permissions {
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     try {
-      // TODO: have other "greater than 1" for unique constraints throw error instead of debug
       const deck = await DeckStore.getById({
         id: deckId,
         options: {
