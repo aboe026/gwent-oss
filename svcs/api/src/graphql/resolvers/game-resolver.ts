@@ -135,6 +135,7 @@ export default class GameResolver {
     return resolvedGames
   }
 
+  // todo: reconcile resolveFromId and resolveById
   static async resolveById(id: ObjectId | string): Promise<Game | undefined> {
     const game = await GameStore.getById({
       id,

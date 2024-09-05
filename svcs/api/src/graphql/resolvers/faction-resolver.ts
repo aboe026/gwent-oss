@@ -67,9 +67,12 @@ export default class FactionResolver {
       ids: [id],
       neutralStats: neutrals,
     })
-    if (factions.length > 0) {
-      return factions[0]
+    if (factions.length > 1) {
+      const message = `Found too many factions for "${id}".`
+      FactionResolver.logger.error(message)
+      throw Error(message)
     }
+    return factions && factions[0]
   }
 
   static async resolveFromIds({

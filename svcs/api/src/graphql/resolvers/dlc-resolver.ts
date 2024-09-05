@@ -2,8 +2,11 @@ import { DlcDbObject } from '@gwent/graphql-schema/database-typings'
 import { Dlc, DlcKey } from '@gwent/graphql-schema/resolver-typings'
 import { ObjectId } from 'mongodb'
 import DlcStore from '../../database/stores/dlc-store'
+import { getLogger } from 'log4js'
 
 export default class DlcResolver {
+  private static logger = getLogger('dlc-resolver')
+
   static resolveFromObject(dlc?: DlcDbObject): Dlc | null {
     if (dlc) {
       return {
@@ -17,9 +20,18 @@ export default class DlcResolver {
     return null
   }
 
+  // TODO: implications of returning "null" for dlc that does not exist?
   static async resolveFromId(id?: ObjectId | string): Promise<Dlc | null> {
     if (id) {
-      return (await DlcResolver.resolveFromIds([id]))[0]
+      const dlcs = await DlcResolver.resolveFromIds([id])
+      if (dlcs.length > 1) {
+        const message = `Multiple dlcs with ID "${id}" resolved.`
+        DlcResolver.logger.error(message)
+        throw Error(message)
+      }
+      if (dlcs.length === 1) {
+        return dlcs[0]
+      }
     }
     return null
   }
@@ -31,6 +43,16 @@ export default class DlcResolver {
     const dlcs = await DlcStore.get({
       ids,
     })
-    return dlcs.map((dlc) => DlcResolver.resolveFromObject(dlc)) as Dlc[]
+    const resolvedDlcs: Dlc[] = []
+    for (const id of ids) {
+      const dlc = dlcs.find((dlc) => dlc._id.toString() === id.toString())
+      if (!dlc) {
+        const message = `Could not resolve dlc "${id}".`
+        DlcResolver.logger.error(message)
+        throw Error(message)
+      }
+      resolvedDlcs.push(DlcResolver.resolveFromObject(dlc) as Dlc)
+    }
+    return resolvedDlcs
   }
 }

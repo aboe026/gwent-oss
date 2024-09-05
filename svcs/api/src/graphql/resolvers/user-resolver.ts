@@ -14,6 +14,7 @@ export default class UserResolver {
 
   static async resolveById(id: ObjectId | string): Promise<User | undefined> {
     const users = await UserResolver.resolveByIds([id])
+    // TODO: error if more than 1 returned
     if (users && users.length > 0) {
       return users[0]
     }
@@ -21,6 +22,7 @@ export default class UserResolver {
 
   static async resolveByIds(ids: (ObjectId | string)[]): Promise<User[]> {
     const users = await UserStore.getByIds(ids)
+    // TODO: ensure user returned for every id
     return users.map((user) => UserResolver.resolveByObject(user))
   }
 }
