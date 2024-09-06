@@ -121,6 +121,7 @@ export default class LeaderResolver {
         resolvedFactions = await FactionResolver.resolveFromIds({
           ids: factionIds,
           neutralStats,
+          verify: false,
         })
       }
     }

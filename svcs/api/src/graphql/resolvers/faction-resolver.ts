@@ -66,21 +66,19 @@ export default class FactionResolver {
     const factions = await FactionResolver.resolveFromIds({
       ids: [id],
       neutralStats: neutrals,
+      verify: false,
     })
-    if (factions.length > 1) {
-      const message = `Found too many factions for "${id}".`
-      FactionResolver.logger.error(message)
-      throw Error(message)
-    }
     return factions && factions[0]
   }
 
   static async resolveFromIds({
     ids,
     neutralStats,
+    verify = true,
   }: {
     ids: (ObjectId | string)[]
     neutralStats?: boolean
+    verify?: boolean
   }): Promise<Faction[]> {
     if (ids.length === 0) {
       return []
@@ -88,6 +86,30 @@ export default class FactionResolver {
     const factions = await FactionStore.get({
       ids: ids,
     })
+
+    if (verify) {
+      for (const id of ids) {
+        const faction = factions.find((faction) => faction._id.toString() === id.toString())
+        if (!faction) {
+          const message = `Could not resolve faction "${id}".`
+          FactionResolver.logger.error(message)
+          throw Error(message)
+        }
+      }
+    }
+    if (factions.length !== ids.length) {
+      const requestedIds = ids.map((id) => id.toString())
+      const extraIds: string[] = []
+      for (const faction of factions) {
+        const id = faction._id.toString()
+        if (!requestedIds.includes(id)) {
+          extraIds.push(id)
+        }
+      }
+      const message = `More factions resolved "${JSON.stringify(extraIds)}" than requested "${JSON.stringify(ids)}".`
+      FactionResolver.logger.error(message)
+      throw Error(message)
+    }
 
     return FactionResolver.resolveFromArray({
       factions,

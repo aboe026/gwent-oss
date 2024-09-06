@@ -103,6 +103,7 @@ export default class GamePlayerResolver {
     const factions = await FactionResolver.resolveFromIds({
       ids: factionIds,
       neutralStats: neutralFactionStats,
+      verify: false,
     })
 
     const leaderIds = getUniqueItems<ObjectId>(players.map((player) => player.deck.from && player.deck.from.leader))

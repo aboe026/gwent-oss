@@ -20,7 +20,6 @@ export default class DlcResolver {
     return null
   }
 
-  // TODO: implications of returning "null" for dlc that does not exist?
   static async resolveFromId(id?: ObjectId | string): Promise<Dlc | null> {
     if (id) {
       const dlcs = await DlcResolver.resolveFromIds([id])
@@ -29,9 +28,7 @@ export default class DlcResolver {
         DlcResolver.logger.error(message)
         throw Error(message)
       }
-      if (dlcs.length === 1) {
-        return dlcs[0]
-      }
+      return dlcs && dlcs[0]
     }
     return null
   }
