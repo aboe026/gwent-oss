@@ -7,6 +7,7 @@ import GamePlayerResolver from './game-player-resolver'
 import { getUniqueItems } from '@gwent/utils'
 import { ObjectId } from 'mongodb'
 import GameStore from '../../database/stores/game-store'
+import verifyObjects from '../../util/verify-objects'
 
 export default class GameResolver {
   private static logger = getLogger('game-resolver')
@@ -48,34 +49,9 @@ export default class GameResolver {
     }
     resolvedUsers.push(...(await UserResolver.resolveByIds(userIdsToResolve)))
 
-    const resolvedCreator = creator || resolvedUsers?.find((user) => user.id === game.creator.toString())
-    if (!resolvedCreator) {
-      const message = `Could not resolve creator "${game.creator}" for game "${game._id}".`
-      GameResolver.logger.error(message)
-      throw Error(message)
-    }
-    for (const player of game.players) {
-      const resolvedPlayer = resolvedUsers.find((user) => user.id === player.user.toString())
-      if (!resolvedPlayer) {
-        const message = `Could not resolve player "${player.user}" for game "${game._id}".`
-        GameResolver.logger.error(message)
-        throw Error(message)
-      }
-    }
-    const resolvedVictors: User[] = []
-    for (const victor of game.victors) {
-      const resolvedVictor = resolvedUsers.find((user) => user.id === victor.toString())
-      if (!resolvedVictor) {
-        const message = `Could not resolve victor "${victor}" for game "${game._id}".`
-        GameResolver.logger.error(message)
-        throw Error(message)
-      }
-      resolvedVictors.push(resolvedVictor)
-    }
-
     return {
       created: game.created,
-      creator: resolvedCreator,
+      creator: creator || (resolvedUsers?.find((user) => user.id === game.creator.toString()) as User),
       id: game._id.toString(),
       players: await GamePlayerResolver.resolveFromArray({
         players: game.players,
@@ -87,7 +63,7 @@ export default class GameResolver {
       round: game.round,
       status: GameResolver.getStatus(game),
       updated: game.updated,
-      victors: resolvedVictors,
+      victors: game.victors.map((victor) => resolvedUsers.find((user) => user.id === victor.toString()) as User),
     }
   }
 
@@ -107,44 +83,34 @@ export default class GameResolver {
 
     const resolvedGames: Game[] = []
     for (const game of games) {
-      const creator = users.find((user) => user.id.toString() === game.creator.toString())
-      if (!creator) {
-        const message = `Could not resolve creator "${game.creator}" for game "${game._id}" in array.`
-        GameResolver.logger.error(message)
-        throw Error(message)
-      }
-      const playerUsers: User[] = []
-      for (const player of game.players) {
-        const user = users.find((user) => user.id === player.user.toString())
-        if (!user) {
-          const message = `Could not resolve player "${player.user}" for game "${game._id}" in array.`
-          GameResolver.logger.error(message)
-          throw Error(message)
-        }
-        playerUsers.push(user)
-      }
-
       resolvedGames.push(
         await GameResolver.resolveFromObject({
-          creator,
+          creator: users.find((user) => user.id.toString() === game.creator.toString()),
           game,
-          users: playerUsers,
+          users: game.players.map((player) => users.find((user) => user.id === player.user.toString()) as User),
         })
       )
     }
     return resolvedGames
   }
 
-  // todo: reconcile resolveFromId and resolveById
+  // todo: reconcile resolveFromId and resolveById (maybe just resolveId)
   static async resolveById(id: ObjectId | string): Promise<Game | undefined> {
     const game = await GameStore.getById({
       id,
     })
-    if (game) {
-      return GameResolver.resolveFromObject({
-        game,
-      })
-    }
+
+    verifyObjects({
+      expectedKeys: [id],
+      objects: [game],
+      key: '_id',
+      logger: GameResolver.logger,
+      resourceLabelPlural: 'games',
+    })
+
+    return GameResolver.resolveFromObject({
+      game: game as GameDbObject,
+    })
   }
 
   static isEveryoneReady(game: GameDbObject): boolean {

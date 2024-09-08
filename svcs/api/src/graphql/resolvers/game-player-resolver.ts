@@ -35,22 +35,12 @@ export default class GamePlayerResolver {
           id: player.deck.from.faction,
           neutrals: neutralFactionStats,
         })
-        if (!faction) {
-          const message = `Could not resolve faction "${player.deck.from.faction}" for game player "${player.user}".`
-          GamePlayerResolver.logger.error(message)
-          throw Error(message)
-        }
       }
       if (!leader && player.deck.from?.leader) {
         leader = await LeaderResolver.resolveFromId({
           id: player.deck.from.leader,
           neutralStats: neutralLeaderStats,
         })
-        if (!leader) {
-          const message = `Could not resolve leader "${player.deck.from.leader}" for game player "${player.user}".`
-          GamePlayerResolver.logger.error(message)
-          throw Error(message)
-        }
       }
       counts = {
         discard: player.deck.discard.length,
@@ -58,19 +48,13 @@ export default class GamePlayerResolver {
         undrawn: player.deck.undrawn.length,
       }
     }
-    const resolvedUser = user || (await UserResolver.resolveById(player.user))
-    if (!resolvedUser) {
-      const message = `Could not resolve user "${player.user}" as game player.`
-      GamePlayerResolver.logger.error(message)
-      throw Error(message)
-    }
     return {
       counts,
       faction: everyoneReady ? faction : undefined,
       leader: everyoneReady ? leader : undefined,
       ready: player.ready,
       rounds: player.rounds,
-      user: resolvedUser,
+      user: user || (await UserResolver.resolveById(player.user)),
     }
   }
 
@@ -103,7 +87,6 @@ export default class GamePlayerResolver {
     const factions = await FactionResolver.resolveFromIds({
       ids: factionIds,
       neutralStats: neutralFactionStats,
-      verify: false,
     })
 
     const leaderIds = getUniqueItems<ObjectId>(players.map((player) => player.deck.from && player.deck.from.leader))
@@ -115,31 +98,17 @@ export default class GamePlayerResolver {
 
     const resolvedPlayers: GamePlayer[] = []
     for (const player of players) {
-      const user = resolvedUsers.find((user) => user.id.toString() === player.user.toString())
-      if (!user) {
-        throw Error(`Could not resolve user "${player.user}" as game player in array.`)
-      }
       let faction: Faction | undefined
       let leader: Leader | undefined
       if (player.deck.from) {
         faction = factions.find((faction) => faction.id === player.deck.from?.faction.toString())
-        if (!faction) {
-          throw Error(
-            `Could not resolve faction "${player.deck.from.faction}" for game player "${player.user}" in array.`
-          )
-        }
         leader = leaders.find((leader) => leader.id === player.deck.from?.leader.toString())
-        if (!leader) {
-          throw Error(
-            `Could not resolve leader "${player.deck.from.leader}" for game player "${player.user}" in array.`
-          )
-        }
       }
 
       resolvedPlayers.push(
         await GamePlayerResolver.resolveFromObject({
           player,
-          user,
+          user: resolvedUsers.find((user) => user.id.toString() === player.user.toString()),
           faction,
           leader,
           neutralFactionStats,

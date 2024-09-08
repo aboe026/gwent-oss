@@ -1,8 +1,6 @@
 import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
-import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
 import UnitResolver from './unit-resolver'
-import { getUniqueItems } from '@gwent/utils'
-import { ObjectId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 export default class DeckUnitResolver {
@@ -11,22 +9,20 @@ export default class DeckUnitResolver {
   static async resolveFromObject({
     deckUnit,
     neutralStats,
+    unit,
   }: {
     deckUnit: DeckUnitDbObject
     neutralStats?: boolean
+    unit?: Unit
   }): Promise<DeckUnit> {
-    const unit = await UnitResolver.resolveFromId({
-      id: deckUnit.unit,
-      neutralStats,
-    })
-    if (!unit) {
-      const message = `Could not resolve unit "${deckUnit.unit}" as deckUnit.`
-      DeckUnitResolver.logger.error(message)
-      throw Error(message)
-    }
     return {
       artStyle: deckUnit.artStyle,
-      unit,
+      unit:
+        unit ||
+        (await UnitResolver.resolveFromId({
+          id: deckUnit.unit,
+          neutralStats,
+        })),
     }
   }
 
@@ -37,22 +33,23 @@ export default class DeckUnitResolver {
     deckUnits: DeckUnitDbObject[]
     neutralStats?: boolean
   }): Promise<DeckUnit[]> {
-    const unitIds = getUniqueItems<ObjectId>(deckUnits.map((deckUnit) => deckUnit.unit))
-    const resolvedUnits = await UnitResolver.resolveFromIds({
-      ids: unitIds,
-      neutralStats,
-    })
-    return deckUnits.map((deckUnit) => {
-      const unit = resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString())
-      if (!unit) {
-        const message = `Could not resolved deck unit "${deckUnit.unit}" in array.`
-        DeckUnitResolver.logger.error(message)
-        throw Error(message)
-      }
-      return {
-        artStyle: deckUnit.artStyle,
-        unit,
-      }
-    })
+    const units =
+      deckUnits.length === 0
+        ? []
+        : await UnitResolver.resolveFromIds({
+            ids: deckUnits.map((deckUnit) => deckUnit.unit),
+            neutralStats,
+          })
+    const resolvedDeckUnits: DeckUnit[] = []
+    for (const deckUnit of deckUnits) {
+      resolvedDeckUnits.push(
+        await DeckUnitResolver.resolveFromObject({
+          deckUnit,
+          neutralStats,
+          unit: units.find((unit) => unit.id.toString() === deckUnit.unit.toString()),
+        })
+      )
+    }
+    return resolvedDeckUnits
   }
 }

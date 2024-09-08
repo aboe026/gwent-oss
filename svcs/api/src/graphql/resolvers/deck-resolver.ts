@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
 import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
-import { Deck, DeckUnit, Faction, Leader, User } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
 import LeaderResolver from './leader-resolver'
 import UserResolver from './user-resolver'
@@ -34,39 +34,21 @@ export default class DeckResolver {
     neutralUnitStats?: boolean
   }): Promise<Deck> {
     // TODO: validate error logged in unit tests
-    const resolvedFaction =
-      faction ||
-      (await FactionResolver.resolveFromId({
-        id: deck.faction,
-        neutrals: neutralDeckStats,
-      }))
-    if (!resolvedFaction) {
-      const message = `Could not resolve faction "${deck.faction}" for deck "${deck._id}".`
-      DeckResolver.logger.error(message)
-      throw Error(message)
-    }
-    const resolvedLeader =
-      leader ||
-      (await LeaderResolver.resolveFromId({
-        id: deck.leader,
-        neutralStats: neutralLeaderStats,
-      }))
-    if (!resolvedLeader) {
-      const message = `Could not resolve leader "${deck.leader}" for deck "${deck._id}".`
-      DeckResolver.logger.error(message)
-      throw Error(message)
-    }
-    const resolvedUser = user || (await UserResolver.resolveById(deck.user))
-    if (!resolvedUser) {
-      const message = `Could not resolve user "${deck.user}" for deck "${deck._id}".`
-      DeckResolver.logger.error(message)
-      throw Error(message)
-    }
     return {
       created: deck.created,
-      faction: resolvedFaction,
+      faction:
+        faction ||
+        (await FactionResolver.resolveFromId({
+          id: deck.faction,
+          neutrals: neutralDeckStats,
+        })),
       id: deck._id.toString(),
-      leader: resolvedLeader,
+      leader:
+        leader ||
+        (await LeaderResolver.resolveFromId({
+          id: deck.leader,
+          neutralStats: neutralLeaderStats,
+        })),
       name: deck.name,
       stats: deck.stats,
       units:
@@ -75,7 +57,7 @@ export default class DeckResolver {
           deckUnits: deck.units,
           neutralStats: neutralUnitStats,
         })),
-      user: resolvedUser,
+      user: user || (await UserResolver.resolveById(deck.user)),
     }
   }
 
@@ -123,44 +105,18 @@ export default class DeckResolver {
 
     const resolvedDecks: Deck[] = []
     for (const deck of decks) {
-      const faction = resolvedFactions.find((faction) => faction.id.toString() === deck.faction.toString())
-      if (!faction) {
-        const message = `Could not resolve faction "${deck.faction}" for deck "${deck._id}" in array.`
-        DeckResolver.logger.error(message)
-        throw Error(message)
-      }
-      const leader = leaders.find((leader) => leader.id.toString() === deck.leader.toString())
-      if (!leader) {
-        const message = `Could not resolve leader "${deck.leader}" for deck "${deck._id}" in array.`
-        DeckResolver.logger.error(message)
-        throw Error(message)
-      }
-      const resolvedUnits: DeckUnit[] = []
-      for (const deckUnit of deck.units) {
-        const unit = units.find((unit) => unit.id.toString() === deckUnit.unit.toString())
-        if (!unit) {
-          const message = `Could not resolve unit "${deckUnit.unit}" for deck "${deck._id}" in array.`
-          DeckResolver.logger.error(message)
-          throw Error(message)
-        }
-        resolvedUnits.push({
-          artStyle: deckUnit.artStyle,
-          unit,
-        })
-      }
-      const user = users.find((user) => user.id.toString() === deck.user.toString())
-      if (!user) {
-        const message = `Could not resolve user "${deck.user}" for deck "${deck._id}" in array.`
-        DeckResolver.logger.error(message)
-        throw Error(message)
-      }
       resolvedDecks.push(
         await DeckResolver.resolveFromObject({
           deck,
-          faction,
-          leader,
-          units: resolvedUnits,
-          user,
+          faction: resolvedFactions.find((faction) => faction.id.toString() === deck.faction.toString()),
+          leader: leaders.find((leader) => leader.id.toString() === deck.leader.toString()),
+          units: deck.units.map((deckUnit) => {
+            return {
+              artStyle: deckUnit.artStyle,
+              unit: units.find((unit) => unit.id.toString() === deckUnit.unit.toString()) as Unit,
+            }
+          }),
+          user: users.find((user) => user.id.toString() === deck.user.toString()),
         })
       )
     }

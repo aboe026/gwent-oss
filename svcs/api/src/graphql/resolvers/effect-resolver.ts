@@ -4,6 +4,7 @@ import { EffectDbObject } from '@gwent/graphql-schema/database-typings'
 import { Effect, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 import { ObjectId } from 'mongodb'
 import EffectStore from '../../database/stores/effect-store'
+import verifyObjects from '../../util/verify-objects'
 
 export default class EffectResolver {
   private static logger = getLogger('effect-resolver')
@@ -19,28 +20,22 @@ export default class EffectResolver {
     }
   }
 
-  static async resolveFromIds(ids?: (string | ObjectId)[]): Promise<Effect[] | null> {
-    if (ids) {
-      if (ids.length === 0) {
-        return []
-      }
-      const effects = await EffectStore.get({
-        ids: ids,
-      })
-      const resolvedEffects: Effect[] = []
-      for (const id of ids) {
-        const effect = effects.find((effect) => effect._id.toString() === id.toString())
-        if (!effect) {
-          // TODO: make sure always verifying
-          // that all ids/objects actually returned
-          const messsage = `Could not resolve effect "${id}".`
-          EffectResolver.logger.error(messsage)
-          throw Error(messsage)
-        }
-        resolvedEffects.push(EffectResolver.resolveFromObject(effect))
-      }
-      return resolvedEffects
-    }
-    return null
+  static async resolveFromIds(ids: (string | ObjectId)[]): Promise<Effect[]> {
+    const effects =
+      ids.length === 0
+        ? []
+        : await EffectStore.get({
+            ids: ids,
+          })
+
+    verifyObjects({
+      expectedKeys: ids,
+      objects: effects,
+      key: '_id',
+      logger: EffectResolver.logger,
+      resourceLabelPlural: 'effects',
+    })
+
+    return effects.map((effect) => EffectResolver.resolveFromObject(effect))
   }
 }

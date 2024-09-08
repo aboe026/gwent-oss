@@ -6,6 +6,7 @@ import DlcResolver from './dlc-resolver'
 import FactionStore from '../../database/stores/faction-store'
 import { ObjectId } from 'mongodb'
 import { getUniqueItems } from '@gwent/utils'
+import verifyObjects from '../../util/verify-objects'
 
 export default class FactionResolver {
   private static logger = getLogger('faction-resolver')
@@ -22,24 +23,17 @@ export default class FactionResolver {
     neutralStats?: boolean
   }): Promise<Faction> {
     if (neutralStats && !neutral) {
-      const factions = await FactionStore.get({
+      const neutralFactions = await FactionStore.get({
         keys: [FactionKey.Neutral],
       })
-      if (factions.length < 1) {
-        const message = `Could not resolve faction "${FactionKey.Neutral}" on faction "${faction._id}".`
-        FactionResolver.logger.error(message)
-        throw Error(message)
-      }
-      neutral = factions[0]
-    }
-    let resolvedDlc: Dlc | null = null
-    if (faction.dlc) {
-      resolvedDlc = dlc || (await DlcResolver.resolveFromId(faction.dlc))
-      if (!resolvedDlc) {
-        const message = `Could not resolve dlc "${faction.dlc}" on faction "${faction._id}".`
-        FactionResolver.logger.error(message)
-        throw Error(message)
-      }
+      verifyObjects({
+        expectedKeys: [FactionKey.Neutral],
+        objects: neutralFactions,
+        key: 'key',
+        logger: FactionResolver.logger,
+        resourceLabelPlural: 'neutral faction',
+      })
+      neutral = neutralFactions[0]
     }
     return {
       created: faction.created,
@@ -52,21 +46,14 @@ export default class FactionResolver {
         neutral: neutralStats ? neutral : undefined,
       }),
       ability: faction.ability,
-      dlc: resolvedDlc,
+      dlc: faction.dlc && (dlc || (await DlcResolver.resolveFromId(faction.dlc))),
     }
   }
 
-  static async resolveFromId({
-    id,
-    neutrals,
-  }: {
-    id: ObjectId | string
-    neutrals?: boolean
-  }): Promise<Faction | undefined> {
+  static async resolveFromId({ id, neutrals }: { id: ObjectId | string; neutrals?: boolean }): Promise<Faction> {
     const factions = await FactionResolver.resolveFromIds({
       ids: [id],
       neutralStats: neutrals,
-      verify: false,
     })
     return factions && factions[0]
   }
@@ -74,42 +61,24 @@ export default class FactionResolver {
   static async resolveFromIds({
     ids,
     neutralStats,
-    verify = true,
   }: {
     ids: (ObjectId | string)[]
     neutralStats?: boolean
-    verify?: boolean
   }): Promise<Faction[]> {
-    if (ids.length === 0) {
-      return []
-    }
-    const factions = await FactionStore.get({
-      ids: ids,
-    })
+    const factions =
+      ids.length === 0
+        ? []
+        : await FactionStore.get({
+            ids: ids,
+          })
 
-    if (verify) {
-      for (const id of ids) {
-        const faction = factions.find((faction) => faction._id.toString() === id.toString())
-        if (!faction) {
-          const message = `Could not resolve faction "${id}".`
-          FactionResolver.logger.error(message)
-          throw Error(message)
-        }
-      }
-    }
-    if (factions.length !== ids.length) {
-      const requestedIds = ids.map((id) => id.toString())
-      const extraIds: string[] = []
-      for (const faction of factions) {
-        const id = faction._id.toString()
-        if (!requestedIds.includes(id)) {
-          extraIds.push(id)
-        }
-      }
-      const message = `More factions resolved "${JSON.stringify(extraIds)}" than requested "${JSON.stringify(ids)}".`
-      FactionResolver.logger.error(message)
-      throw Error(message)
-    }
+    verifyObjects({
+      expectedKeys: ids,
+      objects: factions,
+      key: '_id',
+      logger: FactionResolver.logger,
+      resourceLabelPlural: 'factions',
+    })
 
     return FactionResolver.resolveFromArray({
       factions,
@@ -134,37 +103,22 @@ export default class FactionResolver {
         const neutralFactions = await FactionStore.get({
           keys: [FactionKey.Neutral],
         })
-        if (neutralFactions.length < 1) {
-          const message = `Could not resolve neutral faction "${FactionKey.Neutral}" for factions array: None found.`
-          FactionResolver.logger.error(message)
-          throw Error(message)
-        } else if (neutralFactions.length > 1) {
-          // TODO: add >1 check to other resolvers
-          const message = `Could not resolve neutral faction "${
-            FactionKey.Neutral
-          }" for factions array: Found more than one: "${JSON.stringify(neutralFactions)}".`
-          FactionResolver.logger.error(message)
-          throw Error(message)
-        }
-        neutral = neutralFactions[0]
+        verifyObjects({
+          expectedKeys: [FactionKey.Neutral],
+          objects: neutralFactions,
+          key: 'key',
+          logger: FactionResolver.logger,
+          resourceLabelPlural: 'neutral factions',
+        })
       }
     }
 
     const resolvedFactions: Faction[] = []
     for (const faction of factions) {
-      let dlc: Dlc | undefined
-      if (faction.dlc) {
-        dlc = dlcs.find((dlc) => dlc.id.toString() === faction.dlc?.toString())
-        if (!dlc) {
-          const message = `Could not resolve dlc "${faction.dlc}" for faction ${faction._id} in array.`
-          FactionResolver.logger.error(message)
-          throw Error(message)
-        }
-      }
       resolvedFactions.push(
         await FactionResolver.resolveFromObject({
           faction,
-          dlc,
+          dlc: faction.dlc && dlcs.find((dlc) => dlc.id.toString() === faction.dlc?.toString()),
           neutral,
           neutralStats,
         })
