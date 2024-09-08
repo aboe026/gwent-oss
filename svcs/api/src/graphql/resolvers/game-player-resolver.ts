@@ -1,16 +1,13 @@
-import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
 import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, User } from '@gwent/graphql-schema/resolver-typings'
 import UserResolver from './user-resolver'
 import { getUniqueItems } from '@gwent/utils'
-import { ObjectId } from 'mongodb'
 import FactionResolver from './faction-resolver'
 import LeaderResolver from './leader-resolver'
 
 export default class GamePlayerResolver {
-  private static logger = getLogger('game-player-resolver')
-
   static async resolveFromObject({
     player,
     user,

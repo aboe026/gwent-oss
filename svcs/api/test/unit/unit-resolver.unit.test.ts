@@ -16,45 +16,17 @@ import UnitStore from '../../src/database/stores/unit-store'
 import DlcStore from '../../src/database/stores/dlc-store'
 import EffectStore from '../../src/database/stores/effect-store'
 import FactionStore from '../../src/database/stores/faction-store'
+import Verifier from '../../src/util/verify-objects'
 
 describe('unit-resolver', () => {
   describe('resolveFromObject', () => {
-    it('throws error if faction not resolveable', async () => {
-      const unitId = new ObjectId()
-      const factionId = new ObjectId()
-      await testResolveFromObject({
-        unit: TestUtil.getDbUnit({
-          id: unitId,
-          faction: factionId,
-        }),
-        error: `Could not resolve faction "${factionId}" on unit "${unitId}".`,
-        dlcResolveIdCalls: [[undefined]],
-        effectResolveIdCalls: [[undefined]],
-        factionResolveIdCalls: [
-          [
-            {
-              id: factionId,
-              neutrals: undefined,
-            },
-          ],
-        ],
-      })
-    })
-    it('returns resolved unit if no db objects provided', async () => {
+    it('returns resolved unit if no optional fields', async () => {
       const faction = TestUtil.getFaction({})
       await testResolveFromObject({
-        unit: {
-          _id: new ObjectId(),
-          created: new Date(),
-          deckable: true,
-          faction: new ObjectId(faction.id),
-          images: ['unit-image'],
-          name: 'unit-name',
-          quote: 'unit-quote',
-        },
+        unit: TestUtil.getDbUnit({
+          faction: faction.id,
+        }),
         resolvedFaction: faction,
-        dlcResolveIdCalls: [[undefined]],
-        effectResolveIdCalls: [[undefined]],
         factionResolveIdCalls: [
           [
             {
@@ -65,22 +37,41 @@ describe('unit-resolver', () => {
         ],
       })
     })
-    it('returns resolved unit if all db objects provided', async () => {
+    it('returns resolved unit if optional fields not provided provided', async () => {
+      const faction = TestUtil.getFaction({})
+      const dlc = TestUtil.getDlc({})
+      const effect = TestUtil.getEffect({})
+      await testResolveFromObject({
+        unit: TestUtil.getDbUnit({
+          faction: faction.id,
+          dlc: dlc.id,
+          effects: [effect.id],
+        }),
+        resolvedFaction: faction,
+        resolvedDlc: dlc,
+        resolvedEffects: [effect],
+        factionResolveIdCalls: [
+          [
+            {
+              id: new ObjectId(faction.id),
+              neutrals: undefined,
+            },
+          ],
+        ],
+        dlcResolveIdCalls: [[new ObjectId(dlc.id)]],
+        effectResolveIdCalls: [[[new ObjectId(effect.id)]]],
+      })
+    })
+    it('returns resolved unit if optional fields provided', async () => {
       const dlc = TestUtil.getDbDlc()
       const effect = TestUtil.getDbEffect({})
       const faction = TestUtil.getDbFaction({})
       await testResolveFromObject({
-        unit: {
-          _id: new ObjectId(),
-          created: new Date(),
-          deckable: true,
+        unit: TestUtil.getDbUnit({
           faction: faction._id,
-          images: ['unit-image'],
-          name: 'unit-name',
-          quote: 'unit-quote',
           dlc: dlc._id,
           effects: [effect._id],
-        },
+        }),
         dlc,
         effects: [effect],
         faction,
@@ -102,35 +93,29 @@ describe('unit-resolver', () => {
     })
   })
   describe('resolveFromId', () => {
-    it('throws error if more than 1 unit resolved', async () => {
-      const unitId = new ObjectId()
-      await testResolveFromId({
-        id: unitId,
-        resolvedUnits: [TestUtil.getUnit({}), TestUtil.getUnit({})],
-        error: `More than one unit resolved for "${unitId}".`,
-      })
-    })
-    it('returns undefined if unit not found', async () => {
-      const unitId = new ObjectId()
-      await testResolveFromId({
-        id: unitId,
-        resolvedUnits: [],
-      })
-    })
-    it('returns unit if found', async () => {
-      const unitId = new ObjectId()
-      await testResolveFromId({
-        id: unitId,
-        resolvedUnits: [
-          TestUtil.getUnit({
-            id: unitId,
-          }),
+    it('returns first unit from resolveFromIds', async () => {
+      const unit = TestUtil.getUnit({})
+      const resolveFromIdsSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue([unit])
+
+      await expect(
+        UnitResolver.resolveFromId({
+          id: unit.id,
+          neutralStats: undefined,
+        })
+      ).resolves.toEqual(unit)
+
+      expect(resolveFromIdsSpy.mock.calls).toEqual([
+        [
+          {
+            ids: [unit.id],
+            neutralStats: undefined,
+          },
         ],
-      })
+      ])
     })
   })
   describe('resolveFromIds', () => {
-    test('throws error if unit not returned from UnitStore get', async () => {
+    test('throws error if verifyObjects throws error', async () => {
       const unitId1 = new ObjectId()
       const unitId2 = new ObjectId()
       await testResolveFromIds({
@@ -140,34 +125,11 @@ describe('unit-resolver', () => {
             id: unitId1,
           }),
         ],
-        error: `Could not resolved units "${unitId2}".`,
+        verifyObjectsResponse: Error('Could not find units "["id"]" to resolve.'),
         unitGetCalls: [
           [
             {
               ids: [unitId1, unitId2],
-            },
-          ],
-        ],
-      })
-    })
-    test('throws error if extra unit returned from UnitStore get', async () => {
-      const unitId1 = new ObjectId()
-      const unitId2 = new ObjectId()
-      await testResolveFromIds({
-        ids: [unitId1],
-        getUnitsResponse: [
-          TestUtil.getDbUnit({
-            id: unitId1,
-          }),
-          TestUtil.getDbUnit({
-            id: unitId2,
-          }),
-        ],
-        error: `Received more units "${unitId2}" than ids to resolve: "${unitId1}".`,
-        unitGetCalls: [
-          [
-            {
-              ids: [unitId1],
             },
           ],
         ],
@@ -208,13 +170,13 @@ describe('unit-resolver', () => {
     })
   })
   describe('resolveFromArray', () => {
-    it('throws error if neutral faction not found', async () => {
+    it('throws error if verifyObjects throws error getting neutral faction', async () => {
       const unit = TestUtil.getDbUnit({})
       await testResolveFromArray({
         units: [unit],
         neutralStats: true,
         factionGetResponses: [[], []],
-        error: `Could not resolve neutral faction "${FactionKey.Neutral}" for units in array.`,
+        verifyObjectsResponse: Error(`Could not find factions "${JSON.stringify(FactionKey.Neutral)}" to resolve.`),
         factionGetCalls: [
           [
             {
@@ -224,113 +186,6 @@ describe('unit-resolver', () => {
           [
             {
               keys: [FactionKey.Neutral],
-            },
-          ],
-        ],
-      })
-    })
-    it('throws error if more than 1 neutral faction found', async () => {
-      const unit = TestUtil.getDbUnit({})
-      const neutralFactions = [
-        TestUtil.getDbFaction({
-          key: FactionKey.Neutral,
-        }),
-        TestUtil.getDbFaction({
-          key: FactionKey.Neutral,
-        }),
-      ]
-      await testResolveFromArray({
-        units: [unit],
-        neutralStats: true,
-        factionGetResponses: [[], neutralFactions],
-        error: `More than 1 neutral faction for units in array: "${JSON.stringify(neutralFactions)}".`,
-        factionGetCalls: [
-          [
-            {
-              ids: [unit.faction],
-            },
-          ],
-          [
-            {
-              keys: [FactionKey.Neutral],
-            },
-          ],
-        ],
-      })
-    })
-    it('throws error if faction not found', async () => {
-      const unit = TestUtil.getDbUnit({})
-      await testResolveFromArray({
-        units: [unit],
-        error: `Could not resolve faction "${unit.faction}" for unit "${unit._id}" in array.`,
-        factionGetCalls: [
-          [
-            {
-              ids: [unit.faction],
-            },
-          ],
-        ],
-      })
-    })
-    it('throws error if dlc not found', async () => {
-      const faction = TestUtil.getDbFaction({})
-      const dlc = TestUtil.getDbDlc()
-      const unit = TestUtil.getDbUnit({
-        faction: faction._id,
-        dlc: dlc._id,
-      })
-      await testResolveFromArray({
-        units: [unit],
-        factionGetResponses: [[faction]],
-        error: `Could not resolve dlc "${dlc._id}" for unit "${unit._id}" in array.`,
-        factionGetCalls: [
-          [
-            {
-              ids: [unit.faction],
-            },
-          ],
-        ],
-        dlcGetCalls: [
-          [
-            {
-              ids: [dlc._id],
-            },
-          ],
-        ],
-      })
-    })
-    it('throws error if effect not found', async () => {
-      const faction = TestUtil.getDbFaction({})
-      const dlc = TestUtil.getDbDlc()
-      const effect = TestUtil.getDbEffect({})
-      const unit = TestUtil.getDbUnit({
-        faction: faction._id,
-        dlc: dlc._id,
-        effects: [effect._id],
-      })
-      await testResolveFromArray({
-        units: [unit],
-        factionGetResponses: [[faction]],
-        dlcGetResponse: [dlc],
-        error: `Could not resolve effect "${effect._id}" for unit "${unit._id}" in array.`,
-        factionGetCalls: [
-          [
-            {
-              ids: [unit.faction],
-            },
-          ],
-        ],
-        dlcGetCalls: [
-          [
-            {
-              ids: [dlc._id],
-            },
-          ],
-        ],
-        effectGetCalls: [
-          [
-            {
-              ids: [effect._id.toString()],
             },
           ],
         ],
@@ -338,12 +193,15 @@ describe('unit-resolver', () => {
     })
     it('resolves unit if nothing provided', async () => {
       const faction = TestUtil.getDbFaction({})
+      const dlc = TestUtil.getDbDlc()
       const unit = TestUtil.getDbUnit({
         faction: faction._id,
+        dlc: dlc._id,
       })
       await testResolveFromArray({
         units: [unit],
         factionGetResponses: [[faction]],
+        dlcGetResponse: [dlc],
         resolvedUnits: [
           TestUtil.getUnitFromDbUnit({
             unit,
@@ -356,12 +214,19 @@ describe('unit-resolver', () => {
             },
           ],
         ],
+        dlcGetCalls: [
+          [
+            {
+              ids: [dlc._id],
+            },
+          ],
+        ],
         resolveFromObjectCalls: [
           [
             {
               unit,
-              dlc: undefined,
-              effects: [],
+              dlc,
+              effects: undefined,
               faction: faction,
               neutral: undefined,
               neutralStats: undefined,
@@ -389,7 +254,7 @@ describe('unit-resolver', () => {
             {
               unit,
               dlc: undefined,
-              effects: [],
+              effects: undefined,
               faction: faction,
               neutral: undefined,
               neutralStats: undefined,
@@ -409,7 +274,6 @@ describe('unit-resolver', () => {
         units: [unit],
         factions: [faction],
         neutralStats: true,
-        factionGetResponses: [[]],
         resolvedUnits: [
           TestUtil.getUnitFromDbUnit({
             unit,
@@ -420,7 +284,7 @@ describe('unit-resolver', () => {
             {
               unit,
               dlc: undefined,
-              effects: [],
+              effects: undefined,
               faction: faction,
               neutral: faction,
               neutralStats: true,
@@ -459,7 +323,7 @@ describe('unit-resolver', () => {
             {
               unit,
               dlc: undefined,
-              effects: [],
+              effects: undefined,
               faction: faction,
               neutral: neutralFaction,
               neutralStats: true,
@@ -609,10 +473,9 @@ async function testResolveFromObject({
   unit,
   neutral,
   neutralStats,
-  resolvedDlc = null,
+  resolvedDlc = undefined,
   resolvedEffects = [],
   resolvedFaction,
-  error,
   dlcResolveIdCalls = [],
   dlcResolveObjectCalls = [],
   effectResolveIdCalls = [],
@@ -626,10 +489,9 @@ async function testResolveFromObject({
   faction?: FactionDbObject
   neutral?: FactionDbObject
   neutralStats?: boolean
-  resolvedDlc?: Dlc | null
+  resolvedDlc?: Dlc
   resolvedEffects?: Effect[]
   resolvedFaction?: Faction
-  error?: string
   dlcResolveObjectCalls?: any[][]
   dlcResolveIdCalls?: any[][]
   effectResolveObjectCalls?: any[][]
@@ -659,36 +521,33 @@ async function testResolveFromObject({
     factionResolveIdSpy.mockResolvedValue(resolvedFaction)
   }
 
-  const promise = UnitResolver.resolveFromObject({
-    unit,
-    dlc,
-    effects,
-    faction,
-    neutral,
-    neutralStats,
-  })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
-  } else {
-    await expect(promise).resolves.toEqual({
-      combats: unit.combats,
-      created: unit.created,
-      deckable: unit.deckable,
-      dlc: resolvedDlc,
-      effectPrefix: unit.effectPrefix,
-      effects: resolvedEffects,
-      faction: resolvedFaction,
-      hero: unit.hero,
-      id: unit._id.toString(),
-      images: unit.images,
-      name: unit.name,
-      quote: unit.quote,
-      scorchMin: unit.scorchMin,
-      scorchScope: unit.scorchScope,
-      special: unit.special,
-      strength: unit.strength,
+  await expect(
+    UnitResolver.resolveFromObject({
+      unit,
+      dlc,
+      effects,
+      faction,
+      neutral,
+      neutralStats,
     })
-  }
+  ).resolves.toEqual({
+    combats: unit.combats,
+    created: unit.created,
+    deckable: unit.deckable,
+    dlc: resolvedDlc,
+    effectPrefix: unit.effectPrefix,
+    effects: resolvedEffects,
+    faction: resolvedFaction,
+    hero: unit.hero,
+    id: unit._id.toString(),
+    images: unit.images,
+    name: unit.name,
+    quote: unit.quote,
+    scorchMin: unit.scorchMin,
+    scorchScope: unit.scorchScope,
+    special: unit.special,
+    strength: unit.strength,
+  })
 
   expect(dlcResolveObjectSpy.mock.calls).toEqual(dlcResolveObjectCalls)
   expect(dlcResolveIdSpy.mock.calls).toEqual(dlcResolveIdCalls)
@@ -698,46 +557,13 @@ async function testResolveFromObject({
   expect(factionResolveIdSpy.mock.calls).toEqual(factionResolveIdCalls)
 }
 
-async function testResolveFromId({
-  id,
-  neutralStats,
-  resolvedUnits = [],
-  error,
-}: {
-  id: ObjectId | string
-  neutralStats?: boolean
-  resolvedUnits?: Unit[]
-  error?: string
-}) {
-  const resolveFromIdsSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue(resolvedUnits)
-
-  const promise = UnitResolver.resolveFromId({
-    id,
-    neutralStats,
-  })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
-  } else {
-    await expect(promise).resolves.toEqual(resolvedUnits[0])
-  }
-
-  expect(resolveFromIdsSpy.mock.calls).toEqual([
-    [
-      {
-        ids: [id],
-        neutralStats,
-      },
-    ],
-  ])
-}
-
 async function testResolveFromIds({
   ids,
   factions,
   neutralStats,
   getUnitsResponse = [],
   resolvedUnits = [],
-  error,
+  verifyObjectsResponse,
   unitGetCalls = [],
   resolveFromArrayCalls = [],
 }: {
@@ -745,12 +571,20 @@ async function testResolveFromIds({
   factions?: FactionDbObject[]
   neutralStats?: boolean
   getUnitsResponse?: UnitDbObject[]
+  verifyObjectsResponse?: Error
   resolvedUnits?: Unit[]
-  error?: string
   unitGetCalls?: any[][]
   resolveFromArrayCalls?: any[][]
 }) {
   const unitGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(getUnitsResponse)
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
+  if (verifyObjectsResponse) {
+    verifyObjectsSpy.mockImplementation(() => {
+      throw verifyObjectsResponse
+    })
+  } else {
+    verifyObjectsSpy.mockReturnValue()
+  }
   const resolveFromArraySpy = jest.spyOn(UnitResolver, 'resolveFromArray').mockResolvedValue(resolvedUnits)
 
   const promise = UnitResolver.resolveFromIds({
@@ -758,13 +592,28 @@ async function testResolveFromIds({
     factions,
     neutralStats,
   })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
+  if (verifyObjectsResponse) {
+    await expect(promise).rejects.toThrow(verifyObjectsResponse)
   } else {
     await expect(promise).resolves.toEqual(resolvedUnits)
   }
 
   expect(unitGetSpy.mock.calls).toEqual(unitGetCalls)
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    ids.length === 0
+      ? []
+      : [
+          [
+            {
+              expectedKeys: ids,
+              objects: getUnitsResponse,
+              field: '_id',
+              logger: UnitResolver['logger'],
+              resourceLabelPlural: 'units',
+            },
+          ],
+        ]
+  )
   expect(resolveFromArraySpy.mock.calls).toEqual(resolveFromArrayCalls)
 }
 
@@ -774,8 +623,8 @@ async function testResolveFromArray({
   neutralStats,
   dlcGetResponse = [],
   effectGetResponse = [],
-  factionGetResponses = [[]],
-  error,
+  factionGetResponses = [],
+  verifyObjectsResponse,
   resolvedUnits = [],
   dlcGetCalls = [
     [
@@ -800,7 +649,7 @@ async function testResolveFromArray({
   dlcGetResponse?: DlcDbObject[]
   effectGetResponse?: EffectDbObject[]
   factionGetResponses?: FactionDbObject[][]
-  error?: string
+  verifyObjectsResponse?: Error
   resolvedUnits?: Unit[]
   dlcGetCalls?: any[][]
   effectGetCalls?: any[][]
@@ -815,6 +664,14 @@ async function testResolveFromArray({
       factionGetSpy.mockResolvedValueOnce(factionGetResponse)
     }
   }
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
+  if (verifyObjectsResponse) {
+    verifyObjectsSpy.mockImplementation(() => {
+      throw verifyObjectsResponse
+    })
+  } else {
+    verifyObjectsSpy.mockReturnValue()
+  }
   const resolveFromObjectSpy = jest.spyOn(UnitResolver, 'resolveFromObject')
   if (resolvedUnits) {
     for (const resolvedUnit of resolvedUnits) {
@@ -827,8 +684,8 @@ async function testResolveFromArray({
     factions,
     neutralStats,
   })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
+  if (verifyObjectsResponse) {
+    await expect(promise).rejects.toThrow(verifyObjectsResponse)
   } else {
     await expect(promise).resolves.toEqual(resolvedUnits)
   }
@@ -836,5 +693,20 @@ async function testResolveFromArray({
   expect(dlcGetSpy.mock.calls).toEqual(dlcGetCalls)
   expect(effectGetSpy.mock.calls).toEqual(effectGetCalls)
   expect(factionGetSpy.mock.calls).toEqual(factionGetCalls)
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    neutralStats && factionGetResponses.length > 0
+      ? [
+          [
+            {
+              expectedKeys: [FactionKey.Neutral],
+              objects: factionGetResponses.at(-1),
+              field: 'key',
+              logger: UnitResolver['logger'],
+              resourceLabelPlural: 'factions',
+            },
+          ],
+        ]
+      : []
+  )
   expect(resolveFromObjectSpy.mock.calls).toEqual(resolveFromObjectCalls)
 }

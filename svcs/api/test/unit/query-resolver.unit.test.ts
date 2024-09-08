@@ -136,23 +136,6 @@ describe('query-resolver', () => {
     })
   })
   describe('game', () => {
-    it('throws error if game cannot be resolved', async () => {
-      const gameId = new ObjectId().toString()
-      const resolveByIdSpy = jest.spyOn(GameResolver, 'resolveById').mockResolvedValue(undefined)
-
-      await expect(
-        (QueryResolver.game as any)(
-          null,
-          {
-            id: gameId,
-          },
-          null,
-          null
-        )
-      ).rejects.toThrow(Error('Game does not exist'))
-
-      expect(resolveByIdSpy.mock.calls).toEqual([[gameId]])
-    })
     it('returns resolved game if found', async () => {
       const gameId = new ObjectId().toString()
       const game = TestUtil.getGame({

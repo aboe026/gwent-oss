@@ -65,15 +65,8 @@ const QueryResolver: QueryResolvers<any, any> = {
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   game: async (parent, args, context, info) => {
-    const userId = context?.session?.user._id
     const gameId = args.id
-    const game = await GameResolver.resolveById(gameId)
-    if (!game) {
-      const message = 'Game does not exist'
-      logger.error(`Could not get game "${gameId}" for user "${userId}": ${message}`)
-      throw Error(message)
-    }
-    return game
+    return GameResolver.resolveById(gameId)
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   gameDeck: async (parent, args, context, info) => {

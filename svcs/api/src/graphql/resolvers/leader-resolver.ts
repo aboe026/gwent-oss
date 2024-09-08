@@ -7,7 +7,7 @@ import DlcResolver from './dlc-resolver'
 import { ObjectId } from 'mongodb'
 import LeaderStore from '../../database/stores/leader-store'
 import { getUniqueItems } from '@gwent/utils'
-import verifyObjects from '../../util/verify-objects'
+import Verifier from '../../util/verify-objects'
 
 export default class LeaderResolver {
   private static logger = getLogger('leader-resolver')
@@ -59,17 +59,19 @@ export default class LeaderResolver {
     resolvedFactions?: Faction[]
     neutralStats?: boolean
   }): Promise<Leader[]> {
-    const leaders =
-      ids.length === 0
-        ? []
-        : await LeaderStore.get({
-            ids: ids,
-          })
+    // TODO: short-circuit other resolvers if emtpy
+    if (ids.length === 0) {
+      return []
+    }
 
-    verifyObjects({
+    const leaders = await LeaderStore.get({
+      ids: ids,
+    })
+
+    Verifier.checkObjects({
       expectedKeys: ids,
       objects: leaders,
-      key: '_id',
+      field: '_id',
       logger: LeaderResolver.logger,
       resourceLabelPlural: 'leaders',
     })

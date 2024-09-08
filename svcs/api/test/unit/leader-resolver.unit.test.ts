@@ -6,28 +6,11 @@ import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import { ObjectId } from 'mongodb'
 import LeaderStore from '../../src/database/stores/leader-store'
 import TestUtil from '../test-util'
+import Verifier from '../../src/util/verify-objects'
 
 describe('leader-resolver', () => {
   describe('resolveFromObject', () => {
     const leader = TestUtil.getDbLeader({})
-    it('throws error if faction not resolveable', async () => {
-      await testResolveFromObject({
-        leader,
-        resolveFaction: false,
-        error: `Could not resolve faction "${leader.faction}" for leader "${leader._id}".`,
-      })
-    })
-    it('throws error if dlc not resolveable', async () => {
-      const dlcId = new ObjectId()
-      await testResolveFromObject({
-        leader: {
-          ...leader,
-          dlc: dlcId,
-        },
-        resolveDlc: false,
-        error: `Could not resolve dlc "${dlcId}" for leader "${leader._id}".`,
-      })
-    })
     it('does not call to external resolvers if required fields provided', async () => {
       await testResolveFromObject({
         leader,
@@ -76,26 +59,7 @@ describe('leader-resolver', () => {
     })
   })
   describe('resolveFromId', () => {
-    it('returns undefined if resolveFromIds returns undefined', async () => {
-      const id = new ObjectId()
-      const resolveFromIdsSpy = jest.spyOn(LeaderResolver, 'resolveFromIds').mockResolvedValue(undefined as any)
-
-      await expect(
-        LeaderResolver.resolveFromId({
-          id,
-        })
-      ).resolves.toEqual(undefined)
-
-      expect(resolveFromIdsSpy.mock.calls).toEqual([
-        [
-          {
-            ids: [id],
-            neutralStats: undefined,
-          },
-        ],
-      ])
-    })
-    it('returns first leader if resolveFromIds returns a leader', async () => {
+    it('returns first leader from resolveFromIds', async () => {
       const leader = TestUtil.getLeader({})
       const resolveFromIdsSpy = jest.spyOn(LeaderResolver, 'resolveFromIds').mockResolvedValue([leader])
 
@@ -138,29 +102,6 @@ describe('leader-resolver', () => {
     })
   })
   describe('resolveFromArray', () => {
-    it('throws error if faction cannot be resolved', async () => {
-      const leader = TestUtil.getDbLeader({})
-      await testResolveFromArray({
-        leaders: [leader],
-        resolvedFactions: [],
-        error: `Could not resolve faction "${leader.faction}" for leader "${leader._id}" in array.`,
-      })
-    })
-    it('throws error if dlc cannot be resolved', async () => {
-      const leader = TestUtil.getDbLeader({
-        dlc: new ObjectId(),
-      })
-      const resolvedFaction = TestUtil.getFaction({
-        id: leader.faction,
-      })
-      await testResolveFromArray({
-        leaders: [leader],
-        resolvedFactions: [resolvedFaction],
-        dlcsResolveResponse: [],
-        error: `Could not resolve dlc "${leader.dlc}" for leader "${leader._id}" in array.`,
-        dlcsResolverCalls: [[[leader.dlc]]],
-      })
-    })
     it('does not call to FactionResolver if resolved factions provided', async () => {
       const leader = TestUtil.getDbLeader({})
       const resolvedFaction = TestUtil.getFaction({
@@ -287,19 +228,13 @@ describe('leader-resolver', () => {
 async function testResolveFromObject({
   leader,
   faction,
-  resolveFaction = true,
-  resolveDlc = true,
   dlc,
   neutralStats,
-  error,
 }: {
   leader: LeaderDbObject
   faction?: Faction
-  resolveFaction?: boolean
-  resolveDlc?: boolean
   dlc?: Dlc
   neutralStats?: boolean
-  error?: string
 }) {
   const resolvedDlc: Dlc =
     dlc ||
@@ -318,17 +253,14 @@ async function testResolveFromObject({
   const dlcResolverSpy = jest.spyOn(DlcResolver, 'resolveFromId').mockResolvedValue(resolvedDlc)
   const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromId').mockResolvedValue(resolvedFaction)
 
-  const promise = LeaderResolver.resolveFromObject({
-    leader,
-    dlc,
-    faction,
-    neutralStats,
-  })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
-  } else {
-    await expect(promise).resolves.toEqual(resolvedLeader)
-  }
+  await expect(
+    LeaderResolver.resolveFromObject({
+      leader,
+      dlc,
+      faction,
+      neutralStats,
+    })
+  ).resolves.toEqual(resolvedLeader)
 
   expect(dlcResolverSpy.mock.calls).toEqual(dlc || !leader.dlc ? [] : [[leader.dlc]])
   expect(factionResolverSpy.mock.calls).toEqual(
@@ -345,16 +277,28 @@ async function testResolveFromObject({
   )
 }
 
-async function testResolveFromIds({ ids }: { ids: (ObjectId | string)[] }) {
-  const leaders: LeaderDbObject[] = ids
-    ? ids.map((id) =>
-        TestUtil.getDbLeader({
-          id,
-        })
-      )
-    : []
+async function testResolveFromIds({
+  ids,
+  verifyObjectsResponse,
+}: {
+  ids: (ObjectId | string)[]
+  verifyObjectsResponse?: Error
+}) {
+  const leaders: LeaderDbObject[] = ids.map((id) =>
+    TestUtil.getDbLeader({
+      id,
+    })
+  )
   const resolvedLeaders = leaders.map((leader) => TestUtil.getLeaderFromDbLeader(leader))
   const getSpy = jest.spyOn(LeaderStore, 'get').mockResolvedValue(leaders)
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
+  if (verifyObjectsResponse) {
+    verifyObjectsSpy.mockImplementation(() => {
+      throw verifyObjectsResponse
+    })
+  } else {
+    verifyObjectsSpy.mockReturnValue()
+  }
   const resolveFromArraySpy = jest.spyOn(LeaderResolver, 'resolveFromArray').mockResolvedValue(resolvedLeaders)
 
   await expect(
@@ -369,6 +313,21 @@ async function testResolveFromIds({ ids }: { ids: (ObjectId | string)[] }) {
           [
             {
               ids,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    ids.length > 0
+      ? [
+          [
+            {
+              expectedKeys: ids,
+              objects: leaders,
+              field: '_id',
+              logger: LeaderResolver['logger'],
+              resourceLabelPlural: 'leaders',
             },
           ],
         ]

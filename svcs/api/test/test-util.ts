@@ -214,7 +214,7 @@ export default class TestUtil {
         ? TestUtil.getDlc({
             id: dbFaction.dlc,
           })
-        : null,
+        : undefined,
     }
   }
 
@@ -267,7 +267,7 @@ export default class TestUtil {
         ? TestUtil.getDlc({
             id: dbLeader.dlc,
           })
-        : null,
+        : undefined,
     }
   }
 

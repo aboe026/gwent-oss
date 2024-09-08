@@ -7,93 +7,29 @@ import { ObjectId } from 'mongodb'
 import { MAX_ROUNDS } from '@gwent/constants'
 import GameStore from '../../src/database/stores/game-store'
 import TestUtil from '../test-util'
+import Verifier from '../../src/util/verify-objects'
 
 describe('game-resolver', () => {
   describe('resolveFromObject', () => {
-    it('throws error if creator not found', async () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      await testResolveFromObject({
-        game: {
-          _id: gameId,
-          created: new Date(),
-          creator: userId,
-          players: [],
-          round: {
-            current: 0,
-            maximum: MAX_ROUNDS,
-          },
-          updated: new Date(),
-          victors: [],
-        },
-        resolvedUsers: [],
-        error: `Could not resolve creator "${userId}" for game "${gameId}".`,
-        userResolverCalls: [[[userId.toString()]]],
-      })
-    })
-    it('throws error if player not found', async () => {
-      const gameId = new ObjectId()
-      const creator = TestUtil.getUser({})
-      const playerId = new ObjectId()
-      await testResolveFromObject({
-        game: {
-          _id: gameId,
-          created: new Date(),
-          creator: new ObjectId(creator.id),
-          players: [
-            TestUtil.getDbGamePlayer({
-              user: playerId,
-            }),
-          ],
-          round: {
-            current: 0,
-            maximum: MAX_ROUNDS,
-          },
-          updated: new Date(),
-          victors: [],
-        },
-        users: [creator],
-        resolvedUsers: [],
-        error: `Could not resolve player "${playerId}" for game "${gameId}".`,
-        userResolverCalls: [[[playerId.toString()]]],
-      })
-    })
-    it('throws error if victor not found', async () => {
-      const gameId = new ObjectId()
-      const creator = TestUtil.getUser({})
-      const playerId = new ObjectId()
-      await testResolveFromObject({
-        game: {
-          _id: gameId,
-          created: new Date(),
-          creator: new ObjectId(creator.id),
-          players: [
-            TestUtil.getDbGamePlayer({
-              user: creator.id,
-            }),
-          ],
-          round: {
-            current: 0,
-            maximum: MAX_ROUNDS,
-          },
-          updated: new Date(),
-          victors: [playerId],
-        },
-        resolvedUsers: [creator],
-        error: `Could not resolve victor "${playerId}" for game "${gameId}".`,
-        userResolverCalls: [[[creator.id, playerId.toString()]]],
-      })
-    })
-    it('returns resolved object if no errors', async () => {
+    it('returns resolved object if nothing provided', async () => {
       const gameId = new ObjectId()
       const user = TestUtil.getUser({})
       const victor = TestUtil.getUser({})
+      const players = [
+        TestUtil.getDbGamePlayer({
+          user: user.id,
+        }),
+        TestUtil.getDbGamePlayer({
+          user: victor.id,
+        }),
+      ]
       await testResolveFromObject({
         game: {
           _id: gameId,
           created: new Date(),
           creator: new ObjectId(user.id),
-          players: [],
+          players,
+
           round: {
             current: 0,
             maximum: MAX_ROUNDS,
@@ -101,8 +37,7 @@ describe('game-resolver', () => {
           updated: new Date(),
           victors: [new ObjectId(victor.id)],
         },
-        creator: user,
-        resolvedUsers: [victor],
+        resolvedUsers: [user, victor],
         resolvedVictors: [victor],
         resolvedGamePlayers: [
           {
@@ -111,11 +46,58 @@ describe('game-resolver', () => {
             user,
           },
         ],
-        userResolverCalls: [[[victor.id]]],
+        userResolverCalls: [[[user.id, victor.id]]],
         gamePlayerResolverCalls: [
           [
             {
-              players: [],
+              players,
+              users: [user, victor],
+              everyoneReady: false,
+              neutralFactionStats: undefined,
+              neutralLeaderStats: undefined,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns resolved object if everything provided', async () => {
+      const gameId = new ObjectId()
+      const user = TestUtil.getUser({})
+      const victor = TestUtil.getUser({})
+      const players = [
+        TestUtil.getDbGamePlayer({
+          user: user.id,
+        }),
+        TestUtil.getDbGamePlayer({
+          user: victor.id,
+        }),
+      ]
+      await testResolveFromObject({
+        game: {
+          _id: gameId,
+          created: new Date(),
+          creator: new ObjectId(user.id),
+          players,
+          round: {
+            current: 0,
+            maximum: MAX_ROUNDS,
+          },
+          updated: new Date(),
+          victors: [new ObjectId(victor.id)],
+        },
+        creator: user,
+        users: [victor],
+        resolvedGamePlayers: [
+          {
+            ready: false,
+            rounds: [],
+            user,
+          },
+        ],
+        gamePlayerResolverCalls: [
+          [
+            {
+              players: players,
               users: [user, victor],
               everyoneReady: false,
               neutralFactionStats: undefined,
@@ -127,58 +109,7 @@ describe('game-resolver', () => {
     })
   })
   describe('resolveFromArray', () => {
-    it('throws error if creator not found', async () => {
-      const gameId = new ObjectId()
-      const creatorId = new ObjectId()
-      await testResolveFromArray({
-        games: [
-          {
-            _id: gameId,
-            created: new ObjectId(),
-            creator: creatorId,
-            players: [],
-            round: {
-              current: 0,
-              maximum: MAX_ROUNDS,
-            },
-            updated: new Date(),
-            victors: [],
-          },
-        ],
-        resolvedUsers: [],
-        error: `Could not resolve creator "${creatorId}" for game "${gameId}" in array.`,
-        userResolverCalls: [[[creatorId.toString()]]],
-      })
-    })
-    it('throws error if player not found', async () => {
-      const gameId = new ObjectId()
-      const creator = TestUtil.getUser({})
-      const playerId = new ObjectId()
-      await testResolveFromArray({
-        games: [
-          {
-            _id: gameId,
-            created: new ObjectId(),
-            creator: new ObjectId(creator.id),
-            players: [
-              TestUtil.getDbGamePlayer({
-                user: playerId,
-              }),
-            ],
-            round: {
-              current: 0,
-              maximum: MAX_ROUNDS,
-            },
-            updated: new Date(),
-            victors: [],
-          },
-        ],
-        resolvedUsers: [creator],
-        error: `Could not resolve player "${playerId}" for game "${gameId}" in array.`,
-        userResolverCalls: [[[creator.id, playerId.toString()]]],
-      })
-    })
-    it('calls to resolveFromObject if no errors thrown', async () => {
+    it('calls to resolveFromObject with resolved users', async () => {
       const gameId = new ObjectId()
       const creator = TestUtil.getUser({})
       const player = TestUtil.getUser({})
@@ -238,9 +169,9 @@ describe('game-resolver', () => {
     })
   })
   describe('resolveById', () => {
-    it('returns undefined if getById returns undefined', async () => {
+    it('throws error if verifyObjects throws error', async () => {
       await testResolveById({
-        game: undefined,
+        verifyObjectsResponse: Error(`Could not find games "["id"]" to resolve.`),
       })
     })
     it('returns resolved game if getById returns game', async () => {
@@ -363,7 +294,6 @@ async function testResolveFromObject({
   resolvedUsers = [],
   resolvedGamePlayers = [],
   resolvedVictors,
-  error,
   userResolverCalls = [[[]]],
   gamePlayerResolverCalls = [],
 }: {
@@ -375,7 +305,6 @@ async function testResolveFromObject({
   resolvedUsers?: User[]
   resolvedGamePlayers?: GamePlayer[]
   resolvedVictors?: User[]
-  error?: string
   userResolverCalls?: any[][]
   gamePlayerResolverCalls?: any[][]
 }) {
@@ -383,28 +312,33 @@ async function testResolveFromObject({
   const gamePlayerResolverSpy = jest
     .spyOn(GamePlayerResolver, 'resolveFromArray')
     .mockResolvedValue(resolvedGamePlayers)
-
-  const promise = GameResolver.resolveFromObject({
-    game,
-    creator,
-    neutralFactionStats,
-    neutralLeaderStats,
-    users,
-  })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
-  } else {
-    await expect(promise).resolves.toEqual({
-      created: game.created,
-      creator: creator || resolvedUsers,
-      id: game._id.toString(),
-      players: resolvedGamePlayers,
-      round: game.round,
-      status: GameResolver.getStatus(game),
-      updated: game.updated,
-      victors: resolvedVictors || game.victors,
-    })
+  const victors: User[] = []
+  if (resolvedVictors) {
+    victors.push(...resolvedVictors)
+  } else if (resolvedUsers && resolvedUsers.length > 0) {
+    victors.push(resolvedUsers[1])
+  } else if (users) {
+    victors.push(...users)
   }
+
+  await expect(
+    GameResolver.resolveFromObject({
+      game,
+      creator,
+      neutralFactionStats,
+      neutralLeaderStats,
+      users,
+    })
+  ).resolves.toEqual({
+    created: game.created,
+    creator: creator || resolvedUsers[0],
+    id: game._id.toString(),
+    players: resolvedGamePlayers,
+    round: game.round,
+    status: GameResolver.getStatus(game),
+    updated: game.updated,
+    victors,
+  })
 
   expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)
   expect(gamePlayerResolverSpy.mock.calls).toEqual(gamePlayerResolverCalls)
@@ -442,20 +376,52 @@ async function testResolveFromArray({
   expect(resolveFromObjectSpy.mock.calls).toEqual(gameResolverCalls)
 }
 
-async function testResolveById({ game, resolvedGame }: { game?: GameDbObject; resolvedGame?: Game }) {
+async function testResolveById({
+  game,
+  resolvedGame,
+  verifyObjectsResponse,
+}: {
+  game?: GameDbObject
+  resolvedGame?: Game
+  verifyObjectsResponse?: Error
+}) {
   const id = new ObjectId()
   const gameGetSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(game)
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
+  if (verifyObjectsResponse) {
+    verifyObjectsSpy.mockImplementation(() => {
+      throw verifyObjectsResponse
+    })
+  } else {
+    verifyObjectsSpy.mockReturnValue()
+  }
   const gameResolveSpy = jest.spyOn(GameResolver, 'resolveFromObject')
   if (resolvedGame) {
     gameResolveSpy.mockResolvedValueOnce(resolvedGame)
   }
 
-  await expect(GameResolver.resolveById(id)).resolves.toEqual(resolvedGame)
+  const promise = GameResolver.resolveById(id)
+  if (verifyObjectsResponse) {
+    await expect(promise).rejects.toThrow(verifyObjectsResponse)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedGame)
+  }
 
   expect(gameGetSpy.mock.calls).toEqual([
     [
       {
         id,
+      },
+    ],
+  ])
+  expect(verifyObjectsSpy.mock.calls).toEqual([
+    [
+      {
+        expectedKeys: [id],
+        objects: [game],
+        field: '_id',
+        logger: GameResolver['logger'],
+        resourceLabelPlural: 'games',
       },
     ],
   ])

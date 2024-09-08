@@ -3,7 +3,7 @@ import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
 import { ObjectId } from 'mongodb'
 import DlcStore from '../../src/database/stores/dlc-store'
 import TestUtil from '../test-util'
-import * as verifyObjects from '../../src/util/verify-objects'
+import Verifier from '../../src/util/verify-objects'
 import { Dlc } from '@gwent/graphql-schema/resolver-typings'
 
 describe('dlc-resolver', () => {
@@ -142,7 +142,7 @@ async function testResolveFromIds({
   dlcResolveObjectCalls?: any[][]
 }) {
   const dlcGetSpy = jest.spyOn(DlcStore, 'get').mockResolvedValue(dlcGetResponse)
-  const verifyObjectsSpy = jest.spyOn(verifyObjects, 'default')
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
   if (verifyObjectsError) {
     verifyObjectsSpy.mockImplementation(() => {
       throw Error(verifyObjectsError)
@@ -168,7 +168,7 @@ async function testResolveFromIds({
       {
         expectedKeys: ids,
         objects: dlcGetResponse,
-        key: '_id',
+        field: '_id',
         logger: DlcResolver['logger'],
         resourceLabelPlural: 'dlcs',
       },

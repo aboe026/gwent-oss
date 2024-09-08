@@ -2,8 +2,8 @@ import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import { User } from '@gwent/graphql-schema/resolver-typings'
 import { ObjectId } from 'mongodb'
 import UserStore from '../../database/stores/user-store'
-import verifyObjects from '../../util/verify-objects'
 import { getLogger } from 'log4js'
+import Verifier from '../../util/verify-objects'
 
 export default class UserResolver {
   private static logger = getLogger('user-resolver')
@@ -22,12 +22,16 @@ export default class UserResolver {
   }
 
   static async resolveByIds(ids: (ObjectId | string)[]): Promise<User[]> {
+    if (ids.length === 0) {
+      return []
+    }
+
     const users = await UserStore.getByIds(ids)
 
-    verifyObjects({
+    Verifier.checkObjects({
       expectedKeys: ids,
       objects: users,
-      key: '_id',
+      field: '_id',
       logger: UserResolver.logger,
       resourceLabelPlural: 'users',
     })

@@ -7,14 +7,14 @@ import TestUtil from '../test-util'
 
 describe('deck-unit-resolver', () => {
   describe('resolveFromObject', () => {
-    it('throws error if unit not found', async () => {
-      const unitId = new ObjectId()
+    it('does not call to UnitResolver if unit provided', async () => {
+      const unit = TestUtil.getUnit({})
       await testResolveFromObject({
         deckUnit: {
           artStyle: 1,
-          unit: unitId,
+          unit: new ObjectId(unit.id),
         },
-        error: `Could not resolve unit "${unitId}" as deckUnit.`,
+        unit,
       })
     })
     it('calls to UnitResolver with undefined neutralStats', async () => {
@@ -57,20 +57,9 @@ describe('deck-unit-resolver', () => {
     })
   })
   describe('resolveFromArray', () => {
-    it('throws error if deck unit not found', async () => {
-      const deckUnit = TestUtil.getDbDeckUnit({})
+    it('returns empty array if provided empty array', async () => {
       await testResolveFromArray({
-        deckUnits: [deckUnit],
-        resolvedUnits: [],
-        error: `Could not resolved deck unit "${deckUnit.unit}" in array.`,
-        unitResolverCalls: [
-          [
-            {
-              ids: [deckUnit.unit],
-              neutralStats: undefined,
-            },
-          ],
-        ],
+        deckUnits: [],
       })
     })
     it('calls to resolvers with unique unit ids if undefined neutralStats', async () => {
@@ -138,73 +127,70 @@ describe('deck-unit-resolver', () => {
 async function testResolveFromObject({
   deckUnit,
   neutralStats,
+  unit,
   unitResolverResponse,
-  error,
 }: {
   deckUnit: DeckUnitDbObject
   neutralStats?: boolean
+  unit?: Unit
   unitResolverResponse?: Unit
-  error?: string
 }) {
   const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromId')
   if (unitResolverResponse) {
     unitResolverSpy.mockResolvedValue(unitResolverResponse)
   }
 
-  const promise = DeckUnitResolver.resolveFromObject({
-    deckUnit,
-    neutralStats,
-  })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
-  } else {
-    await expect(promise).resolves.toEqual({
-      artStyle: deckUnit.artStyle,
-      unit: unitResolverResponse,
+  await expect(
+    DeckUnitResolver.resolveFromObject({
+      deckUnit,
+      neutralStats,
+      unit,
     })
-  }
+  ).resolves.toEqual({
+    artStyle: deckUnit.artStyle,
+    unit: unit || unitResolverResponse,
+  })
 
-  expect(unitResolverSpy.mock.calls).toEqual([
-    [
-      {
-        id: deckUnit.unit,
-        neutralStats,
-      },
-    ],
-  ])
+  expect(unitResolverSpy.mock.calls).toEqual(
+    unit
+      ? []
+      : [
+          [
+            {
+              id: deckUnit.unit,
+              neutralStats,
+            },
+          ],
+        ]
+  )
 }
 
 async function testResolveFromArray({
   deckUnits = [],
   neutralStats,
   resolvedUnits = [],
-  error,
   unitResolverCalls = [],
 }: {
   deckUnits?: DeckUnitDbObject[]
   neutralStats?: boolean
   resolvedUnits?: Unit[]
-  error?: string
   unitResolverCalls?: any[][]
 }) {
   const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue(resolvedUnits)
 
-  const promise = DeckUnitResolver.resolveFromArray({
-    deckUnits,
-    neutralStats,
-  })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
-  } else {
-    await expect(promise).resolves.toEqual(
-      deckUnits?.map((deckUnit) => {
-        return {
-          artStyle: deckUnit.artStyle,
-          unit: resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString()),
-        }
-      })
-    )
-  }
+  await expect(
+    DeckUnitResolver.resolveFromArray({
+      deckUnits,
+      neutralStats,
+    })
+  ).resolves.toEqual(
+    deckUnits?.map((deckUnit) => {
+      return {
+        artStyle: deckUnit.artStyle,
+        unit: resolvedUnits.find((unit) => unit.id.toString() === deckUnit.unit.toString()),
+      }
+    })
+  )
 
   expect(unitResolverSpy.mock.calls).toEqual(unitResolverCalls)
 }

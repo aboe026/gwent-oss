@@ -3,7 +3,7 @@ import { Dlc, DlcKey } from '@gwent/graphql-schema/resolver-typings'
 import { ObjectId } from 'mongodb'
 import DlcStore from '../../database/stores/dlc-store'
 import { getLogger } from 'log4js'
-import verifyObjects from '../../util/verify-objects'
+import Verifier from '../../util/verify-objects'
 
 export default class DlcResolver {
   private static logger = getLogger('dlc-resolver')
@@ -31,10 +31,10 @@ export default class DlcResolver {
             ids,
           })
 
-    verifyObjects({
+    Verifier.checkObjects({
       expectedKeys: ids,
       objects: dlcs,
-      key: '_id',
+      field: '_id',
       logger: DlcResolver.logger,
       resourceLabelPlural: 'dlcs',
     })

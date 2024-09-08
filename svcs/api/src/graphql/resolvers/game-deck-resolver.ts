@@ -1,5 +1,5 @@
 import { GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
-import { Deck, DeckUnit, GameDeck } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import DeckResolver from './deck-resolver'
 import DeckUnitResolver from './deck-unit-resolver'
 
@@ -15,16 +15,6 @@ export default class GameDeckResolver {
     neutralLeaderStats?: boolean
     neutralUnitStats?: boolean
   }): Promise<GameDeck> {
-    let from: Deck | undefined = undefined
-    if (gameDeck.from) {
-      from = await DeckResolver.resolveFromObject({
-        deck: gameDeck.from,
-        neutralDeckStats,
-        neutralLeaderStats,
-        neutralUnitStats,
-      })
-    }
-
     const deckUnits = await DeckUnitResolver.resolveFromArray({
       deckUnits: [
         ...gameDeck.discard,
@@ -41,7 +31,14 @@ export default class GameDeckResolver {
         (deckUnit) =>
           deckUnits.find((resolvedDeckUnit) => resolvedDeckUnit.unit.id === deckUnit.unit.toString()) as DeckUnit
       ),
-      from,
+      from:
+        gameDeck.from &&
+        (await DeckResolver.resolveFromObject({
+          deck: gameDeck.from,
+          neutralDeckStats,
+          neutralLeaderStats,
+          neutralUnitStats,
+        })),
       hand: gameDeck.hand.map(
         (deckUnit) =>
           deckUnits.find((resolvedDeckUnit) => resolvedDeckUnit.unit.id === deckUnit.unit.toString()) as DeckUnit

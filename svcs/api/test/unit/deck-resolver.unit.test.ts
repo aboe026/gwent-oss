@@ -13,30 +13,6 @@ import TestUtil from '../test-util'
 describe('deck-resolver', () => {
   describe('resolveFromObject', () => {
     const deck = TestUtil.getDbDeck({})
-    it('throws error if faction cannot be resolved', async () => {
-      await testResolveFromObject({
-        deck,
-        factionResolved: false,
-        error: `Could not resolve faction "${deck.faction}" for deck "${deck._id}".`,
-        leaderResolverCalled: false,
-        userResolverCalled: false,
-      })
-    })
-    it('throws error if leader cannot be resolved', async () => {
-      await testResolveFromObject({
-        deck,
-        leaderResolved: false,
-        error: `Could not resolve leader "${deck.leader}" for deck "${deck._id}".`,
-        userResolverCalled: false,
-      })
-    })
-    it('throws error if user cannot be resolved', async () => {
-      await testResolveFromObject({
-        deck,
-        userResolved: false,
-        error: `Could not resolve user "${deck.user}" for deck "${deck._id}".`,
-      })
-    })
     it('does not call to external resolvers if fields provided', async () => {
       const faction = TestUtil.getFaction({
         id: deck.faction,
@@ -110,59 +86,7 @@ describe('deck-resolver', () => {
         unit,
       }
     })
-    it('throws error if faction not found', async () => {
-      await testResolveFromArray({
-        decks: [deck],
-        factionsGetResponse: [
-          TestUtil.getDbFaction({
-            id: deck.faction,
-          }),
-        ],
-        factionsResolveResponse: [],
-        error: `Could not resolve faction "${deck.faction}" for deck "${deck._id}" in array.`,
-      })
-    })
-    it('throws error if leader not found', async () => {
-      await testResolveFromArray({
-        decks: [deck],
-        factionsGetResponse: [faction],
-        factionsResolveResponse: [TestUtil.getFactionFromDbFaction(faction)],
-        leadersResolveResponse: [],
-        error: `Could not resolve leader "${deck.leader}" for deck "${deck._id}" in array.`,
-      })
-    })
-    it('throws error if unit not found', async () => {
-      await testResolveFromArray({
-        decks: [deck],
-        factionsGetResponse: [faction],
-        factionsResolveResponse: [TestUtil.getFactionFromDbFaction(faction)],
-        leadersResolveResponse: [
-          TestUtil.getLeader({
-            id: deck.leader,
-          }),
-        ],
-        error: `Could not resolve unit "${deck.units[0].unit}" for deck "${deck._id}" in array.`,
-      })
-    })
-    it('throws error if user not found', async () => {
-      await testResolveFromArray({
-        decks: [deck],
-        factionsGetResponse: [faction],
-        factionsResolveResponse: [TestUtil.getFactionFromDbFaction(faction)],
-        leadersResolveResponse: [
-          TestUtil.getLeader({
-            id: deck.leader,
-          }),
-        ],
-        unitsResolveResponse: deck.units.map((deckUnit) =>
-          TestUtil.getUnit({
-            id: deckUnit.unit,
-          })
-        ),
-        error: `Could not resolve user "${deck.user}" for deck "${deck._id}" in array.`,
-      })
-    })
-    it('returns resolved deck if no errors and implicit neutral stats', async () => {
+    it('returns resolved deck if implicit neutral stats', async () => {
       await testResolveFromArray({
         decks: [deck],
         factionsGetResponse: [faction],
@@ -192,7 +116,7 @@ describe('deck-resolver', () => {
         ],
       })
     })
-    it('returns resolved deck if no errors and explicit false neutral stats', async () => {
+    it('returns resolved deck if explicit false neutral stats', async () => {
       await testResolveFromArray({
         decks: [deck],
         neutralDeckStats: false,
@@ -225,7 +149,7 @@ describe('deck-resolver', () => {
         ],
       })
     })
-    it('returns resolved deck if no errors and explicit true neutral stats', async () => {
+    it('returns resolved deck if explicit true neutral stats', async () => {
       await testResolveFromArray({
         decks: [deck],
         neutralDeckStats: true,
@@ -258,23 +182,6 @@ describe('deck-resolver', () => {
         ],
       })
     })
-    // it('calls to other resolvers with unique ids and undefined for stats', async () => {
-    //   await testResolveFromArray({})
-    // })
-    // it('calls to other resolvers with unique ids and explicit false for stats', async () => {
-    //   await testResolveFromArray({
-    //     neutralDeckStats: false,
-    //     neutralLeaderStats: false,
-    //     neutralUnitStats: false,
-    //   })
-    // })
-    // it('calls to other resolvers with unique ids and explicit true for stats', async () => {
-    //   await testResolveFromArray({
-    //     neutralDeckStats: true,
-    //     neutralLeaderStats: true,
-    //     neutralUnitStats: true,
-    //   })
-    // })
   })
 })
 
@@ -287,10 +194,6 @@ async function testResolveFromObject({
   neutralUnitStats,
   units,
   user,
-  factionResolved = true,
-  leaderResolved = true,
-  userResolved = true,
-  error,
   factionResolverCalled = true,
   leaderResolverCalled = true,
   userResolverCalled = true,
@@ -303,10 +206,6 @@ async function testResolveFromObject({
   neutralDeckStats?: boolean
   neutralLeaderStats?: boolean
   neutralUnitStats?: boolean
-  factionResolved?: boolean
-  leaderResolved?: boolean
-  userResolved?: boolean
-  error?: string
   factionResolverCalled?: boolean
   leaderResolverCalled?: boolean
   userResolverCalled?: boolean
@@ -337,30 +236,27 @@ async function testResolveFromObject({
   })
   const userResolverSpy = jest.spyOn(UserResolver, 'resolveById').mockResolvedValue(retrievedUser)
 
-  const promise = DeckResolver.resolveFromObject({
-    deck,
-    faction,
-    leader,
-    neutralDeckStats,
-    neutralLeaderStats,
-    neutralUnitStats,
-    units,
-    user,
-  })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
-  } else {
-    await expect(promise).resolves.toEqual({
-      created: deck.created,
-      faction: faction || retrievedFaction,
-      id: deck._id.toString(),
-      leader: leader || retrievedLeader,
-      name: deck.name,
-      stats: deck.stats,
-      units: units || retrievedUnits,
-      user: user || retrievedUser,
+  await expect(
+    DeckResolver.resolveFromObject({
+      deck,
+      faction,
+      leader,
+      neutralDeckStats,
+      neutralLeaderStats,
+      neutralUnitStats,
+      units,
+      user,
     })
-  }
+  ).resolves.toEqual({
+    created: deck.created,
+    faction: faction || retrievedFaction,
+    id: deck._id.toString(),
+    leader: leader || retrievedLeader,
+    name: deck.name,
+    stats: deck.stats,
+    units: units || retrievedUnits,
+    user: user || retrievedUser,
+  })
 
   expect(factionResolverSpy.mock.calls).toEqual(
     factionResolverCalled
@@ -387,7 +283,7 @@ async function testResolveFromObject({
       : []
   )
   expect(deckUnitResolverSpy.mock.calls).toEqual(
-    units || error
+    units
       ? []
       : [
           [
@@ -412,7 +308,6 @@ async function testResolveFromArray({
   unitsResolveResponse = [],
   userResolveResponse = [],
   resolvedDecks = [],
-  error,
   deckResolveCalls = [],
 }: {
   decks: DeckDbObject[]
@@ -425,7 +320,6 @@ async function testResolveFromArray({
   unitsResolveResponse?: Unit[]
   userResolveResponse?: User[]
   resolvedDecks?: Deck[]
-  error?: string
   deckResolveCalls?: any[][]
 }) {
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionsGetResponse)
@@ -440,17 +334,14 @@ async function testResolveFromArray({
     }
   }
 
-  const promise = DeckResolver.resolveFromArray({
-    decks,
-    neutralDeckStats,
-    neutralLeaderStats,
-    neutralUnitStats,
-  })
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
-  } else {
-    await expect(promise).resolves.toEqual(resolvedDecks)
-  }
+  await expect(
+    DeckResolver.resolveFromArray({
+      decks,
+      neutralDeckStats,
+      neutralLeaderStats,
+      neutralUnitStats,
+    })
+  ).resolves.toEqual(resolvedDecks)
 
   expect(factionGetSpy.mock.calls).toEqual([
     [

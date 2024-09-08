@@ -6,7 +6,7 @@ import DlcResolver from './dlc-resolver'
 import FactionStore from '../../database/stores/faction-store'
 import { ObjectId } from 'mongodb'
 import { getUniqueItems } from '@gwent/utils'
-import verifyObjects from '../../util/verify-objects'
+import Verifier from '../../util/verify-objects'
 
 export default class FactionResolver {
   private static logger = getLogger('faction-resolver')
@@ -26,12 +26,12 @@ export default class FactionResolver {
       const neutralFactions = await FactionStore.get({
         keys: [FactionKey.Neutral],
       })
-      verifyObjects({
+      Verifier.checkObjects({
         expectedKeys: [FactionKey.Neutral],
         objects: neutralFactions,
-        key: 'key',
+        field: 'key',
         logger: FactionResolver.logger,
-        resourceLabelPlural: 'neutral faction',
+        resourceLabelPlural: 'factions',
       })
       neutral = neutralFactions[0]
     }
@@ -72,10 +72,10 @@ export default class FactionResolver {
             ids: ids,
           })
 
-    verifyObjects({
+    Verifier.checkObjects({
       expectedKeys: ids,
       objects: factions,
-      key: '_id',
+      field: '_id',
       logger: FactionResolver.logger,
       resourceLabelPlural: 'factions',
     })
@@ -103,13 +103,14 @@ export default class FactionResolver {
         const neutralFactions = await FactionStore.get({
           keys: [FactionKey.Neutral],
         })
-        verifyObjects({
+        Verifier.checkObjects({
           expectedKeys: [FactionKey.Neutral],
           objects: neutralFactions,
-          key: 'key',
+          field: 'key',
           logger: FactionResolver.logger,
-          resourceLabelPlural: 'neutral factions',
+          resourceLabelPlural: 'factions',
         })
+        neutral = neutralFactions[0]
       }
     }
 

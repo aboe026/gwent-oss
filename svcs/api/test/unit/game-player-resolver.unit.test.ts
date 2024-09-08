@@ -9,74 +9,6 @@ import TestUtil from '../test-util'
 
 describe('game-player-resolver', () => {
   describe('resolveFromObject', () => {
-    it('throws error if faction unresolveable', async () => {
-      const userId = new ObjectId()
-      const factionId = new ObjectId()
-      await testResolveFromObject({
-        everyoneReady: true,
-        player: TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            from: TestUtil.getDbDeck({
-              faction: factionId,
-            }),
-          }),
-          ready: true,
-          user: userId,
-        }),
-        error: `Could not resolve faction "${factionId}" for game player "${userId}".`,
-        factionResolverCalls: [
-          [
-            {
-              id: factionId,
-              neutrals: undefined,
-            },
-          ],
-        ],
-      })
-    })
-    it('throws error if leader unresolveable', async () => {
-      const userId = new ObjectId()
-      const factionId = new ObjectId()
-      const leaderId = new ObjectId()
-      await testResolveFromObject({
-        everyoneReady: true,
-        player: TestUtil.getDbGamePlayer({
-          deck: TestUtil.getDbGameDeck({
-            from: TestUtil.getDbDeck({
-              faction: factionId,
-              leader: leaderId,
-            }),
-          }),
-          ready: true,
-          user: userId,
-        }),
-        faction: TestUtil.getFaction({
-          id: factionId,
-        }),
-        error: `Could not resolve leader "${leaderId}" for game player "${userId}".`,
-        leaderResolverCalls: [
-          [
-            {
-              id: leaderId,
-              neutralStats: undefined,
-            },
-          ],
-        ],
-      })
-    })
-    it('throws error if user unresolveable', async () => {
-      const userId = new ObjectId()
-      await testResolveFromObject({
-        everyoneReady: false,
-        player: TestUtil.getDbGamePlayer({
-          ready: true,
-          user: userId,
-        }),
-        resolvedUser: undefined,
-        error: `Could not resolve user "${userId}" as game player.`,
-        userResolverCalls: [[userId]],
-      })
-    })
     it('returns without faction, leader or counts if everybody not ready', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
@@ -109,104 +41,46 @@ describe('game-player-resolver', () => {
         user,
       })
     })
-  })
-  describe('resolveFromArray', () => {
-    it('throws error if user not found', async () => {
-      const userId = new ObjectId()
-      await testResolveFromArray({
-        everyoneReady: false,
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-        ],
-        resolvedUsers: [],
-        error: `Could not resolve user "${userId}" as game player in array.`,
-        userResolverCalls: [[[userId]]],
-      })
-    })
-    it('throws error if faction not found', async () => {
-      const user = TestUtil.getUser({})
-      const factionId = new ObjectId()
-      const leaderId = new ObjectId()
-      await testResolveFromArray({
-        everyoneReady: false,
-        players: [
-          TestUtil.getDbGamePlayer({
-            deck: TestUtil.getDbGameDeck({
-              from: TestUtil.getDbDeck({
-                faction: factionId,
-                leader: leaderId,
-                user: user.id,
-              }),
-            }),
-            user: user.id,
-          }),
-        ],
-        resolvedUsers: [user],
-        resolvedFactions: [],
-        error: `Could not resolve faction "${factionId}" for game player "${user.id}" in array.`,
-        userResolverCalls: [[[new ObjectId(user.id)]]],
-        factionResolverCalls: [
-          [
-            {
-              ids: [factionId],
-              neutralStats: undefined,
-            },
-          ],
-        ],
-        leaderResolverCalls: [
-          [
-            {
-              ids: [leaderId],
-              resolvedFactions: [],
-              neutralStats: undefined,
-            },
-          ],
-        ],
-      })
-    })
-    it('throws error if leader not found', async () => {
+    it('reaches out to resolvers if everybody ready but nothing provided', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
-      const leaderId = new ObjectId()
-      await testResolveFromArray({
-        everyoneReady: false,
-        players: [
-          TestUtil.getDbGamePlayer({
-            deck: TestUtil.getDbGameDeck({
-              from: TestUtil.getDbDeck({
-                faction: faction.id,
-                leader: leaderId,
-                user: user.id,
-              }),
+      const leader = TestUtil.getLeader({})
+      await testResolveFromObject({
+        everyoneReady: true,
+        player: TestUtil.getDbGamePlayer({
+          ready: true,
+          user: user.id,
+          deck: TestUtil.getDbGameDeck({
+            from: TestUtil.getDbDeck({
+              faction: faction.id,
+              leader: leader.id,
             }),
-            user: user.id,
           }),
-        ],
-        resolvedUsers: [user],
-        resolvedFactions: [faction],
-        error: `Could not resolve leader "${leaderId}" for game player "${user.id}" in array.`,
-        userResolverCalls: [[[new ObjectId(user.id)]]],
+        }),
+        resolvedFaction: faction,
+        resolvedLeader: leader,
+        resolvedUser: user,
         factionResolverCalls: [
           [
             {
-              ids: [new ObjectId(faction.id)],
-              neutralStats: undefined,
+              id: new ObjectId(faction.id),
+              neutrals: undefined,
             },
           ],
         ],
         leaderResolverCalls: [
           [
             {
-              ids: [leaderId],
-              resolvedFactions: [faction],
+              id: new ObjectId(leader.id),
               neutralStats: undefined,
             },
           ],
         ],
+        userResolverCalls: [[new ObjectId(user.id)]],
       })
     })
+  })
+  describe('resolveFromArray', () => {
     it('returns resolved objects if none provided', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})

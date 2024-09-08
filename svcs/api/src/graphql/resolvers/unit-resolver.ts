@@ -18,7 +18,7 @@ import FactionStore from '../../database/stores/faction-store'
 import { prettyPrintList } from '../../util/string-util'
 import { getUniqueItems, toTitleCase } from '@gwent/utils'
 import { getLogger } from 'log4js'
-import verifyObjects from '../../util/verify-objects'
+import Verifier from '../../util/verify-objects'
 
 export default class UnitResolver {
   private static logger = getLogger('unit-resolver')
@@ -89,17 +89,18 @@ export default class UnitResolver {
     factions?: FactionDbObject[]
     neutralStats?: boolean
   }): Promise<Unit[]> {
-    const units =
-      ids.length === 0
-        ? []
-        : await UnitStore.get({
-            ids: getUniqueItems(ids),
-          })
+    if (ids.length === 0) {
+      return []
+    }
 
-    verifyObjects({
+    const units = await UnitStore.get({
+      ids: getUniqueItems(ids),
+    })
+
+    Verifier.checkObjects({
       expectedKeys: ids,
       objects: units,
-      key: '_id',
+      field: '_id',
       logger: UnitResolver.logger,
       resourceLabelPlural: 'units',
     })
@@ -169,12 +170,12 @@ export default class UnitResolver {
         const neutralFactions = await FactionStore.get({
           keys: [FactionKey.Neutral],
         })
-        verifyObjects({
+        Verifier.checkObjects({
           expectedKeys: [FactionKey.Neutral],
           objects: neutralFactions,
-          key: 'key',
+          field: 'key',
           logger: UnitResolver.logger,
-          resourceLabelPlural: 'neutral factions',
+          resourceLabelPlural: 'factions',
         })
         neutralFaction = neutralFactions[0]
       }

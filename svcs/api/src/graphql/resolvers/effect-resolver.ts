@@ -4,7 +4,7 @@ import { EffectDbObject } from '@gwent/graphql-schema/database-typings'
 import { Effect, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 import { ObjectId } from 'mongodb'
 import EffectStore from '../../database/stores/effect-store'
-import verifyObjects from '../../util/verify-objects'
+import Verifier from '../../util/verify-objects'
 
 export default class EffectResolver {
   private static logger = getLogger('effect-resolver')
@@ -28,10 +28,10 @@ export default class EffectResolver {
             ids: ids,
           })
 
-    verifyObjects({
+    Verifier.checkObjects({
       expectedKeys: ids,
       objects: effects,
-      key: '_id',
+      field: '_id',
       logger: EffectResolver.logger,
       resourceLabelPlural: 'effects',
     })

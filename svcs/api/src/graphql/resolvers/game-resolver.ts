@@ -7,7 +7,7 @@ import GamePlayerResolver from './game-player-resolver'
 import { getUniqueItems } from '@gwent/utils'
 import { ObjectId } from 'mongodb'
 import GameStore from '../../database/stores/game-store'
-import verifyObjects from '../../util/verify-objects'
+import Verifier from '../../util/verify-objects'
 
 export default class GameResolver {
   private static logger = getLogger('game-resolver')
@@ -34,17 +34,9 @@ export default class GameResolver {
     }
     const preResolvedUserIds: string[] = resolvedUsers.map((user) => user.id)
     const userIdsToResolve: string[] = []
-    if (!preResolvedUserIds.includes(game.creator.toString())) {
-      userIdsToResolve.push(game.creator.toString())
-    }
     for (const player of game.players) {
       if (!userIdsToResolve.includes(player.user.toString()) && !preResolvedUserIds.includes(player.user.toString())) {
         userIdsToResolve.push(player.user.toString())
-      }
-    }
-    for (const victor of game.victors) {
-      if (!userIdsToResolve.includes(victor.toString()) && !preResolvedUserIds.includes(victor.toString())) {
-        userIdsToResolve.push(victor.toString())
       }
     }
     resolvedUsers.push(...(await UserResolver.resolveByIds(userIdsToResolve)))
@@ -94,16 +86,16 @@ export default class GameResolver {
     return resolvedGames
   }
 
-  // todo: reconcile resolveFromId and resolveById (maybe just resolveId)
-  static async resolveById(id: ObjectId | string): Promise<Game | undefined> {
+  // todo: reconcile resolveFromId and resolveById (maybe just fromId?)
+  static async resolveById(id: ObjectId | string): Promise<Game> {
     const game = await GameStore.getById({
       id,
     })
 
-    verifyObjects({
+    Verifier.checkObjects({
       expectedKeys: [id],
       objects: [game],
-      key: '_id',
+      field: '_id',
       logger: GameResolver.logger,
       resourceLabelPlural: 'games',
     })

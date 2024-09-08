@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import EffectStore from '../../src/database/stores/effect-store'
 import { Effect } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
-import * as verifyObjects from '../../src/util/verify-objects'
+import Verifier from '../../src/util/verify-objects'
 
 describe('effect-resolver', () => {
   describe('resolveFromObject', () => {
@@ -110,7 +110,7 @@ async function testResolveFromIds({
   resolveObjectCalls?: any[][]
 }) {
   const effectGetSpy = jest.spyOn(EffectStore, 'get').mockResolvedValue(effectGetResponse)
-  const verifyObjectsSpy = jest.spyOn(verifyObjects, 'default')
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
   if (verifyObjectsError) {
     verifyObjectsSpy.mockImplementation(() => {
       throw Error(verifyObjectsError)
@@ -136,7 +136,7 @@ async function testResolveFromIds({
       {
         expectedKeys: ids,
         objects: effectGetResponse,
-        key: '_id',
+        field: '_id',
         logger: EffectResolver['logger'],
         resourceLabelPlural: 'effects',
       },
