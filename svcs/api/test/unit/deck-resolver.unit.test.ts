@@ -314,16 +314,12 @@ async function testResolveFromObject({
   const retrievedFaction = TestUtil.getFaction({
     id: deck.faction,
   })
-  const factionResolverSpy = jest
-    .spyOn(FactionResolver, 'resolveFromId')
-    .mockResolvedValue(factionResolved ? retrievedFaction : undefined)
+  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromId').mockResolvedValue(retrievedFaction)
   const retrievedLeader = TestUtil.getLeader({
     id: deck.leader,
     faction: faction || retrievedFaction,
   })
-  const leaderResolverSpy = jest
-    .spyOn(LeaderResolver, 'resolveFromId')
-    .mockResolvedValue(leaderResolved ? retrievedLeader : undefined)
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromId').mockResolvedValue(retrievedLeader)
   const retrievedUnits: DeckUnit[] = deck.units.map((deckUnit) => {
     return {
       artStyle: 1,
@@ -339,9 +335,7 @@ async function testResolveFromObject({
   const retrievedUser = TestUtil.getUser({
     id: deck.user,
   })
-  const userResolverSpy = jest
-    .spyOn(UserResolver, 'resolveById')
-    .mockResolvedValue(userResolved ? retrievedUser : undefined)
+  const userResolverSpy = jest.spyOn(UserResolver, 'resolveById').mockResolvedValue(retrievedUser)
 
   const promise = DeckResolver.resolveFromObject({
     deck,

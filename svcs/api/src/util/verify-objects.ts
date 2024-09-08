@@ -21,6 +21,7 @@ export default function verifyObjects({
   })
   if (missingIds.length > 0) {
     const message = `Could not find ${resourceLabelPlural} "${JSON.stringify(missingIds)}" to resolve.`
+    // TODO: throw stack traces for other logger.error?
     logger.error(Error(message))
     throw Error(message)
   }

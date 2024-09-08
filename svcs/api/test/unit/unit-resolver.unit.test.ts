@@ -637,8 +637,12 @@ async function testResolveFromObject({
   factionResolveObjectCalls?: any[][]
   factionResolveIdCalls?: any[][]
 }) {
-  const dlcResolveObjectSpy = jest.spyOn(DlcResolver, 'resolveFromObject').mockReturnValue(resolvedDlc)
-  const dlcResolveIdSpy = jest.spyOn(DlcResolver, 'resolveFromId').mockResolvedValue(resolvedDlc)
+  const dlcResolveObjectSpy = jest.spyOn(DlcResolver, 'resolveFromObject')
+  const dlcResolveIdSpy = jest.spyOn(DlcResolver, 'resolveFromId')
+  if (resolvedDlc) {
+    dlcResolveObjectSpy.mockReturnValue(resolvedDlc)
+    dlcResolveIdSpy.mockResolvedValue(resolvedDlc)
+  }
   const effectResolveObjectSpy = jest.spyOn(EffectResolver, 'resolveFromObject')
   if (resolvedEffects) {
     for (const effect of resolvedEffects) {
@@ -650,7 +654,10 @@ async function testResolveFromObject({
   if (resolvedFaction) {
     factionResolveObjectSpy.mockResolvedValue(resolvedFaction)
   }
-  const factionResolveIdSpy = jest.spyOn(FactionResolver, 'resolveFromId').mockResolvedValue(resolvedFaction)
+  const factionResolveIdSpy = jest.spyOn(FactionResolver, 'resolveFromId')
+  if (resolvedFaction) {
+    factionResolveIdSpy.mockResolvedValue(resolvedFaction)
+  }
 
   const promise = UnitResolver.resolveFromObject({
     unit,

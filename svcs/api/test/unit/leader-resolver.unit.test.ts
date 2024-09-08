@@ -315,10 +315,8 @@ async function testResolveFromObject({
   if (leader.dlc) {
     resolvedLeader.dlc = resolvedDlc
   }
-  const dlcResolverSpy = jest.spyOn(DlcResolver, 'resolveFromId').mockResolvedValue(resolveDlc ? resolvedDlc : null)
-  const factionResolverSpy = jest
-    .spyOn(FactionResolver, 'resolveFromId')
-    .mockResolvedValue(resolveFaction ? resolvedFaction : undefined)
+  const dlcResolverSpy = jest.spyOn(DlcResolver, 'resolveFromId').mockResolvedValue(resolvedDlc)
+  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromId').mockResolvedValue(resolvedFaction)
 
   const promise = LeaderResolver.resolveFromObject({
     leader,

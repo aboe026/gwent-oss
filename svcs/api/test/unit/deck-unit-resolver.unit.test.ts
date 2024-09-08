@@ -146,7 +146,10 @@ async function testResolveFromObject({
   unitResolverResponse?: Unit
   error?: string
 }) {
-  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromId').mockResolvedValue(unitResolverResponse)
+  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromId')
+  if (unitResolverResponse) {
+    unitResolverSpy.mockResolvedValue(unitResolverResponse)
+  }
 
   const promise = DeckUnitResolver.resolveFromObject({
     deckUnit,

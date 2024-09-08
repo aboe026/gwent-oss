@@ -364,9 +364,18 @@ async function testResolveFromObject({
   leaderResolverCalls?: any[][]
   userResolverCalls?: any[][]
 }) {
-  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromId').mockResolvedValue(resolvedFaction)
-  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromId').mockResolvedValue(resolvedLeader)
-  const userresolverSpy = jest.spyOn(UserResolver, 'resolveById').mockResolvedValue(resolvedUser)
+  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromId')
+  if (resolvedFaction) {
+    factionResolverSpy.mockResolvedValue(resolvedFaction)
+  }
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromId')
+  if (resolvedLeader) {
+    leaderResolverSpy.mockResolvedValue(resolvedLeader)
+  }
+  const userResolverSpy = jest.spyOn(UserResolver, 'resolveById')
+  if (resolvedUser) {
+    userResolverSpy.mockResolvedValue(resolvedUser)
+  }
 
   // TODO: change all other tests to create promise
   // for resolve/reject to avoid duplicate code
@@ -401,7 +410,7 @@ async function testResolveFromObject({
 
   expect(factionResolverSpy.mock.calls).toEqual(factionResolverCalls)
   expect(leaderResolverSpy.mock.calls).toEqual(leaderResolverCalls)
-  expect(userresolverSpy.mock.calls).toEqual(userResolverCalls)
+  expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)
 }
 
 async function testResolveFromArray({

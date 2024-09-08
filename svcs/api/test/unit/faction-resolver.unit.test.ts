@@ -336,7 +336,10 @@ async function testResolveFromObject({
     dlc: resolvedDlc,
   }
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(neutralFactions)
-  const dlcResolveSpy = jest.spyOn(DlcResolver, 'resolveFromId').mockResolvedValue(resolveDlc ? resolvedDlc : null)
+  const dlcResolveSpy = jest.spyOn(DlcResolver, 'resolveFromId')
+  if (resolvedDlc) {
+    dlcResolveSpy.mockResolvedValue(resolvedDlc)
+  }
   const resolveStatsSpy = jest.spyOn(FactionResolver, 'resolveStats').mockReturnValue(resolvedStats)
 
   const promise = FactionResolver.resolveFromObject({
