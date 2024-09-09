@@ -4,7 +4,7 @@ import DeckResolver from './deck-resolver'
 import DeckUnitResolver from './deck-unit-resolver'
 
 export default class GameDeckResolver {
-  static async resolveFromObject({
+  static async fromObject({
     gameDeck,
     neutralDeckStats,
     neutralLeaderStats,
@@ -15,7 +15,7 @@ export default class GameDeckResolver {
     neutralLeaderStats?: boolean
     neutralUnitStats?: boolean
   }): Promise<GameDeck> {
-    const deckUnits = await DeckUnitResolver.resolveFromArray({
+    const deckUnits = await DeckUnitResolver.fromArray({
       deckUnits: [
         ...gameDeck.discard,
         ...gameDeck.hand,
@@ -33,7 +33,7 @@ export default class GameDeckResolver {
       ),
       from:
         gameDeck.from &&
-        (await DeckResolver.resolveFromObject({
+        (await DeckResolver.fromObject({
           deck: gameDeck.from,
           neutralDeckStats,
           neutralLeaderStats,

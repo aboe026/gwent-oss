@@ -161,7 +161,7 @@ export function expectizeUnits({ neutrals = false }: { neutrals?: boolean }): Un
       expectedUnits.push({
         ...expectedUnit,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        effects: UnitResolver.resolveEffectAbilities(expectedUnit as any, unitEffects),
+        effects: UnitResolver.effectAbilities(expectedUnit as any, unitEffects),
       })
     }
   }

@@ -6,7 +6,7 @@ import { getLogger } from 'log4js'
 export default class DeckUnitResolver {
   private static logger = getLogger('deck-unit-resolver')
 
-  static async resolveFromObject({
+  static async fromObject({
     deckUnit,
     neutralStats,
     unit,
@@ -19,14 +19,14 @@ export default class DeckUnitResolver {
       artStyle: deckUnit.artStyle,
       unit:
         unit ||
-        (await UnitResolver.resolveFromId({
+        (await UnitResolver.fromId({
           id: deckUnit.unit,
           neutralStats,
         })),
     }
   }
 
-  static async resolveFromArray({
+  static async fromArray({
     deckUnits,
     neutralStats,
   }: {
@@ -36,14 +36,14 @@ export default class DeckUnitResolver {
     const units =
       deckUnits.length === 0
         ? []
-        : await UnitResolver.resolveFromIds({
+        : await UnitResolver.fromIds({
             ids: deckUnits.map((deckUnit) => deckUnit.unit),
             neutralStats,
           })
     const resolvedDeckUnits: DeckUnit[] = []
     for (const deckUnit of deckUnits) {
       resolvedDeckUnits.push(
-        await DeckUnitResolver.resolveFromObject({
+        await DeckUnitResolver.fromObject({
           deckUnit,
           neutralStats,
           unit: units.find((unit) => unit.id.toString() === deckUnit.unit.toString()),

@@ -1,5 +1,3 @@
-import { getLogger } from 'log4js'
-
 import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
 import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
@@ -12,9 +10,7 @@ import UnitResolver from './unit-resolver'
 import FactionStore from '../../database/stores/faction-store'
 
 export default class DeckResolver {
-  private static logger = getLogger('deck-resolver')
-
-  static async resolveFromObject({
+  static async fromObject({
     deck,
     faction,
     leader,
@@ -38,14 +34,14 @@ export default class DeckResolver {
       created: deck.created,
       faction:
         faction ||
-        (await FactionResolver.resolveFromId({
+        (await FactionResolver.fromId({
           id: deck.faction,
           neutrals: neutralDeckStats,
         })),
       id: deck._id.toString(),
       leader:
         leader ||
-        (await LeaderResolver.resolveFromId({
+        (await LeaderResolver.fromId({
           id: deck.leader,
           neutralStats: neutralLeaderStats,
         })),
@@ -53,15 +49,15 @@ export default class DeckResolver {
       stats: deck.stats,
       units:
         units ||
-        (await DeckUnitResolver.resolveFromArray({
+        (await DeckUnitResolver.fromArray({
           deckUnits: deck.units,
           neutralStats: neutralUnitStats,
         })),
-      user: user || (await UserResolver.resolveById(deck.user)),
+      user: user || (await UserResolver.fromId(deck.user)),
     }
   }
 
-  static async resolveFromArray({
+  static async fromArray({
     decks,
     neutralDeckStats,
     neutralLeaderStats,
@@ -87,26 +83,26 @@ export default class DeckResolver {
     const factions = await FactionStore.get({
       ids: factionIds,
     })
-    const resolvedFactions = await FactionResolver.resolveFromArray({
+    const resolvedFactions = await FactionResolver.fromArray({
       factions,
       neutralStats: neutralDeckStats,
     })
-    const leaders = await LeaderResolver.resolveFromIds({
+    const leaders = await LeaderResolver.fromIds({
       ids: leaderIds,
       factions,
       neutralStats: neutralLeaderStats,
     })
-    const units = await UnitResolver.resolveFromIds({
+    const units = await UnitResolver.fromIds({
       ids: unitIds,
       factions,
       neutralStats: neutralUnitStats,
     })
-    const users = await UserResolver.resolveByIds(userIds)
+    const users = await UserResolver.fromIds(userIds)
 
     const resolvedDecks: Deck[] = []
     for (const deck of decks) {
       resolvedDecks.push(
-        await DeckResolver.resolveFromObject({
+        await DeckResolver.fromObject({
           deck,
           faction: resolvedFactions.find((faction) => faction.id.toString() === deck.faction.toString()),
           leader: leaders.find((leader) => leader.id.toString() === deck.leader.toString()),

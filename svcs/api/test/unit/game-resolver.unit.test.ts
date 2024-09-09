@@ -7,10 +7,10 @@ import { ObjectId } from 'mongodb'
 import { MAX_ROUNDS } from '@gwent/constants'
 import GameStore from '../../src/database/stores/game-store'
 import TestUtil from '../test-util'
-import Verifier from '../../src/util/verify-objects'
+import Verifier from '../../src/util/verifier'
 
 describe('game-resolver', () => {
-  describe('resolveFromObject', () => {
+  describe('fromObject', () => {
     it('returns resolved object if nothing provided', async () => {
       const gameId = new ObjectId()
       const user = TestUtil.getUser({})
@@ -108,8 +108,8 @@ describe('game-resolver', () => {
       })
     })
   })
-  describe('resolveFromArray', () => {
-    it('calls to resolveFromObject with resolved users', async () => {
+  describe('fromArray', () => {
+    it('calls to fromObject with resolved users', async () => {
       const gameId = new ObjectId()
       const creator = TestUtil.getUser({})
       const player = TestUtil.getUser({})
@@ -168,7 +168,7 @@ describe('game-resolver', () => {
       })
     })
   })
-  describe('resolveById', () => {
+  describe('fromId', () => {
     it('throws error if verifyObjects throws error', async () => {
       await testResolveById({
         verifyObjectsResponse: Error(`Could not find games "["id"]" to resolve.`),
@@ -308,10 +308,8 @@ async function testResolveFromObject({
   userResolverCalls?: any[][]
   gamePlayerResolverCalls?: any[][]
 }) {
-  const userResolverSpy = jest.spyOn(UserResolver, 'resolveByIds').mockResolvedValue(resolvedUsers)
-  const gamePlayerResolverSpy = jest
-    .spyOn(GamePlayerResolver, 'resolveFromArray')
-    .mockResolvedValue(resolvedGamePlayers)
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue(resolvedUsers)
+  const gamePlayerResolverSpy = jest.spyOn(GamePlayerResolver, 'fromArray').mockResolvedValue(resolvedGamePlayers)
   const victors: User[] = []
   if (resolvedVictors) {
     victors.push(...resolvedVictors)
@@ -322,7 +320,7 @@ async function testResolveFromObject({
   }
 
   await expect(
-    GameResolver.resolveFromObject({
+    GameResolver.fromObject({
       game,
       creator,
       neutralFactionStats,
@@ -359,13 +357,13 @@ async function testResolveFromArray({
   userResolverCalls?: any[][]
   gameResolverCalls?: any[][]
 }) {
-  const userResolverSpy = jest.spyOn(UserResolver, 'resolveByIds').mockResolvedValue(resolvedUsers)
-  const resolveFromObjectSpy = jest.spyOn(GameResolver, 'resolveFromObject')
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue(resolvedUsers)
+  const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject')
   for (const resolvedGame of resolvedGames) {
-    resolveFromObjectSpy.mockResolvedValueOnce(resolvedGame)
+    fromObjectSpy.mockResolvedValueOnce(resolvedGame)
   }
 
-  const promise = GameResolver.resolveFromArray(games)
+  const promise = GameResolver.fromArray(games)
   if (error) {
     await expect(promise).rejects.toThrow(Error(error))
   } else {
@@ -373,7 +371,7 @@ async function testResolveFromArray({
   }
 
   expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)
-  expect(resolveFromObjectSpy.mock.calls).toEqual(gameResolverCalls)
+  expect(fromObjectSpy.mock.calls).toEqual(gameResolverCalls)
 }
 
 async function testResolveById({
@@ -395,12 +393,12 @@ async function testResolveById({
   } else {
     verifyObjectsSpy.mockReturnValue()
   }
-  const gameResolveSpy = jest.spyOn(GameResolver, 'resolveFromObject')
+  const gameResolveSpy = jest.spyOn(GameResolver, 'fromObject')
   if (resolvedGame) {
     gameResolveSpy.mockResolvedValueOnce(resolvedGame)
   }
 
-  const promise = GameResolver.resolveById(id)
+  const promise = GameResolver.fromId(id)
   if (verifyObjectsResponse) {
     await expect(promise).rejects.toThrow(verifyObjectsResponse)
   } else {
@@ -421,7 +419,7 @@ async function testResolveById({
         objects: [game],
         field: '_id',
         logger: GameResolver['logger'],
-        resourceLabelPlural: 'games',
+        label: 'games',
       },
     ],
   ])

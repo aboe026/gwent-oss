@@ -6,10 +6,10 @@ import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import { ObjectId } from 'mongodb'
 import LeaderStore from '../../src/database/stores/leader-store'
 import TestUtil from '../test-util'
-import Verifier from '../../src/util/verify-objects'
+import Verifier from '../../src/util/verifier'
 
 describe('leader-resolver', () => {
-  describe('resolveFromObject', () => {
+  describe('fromObject', () => {
     const leader = TestUtil.getDbLeader({})
     it('does not call to external resolvers if required fields provided', async () => {
       await testResolveFromObject({
@@ -58,18 +58,18 @@ describe('leader-resolver', () => {
       })
     })
   })
-  describe('resolveFromId', () => {
-    it('returns first leader from resolveFromIds', async () => {
+  describe('fromId', () => {
+    it('returns first leader from fromIds', async () => {
       const leader = TestUtil.getLeader({})
-      const resolveFromIdsSpy = jest.spyOn(LeaderResolver, 'resolveFromIds').mockResolvedValue([leader])
+      const fromIdsSpy = jest.spyOn(LeaderResolver, 'fromIds').mockResolvedValue([leader])
 
       await expect(
-        LeaderResolver.resolveFromId({
+        LeaderResolver.fromId({
           id: leader.id,
         })
       ).resolves.toEqual(leader)
 
-      expect(resolveFromIdsSpy.mock.calls).toEqual([
+      expect(fromIdsSpy.mock.calls).toEqual([
         [
           {
             ids: [leader.id],
@@ -79,7 +79,7 @@ describe('leader-resolver', () => {
       ])
     })
   })
-  describe('resolveFromIds', () => {
+  describe('fromIds', () => {
     it('does not call to other methods and just if empty array', async () => {
       await testResolveFromIds({
         ids: [],
@@ -101,7 +101,7 @@ describe('leader-resolver', () => {
       })
     })
   })
-  describe('resolveFromArray', () => {
+  describe('fromArray', () => {
     it('does not call to FactionResolver if resolved factions provided', async () => {
       const leader = TestUtil.getDbLeader({})
       const resolvedFaction = TestUtil.getFaction({
@@ -123,7 +123,7 @@ describe('leader-resolver', () => {
         ],
       })
     })
-    it('calls to FactionResolver resolveFromIds if no factions provided', async () => {
+    it('calls to FactionResolver fromIds if no factions provided', async () => {
       const leader = TestUtil.getDbLeader({})
       const resolvedFaction = TestUtil.getFaction({
         id: leader.faction,
@@ -152,7 +152,7 @@ describe('leader-resolver', () => {
         ],
       })
     })
-    it('calls to FactionResolver resolveFromArray if faction provided', async () => {
+    it('calls to FactionResolver fromArray if faction provided', async () => {
       const faction = TestUtil.getDbFaction({})
       const leader = TestUtil.getDbLeader({
         faction: faction._id,
@@ -250,11 +250,11 @@ async function testResolveFromObject({
   if (leader.dlc) {
     resolvedLeader.dlc = resolvedDlc
   }
-  const dlcResolverSpy = jest.spyOn(DlcResolver, 'resolveFromId').mockResolvedValue(resolvedDlc)
-  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromId').mockResolvedValue(resolvedFaction)
+  const dlcResolverSpy = jest.spyOn(DlcResolver, 'fromId').mockResolvedValue(resolvedDlc)
+  const factionResolverSpy = jest.spyOn(FactionResolver, 'fromId').mockResolvedValue(resolvedFaction)
 
   await expect(
-    LeaderResolver.resolveFromObject({
+    LeaderResolver.fromObject({
       leader,
       dlc,
       faction,
@@ -299,10 +299,10 @@ async function testResolveFromIds({
   } else {
     verifyObjectsSpy.mockReturnValue()
   }
-  const resolveFromArraySpy = jest.spyOn(LeaderResolver, 'resolveFromArray').mockResolvedValue(resolvedLeaders)
+  const fromArraySpy = jest.spyOn(LeaderResolver, 'fromArray').mockResolvedValue(resolvedLeaders)
 
   await expect(
-    LeaderResolver.resolveFromIds({
+    LeaderResolver.fromIds({
       ids,
     })
   ).resolves.toEqual(resolvedLeaders)
@@ -327,13 +327,13 @@ async function testResolveFromIds({
               objects: leaders,
               field: '_id',
               logger: LeaderResolver['logger'],
-              resourceLabelPlural: 'leaders',
+              label: 'leaders',
             },
           ],
         ]
       : []
   )
-  expect(resolveFromArraySpy.mock.calls).toEqual(
+  expect(fromArraySpy.mock.calls).toEqual(
     ids.length > 0
       ? [
           [
@@ -372,21 +372,17 @@ async function testResolveFromArray({
   factionResolveFromArrayCalls?: any[][]
   factionResolveFromIdsCalls?: any[][]
 }) {
-  const dlcResolverSpy = jest.spyOn(DlcResolver, 'resolveFromIds').mockResolvedValue(dlcsResolveResponse)
-  const factionResolveFromArraySpy = jest
-    .spyOn(FactionResolver, 'resolveFromArray')
-    .mockResolvedValue(factionsResolveResponse)
-  const factionResolveFromIdsSpy = jest
-    .spyOn(FactionResolver, 'resolveFromIds')
-    .mockResolvedValue(factionsResolveResponse)
-  const resolveFromObjectSpy = jest.spyOn(LeaderResolver, 'resolveFromObject')
+  const dlcResolverSpy = jest.spyOn(DlcResolver, 'fromIds').mockResolvedValue(dlcsResolveResponse)
+  const factionResolveFromArraySpy = jest.spyOn(FactionResolver, 'fromArray').mockResolvedValue(factionsResolveResponse)
+  const factionResolveFromIdsSpy = jest.spyOn(FactionResolver, 'fromIds').mockResolvedValue(factionsResolveResponse)
+  const fromObjectSpy = jest.spyOn(LeaderResolver, 'fromObject')
   if (expected) {
     for (const expectedLeader of expected) {
-      resolveFromObjectSpy.mockResolvedValueOnce(expectedLeader)
+      fromObjectSpy.mockResolvedValueOnce(expectedLeader)
     }
   }
 
-  const promise = LeaderResolver.resolveFromArray({
+  const promise = LeaderResolver.fromArray({
     leaders,
     factions,
     resolvedFactions,

@@ -3,14 +3,14 @@ import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
 import { ObjectId } from 'mongodb'
 import DlcStore from '../../src/database/stores/dlc-store'
 import TestUtil from '../test-util'
-import Verifier from '../../src/util/verify-objects'
+import Verifier from '../../src/util/verifier'
 import { Dlc } from '@gwent/graphql-schema/resolver-typings'
 
 describe('dlc-resolver', () => {
-  describe('resolveFromObject', () => {
+  describe('fromObject', () => {
     it('returns dlc object if defined', () => {
       const dlc = TestUtil.getDbDlc()
-      expect(DlcResolver.resolveFromObject(dlc)).toEqual({
+      expect(DlcResolver.fromObject(dlc)).toEqual({
         created: dlc.created,
         id: dlc._id.toString(),
         image: dlc.image,
@@ -19,23 +19,23 @@ describe('dlc-resolver', () => {
       })
     })
   })
-  describe('resolveFromId', () => {
-    it('calls to resolveFromIds and returns first result if ObjectId', async () => {
+  describe('fromId', () => {
+    it('calls to fromIds and returns first result if ObjectId', async () => {
       const id = new ObjectId()
       await testResolveFromId({
         id,
-        resolveFromIdsCalls: [[[id]]],
+        fromIdsCalls: [[[id]]],
       })
     })
-    it('calls to resolveFromIds and returns first result if string', async () => {
+    it('calls to fromIds and returns first result if string', async () => {
       const id = new ObjectId().toString()
       await testResolveFromId({
         id,
-        resolveFromIdsCalls: [[[id]]],
+        fromIdsCalls: [[[id]]],
       })
     })
   })
-  describe('resolveFromIds', () => {
+  describe('fromIds', () => {
     it('throws error if verifyObjects throws error', async () => {
       const dlc = TestUtil.getDbDlc()
       await testResolveFromIds({
@@ -109,21 +109,15 @@ describe('dlc-resolver', () => {
   })
 })
 
-async function testResolveFromId({
-  id,
-  resolveFromIdsCalls = [],
-}: {
-  id: ObjectId | string
-  resolveFromIdsCalls?: any[][]
-}) {
+async function testResolveFromId({ id, fromIdsCalls = [] }: { id: ObjectId | string; fromIdsCalls?: any[][] }) {
   const dlc = TestUtil.getDlc({
     id,
   })
-  const dlcResolverSpy = jest.spyOn(DlcResolver, 'resolveFromIds').mockResolvedValue([dlc])
+  const dlcResolverSpy = jest.spyOn(DlcResolver, 'fromIds').mockResolvedValue([dlc])
 
-  await expect(DlcResolver.resolveFromId(id)).resolves.toEqual(dlc)
+  await expect(DlcResolver.fromId(id)).resolves.toEqual(dlc)
 
-  expect(dlcResolverSpy.mock.calls).toEqual(resolveFromIdsCalls)
+  expect(dlcResolverSpy.mock.calls).toEqual(fromIdsCalls)
 }
 
 async function testResolveFromIds({
@@ -150,12 +144,12 @@ async function testResolveFromIds({
   } else {
     verifyObjectsSpy.mockReturnValue()
   }
-  const dlcResolveObjectSpy = jest.spyOn(DlcResolver, 'resolveFromObject')
+  const dlcResolveObjectSpy = jest.spyOn(DlcResolver, 'fromObject')
   for (const dlc of dlcResolveObjectResponse) {
     dlcResolveObjectSpy.mockReturnValueOnce(dlc)
   }
 
-  const promise = DlcResolver.resolveFromIds(ids)
+  const promise = DlcResolver.fromIds(ids)
   if (verifyObjectsError) {
     await expect(promise).rejects.toThrow(Error(verifyObjectsError))
   } else {
@@ -170,7 +164,7 @@ async function testResolveFromIds({
         objects: dlcGetResponse,
         field: '_id',
         logger: DlcResolver['logger'],
-        resourceLabelPlural: 'dlcs',
+        label: 'dlcs',
       },
     ],
   ])

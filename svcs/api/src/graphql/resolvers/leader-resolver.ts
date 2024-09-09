@@ -7,12 +7,12 @@ import DlcResolver from './dlc-resolver'
 import { ObjectId } from 'mongodb'
 import LeaderStore from '../../database/stores/leader-store'
 import { getUniqueItems } from '@gwent/utils'
-import Verifier from '../../util/verify-objects'
+import Verifier from '../../util/verifier'
 
 export default class LeaderResolver {
   private static logger = getLogger('leader-resolver')
 
-  static async resolveFromObject({
+  static async fromObject({
     dlc,
     faction,
     leader,
@@ -26,10 +26,10 @@ export default class LeaderResolver {
     return {
       ability: leader.ability,
       created: leader.created,
-      dlc: leader.dlc && (dlc || (await DlcResolver.resolveFromId(leader.dlc))),
+      dlc: leader.dlc && (dlc || (await DlcResolver.fromId(leader.dlc))),
       faction:
         faction ||
-        (await FactionResolver.resolveFromId({
+        (await FactionResolver.fromId({
           id: leader.faction,
           neutrals: neutralStats,
         })),
@@ -40,15 +40,15 @@ export default class LeaderResolver {
     }
   }
 
-  static async resolveFromId({ id, neutralStats }: { id: string | ObjectId; neutralStats?: boolean }): Promise<Leader> {
-    const leaders = await LeaderResolver.resolveFromIds({
+  static async fromId({ id, neutralStats }: { id: string | ObjectId; neutralStats?: boolean }): Promise<Leader> {
+    const leaders = await LeaderResolver.fromIds({
       ids: [id],
       neutralStats,
     })
     return leaders[0]
   }
 
-  static async resolveFromIds({
+  static async fromIds({
     ids,
     factions,
     resolvedFactions,
@@ -73,10 +73,10 @@ export default class LeaderResolver {
       objects: leaders,
       field: '_id',
       logger: LeaderResolver.logger,
-      resourceLabelPlural: 'leaders',
+      label: 'leaders',
     })
 
-    return LeaderResolver.resolveFromArray({
+    return LeaderResolver.fromArray({
       leaders,
       factions,
       resolvedFactions,
@@ -84,7 +84,7 @@ export default class LeaderResolver {
     })
   }
 
-  static async resolveFromArray({
+  static async fromArray({
     factions,
     leaders,
     resolvedFactions,
@@ -96,17 +96,17 @@ export default class LeaderResolver {
     neutralStats?: boolean
   }): Promise<Leader[]> {
     const dlcIds = getUniqueItems<ObjectId>(leaders.map((leader) => leader.dlc))
-    const dlcs = await DlcResolver.resolveFromIds(dlcIds)
+    const dlcs = await DlcResolver.fromIds(dlcIds)
 
     if (!resolvedFactions) {
       if (factions) {
-        resolvedFactions = await FactionResolver.resolveFromArray({
+        resolvedFactions = await FactionResolver.fromArray({
           factions,
           neutralStats,
         })
       } else {
         const factionIds = getUniqueItems<ObjectId>(leaders.map((leader) => leader.faction))
-        resolvedFactions = await FactionResolver.resolveFromIds({
+        resolvedFactions = await FactionResolver.fromIds({
           ids: factionIds,
           neutralStats,
         })
@@ -116,7 +116,7 @@ export default class LeaderResolver {
     const resolvedLeaders: Leader[] = []
     for (const leader of leaders) {
       resolvedLeaders.push(
-        await LeaderResolver.resolveFromObject({
+        await LeaderResolver.fromObject({
           leader,
           dlc: leader.dlc && dlcs.find((dlc) => dlc.id.toString() === leader.dlc?.toString()),
           faction: resolvedFactions.find((faction) => faction.id.toString() === leader.faction.toString()),

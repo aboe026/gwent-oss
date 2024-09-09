@@ -98,7 +98,7 @@ describe('query-resolver', () => {
       }
       const deck = TestUtil.getDbDeck({})
       const getSpy = jest.spyOn(DeckStore, 'get').mockResolvedValue([deck])
-      const deckResolverSpy = jest.spyOn(DeckResolver, 'resolveFromArray').mockResolvedValue([])
+      const deckResolverSpy = jest.spyOn(DeckResolver, 'fromArray').mockResolvedValue([])
 
       await expect((QueryResolver.decks as any)(null, null, context, null)).resolves.toEqual([])
 
@@ -120,7 +120,7 @@ describe('query-resolver', () => {
       const faction = TestUtil.getDbFaction({})
       const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
       const getSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue([faction])
-      const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue([resolvedFaction])
+      const factionResolverSpy = jest.spyOn(FactionResolver, 'fromArray').mockResolvedValue([resolvedFaction])
 
       await expect((QueryResolver.factions as any)(null, null, null, null)).resolves.toEqual([resolvedFaction])
 
@@ -141,7 +141,7 @@ describe('query-resolver', () => {
       const game = TestUtil.getGame({
         id: gameId,
       })
-      const resolveByIdSpy = jest.spyOn(GameResolver, 'resolveById').mockResolvedValue(game)
+      const fromIdSpy = jest.spyOn(GameResolver, 'fromId').mockResolvedValue(game)
 
       await expect(
         (QueryResolver.game as any)(
@@ -154,7 +154,7 @@ describe('query-resolver', () => {
         )
       ).resolves.toEqual(game)
 
-      expect(resolveByIdSpy.mock.calls).toEqual([[gameId]])
+      expect(fromIdSpy.mock.calls).toEqual([[gameId]])
     })
   })
   describe('gameDeck', () => {
@@ -263,7 +263,7 @@ describe('query-resolver', () => {
     })
   })
   describe('games', () => {
-    it('calls out to GameResolver resolveFromArray', async () => {
+    it('calls out to GameResolver fromArray', async () => {
       const userId = new ObjectId()
       const context = {
         session: {
@@ -273,12 +273,12 @@ describe('query-resolver', () => {
         },
       }
       const getByUserIdSpy = jest.spyOn(GameStore, 'getByUserId').mockResolvedValue([])
-      const resolveFromArraySpy = jest.spyOn(GameResolver, 'resolveFromArray').mockResolvedValue([])
+      const fromArraySpy = jest.spyOn(GameResolver, 'fromArray').mockResolvedValue([])
 
       await expect((QueryResolver.games as any)(null, null, context, null))
 
       expect(getByUserIdSpy.mock.calls).toEqual([[userId]])
-      expect(resolveFromArraySpy.mock.calls).toEqual([[[]]])
+      expect(fromArraySpy.mock.calls).toEqual([[[]]])
     })
   })
   describe('leaders', () => {
@@ -421,7 +421,7 @@ function testCurrentUser({
   userResolverResponse?: User
   userResolverCalls?: any[][]
 }) {
-  const userResolverSpy = jest.spyOn(UserResolver, 'resolveByObject')
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromObject')
   if (userResolverResponse) {
     userResolverSpy.mockReturnValue(userResolverResponse)
   }
@@ -461,9 +461,7 @@ async function testGameDeck({
     game: gameId,
   }
   const getByIdSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(gameResponse)
-  const resolveFromObjectSpy = jest
-    .spyOn(GameDeckResolver, 'resolveFromObject')
-    .mockResolvedValue(expected as any as GameDeck)
+  const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject').mockResolvedValue(expected as any as GameDeck)
 
   const promise = (QueryResolver.gameDeck as any)(null, args, context, null)
   if (error) {
@@ -479,7 +477,7 @@ async function testGameDeck({
       },
     ],
   ])
-  expect(resolveFromObjectSpy.mock.calls).toEqual(gameDeckResolverCalls)
+  expect(fromObjectSpy.mock.calls).toEqual(gameDeckResolverCalls)
 }
 
 async function testLeaders({
@@ -499,7 +497,7 @@ async function testLeaders({
   const leaders = [TestUtil.getDbLeader({})]
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse || [])
   const leaderGetSpy = jest.spyOn(LeaderStore, 'get').mockResolvedValue(leaders)
-  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromArray').mockResolvedValue([])
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromArray').mockResolvedValue([])
 
   await expect((QueryResolver.leaders as any)(null, args, null, null)).resolves.toEqual([])
 
@@ -540,7 +538,7 @@ async function testUnits({
   ]
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse || [])
   const unitGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(units)
-  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromArray').mockResolvedValue([])
+  const unitResolverSpy = jest.spyOn(UnitResolver, 'fromArray').mockResolvedValue([])
 
   await expect((QueryResolver.units as any)(null, args, null, null)).resolves.toEqual([])
 

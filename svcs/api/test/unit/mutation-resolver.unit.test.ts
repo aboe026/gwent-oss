@@ -242,7 +242,7 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        resolveFromObjectCalled: true,
+        fromObjectCalled: true,
         getByNamesCalls: [[[opponent]]],
       })
     })
@@ -1385,7 +1385,7 @@ async function testAddDeck({
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse || [faction])
   const leaderGetSpy = jest.spyOn(LeaderStore, 'get').mockResolvedValue(leaderGetResponse || [leader])
   const unitGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(unitGetResponse || [unit])
-  const deckUnitResolverSpy = jest.spyOn(DeckUnitResolver, 'resolveFromArray').mockResolvedValue(deckUnits)
+  const deckUnitResolverSpy = jest.spyOn(DeckUnitResolver, 'fromArray').mockResolvedValue(deckUnits)
   const validateDeckSpy = jest.spyOn(validateDeck, 'validateDeck').mockReturnValue(validateDeckResponse)
   const addDeckSpy = jest.spyOn(DeckStore, 'add')
   if (deckAddError) {
@@ -1394,9 +1394,9 @@ async function testAddDeck({
     addDeckSpy.mockResolvedValue((deckAddResponse as any) || deck)
   }
   const getDeckStatsSpy = jest.spyOn(gwentUtils, 'getDeckStats').mockReturnValue(deckStats)
-  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromObject').mockResolvedValue(resolvedFaction)
-  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromObject').mockResolvedValue(resolvedLeader)
-  const deckResolverSpy = jest.spyOn(DeckResolver, 'resolveFromObject').mockResolvedValue(resolvedDeck)
+  const factionResolverSpy = jest.spyOn(FactionResolver, 'fromObject').mockResolvedValue(resolvedFaction)
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromObject').mockResolvedValue(resolvedLeader)
+  const deckResolverSpy = jest.spyOn(DeckResolver, 'fromObject').mockResolvedValue(resolvedDeck)
 
   const promise = (MutationResolver.addDeck as any)(null, args, context, null)
   if (errorThrown) {
@@ -1517,7 +1517,7 @@ async function testAddGame({
   getUserByNamesResponse = [],
   expected,
   addCalls = [],
-  resolveFromObjectCalled,
+  fromObjectCalled,
   getByNamesCalls = [],
 }: {
   creatorId?: ObjectId
@@ -1525,7 +1525,7 @@ async function testAddGame({
   getUserByNamesResponse?: UserDbObject[]
   expected?: Game | Error
   addCalls?: any[][]
-  resolveFromObjectCalled?: boolean
+  fromObjectCalled?: boolean
   getByNamesCalls?: any[][]
 }) {
   const context = {
@@ -1550,14 +1550,14 @@ async function testAddGame({
   })
   const getByNamesSpy = jest.spyOn(UserStore, 'getByNames').mockResolvedValue(getUserByNamesResponse)
   const addSpy = jest.spyOn(GameStore, 'add').mockResolvedValue(game)
-  const resolveFromObjectSpy = jest.spyOn(GameResolver, 'resolveFromObject').mockResolvedValue(resolvedGame)
+  const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
 
   await expect((MutationResolver.addGame as any)(null, args, context, null)).resolves.toEqual(expected || resolvedGame)
 
   expect(getByNamesSpy.mock.calls).toEqual(getByNamesCalls)
   expect(addSpy.mock.calls).toEqual(addCalls)
-  expect(resolveFromObjectSpy.mock.calls).toEqual(
-    resolveFromObjectCalled
+  expect(fromObjectSpy.mock.calls).toEqual(
+    fromObjectCalled
       ? [
           [
             {
@@ -1605,7 +1605,7 @@ async function testReady({
   }
   const gameGetSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(gameGetResponse)
   const setReadySpy = jest.spyOn(GameStore, 'setReady').mockResolvedValue(setReadyResponse)
-  const gameResolveSpy = jest.spyOn(GameResolver, 'resolveFromObject')
+  const gameResolveSpy = jest.spyOn(GameResolver, 'fromObject')
   if (resolvedGame) {
     gameResolveSpy.mockResolvedValue(resolvedGame)
   }
@@ -1653,7 +1653,7 @@ async function testRedraw({
   }
   const gameGetSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(gameGetResponse)
   const gameRedrawSpy = jest.spyOn(GameStore, 'redraw').mockResolvedValue(gameRedrawResponse)
-  const resolveDeckUnitSpy = jest.spyOn(DeckUnitResolver, 'resolveFromObject')
+  const resolveDeckUnitSpy = jest.spyOn(DeckUnitResolver, 'fromObject')
   if (resolveDeckUnitResponse) {
     resolveDeckUnitSpy.mockResolvedValue(resolveDeckUnitResponse)
   }
@@ -1707,9 +1707,9 @@ async function testSetDeck({
   const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
   const getRandomSubsetSpy = jest.spyOn(getRandomSubset, 'getRandomSubset').mockReturnValue(randomSubset)
   const setDeckSpy = jest.spyOn(GameStore, 'setDeck').mockResolvedValue(setDeckResponse as any as GameDbObject)
-  const resolveFromObjectSpy = jest.spyOn(GameDeckResolver, 'resolveFromObject')
+  const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject')
   if (!(expected instanceof Error)) {
-    resolveFromObjectSpy.mockResolvedValue(expected)
+    fromObjectSpy.mockResolvedValue(expected)
   }
 
   await expect((MutationResolver.setDeck as any)(null, args, context, null)).resolves.toEqual(expected)

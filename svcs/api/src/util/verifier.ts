@@ -7,13 +7,13 @@ export default class Verifier {
     objects,
     field,
     logger,
-    resourceLabelPlural,
+    label,
   }: {
     expectedKeys: (ObjectId | string)[]
     objects: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
     field: string
     logger: Logger
-    resourceLabelPlural: string
+    label: string
   }) {
     const missingIds = Verifier.getMissingKeys({
       expectedKeys,
@@ -21,7 +21,7 @@ export default class Verifier {
       field,
     })
     if (missingIds.length > 0) {
-      const message = `Could not find ${resourceLabelPlural} "${JSON.stringify(missingIds)}" to resolve.`
+      const message = `Could not find ${label} "${JSON.stringify(missingIds)}" to resolve.`
       // TODO: throw stack traces for other logger.error?
       logger.error(Error(message))
       throw Error(message)
@@ -33,9 +33,9 @@ export default class Verifier {
       field,
     })
     if (extraIds.length > 0) {
-      const message = `More ${resourceLabelPlural} resolved "${JSON.stringify(
-        extraIds
-      )}" than requested "${JSON.stringify(expectedKeys)}".`
+      const message = `More ${label} resolved "${JSON.stringify(extraIds)}" than requested "${JSON.stringify(
+        expectedKeys
+      )}".`
       logger.error(Error(message))
       throw Error(message)
     }

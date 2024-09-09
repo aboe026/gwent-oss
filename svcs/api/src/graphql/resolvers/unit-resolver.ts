@@ -18,12 +18,12 @@ import FactionStore from '../../database/stores/faction-store'
 import { prettyPrintList } from '../../util/string-util'
 import { getUniqueItems, toTitleCase } from '@gwent/utils'
 import { getLogger } from 'log4js'
-import Verifier from '../../util/verify-objects'
+import Verifier from '../../util/verifier'
 
 export default class UnitResolver {
   private static logger = getLogger('unit-resolver')
 
-  static async resolveFromObject({
+  static async fromObject({
     dlc,
     effects,
     faction,
@@ -40,23 +40,23 @@ export default class UnitResolver {
   }): Promise<Unit> {
     const resolvedEffects = unit.effects
       ? effects
-        ? effects.map((effect) => EffectResolver.resolveFromObject(effect))
-        : await EffectResolver.resolveFromIds(unit.effects)
+        ? effects.map((effect) => EffectResolver.fromObject(effect))
+        : await EffectResolver.fromIds(unit.effects)
       : []
     return {
       combats: unit.combats as Combat[],
       created: unit.created,
       deckable: unit.deckable,
-      dlc: unit.dlc && (dlc ? DlcResolver.resolveFromObject(dlc) : await DlcResolver.resolveFromId(unit.dlc)),
+      dlc: unit.dlc && (dlc ? DlcResolver.fromObject(dlc) : await DlcResolver.fromId(unit.dlc)),
       effectPrefix: unit.effectPrefix,
-      effects: UnitResolver.resolveEffectAbilities(unit, resolvedEffects),
+      effects: UnitResolver.effectAbilities(unit, resolvedEffects),
       faction: faction
-        ? await FactionResolver.resolveFromObject({
+        ? await FactionResolver.fromObject({
             faction,
             neutral,
             neutralStats,
           })
-        : await FactionResolver.resolveFromId({
+        : await FactionResolver.fromId({
             id: unit.faction,
             neutrals: neutralStats,
           }),
@@ -72,15 +72,15 @@ export default class UnitResolver {
     }
   }
 
-  static async resolveFromId({ id, neutralStats }: { id: ObjectId | string; neutralStats?: boolean }): Promise<Unit> {
-    const units = await UnitResolver.resolveFromIds({
+  static async fromId({ id, neutralStats }: { id: ObjectId | string; neutralStats?: boolean }): Promise<Unit> {
+    const units = await UnitResolver.fromIds({
       ids: [id],
       neutralStats,
     })
     return units[0]
   }
 
-  static async resolveFromIds({
+  static async fromIds({
     ids,
     factions,
     neutralStats,
@@ -102,17 +102,17 @@ export default class UnitResolver {
       objects: units,
       field: '_id',
       logger: UnitResolver.logger,
-      resourceLabelPlural: 'units',
+      label: 'units',
     })
 
-    return UnitResolver.resolveFromArray({
+    return UnitResolver.fromArray({
       units,
       factions,
       neutralStats,
     })
   }
 
-  static async resolveFromArray({
+  static async fromArray({
     factions,
     units,
     neutralStats,
@@ -175,7 +175,7 @@ export default class UnitResolver {
           objects: neutralFactions,
           field: 'key',
           logger: UnitResolver.logger,
-          resourceLabelPlural: 'factions',
+          label: 'factions',
         })
         neutralFaction = neutralFactions[0]
       }
@@ -183,7 +183,7 @@ export default class UnitResolver {
 
     for (const unit of units) {
       resolvedUnits.push(
-        await UnitResolver.resolveFromObject({
+        await UnitResolver.fromObject({
           unit,
           dlc: unit.dlc && dlcs.find((dlc) => dlc._id.toString() === unit.dlc?.toString()),
           effects:
@@ -202,7 +202,7 @@ export default class UnitResolver {
     return resolvedUnits
   }
 
-  static resolveEffectAbilities(unit: UnitDbObject, effects: Effect[] | null): Effect[] | null {
+  static effectAbilities(unit: UnitDbObject, effects: Effect[] | null): Effect[] | null {
     if (effects) {
       return effects.map((effect) => {
         let ability = effect.ability

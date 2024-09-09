@@ -6,12 +6,12 @@ import DlcResolver from './dlc-resolver'
 import FactionStore from '../../database/stores/faction-store'
 import { ObjectId } from 'mongodb'
 import { getUniqueItems } from '@gwent/utils'
-import Verifier from '../../util/verify-objects'
+import Verifier from '../../util/verifier'
 
 export default class FactionResolver {
   private static logger = getLogger('faction-resolver')
 
-  static async resolveFromObject({
+  static async fromObject({
     dlc,
     faction,
     neutral,
@@ -31,7 +31,7 @@ export default class FactionResolver {
         objects: neutralFactions,
         field: 'key',
         logger: FactionResolver.logger,
-        resourceLabelPlural: 'factions',
+        label: 'factions',
       })
       neutral = neutralFactions[0]
     }
@@ -46,19 +46,19 @@ export default class FactionResolver {
         neutral: neutralStats ? neutral : undefined,
       }),
       ability: faction.ability,
-      dlc: faction.dlc && (dlc || (await DlcResolver.resolveFromId(faction.dlc))),
+      dlc: faction.dlc && (dlc || (await DlcResolver.fromId(faction.dlc))),
     }
   }
 
-  static async resolveFromId({ id, neutrals }: { id: ObjectId | string; neutrals?: boolean }): Promise<Faction> {
-    const factions = await FactionResolver.resolveFromIds({
+  static async fromId({ id, neutrals }: { id: ObjectId | string; neutrals?: boolean }): Promise<Faction> {
+    const factions = await FactionResolver.fromIds({
       ids: [id],
       neutralStats: neutrals,
     })
     return factions && factions[0]
   }
 
-  static async resolveFromIds({
+  static async fromIds({
     ids,
     neutralStats,
   }: {
@@ -77,16 +77,16 @@ export default class FactionResolver {
       objects: factions,
       field: '_id',
       logger: FactionResolver.logger,
-      resourceLabelPlural: 'factions',
+      label: 'factions',
     })
 
-    return FactionResolver.resolveFromArray({
+    return FactionResolver.fromArray({
       factions,
       neutralStats,
     })
   }
 
-  static async resolveFromArray({
+  static async fromArray({
     factions,
     neutralStats,
   }: {
@@ -94,7 +94,7 @@ export default class FactionResolver {
     neutralStats?: boolean
   }): Promise<Faction[]> {
     const dlcIds = getUniqueItems<ObjectId>(factions.map((faction) => faction.dlc))
-    const dlcs = await DlcResolver.resolveFromIds(dlcIds)
+    const dlcs = await DlcResolver.fromIds(dlcIds)
 
     let neutral: FactionDbObject | undefined = undefined
     if (neutralStats) {
@@ -108,7 +108,7 @@ export default class FactionResolver {
           objects: neutralFactions,
           field: 'key',
           logger: FactionResolver.logger,
-          resourceLabelPlural: 'factions',
+          label: 'factions',
         })
         neutral = neutralFactions[0]
       }
@@ -117,7 +117,7 @@ export default class FactionResolver {
     const resolvedFactions: Faction[] = []
     for (const faction of factions) {
       resolvedFactions.push(
-        await FactionResolver.resolveFromObject({
+        await FactionResolver.fromObject({
           faction,
           dlc: faction.dlc && dlcs.find((dlc) => dlc.id.toString() === faction.dlc?.toString()),
           neutral,

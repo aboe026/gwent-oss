@@ -77,7 +77,7 @@ const MutationResolver: MutationResolvers<any, any> = {
     if (errors.length > 0) {
       return Error(errors.join('\n')) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    const deckUnits = await DeckUnitResolver.resolveFromArray({
+    const deckUnits = await DeckUnitResolver.fromArray({
       deckUnits: unitsInput.map((unit) => {
         return {
           artStyle: unit.artStyle === undefined || unit.artStyle === null ? 1 : unit.artStyle,
@@ -118,14 +118,14 @@ const MutationResolver: MutationResolvers<any, any> = {
       logger.error(err)
       throw err
     }
-    const resolvedFaction = await FactionResolver.resolveFromObject({
+    const resolvedFaction = await FactionResolver.fromObject({
       faction,
       neutralStats: RequestedFields.getArgument(info, 'addDeck.faction.stats.neutrals'),
     })
-    return DeckResolver.resolveFromObject({
+    return DeckResolver.fromObject({
       deck,
       faction: resolvedFaction,
-      leader: await LeaderResolver.resolveFromObject({
+      leader: await LeaderResolver.fromObject({
         leader,
         faction: resolvedFaction,
         neutralStats: RequestedFields.getArgument(info, 'addDeck.leader.faction.stats.neutrals'),
@@ -160,7 +160,7 @@ const MutationResolver: MutationResolvers<any, any> = {
       if (!opponent) {
         errors.push(`User with name "${opponentName}" does not exist`)
       } else {
-        resolvedOpponents.push(UserResolver.resolveByObject(opponent))
+        resolvedOpponents.push(UserResolver.fromObject(opponent))
       }
     }
     if (errors.length > 0) {
@@ -174,7 +174,7 @@ const MutationResolver: MutationResolvers<any, any> = {
     })
     // neutral stats resolving not really needed here (since no decks are set when game initially created)
     // but left in for good measure
-    return GameResolver.resolveFromObject({
+    return GameResolver.fromObject({
       game,
       users: resolvedOpponents,
       neutralFactionStats: RequestedFields.getArgument(info, 'addGame.players.faction.stats.neutrals'),
@@ -187,7 +187,7 @@ const MutationResolver: MutationResolvers<any, any> = {
     const password = args.password
     try {
       const user = await UserStore.add(name, password)
-      return UserResolver.resolveByObject(user)
+      return UserResolver.fromObject(user)
     } catch (err: unknown) {
       const alreadyExistsMessage = `User "${name}" already exists`
       if (err instanceof Error && err.message === alreadyExistsMessage) {
@@ -226,7 +226,7 @@ const MutationResolver: MutationResolvers<any, any> = {
     } else {
       context.session.user = user
     }
-    return UserResolver.resolveByObject(user)
+    return UserResolver.fromObject(user)
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   logout: (parent, args, context, info) => {
@@ -277,7 +277,7 @@ const MutationResolver: MutationResolvers<any, any> = {
       logger.error(`${logPrefix} ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    return GameResolver.resolveFromObject({
+    return GameResolver.fromObject({
       game: updatedGame,
       neutralFactionStats: RequestedFields.getArgument(info, 'ready.players.faction.stats.neutrals'),
       neutralLeaderStats: RequestedFields.getArgument(info, 'ready.players.leader.faction.stats.neutrals'),
@@ -359,7 +359,7 @@ const MutationResolver: MutationResolvers<any, any> = {
       logger.error(`${logPrefix} ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    return DeckUnitResolver.resolveFromObject({
+    return DeckUnitResolver.fromObject({
       deckUnit: newCard,
       neutralStats: RequestedFields.getArgument(info, 'redraw.unit.faction.stats.neutrals'),
     })
@@ -422,7 +422,7 @@ const MutationResolver: MutationResolvers<any, any> = {
       logger.error(`Could not get player "${userId}" after setting deck on game "${gameId}".`)
       return Error('Could not get player after setting deck on game.')
     }
-    return GameDeckResolver.resolveFromObject({
+    return GameDeckResolver.fromObject({
       gameDeck: updatedPlayer.deck,
       neutralDeckStats: RequestedFields.getArgument(info, 'setDeck.from.faction.stats.neutrals'),
       neutralLeaderStats: RequestedFields.getArgument(info, 'setDeck.from.leader.faction.stats.neutrals'),

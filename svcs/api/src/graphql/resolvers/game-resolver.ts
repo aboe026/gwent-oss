@@ -7,12 +7,12 @@ import GamePlayerResolver from './game-player-resolver'
 import { getUniqueItems } from '@gwent/utils'
 import { ObjectId } from 'mongodb'
 import GameStore from '../../database/stores/game-store'
-import Verifier from '../../util/verify-objects'
+import Verifier from '../../util/verifier'
 
 export default class GameResolver {
   private static logger = getLogger('game-resolver')
 
-  static async resolveFromObject({
+  static async fromObject({
     creator,
     game,
     users,
@@ -39,13 +39,13 @@ export default class GameResolver {
         userIdsToResolve.push(player.user.toString())
       }
     }
-    resolvedUsers.push(...(await UserResolver.resolveByIds(userIdsToResolve)))
+    resolvedUsers.push(...(await UserResolver.fromIds(userIdsToResolve)))
 
     return {
       created: game.created,
       creator: creator || (resolvedUsers?.find((user) => user.id === game.creator.toString()) as User),
       id: game._id.toString(),
-      players: await GamePlayerResolver.resolveFromArray({
+      players: await GamePlayerResolver.fromArray({
         players: game.players,
         users: resolvedUsers,
         everyoneReady: GameResolver.isEveryoneReady(game),
@@ -59,7 +59,7 @@ export default class GameResolver {
     }
   }
 
-  static async resolveFromArray(games: GameDbObject[]): Promise<Game[]> {
+  static async fromArray(games: GameDbObject[]): Promise<Game[]> {
     const userIds = getUniqueItems<string>(games.map((game) => game.creator.toString()))
 
     for (const game of games) {
@@ -71,12 +71,12 @@ export default class GameResolver {
       }
     }
 
-    const users = await UserResolver.resolveByIds(userIds)
+    const users = await UserResolver.fromIds(userIds)
 
     const resolvedGames: Game[] = []
     for (const game of games) {
       resolvedGames.push(
-        await GameResolver.resolveFromObject({
+        await GameResolver.fromObject({
           creator: users.find((user) => user.id.toString() === game.creator.toString()),
           game,
           users: game.players.map((player) => users.find((user) => user.id === player.user.toString()) as User),
@@ -86,8 +86,8 @@ export default class GameResolver {
     return resolvedGames
   }
 
-  // todo: reconcile resolveFromId and resolveById (maybe just fromId?)
-  static async resolveById(id: ObjectId | string): Promise<Game> {
+  // todo: reconcile fromId and fromId (maybe just fromId?)
+  static async fromId(id: ObjectId | string): Promise<Game> {
     const game = await GameStore.getById({
       id,
     })
@@ -97,10 +97,10 @@ export default class GameResolver {
       objects: [game],
       field: '_id',
       logger: GameResolver.logger,
-      resourceLabelPlural: 'games',
+      label: 'games',
     })
 
-    return GameResolver.resolveFromObject({
+    return GameResolver.fromObject({
       game: game as GameDbObject,
     })
   }

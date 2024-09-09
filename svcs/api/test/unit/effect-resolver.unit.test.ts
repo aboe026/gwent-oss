@@ -4,13 +4,13 @@ import { ObjectId } from 'mongodb'
 import EffectStore from '../../src/database/stores/effect-store'
 import { Effect } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
-import Verifier from '../../src/util/verify-objects'
+import Verifier from '../../src/util/verifier'
 
 describe('effect-resolver', () => {
-  describe('resolveFromObject', () => {
+  describe('fromObject', () => {
     it('returns transformed object', () => {
       const effect = TestUtil.getDbEffect({})
-      expect(EffectResolver.resolveFromObject(effect)).toEqual({
+      expect(EffectResolver.fromObject(effect)).toEqual({
         ability: effect.ability,
         created: effect.created,
         id: effect._id.toString(),
@@ -20,7 +20,7 @@ describe('effect-resolver', () => {
       })
     })
   })
-  describe('resolveFromIds', () => {
+  describe('fromIds', () => {
     it('throws error if verifyObjects throws error', async () => {
       const effect = TestUtil.getDbEffect({})
       await testResolveFromIds({
@@ -118,12 +118,12 @@ async function testResolveFromIds({
   } else {
     verifyObjectsSpy.mockReturnValue()
   }
-  const resolveObjectSpy = jest.spyOn(EffectResolver, 'resolveFromObject')
+  const resolveObjectSpy = jest.spyOn(EffectResolver, 'fromObject')
   for (const effect of resolveObjectResponse) {
     resolveObjectSpy.mockReturnValueOnce(effect)
   }
 
-  const promise = EffectResolver.resolveFromIds(ids)
+  const promise = EffectResolver.fromIds(ids)
   if (verifyObjectsError) {
     await expect(promise).rejects.toThrow(Error(verifyObjectsError))
   } else {
@@ -138,7 +138,7 @@ async function testResolveFromIds({
         objects: effectGetResponse,
         field: '_id',
         logger: EffectResolver['logger'],
-        resourceLabelPlural: 'effects',
+        label: 'effects',
       },
     ],
   ])

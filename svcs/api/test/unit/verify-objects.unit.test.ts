@@ -1,5 +1,5 @@
 import { Logger } from 'log4js'
-import Verifier from '../../src/util/verify-objects'
+import Verifier from '../../src/util/verifier'
 import { ObjectId } from 'mongodb'
 
 describe('verifier', () => {
@@ -10,7 +10,7 @@ describe('verifier', () => {
         expectedKeys: [id],
         objects: [],
         field: '_id',
-        resourceLabelPlural: 'units',
+        label: 'units',
         getMissingKeysResponse: [id.toString()],
         error: `Could not find units "${JSON.stringify([id])}" to resolve.`,
       })
@@ -21,7 +21,7 @@ describe('verifier', () => {
         expectedKeys: [],
         objects: [{ _id: id }],
         field: '_id',
-        resourceLabelPlural: 'units',
+        label: 'units',
         getExtraKeysResponse: [id.toString()],
         error: `More units resolved "${JSON.stringify([id])}" than requested "[]".`,
       })
@@ -32,7 +32,7 @@ describe('verifier', () => {
         expectedKeys: [id],
         objects: [{ _id: id }],
         field: '_id',
-        resourceLabelPlural: 'units',
+        label: 'units',
       })
     })
   })
@@ -172,7 +172,7 @@ function testVerifiyObjects({
   expectedKeys,
   objects,
   field,
-  resourceLabelPlural,
+  label,
   getMissingKeysResponse = [],
   getExtraKeysResponse = [],
   error,
@@ -180,7 +180,7 @@ function testVerifiyObjects({
   expectedKeys: (ObjectId | string)[]
   objects: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
   field: string
-  resourceLabelPlural: string
+  label: string
   getMissingKeysResponse?: string[]
   getExtraKeysResponse?: string[]
   error?: string
@@ -199,7 +199,7 @@ function testVerifiyObjects({
         objects,
         field,
         logger,
-        resourceLabelPlural,
+        label,
       })
     ).toThrow(Error(error))
   } else {
@@ -209,7 +209,7 @@ function testVerifiyObjects({
         objects,
         field,
         logger,
-        resourceLabelPlural,
+        label,
       })
     ).toEqual(undefined)
   }

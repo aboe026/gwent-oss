@@ -5,7 +5,7 @@ import GameDeckResolver from '../../src/graphql/resolvers/game-deck-resolver'
 import TestUtil from '../test-util'
 
 describe('game-deck-resolver', () => {
-  describe('resolveFromObject', () => {
+  describe('fromObject', () => {
     it('does not call out to deck resolver if no from', async () => {
       await testResolveFromObject({
         from: false,
@@ -96,16 +96,16 @@ async function testResolveFromObject({
   if (from) {
     gameDeck.from = deckDbObject
   }
-  const deckResolverSpy = jest.spyOn(DeckResolver, 'resolveFromObject')
+  const deckResolverSpy = jest.spyOn(DeckResolver, 'fromObject')
   if (from) {
     deckResolverSpy.mockResolvedValue(resolvedDeck)
   }
   const deckUnitResolverSpy = jest
-    .spyOn(DeckUnitResolver, 'resolveFromArray')
+    .spyOn(DeckUnitResolver, 'fromArray')
     .mockResolvedValue([discard, hand, redrawFrom, redrawTo, undrawn])
 
   await expect(
-    GameDeckResolver.resolveFromObject({
+    GameDeckResolver.fromObject({
       gameDeck,
       neutralDeckStats,
       neutralLeaderStats,

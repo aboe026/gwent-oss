@@ -4,12 +4,12 @@ import { EffectDbObject } from '@gwent/graphql-schema/database-typings'
 import { Effect, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 import { ObjectId } from 'mongodb'
 import EffectStore from '../../database/stores/effect-store'
-import Verifier from '../../util/verify-objects'
+import Verifier from '../../util/verifier'
 
 export default class EffectResolver {
   private static logger = getLogger('effect-resolver')
 
-  static resolveFromObject(effect: EffectDbObject): Effect {
+  static fromObject(effect: EffectDbObject): Effect {
     return {
       ability: effect.ability,
       created: effect.created,
@@ -20,7 +20,7 @@ export default class EffectResolver {
     }
   }
 
-  static async resolveFromIds(ids: (string | ObjectId)[]): Promise<Effect[]> {
+  static async fromIds(ids: (string | ObjectId)[]): Promise<Effect[]> {
     const effects =
       ids.length === 0
         ? []
@@ -33,9 +33,9 @@ export default class EffectResolver {
       objects: effects,
       field: '_id',
       logger: EffectResolver.logger,
-      resourceLabelPlural: 'effects',
+      label: 'effects',
     })
 
-    return effects.map((effect) => EffectResolver.resolveFromObject(effect))
+    return effects.map((effect) => EffectResolver.fromObject(effect))
   }
 }

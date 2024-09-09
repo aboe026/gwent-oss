@@ -3,12 +3,12 @@ import { Dlc, DlcKey } from '@gwent/graphql-schema/resolver-typings'
 import { ObjectId } from 'mongodb'
 import DlcStore from '../../database/stores/dlc-store'
 import { getLogger } from 'log4js'
-import Verifier from '../../util/verify-objects'
+import Verifier from '../../util/verifier'
 
 export default class DlcResolver {
   private static logger = getLogger('dlc-resolver')
 
-  static resolveFromObject(dlc: DlcDbObject): Dlc {
+  static fromObject(dlc: DlcDbObject): Dlc {
     return {
       created: dlc.created,
       id: dlc._id.toString(),
@@ -18,12 +18,12 @@ export default class DlcResolver {
     }
   }
 
-  static async resolveFromId(id: ObjectId | string): Promise<Dlc> {
-    const dlcs = await DlcResolver.resolveFromIds([id])
+  static async fromId(id: ObjectId | string): Promise<Dlc> {
+    const dlcs = await DlcResolver.fromIds([id])
     return dlcs[0]
   }
 
-  static async resolveFromIds(ids: (ObjectId | string)[]): Promise<Dlc[]> {
+  static async fromIds(ids: (ObjectId | string)[]): Promise<Dlc[]> {
     const dlcs =
       ids.length === 0
         ? []
@@ -36,9 +36,9 @@ export default class DlcResolver {
       objects: dlcs,
       field: '_id',
       logger: DlcResolver.logger,
-      resourceLabelPlural: 'dlcs',
+      label: 'dlcs',
     })
 
-    return dlcs.map((dlc) => DlcResolver.resolveFromObject(dlc))
+    return dlcs.map((dlc) => DlcResolver.fromObject(dlc))
   }
 }

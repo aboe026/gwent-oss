@@ -6,7 +6,7 @@ import { Unit } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
 
 describe('deck-unit-resolver', () => {
-  describe('resolveFromObject', () => {
+  describe('fromObject', () => {
     it('does not call to UnitResolver if unit provided', async () => {
       const unit = TestUtil.getUnit({})
       await testResolveFromObject({
@@ -56,7 +56,7 @@ describe('deck-unit-resolver', () => {
       })
     })
   })
-  describe('resolveFromArray', () => {
+  describe('fromArray', () => {
     it('returns empty array if provided empty array', async () => {
       await testResolveFromArray({
         deckUnits: [],
@@ -135,13 +135,13 @@ async function testResolveFromObject({
   unit?: Unit
   unitResolverResponse?: Unit
 }) {
-  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromId')
+  const unitResolverSpy = jest.spyOn(UnitResolver, 'fromId')
   if (unitResolverResponse) {
     unitResolverSpy.mockResolvedValue(unitResolverResponse)
   }
 
   await expect(
-    DeckUnitResolver.resolveFromObject({
+    DeckUnitResolver.fromObject({
       deckUnit,
       neutralStats,
       unit,
@@ -176,10 +176,10 @@ async function testResolveFromArray({
   resolvedUnits?: Unit[]
   unitResolverCalls?: any[][]
 }) {
-  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue(resolvedUnits)
+  const unitResolverSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue(resolvedUnits)
 
   await expect(
-    DeckUnitResolver.resolveFromArray({
+    DeckUnitResolver.fromArray({
       deckUnits,
       neutralStats,
     })

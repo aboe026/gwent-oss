@@ -11,7 +11,7 @@ import { getUniqueItems } from '@gwent/utils'
 import TestUtil from '../test-util'
 
 describe('deck-resolver', () => {
-  describe('resolveFromObject', () => {
+  describe('fromObject', () => {
     const deck = TestUtil.getDbDeck({})
     it('does not call to external resolvers if fields provided', async () => {
       const faction = TestUtil.getFaction({
@@ -62,7 +62,7 @@ describe('deck-resolver', () => {
       })
     })
   })
-  describe('resolveFromArray', () => {
+  describe('fromArray', () => {
     const deck = TestUtil.getDbDeck({})
     const faction = TestUtil.getDbFaction({
       id: deck.faction,
@@ -213,12 +213,12 @@ async function testResolveFromObject({
   const retrievedFaction = TestUtil.getFaction({
     id: deck.faction,
   })
-  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromId').mockResolvedValue(retrievedFaction)
+  const factionResolverSpy = jest.spyOn(FactionResolver, 'fromId').mockResolvedValue(retrievedFaction)
   const retrievedLeader = TestUtil.getLeader({
     id: deck.leader,
     faction: faction || retrievedFaction,
   })
-  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromId').mockResolvedValue(retrievedLeader)
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromId').mockResolvedValue(retrievedLeader)
   const retrievedUnits: DeckUnit[] = deck.units.map((deckUnit) => {
     return {
       artStyle: 1,
@@ -228,16 +228,14 @@ async function testResolveFromObject({
       }),
     }
   })
-  const deckUnitResolverSpy = jest
-    .spyOn(DeckUnitResolver, 'resolveFromArray')
-    .mockResolvedValue(units || retrievedUnits)
+  const deckUnitResolverSpy = jest.spyOn(DeckUnitResolver, 'fromArray').mockResolvedValue(units || retrievedUnits)
   const retrievedUser = TestUtil.getUser({
     id: deck.user,
   })
-  const userResolverSpy = jest.spyOn(UserResolver, 'resolveById').mockResolvedValue(retrievedUser)
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromId').mockResolvedValue(retrievedUser)
 
   await expect(
-    DeckResolver.resolveFromObject({
+    DeckResolver.fromObject({
       deck,
       faction,
       leader,
@@ -323,11 +321,11 @@ async function testResolveFromArray({
   deckResolveCalls?: any[][]
 }) {
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionsGetResponse)
-  const factionResolveSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue(factionsResolveResponse)
-  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromIds').mockResolvedValue(leadersResolveResponse)
-  const unitResolverSpy = jest.spyOn(UnitResolver, 'resolveFromIds').mockResolvedValue(unitsResolveResponse)
-  const userResolverSpy = jest.spyOn(UserResolver, 'resolveByIds').mockResolvedValue(userResolveResponse)
-  const deckResolverSpy = jest.spyOn(DeckResolver, 'resolveFromObject')
+  const factionResolveSpy = jest.spyOn(FactionResolver, 'fromArray').mockResolvedValue(factionsResolveResponse)
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromIds').mockResolvedValue(leadersResolveResponse)
+  const unitResolverSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue(unitsResolveResponse)
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue(userResolveResponse)
+  const deckResolverSpy = jest.spyOn(DeckResolver, 'fromObject')
   if (resolvedDecks) {
     for (const resolvedDeck of resolvedDecks) {
       deckResolverSpy.mockResolvedValueOnce(resolvedDeck)
@@ -335,7 +333,7 @@ async function testResolveFromArray({
   }
 
   await expect(
-    DeckResolver.resolveFromArray({
+    DeckResolver.fromArray({
       decks,
       neutralDeckStats,
       neutralLeaderStats,

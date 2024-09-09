@@ -2,30 +2,30 @@ import UserResolver from '../../src/graphql/resolvers/user-resolver'
 import { ObjectId } from 'mongodb'
 import UserStore from '../../src/database/stores/user-store'
 import TestUtil from '../test-util'
-import Verifier from '../../src/util/verify-objects'
+import Verifier from '../../src/util/verifier'
 
 describe('user-resolver', () => {
-  describe('resolveByObject', () => {
+  describe('fromObject', () => {
     it('returns resolved object', () => {
       const user = TestUtil.getDbUser({})
-      expect(UserResolver.resolveByObject(user)).toEqual({
+      expect(UserResolver.fromObject(user)).toEqual({
         created: user.created,
         id: user._id.toString(),
         name: user.name,
       })
     })
   })
-  describe('resolveById', () => {
-    it('returns first user from resolveByIds', async () => {
+  describe('fromId', () => {
+    it('returns first user from fromIds', async () => {
       const user = TestUtil.getUser({})
-      const resolveByIdsSpy = jest.spyOn(UserResolver, 'resolveByIds').mockResolvedValue([user])
+      const fromIdsSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue([user])
 
-      await expect(UserResolver.resolveById(user.id)).resolves.toEqual(user)
+      await expect(UserResolver.fromId(user.id)).resolves.toEqual(user)
 
-      expect(resolveByIdsSpy.mock.calls).toEqual([[[user.id]]])
+      expect(fromIdsSpy.mock.calls).toEqual([[[user.id]]])
     })
   })
-  describe('resolveByIds', () => {
+  describe('fromIds', () => {
     it('throws error if verifyObjects throws error', async () => {
       await testResolveByIds({
         ids: [new ObjectId()],
@@ -67,12 +67,12 @@ async function testResolveByIds({
   } else {
     verifyObjectsSpy.mockReturnValue()
   }
-  const resolveByObjectSpy = jest.spyOn(UserResolver, 'resolveByObject')
+  const fromObjectSpy = jest.spyOn(UserResolver, 'fromObject')
   for (const user of users) {
-    resolveByObjectSpy.mockReturnValueOnce(TestUtil.getUserFromDbUser(user))
+    fromObjectSpy.mockReturnValueOnce(TestUtil.getUserFromDbUser(user))
   }
 
-  const promise = UserResolver.resolveByIds(ids)
+  const promise = UserResolver.fromIds(ids)
   if (verifyObjectsResponse) {
     await expect(promise).rejects.toThrow(verifyObjectsResponse)
   } else {
@@ -90,10 +90,10 @@ async function testResolveByIds({
               objects: users,
               field: '_id',
               logger: UserResolver['logger'],
-              resourceLabelPlural: 'users',
+              label: 'users',
             },
           ],
         ]
   )
-  expect(resolveByObjectSpy.mock.calls).toEqual(ids.length === 0 || verifyObjectsResponse ? [] : [users])
+  expect(fromObjectSpy.mock.calls).toEqual(ids.length === 0 || verifyObjectsResponse ? [] : [users])
 }

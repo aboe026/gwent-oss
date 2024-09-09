@@ -42,12 +42,12 @@ const QueryResolver: QueryResolvers<any, any> = {
       logger.debug(`Cannot get currentUser: "${message}"`)
       throw Error(message)
     }
-    return UserResolver.resolveByObject(user)
+    return UserResolver.fromObject(user)
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   decks: async (parent, args, context, info) => {
     const userId = context.session.user._id
-    return DeckResolver.resolveFromArray({
+    return DeckResolver.fromArray({
       decks: await DeckStore.get(userId),
       neutralDeckStats: RequestedFields.getArgument<boolean>(info, 'decks.faction.stats.neutrals'),
       neutralLeaderStats: RequestedFields.getArgument<boolean>(info, 'decks.leader.faction.stats.neutrals'),
@@ -58,7 +58,7 @@ const QueryResolver: QueryResolvers<any, any> = {
   factions: async (parent, args, context, info) => {
     const factions = await FactionStore.get({})
     const neutrals = RequestedFields.getArgument<boolean>(info, 'factions.stats.neutrals')
-    return FactionResolver.resolveFromArray({
+    return FactionResolver.fromArray({
       factions,
       neutralStats: neutrals,
     })
@@ -66,7 +66,7 @@ const QueryResolver: QueryResolvers<any, any> = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   game: async (parent, args, context, info) => {
     const gameId = args.id
-    return GameResolver.resolveById(gameId)
+    return GameResolver.fromId(gameId)
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   gameDeck: async (parent, args, context, info) => {
@@ -88,7 +88,7 @@ const QueryResolver: QueryResolvers<any, any> = {
       throw Error(message)
     }
     if (player.deck.from) {
-      return GameDeckResolver.resolveFromObject({
+      return GameDeckResolver.fromObject({
         gameDeck: player.deck,
         neutralDeckStats: RequestedFields.getArgument(info, 'gameDeck.from.faction.stats.neutrals'),
         neutralLeaderStats: RequestedFields.getArgument(info, 'gameDeck.from.leader.faction.stats.neutrals'),
@@ -101,7 +101,7 @@ const QueryResolver: QueryResolvers<any, any> = {
   games: async (parent, args, context, info) => {
     const userId = context.session.user._id
     const games = await GameStore.getByUserId(userId)
-    return GameResolver.resolveFromArray(games)
+    return GameResolver.fromArray(games)
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   leaders: async (parent, args, context, info) => {
@@ -118,7 +118,7 @@ const QueryResolver: QueryResolvers<any, any> = {
     const leaders = await LeaderStore.get({
       factionIds,
     })
-    return LeaderResolver.resolveFromArray({
+    return LeaderResolver.fromArray({
       leaders,
       factions,
       neutralStats: RequestedFields.getArgument<boolean>(info, 'leaders.faction.stats.neutrals'),
@@ -152,7 +152,7 @@ const QueryResolver: QueryResolvers<any, any> = {
       deckable: typeof deckable === 'boolean' ? deckable : undefined,
       factionIds,
     })
-    return UnitResolver.resolveFromArray({
+    return UnitResolver.fromArray({
       factions,
       units,
       neutralStats: RequestedFields.getArgument<boolean>(info, 'units.faction.stats.neutrals'),

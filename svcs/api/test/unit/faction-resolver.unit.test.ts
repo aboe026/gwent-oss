@@ -5,10 +5,10 @@ import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import { Dlc, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
 import { ObjectId } from 'mongodb'
-import Verifier from '../../src/util/verify-objects'
+import Verifier from '../../src/util/verifier'
 
 describe('faction-resolver', () => {
-  describe('resolveFromObject', () => {
+  describe('fromObject', () => {
     const faction = TestUtil.getDbFaction({})
     it('throws error if verifyObjects throws error', async () => {
       await testResolveFromObject({
@@ -57,21 +57,21 @@ describe('faction-resolver', () => {
       })
     })
   })
-  describe('resolveFromId', () => {
-    it('returns first item from resolveFromIds', async () => {
+  describe('fromId', () => {
+    it('returns first item from fromIds', async () => {
       const id = new ObjectId()
       const faction = TestUtil.getFaction({
         id,
       })
-      const resolveFromIdsSpy = jest.spyOn(FactionResolver, 'resolveFromIds').mockResolvedValue([faction])
+      const fromIdsSpy = jest.spyOn(FactionResolver, 'fromIds').mockResolvedValue([faction])
 
       await expect(
-        FactionResolver.resolveFromId({
+        FactionResolver.fromId({
           id,
         })
       ).resolves.toEqual(faction)
 
-      expect(resolveFromIdsSpy.mock.calls).toEqual([
+      expect(fromIdsSpy.mock.calls).toEqual([
         [
           {
             ids: [id],
@@ -81,7 +81,7 @@ describe('faction-resolver', () => {
       ])
     })
   })
-  describe('resolveFromIds', () => {
+  describe('fromIds', () => {
     it('throws error if verifyObjects throws error', async () => {
       await testResolveFromIds({
         ids: [new ObjectId()],
@@ -104,7 +104,7 @@ describe('faction-resolver', () => {
       })
     })
   })
-  describe('resolveFromArray', () => {
+  describe('fromArray', () => {
     it('throws error verifyObjects throws error on neutral faction', async () => {
       await testResolveFromArray({
         factions: [TestUtil.getDbFaction({})],
@@ -120,7 +120,7 @@ describe('faction-resolver', () => {
         ],
       })
     })
-    it('calls to resolveFromObject without neutrals or dlc', async () => {
+    it('calls to fromObject without neutrals or dlc', async () => {
       const faction = TestUtil.getDbFaction({})
       await testResolveFromArray({
         factions: [faction],
@@ -134,7 +134,7 @@ describe('faction-resolver', () => {
         },
       })
     })
-    it('calls to resolveFromObject requesting neutrals without providing', async () => {
+    it('calls to fromObject requesting neutrals without providing', async () => {
       const faction = TestUtil.getDbFaction({})
       await testResolveFromArray({
         factions: [faction],
@@ -166,7 +166,7 @@ describe('faction-resolver', () => {
         ],
       })
     })
-    it('calls to resolveFromObject with dlc without providing', async () => {
+    it('calls to fromObject with dlc without providing', async () => {
       const dlc = TestUtil.getDlc({})
       const faction = TestUtil.getDbFaction({
         dlc: dlc.id,
@@ -296,13 +296,13 @@ async function testResolveFromObject({
   } else {
     verifyObjectsSpy.mockReturnValue(undefined)
   }
-  const dlcResolveSpy = jest.spyOn(DlcResolver, 'resolveFromId')
+  const dlcResolveSpy = jest.spyOn(DlcResolver, 'fromId')
   if (resolvedDlc && !dlc) {
     dlcResolveSpy.mockResolvedValue(resolvedDlc)
   }
   const resolveStatsSpy = jest.spyOn(FactionResolver, 'resolveStats').mockReturnValue(resolvedStats)
 
-  const promise = FactionResolver.resolveFromObject({
+  const promise = FactionResolver.fromObject({
     faction,
     dlc,
     neutral,
@@ -335,7 +335,7 @@ async function testResolveFromObject({
               objects: neutralFactions,
               field: 'key',
               logger: FactionResolver['logger'],
-              resourceLabelPlural: 'factions',
+              label: 'factions',
             },
           ],
         ]
@@ -378,9 +378,9 @@ async function testResolveFromIds({
   } else {
     verifyObjectsSpy.mockReturnValue()
   }
-  const resolveSpy = jest.spyOn(FactionResolver, 'resolveFromArray').mockResolvedValue(resolvedFactions)
+  const resolveSpy = jest.spyOn(FactionResolver, 'fromArray').mockResolvedValue(resolvedFactions)
 
-  const promise = FactionResolver.resolveFromIds({
+  const promise = FactionResolver.fromIds({
     ids,
   })
   if (verifyObjectsResponse) {
@@ -407,7 +407,7 @@ async function testResolveFromIds({
         objects: factions,
         field: '_id',
         logger: FactionResolver['logger'],
-        resourceLabelPlural: 'factions',
+        label: 'factions',
       },
     ],
   ])
@@ -444,7 +444,7 @@ async function testResolveFromArray({
   dlcResolveCalls?: any[][]
   factionGetCalls?: any[][]
 }) {
-  const dlcResolveSpy = jest.spyOn(DlcResolver, 'resolveFromIds').mockResolvedValue(dlcResolveResponse)
+  const dlcResolveSpy = jest.spyOn(DlcResolver, 'fromIds').mockResolvedValue(dlcResolveResponse)
   const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse)
   const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
   if (verifyObjectsResponse) {
@@ -454,12 +454,12 @@ async function testResolveFromArray({
   } else {
     verifyObjectsSpy.mockReturnValue()
   }
-  const resolveFromObjectSpy = jest.spyOn(FactionResolver, 'resolveFromObject')
+  const fromObjectSpy = jest.spyOn(FactionResolver, 'fromObject')
   if (factionResolveResponse) {
-    resolveFromObjectSpy.mockResolvedValue(factionResolveResponse)
+    fromObjectSpy.mockResolvedValue(factionResolveResponse)
   }
 
-  const promise = FactionResolver.resolveFromArray({
+  const promise = FactionResolver.fromArray({
     factions,
     neutralStats,
   })
@@ -480,13 +480,13 @@ async function testResolveFromArray({
               objects: factionGetResponse,
               field: 'key',
               logger: FactionResolver['logger'],
-              resourceLabelPlural: 'factions',
+              label: 'factions',
             },
           ],
         ]
       : []
   )
-  expect(resolveFromObjectSpy.mock.calls).toEqual(
+  expect(fromObjectSpy.mock.calls).toEqual(
     verifyObjectsResponse
       ? []
       : [

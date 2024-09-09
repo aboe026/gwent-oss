@@ -8,7 +8,7 @@ import { ObjectId } from 'mongodb'
 import TestUtil from '../test-util'
 
 describe('game-player-resolver', () => {
-  describe('resolveFromObject', () => {
+  describe('fromObject', () => {
     it('returns without faction, leader or counts if everybody not ready', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
@@ -80,7 +80,7 @@ describe('game-player-resolver', () => {
       })
     })
   })
-  describe('resolveFromArray', () => {
+  describe('fromArray', () => {
     it('returns resolved objects if none provided', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
@@ -238,22 +238,22 @@ async function testResolveFromObject({
   leaderResolverCalls?: any[][]
   userResolverCalls?: any[][]
 }) {
-  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromId')
+  const factionResolverSpy = jest.spyOn(FactionResolver, 'fromId')
   if (resolvedFaction) {
     factionResolverSpy.mockResolvedValue(resolvedFaction)
   }
-  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromId')
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromId')
   if (resolvedLeader) {
     leaderResolverSpy.mockResolvedValue(resolvedLeader)
   }
-  const userResolverSpy = jest.spyOn(UserResolver, 'resolveById')
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromId')
   if (resolvedUser) {
     userResolverSpy.mockResolvedValue(resolvedUser)
   }
 
   // TODO: change all other tests to create promise
   // for resolve/reject to avoid duplicate code
-  const promise = GamePlayerResolver.resolveFromObject({
+  const promise = GamePlayerResolver.fromObject({
     everyoneReady,
     player,
     faction,
@@ -339,15 +339,15 @@ async function testResolveFromArray({
       ],
     ]
   }
-  const userResolverSpy = jest.spyOn(UserResolver, 'resolveByIds').mockResolvedValue(resolvedUsers)
-  const factionResolverSpy = jest.spyOn(FactionResolver, 'resolveFromIds').mockResolvedValue(resolvedFactions)
-  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'resolveFromIds').mockResolvedValue(resolvedLeaders)
-  const gamePlayerResolveFromObjectSpy = jest.spyOn(GamePlayerResolver, 'resolveFromObject')
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue(resolvedUsers)
+  const factionResolverSpy = jest.spyOn(FactionResolver, 'fromIds').mockResolvedValue(resolvedFactions)
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromIds').mockResolvedValue(resolvedLeaders)
+  const gamePlayerResolveFromObjectSpy = jest.spyOn(GamePlayerResolver, 'fromObject')
   for (const resolvedGamePlayer of resolvedGamePlayers) {
     gamePlayerResolveFromObjectSpy.mockResolvedValueOnce(resolvedGamePlayer)
   }
 
-  const promise = GamePlayerResolver.resolveFromArray({
+  const promise = GamePlayerResolver.fromArray({
     everyoneReady,
     players,
     neutralFactionStats,

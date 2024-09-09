@@ -3,12 +3,12 @@ import { User } from '@gwent/graphql-schema/resolver-typings'
 import { ObjectId } from 'mongodb'
 import UserStore from '../../database/stores/user-store'
 import { getLogger } from 'log4js'
-import Verifier from '../../util/verify-objects'
+import Verifier from '../../util/verifier'
 
 export default class UserResolver {
   private static logger = getLogger('user-resolver')
 
-  static resolveByObject(user: UserDbObject): User {
+  static fromObject(user: UserDbObject): User {
     return {
       created: user.created,
       id: user._id.toString(),
@@ -16,12 +16,12 @@ export default class UserResolver {
     }
   }
 
-  static async resolveById(id: ObjectId | string): Promise<User> {
-    const users = await UserResolver.resolveByIds([id])
+  static async fromId(id: ObjectId | string): Promise<User> {
+    const users = await UserResolver.fromIds([id])
     return users[0]
   }
 
-  static async resolveByIds(ids: (ObjectId | string)[]): Promise<User[]> {
+  static async fromIds(ids: (ObjectId | string)[]): Promise<User[]> {
     if (ids.length === 0) {
       return []
     }
@@ -33,9 +33,9 @@ export default class UserResolver {
       objects: users,
       field: '_id',
       logger: UserResolver.logger,
-      resourceLabelPlural: 'users',
+      label: 'users',
     })
 
-    return users.map((user) => UserResolver.resolveByObject(user))
+    return users.map((user) => UserResolver.fromObject(user))
   }
 }
