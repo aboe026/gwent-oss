@@ -251,8 +251,6 @@ async function testResolveFromObject({
     userResolverSpy.mockResolvedValue(resolvedUser)
   }
 
-  // TODO: change all other tests to create promise
-  // for resolve/reject to avoid duplicate code
   const promise = GamePlayerResolver.fromObject({
     everyoneReady,
     player,

@@ -260,10 +260,9 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- verify self deck on game page
 - organize imports
 - add comments to methods
-- have game page display nicely for small screens (have player infos vertically scrollable)
-- replace `stats: {} as any` with constant value in tests
 - add ability to resolve neutrals on gameDeck (undrawn, hand, discard, redraws (from/to))
 - Change "ready" mutation to "readyGame"
 - get icon for neutral faction
@@ -275,12 +274,11 @@ A list of things to be done in the future:
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
   - change schema input to be just an optional image instead of artStyle
 - more accurately type front-end results based on their return fragments
-  type Game = GameQuery['game']
-  this seems to mess up nested objects though :/
+  - type Game = GameQuery['game']
+  - this seems to mess up nested objects though :/
 - Have "DateTime" on resolver object map to javascript Date object?
 - add Error to returns types for all queries/mutations?
 - Make Combat a type (because of image)
-- Deck name (and "as of" date) somewhere on game? So user can know which deck they picked for the game (and when it was last updated at time of game)
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
@@ -288,7 +286,6 @@ A list of things to be done in the future:
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
 - Change schema.ts to schema.gql
-- Figure out how to do \_id -> id mapping in automated way. Is @map not working correctly?
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
 - Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)

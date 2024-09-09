@@ -30,10 +30,6 @@ import TestUtil from '../test-util'
 import * as getRandomSubset from '@gwent/utils'
 import GameDeckResolver from '../../src/graphql/resolvers/game-deck-resolver'
 
-// TODO: keep going through unit tests and improving them
-// use TestUtil methods for creating objects
-// make sure to use promise object instead of duplicate code if error/reject/resolve
-
 describe('mutation-resolver', () => {
   describe('addDeck', () => {
     it('returns error if faction is neutral', async () => {
