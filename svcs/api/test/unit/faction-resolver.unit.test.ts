@@ -88,7 +88,7 @@ describe('faction-resolver', () => {
         verifyObjectsResponse: Error(`Could not find factions "["NEUTRAL"]" to resolve.`),
       })
     })
-    it('returns empty array if passed one', async () => {
+    it('returns empty array if given empty array', async () => {
       await testResolveFromIds({
         ids: [],
       })
@@ -400,19 +400,23 @@ async function testResolveFromIds({
         ]
       : []
   )
-  expect(verifyObjectsSpy.mock.calls).toEqual([
-    [
-      {
-        expectedKeys: ids,
-        objects: factions,
-        field: '_id',
-        logger: FactionResolver['logger'],
-        label: 'factions',
-      },
-    ],
-  ])
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    ids.length === 0
+      ? []
+      : [
+          [
+            {
+              expectedKeys: ids,
+              objects: factions,
+              field: '_id',
+              logger: FactionResolver['logger'],
+              label: 'factions',
+            },
+          ],
+        ]
+  )
   expect(resolveSpy.mock.calls).toEqual(
-    verifyObjectsResponse
+    verifyObjectsResponse || ids.length === 0
       ? []
       : [
           [

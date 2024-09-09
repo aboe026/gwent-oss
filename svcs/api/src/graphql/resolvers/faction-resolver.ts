@@ -65,12 +65,13 @@ export default class FactionResolver {
     ids: (ObjectId | string)[]
     neutralStats?: boolean
   }): Promise<Faction[]> {
-    const factions =
-      ids.length === 0
-        ? []
-        : await FactionStore.get({
-            ids: ids,
-          })
+    if (ids.length === 0) {
+      return []
+    }
+
+    const factions = await FactionStore.get({
+      ids: ids,
+    })
 
     Verifier.checkObjects({
       expectedKeys: ids,

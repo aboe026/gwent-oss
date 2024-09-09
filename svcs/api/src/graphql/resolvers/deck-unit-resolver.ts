@@ -33,13 +33,15 @@ export default class DeckUnitResolver {
     deckUnits: DeckUnitDbObject[]
     neutralStats?: boolean
   }): Promise<DeckUnit[]> {
-    const units =
-      deckUnits.length === 0
-        ? []
-        : await UnitResolver.fromIds({
-            ids: deckUnits.map((deckUnit) => deckUnit.unit),
-            neutralStats,
-          })
+    if (deckUnits.length === 0) {
+      return []
+    }
+
+    const units = await UnitResolver.fromIds({
+      ids: deckUnits.map((deckUnit) => deckUnit.unit),
+      neutralStats,
+    })
+
     const resolvedDeckUnits: DeckUnit[] = []
     for (const deckUnit of deckUnits) {
       resolvedDeckUnits.push(
@@ -50,6 +52,7 @@ export default class DeckUnitResolver {
         })
       )
     }
+
     return resolvedDeckUnits
   }
 }

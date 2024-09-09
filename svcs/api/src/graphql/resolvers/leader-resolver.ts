@@ -59,7 +59,6 @@ export default class LeaderResolver {
     resolvedFactions?: Faction[]
     neutralStats?: boolean
   }): Promise<Leader[]> {
-    // TODO: short-circuit other resolvers if emtpy
     if (ids.length === 0) {
       return []
     }

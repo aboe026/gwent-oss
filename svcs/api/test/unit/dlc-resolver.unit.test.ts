@@ -157,16 +157,20 @@ async function testResolveFromIds({
   }
 
   expect(dlcGetSpy.mock.calls).toEqual(dlcGetCalls)
-  expect(verifyObjectsSpy.mock.calls).toEqual([
-    [
-      {
-        expectedKeys: ids,
-        objects: dlcGetResponse,
-        field: '_id',
-        logger: DlcResolver['logger'],
-        label: 'dlcs',
-      },
-    ],
-  ])
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    ids.length === 0
+      ? []
+      : [
+          [
+            {
+              expectedKeys: ids,
+              objects: dlcGetResponse,
+              field: '_id',
+              logger: DlcResolver['logger'],
+              label: 'dlcs',
+            },
+          ],
+        ]
+  )
   expect(dlcResolveObjectSpy.mock.calls).toEqual(dlcResolveObjectCalls)
 }

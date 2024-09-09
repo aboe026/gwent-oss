@@ -131,16 +131,20 @@ async function testResolveFromIds({
   }
 
   expect(effectGetSpy.mock.calls).toEqual(effectGetCalls)
-  expect(verifyObjectsSpy.mock.calls).toEqual([
-    [
-      {
-        expectedKeys: ids,
-        objects: effectGetResponse,
-        field: '_id',
-        logger: EffectResolver['logger'],
-        label: 'effects',
-      },
-    ],
-  ])
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    ids.length === 0
+      ? []
+      : [
+          [
+            {
+              expectedKeys: ids,
+              objects: effectGetResponse,
+              field: '_id',
+              logger: EffectResolver['logger'],
+              label: 'effects',
+            },
+          ],
+        ]
+  )
   expect(resolveObjectSpy.mock.calls).toEqual(resolveObjectCalls)
 }

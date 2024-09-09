@@ -24,12 +24,13 @@ export default class DlcResolver {
   }
 
   static async fromIds(ids: (ObjectId | string)[]): Promise<Dlc[]> {
-    const dlcs =
-      ids.length === 0
-        ? []
-        : await DlcStore.get({
-            ids,
-          })
+    if (ids.length === 0) {
+      return []
+    }
+
+    const dlcs = await DlcStore.get({
+      ids,
+    })
 
     Verifier.checkObjects({
       expectedKeys: ids,

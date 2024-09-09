@@ -21,12 +21,13 @@ export default class EffectResolver {
   }
 
   static async fromIds(ids: (string | ObjectId)[]): Promise<Effect[]> {
-    const effects =
-      ids.length === 0
-        ? []
-        : await EffectStore.get({
-            ids: ids,
-          })
+    if (ids.length === 0) {
+      return []
+    }
+
+    const effects = await EffectStore.get({
+      ids: ids,
+    })
 
     Verifier.checkObjects({
       expectedKeys: ids,
