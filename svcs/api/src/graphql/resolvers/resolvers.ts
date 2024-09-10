@@ -4,7 +4,7 @@ import { Resolvers } from '@gwent/graphql-schema/resolver-typings'
 import { scalars } from '@gwent/graphql-schema'
 
 export const resolvers: Resolvers = {
-  Mutation: MutationResolver,
+  Mutation: MutationResolver.getResolvers(),
   Query: QueryResolver,
   ...scalars,
 }

@@ -22,7 +22,6 @@ export default class Verifier {
     })
     if (missingIds.length > 0) {
       const message = `Could not find ${label} "${JSON.stringify(missingIds)}" to resolve.`
-      // TODO: throw stack traces for other logger.error?
       logger.error(Error(message))
       throw Error(message)
     }

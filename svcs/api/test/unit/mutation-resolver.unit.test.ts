@@ -32,8 +32,10 @@ import GameDeckResolver from '../../src/graphql/resolvers/game-deck-resolver'
 
 describe('mutation-resolver', () => {
   describe('addDeck', () => {
+    const userId = new ObjectId()
     it('returns error if faction is neutral', async () => {
       await testAddDeck({
+        userId,
         factionKey: FactionKey.Neutral,
         errorReturned: `Cannot create Deck with "${FactionKey.Neutral}" faction.`,
         factionGetCalls: [],
@@ -44,10 +46,12 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
+        debugCalls: [[`addDeck failed for user "${userId}": "${FactionKey.Neutral}" faction invalid.`]],
       })
     })
     it('returns error if faction with key does not exist', async () => {
       await testAddDeck({
+        userId,
         factionGetResponse: [],
         errorReturned: `Faction with key "${FactionKey.Monsters}" not found.`,
         leaderGetCalls: [],
@@ -57,26 +61,30 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
+        debugCalls: [[`addDeck failed for user "${userId}": Faction with key "${FactionKey.Monsters}" not found.`]],
       })
     })
     it('returns error if leader does not exist', async () => {
       const leaderId = new ObjectId()
       await testAddDeck({
+        userId,
         leaderId,
         leaderGetResponse: [],
-        errorReturned: `Invalid leader ID "${leaderId}": Does not exist.`,
+        errorReturned: `Leader with ID "${leaderId}" does not exist.`,
         unitGetCalls: [],
         deckUnitCalls: [],
         validateDeckCalls: [],
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
+        debugCalls: [[`addDeck failed for user "${userId}": Leader with ID "${leaderId}" does not exist.`]],
       })
     })
     it('returns error if leader is of wrong faction', async () => {
       const factionId = new ObjectId()
       const leaderId = new ObjectId()
       await testAddDeck({
+        userId,
         factionKey: FactionKey.Monsters,
         factionGetResponse: [
           TestUtil.getDbFaction({
@@ -94,84 +102,98 @@ describe('mutation-resolver', () => {
             faction: factionId,
           }),
         ],
-        errorReturned: `Invalid leader ID "${leaderId}": Faction "${FactionKey.NorthernRealms}" does not match deck faction of "${FactionKey.Monsters}".`,
+        errorReturned: `Leader faction "${FactionKey.NorthernRealms}" does not match deck faction "${FactionKey.Monsters}".`,
         unitGetCalls: [],
         deckUnitCalls: [],
         validateDeckCalls: [],
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
+        debugCalls: [
+          [
+            `addDeck failed for user "${userId}": Leader faction "${FactionKey.NorthernRealms}" does not match deck faction "${FactionKey.Monsters}".`,
+          ],
+        ],
       })
     })
     it('returns error if single unit does not exist', async () => {
       const unitId = new ObjectId()
       await testAddDeck({
+        userId,
         unitIds: [unitId],
         unitGetResponse: [],
-        errorReturned: `Invalid unit ID "${unitId}": Does not exist.`,
+        errorReturned: `Unit "${unitId}" does not exist.`,
         deckUnitCalls: [],
         validateDeckCalls: [],
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
+        debugCalls: [[`addDeck failed for user "${userId}": Unit "${unitId}" does not exist.`]],
       })
     })
     it('returns errors if multiple units do not exist', async () => {
       const unitId1 = new ObjectId()
       const unitId2 = new ObjectId()
       await testAddDeck({
+        userId,
         unitIds: [unitId1, unitId2],
         unitGetResponse: [],
-        errorReturned: [
-          `Invalid unit ID "${unitId1}": Does not exist.`,
-          `Invalid unit ID "${unitId2}": Does not exist.`,
-        ].join('\n'),
+        errorReturned: [`Unit "${unitId1}" does not exist.`, `Unit "${unitId2}" does not exist.`].join('\n'),
         deckUnitCalls: [],
         validateDeckCalls: [],
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
+        debugCalls: [
+          [`addDeck failed for user "${userId}": Unit "${unitId1}" does not exist.\nUnit "${unitId2}" does not exist.`],
+        ],
       })
     })
     it('returns error if validateDeck returns single error', async () => {
       const error = 'too many specials'
       await testAddDeck({
+        userId,
         validateDeckResponse: [error],
         errorReturned: error,
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
+        debugCalls: [[`addDeck failed for user "${userId}": ${error}`]],
       })
     })
     it('returns errors if validateDeck returns multiple errors', async () => {
       const error1 = 'too many specials'
       const error2 = 'not enough units'
       await testAddDeck({
+        userId,
         validateDeckResponse: [error1, error2],
         errorReturned: `${error1}\n${error2}`,
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
+        debugCalls: [[`addDeck failed for user "${userId}": ${error1}\n${error2}`]],
       })
     })
     it('returns error if deck with name already exists', async () => {
       const name = 'deck-name'
-      const userId = new ObjectId()
       const error = `Deck with name "${name}" already exists for user "${userId}"`
       await testAddDeck({
         userId,
         name,
         deckAddError: error,
-        errorReturned: `Deck with name "${name}" already exists`,
+        errorReturned: `Deck with name "${name}" already exists.`,
         postResolversCalled: false,
+        debugCalls: [[`addDeck failed for user "${userId}": Deck with name "${name}" already exists.`]],
       })
     })
     it('throws error if addDeck throws error that is not duplicate name', async () => {
       const error = 'network error'
       await testAddDeck({
+        userId,
         deckAddError: error,
         errorThrown: error,
         postResolversCalled: false,
+        errorCalls: [[Error(`addDeck failed for user "${userId}": ${Error(error)}`)]],
       })
     })
     it('undefined artstyle converted to 1', async () => {
@@ -1148,8 +1170,6 @@ describe('mutation-resolver', () => {
   })
 })
 
-// TODO: make other mutation/query inputs strings, not ObjectId
-
 async function testAddDeck({
   inputArtStyle = 1,
   expectedArtStyle = 1,
@@ -1166,7 +1186,7 @@ async function testAddDeck({
   deckAddError,
   errorReturned,
   errorThrown,
-  factionGetCalls = [[{}]],
+  factionGetCalls,
   leaderGetCalls,
   unitGetCalls,
   deckUnitCalls,
@@ -1174,6 +1194,8 @@ async function testAddDeck({
   deckAddCalls,
   getDeckStatsCalls,
   postResolversCalled = true,
+  debugCalls = [],
+  errorCalls = [],
 }: {
   inputArtStyle?: number | undefined | null
   expectedArtStyle?: number
@@ -1198,6 +1220,8 @@ async function testAddDeck({
   deckAddCalls?: any[][]
   getDeckStatsCalls?: any[][]
   postResolversCalled?: boolean
+  debugCalls?: any[][]
+  errorCalls?: any[][]
 }) {
   if (!unitIds) {
     unitIds = [new ObjectId()]
@@ -1212,9 +1236,6 @@ async function testAddDeck({
       }
     }),
     name,
-  }
-  if (!userId) {
-    userId = new ObjectId()
   }
   const context = {
     session: {
@@ -1285,15 +1306,21 @@ async function testAddDeck({
   const factionResolverSpy = jest.spyOn(FactionResolver, 'fromObject').mockResolvedValue(resolvedFaction)
   const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromObject').mockResolvedValue(resolvedLeader)
   const deckResolverSpy = jest.spyOn(DeckResolver, 'fromObject').mockResolvedValue(resolvedDeck)
+  const debugSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  MutationResolver['logger'] = {
+    debug: debugSpy,
+    error: errorSpy,
+  } as any
 
-  const promise = (MutationResolver.addDeck as any)(null, args, context, null)
+  const promise = (MutationResolver.getResolvers().addDeck as any)(null, args, context, null)
   if (errorThrown) {
     await expect(promise).rejects.toEqual(Error(errorThrown))
   } else {
     await expect(promise).resolves.toEqual(errorReturned ? Error(errorReturned) : resolvedDeck)
   }
 
-  expect(factionGetSpy.mock.calls).toEqual(factionGetCalls)
+  expect(factionGetSpy.mock.calls).toEqual(factionGetCalls || [[{}]])
   expect(leaderGetSpy.mock.calls).toEqual(
     leaderGetCalls || [
       [
@@ -1397,6 +1424,8 @@ async function testAddDeck({
         ]
       : []
   )
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
 
 async function testAddGame({
@@ -1440,7 +1469,9 @@ async function testAddGame({
   const addSpy = jest.spyOn(GameStore, 'add').mockResolvedValue(game)
   const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
 
-  await expect((MutationResolver.addGame as any)(null, args, context, null)).resolves.toEqual(expected || resolvedGame)
+  await expect((MutationResolver.getResolvers().addGame as any)(null, args, context, null)).resolves.toEqual(
+    expected || resolvedGame
+  )
 
   expect(getByNamesSpy.mock.calls).toEqual(getByNamesCalls)
   expect(addSpy.mock.calls).toEqual(addCalls)
@@ -1483,9 +1514,9 @@ async function testAddUser({
   }
 
   if (error) {
-    await expect((MutationResolver.addUser as any)(null, args, null, null)).rejects.toThrow(error)
+    await expect((MutationResolver.getResolvers().addUser as any)(null, args, null, null)).rejects.toThrow(error)
   } else {
-    await expect((MutationResolver.addUser as any)(null, args, null, null)).resolves.toEqual(expected)
+    await expect((MutationResolver.getResolvers().addUser as any)(null, args, null, null)).resolves.toEqual(expected)
   }
 
   expect(addSpy.mock.calls).toEqual([[args.name, args.password]])
@@ -1518,7 +1549,7 @@ async function testLogin({
     }
   }
 
-  const promise = (MutationResolver.login as any)(null, args, context, null)
+  const promise = (MutationResolver.getResolvers().login as any)(null, args, context, null)
   if (error) {
     await expect(promise).rejects.toThrow(error)
   } else {
@@ -1538,7 +1569,7 @@ async function testLogin({
 }
 
 function testLogout({ context, expected }: { context?: any; expected: boolean }) {
-  expect((MutationResolver.logout as any)(null, null, context, null)).toEqual(expected)
+  expect((MutationResolver.getResolvers().logout as any)(null, null, context, null)).toEqual(expected)
 
   expect(context?.session?.user).toEqual(undefined)
 }
@@ -1581,7 +1612,7 @@ async function testReady({
     gameResolveSpy.mockResolvedValue(resolvedGame)
   }
 
-  await expect((MutationResolver.ready as any)(null, args, context, null)).resolves.toEqual(expected)
+  await expect((MutationResolver.getResolvers().ready as any)(null, args, context, null)).resolves.toEqual(expected)
 
   expect(gameGetSpy.mock.calls).toEqual(gameGetCalls)
   expect(setReadySpy.mock.calls).toEqual(setReadyCalls)
@@ -1629,7 +1660,7 @@ async function testRedraw({
     resolveDeckUnitSpy.mockResolvedValue(resolveDeckUnitResponse)
   }
 
-  await expect((MutationResolver.redraw as any)(null, args, context, null)).resolves.toEqual(expected)
+  await expect((MutationResolver.getResolvers().redraw as any)(null, args, context, null)).resolves.toEqual(expected)
 
   expect(gameGetSpy.mock.calls).toEqual(gameGetCalls)
   expect(gameRedrawSpy.mock.calls).toEqual(gameRedrawCalls)
@@ -1683,7 +1714,7 @@ async function testSetDeck({
     fromObjectSpy.mockResolvedValue(expected)
   }
 
-  await expect((MutationResolver.setDeck as any)(null, args, context, null)).resolves.toEqual(expected)
+  await expect((MutationResolver.getResolvers().setDeck as any)(null, args, context, null)).resolves.toEqual(expected)
 
   expect(getDeckSpy.mock.calls).toEqual(getDeckCalls)
   expect(getGameSpy.mock.calls).toEqual(getGameCalls)

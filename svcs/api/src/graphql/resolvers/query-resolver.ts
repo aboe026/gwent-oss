@@ -72,19 +72,20 @@ const QueryResolver: QueryResolvers<any, any> = {
   gameDeck: async (parent, args, context, info) => {
     const userId = context?.session?.user._id
     const gameId = args.game
+    const logPrefix = `gameDeck failed for user "${userId}":`
     const game = await GameStore.getById({
       id: gameId,
     })
     if (!game) {
-      const message = `Game with ID "${gameId}" does not exist`
-      logger.error(`Cannot get gameDeck for user "${userId}": ${message}`)
+      const message = `Game with ID "${gameId}" does not exist.`
+      logger.error(`${logPrefix} ${message}`)
       throw Error(message)
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const player = game.players.find((player) => player.user.toString() === userId.toString())
     if (!player) {
-      const message = `Not a player for game with ID "${gameId}"`
-      logger.debug(`Cannot get gameDeck for user "${userId}": ${message}`)
+      const message = `Not a player for game with ID "${gameId}".`
+      logger.debug(`${logPrefix} ${message}`)
       throw Error(message)
     }
     if (player.deck.from) {
