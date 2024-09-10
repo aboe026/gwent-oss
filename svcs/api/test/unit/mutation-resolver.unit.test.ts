@@ -11,7 +11,7 @@ import {
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import DeckStore from '../../src/database/stores/deck-store'
-import { Deck, DeckUnit, FactionKey, Game, GameDeck } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, DeckUnit, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import * as gwentUtils from '@gwent/utils'
 import LeaderStore from '../../src/database/stores/leader-store'
@@ -244,216 +244,108 @@ describe('mutation-resolver', () => {
     })
   })
   describe('addUser', () => {
+    const name = 'james.bond@mi6.com'
     it('returns error if user already exists', async () => {
-      const args = {
-        name: 'james.bond@mi6.com',
-        password: 'secret',
-      }
-      const error = Error(`User "${args.name}" already exists`)
-      const addSpy = jest.spyOn(UserStore, 'add').mockRejectedValue(error)
-
-      await expect((MutationResolver.addUser as any)(null, args, null, null)).resolves.toEqual(error)
-
-      expect(addSpy.mock.calls).toEqual([[args.name, args.password]])
+      const error = Error(`User "${name}" already exists`)
+      await testAddUser({
+        name,
+        userAddResponse: error,
+        expected: error,
+      })
     })
     it('throws error if not about user already existing', async () => {
-      const args = {
-        name: 'james.bond@mi6.com',
-        password: 'secret',
-      }
       const error = Error('Connection refused')
-      const addSpy = jest.spyOn(UserStore, 'add').mockRejectedValue(error)
-
-      await expect((MutationResolver.addUser as any)(null, args, null, null)).rejects.toThrow(error)
-
-      expect(addSpy.mock.calls).toEqual([[args.name, args.password]])
+      await testAddUser({
+        name,
+        userAddResponse: error,
+        error,
+      })
     })
     it('returns user if no error', async () => {
-      const args = {
-        name: 'james.bond@mi6.com',
-        password: 'secret',
-      }
       const user = TestUtil.getDbUser({
-        name: args.name,
+        name,
       })
-      const addSpy = jest.spyOn(UserStore, 'add').mockResolvedValue(user)
-
-      await expect((MutationResolver.addUser as any)(null, args, null, null)).resolves.toEqual({
-        id: user._id.toString(),
-        created: user.created,
-        name: user.name,
+      await testAddUser({
+        name,
+        userAddResponse: user,
+        expected: TestUtil.getUserFromDbUser(user),
       })
-
-      expect(addSpy.mock.calls).toEqual([[args.name, args.password]])
     })
   })
   describe('login', () => {
     it('returns error if credentials invalid', async () => {
-      const args = {
-        name: 'james.bond@mi6.com',
-        password: 'secret',
-      }
-      const context = undefined
-      const error = Error(`Invalid credentials for user "${args.name}"`)
-      const validateSpy = jest.spyOn(UserStore, 'validate').mockRejectedValue(error)
-
-      await expect((MutationResolver.login as any)(null, args, context, null)).resolves.toEqual(error)
-
-      expect(validateSpy.mock.calls).toEqual([[args.name, args.password]])
+      const name = 'james.bond@mi6.com'
+      const error = Error(`Invalid credentials for user "${name}"`)
+      await testLogin({
+        name,
+        userValidateResponse: error,
+        expected: error,
+      })
     })
     it('throws error if not invalid credentials', async () => {
-      const args = {
-        name: 'james.bond@mi6.com',
-        password: 'secret',
-      }
-      const context = undefined
       const error = Error('Connection refused')
-      const validateSpy = jest.spyOn(UserStore, 'validate').mockRejectedValue(error)
-
-      await expect((MutationResolver.login as any)(null, args, context, null)).rejects.toThrow(error)
-
-      expect(validateSpy.mock.calls).toEqual([[args.name, args.password]])
+      await testLogin({
+        userValidateResponse: error,
+        error,
+      })
     })
     it('sets user on context if context undefined', async () => {
-      const args = {
-        name: 'james.bond@mi6.com',
-        password: 'secret',
-      }
-      const context = undefined
-      const user = TestUtil.getDbUser({
-        name: args.name,
+      await testLogin({
+        context: undefined,
       })
-      const validateSpy = jest.spyOn(UserStore, 'validate').mockResolvedValue(user)
-
-      await expect((MutationResolver.login as any)(null, args, context, null)).resolves.toEqual({
-        id: user._id.toString(),
-        created: user.created,
-        name: user.name,
-      })
-
-      expect(validateSpy.mock.calls).toEqual([[args.name, args.password]])
     })
     it('sets user on context if context session undefined', async () => {
-      const args = {
-        name: 'james.bond@mi6.com',
-        password: 'secret',
-      }
-      const context = {}
-      const user = TestUtil.getDbUser({
-        name: args.name,
-      })
-      const validateSpy = jest.spyOn(UserStore, 'validate').mockResolvedValue(user)
-
-      await expect((MutationResolver.login as any)(null, args, context, null)).resolves.toEqual({
-        id: user._id.toString(),
-        created: user.created,
-        name: user.name,
-      })
-
-      expect(validateSpy.mock.calls).toEqual([[args.name, args.password]])
-      expect(context).toEqual({
-        session: {
-          user,
-        },
+      await testLogin({
+        context: {},
       })
     })
     it('sets user on context if context session does not have user', async () => {
-      const args = {
-        name: 'james.bond@mi6.com',
-        password: 'secret',
-      }
-      const context = {
-        session: {},
-      }
-      const user = TestUtil.getDbUser({
-        name: args.name,
-      })
-      const validateSpy = jest.spyOn(UserStore, 'validate').mockResolvedValue(user)
-
-      await expect((MutationResolver.login as any)(null, args, context, null)).resolves.toEqual({
-        id: user._id.toString(),
-        created: user.created,
-        name: user.name,
-      })
-
-      expect(validateSpy.mock.calls).toEqual([[args.name, args.password]])
-      expect(context).toEqual({
-        session: {
-          user,
+      await testLogin({
+        context: {
+          session: {},
         },
       })
     })
     it('sets user on context if context session already has user', async () => {
-      const args = {
-        name: 'james.bond@mi6.com',
-        password: 'secret',
-      }
-      const context = {
-        session: {
-          user: {
-            _id: new ObjectId(),
-            created: new Date(),
-            name: 'existing',
+      await testLogin({
+        context: {
+          session: {
+            user: TestUtil.getDbUser({}),
           },
-        },
-      }
-      const user = TestUtil.getDbUser({
-        name: args.name,
-      })
-      const validateSpy = jest.spyOn(UserStore, 'validate').mockResolvedValue(user)
-
-      await expect((MutationResolver.login as any)(null, args, context, null)).resolves.toEqual({
-        id: user._id.toString(),
-        created: user.created,
-        name: user.name,
-      })
-
-      expect(validateSpy.mock.calls).toEqual([[args.name, args.password]])
-      expect(context).toEqual({
-        session: {
-          user,
         },
       })
     })
   })
   describe('logout', () => {
-    it('removes user from session and returns true if user on session', () => {
-      const context = {
-        session: {
-          user: {
-            _id: new ObjectId(),
-            created: new Date(),
-            name: 'name',
-          },
-        },
-      }
-
-      expect((MutationResolver.logout as any)(null, null, context, null)).toEqual(true)
-
-      expect(context.session.user).toEqual(undefined)
-    })
-    it('returns false if no user on session', () => {
-      const context = {
-        session: {},
-      }
-
-      expect((MutationResolver.logout as any)(null, null, context, null)).toEqual(false)
-
-      expect(context.session).toEqual({})
+    it('returns false if no context', () => {
+      testLogout({
+        context: undefined,
+        expected: false,
+      })
     })
     it('returns false if no session on context', () => {
-      const context = {}
-
-      expect((MutationResolver.logout as any)(null, null, context, null)).toEqual(false)
-
-      expect(context).toEqual({})
+      testLogout({
+        context: {},
+        expected: false,
+      })
     })
-    it('returns false if no context', () => {
-      const context = undefined
-
-      expect((MutationResolver.logout as any)(null, null, context, null)).toEqual(false)
-
-      expect(context).toEqual(undefined)
+    it('returns false if no user on session', () => {
+      testLogout({
+        context: {
+          session: {},
+        },
+        expected: false,
+      })
+    })
+    it('removes user from session and returns true if user on session', () => {
+      testLogout({
+        context: {
+          session: {
+            user: TestUtil.getDbUser({}),
+          },
+        },
+        expected: true,
+      })
     })
   })
   describe('ready', () => {
@@ -994,7 +886,7 @@ describe('mutation-resolver', () => {
   })
   describe('setDeck', () => {
     it('returns error if deck does not exist', async () => {
-      const deckId = new ObjectId()
+      const deckId = new ObjectId().toString()
       await testSetDeck({
         deckId,
         expected: Error(`Deck with ID "${deckId}" does not exist`),
@@ -1009,16 +901,16 @@ describe('mutation-resolver', () => {
     })
     it('returns error if game does not exist', async () => {
       const deck = TestUtil.getDbDeck({})
-      const gameId = new ObjectId()
+      const gameId = new ObjectId().toString()
       await testSetDeck({
-        deckId: deck._id,
+        deckId: deck._id.toString(),
         gameId,
         getDeckResponse: deck,
         expected: Error(`Game with ID "${gameId}" does not exist`),
         getDeckCalls: [
           [
             {
-              id: deck._id,
+              id: deck._id.toString(),
             },
           ],
         ],
@@ -1037,22 +929,22 @@ describe('mutation-resolver', () => {
       const game = TestUtil.getDbGame({})
       await testSetDeck({
         userId,
-        deckId: deck._id,
-        gameId: game._id,
+        deckId: deck._id.toString(),
+        gameId: game._id.toString(),
         getDeckResponse: deck,
         getGameResponse: game,
         expected: Error(`User "${userId}" is not a player on game "${game._id}"`),
         getDeckCalls: [
           [
             {
-              id: deck._id,
+              id: deck._id.toString(),
             },
           ],
         ],
         getGameCalls: [
           [
             {
-              id: game._id,
+              id: game._id.toString(),
             },
           ],
         ],
@@ -1073,22 +965,22 @@ describe('mutation-resolver', () => {
       })
       await testSetDeck({
         userId,
-        deckId: deck._id,
-        gameId: game._id,
+        deckId: deck._id.toString(),
+        gameId: game._id.toString(),
         getDeckResponse: deck,
         getGameResponse: game,
         expected: Error('Deck already set'),
         getDeckCalls: [
           [
             {
-              id: deck._id,
+              id: deck._id.toString(),
             },
           ],
         ],
         getGameCalls: [
           [
             {
-              id: game._id,
+              id: game._id.toString(),
             },
           ],
         ],
@@ -1102,8 +994,8 @@ describe('mutation-resolver', () => {
       })
       await testSetDeck({
         userId,
-        deckId: deck._id,
-        gameId: game._id,
+        deckId: deck._id.toString(),
+        gameId: game._id.toString(),
         getDeckResponse: deck,
         getGameResponse: game,
         setDeckResponse: undefined,
@@ -1112,14 +1004,14 @@ describe('mutation-resolver', () => {
         getDeckCalls: [
           [
             {
-              id: deck._id,
+              id: deck._id.toString(),
             },
           ],
         ],
         getGameCalls: [
           [
             {
-              id: game._id,
+              id: game._id.toString(),
             },
           ],
         ],
@@ -1135,7 +1027,7 @@ describe('mutation-resolver', () => {
           [
             {
               deck,
-              gameId: game._id,
+              gameId: game._id.toString(),
               hand: deck.units.slice(0, STARTING_HAND_SIZE),
               undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
               userId,
@@ -1152,8 +1044,8 @@ describe('mutation-resolver', () => {
       })
       await testSetDeck({
         userId,
-        deckId: deck._id,
-        gameId: game._id,
+        deckId: deck._id.toString(),
+        gameId: game._id.toString(),
         getDeckResponse: deck,
         getGameResponse: game,
         setDeckResponse: TestUtil.getDbGame({}),
@@ -1162,14 +1054,14 @@ describe('mutation-resolver', () => {
         getDeckCalls: [
           [
             {
-              id: deck._id,
+              id: deck._id.toString(),
             },
           ],
         ],
         getGameCalls: [
           [
             {
-              id: game._id,
+              id: game._id.toString(),
             },
           ],
         ],
@@ -1185,7 +1077,7 @@ describe('mutation-resolver', () => {
           [
             {
               deck,
-              gameId: game._id,
+              gameId: game._id.toString(),
               hand: deck.units.slice(0, STARTING_HAND_SIZE),
               undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
               userId,
@@ -1202,8 +1094,8 @@ describe('mutation-resolver', () => {
       })
       await testSetDeck({
         userId,
-        deckId: deck._id,
-        gameId: game._id,
+        deckId: deck._id.toString(),
+        gameId: game._id.toString(),
         getDeckResponse: deck,
         getGameResponse: game,
         setDeckResponse: game,
@@ -1221,14 +1113,14 @@ describe('mutation-resolver', () => {
         getDeckCalls: [
           [
             {
-              id: deck._id,
+              id: deck._id.toString(),
             },
           ],
         ],
         getGameCalls: [
           [
             {
-              id: game._id,
+              id: game._id.toString(),
             },
           ],
         ],
@@ -1244,7 +1136,7 @@ describe('mutation-resolver', () => {
           [
             {
               deck,
-              gameId: game._id,
+              gameId: game._id.toString(),
               hand: deck.units.slice(0, STARTING_HAND_SIZE),
               undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
               userId,
@@ -1311,7 +1203,7 @@ async function testAddDeck({
     unitIds = [new ObjectId()]
   }
   const args = {
-    faction: factionKey,
+    faction: factionKey.toString(),
     leader: leaderId ? leaderId.toString() : new ObjectId().toString(),
     units: unitIds.map((unitId) => {
       return {
@@ -1335,7 +1227,7 @@ async function testAddDeck({
     id: userId,
   })
   const faction = TestUtil.getDbFaction({
-    key: args.faction,
+    key: factionKey,
   })
   const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
   const leader = TestUtil.getDbLeader({
@@ -1568,6 +1460,89 @@ async function testAddGame({
   )
 }
 
+async function testAddUser({
+  name = 'james.bond@mi6.com',
+  userAddResponse,
+  error,
+  expected,
+}: {
+  name?: string
+  userAddResponse: UserDbObject | Error
+  error?: Error
+  expected?: User | Error
+}) {
+  const args = {
+    name,
+    password: 'secret',
+  }
+  const addSpy = jest.spyOn(UserStore, 'add')
+  if (userAddResponse instanceof Error) {
+    addSpy.mockRejectedValue(userAddResponse)
+  } else {
+    addSpy.mockResolvedValue(userAddResponse)
+  }
+
+  if (error) {
+    await expect((MutationResolver.addUser as any)(null, args, null, null)).rejects.toThrow(error)
+  } else {
+    await expect((MutationResolver.addUser as any)(null, args, null, null)).resolves.toEqual(expected)
+  }
+
+  expect(addSpy.mock.calls).toEqual([[args.name, args.password]])
+}
+
+async function testLogin({
+  name = 'james.bond@mi6.com',
+  context,
+  userValidateResponse = TestUtil.getDbUser({}),
+  error,
+  expected,
+}: {
+  name?: string
+  context?: any
+  userValidateResponse?: UserDbObject | Error
+  error?: Error
+  expected?: User | Error
+}) {
+  const args = {
+    name,
+    password: 'secret',
+  }
+  const validateSpy = jest.spyOn(UserStore, 'validate')
+  if (userValidateResponse instanceof Error) {
+    validateSpy.mockRejectedValue(userValidateResponse)
+  } else {
+    validateSpy.mockResolvedValue(userValidateResponse as UserDbObject)
+    if (!expected) {
+      expected = TestUtil.getUserFromDbUser(userValidateResponse as UserDbObject)
+    }
+  }
+
+  const promise = (MutationResolver.login as any)(null, args, context, null)
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
+
+  expect(validateSpy.mock.calls).toEqual([[args.name, args.password]])
+  expect(context).toEqual(
+    userValidateResponse instanceof Error || !context
+      ? undefined
+      : {
+          session: {
+            user: userValidateResponse,
+          },
+        }
+  )
+}
+
+function testLogout({ context, expected }: { context?: any; expected: boolean }) {
+  expect((MutationResolver.logout as any)(null, null, context, null)).toEqual(expected)
+
+  expect(context?.session?.user).toEqual(undefined)
+}
+
 async function testReady({
   userId = new ObjectId(),
   gameId = new ObjectId().toString(),
@@ -1676,8 +1651,8 @@ async function testSetDeck({
   setDeckCalls = [],
 }: {
   userId?: ObjectId
-  gameId?: ObjectId
-  deckId?: ObjectId
+  gameId?: string
+  deckId?: string
   getDeckResponse?: DeckDbObject
   getGameResponse?: GameDbObject
   randomSubset?: DeckUnitDbObject[]

@@ -654,7 +654,6 @@ describe('upgrade-2', () => {
         })
       ).toThrow(`Invalid unit "${unit.Name}": Must have "Quote".`)
     })
-    // TODO: refactor these into shared method?
     it('calls to other normalize functions if only required fields', () => {
       const unit: UnitJson = {
         'Art Styles': 1,
