@@ -1,6 +1,6 @@
 import { getLogger } from 'log4js'
 
-import { Faction, FactionKey, MutationResolvers, User } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, MutationResolvers, User } from '@gwent/graphql-schema/resolver-typings'
 import DeckStore from '../../database/stores/deck-store'
 import FactionStore from '../../database/stores/faction-store'
 import GameStore from '../../database/stores/game-store'
@@ -8,7 +8,13 @@ import { getDeckStats, getUniqueItems } from '@gwent/utils'
 import { getRandomSubset } from '@gwent/utils'
 import LeaderStore from '../../database/stores/leader-store'
 import UnitStore from '../../database/stores/unit-store'
-import { DeckDbObject, GamePlayerDbObject, RedrawDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  DeckDbObject,
+  FactionDbObject,
+  GamePlayerDbObject,
+  RedrawDbObject,
+  UserDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../database/stores/user-store'
 import { validateDeck } from '@gwent/validators'
 import { MAX_REDRAWS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
@@ -31,46 +37,61 @@ export default class MutationResolver {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       addDeck: async (parent, args, context, info) => {
         const userId = context.session.user._id
+        const logPrefix = `addDeck by user "${userId}"`
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
+          MutationResolver.logger.trace(
+            `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+        }
         const name = args.name
         const factionKey = args.faction
         const leaderId = args.leader
         const unitsInput = args.units
-        const logPrefix = `addDeck failed for user "${userId}":`
         if (factionKey === FactionKey.Neutral) {
-          MutationResolver.logger.debug(`${logPrefix} "${FactionKey.Neutral}" faction invalid.`)
+          MutationResolver.logger.debug(`${logPrefix} failed: "${FactionKey.Neutral}" faction invalid.`)
           return Error(`Cannot create Deck with "${FactionKey.Neutral}" faction.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const factions = await FactionStore.get({})
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} factions: "${JSON.stringify(factions)}"`)
+        }
         const factionMap: {
-          [x: string]: Faction
+          [x: string]: FactionDbObject
         } = {}
         for (const faction of factions) {
-          factionMap[faction._id.toString()] = faction as any as Faction // eslint-disable-line @typescript-eslint/no-explicit-any
+          factionMap[faction._id.toString()] = faction
         }
         const faction = factions.find((faction) => faction.key === factionKey)
         if (!faction) {
           const message = `Faction with key "${factionKey}" not found.`
-          MutationResolver.logger.debug(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const leaders = await LeaderStore.get({
           ids: [leaderId],
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} leaders: "${JSON.stringify(leaders)}"`)
+        }
         if (!leaders || leaders.length === 0) {
           const message = `Leader with ID "${leaderId}" does not exist.`
-          MutationResolver.logger.debug(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const leader = leaders[0]
         const leaderFaction = factionMap[leader.faction.toString()]
         if (leaderFaction.key !== factionKey) {
           const message = `Leader "${leader._id}" faction "${leaderFaction.key}" does not match deck faction "${factionKey}".`
-          MutationResolver.logger.debug(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const units = await UnitStore.get({
           ids: unitsInput.map((unit) => unit.id),
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} units: "${JSON.stringify(units)}"`)
+        }
         let errors: string[] = []
         for (const unitInput of unitsInput) {
           const dbUnit = units.find((dbUnit) => dbUnit._id.toString() === unitInput.id)
@@ -80,7 +101,7 @@ export default class MutationResolver {
         }
         if (errors.length > 0) {
           const message = errors.join('\n')
-          MutationResolver.logger.debug(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const deckUnits = await DeckUnitResolver.fromArray({
@@ -98,7 +119,7 @@ export default class MutationResolver {
         })
         if (errors.length > 0) {
           const message = errors.join('\n')
-          MutationResolver.logger.debug(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed validateDeck: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         let deck: DeckDbObject
@@ -119,18 +140,21 @@ export default class MutationResolver {
         } catch (err: unknown) {
           if (err instanceof Error && err.message === `Deck with name "${name}" already exists for user "${userId}"`) {
             const message = `Deck with name "${name}" already exists.` // exclude user ID for security
-            MutationResolver.logger.debug(`${logPrefix} ${message}`)
+            MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
             err.message = message
             // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
             return err as any // eslint-disable-line @typescript-eslint/no-explicit-any
           }
-          MutationResolver.logger.error(Error(`${logPrefix} ${err}`))
+          MutationResolver.logger.error(Error(`${logPrefix} failed: ${err}`))
           throw err
         }
         const resolvedFaction = await FactionResolver.fromObject({
           faction,
           neutralStats: RequestedFields.getArgument(info, 'addDeck.faction.stats.neutrals'),
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} resolvedFaction: "${JSON.stringify(resolvedFaction)}"`)
+        }
         return DeckResolver.fromObject({
           deck,
           faction: resolvedFaction,

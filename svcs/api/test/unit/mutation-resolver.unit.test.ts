@@ -33,6 +33,7 @@ import GameDeckResolver from '../../src/graphql/resolvers/game-deck-resolver'
 describe('mutation-resolver', () => {
   describe('addDeck', () => {
     const userId = new ObjectId()
+    const logPrefix = `addDeck by user "${userId}"`
     it('returns error if faction is neutral', async () => {
       await testAddDeck({
         userId,
@@ -46,7 +47,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`addDeck failed for user "${userId}": "${FactionKey.Neutral}" faction invalid.`]],
+        debugCalls: [[`${logPrefix} failed: "${FactionKey.Neutral}" faction invalid.`]],
       })
     })
     it('returns error if faction with key does not exist', async () => {
@@ -61,7 +62,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`addDeck failed for user "${userId}": Faction with key "${FactionKey.Monsters}" not found.`]],
+        debugCalls: [[`${logPrefix} failed: Faction with key "${FactionKey.Monsters}" not found.`]],
       })
     })
     it('returns error if leader does not exist', async () => {
@@ -77,7 +78,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`addDeck failed for user "${userId}": Leader with ID "${leaderId}" does not exist.`]],
+        debugCalls: [[`${logPrefix} failed: Leader with ID "${leaderId}" does not exist.`]],
       })
     })
     it('returns error if leader is of wrong faction', async () => {
@@ -102,7 +103,7 @@ describe('mutation-resolver', () => {
             faction: factionId,
           }),
         ],
-        errorReturned: `Leader faction "${FactionKey.NorthernRealms}" does not match deck faction "${FactionKey.Monsters}".`,
+        errorReturned: `Leader "${leaderId}" faction "${FactionKey.NorthernRealms}" does not match deck faction "${FactionKey.Monsters}".`,
         unitGetCalls: [],
         deckUnitCalls: [],
         validateDeckCalls: [],
@@ -111,7 +112,7 @@ describe('mutation-resolver', () => {
         postResolversCalled: false,
         debugCalls: [
           [
-            `addDeck failed for user "${userId}": Leader faction "${FactionKey.NorthernRealms}" does not match deck faction "${FactionKey.Monsters}".`,
+            `${logPrefix} failed: Leader "${leaderId}" faction "${FactionKey.NorthernRealms}" does not match deck faction "${FactionKey.Monsters}".`,
           ],
         ],
       })
@@ -128,7 +129,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`addDeck failed for user "${userId}": Unit "${unitId}" does not exist.`]],
+        debugCalls: [[`${logPrefix} failed: Unit "${unitId}" does not exist.`]],
       })
     })
     it('returns errors if multiple units do not exist', async () => {
@@ -144,9 +145,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [
-          [`addDeck failed for user "${userId}": Unit "${unitId1}" does not exist.\nUnit "${unitId2}" does not exist.`],
-        ],
+        debugCalls: [[`${logPrefix} failed: Unit "${unitId1}" does not exist.\nUnit "${unitId2}" does not exist.`]],
       })
     })
     it('returns error if validateDeck returns single error', async () => {
@@ -158,7 +157,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`addDeck failed for user "${userId}": ${error}`]],
+        debugCalls: [[`${logPrefix} failed validateDeck: ${error}`]],
       })
     })
     it('returns errors if validateDeck returns multiple errors', async () => {
@@ -171,7 +170,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`addDeck failed for user "${userId}": ${error1}\n${error2}`]],
+        debugCalls: [[`${logPrefix} failed validateDeck: ${error1}\n${error2}`]],
       })
     })
     it('returns error if deck with name already exists', async () => {
@@ -183,7 +182,7 @@ describe('mutation-resolver', () => {
         deckAddError: error,
         errorReturned: `Deck with name "${name}" already exists.`,
         postResolversCalled: false,
-        debugCalls: [[`addDeck failed for user "${userId}": Deck with name "${name}" already exists.`]],
+        debugCalls: [[`${logPrefix} failed: Deck with name "${name}" already exists.`]],
       })
     })
     it('throws error if addDeck throws error that is not duplicate name', async () => {
@@ -193,7 +192,7 @@ describe('mutation-resolver', () => {
         deckAddError: error,
         errorThrown: error,
         postResolversCalled: false,
-        errorCalls: [[Error(`addDeck failed for user "${userId}": ${Error(error)}`)]],
+        errorCalls: [[Error(`${logPrefix} failed: ${Error(error)}`)]],
       })
     })
     it('undefined artstyle converted to 1', async () => {
@@ -218,6 +217,13 @@ describe('mutation-resolver', () => {
       await testAddDeck({
         inputArtStyle: 2,
         expectedArtStyle: 2,
+      })
+    })
+    it('calls to trace if enabled', async () => {
+      await testAddDeck({
+        userId,
+        traceEnabled: true,
+        logPrefix,
       })
     })
   })
@@ -1174,7 +1180,7 @@ async function testAddDeck({
   inputArtStyle = 1,
   expectedArtStyle = 1,
   factionKey = FactionKey.Monsters,
-  leaderId,
+  leaderId = new ObjectId(),
   unitIds,
   name = 'deck-name',
   userId,
@@ -1186,6 +1192,7 @@ async function testAddDeck({
   deckAddError,
   errorReturned,
   errorThrown,
+  traceEnabled,
   factionGetCalls,
   leaderGetCalls,
   unitGetCalls,
@@ -1194,6 +1201,7 @@ async function testAddDeck({
   deckAddCalls,
   getDeckStatsCalls,
   postResolversCalled = true,
+  logPrefix,
   debugCalls = [],
   errorCalls = [],
 }: {
@@ -1212,6 +1220,7 @@ async function testAddDeck({
   deckAddError?: string
   errorReturned?: string
   errorThrown?: string
+  traceEnabled?: boolean
   factionGetCalls?: any[][]
   leaderGetCalls?: any[][]
   unitGetCalls?: any[][]
@@ -1220,6 +1229,7 @@ async function testAddDeck({
   deckAddCalls?: any[][]
   getDeckStatsCalls?: any[][]
   postResolversCalled?: boolean
+  logPrefix?: string
   debugCalls?: any[][]
   errorCalls?: any[][]
 }) {
@@ -1228,7 +1238,7 @@ async function testAddDeck({
   }
   const args = {
     faction: factionKey.toString(),
-    leader: leaderId ? leaderId.toString() : new ObjectId().toString(),
+    leader: leaderId.toString(),
     units: unitIds.map((unitId) => {
       return {
         artStyle: inputArtStyle,
@@ -1306,11 +1316,14 @@ async function testAddDeck({
   const factionResolverSpy = jest.spyOn(FactionResolver, 'fromObject').mockResolvedValue(resolvedFaction)
   const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromObject').mockResolvedValue(resolvedLeader)
   const deckResolverSpy = jest.spyOn(DeckResolver, 'fromObject').mockResolvedValue(resolvedDeck)
+  const traceSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   MutationResolver['logger'] = {
     debug: debugSpy,
     error: errorSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
   const promise = (MutationResolver.getResolvers().addDeck as any)(null, args, context, null)
@@ -1421,6 +1434,27 @@ async function testAddDeck({
               neutralDeckStats: undefined,
             },
           ],
+        ]
+      : []
+  )
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [
+            `${logPrefix} args: "${JSON.stringify({
+              faction: factionKey.toString(),
+              leader: leaderId.toString(),
+              units: unitIds.map((unitId) => {
+                return {
+                  artStyle: 1,
+                  id: unitId.toString(),
+                }
+              }),
+              name,
+            })}"`,
+          ],
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} factions: "${JSON.stringify([faction])}"`],
         ]
       : []
   )
