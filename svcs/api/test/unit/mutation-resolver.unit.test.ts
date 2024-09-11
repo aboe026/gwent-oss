@@ -230,24 +230,40 @@ describe('mutation-resolver', () => {
     })
   })
   describe('addGame', () => {
+    const userId = new ObjectId()
+    const logPrefix = `addGame by user "${userId}"`
     it('returns error if not enough opponents', async () => {
       await testAddGame({
+        creatorId: userId,
         opponentNames: [],
         expected: Error(`Not enough opponents for game at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`),
+        debugCalls: [
+          [`${logPrefix} failed: Not enough opponents for game at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`],
+        ],
       })
     })
     it('returns error if too many opponents', async () => {
       await testAddGame({
+        creatorId: userId,
         opponentNames: ['one', 'two'],
         expected: Error(`Excessive number of opponents for game at "2", maximum is "${PLAYER_COUNTS.Min - 1}".`),
+        debugCalls: [
+          [
+            `${logPrefix} failed: Excessive number of opponents for game at "2", maximum is "${
+              PLAYER_COUNTS.Min - 1
+            }".`,
+          ],
+        ],
       })
     })
     it('returns error if opponent does not exist', async () => {
       const opponent = 'opponent'
       await testAddGame({
+        creatorId: userId,
         opponentNames: [opponent],
         expected: Error(`User with name "${opponent}" does not exist.`),
         getByNamesCalls: [[[opponent]]],
+        debugCalls: [[`${logPrefix} failed opponents: User with name "${opponent}" does not exist.`]],
       })
     })
     it('returns resolved game if opponent exists', async () => {
@@ -272,15 +288,40 @@ describe('mutation-resolver', () => {
         getByNamesCalls: [[[opponent]]],
       })
     })
+    it('calls to trace if enabled', async () => {
+      const opponent = 'opponent'
+      const user = TestUtil.getDbUser({
+        name: 'opponent',
+      })
+      await testAddGame({
+        creatorId: userId,
+        opponentNames: [user.name],
+        getUserByNamesResponse: [user],
+        addCalls: [
+          [
+            {
+              creatorId: userId,
+              opponentIds: [user._id.toString()],
+            },
+          ],
+        ],
+        fromObjectCalled: true,
+        getByNamesCalls: [[[opponent]]],
+        logPrefix,
+        traceEnabled: true,
+      })
+    })
   })
   describe('addUser', () => {
     const name = 'james.bond@mi6.com'
+    const logPrefix = `addUser for user "${name}"`
     it('returns error if user already exists', async () => {
       const error = Error(`User "${name}" already exists`)
       await testAddUser({
         name,
         userAddResponse: error,
         expected: error,
+        debugCalls: [[`${logPrefix} failed: User "${name}" already exists`]],
       })
     })
     it('throws error if not about user already existing', async () => {
@@ -289,6 +330,7 @@ describe('mutation-resolver', () => {
         name,
         userAddResponse: error,
         error,
+        errorCalls: [[Error(`${logPrefix} failed: ${error}`)]],
       })
     })
     it('returns user if no error', async () => {
@@ -301,15 +343,29 @@ describe('mutation-resolver', () => {
         expected: TestUtil.getUserFromDbUser(user),
       })
     })
+    it('calls to trace if enabled', async () => {
+      const user = TestUtil.getDbUser({
+        name,
+      })
+      await testAddUser({
+        name,
+        userAddResponse: user,
+        expected: TestUtil.getUserFromDbUser(user),
+        logPrefix,
+        traceEnabled: true,
+      })
+    })
   })
   describe('login', () => {
+    const name = 'james.bond@mi6.com'
+    const logPrefix = `login for user "${name}"`
     it('returns error if credentials invalid', async () => {
-      const name = 'james.bond@mi6.com'
       const error = Error(`Invalid credentials for user "${name}"`)
       await testLogin({
         name,
         userValidateResponse: error,
         expected: error,
+        debugCalls: [[`${logPrefix} failed: Invalid credentials for user "${name}"`]],
       })
     })
     it('throws error if not invalid credentials', async () => {
@@ -317,16 +373,19 @@ describe('mutation-resolver', () => {
       await testLogin({
         userValidateResponse: error,
         error,
+        errorCalls: [[Error(`${logPrefix} failed: ${error}`)]],
       })
     })
     it('sets user on context if context undefined', async () => {
       await testLogin({
         context: undefined,
+        additionalTraceCalls: [`${logPrefix}: context not set, defining.`],
       })
     })
     it('sets user on context if context session undefined', async () => {
       await testLogin({
         context: {},
+        additionalTraceCalls: [`${logPrefix}: session not set, defining.`],
       })
     })
     it('sets user on context if context session does not have user', async () => {
@@ -334,6 +393,7 @@ describe('mutation-resolver', () => {
         context: {
           session: {},
         },
+        additionalTraceCalls: [`${logPrefix}: setting user on context session.`],
       })
     })
     it('sets user on context if context session already has user', async () => {
@@ -343,10 +403,25 @@ describe('mutation-resolver', () => {
             user: TestUtil.getDbUser({}),
           },
         },
+        additionalTraceCalls: [`${logPrefix}: setting user on context session.`],
+      })
+    })
+    it('calls to trace if enabled', async () => {
+      await testLogin({
+        context: {
+          session: {
+            user: TestUtil.getDbUser({}),
+          },
+        },
+        logPrefix,
+        traceEnabled: true,
+        additionalTraceCalls: [`${logPrefix}: setting user on context session.`],
       })
     })
   })
   describe('logout', () => {
+    const user = TestUtil.getDbUser({})
+    const logPrefix = `logout for user "${user._id}"`
     it('returns false if no context', () => {
       testLogout({
         context: undefined,
@@ -371,10 +446,24 @@ describe('mutation-resolver', () => {
       testLogout({
         context: {
           session: {
-            user: TestUtil.getDbUser({}),
+            user,
           },
         },
         expected: true,
+        debugCalls: [[`${logPrefix}: removing from session.`]],
+      })
+    })
+    it('calls to trace if enabled', async () => {
+      testLogout({
+        context: {
+          session: {
+            user,
+          },
+        },
+        expected: true,
+        debugCalls: [[`${logPrefix}: removing from session.`]],
+        logPrefix,
+        traceEnabled: true,
       })
     })
   })
@@ -1492,19 +1581,20 @@ async function testAddGame({
   traceEnabled?: boolean
   debugCalls?: any[][]
 }) {
+  const user = TestUtil.getUser({
+    id: creatorId,
+  })
   const context = {
     session: {
       user: {
         _id: creatorId,
+        name: user.name,
       },
     },
   }
   const args = {
     opponentNames,
   }
-  const user = TestUtil.getUser({
-    id: creatorId,
-  })
   const game = TestUtil.getDbGame({
     creator: creatorId,
   })
@@ -1572,11 +1662,19 @@ async function testAddUser({
   userAddResponse,
   error,
   expected,
+  logPrefix,
+  traceEnabled,
+  debugCalls = [],
+  errorCalls = [],
 }: {
   name?: string
   userAddResponse: UserDbObject | Error
   error?: Error
   expected?: User | Error
+  logPrefix?: string
+  traceEnabled?: boolean
+  debugCalls?: any[][]
+  errorCalls?: any[][]
 }) {
   const args = {
     name,
@@ -1588,6 +1686,15 @@ async function testAddUser({
   } else {
     addSpy.mockResolvedValue(userAddResponse)
   }
+  const traceSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  MutationResolver['logger'] = {
+    trace: traceSpy,
+    debug: debugSpy,
+    error: errorSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
 
   if (error) {
     await expect((MutationResolver.getResolvers().addUser as any)(null, args, null, null)).rejects.toThrow(error)
@@ -1596,6 +1703,13 @@ async function testAddUser({
   }
 
   expect(addSpy.mock.calls).toEqual([[args.name, args.password]])
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} user: "${JSON.stringify(userAddResponse)}"`]]
+      : []
+  )
 }
 
 async function testLogin({
@@ -1604,12 +1718,22 @@ async function testLogin({
   userValidateResponse = TestUtil.getDbUser({}),
   error,
   expected,
+  logPrefix,
+  traceEnabled,
+  debugCalls = [],
+  errorCalls = [],
+  additionalTraceCalls = [],
 }: {
   name?: string
   context?: any
   userValidateResponse?: UserDbObject | Error
   error?: Error
   expected?: User | Error
+  logPrefix?: string
+  traceEnabled?: boolean
+  debugCalls?: any[][]
+  errorCalls?: any[][]
+  additionalTraceCalls?: any[]
 }) {
   const args = {
     name,
@@ -1624,6 +1748,15 @@ async function testLogin({
       expected = TestUtil.getUserFromDbUser(userValidateResponse as UserDbObject)
     }
   }
+  const traceSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  MutationResolver['logger'] = {
+    trace: traceSpy,
+    debug: debugSpy,
+    error: errorSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
 
   const promise = (MutationResolver.getResolvers().login as any)(null, args, context, null)
   if (error) {
@@ -1642,12 +1775,49 @@ async function testLogin({
           },
         }
   )
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  const traceCalls: string[][] = []
+  if (traceEnabled) {
+    traceCalls.push(
+      [`${logPrefix} requested fields: "[]"`],
+      [`${logPrefix} user: "${JSON.stringify(userValidateResponse)}"`]
+    )
+  }
+  if (additionalTraceCalls.length > 0) {
+    for (const additionalTraceCall of additionalTraceCalls) {
+      traceCalls.push([additionalTraceCall])
+    }
+  }
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 
-function testLogout({ context, expected }: { context?: any; expected: boolean }) {
+function testLogout({
+  context,
+  expected,
+  logPrefix,
+  traceEnabled,
+  debugCalls = [],
+}: {
+  context?: any
+  expected: boolean
+  logPrefix?: string
+  traceEnabled?: boolean
+  debugCalls?: any[][]
+}) {
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MutationResolver['logger'] = {
+    debug: debugSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
+
   expect((MutationResolver.getResolvers().logout as any)(null, null, context, null)).toEqual(expected)
 
   expect(context?.session?.user).toEqual(undefined)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`${logPrefix} requested fields: "[]"`]] : [])
 }
 
 async function testReady({
