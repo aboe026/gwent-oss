@@ -49,8 +49,9 @@ export default class MutationResolver {
         const leaderId = args.leader
         const unitsInput = args.units
         if (factionKey === FactionKey.Neutral) {
-          MutationResolver.logger.debug(`${logPrefix} failed: "${FactionKey.Neutral}" faction invalid.`)
-          return Error(`Cannot create Deck with "${FactionKey.Neutral}" faction.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+          const message = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const factions = await FactionStore.get({})
         if (MutationResolver.logger.isTraceEnabled()) {
@@ -101,7 +102,7 @@ export default class MutationResolver {
         }
         if (errors.length > 0) {
           const message = errors.join('\n')
-          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed units: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const deckUnits = await DeckUnitResolver.fromArray({
@@ -113,6 +114,9 @@ export default class MutationResolver {
           }),
           neutralStats: RequestedFields.getArgument(info, 'addDeck.units.unit.faction.stats.neutrals'),
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} deckUnits: "${JSON.stringify(deckUnits)}"`)
+        }
         errors = validateDeck({
           deckUnits: deckUnits,
           faction: factionKey,
@@ -148,6 +152,9 @@ export default class MutationResolver {
           MutationResolver.logger.error(Error(`${logPrefix} failed: ${err}`))
           throw err
         }
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
+        }
         const resolvedFaction = await FactionResolver.fromObject({
           faction,
           neutralStats: RequestedFields.getArgument(info, 'addDeck.faction.stats.neutrals'),
@@ -169,26 +176,38 @@ export default class MutationResolver {
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       addGame: async (parent, args, context, info) => {
-        const creatorId = context.session.user._id
-        const opponentNames = getUniqueItems<string>(
-          args.opponentNames.filter((name) => name !== context.session.user.name)
-        )
-        const logPrefix = `addGame failed for user "${creatorId}":`
+        const userId = context.session.user._id
+        const logPrefix = `addGame by user "${userId}"`
+        const creatorName = context.session.user.name
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
+          MutationResolver.logger.trace(
+            `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          MutationResolver.logger.trace(`${logPrefix} creator: "${creatorName}"`)
+        }
+        const opponentNames = getUniqueItems<string>(args.opponentNames.filter((name) => name !== creatorName))
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} opponentNames: "${JSON.stringify(opponentNames)}"`)
+        }
         if (opponentNames.length < PLAYER_COUNTS.Min - 1) {
           const message = `Not enough opponents for game at "${opponentNames.length}", minimum is "${
             PLAYER_COUNTS.Min - 1
           }".`
-          MutationResolver.logger.debug(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (opponentNames.length > PLAYER_COUNTS.Max - 1) {
           const message = `Excessive number of opponents for game at "${opponentNames.length}", maximum is "${
             PLAYER_COUNTS.Max - 1
           }".`
-          MutationResolver.logger.debug(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const opponents = await UserStore.getByNames(opponentNames)
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} opponents: "${JSON.stringify(opponents)}"`)
+        }
         const resolvedOpponents: User[] = []
         const errors = []
         for (const opponentName of opponentNames) {
@@ -201,13 +220,19 @@ export default class MutationResolver {
         }
         if (errors.length > 0) {
           const message = `${errors.join(',')}.`
-          MutationResolver.logger.debug(`${logPrefix} "${message}"`)
+          MutationResolver.logger.debug(`${logPrefix} failed opponents: "${message}"`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} resolvedOpponents: "${JSON.stringify(resolvedOpponents)}"`)
+        }
         const game = await GameStore.add({
-          creatorId,
+          creatorId: userId,
           opponentIds: resolvedOpponents.map((opponent) => opponent.id),
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+        }
         // neutral stats resolving not really needed here (since no decks are set when game initially created)
         // but left in for good measure
         return GameResolver.fromObject({

@@ -47,7 +47,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: "${FactionKey.Neutral}" faction invalid.`]],
+        debugCalls: [[`${logPrefix} failed: Cannot create Deck with "${FactionKey.Neutral}" faction.`]],
       })
     })
     it('returns error if faction with key does not exist', async () => {
@@ -129,7 +129,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: Unit "${unitId}" does not exist.`]],
+        debugCalls: [[`${logPrefix} failed units: Unit "${unitId}" does not exist.`]],
       })
     })
     it('returns errors if multiple units do not exist', async () => {
@@ -145,7 +145,9 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: Unit "${unitId1}" does not exist.\nUnit "${unitId2}" does not exist.`]],
+        debugCalls: [
+          [`${logPrefix} failed units: Unit "${unitId1}" does not exist.\nUnit "${unitId2}" does not exist.`],
+        ],
       })
     })
     it('returns error if validateDeck returns single error', async () => {
@@ -1455,6 +1457,11 @@ async function testAddDeck({
           ],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} factions: "${JSON.stringify([faction])}"`],
+          [`${logPrefix} leaders: "${JSON.stringify([leader])}"`],
+          [`${logPrefix} units: "${JSON.stringify([unit])}"`],
+          [`${logPrefix} deckUnits: "${JSON.stringify(deckUnits)}"`],
+          [`${logPrefix} deck: "${JSON.stringify(deck)}"`],
+          [`${logPrefix} resolvedFaction: "${JSON.stringify(resolvedFaction)}"`],
         ]
       : []
   )
@@ -1470,6 +1477,9 @@ async function testAddGame({
   addCalls = [],
   fromObjectCalled,
   getByNamesCalls = [],
+  logPrefix,
+  traceEnabled,
+  debugCalls = [],
 }: {
   creatorId?: ObjectId
   opponentNames: string[]
@@ -1478,6 +1488,9 @@ async function testAddGame({
   addCalls?: any[][]
   fromObjectCalled?: boolean
   getByNamesCalls?: any[][]
+  logPrefix?: string
+  traceEnabled?: boolean
+  debugCalls?: any[][]
 }) {
   const context = {
     session: {
@@ -1502,6 +1515,13 @@ async function testAddGame({
   const getByNamesSpy = jest.spyOn(UserStore, 'getByNames').mockResolvedValue(getUserByNamesResponse)
   const addSpy = jest.spyOn(GameStore, 'add').mockResolvedValue(game)
   const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MutationResolver['logger'] = {
+    debug: debugSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
 
   await expect((MutationResolver.getResolvers().addGame as any)(null, args, context, null)).resolves.toEqual(
     expected || resolvedGame
@@ -1520,6 +1540,28 @@ async function testAddGame({
               neutralLeaderStats: undefined,
             },
           ],
+        ]
+      : []
+  )
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [
+            `${logPrefix} args: "${JSON.stringify({
+              opponentNames,
+            })}"`,
+          ],
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} creator: "${user.name}"`],
+          [`${logPrefix} opponentNames: "${JSON.stringify(opponentNames)}"`],
+          [`${logPrefix} opponents: "${JSON.stringify(getUserByNamesResponse)}"`],
+          [
+            `${logPrefix} resolvedOpponents: "${JSON.stringify(
+              getUserByNamesResponse.map((opponent) => TestUtil.getUserFromDbUser(opponent))
+            )}"`,
+          ],
+          [`${logPrefix} game: "${JSON.stringify(game)}"`],
         ]
       : []
   )
