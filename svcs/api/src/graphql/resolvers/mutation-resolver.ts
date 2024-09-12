@@ -358,17 +358,17 @@ export default class MutationResolver {
         }
         if (!player) {
           const message = 'Not a player on this game.'
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (!player.deck.from) {
           const message = 'Must set deck first.'
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (player.ready) {
           const message = 'Already marked as ready.'
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
 
@@ -377,11 +377,11 @@ export default class MutationResolver {
           userId,
         })
         if (MutationResolver.logger.isTraceEnabled()) {
-          MutationResolver.logger.trace(`${updatedGame} game: "${JSON.stringify(updatedGame)}"`)
+          MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
         }
         if (!updatedGame) {
           const message = 'Could not set player as ready in probably race condition collision.'
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          MutationResolver.logger.error(`${logPrefix} failed update: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         return GameResolver.fromObject({
@@ -393,53 +393,74 @@ export default class MutationResolver {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       redraw: async (parent, args, context, info) => {
         const userId = context.session.user._id
+        const logPrefix = `redraw by user "${userId}"`
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
+          MutationResolver.logger.trace(
+            `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+        }
         const gameId = args.game
         const unitId = args.unit
         const game = await GameStore.getById({
           id: gameId,
         })
-        const logPrefix = `Could not redraw unit "${unitId}" for user "${userId}" on game "${gameId}":`
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+        }
         if (!game) {
           const message = 'Game does not exist.'
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const player: GamePlayerDbObject | undefined = game.players.find(
           (player) => player.user.toString() === userId.toString()
         )
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
+        }
         if (!player) {
           const message = 'Not a player on this game.'
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (player.ready) {
           const message = 'Cannot redraw after game is marked as ready.'
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (!player.deck.from) {
           const message = 'Cannot redraw before deck is set.'
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (player.deck.redraws.length >= MAX_REDRAWS) {
           const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
         const cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} cardToRedraw: "${JSON.stringify(cardToRedraw)}"`)
+        }
         if (!cardToRedraw) {
           const message = 'Invalid unit, does not exist in hand.'
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         // make sure we don't redraw card that was previously chosen for redraw
         const redrawPool = player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} redrawPool: "${JSON.stringify(redrawPool)}"`)
+        }
         const newCard = getRandomSubset({
           items: redrawPool,
           subsetSize: 1,
         })[0]
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} newCard: "${JSON.stringify(newCard)}"`)
+        }
         const newUndrawn = player.deck.undrawn.filter(
           (deckUnit) => deckUnit.unit.toString() !== newCard.unit.toString()
         )
@@ -454,6 +475,12 @@ export default class MutationResolver {
           },
         ]
 
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} newHand: "${JSON.stringify(newHand)}"`)
+          MutationResolver.logger.trace(`${logPrefix} newRedraws: "${JSON.stringify(newRedraws)}"`)
+          MutationResolver.logger.trace(`${logPrefix} newUndrawn: "${JSON.stringify(newUndrawn)}"`)
+        }
+
         const updatedGame = await GameStore.redraw({
           currentRedraws: player.deck.redraws,
           gameId,
@@ -463,9 +490,13 @@ export default class MutationResolver {
           userId,
         })
 
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
+        }
+
         if (!updatedGame) {
           const message = 'Could not update game with new card in probably race condition collision.'
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
+          MutationResolver.logger.error(`${logPrefix} failed update: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         return DeckUnitResolver.fromObject({

@@ -5,6 +5,7 @@ import {
   DeckUnitDbObject,
   FactionDbObject,
   GameDbObject,
+  GamePlayerDbObject,
   LeaderDbObject,
   RedrawDbObject,
   UnitDbObject,
@@ -468,9 +469,12 @@ describe('mutation-resolver', () => {
     })
   })
   describe('ready', () => {
+    const userId = new ObjectId()
+    const logPrefix = `ready by user "${userId}"`
     it('returns error if game does not exist', async () => {
       const gameId = new ObjectId().toString()
       await testReady({
+        userId,
         gameId,
         expected: Error('Game does not exist.'),
         gameGetCalls: [
@@ -480,11 +484,13 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
+        errorCalls: [[`${logPrefix} failed: Game does not exist.`]],
       })
     })
     it('returns error if not a player on the game', async () => {
       const gameId = new ObjectId().toString()
       await testReady({
+        userId,
         gameId,
         gameGetResponse: TestUtil.getDbGame({}),
         expected: Error('Not a player on this game.'),
@@ -495,10 +501,10 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
+        debugCalls: [[`${logPrefix} failed: Not a player on this game.`]],
       })
     })
     it('returns error if deck not yet set', async () => {
-      const userId = new ObjectId()
       const gameId = new ObjectId().toString()
       await testReady({
         userId,
@@ -514,10 +520,10 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
+        debugCalls: [[`${logPrefix} failed: Must set deck first.`]],
       })
     })
     it('returns error if already marked as ready', async () => {
-      const userId = new ObjectId()
       const gameId = new ObjectId().toString()
       await testReady({
         userId,
@@ -541,10 +547,10 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
+        debugCalls: [[`${logPrefix} failed: Already marked as ready.`]],
       })
     })
     it('returns error if setReady response is undefined', async () => {
-      const userId = new ObjectId()
       const gameId = new ObjectId().toString()
       await testReady({
         userId,
@@ -576,10 +582,12 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
+        errorCalls: [
+          [`${logPrefix} failed update: Could not set player as ready in probably race condition collision.`],
+        ],
       })
     })
     it('returns resolved game if no errors', async () => {
-      const userId = new ObjectId()
       const gameId = new ObjectId().toString()
       const game = TestUtil.getDbGame({
         players: [
@@ -643,6 +651,74 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const gameId = new ObjectId().toString()
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({}),
+            }),
+            user: userId,
+          }),
+        ],
+      })
+      const updatedGame: GameDbObject = {
+        ...game,
+        players: [
+          {
+            ...game.players[0],
+            ready: true,
+          },
+        ],
+      }
+      const resolvedGame = TestUtil.getGame({
+        id: game._id,
+        players: [
+          {
+            ready: true,
+            rounds: [],
+            user: TestUtil.getUser({
+              id: userId,
+            }),
+          },
+        ],
+      })
+      await testReady({
+        userId,
+        gameId,
+        gameGetResponse: game,
+        setReadyResponse: updatedGame,
+        resolvedGame: resolvedGame,
+        expected: resolvedGame,
+        gameGetCalls: [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ],
+        setReadyCalls: [
+          [
+            {
+              gameId,
+              userId,
+            },
+          ],
+        ],
+        gameResolveCalls: [
+          [
+            {
+              game: updatedGame,
+              neutralFactionStats: undefined,
+              neutralLeaderStats: undefined,
+            },
+          ],
+        ],
+        logPrefix,
+        traceEnabled: true,
       })
     })
   })
@@ -1830,6 +1906,10 @@ async function testReady({
   gameGetCalls = [],
   gameResolveCalls = [],
   setReadyCalls = [],
+  logPrefix,
+  traceEnabled,
+  debugCalls = [],
+  errorCalls = [],
 }: {
   userId?: ObjectId
   gameId?: string
@@ -1840,6 +1920,10 @@ async function testReady({
   gameGetCalls?: any[][]
   setReadyCalls?: any[][]
   gameResolveCalls?: any[][]
+  logPrefix?: string
+  traceEnabled?: boolean
+  debugCalls?: any[][]
+  errorCalls?: any[][]
 }) {
   const context = {
     session: {
@@ -1857,12 +1941,42 @@ async function testReady({
   if (resolvedGame) {
     gameResolveSpy.mockResolvedValue(resolvedGame)
   }
+  const debugSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MutationResolver['logger'] = {
+    debug: debugSpy,
+    error: errorSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
 
   await expect((MutationResolver.getResolvers().ready as any)(null, args, context, null)).resolves.toEqual(expected)
 
   expect(gameGetSpy.mock.calls).toEqual(gameGetCalls)
   expect(setReadySpy.mock.calls).toEqual(setReadyCalls)
   expect(gameResolveSpy.mock.calls).toEqual(gameResolveCalls)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [
+            `${logPrefix} args: "${JSON.stringify({
+              game: gameId,
+            })}"`,
+          ],
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} game: "${JSON.stringify(gameGetResponse)}"`],
+          [
+            `${logPrefix} player: "${JSON.stringify(
+              gameGetResponse?.players.find((player) => player.user.toString() === userId.toString())
+            )}"`,
+          ],
+          [`${logPrefix} updatedGame: "${JSON.stringify(setReadyResponse)}"`],
+        ]
+      : []
+  )
 }
 
 async function testRedraw({
@@ -1876,6 +1990,10 @@ async function testRedraw({
   gameGetCalls = [],
   gameRedrawCalls = [],
   resolveDeckUnitCalls = [],
+  logPrefix,
+  traceEnabled,
+  debugCalls = [],
+  errorCalls = [],
 }: {
   userId?: string
   gameId?: string
@@ -1887,6 +2005,10 @@ async function testRedraw({
   gameGetCalls?: any[][]
   gameRedrawCalls?: any[][]
   resolveDeckUnitCalls?: any[][]
+  logPrefix?: string
+  traceEnabled?: boolean
+  debugCalls?: any[][]
+  errorCalls?: any[][]
 }) {
   const context = {
     session: {
@@ -1899,18 +2021,102 @@ async function testRedraw({
     game: gameId,
     unit: unitId,
   }
+  const player = gameGetResponse?.players.find(
+    (player) => player.user.toString() === userId?.toString()
+  ) as GamePlayerDbObject
+  let newCard: DeckUnitDbObject | undefined = undefined
+  let cardToRedraw: DeckUnitDbObject | undefined = undefined
+  let redrawPool: DeckUnitDbObject[] = []
+  let redrawnIds: string[] = []
+  if (player) {
+    redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
+    redrawPool = player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
+    cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
+    newCard = redrawPool[redrawPool.length - 1]
+  }
   const gameGetSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(gameGetResponse)
+  const getRandomSubsetSpy = jest.spyOn(getRandomSubset, 'getRandomSubset').mockReturnValue([newCard])
   const gameRedrawSpy = jest.spyOn(GameStore, 'redraw').mockResolvedValue(gameRedrawResponse)
   const resolveDeckUnitSpy = jest.spyOn(DeckUnitResolver, 'fromObject')
   if (resolveDeckUnitResponse) {
     resolveDeckUnitSpy.mockResolvedValue(resolveDeckUnitResponse)
   }
+  const debugSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MutationResolver['logger'] = {
+    debug: debugSpy,
+    error: errorSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
 
   await expect((MutationResolver.getResolvers().redraw as any)(null, args, context, null)).resolves.toEqual(expected)
 
   expect(gameGetSpy.mock.calls).toEqual(gameGetCalls)
+  expect(getRandomSubsetSpy.mock.calls).toEqual([
+    [
+      {
+        items: redrawPool,
+        subsetSize: 1,
+      },
+    ],
+  ])
   expect(gameRedrawSpy.mock.calls).toEqual(gameRedrawCalls)
   expect(resolveDeckUnitSpy.mock.calls).toEqual(resolveDeckUnitCalls)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [
+            `${logPrefix} args: "${JSON.stringify({
+              game: gameId,
+              unit: unitId,
+            })}"`,
+          ],
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} game: "${JSON.stringify(gameGetResponse)}"`],
+          [`${logPrefix} player: "${JSON.stringify(player)}"`],
+          [
+            `${logPrefix} cardToRedraw: "${JSON.stringify(
+              player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
+            )}"`,
+          ],
+          [
+            `${logPrefix} redrawPool: "${JSON.stringify(
+              player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
+            )}"`,
+          ],
+          [
+            `${logPrefix} newCard: "${JSON.stringify(
+              player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
+            )}"`,
+          ],
+          [
+            `${logPrefix} newHand: "${JSON.stringify([
+              ...player.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== unitId),
+              newCard,
+            ])}"`,
+          ],
+          [
+            `${logPrefix} newRedraws: "${JSON.stringify([
+              ...player.deck.redraws,
+              {
+                from: cardToRedraw,
+                to: newCard,
+              },
+            ])}"`,
+          ],
+          [
+            `${logPrefix} newUndrawn: "${JSON.stringify([
+              ...player.deck.undrawn.filter((deckUnit) => deckUnit.unit.toString() !== newCard.unit.toString()),
+              cardToRedraw,
+            ])}"`,
+          ],
+        ]
+      : []
+  )
 }
 
 async function testSetDeck({
