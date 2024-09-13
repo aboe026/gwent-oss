@@ -220,7 +220,7 @@ export default class MutationResolver {
         }
         if (errors.length > 0) {
           const message = `${errors.join(',')}.`
-          MutationResolver.logger.debug(`${logPrefix} failed opponents: ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (MutationResolver.logger.isTraceEnabled()) {
@@ -261,9 +261,10 @@ export default class MutationResolver {
         } catch (err: unknown) {
           const alreadyExistsMessage = `User "${name}" already exists`
           if (err instanceof Error && err.message === alreadyExistsMessage) {
-            MutationResolver.logger.debug(`${logPrefix} failed: ${alreadyExistsMessage}`)
+            const message = 'User already exists.'
+            MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
             // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
-            return err as any // eslint-disable-line @typescript-eslint/no-explicit-any
+            return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
           }
           MutationResolver.logger.error(Error(`${logPrefix} failed: ${err}`))
           throw err
@@ -333,6 +334,7 @@ export default class MutationResolver {
         const userId = context.session.user._id
         const logPrefix = `ready by user "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
+          // TODO: add "args" into logPrefix and get rid of args trace
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
@@ -357,7 +359,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
         }
         if (!player) {
-          const message = 'Not a player on this game.'
+          const message = 'Not a player on game.'
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -381,7 +383,7 @@ export default class MutationResolver {
         }
         if (!updatedGame) {
           const message = 'Could not set player as ready in probably race condition collision.'
-          MutationResolver.logger.error(`${logPrefix} failed update: ${message}`)
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         return GameResolver.fromObject({
@@ -393,15 +395,14 @@ export default class MutationResolver {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       redraw: async (parent, args, context, info) => {
         const userId = context.session.user._id
-        const logPrefix = `redraw by user "${userId}"`
+        const gameId = args.game
+        const unitId = args.unit
+        const logPrefix = `redraw by user "${userId}" for unit "${unitId}" on game "${gameId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
-          MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
         }
-        const gameId = args.game
-        const unitId = args.unit
         const game = await GameStore.getById({
           id: gameId,
         })
@@ -420,7 +421,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
         }
         if (!player) {
-          const message = 'Not a player on this game.'
+          const message = 'Not a player on game.'
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -493,10 +494,9 @@ export default class MutationResolver {
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
         }
-
         if (!updatedGame) {
           const message = 'Could not update game with new card in probably race condition collision.'
-          MutationResolver.logger.error(`${logPrefix} failed update: ${message}`)
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         return DeckUnitResolver.fromObject({
@@ -509,41 +509,49 @@ export default class MutationResolver {
         const userId = context.session.user._id
         const gameId = args.game
         const deckId = args.deck
-        const logPrefix = `setDeck failed for user "${userId}":`
+        const logPrefix = `setDeck by user "${userId}" for deck "${deckId}" on game "${gameId}"`
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(
+            `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+        }
 
         const deck = await DeckStore.getById({
           id: deckId,
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
+        }
         if (!deck) {
-          const message = `Deck with ID "${deckId}" does not exist`
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
+          const message = 'Deck does not exist.'
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
 
         const game = await GameStore.getById({
           id: gameId,
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+        }
         if (!game) {
-          const message = `Game with ID "${gameId}" does not exist`
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
+          const message = 'Game does not exist.'
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
 
         const player = game.players.find((player) => player.user.toString() === userId.toString())
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
+        }
         if (!player) {
-          const message = `User "${userId}" is not a player on game "${gameId}"`
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
-          if (MutationResolver.logger.isTraceEnabled()) {
-            MutationResolver.logger.trace(`${logPrefix} ${message}: "${JSON.stringify(game.players)}"`)
-          }
+          const message = 'Not a player on game.'
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (player.deck.from !== null && player.deck.from !== undefined) {
-          const message = 'Deck already set'
-          MutationResolver.logger.error(`${logPrefix} ${message}`)
-          if (MutationResolver.logger.isTraceEnabled()) {
-            MutationResolver.logger.trace(`${logPrefix} ${message}: "${JSON.stringify(player.deck.from)}"`)
-          }
+          const message = 'Deck already set.'
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
 
@@ -551,8 +559,14 @@ export default class MutationResolver {
           items: deck.units,
           subsetSize: STARTING_HAND_SIZE,
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} hand: "${JSON.stringify(hand)}"`)
+        }
         const handIds = hand.map((deckUnit) => deckUnit.unit.toString())
         const undrawn = deck.units.filter((deckUnit) => !handIds.includes(deckUnit.unit.toString()))
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} undrawn: "${JSON.stringify(undrawn)}"`)
+        }
 
         const updatedGame = await GameStore.setDeck({
           deck,
@@ -561,24 +575,23 @@ export default class MutationResolver {
           undrawn,
           userId,
         })
+
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
+        }
         if (!updatedGame) {
           const message = 'Game updated underneath operation in probable race condition collision.'
-          MutationResolver.logger.error(`${logPrefix} Could not set deck "${deckId}" on game "${gameId}": ${message}`)
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const updatedPlayer = updatedGame.players.find((gamePlayer) => gamePlayer.user.toString() === userId.toString())
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} updatedPlayer: "${JSON.stringify(updatedPlayer)}"`)
+        }
         if (!updatedPlayer) {
-          MutationResolver.logger.error(
-            `${logPrefix} Could not get player "${userId}" after setting deck on game "${gameId}".`
-          )
-          if (MutationResolver.logger.isTraceEnabled()) {
-            MutationResolver.logger.trace(
-              `${logPrefix} Could not get player "${userId}" after setting deck on game "${gameId}": ${JSON.stringify(
-                updatedGame
-              )}`
-            )
-          }
-          return Error('Could not get player after setting deck on game.') as any // eslint-disable-line @typescript-eslint/no-explicit-any
+          const message = 'Could not get player after setting deck on game.'
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         return GameDeckResolver.fromObject({
           gameDeck: updatedPlayer.deck,
