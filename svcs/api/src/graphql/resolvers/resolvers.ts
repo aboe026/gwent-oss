@@ -5,7 +5,7 @@ import { scalars } from '@gwent/graphql-schema'
 
 export const resolvers: Resolvers = {
   Mutation: MutationResolver.getResolvers(),
-  Query: QueryResolver,
+  Query: QueryResolver.getResolvers(),
   ...scalars,
 }
 

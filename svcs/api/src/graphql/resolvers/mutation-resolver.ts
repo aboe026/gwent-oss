@@ -37,7 +37,7 @@ export default class MutationResolver {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       addDeck: async (parent, args, context, info) => {
         const userId = context.session.user._id
-        const logPrefix = `addDeck by user "${userId}"`
+        const logPrefix = `addDeck by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
@@ -178,7 +178,7 @@ export default class MutationResolver {
       addGame: async (parent, args, context, info) => {
         const userId = context.session.user._id
         const creatorName = context.session.user.name
-        const logPrefix = `addGame by user "${userId}"`
+        const logPrefix = `addGame by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
@@ -332,9 +332,8 @@ export default class MutationResolver {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ready: async (parent, args, context, info) => {
         const userId = context.session.user._id
-        const logPrefix = `ready by user "${userId}"`
+        const logPrefix = `ready by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
-          // TODO: add "args" into logPrefix and get rid of args trace
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
@@ -395,14 +394,15 @@ export default class MutationResolver {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       redraw: async (parent, args, context, info) => {
         const userId = context.session.user._id
-        const gameId = args.game
-        const unitId = args.unit
-        const logPrefix = `redraw by user "${userId}" for unit "${unitId}" on game "${gameId}"`
+        const logPrefix = `redraw by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
         }
+        const gameId = args.game
+        const unitId = args.unit
         const game = await GameStore.getById({
           id: gameId,
         })
@@ -507,14 +507,15 @@ export default class MutationResolver {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setDeck: async (parent, args, context, info) => {
         const userId = context.session.user._id
-        const gameId = args.game
-        const deckId = args.deck
-        const logPrefix = `setDeck by user "${userId}" for deck "${deckId}" on game "${gameId}"`
+        const logPrefix = `setDeck by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
         }
+        const gameId = args.game
+        const deckId = args.deck
 
         const deck = await DeckStore.getById({
           id: deckId,

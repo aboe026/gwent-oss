@@ -34,7 +34,7 @@ import GameDeckResolver from '../../src/graphql/resolvers/game-deck-resolver'
 describe('mutation-resolver', () => {
   describe('addDeck', () => {
     const userId = new ObjectId()
-    const logPrefix = `addDeck by user "${userId}"`
+    const logPrefix = `addDeck by "${userId}"`
     it('returns error if faction is neutral', async () => {
       await testAddDeck({
         userId,
@@ -232,7 +232,7 @@ describe('mutation-resolver', () => {
   })
   describe('addGame', () => {
     const userId = new ObjectId()
-    const logPrefix = `addGame by user "${userId}"`
+    const logPrefix = `addGame by "${userId}"`
     it('returns error if not enough opponents', async () => {
       const error = `Not enough opponents for game at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`
       await testAddGame({
@@ -356,7 +356,6 @@ describe('mutation-resolver', () => {
     const name = 'james.bond@mi6.com'
     const logPrefix = `login for user "${name}"`
     it('returns error if credentials invalid', async () => {
-      // TODO: have debug/error calls reference error variable
       const error = Error(`Invalid credentials for user "${name}"`)
       await testLogin({
         name,
@@ -466,13 +465,14 @@ describe('mutation-resolver', () => {
   })
   describe('ready', () => {
     const userId = new ObjectId()
-    const logPrefix = `ready by user "${userId}"`
+    const gameId = new ObjectId().toString()
+    const logPrefix = `ready by "${userId}"`
     it('returns error if game does not exist', async () => {
-      const gameId = new ObjectId().toString()
+      const error = 'Game does not exist.'
       await testReady({
         userId,
         gameId,
-        expected: Error('Game does not exist.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -480,16 +480,18 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        errorCalls: [[`${logPrefix} failed: Game does not exist.`]],
+        errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if not a player on the game', async () => {
-      const gameId = new ObjectId().toString()
+      const error = 'Not a player on game.'
       await testReady({
         userId,
         gameId,
-        gameGetResponse: TestUtil.getDbGame({}),
-        expected: Error('Not a player on game.'),
+        gameGetResponse: TestUtil.getDbGame({
+          id: gameId,
+        }),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -497,18 +499,19 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: Not a player on game.`]],
+        debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if deck not yet set', async () => {
-      const gameId = new ObjectId().toString()
+      const error = 'Must set deck first.'
       await testReady({
         userId,
         gameId,
         gameGetResponse: TestUtil.getDbGame({
+          id: gameId,
           creator: userId,
         }),
-        expected: Error('Must set deck first.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -516,15 +519,16 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: Must set deck first.`]],
+        debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if already marked as ready', async () => {
-      const gameId = new ObjectId().toString()
+      const error = 'Already marked as ready.'
       await testReady({
         userId,
         gameId,
         gameGetResponse: TestUtil.getDbGame({
+          id: gameId,
           players: [
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
@@ -535,7 +539,7 @@ describe('mutation-resolver', () => {
             }),
           ],
         }),
-        expected: Error('Already marked as ready.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -543,15 +547,16 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: Already marked as ready.`]],
+        debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if setReady response is undefined', async () => {
-      const gameId = new ObjectId().toString()
+      const error = 'Could not set player as ready in probably race condition collision.'
       await testReady({
         userId,
         gameId,
         gameGetResponse: TestUtil.getDbGame({
+          id: gameId,
           players: [
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
@@ -562,7 +567,7 @@ describe('mutation-resolver', () => {
           ],
         }),
         setReadyResponse: undefined,
-        expected: Error('Could not set player as ready in probably race condition collision.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -578,12 +583,12 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        errorCalls: [[`${logPrefix} failed: Could not set player as ready in probably race condition collision.`]],
+        errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns resolved game if no errors', async () => {
-      const gameId = new ObjectId().toString()
       const game = TestUtil.getDbGame({
+        id: gameId,
         players: [
           TestUtil.getDbGamePlayer({
             deck: TestUtil.getDbGameDeck({
@@ -648,8 +653,8 @@ describe('mutation-resolver', () => {
       })
     })
     it('logs to trace if enabled', async () => {
-      const gameId = new ObjectId().toString()
       const game = TestUtil.getDbGame({
+        id: gameId,
         players: [
           TestUtil.getDbGamePlayer({
             deck: TestUtil.getDbGameDeck({
@@ -720,13 +725,14 @@ describe('mutation-resolver', () => {
     const userId = new ObjectId().toString()
     const gameId = new ObjectId().toString()
     const unit = TestUtil.getDbUnit({})
-    const logPrefix = `redraw by user "${userId}" for unit "${unit._id}" on game "${gameId}"`
+    const logPrefix = `redraw by "${userId}"`
     it('returns error if game does not exist', async () => {
+      const error = 'Game does not exist.'
       await testRedraw({
         userId,
         gameId,
         unitId: unit._id.toString(),
-        expected: Error('Game does not exist.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -734,16 +740,17 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        errorCalls: [[`${logPrefix} failed: Game does not exist.`]],
+        errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if not a player on game', async () => {
+      const error = 'Not a player on game.'
       await testRedraw({
         userId,
         gameId,
         unitId: unit._id.toString(),
         gameGetResponse: TestUtil.getDbGame({}),
-        expected: Error('Not a player on game.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -751,10 +758,11 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: Not a player on game.`]],
+        debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if game marked as ready', async () => {
+      const error = 'Cannot redraw after game is marked as ready.'
       await testRedraw({
         userId,
         gameId,
@@ -767,7 +775,7 @@ describe('mutation-resolver', () => {
             }),
           ],
         }),
-        expected: Error('Cannot redraw after game is marked as ready.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -775,10 +783,11 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: Cannot redraw after game is marked as ready.`]],
+        debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if deck not set', async () => {
+      const error = 'Cannot redraw before deck is set.'
       await testRedraw({
         userId,
         gameId,
@@ -790,7 +799,7 @@ describe('mutation-resolver', () => {
             }),
           ],
         }),
-        expected: Error('Cannot redraw before deck is set.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -798,10 +807,11 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: Cannot redraw before deck is set.`]],
+        debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if max redraws already taken', async () => {
+      const error = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`
       await testRedraw({
         userId,
         gameId,
@@ -826,7 +836,7 @@ describe('mutation-resolver', () => {
             }),
           ],
         }),
-        expected: Error(`Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -834,10 +844,11 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`]],
+        debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if unit not in hand', async () => {
+      const error = 'Invalid unit, does not exist in hand.'
       await testRedraw({
         userId,
         gameId,
@@ -852,7 +863,7 @@ describe('mutation-resolver', () => {
             }),
           ],
         }),
-        expected: Error('Invalid unit, does not exist in hand.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -860,10 +871,11 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: Invalid unit, does not exist in hand.`]],
+        debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if updated game undefined', async () => {
+      const error = 'Could not update game with new card in probably race condition collision.'
       const unit2 = TestUtil.getDbUnit({})
       await testRedraw({
         userId,
@@ -892,7 +904,7 @@ describe('mutation-resolver', () => {
           ],
         }),
         gameRedrawResponse: undefined,
-        expected: Error('Could not update game with new card in probably race condition collision.'),
+        expected: Error(error),
         gameGetCalls: [
           [
             {
@@ -934,9 +946,7 @@ describe('mutation-resolver', () => {
             },
           ],
         ],
-        errorCalls: [
-          [`${logPrefix} failed: Could not update game with new card in probably race condition collision.`],
-        ],
+        errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns resolved DeckUnit if no errors', async () => {
@@ -1222,7 +1232,7 @@ describe('mutation-resolver', () => {
       creator: userId,
     })
     const deck = TestUtil.getDbDeck({})
-    const logPrefix = `setDeck by user "${userId}" for deck "${deck._id}" on game "${game._id}"`
+    const logPrefix = `setDeck by "${userId}"`
     it('returns error if deck does not exist', async () => {
       const error = 'Deck does not exist.'
       await testSetDeck({
@@ -2269,6 +2279,12 @@ async function testRedraw({
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
+          [
+            `${logPrefix} args: "${JSON.stringify({
+              game: gameId,
+              unit: unitId,
+            })}"`,
+          ],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} game: "${JSON.stringify(gameGetResponse)}"`],
           [`${logPrefix} player: "${JSON.stringify(player)}"`],
@@ -2398,6 +2414,12 @@ async function testSetDeck({
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
+          [
+            `${logPrefix} args: "${JSON.stringify({
+              game: gameId,
+              deck: deckId,
+            })}"`,
+          ],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} deck: "${JSON.stringify(getDeckResponse)}"`],
           [`${logPrefix} game: "${JSON.stringify(getGameResponse)}"`],
