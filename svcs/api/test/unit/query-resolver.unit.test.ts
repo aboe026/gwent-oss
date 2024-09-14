@@ -22,15 +22,11 @@ import TestUtil from '../test-util'
 
 describe('query-resolver', () => {
   describe('application', () => {
-    const userId = new ObjectId()
-    const logPrefix = `application by "${userId}"`
     it('calls out to AppInfo to get build number', async () => {
       await testApplication({})
     })
     it('logs to trace if enabled', async () => {
       await testApplication({
-        userId,
-        logPrefix,
         traceEnabled: true,
       })
     })
@@ -120,7 +116,6 @@ describe('query-resolver', () => {
             },
           ],
         ],
-        logPrefix: `currentUser by "${userId}"`,
         traceEnabled: true,
       })
     })
@@ -464,23 +459,16 @@ describe('query-resolver', () => {
   })
 })
 
-async function testApplication({
-  userId,
-  logPrefix,
-  traceEnabled,
-}: {
-  userId?: ObjectId | string
-  logPrefix?: string
-  traceEnabled?: boolean
-}) {
+async function testApplication({ traceEnabled }: { traceEnabled?: boolean }) {
   const build = 3
   const context = {
     session: {
       user: {
-        _id: userId ? new ObjectId(userId) : new ObjectId(),
+        _id: new ObjectId(),
       },
     },
   }
+  const logPrefix = `application by "${context.session.user._id}"`
   const getBuildNumberSpy = jest.spyOn(AppInfo, 'getBuildNumber').mockResolvedValue(build)
   const traceSpy = jest.fn().mockImplementation()
   QueryResolver['logger'] = {
@@ -504,7 +492,6 @@ function testCurrentUser({
   error,
   userResolverResponse,
   userResolverCalls = [],
-  logPrefix,
   traceEnabled,
   debugCalls = [],
 }: {
@@ -512,10 +499,10 @@ function testCurrentUser({
   error?: Error
   userResolverResponse?: User
   userResolverCalls?: any[][]
-  logPrefix?: string
   traceEnabled?: boolean
   debugCalls?: any[][]
 }) {
+  const logPrefix = `currentUser by "${context?.session?.user?._id}"`
   const userResolverSpy = jest.spyOn(UserResolver, 'fromObject')
   if (userResolverResponse) {
     userResolverSpy.mockReturnValue(userResolverResponse)
@@ -655,7 +642,6 @@ async function testGame({ traceEnabled }: { traceEnabled?: boolean }) {
   )
 }
 
-// TODO: remove logPrefix as input if always have enough info to create it within method?
 async function testGameDeck({
   userId,
   gameId,

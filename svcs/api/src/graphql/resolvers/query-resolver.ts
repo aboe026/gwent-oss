@@ -130,7 +130,6 @@ export default class QueryResolver {
           QueryResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
         }
         if (!game) {
-          // TODO: add ids to logs so know which resource causes error/debug?
           const message = `Game "${gameId}" does not exist.`
           QueryResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any

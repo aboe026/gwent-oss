@@ -347,7 +347,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
         }
         if (!game) {
-          const message = 'Game does not exist.'
+          const message = `Game "${gameId}" does not exist.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -381,7 +381,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
         }
         if (!updatedGame) {
-          const message = 'Could not set player as ready in probably race condition collision.'
+          const message = `Could not set player as ready for game "${gameId}" in probable race condition collision.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -410,7 +410,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
         }
         if (!game) {
-          const message = 'Game does not exist.'
+          const message = `Game "${gameId}" does not exist.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -495,7 +495,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
         }
         if (!updatedGame) {
-          const message = 'Could not update game with new card in probably race condition collision.'
+          const message = `Could not update game "${gameId}" to redraw unit "${unitId}" in probable race condition collision.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -524,7 +524,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
         }
         if (!deck) {
-          const message = 'Deck does not exist.'
+          const message = `Deck "${deckId}" does not exist.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -536,7 +536,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
         }
         if (!game) {
-          const message = 'Game does not exist.'
+          const message = `Game "${gameId}" does not exist.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -581,7 +581,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
         }
         if (!updatedGame) {
-          const message = 'Game updated underneath operation in probable race condition collision.'
+          const message = `Could not update game "${gameId}" in probable race condition collision.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -590,7 +590,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} updatedPlayer: "${JSON.stringify(updatedPlayer)}"`)
         }
         if (!updatedPlayer) {
-          const message = 'Could not get player after setting deck on game.'
+          const message = `Could not get player after setting deck "${deckId}" on game "${gameId}".`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }

@@ -29,7 +29,6 @@ export default class DeckResolver {
     neutralLeaderStats?: boolean
     neutralUnitStats?: boolean
   }): Promise<Deck> {
-    // TODO: validate error logged in unit tests
     return {
       created: deck.created,
       faction:

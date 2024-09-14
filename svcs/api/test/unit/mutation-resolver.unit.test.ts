@@ -468,7 +468,7 @@ describe('mutation-resolver', () => {
     const gameId = new ObjectId().toString()
     const logPrefix = `ready by "${userId}"`
     it('returns error if game does not exist', async () => {
-      const error = 'Game does not exist.'
+      const error = `Game "${gameId}" does not exist.`
       await testReady({
         userId,
         gameId,
@@ -551,7 +551,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if setReady response is undefined', async () => {
-      const error = 'Could not set player as ready in probably race condition collision.'
+      const error = `Could not set player as ready for game "${gameId}" in probable race condition collision.`
       await testReady({
         userId,
         gameId,
@@ -727,7 +727,7 @@ describe('mutation-resolver', () => {
     const unit = TestUtil.getDbUnit({})
     const logPrefix = `redraw by "${userId}"`
     it('returns error if game does not exist', async () => {
-      const error = 'Game does not exist.'
+      const error = `Game "${gameId}" does not exist.`
       await testRedraw({
         userId,
         gameId,
@@ -875,7 +875,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if updated game undefined', async () => {
-      const error = 'Could not update game with new card in probably race condition collision.'
+      const error = `Could not update game "${gameId}" to redraw unit "${unit._id}" in probable race condition collision.`
       const unit2 = TestUtil.getDbUnit({})
       await testRedraw({
         userId,
@@ -1234,7 +1234,7 @@ describe('mutation-resolver', () => {
     const deck = TestUtil.getDbDeck({})
     const logPrefix = `setDeck by "${userId}"`
     it('returns error if deck does not exist', async () => {
-      const error = 'Deck does not exist.'
+      const error = `Deck "${deck._id}" does not exist.`
       await testSetDeck({
         userId,
         gameId: game._id.toString(),
@@ -1251,7 +1251,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if game does not exist', async () => {
-      const error = 'Game does not exist.'
+      const error = `Game "${game._id}" does not exist.`
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -1341,7 +1341,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if updated game is undefined', async () => {
-      const error = 'Game updated underneath operation in probable race condition collision.'
+      const error = `Could not update game "${game._id}" in probable race condition collision.`
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -1388,7 +1388,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if player not on updated game', async () => {
-      const error = 'Could not get player after setting deck on game.'
+      const error = `Could not get player after setting deck "${deck._id}" on game "${game._id}".`
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
