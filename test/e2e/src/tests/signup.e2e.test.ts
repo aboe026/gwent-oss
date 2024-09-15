@@ -31,7 +31,7 @@ test('Shows error if signing up for user that already exists', async () => {
   await SignupPage.verifyNotLoggedIn({
     username,
     password,
-    error: `User "${username}" already exists`,
+    error: 'User already exists.',
   })
 })
 

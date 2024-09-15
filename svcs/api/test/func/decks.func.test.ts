@@ -79,7 +79,7 @@ describe('decks', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Invalid leader ID "${leaderId}": Does not exist.`)],
+          errors: [new GraphQLError(`Leader "${leaderId}" does not exist.`)],
         })
       })
       it('throws error if leader is of wrong faction', async () => {
@@ -112,7 +112,7 @@ describe('decks', () => {
           data: null,
           errors: [
             new GraphQLError(
-              `Invalid leader ID "${leaderId}": Faction "${FactionKey.Skellige}" does not match deck faction of "${faction}".`
+              `Leader "${leaderId}" faction "${FactionKey.Skellige}" does not match deck faction "${faction}".`
             ),
           ],
         })
@@ -153,7 +153,7 @@ describe('decks', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Invalid unit ID "${dummyUnitId}": Does not exist.`)],
+          errors: [new GraphQLError(`Unit "${dummyUnitId}" does not exist.`)],
         })
       })
       it('throws error if units are of wrong faction', async () => {
@@ -458,7 +458,7 @@ describe('decks', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Deck with name "${name}" already exists`)],
+          errors: [new GraphQLError(`Deck with name "${name}" already exists.`)],
         })
       })
     })

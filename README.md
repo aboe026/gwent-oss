@@ -260,6 +260,7 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- add resource IDs to all errors/debugs
 - organize imports
 - add comments to methods
 - add ability to resolve neutrals on gameDeck (undrawn, hand, discard, redraws (from/to))

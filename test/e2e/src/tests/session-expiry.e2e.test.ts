@@ -486,6 +486,7 @@ test('Setting deck for game after session expires shows login dialog', async () 
       hand: STARTING_HAND_SIZE,
       leader: deck.leader,
       undrawn: deck.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -559,6 +560,7 @@ test('Creating deck for game after session expires shows login dialog', async ()
       hand: STARTING_HAND_SIZE,
       leader: gameDeck.from.leader,
       undrawn: gameDeck.from.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -617,6 +619,7 @@ test('Redrawing unit for game after session expires shows login dialog', async (
       hand: STARTING_HAND_SIZE,
       leader: deck.leader,
       undrawn: deck.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -641,6 +644,7 @@ test('Redrawing unit for game after session expires shows login dialog', async (
       hand: STARTING_HAND_SIZE,
       leader: deck.leader,
       undrawn: deck.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -705,6 +709,7 @@ test('Readying game after session expires shows login dialog', async () => {
       hand: STARTING_HAND_SIZE,
       leader: deck.leader,
       undrawn: deck.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -728,6 +733,7 @@ test('Readying game after session expires shows login dialog', async () => {
       leader: deck.leader,
       undrawn: deck.units.length - STARTING_HAND_SIZE,
       ready: true,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],

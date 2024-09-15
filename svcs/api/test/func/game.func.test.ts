@@ -540,7 +540,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Deck already set')],
+          errors: [new GraphQLError('Deck already set.')],
         })
         const gameDeckAfterSet = await getGameDeck({
           gameId: game.id,

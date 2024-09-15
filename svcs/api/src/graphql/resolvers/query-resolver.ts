@@ -27,7 +27,7 @@ export default class QueryResolver {
     return {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       application: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+        const userId = context?.session?.user?._id
         const logPrefix = `application by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(

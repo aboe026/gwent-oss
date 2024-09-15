@@ -150,6 +150,7 @@ test('Speed Run', async () => {
       leader: leader2,
       losses: 0,
       undrawn: gameDeck2.undrawn.length,
+      from: gameDeck2.from,
     },
     opponent: {
       name: username1,
@@ -170,6 +171,7 @@ test('Speed Run', async () => {
       losses: 0,
       undrawn: gameDeck2.undrawn.length,
       ready: true,
+      from: gameDeck2.from,
     },
     opponent: {
       name: username1,
@@ -233,6 +235,7 @@ test('Speed Run', async () => {
       leader: leader1,
       losses: 0,
       undrawn: gameDeck1.undrawn.length,
+      from: gameDeck1.from,
     },
     opponent: {
       name: username2,
@@ -253,6 +256,7 @@ test('Speed Run', async () => {
       losses: 0,
       undrawn: gameDeck1.undrawn.length,
       ready: true,
+      from: gameDeck1.from,
     },
     opponent: {
       name: username2,
@@ -405,6 +409,7 @@ test('Scenic Route', async () => {
       discard: 0,
       hand: STARTING_HAND_SIZE,
       undrawn: deck2.units.length - STARTING_HAND_SIZE,
+      from: gameDeck2.from,
     },
     opponent: {
       name: username1,
@@ -425,6 +430,7 @@ test('Scenic Route', async () => {
       discard: 0,
       hand: STARTING_HAND_SIZE,
       undrawn: deck2.units.length - STARTING_HAND_SIZE,
+      from: gameDeck2.from,
     },
     opponent: {
       name: username1,
@@ -451,6 +457,7 @@ test('Scenic Route', async () => {
       discard: 0,
       hand: STARTING_HAND_SIZE,
       undrawn: deck2.units.length - STARTING_HAND_SIZE,
+      from: gameDeck2.from,
     },
     opponent: {
       name: username1,
@@ -480,6 +487,7 @@ test('Scenic Route', async () => {
       hand: STARTING_HAND_SIZE,
       undrawn: deck2.units.length - STARTING_HAND_SIZE,
       ready: true,
+      from: gameDeck2.from,
     },
     opponent: {
       name: username1,
@@ -540,6 +548,7 @@ test('Scenic Route', async () => {
       discard: 0,
       hand: STARTING_HAND_SIZE,
       undrawn: deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck1.from,
     },
     opponent: {
       name: username2,
@@ -560,6 +569,7 @@ test('Scenic Route', async () => {
       discard: 0,
       hand: STARTING_HAND_SIZE,
       undrawn: deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck1.from,
     },
     opponent: {
       name: username2,
@@ -586,6 +596,7 @@ test('Scenic Route', async () => {
       discard: 0,
       hand: STARTING_HAND_SIZE,
       undrawn: deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck1.from,
     },
     opponent: {
       name: username2,
@@ -615,6 +626,7 @@ test('Scenic Route', async () => {
       hand: STARTING_HAND_SIZE,
       undrawn: deck1.units.length - STARTING_HAND_SIZE,
       ready: true,
+      from: gameDeck1.from,
     },
     opponent: {
       name: username2,

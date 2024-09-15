@@ -50,7 +50,7 @@ describe('user', () => {
         })
       ).resolves.toEqual({
         data: null,
-        errors: [new GraphQLError(`User "${name}" already exists`)],
+        errors: [new GraphQLError('User already exists.')],
       })
 
       await verifyUserExists(name, password)

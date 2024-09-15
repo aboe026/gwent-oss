@@ -76,7 +76,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} leaders: "${JSON.stringify(leaders)}"`)
         }
         if (!leaders || leaders.length === 0) {
-          const message = `Leader with ID "${leaderId}" does not exist.`
+          const message = `Leader "${leaderId}" does not exist.`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -102,7 +102,7 @@ export default class MutationResolver {
         }
         if (errors.length > 0) {
           const message = errors.join('\n')
-          MutationResolver.logger.debug(`${logPrefix} failed units: ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const deckUnits = await DeckUnitResolver.fromArray({

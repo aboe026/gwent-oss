@@ -469,7 +469,7 @@ test('Cannot create deck with existing name', async () => {
   })
 
   await E2eUtil.verifyCurrentUrl(DeckPage.getUrl())
-  await DeckEditor.verifyCreateError(`Error creating deck: Deck with name "${name}" already exists`)
+  await DeckEditor.verifyCreateError(`Error creating deck: Deck with name "${name}" already exists.`)
 })
 
 test('Cancel brings user to decks list', async () => {
