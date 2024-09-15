@@ -1,14 +1,14 @@
-import log4js from 'log4js'
+import { getLogger } from 'log4js'
 
 import DbConnector from '../db-connector'
-import Upgrade from './upgrade'
 import GameStore from '../stores/game-store'
+import Upgrade from './upgrade'
 
 /**
  * Creates collection and indexes for Games.
  */
 export default class Upgrade5 extends Upgrade {
-  static logger = log4js.getLogger('upgrade-5')
+  static logger = getLogger('upgrade-5')
 
   async run() {
     Upgrade5.logger.debug('Connecting to database')

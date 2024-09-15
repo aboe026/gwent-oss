@@ -1,7 +1,7 @@
 import { Document, Filter, ObjectId } from 'mongodb'
+import { getLogger } from 'log4js'
 
 import { Combat, UnitDbObject } from '@gwent/graphql-schema/database-typings'
-import { getLogger } from 'log4js'
 import Store from './store'
 
 /**

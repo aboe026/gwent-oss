@@ -5,7 +5,6 @@ import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'
 import { useTitle } from '../components/TabTitle'
 import { useUserContext } from '../App'
-
 import './Profile.css'
 
 /**

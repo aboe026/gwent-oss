@@ -261,7 +261,6 @@ then [install](#install) to have the change picked up.
 A list of things to be done in the future:
 
 - add resource IDs to all errors/debugs
-- organize imports
 - add comments to methods
 - add ability to resolve neutrals on gameDeck (undrawn, hand, discard, redraws (from/to))
 - Change "ready" mutation to "readyGame"
@@ -275,6 +274,7 @@ A list of things to be done in the future:
 - more accurately type front-end results based on their return fragments
   - type Game = GameQuery['game']
   - this seems to mess up nested objects though :/
+- Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
 - Have "DateTime" on resolver object map to javascript Date object?
 - add Error to returns types for all queries/mutations?
 - Make Combat a type (because of image)

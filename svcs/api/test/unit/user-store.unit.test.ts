@@ -1,9 +1,9 @@
 import { ObjectId } from 'mongodb'
 
 import PasswordHasher from '../../src/util/password-hasher'
+import TestUtil from '../test-util'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../src/database/stores/user-store'
-import TestUtil from '../test-util'
 
 describe('user-store', () => {
   describe('add', () => {

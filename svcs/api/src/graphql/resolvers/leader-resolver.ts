@@ -1,12 +1,12 @@
 import { getLogger } from 'log4js'
-
-import { FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
-import { Dlc, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
-import FactionResolver from './faction-resolver'
-import DlcResolver from './dlc-resolver'
 import { ObjectId } from 'mongodb'
-import LeaderStore from '../../database/stores/leader-store'
+
+import { Dlc, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
+import DlcResolver from './dlc-resolver'
+import { FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
+import FactionResolver from './faction-resolver'
 import { getUniqueItems } from '@gwent/utils'
+import LeaderStore from '../../database/stores/leader-store'
 import Verifier from '../../util/verifier'
 
 export default class LeaderResolver {

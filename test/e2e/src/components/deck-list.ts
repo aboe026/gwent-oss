@@ -1,7 +1,8 @@
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import { Selector, t } from 'testcafe'
+
 import { Faction, Leader, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import { FILTER_FIELD, SORT_FIELD } from '@gwent/graphql-schema/decks-filter'
-import { Selector, t } from 'testcafe'
+import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 
 const container = Selector(`#${HTML_IDS.DeckListContainer}`)
 

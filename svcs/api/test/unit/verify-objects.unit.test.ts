@@ -1,6 +1,7 @@
 import { Logger } from 'log4js'
-import Verifier from '../../src/util/verifier'
 import { ObjectId } from 'mongodb'
+
+import Verifier from '../../src/util/verifier'
 
 describe('verifier', () => {
   describe('checkObjects', () => {

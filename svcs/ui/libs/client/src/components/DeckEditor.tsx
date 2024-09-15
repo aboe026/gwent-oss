@@ -1,6 +1,7 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useState } from 'react'
 
 import Centered from '../components/Centered'
+import CloseButton from './CloseButton'
 import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 import {
   DecksQuery,
@@ -40,7 +41,6 @@ import { useUserContext } from '../App'
 import { validateDeck } from '@gwent/validators'
 import WholeScreenDialog from '../components/WholeScreenDialog'
 import './DeckEditor.css'
-import CloseButton from './CloseButton'
 
 /**
  * The component to configure a user created Deck

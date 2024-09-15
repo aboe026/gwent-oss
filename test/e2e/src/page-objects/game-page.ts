@@ -1,10 +1,11 @@
-import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
-import E2eUtil from '../util/e2e-util'
 import { Selector, t } from 'testcafe'
+
 import { Deck, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
-import { Leader } from '@gwent/graphql-schema/resolver-typings'
 import DeckList from '../components/deck-list'
+import E2eUtil from '../util/e2e-util'
 import GamePlayerInfo from '../components/game-player-info'
+import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
+import { Leader } from '@gwent/graphql-schema/resolver-typings'
 
 const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)
 const existingGameContainer = Selector(`#${HTML_IDS.GameContainer}`)

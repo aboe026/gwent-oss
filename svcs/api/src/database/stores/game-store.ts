@@ -1,9 +1,9 @@
 import { Document, FindOptions, ObjectId } from 'mongodb'
+import { getLogger } from 'log4js'
 
 import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
-import { getLogger } from 'log4js'
-import Store from './store'
 import { MAX_ROUNDS } from '@gwent/constants'
+import Store from './store'
 
 /**
  * Factory for Gwent games a user creates.

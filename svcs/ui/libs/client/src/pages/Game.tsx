@@ -3,10 +3,6 @@ import { CgArrowLongRight, CgPlayButton, CgTime } from 'react-icons/cg'
 import { Link } from 'react-router-dom'
 import { NavigateFunction, useLocation, useNavigate } from 'react-router-dom'
 
-import Centered from '../components/Centered'
-import Form from '../components/Form'
-import DeckList from '../components/DeckList'
-import { useTitle } from '../components/TabTitle'
 import {
   AddGameMutation,
   Deck,
@@ -35,18 +31,22 @@ import {
   Faction,
   Leader,
 } from '@gwent/graphql-schema/apollo-typings'
-import { useUserContext } from '../App'
-import './Game.css'
-import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE, PLAYER_COUNTS, ROUTES } from '@gwent/constants'
-import { Dispatch, SetStateAction, useState } from 'react'
-import { getApolloError, retryCheckingAuth } from '../util/error-util'
-import LoadingSpinner from '../components/LoadingSpinner'
-import WholeScreenDialog from '../components/WholeScreenDialog'
-import UnitGameCard from '../components/UnitGameCard'
-import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
-import LoadingBar from '../components/LoadingBar'
-import UnitFullCard from '../components/UnitFullCard'
+import Centered from '../components/Centered'
 import DeckEditor from '../components/DeckEditor'
+import DeckList from '../components/DeckList'
+import { Dispatch, SetStateAction, useState } from 'react'
+import Form from '../components/Form'
+import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
+import { getApolloError, retryCheckingAuth } from '../util/error-util'
+import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE, PLAYER_COUNTS, ROUTES } from '@gwent/constants'
+import LoadingBar from '../components/LoadingBar'
+import LoadingSpinner from '../components/LoadingSpinner'
+import UnitFullCard from '../components/UnitFullCard'
+import UnitGameCard from '../components/UnitGameCard'
+import { useTitle } from '../components/TabTitle'
+import { useUserContext } from '../App'
+import WholeScreenDialog from '../components/WholeScreenDialog'
+import './Game.css'
 
 /**
  * The page listing a users games

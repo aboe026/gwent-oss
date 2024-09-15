@@ -1,7 +1,7 @@
 import path from 'path'
 
-import * as getEnv from '@gwent/env'
 import env from '../../src/env'
+import * as getEnv from '@gwent/env'
 
 describe('env', () => {
   it('sets dotEnvFilePath to empty string if NODE_ENV is production', () => {

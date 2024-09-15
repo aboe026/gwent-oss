@@ -1,10 +1,10 @@
 import ApiClient from '../util/api-client'
-import DeckPage from '../page-objects/deck-page'
 import { Combat, DlcKey, EffectKey, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
+import DeckEditor from '../components/deck-editor'
+import DeckPage from '../page-objects/deck-page'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
-import DeckEditor from '../components/deck-editor'
 
 fixture('Deck Units Filter').page(DeckPage.getUrl())
 

@@ -1,8 +1,8 @@
 import { t } from 'testcafe'
 
+import DeckList, { DeckInfo } from '../components/deck-list'
 import E2eUtil from '../util/e2e-util'
 import { ROUTES } from '@gwent/constants'
-import DeckList, { DeckInfo } from '../components/deck-list'
 
 export default class DecksPage {
   static getUrl(): string {

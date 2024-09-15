@@ -1,7 +1,7 @@
-import { GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
-import { DeckUnit, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import DeckResolver from './deck-resolver'
+import { DeckUnit, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from './deck-unit-resolver'
+import { GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 
 export default class GameDeckResolver {
   static async fromObject({

@@ -1,8 +1,6 @@
+import { ObjectId } from 'mongodb'
+
 import { Combat, Dlc, Effect, Faction, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
-import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
-import EffectResolver from '../../src/graphql/resolvers/effect-resolver'
-import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
-import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
 import {
   DlcDbObject,
   EffectDbObject,
@@ -10,12 +8,15 @@ import {
   FactionDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import { ObjectId } from 'mongodb'
-import TestUtil from '../test-util'
-import UnitStore from '../../src/database/stores/unit-store'
+import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
 import DlcStore from '../../src/database/stores/dlc-store'
+import EffectResolver from '../../src/graphql/resolvers/effect-resolver'
 import EffectStore from '../../src/database/stores/effect-store'
+import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import FactionStore from '../../src/database/stores/faction-store'
+import TestUtil from '../test-util'
+import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
+import UnitStore from '../../src/database/stores/unit-store'
 import Verifier from '../../src/util/verifier'
 
 describe('unit-resolver', () => {

@@ -1,15 +1,15 @@
 import { GraphQLError, graphql } from 'graphql'
+import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, getGameDeck, ready, redraw, setDeck } from './util/graphql-util'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
-import { getDeckUnitFragment, getGameDeckFragment, getGameFragment } from './util/fragment-util'
-import schema from '../../src/graphql/executable-schema'
-import { expectizeGame, expectizeGameDeck } from './util/expect-util'
 import { Deck, DeckUnit, FactionKey, GameDeck, GameStatus } from '@gwent/graphql-schema/resolver-typings'
-import { ObjectId } from 'mongodb'
+import { expectizeGame, expectizeGameDeck } from './util/expect-util'
+import { getDeckUnitFragment, getGameDeckFragment, getGameFragment } from './util/fragment-util'
 import { MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE, STARTING_HAND_SIZE } from '@gwent/constants'
+import schema from '../../src/graphql/executable-schema'
 
 describe('game', () => {
   beforeAll(async () => {

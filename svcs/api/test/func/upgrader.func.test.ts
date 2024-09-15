@@ -4,8 +4,8 @@ import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
 import { sleep } from '@gwent/utils'
-import UpgradeStore from '../../src/database/stores/upgrade-store'
 import Upgrade from '../../src/database/upgrades/upgrade'
+import UpgradeStore from '../../src/database/stores/upgrade-store'
 
 describe('upgrader', () => {
   beforeEach(async () => {

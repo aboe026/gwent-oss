@@ -1,5 +1,6 @@
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
+import { NavigateFunction, useNavigate } from 'react-router-dom'
 
 import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
@@ -12,14 +13,13 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/games-filter'
+import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
 import { getApolloError } from '../util/error-util'
-import LoadingSpinner from '../components/LoadingSpinner'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
-import { NavigateFunction, useNavigate } from 'react-router-dom'
+import LoadingSpinner from '../components/LoadingSpinner'
 import { useTitle } from '../components/TabTitle'
 import { useUserContext } from '../App'
 import './Games.css'
-import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
 
 /**
  * The page listing a users games

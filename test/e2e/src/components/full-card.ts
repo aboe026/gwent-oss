@@ -1,7 +1,7 @@
 import { Selector, t } from 'testcafe'
 
-import { HTML_CLASSES, HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
 import { EffectKey, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { HTML_CLASSES, HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
 import { toTitleCase } from '@gwent/utils'
 
 const container = Selector(`#${HTML_IDS.UnitFullCardContainer}`)

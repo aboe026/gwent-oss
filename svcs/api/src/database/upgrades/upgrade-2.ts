@@ -1,4 +1,4 @@
-import log4js from 'log4js'
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import {
@@ -30,7 +30,7 @@ import { validatePositiveInteger } from '@gwent/validators'
  * Adds resources required to create decks.
  */
 export default class Upgrade2 extends Upgrade {
-  static logger = log4js.getLogger('upgrade-2')
+  static logger = getLogger('upgrade-2')
 
   async run() {
     const dlcMap = await this.createDlcs({

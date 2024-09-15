@@ -1,26 +1,26 @@
-import log4js from 'log4js'
+import { getLogger } from 'log4js'
 
 import AppInfo from '../../app-info'
+import DeckResolver from './deck-resolver'
 import DeckStore from '../../database/stores/deck-store'
 import env from '../../env'
+import { FactionDbObject } from '@gwent/graphql-schema/database-typings'
+import FactionResolver from './faction-resolver'
 import FactionStore from '../../database/stores/faction-store'
+import GameDeckResolver from './game-deck-resolver'
+import GameResolver from './game-resolver'
 import GameStore from '../../database/stores/game-store'
 import LeaderStore from '../../database/stores/leader-store'
-import { QueryResolvers, SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
-import UnitStore from '../../database/stores/unit-store'
-import { version } from '../../../package.json'
-import UserResolver from './user-resolver'
-import FactionResolver from './faction-resolver'
 import LeaderResolver from './leader-resolver'
-import UnitResolver from './unit-resolver'
-import { FactionDbObject } from '@gwent/graphql-schema/database-typings'
-import DeckResolver from './deck-resolver'
-import GameResolver from './game-resolver'
-import GameDeckResolver from './game-deck-resolver'
+import { QueryResolvers, SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
 import { RequestedFields } from '@gwent/graphql-schema'
+import UnitResolver from './unit-resolver'
+import UnitStore from '../../database/stores/unit-store'
+import UserResolver from './user-resolver'
+import { version } from '../../../package.json'
 
 export default class QueryResolver {
-  private static logger = log4js.getLogger('query-resolver')
+  private static logger = getLogger('query-resolver')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static getResolvers(): QueryResolvers<any, any> {

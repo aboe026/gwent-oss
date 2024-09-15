@@ -1,11 +1,8 @@
-import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { DeckUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import UnitResolver from './unit-resolver'
-import { getLogger } from 'log4js'
 
 export default class DeckUnitResolver {
-  private static logger = getLogger('deck-unit-resolver')
-
   static async fromObject({
     deckUnit,
     neutralStats,

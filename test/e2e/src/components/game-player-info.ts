@@ -1,7 +1,8 @@
-import { HTML_CLASSES, MAX_ROUNDS } from '@gwent/constants'
+import { t } from 'testcafe'
+
 import { Deck, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
 import { formatDay, formatTime } from '@gwent/utils'
-import { t } from 'testcafe'
+import { HTML_CLASSES, MAX_ROUNDS } from '@gwent/constants'
 
 export default class GamePlayerInfo {
   private container: Selector

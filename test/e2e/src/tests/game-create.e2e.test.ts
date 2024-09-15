@@ -1,11 +1,11 @@
+import { ObjectId } from 'mongodb'
 import { t } from 'testcafe'
 
 import ApiClient from '../util/api-client'
-import LoginPage from '../page-objects/login-page'
-import GamePage from '../page-objects/game-page'
 import E2eUtil from '../util/e2e-util'
-import { ObjectId } from 'mongodb'
+import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
+import LoginPage from '../page-objects/login-page'
 
 fixture('Game Create').page(GamePage.getUrl())
 

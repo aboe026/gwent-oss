@@ -1,13 +1,13 @@
 import ApiClient from '../util/api-client'
-import DecksPage from '../page-objects/decks-page'
-import LoginPage from '../page-objects/login-page'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import DeckPage from '../page-objects/deck-page'
 import Banner from '../components/banner'
-import GamesPage from '../page-objects/games-page'
-import GamePage from '../page-objects/game-page'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
+import DeckPage from '../page-objects/deck-page'
+import DecksPage from '../page-objects/decks-page'
+import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import GamePage from '../page-objects/game-page'
+import GamesPage from '../page-objects/games-page'
+import LoginPage from '../page-objects/login-page'
 
 fixture('Decks View').page(DecksPage.getUrl())
 

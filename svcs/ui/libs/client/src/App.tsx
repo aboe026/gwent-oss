@@ -5,13 +5,13 @@ import { Outlet, useLocation, Navigate } from 'react-router-dom'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
+import { CurrentUserDocument, CurrentUserQuery, useCurrentUserQuery, User } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from './util/error-util'
 import { getRouteFromPath } from './util/route-util'
-import { NOT_AUTHENTICATED_MESSAGE, ROUTES } from '@gwent/constants'
 import LoadingSpinner from './components/LoadingSpinner'
-import { CurrentUserDocument, CurrentUserQuery, useCurrentUserQuery, User } from '@gwent/graphql-schema/apollo-typings'
-import WholeScreenDialog from './components/WholeScreenDialog'
 import LoginDialog from './components/LoginDialog'
+import { NOT_AUTHENTICATED_MESSAGE, ROUTES } from '@gwent/constants'
+import WholeScreenDialog from './components/WholeScreenDialog'
 
 const AUTH_TIMEOUT_ID = 'AUTH_TIMEOUT_ID'
 

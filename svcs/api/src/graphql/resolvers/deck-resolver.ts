@@ -1,13 +1,14 @@
-import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
-import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
-import FactionResolver from './faction-resolver'
-import LeaderResolver from './leader-resolver'
-import UserResolver from './user-resolver'
-import DeckUnitResolver from './deck-unit-resolver'
-import { getUniqueItems } from '@gwent/utils'
 import { ObjectId } from 'mongodb'
-import UnitResolver from './unit-resolver'
+
+import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
+import DeckUnitResolver from './deck-unit-resolver'
+import FactionResolver from './faction-resolver'
 import FactionStore from '../../database/stores/faction-store'
+import { getUniqueItems } from '@gwent/utils'
+import LeaderResolver from './leader-resolver'
+import UnitResolver from './unit-resolver'
+import UserResolver from './user-resolver'
 
 export default class DeckResolver {
   static async fromObject({

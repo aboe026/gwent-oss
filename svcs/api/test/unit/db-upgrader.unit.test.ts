@@ -3,9 +3,9 @@ import { MongoError, ObjectId } from 'mongodb'
 import path from 'path'
 
 import DbUpgrader from '../../src/database/db-upgrader'
-import * as utils from '@gwent/utils'
 import Upgrade from '../../src/database/upgrades/upgrade'
 import UpgradeStore from '../../src/database/stores/upgrade-store'
+import * as utils from '@gwent/utils'
 
 describe('db-upgrader', () => {
   describe('getUpgrades', () => {

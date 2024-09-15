@@ -1,5 +1,5 @@
-import { Unit } from '@gwent/graphql-schema/resolver-typings'
 import getWeatherImage from '../../src/get-weather-image'
+import { Unit } from '@gwent/graphql-schema/resolver-typings'
 
 describe('getWeatherImage', () => {
   it('returns undefined if unit name does not match weather name', () => {

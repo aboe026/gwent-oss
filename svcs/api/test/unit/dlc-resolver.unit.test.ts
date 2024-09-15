@@ -1,10 +1,11 @@
+import { ObjectId } from 'mongodb'
+
+import { Dlc } from '@gwent/graphql-schema/resolver-typings'
 import { DlcDbObject } from '@gwent/graphql-schema/database-typings'
 import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
-import { ObjectId } from 'mongodb'
 import DlcStore from '../../src/database/stores/dlc-store'
 import TestUtil from '../test-util'
 import Verifier from '../../src/util/verifier'
-import { Dlc } from '@gwent/graphql-schema/resolver-typings'
 
 describe('dlc-resolver', () => {
   describe('fromObject', () => {

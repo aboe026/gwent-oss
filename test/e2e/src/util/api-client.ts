@@ -1,6 +1,6 @@
 import { GraphQLClient, gql } from 'graphql-request'
+import { ObjectId } from 'mongodb'
 
-import env from './env'
 import {
   Deck,
   Faction,
@@ -14,8 +14,8 @@ import {
   Unit,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
+import env from './env'
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/esm/types'
-import { ObjectId } from 'mongodb'
 
 export default class ApiClient {
   private _client = new GraphQLClient(env.API_URL)

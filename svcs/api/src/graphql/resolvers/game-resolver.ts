@@ -1,12 +1,12 @@
 import { getLogger } from 'log4js'
-
-import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import { Game, User } from '@gwent/graphql-schema/resolver-typings'
-import UserResolver from './user-resolver'
-import GamePlayerResolver from './game-player-resolver'
-import { getUniqueItems } from '@gwent/utils'
 import { ObjectId } from 'mongodb'
+
+import { Game, User } from '@gwent/graphql-schema/resolver-typings'
+import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../database/stores/game-store'
+import { getUniqueItems } from '@gwent/utils'
+import UserResolver from './user-resolver'
 import Verifier from '../../util/verifier'
 
 export default class GameResolver {

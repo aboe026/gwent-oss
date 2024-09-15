@@ -1,20 +1,20 @@
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye } from 'react-icons/cg'
-import { NavigateFunction, useNavigate } from 'react-router-dom'
 import { Dispatch, SetStateAction, useState } from 'react'
+import { NavigateFunction, useNavigate } from 'react-router-dom'
 
 import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
+import CloseButton from './CloseButton'
 import { Deck, FactionKey, useDecksQuery } from '@gwent/graphql-schema/apollo-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
+import { IconType } from 'react-icons'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ProgressBar from '../components/ProgressBar'
 import { sortObjectArray } from '@gwent/utils'
 import { useUserContext } from '../App'
 import './DeckList.css'
-import { IconType } from 'react-icons'
-import CloseButton from './CloseButton'
 
 /**
  * The a list of a users created decks

@@ -1,4 +1,4 @@
-import log4js from 'log4js'
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import Store from './store'
@@ -9,7 +9,7 @@ import Store from './store'
 export default class UpgradeStore extends Store {
   static readonly COLLECTION_NAME = 'upgrades'
   private static readonly LOCK_ID = new ObjectId('000000000000000000000001')
-  private static logger = log4js.getLogger('upgrade-store')
+  private static logger = getLogger('upgrade-store')
 
   /**
    * Attempts to create a lock on the database for upgrades. Throws an error if a lock already exists.

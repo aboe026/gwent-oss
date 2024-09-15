@@ -1,4 +1,5 @@
 import { ApolloError } from '@apollo/client'
+
 import { getApolloError, retryCheckingAuth } from '../../src/util/error-util'
 
 describe('error-util', () => {

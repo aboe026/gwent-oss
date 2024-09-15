@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
-import GameStore from '../../src/database/stores/game-store'
 import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
+import GameStore from '../../src/database/stores/game-store'
 import { MAX_ROUNDS } from '@gwent/constants'
 import TestUtil from '../test-util'
 

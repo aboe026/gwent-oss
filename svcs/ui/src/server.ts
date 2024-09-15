@@ -1,16 +1,16 @@
 import express, { Express } from 'express'
 import fs from 'fs-extra'
-import log4js from 'log4js'
+import { getLogger } from 'log4js'
 import path from 'path'
 
-import env from './env'
 import ClientUtil from './client-util'
+import env from './env'
 
 /**
  * A class to handle startup and configuration of the UI server.
  */
 export default class Server {
-  private static logger = log4js.getLogger('server')
+  private static logger = getLogger('server')
   private static clientDir: string
   private static app: Express
 

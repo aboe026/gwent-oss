@@ -1,10 +1,10 @@
+import { CgMaximizeAlt } from 'react-icons/cg'
 import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
-import './UnitGameCard.css'
-import StrengthCircle from './StrengthCircle'
+import { Dispatch, SetStateAction } from 'react'
 import { getCombatImage, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES } from '@gwent/constants'
-import { CgMaximizeAlt } from 'react-icons/cg'
-import { Dispatch, SetStateAction } from 'react'
+import StrengthCircle from './StrengthCircle'
+import './UnitGameCard.css'
 
 /**
  * A card displayed during a Game

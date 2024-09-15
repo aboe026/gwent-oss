@@ -1,19 +1,5 @@
-import { MAX_ROUNDS, STARTING_HAND_SIZE } from '@gwent/constants'
-import {
-  DeckDbObject,
-  DeckUnitDbObject,
-  DlcDbObject,
-  EffectDbObject,
-  EffectKey,
-  FactionDbObject,
-  GameDbObject,
-  GameDeckDbObject,
-  GamePlayerDbObject,
-  LeaderDbObject,
-  RedrawDbObject,
-  UnitDbObject,
-  UserDbObject,
-} from '@gwent/graphql-schema/database-typings'
+import { ObjectId } from 'mongodb'
+
 import {
   Deck,
   DeckUnit,
@@ -33,7 +19,22 @@ import {
   UnitStats,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
-import { ObjectId } from 'mongodb'
+import {
+  DeckDbObject,
+  DeckUnitDbObject,
+  DlcDbObject,
+  EffectDbObject,
+  EffectKey,
+  FactionDbObject,
+  GameDbObject,
+  GameDeckDbObject,
+  GamePlayerDbObject,
+  LeaderDbObject,
+  RedrawDbObject,
+  UnitDbObject,
+  UserDbObject,
+} from '@gwent/graphql-schema/database-typings'
+import { MAX_ROUNDS, STARTING_HAND_SIZE } from '@gwent/constants'
 
 export default class TestUtil {
   static getDbUnit({

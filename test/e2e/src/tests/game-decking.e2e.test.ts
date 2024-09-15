@@ -1,15 +1,15 @@
 import { t } from 'testcafe'
 
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import GamePage from '../page-objects/game-page'
-import LoginPage from '../page-objects/login-page'
 import ApiClient from '../util/api-client'
 import E2eUtil from '../util/e2e-util'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
-import HomePage from '../page-objects/home-page'
-import { sortObjectArray } from '@gwent/utils'
-import DeckList from '../components/deck-list'
 import DeckEditor from '../components/deck-editor'
+import DeckList from '../components/deck-list'
+import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import GamePage from '../page-objects/game-page'
+import HomePage from '../page-objects/home-page'
+import LoginPage from '../page-objects/login-page'
+import { sortObjectArray } from '@gwent/utils'
+import { STARTING_HAND_SIZE } from '@gwent/constants'
 
 fixture('Game Decking')
   .page(HomePage.getUrl())

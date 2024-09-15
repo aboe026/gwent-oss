@@ -1,6 +1,6 @@
 import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client'
-import { createRoot } from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createRoot } from 'react-dom/client'
 
 import '@gwent/client-env' // get typings/access to window.env
 import AboutPage from './pages/About'

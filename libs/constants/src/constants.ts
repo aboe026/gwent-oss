@@ -1,5 +1,5 @@
-import { HTML_CLASSES, HTML_IDS } from './html-names'
 import { AppRoute, ROUTES } from './routes'
+import { HTML_CLASSES, HTML_IDS } from './html-names'
 
 export const DATE_TIME_FORMAT = 'YYYY-MM-DDTHH:mm:ss.SSSZ'
 

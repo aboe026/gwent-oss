@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb'
 
-import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
 import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, User } from '@gwent/graphql-schema/resolver-typings'
-import UserResolver from './user-resolver'
-import { getUniqueItems } from '@gwent/utils'
 import FactionResolver from './faction-resolver'
+import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
+import { getUniqueItems } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
+import UserResolver from './user-resolver'
 
 export default class GamePlayerResolver {
   static async fromObject({

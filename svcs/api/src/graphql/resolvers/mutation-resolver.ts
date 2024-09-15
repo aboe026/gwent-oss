@@ -1,13 +1,6 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
-import { FactionKey, MutationResolvers, User } from '@gwent/graphql-schema/resolver-typings'
-import DeckStore from '../../database/stores/deck-store'
-import FactionStore from '../../database/stores/faction-store'
-import GameStore from '../../database/stores/game-store'
-import { getDeckStats, getUniqueItems } from '@gwent/utils'
-import { getRandomSubset } from '@gwent/utils'
-import LeaderStore from '../../database/stores/leader-store'
-import UnitStore from '../../database/stores/unit-store'
 import {
   DeckDbObject,
   FactionDbObject,
@@ -15,18 +8,25 @@ import {
   RedrawDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import DeckResolver from './deck-resolver'
+import DeckStore from '../../database/stores/deck-store'
+import DeckUnitResolver from './deck-unit-resolver'
+import { FactionKey, MutationResolvers, User } from '@gwent/graphql-schema/resolver-typings'
+import FactionResolver from './faction-resolver'
+import FactionStore from '../../database/stores/faction-store'
+import GameDeckResolver from './game-deck-resolver'
+import GameResolver from './game-resolver'
+import GameStore from '../../database/stores/game-store'
+import { getDeckStats, getUniqueItems } from '@gwent/utils'
+import { getRandomSubset } from '@gwent/utils'
+import LeaderResolver from './leader-resolver'
+import LeaderStore from '../../database/stores/leader-store'
+import { MAX_REDRAWS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
+import { RequestedFields } from '@gwent/graphql-schema'
+import UnitStore from '../../database/stores/unit-store'
+import UserResolver from './user-resolver'
 import UserStore from '../../database/stores/user-store'
 import { validateDeck } from '@gwent/validators'
-import { MAX_REDRAWS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
-import DeckUnitResolver from './deck-unit-resolver'
-import UserResolver from './user-resolver'
-import DeckResolver from './deck-resolver'
-import FactionResolver from './faction-resolver'
-import LeaderResolver from './leader-resolver'
-import { ObjectId } from 'mongodb'
-import GameResolver from './game-resolver'
-import GameDeckResolver from './game-deck-resolver'
-import { RequestedFields } from '@gwent/graphql-schema'
 
 export default class MutationResolver {
   private static logger = getLogger('mutation-resolver')

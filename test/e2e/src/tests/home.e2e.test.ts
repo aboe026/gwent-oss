@@ -1,7 +1,7 @@
+import DeckPage from '../page-objects/deck-page'
+import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
 import HomePage from '../page-objects/home-page'
-import E2eUtil from '../util/e2e-util'
-import DeckPage from '../page-objects/deck-page'
 import ProfilePage from '../page-objects/profile-page'
 import SignupPage from '../page-objects/signup-page'
 

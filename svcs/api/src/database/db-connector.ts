@@ -1,5 +1,5 @@
-import { ConnectionString } from 'connection-string'
 import { ConnectionClosedEvent, Db, MongoClient } from 'mongodb'
+import { ConnectionString } from 'connection-string'
 import { getLogger } from 'log4js'
 
 import env from '../env'

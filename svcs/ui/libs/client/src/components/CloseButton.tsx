@@ -1,5 +1,5 @@
-import { PropsWithChildren } from 'react'
 import { CgClose } from 'react-icons/cg'
+import { PropsWithChildren } from 'react'
 
 import './CloseButton.css'
 

@@ -1,12 +1,13 @@
-import { Game, GamePlayer, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
-import GamePlayerResolver from '../../src/graphql/resolvers/game-player-resolver'
-import UserResolver from '../../src/graphql/resolvers/user-resolver'
-import GameResolver from '../../src/graphql/resolvers/game-resolver'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import { ObjectId } from 'mongodb'
-import { MAX_ROUNDS } from '@gwent/constants'
+
+import { Game, GamePlayer, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import GamePlayerResolver from '../../src/graphql/resolvers/game-player-resolver'
+import GameResolver from '../../src/graphql/resolvers/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
+import { MAX_ROUNDS } from '@gwent/constants'
 import TestUtil from '../test-util'
+import UserResolver from '../../src/graphql/resolvers/user-resolver'
 import Verifier from '../../src/util/verifier'
 
 describe('game-resolver', () => {

@@ -1,6 +1,6 @@
 import { EffectKey, Unit } from '@gwent/graphql-schema/resolver-typings'
-import './StrengthCircle.css'
 import { getWeatherImage } from '@gwent/utils'
+import './StrengthCircle.css'
 
 /**
  * A circle containing strength value or weather type

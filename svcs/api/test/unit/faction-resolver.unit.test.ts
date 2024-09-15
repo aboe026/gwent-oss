@@ -1,10 +1,11 @@
-import { Faction, FactionDbObject } from '@gwent/graphql-schema/database-typings'
-import FactionStore from '../../src/database/stores/faction-store'
-import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
-import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
-import { Dlc, FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import TestUtil from '../test-util'
 import { ObjectId } from 'mongodb'
+
+import { Dlc, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
+import { Faction, FactionDbObject } from '@gwent/graphql-schema/database-typings'
+import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
+import FactionStore from '../../src/database/stores/faction-store'
+import TestUtil from '../test-util'
 import Verifier from '../../src/util/verifier'
 
 describe('faction-resolver', () => {

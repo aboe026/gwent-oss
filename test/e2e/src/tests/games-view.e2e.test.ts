@@ -1,9 +1,9 @@
 import ApiClient from '../util/api-client'
-import LoginPage from '../page-objects/login-page'
+import Banner from '../components/banner'
+import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import { GameStatus } from '@gwent/graphql-schema/resolver-typings'
-import GamePage from '../page-objects/game-page'
-import Banner from '../components/banner'
+import LoginPage from '../page-objects/login-page'
 
 fixture('Games View').page(GamesPage.getUrl())
 

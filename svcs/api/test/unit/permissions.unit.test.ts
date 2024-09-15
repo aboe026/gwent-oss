@@ -1,11 +1,11 @@
 import { ObjectId } from 'mongodb'
 
-import { NO_RULE_DEFINED, Permissions } from '../../src/graphql/permissions'
-import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
-import { GraphQLResolveInfo } from 'graphql'
-import GameStore from '../../src/database/stores/game-store'
 import { DeckDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckStore from '../../src/database/stores/deck-store'
+import GameStore from '../../src/database/stores/game-store'
+import { GraphQLResolveInfo } from 'graphql'
+import { NO_RULE_DEFINED, Permissions } from '../../src/graphql/permissions'
+import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import TestUtil from '../test-util'
 
 describe('permissions', () => {

@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 
+import { Deck, DeckUnit, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import {
   DeckDbObject,
   DeckUnitDbObject,
@@ -11,25 +12,24 @@ import {
   UnitDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import DeckResolver from '../../src/graphql/resolvers/deck-resolver'
 import DeckStore from '../../src/database/stores/deck-store'
-import { Deck, DeckUnit, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import DeckUnitResolver from '../../src/graphql/resolvers/deck-unit-resolver'
+import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import FactionStore from '../../src/database/stores/faction-store'
+import GameDeckResolver from '../../src/graphql/resolvers/game-deck-resolver'
+import GameResolver from '../../src/graphql/resolvers/game-resolver'
+import GameStore from '../../src/database/stores/game-store'
+import * as getRandomSubset from '@gwent/utils'
 import * as gwentUtils from '@gwent/utils'
+import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import LeaderStore from '../../src/database/stores/leader-store'
+import { MAX_REDRAWS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
 import MutationResolver from '../../src/graphql/resolvers/mutation-resolver'
+import TestUtil from '../test-util'
 import UnitStore from '../../src/database/stores/unit-store'
 import UserStore from '../../src/database/stores/user-store'
 import * as validateDeck from '@gwent/validators'
-import DeckUnitResolver from '../../src/graphql/resolvers/deck-unit-resolver'
-import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
-import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
-import DeckResolver from '../../src/graphql/resolvers/deck-resolver'
-import GameStore from '../../src/database/stores/game-store'
-import { MAX_REDRAWS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
-import GameResolver from '../../src/graphql/resolvers/game-resolver'
-import TestUtil from '../test-util'
-import * as getRandomSubset from '@gwent/utils'
-import GameDeckResolver from '../../src/graphql/resolvers/game-deck-resolver'
 
 describe('mutation-resolver', () => {
   describe('addDeck', () => {

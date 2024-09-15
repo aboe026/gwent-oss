@@ -1,5 +1,5 @@
-import { getLogger } from 'log4js'
 import { FindOptions, ObjectId } from 'mongodb'
+import { getLogger } from 'log4js'
 
 import PasswordHasher from '../../util/password-hasher'
 import Store from './store'

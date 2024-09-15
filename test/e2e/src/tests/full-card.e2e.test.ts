@@ -1,14 +1,14 @@
 import { t } from 'testcafe'
 
-import DeckPage from '../page-objects/deck-page'
 import ApiClient from '../util/api-client'
-import LoginPage from '../page-objects/login-page'
-import FullCard from '../components/full-card'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import E2eUtil from '../util/e2e-util'
-import GamePage from '../page-objects/game-page'
-import { sortObjectArray } from '@gwent/utils'
 import DeckEditor from '../components/deck-editor'
+import DeckPage from '../page-objects/deck-page'
+import E2eUtil from '../util/e2e-util'
+import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import FullCard from '../components/full-card'
+import GamePage from '../page-objects/game-page'
+import LoginPage from '../page-objects/login-page'
+import { sortObjectArray } from '@gwent/utils'
 
 fixture('Full Card')
   .page(DeckPage.getUrl())

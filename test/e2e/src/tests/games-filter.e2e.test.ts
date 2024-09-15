@@ -1,10 +1,10 @@
 import { t } from 'testcafe'
 
-import GamesPage, { GameInList } from '../page-objects/games-page'
 import ApiClient from '../util/api-client'
 import { FactionKey, GamePlayer } from '@gwent/graphql-schema/resolver-typings'
-import LoginPage from '../page-objects/login-page'
 import { FILTER_FIELD } from '@gwent/graphql-schema/games-filter'
+import GamesPage, { GameInList } from '../page-objects/games-page'
+import LoginPage from '../page-objects/login-page'
 
 fixture('Games Filter')
   .page(GamesPage.getUrl())

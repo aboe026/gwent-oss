@@ -4,11 +4,11 @@ import { addDeck, addGame, addUser, ready, setDeck } from './util/graphql-util'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
-import { getGameFragment } from './util/fragment-util'
-import schema from '../../src/graphql/executable-schema'
 import { expectizeGame } from './util/expect-util'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { getGameFragment } from './util/fragment-util'
 import { NOT_AUTHENTICATED_MESSAGE, STARTING_HAND_SIZE } from '@gwent/constants'
+import schema from '../../src/graphql/executable-schema'
 
 describe('games', () => {
   beforeAll(async () => {

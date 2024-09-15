@@ -1,12 +1,12 @@
 import ApiClient from '../util/api-client'
+import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
+import DecksPage from '../page-objects/decks-page'
 import E2eUtil from '../util/e2e-util'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import LoginPage from '../page-objects/login-page'
-import DecksPage from '../page-objects/decks-page'
 import { sortObjectArray } from '@gwent/utils'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
-import DeckEditor from '../components/deck-editor'
 
 fixture('Deck Create').page(DeckPage.getUrl())
 

@@ -1,7 +1,8 @@
-import UserResolver from '../../src/graphql/resolvers/user-resolver'
 import { ObjectId } from 'mongodb'
-import UserStore from '../../src/database/stores/user-store'
+
 import TestUtil from '../test-util'
+import UserResolver from '../../src/graphql/resolvers/user-resolver'
+import UserStore from '../../src/database/stores/user-store'
 import Verifier from '../../src/util/verifier'
 
 describe('user-resolver', () => {

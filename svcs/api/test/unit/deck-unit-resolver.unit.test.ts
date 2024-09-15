@@ -1,9 +1,10 @@
-import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
-import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
 import { ObjectId } from 'mongodb'
+
+import { DeckUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/deck-unit-resolver'
-import { Unit } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
+import { Unit } from '@gwent/graphql-schema/resolver-typings'
+import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
 
 describe('deck-unit-resolver', () => {
   describe('fromObject', () => {
