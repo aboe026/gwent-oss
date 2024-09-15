@@ -19,9 +19,17 @@ import UnitStore from '../../database/stores/unit-store'
 import UserResolver from './user-resolver'
 import { version } from '../../../package.json'
 
+/**
+ * A class for executing the searches of the GraphQL Queries defined in the schema.
+ */
 export default class QueryResolver {
   private static logger = getLogger('query-resolver')
 
+  /**
+   * Get the methods correlating to the GraphQL Queries defined in the schema.
+   *
+   * @returns The methods used to resolve Queries defined in the GraphQL schema.
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static getResolvers(): QueryResolvers<any, any> {
     return {

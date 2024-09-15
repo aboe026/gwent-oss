@@ -9,21 +9,35 @@ import { getUniqueItems } from '@gwent/utils'
 import UserResolver from './user-resolver'
 import Verifier from '../../util/verifier'
 
+/**
+ * A class to convert Game database objects to their GraphQL equivalent.
+ */
 export default class GameResolver {
   private static logger = getLogger('game-resolver')
 
+  /**
+   * Converts a single Game database object to a single Game GraphQL object.
+   *
+   * @param config The configuration used to convert the Game.
+   * @param config.creator The resolved User who created the Game. If not provided, will be retrieved.
+   * @param config.game The Game to convert.
+   * @param config.neutralFactionStats Whether or not to account for the Neutral faction when calculating the stats of the Faction of the Game.
+   * @param config.neutralLeaderStats Whether or not to account for the Neutral faction when calculating the stats of the Leader of the Game.
+   * @param config.user The resolved Users for the players on the Game. If not provided, will be retrieved.
+   * @returns The resolved Game object matching its GraphQL schema definition.
+   */
   static async fromObject({
     creator,
     game,
-    users,
     neutralFactionStats,
     neutralLeaderStats,
+    users,
   }: {
     game: GameDbObject
     creator?: User
-    users?: User[]
     neutralFactionStats?: boolean
     neutralLeaderStats?: boolean
+    users?: User[]
   }): Promise<Game> {
     const resolvedUsers: User[] = []
     if (creator) {
@@ -59,6 +73,12 @@ export default class GameResolver {
     }
   }
 
+  /**
+   * Converts an array of Game database objects to an array of Game GraphQL objects.
+   *
+   * @param games The Game database documents to convert.
+   * @returns The resolved Game array matching the GraphQL schema definition.
+   */
   static async fromArray(games: GameDbObject[]): Promise<Game[]> {
     const userIds = getUniqueItems<string>(games.map((game) => game.creator.toString()))
 
@@ -86,6 +106,13 @@ export default class GameResolver {
     return resolvedGames
   }
 
+  /**
+   * Retrieves a Game with the given ID and converts it to the GraphQL object equivalent.
+   *
+   * @param id The ObjectID of the Game to convert.
+   * @returns The resolved Game object with the given ID.
+   * @throws Error if a Game with the given ID does not exist.
+   */
   static async fromId(id: ObjectId | string): Promise<Game> {
     const game = await GameStore.getById({
       id,
@@ -104,10 +131,22 @@ export default class GameResolver {
     })
   }
 
+  /**
+   * Whether or not every player in the game is marked as ready. Some information may provide a competetive advantage to players if revealed before all players ready.
+   *
+   * @param game The Game database document to determine if all players are ready for.
+   * @returns True if all players are marked as ready on the game, false otherwise.
+   */
   static isEveryoneReady(game: GameDbObject): boolean {
     return game.players.length > 0 && game.players.filter((player) => player.ready).length === game.players.length
   }
 
+  /**
+   * Calculate the Status that a Game is in.
+   *
+   * @param game The Game database object to calculate the Status for.
+   * @returns The Status the Game is currently in.
+   */
   static getStatus(game: GameDbObject): GameStatus {
     if (game.victors.length > 0) {
       return GameStatus.Done

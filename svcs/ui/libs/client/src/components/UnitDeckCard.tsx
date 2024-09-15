@@ -8,9 +8,9 @@ import StrengthCircle from './StrengthCircle'
 import './UnitDeckCard.css'
 
 /**
- * A Unit of a deck
+ * A card for a Unit in a deck.
  *
- * @returns The Unit in the deck
+ * @returns The Unit card for the deck.
  */
 export default function UnitDeckCard({
   deckUnit,

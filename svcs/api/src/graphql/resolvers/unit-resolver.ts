@@ -21,9 +21,24 @@ import { prettyPrintList } from '../../util/string-util'
 import UnitStore from '../../database/stores/unit-store'
 import Verifier from '../../util/verifier'
 
+/**
+ * A class to convert Unit database objects to their GraphQL equivalent.
+ */
 export default class UnitResolver {
   private static logger = getLogger('unit-resolver')
 
+  /**
+   * Converts a single Unit database object to a single Unit GraphQL object.
+   *
+   * @param config The configuration used to convert the Unit.
+   * @param config.dlc The resolved DLC for the Unit.  If not provided, will be retrieved.
+   * @param config.effects The resolved Effects for the Unit.  If not provided, will be retrieved.
+   * @param config.faction The resolved Faction for the Unit. If not provided, will be retrieved.
+   * @param config.unit The Unit database document to convert.
+   * @param config.neutral The Neutral Faction database document to use for calculating stats if neutralStats is true. If not provided, will be retrieved.
+   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Unit.
+   * @returns The resolved Unit object matching its GraphQL schema definition.
+   */
   static async fromObject({
     dlc,
     effects,
@@ -73,6 +88,13 @@ export default class UnitResolver {
     }
   }
 
+  /**
+   * Retrieves a Unit with the given ID and converts it to the GraphQL object equivalent.
+   *
+   * @param id The ObjectID of the Unit to convert.
+   * @returns The resolved Unit object with the given ID.
+   * @throws Error if a Unit with the given ID does not exist.
+   */
   static async fromId({ id, neutralStats }: { id: ObjectId | string; neutralStats?: boolean }): Promise<Unit> {
     const units = await UnitResolver.fromIds({
       ids: [id],
@@ -81,6 +103,13 @@ export default class UnitResolver {
     return units[0]
   }
 
+  /**
+   * Retrieves Units with the given IDs and converts them to their GraphQL object equivalents.
+   *
+   * @param ids The ObjectIDs of the Units to convert.
+   * @returns The resolved Units array for the given IDs.
+   * @throws Error if a Unit with the given IDs does not exist.
+   */
   static async fromIds({
     ids,
     factions,
@@ -113,6 +142,15 @@ export default class UnitResolver {
     })
   }
 
+  /**
+   * Converts an array of Unit database objects to an array of Unit GraphQL objects.
+   *
+   * @param config The configuration used to convert the array.
+   * @param config.factions The resolved Factions for the Units. If not provided, will be retrieved.
+   * @param config.units The array of Unit database objects to convert.
+   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Factions of the Units.
+   * @returns The resolved Unit array matching the GraphQL schema definition.
+   */
   static async fromArray({
     factions,
     units,
@@ -203,6 +241,13 @@ export default class UnitResolver {
     return resolvedUnits
   }
 
+  /**
+   * Resolve abilities on Effects a Unit may have. Replaces generic text with specific info for the Unit in question. Does not modify original Unit.
+   *
+   * @param unit The Unit database object to resolve Effect abilities for.
+   * @param effects The resolved Effects for the Unit.
+   * @returns The resolved Effects with their abilities resolved to be more specific to the particular Unit.
+   */
   static effectAbilities(unit: UnitDbObject, effects: Effect[] | null): Effect[] | null {
     if (effects) {
       return effects.map((effect) => {

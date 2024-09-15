@@ -18,6 +18,9 @@ import { ROUTES } from '@gwent/constants'
 import SignupPage from './pages/Signup'
 import './index.css'
 
+/**
+ * The main entrypoint of the Browser Client.
+ */
 const router = createBrowserRouter([
   {
     element: <App />,

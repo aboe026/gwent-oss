@@ -3,9 +3,9 @@ import LoginDialog from '../components/LoginDialog'
 import { ROUTES } from '@gwent/constants'
 
 /**
- * A page for the user to either log in or create a user
+ * A page for the user to either log in or create a user.
  *
- * @returns The application login page
+ * @returns The application login page.
  */
 export default function LoginPage() {
   return (

@@ -75,10 +75,11 @@ export default class DeckStore extends Store {
   }
 
   /**
-   * Get decks for the given IDs
+   * Get decks for the given IDs.
    *
-   * @param ids The ObjectIds of the decks to retrieve
-   * @returns The decks of the given IDs
+   * @param ids The ObjectIds of the decks to retrieve.
+   * @returns The decks of the given IDs.
+   * @throws Error if more than 1 deck found.
    */
   static async getById({
     id,

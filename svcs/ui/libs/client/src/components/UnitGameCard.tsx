@@ -7,9 +7,9 @@ import StrengthCircle from './StrengthCircle'
 import './UnitGameCard.css'
 
 /**
- * A card displayed during a Game
+ * A card displayed during a Game.
  *
- * @returns The card for a Game
+ * @returns The card for a Game.
  */
 export default function UnitGameCard({
   deckUnit,

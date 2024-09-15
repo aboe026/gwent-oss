@@ -38,6 +38,14 @@ export function getApolloError(error: ApolloError | undefined): string {
   return resolvedErrors.join('\n')
 }
 
+/**
+ * Perform an operation, and retry if it initially fails due to an Authentication error.
+ *
+ * @param config The configuration used when executing the method.
+ * @param config.checkAuth The method used to check whether the error is an Authentication error.
+ * @param method The method to execute, potentially twice if there is an Authentication error.
+ * @throws Error if the method fails due to an error not related to Authentication.
+ */
 export async function retryCheckingAuth({
   checkAuth,
   method,

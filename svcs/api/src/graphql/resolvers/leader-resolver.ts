@@ -9,9 +9,22 @@ import { getUniqueItems } from '@gwent/utils'
 import LeaderStore from '../../database/stores/leader-store'
 import Verifier from '../../util/verifier'
 
+/**
+ * A class to convert Leader database objects to their GraphQL equivalent.
+ */
 export default class LeaderResolver {
   private static logger = getLogger('leader-resolver')
 
+  /**
+   * Converts a single Leader database object to a single Leader GraphQL object.
+   *
+   * @param config The configuration used to convert the Leader.
+   * @param config.unit The resolved DLC for the Leader. If not provided, will be retrieved.
+   * @param config.faction The resolved Faction for the Leader. If not provided, will be retrieved.
+   * @param config.leader The Leader to convert.
+   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Leader.
+   * @returns The resolved Leader object matching its GraphQL schema definition.
+   */
   static async fromObject({
     dlc,
     faction,
@@ -40,6 +53,13 @@ export default class LeaderResolver {
     }
   }
 
+  /**
+   * Retrieves a Leader with the given ID and converts it to the GraphQL object equivalent.
+   *
+   * @param id The ObjectID of the Leader to convert.
+   * @returns The resolved Leader object with the given ID.
+   * @throws Error if a Leader with the given ID does not exist.
+   */
   static async fromId({ id, neutralStats }: { id: string | ObjectId; neutralStats?: boolean }): Promise<Leader> {
     const leaders = await LeaderResolver.fromIds({
       ids: [id],
@@ -48,6 +68,13 @@ export default class LeaderResolver {
     return leaders[0]
   }
 
+  /**
+   * Retrieves Leaders with the given IDs and converts them to their GraphQL object equivalents.
+   *
+   * @param ids The ObjectIDs of the Leaders to convert.
+   * @returns The resolved Leaders array for the given IDs.
+   * @throws Error if a Leader with the given IDs does not exist.
+   */
   static async fromIds({
     ids,
     factions,
@@ -83,16 +110,26 @@ export default class LeaderResolver {
     })
   }
 
+  /**
+   * Converts an array of Leader database objects to an array of Leader GraphQL objects.
+   *
+   * @param config The configuration used to convert the array.
+   * @param config.factions The resolved Factions for the Leaders. If not provided, will be retrieved.
+   * @param config.leaders The array of Leader database objects to convert.
+   * @param config.resolvedFactions The resolved Factions for the Leaders. If not provided, will be retrieved.
+   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Factions of the Leaders.
+   * @returns The resolved Leader array matching the GraphQL schema definition.
+   */
   static async fromArray({
     factions,
     leaders,
-    resolvedFactions,
     neutralStats,
+    resolvedFactions,
   }: {
     factions?: FactionDbObject[]
-    resolvedFactions?: Faction[]
     leaders: LeaderDbObject[]
     neutralStats?: boolean
+    resolvedFactions?: Faction[]
   }): Promise<Leader[]> {
     const dlcIds = getUniqueItems<ObjectId>(leaders.map((leader) => leader.dlc))
     const dlcs = await DlcResolver.fromIds(dlcIds)

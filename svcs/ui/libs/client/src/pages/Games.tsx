@@ -22,9 +22,9 @@ import { useUserContext } from '../App'
 import './Games.css'
 
 /**
- * The page listing a users games
+ * The page listing a users Games.
  *
- * @returns The users games page
+ * @returns The users games page.
  */
 export default function GamesPage() {
   useTitle('Games | Gwent')
@@ -119,11 +119,11 @@ export default function GamesPage() {
 
             return (
               <div key={game.id} className="game-list-row" onClick={() => navigate(rowUrl)}>
-                <div className="multi-row-cell">
+                <div title={game.created} className="multi-row-cell">
                   <span className={HTML_CLASSES.GameRowCreatedDay}>{formatDay(game.created)}</span>
                   <span className={HTML_CLASSES.GameRowCreatedTime}>{formatTime(game.created)}</span>
                 </div>
-                <div className="multi-row-cell">
+                <div title={game.updated} className="multi-row-cell">
                   <span className={HTML_CLASSES.GameRowUpdatedDay}>{formatDay(game.updated)}</span>
                   <span className={HTML_CLASSES.GameRowUpdatedTime}>{formatTime(game.updated)}</span>
                 </div>

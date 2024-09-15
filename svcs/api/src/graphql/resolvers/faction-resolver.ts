@@ -8,9 +8,22 @@ import FactionStore from '../../database/stores/faction-store'
 import { getUniqueItems } from '@gwent/utils'
 import Verifier from '../../util/verifier'
 
+/**
+ * A class to convert Faction database objects to their GraphQL equivalent.
+ */
 export default class FactionResolver {
   private static logger = getLogger('faction-resolver')
 
+  /**
+   * Converts a single Faction database object to a single Faction GraphQL object.
+   *
+   * @param config The configuration used to convert the Faction.
+   * @param config.dlc The resolved DLC for the Faction. If not provided, will be retrieved.
+   * @param config.faction The Faction to convert.
+   * @param config.neutral The Neutral Faction database document to use for calculating stats if neutralStats is true. If not provided, will be retrieved.
+   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Faction.
+   * @returns The resolved Faction object matching its GraphQL schema definition.
+   */
   static async fromObject({
     dlc,
     faction,
@@ -50,6 +63,13 @@ export default class FactionResolver {
     }
   }
 
+  /**
+   * Retrieves a Faction with the given ID and converts it to the GraphQL object equivalent.
+   *
+   * @param id The ObjectID of the Faction to convert.
+   * @returns The resolved Faction object with the given ID.
+   * @throws Error if a Faction with the given ID does not exist.
+   */
   static async fromId({ id, neutrals }: { id: ObjectId | string; neutrals?: boolean }): Promise<Faction> {
     const factions = await FactionResolver.fromIds({
       ids: [id],
@@ -58,6 +78,13 @@ export default class FactionResolver {
     return factions && factions[0]
   }
 
+  /**
+   * Retrieves Factions with the given IDs and converts them to their GraphQL object equivalents.
+   *
+   * @param ids The ObjectIDs of the Factions to convert.
+   * @returns The resolved Factions array for the given IDs.
+   * @throws Error if a Faction with the given IDs does not exist.
+   */
   static async fromIds({
     ids,
     neutralStats,
@@ -87,6 +114,14 @@ export default class FactionResolver {
     })
   }
 
+  /**
+   * Converts an array of Faction database objects to an array of Faction GraphQL objects.
+   *
+   * @param config The configuration used to convert the array.
+   * @param config.factions The array of Faction database objects to convert.
+   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Factions.
+   * @returns The resolved Faction array matching the GraphQL schema definition.
+   */
   static async fromArray({
     factions,
     neutralStats,
@@ -129,6 +164,14 @@ export default class FactionResolver {
     return resolvedFactions
   }
 
+  /**
+   * Calculate the statistics for Units in the faction.
+   *
+   * @param config The configuration used to calculate the statistics.
+   * @param config.faction The Faction database object to calculate Unit statistics for.
+   * @param config.neutral Whether or not to include Neutral Faction Units when calculating statistics for the Faction.
+   * @returns The statistics for the Units in the Faction.
+   */
   static resolveStats({
     faction,
     neutral,

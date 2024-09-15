@@ -12,7 +12,7 @@ export default class BasicAuth {
    *
    * @param req The incoming request.
    * @param res The outgoing response.
-   * @param next A method to trigger then next middleware in the chain.
+   * @param next A method to trigger the next middleware in the chain.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async authenticate(req: any, res: Response, next?: NextFunction) {

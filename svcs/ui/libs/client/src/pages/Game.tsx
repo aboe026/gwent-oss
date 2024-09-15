@@ -49,9 +49,9 @@ import WholeScreenDialog from '../components/WholeScreenDialog'
 import './Game.css'
 
 /**
- * The page listing a users games
+ * A user created Game.
  *
- * @returns The users games page
+ * @returns A users game.
  */
 export default function GamePage() {
   useTitle('Game | Gwent')

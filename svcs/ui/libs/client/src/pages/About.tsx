@@ -7,9 +7,9 @@ import { useTitle } from '../components/TabTitle'
 import './About.css'
 
 /**
- * The about page containing application information
+ * The about page containing application information.
  *
- * @returns The application about page
+ * @returns The application about page.
  */
 export default function AboutPage() {
   useTitle('About | Gwent')

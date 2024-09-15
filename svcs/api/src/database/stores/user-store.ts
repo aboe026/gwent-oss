@@ -51,8 +51,8 @@ export default class UserStore extends Store {
    * Retrieve a user from the database by their ObjectId.
    *
    * @param id The ObjectId of the user to retrieve.
-   * @returns The User database object.
-   * @throws Error if the user with given ID does not exist.
+   * @returns The User database object if it exists, undefined otherwise.
+   * @throws Error if more than 1 user found.
    */
   static async getById(id: string | ObjectId): Promise<UserDbObject | undefined> {
     const users = await UserStore.getByIds([id])
@@ -72,7 +72,7 @@ export default class UserStore extends Store {
    * Retrieve users from the database by their ObjectIds.
    *
    * @param ids The ObjectIds of the users to retrieve.
-   * @returns The User database object.
+   * @returns An array of database users found with the given IDs.
    */
   static async getByIds(ids: (string | ObjectId)[]): Promise<UserDbObject[]> {
     UserStore.logger.trace(`Getting users with IDs "${JSON.stringify(ids)}"`)
@@ -90,11 +90,10 @@ export default class UserStore extends Store {
   }
 
   /**
-   * Retrieve a user from the database by their name.
+   * Retrieve users from the database by their names.
    *
-   * @param names The name of the user to retrieve.
-   * @returns The User database object.
-   * @throws Error if the user with given name does not exist.
+   * @param names The names of the users to retrieve.
+   * @returns An array of user database documents found with the given names.
    */
   static async getByNames(names: string[], options?: FindOptions<Document>): Promise<UserDbObject[]> {
     if (UserStore.logger.isTraceEnabled()) {
@@ -120,7 +119,7 @@ export default class UserStore extends Store {
    * @param name The name of the user to check.
    * @param password The password to check against the potentially existing user.
    * @returns The User if they exist with the correct password.
-   * @throws An Error if the user does not exist or if the password is not correct.
+   * @throws Error if the user does not exist, more than 1 user found with the name, or if the password is not correct.
    */
   static async validate(name: string, password: string): Promise<UserDbObject> {
     const users = await UserStore.read<UserDbObject[]>({

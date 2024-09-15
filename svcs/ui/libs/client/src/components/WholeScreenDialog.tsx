@@ -3,9 +3,9 @@ import { PropsWithChildren } from 'react'
 import Centered from './Centered'
 
 /**
- * A container which centers content
+ * A dialog which occupies the entire screen, obscuring everything behind it.
  *
- * @returns The centering container
+ * @returns The obscuring screen-size dialog.
  */
 export default function WholeScreenDialog({ children, onClose, style }: WholeScreenDialogProps) {
   const id = 'wholeScreenDialog'

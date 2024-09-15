@@ -8,9 +8,9 @@ import { useUserContext } from '../App'
 import './Profile.css'
 
 /**
- * The home page of the application
+ * A page containing information about the authenticated user.
  *
- * @returns The application home page
+ * @returns The users profile page.
  */
 export default function ProfilePage() {
   const { user } = useUserContext()

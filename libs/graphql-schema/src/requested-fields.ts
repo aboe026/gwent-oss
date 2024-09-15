@@ -1,6 +1,17 @@
 import { GraphQLResolveInfo, SelectionNode, Kind } from 'graphql'
 
+/**
+ * A class to help determine which GraphQL fields
+ * a user is requesting on an operation
+ */
 export default class RequestedFields {
+  /**
+   * Get all fields a user is requesting.
+   *
+   * @param info The info passed to the operation.
+   * @param node The node to inspect, used for recursion.
+   * @returns An array of all fields requested by the user on the operation.
+   */
   static getFieldsRequested(info: GraphQLResolveInfo | undefined, node?: SelectionNode): string[] {
     const fields: string[] = []
     const nodes: SelectionNode[] = []
@@ -43,6 +54,13 @@ export default class RequestedFields {
     return fields
   }
 
+  /**
+   * Whether or not a field was requested by a user.
+   *
+   * @param info The info passed to the operation.
+   * @param field The field to check if it was requested.
+   * @returns True if the field was requested, false if not.
+   */
   static isRequested(info: GraphQLResolveInfo | undefined, field: string): boolean {
     const fieldsRequsted = RequestedFields.getFieldsRequested(info)
     for (const fieldRequested of fieldsRequsted) {
@@ -53,6 +71,13 @@ export default class RequestedFields {
     return false
   }
 
+  /**
+   * Returns all arguments requested by a user.
+   *
+   * @param info The info passed to the operation.
+   * @param node The node to inspect, used for recursion.
+   * @returns An array of all field arguments requested by a user.
+   */
   static getArguments(info: GraphQLResolveInfo | undefined, node?: SelectionNode): FieldArguments[] {
     const args: FieldArguments[] = []
     const nodes: SelectionNode[] = []
@@ -109,6 +134,13 @@ export default class RequestedFields {
     return args
   }
 
+  /**
+   * The value of a specific argument a user could request.
+   *
+   * @param info The info passed to the operation.
+   * @param path The path of the argument to get the potential value of.
+   * @returns The value of the specific argument if a user specified one, undefined otherwise.
+   */
   static getArgument<T>(info: GraphQLResolveInfo | undefined, path: string): T | undefined {
     const requestedArgs = RequestedFields.getArguments(info)
     for (const argument of requestedArgs) {

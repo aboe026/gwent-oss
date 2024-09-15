@@ -24,6 +24,11 @@ const useUserContext = () => useContext(UserContext)
 
 export { useUserContext }
 
+/**
+ * The main component of the Application, under which everything else is rendered.
+ *
+ * @returns The main application component.
+ */
 export default function App() {
   const { pathname } = useLocation()
   // eslint-disable-next-line @typescript-eslint/ban-types

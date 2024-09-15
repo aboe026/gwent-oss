@@ -9,9 +9,9 @@ import { ROUTES } from '@gwent/constants'
 import './Logout.css'
 
 /**
- * A page to log the user out of the application
+ * A page to log the user out of the application.
  *
- * @returns The application logout page
+ * @returns The application logout page.
  */
 export default function LogoutPage() {
   const navigate = useNavigate()

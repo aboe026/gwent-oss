@@ -5,6 +5,6 @@ import Upgrade4 from './upgrade-4'
 import Upgrade5 from './upgrade-5'
 
 /**
- * Return all upgrade script functions.
+ * Returns all upgrade objects.
  */
 export default [new Upgrade1(), new Upgrade2(), new Upgrade3(), new Upgrade4(), new Upgrade5()]

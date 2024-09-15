@@ -6,9 +6,9 @@ import { useUserContext } from '../App'
 import './Home.css'
 
 /**
- * The home page of the application
+ * The home page of the application.
  *
- * @returns The application home page
+ * @returns The application home page.
  */
 export default function HomePage() {
   const { user } = useUserContext()

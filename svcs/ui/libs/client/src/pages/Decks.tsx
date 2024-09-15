@@ -4,9 +4,9 @@ import { useTitle } from '../components/TabTitle'
 import './Decks.css'
 
 /**
- * The page listing a users created decks
+ * The page listing a users created decks.
  *
- * @returns The users created decks page
+ * @returns The users created decks page.
  */
 export default function DecksPage() {
   useTitle('Decks | Gwent')

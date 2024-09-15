@@ -11,6 +11,9 @@ import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/consta
 
 export const NO_RULE_DEFINED = 'No rule defined.'
 
+/**
+ * A class to define the permissions required for performing GraphQL operations (Mutations/Queries).
+ */
 export class Permissions {
   private static logger = getLogger('permissions')
 

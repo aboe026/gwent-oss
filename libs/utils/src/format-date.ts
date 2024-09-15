@@ -1,3 +1,9 @@
+/**
+ * Convert an ISO string into a human readable day.
+ *
+ * @param isoString The ISO string to convert into a formatted day string.
+ * @returns The ISO string day in a "MMMM D, YYYY" format.
+ */
 export function formatDay(isoString: string): string {
   return new Date(isoString).toLocaleDateString('en-us', {
     month: 'long',
@@ -6,6 +12,12 @@ export function formatDay(isoString: string): string {
   })
 }
 
+/**
+ * Convert an ISO string into a human readable time.
+ *
+ * @param isoString The ISO string to convert into a formatted time string.
+ * @returns The ISO string time in a "h:m A" format.
+ */
 export function formatTime(isoString: string): string {
   return new Date(isoString).toLocaleTimeString('en-us', {
     hour: 'numeric',

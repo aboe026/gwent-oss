@@ -28,9 +28,17 @@ import UserResolver from './user-resolver'
 import UserStore from '../../database/stores/user-store'
 import { validateDeck } from '@gwent/validators'
 
+/**
+ * A class executing the actions of the GraphQL Mutations defined in the schema.
+ */
 export default class MutationResolver {
   private static logger = getLogger('mutation-resolver')
 
+  /**
+   * Get the methods correlating to the GraphQL Mutations defined in the schema.
+   *
+   * @returns The methods used to resolve Mutations defined in the GraphQL schema.
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static getResolvers(): MutationResolvers<any, any> {
     return {
@@ -457,7 +465,7 @@ export default class MutationResolver {
         }
         const newCard = getRandomSubset({
           items: redrawPool,
-          subsetSize: 1,
+          size: 1,
         })[0]
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} newCard: "${JSON.stringify(newCard)}"`)
@@ -558,7 +566,7 @@ export default class MutationResolver {
 
         const hand = getRandomSubset({
           items: deck.units,
-          subsetSize: STARTING_HAND_SIZE,
+          size: STARTING_HAND_SIZE,
         })
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} hand: "${JSON.stringify(hand)}"`)
