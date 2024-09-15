@@ -151,6 +151,7 @@ test('Ready before opponent shows loading message until opponent ready', async (
       leader: t.ctx.deck1.leader,
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -170,6 +171,7 @@ test('Ready before opponent shows loading message until opponent ready', async (
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
       ready: true,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -204,6 +206,7 @@ test('Ready before opponent shows loading message until opponent ready', async (
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
       ready: true,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -252,6 +255,7 @@ test('Ready after opponent enters playing', async () => {
       leader: t.ctx.deck1.leader,
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -277,6 +281,7 @@ test('Ready after opponent enters playing', async () => {
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
       ready: true,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -325,6 +330,7 @@ test('Can set ready after redrawing 1 card', async () => {
       leader: t.ctx.deck1.leader,
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -346,6 +352,7 @@ test('Can set ready after redrawing 1 card', async () => {
       leader: t.ctx.deck1.leader,
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -377,6 +384,7 @@ test('Can set ready after redrawing 1 card', async () => {
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
       ready: true,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -425,6 +433,7 @@ test('Can set ready after redrawing 2 cards', async () => {
       leader: t.ctx.deck1.leader,
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -446,6 +455,7 @@ test('Can set ready after redrawing 2 cards', async () => {
       leader: t.ctx.deck1.leader,
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -472,6 +482,7 @@ test('Can set ready after redrawing 2 cards', async () => {
       leader: t.ctx.deck1.leader,
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],
@@ -507,6 +518,7 @@ test('Can set ready after redrawing 2 cards', async () => {
       hand: STARTING_HAND_SIZE,
       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
       ready: true,
+      from: gameDeck.from,
     },
     hand: sortObjectArray({
       sortProperties: ['unit.strength', 'unit.id'],

@@ -710,8 +710,10 @@ function renderDeckFrom({ name, updated }: { name: string; updated: Date }) {
   const isoString = new Date(updated).toISOString()
   return (
     <div className="game-player-deck-from">
-      <div title="Name of deck chosen">{name}</div>
-      <div title="When deck was last updated before choosing" className="game-player-deck-from-date">{`${formatDay(
+      <div className={HTML_CLASSES.GamePlayerDeckName} title="Name of deck chosen">
+        {name}
+      </div>
+      <div className={HTML_CLASSES.GamePlayerDeckDate} title="When deck was last updated before choosing">{`${formatDay(
         isoString
       )} @ ${formatTime(isoString)}`}</div>
     </div>

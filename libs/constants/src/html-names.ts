@@ -26,6 +26,8 @@ export const HTML_CLASSES = {
   GamePlayerUndrawnCount: 'game-player-undrawn-count',
   GamePlayerHandCount: 'game-player-hand-count',
   GamePlayerDiscardCount: 'game-player-discard-count',
+  GamePlayerDeckName: 'game-player-deck-name',
+  GamePlayerDeckDate: 'game-player-deck-date',
   GameDeckRedrawCard: 'game-deck-redraw-card',
   GameDeckRedrawAvailable: 'game-deck-redraw-available',
   GameDeckRedrawPair: 'game-deck-redraw-pair',

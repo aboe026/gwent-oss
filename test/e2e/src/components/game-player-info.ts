@@ -1,6 +1,7 @@
 import { HTML_CLASSES, MAX_ROUNDS } from '@gwent/constants'
-import { Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
-import { Selector, t } from 'testcafe'
+import { Deck, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
+import { formatDay, formatTime } from '@gwent/utils'
+import { t } from 'testcafe'
 
 export default class GamePlayerInfo {
   private container: Selector
@@ -20,6 +21,8 @@ export default class GamePlayerInfo {
       UndrawnCount: this.container.find(`.${HTML_CLASSES.GamePlayerUndrawnCount}`),
       HandCount: this.container.find(`.${HTML_CLASSES.GamePlayerHandCount}`),
       DiscardCount: this.container.find(`.${HTML_CLASSES.GamePlayerDiscardCount}`),
+      DeckName: this.container.find(`.${HTML_CLASSES.GamePlayerDeckName}`),
+      DeckDate: this.container.find(`.${HTML_CLASSES.GamePlayerDeckDate}`),
     }
   }
 
@@ -32,6 +35,7 @@ export default class GamePlayerInfo {
     score = 0,
     undrawn,
     losses = 0,
+    from,
   }: {
     name: string
     losses?: number
@@ -41,6 +45,7 @@ export default class GamePlayerInfo {
     undrawn?: number
     hand?: number
     discards?: number
+    from?: Deck | null
   }) {
     await t.expect(this.elements.Name.innerText).eql(name)
     await t.expect(this.elements.TokensWon.count).eql(MAX_ROUNDS - 1 - losses)
@@ -73,6 +78,14 @@ export default class GamePlayerInfo {
       }
       if (discards !== undefined) {
         await t.expect(this.elements.DiscardCount.innerText).eql(discards.toString())
+      }
+      if (from !== undefined && from !== null) {
+        const isoString = new Date(from.created).toISOString()
+        await t.expect(this.elements.DeckName.innerText).eql(from.name)
+        await t.expect(this.elements.DeckDate.innerText).eql(`${formatDay(isoString)} @ ${formatTime(isoString)}`)
+      } else {
+        await t.expect(this.elements.DeckName.exists).notOk()
+        await t.expect(this.elements.DeckDate.exists).notOk()
       }
     }
   }

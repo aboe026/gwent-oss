@@ -1,7 +1,7 @@
 import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
 import E2eUtil from '../util/e2e-util'
 import { Selector, t } from 'testcafe'
-import { Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import { Leader } from '@gwent/graphql-schema/resolver-typings'
 import DeckList from '../components/deck-list'
 import GamePlayerInfo from '../components/game-player-info'
@@ -112,6 +112,7 @@ export default class GamePage {
     score,
     undrawn,
     losses,
+    from,
   }: {
     name: string
     losses?: number
@@ -121,6 +122,7 @@ export default class GamePage {
     undrawn?: number
     hand?: number
     discards?: number
+    from?: Deck | null
   }) {
     const info = new GamePlayerInfo(GamePage.elements.InfoSelfContainer)
     await info.verify({
@@ -132,6 +134,7 @@ export default class GamePage {
       score,
       undrawn,
       losses,
+      from,
     })
   }
 
@@ -258,6 +261,7 @@ export default class GamePage {
       undrawn: self.undrawn,
       score: self.score,
       losses: self.losses,
+      from: self.from,
     })
     await GamePage.verifyOpponent({
       name: opponent.name,
@@ -373,6 +377,7 @@ interface GamePlayerExpected {
   score?: number
   losses?: number
   ready?: boolean
+  from?: Deck | null
 }
 
 interface Redraws {
