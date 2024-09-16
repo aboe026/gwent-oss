@@ -486,6 +486,7 @@ async function testApplication({ traceEnabled }: { traceEnabled?: boolean }) {
     traceEnabled
       ? [
           [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} build: "${build}"`],
           [`${logPrefix} version: "${version}"`],
         ]
@@ -529,7 +530,11 @@ function testCurrentUser({
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
-      ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} user: "${JSON.stringify(context?.session?.user)}"`]]
+      ? [
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
+          [`${logPrefix} user: "${JSON.stringify(context?.session?.user)}"`],
+        ]
       : []
   )
 }
@@ -566,7 +571,13 @@ async function testDecks({ traceEnabled }: { traceEnabled?: boolean }) {
     ],
   ])
   expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} decks: "${JSON.stringify([deck])}"`]] : []
+    traceEnabled
+      ? [
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
+          [`${logPrefix} decks: "${JSON.stringify([deck])}"`],
+        ]
+      : []
   )
 }
 
@@ -604,7 +615,11 @@ async function testFactions({ traceEnabled }: { traceEnabled?: boolean }) {
   ])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
-      ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} factions: "${JSON.stringify([faction])}"`]]
+      ? [
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
+          [`${logPrefix} factions: "${JSON.stringify([faction])}"`],
+        ]
       : []
   )
 }
@@ -643,7 +658,11 @@ async function testGame({ traceEnabled }: { traceEnabled?: boolean }) {
   expect(fromIdSpy.mock.calls).toEqual([[gameId]])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
-      ? [[`${logPrefix} args: "${JSON.stringify({ id: gameId })}"`], [`${logPrefix} requested fields: "[]"`]]
+      ? [
+          [`${logPrefix} args: "${JSON.stringify({ id: gameId })}"`],
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
+        ]
       : []
   )
 }
@@ -712,6 +731,7 @@ async function testGameDeck({
       ? [
           [`${logPrefix} args: "${JSON.stringify({ game: gameId })}"`],
           [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} game: "${JSON.stringify(gameResponse)}"`],
           [
             `${logPrefix} player: "${JSON.stringify(
@@ -752,7 +772,13 @@ async function testGames({ traceEnabled }: { traceEnabled?: boolean }) {
   expect(getByUserIdSpy.mock.calls).toEqual([[userId]])
   expect(fromArraySpy.mock.calls).toEqual([[[game]]])
   expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} games: "${JSON.stringify([game])}"`]] : []
+    traceEnabled
+      ? [
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
+          [`${logPrefix} games: "${JSON.stringify([game])}"`],
+        ]
+      : []
   )
 }
 
@@ -811,6 +837,7 @@ async function testLeaders({
       ? [
           [`${logPrefix} args: "${JSON.stringify({ factions: factionKeys })}"`],
           [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} factions: "${JSON.stringify(factionGetResponse)}"`],
           [`${logPrefix} factionIds: "${JSON.stringify(factionGetResponse?.map((faction) => faction._id))}"`],
           [`${logPrefix} leaders: "${JSON.stringify([leader])}"`],
@@ -847,7 +874,9 @@ function testSettings({ traceEnabled }: { traceEnabled?: boolean }) {
     },
   ])
 
-  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`${logPrefix} requested fields: "[]"`]] : [])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} requested arguments: "[]"`]] : []
+  )
 }
 
 async function testUnits({
@@ -910,6 +939,7 @@ async function testUnits({
       ? [
           [`${logPrefix} args: "${JSON.stringify({ factions: factionKeys, deckable })}"`],
           [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} factions: "${JSON.stringify(factionGetResponse)}"`],
           [`${logPrefix} factionIds: "${JSON.stringify(factionGetResponse?.map((faction) => faction._id))}"`],
           [`${logPrefix} units: "${JSON.stringify([unit])}"`],

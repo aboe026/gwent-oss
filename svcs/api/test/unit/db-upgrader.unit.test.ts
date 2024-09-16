@@ -124,7 +124,6 @@ describe('db-upgrader', () => {
       const upgrades = [new TestUpgrade(), new TestUpgrade()]
       const start = new Date()
       const end = new Date(start.getTime() + 1000 * 60) // 1 second
-      // TODO: look into changes that had to be made to see if they are legit
       await testDbUpgrader({
         currentVersion,
         upgrades,

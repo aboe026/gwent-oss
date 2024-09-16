@@ -260,8 +260,8 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
-- add ability to resolve neutrals on gameDeck (undrawn, hand, discard, redraws (from/to))
-- Change "ready" mutation to "readyGame"
+- add ability to target resolution of neutrals on each type of DeckUnit gameDeck (undrawn, hand, discard, redraws (from/to))
+- Change "ready" mutation to "readyGame"?
 - Remove @map directive for ID types?
 - Figure out why mutation resolvers don't show typescript error when returning Db object instead of resolved object
 - have Graphql context be typed: https://the-guild.dev/graphql/codegen/plugins/typescript/typescript-resolvers#contexttype

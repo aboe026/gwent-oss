@@ -41,6 +41,9 @@ export default class QueryResolver {
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
         }
         const build = await AppInfo.getBuildNumber()
         if (QueryResolver.logger.isTraceEnabled()) {
@@ -60,6 +63,9 @@ export default class QueryResolver {
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
           QueryResolver.logger.trace(`${logPrefix} user: "${JSON.stringify(user)}"`)
         }
         if (!user) {
@@ -76,6 +82,9 @@ export default class QueryResolver {
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
           )
         }
         const decks = await DeckStore.get(userId)
@@ -97,6 +106,9 @@ export default class QueryResolver {
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
         }
         const factions = await FactionStore.get({})
         if (QueryResolver.logger.isTraceEnabled()) {
@@ -117,6 +129,9 @@ export default class QueryResolver {
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
         }
         const gameId = args.id
         return GameResolver.fromId(gameId)
@@ -129,6 +144,9 @@ export default class QueryResolver {
           QueryResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
           )
         }
         const gameId = args.game
@@ -171,6 +189,9 @@ export default class QueryResolver {
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
         }
         const games = await GameStore.getByUserId(userId)
         if (QueryResolver.logger.isTraceEnabled()) {
@@ -186,6 +207,9 @@ export default class QueryResolver {
           QueryResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
           )
         }
         const factionKeys = args.factions
@@ -223,6 +247,9 @@ export default class QueryResolver {
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
         }
         return [
           {
@@ -241,6 +268,9 @@ export default class QueryResolver {
           QueryResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           QueryResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          QueryResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
           )
         }
         const factionKeys = args.factions

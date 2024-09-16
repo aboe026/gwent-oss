@@ -224,7 +224,7 @@ describe('mutation-resolver', () => {
         expectedArtStyle: 2,
       })
     })
-    it('calls to trace if enabled', async () => {
+    it('logs to trace if enabled', async () => {
       await testAddDeck({
         userId,
         traceEnabled: true,
@@ -286,7 +286,7 @@ describe('mutation-resolver', () => {
         getByNamesCalls: [[[opponent]]],
       })
     })
-    it('calls to trace if enabled', async () => {
+    it('logs to trace if enabled', async () => {
       const opponent = 'opponent'
       const user = TestUtil.getDbUser({
         name: 'opponent',
@@ -341,7 +341,7 @@ describe('mutation-resolver', () => {
         expected: TestUtil.getUserFromDbUser(user),
       })
     })
-    it('calls to trace if enabled', async () => {
+    it('logs to trace if enabled', async () => {
       const user = TestUtil.getDbUser({
         name,
       })
@@ -404,7 +404,7 @@ describe('mutation-resolver', () => {
         additionalTraceCalls: [`${logPrefix}: setting user on context session.`],
       })
     })
-    it('calls to trace if enabled', async () => {
+    it('logs to trace if enabled', async () => {
       await testLogin({
         context: {
           session: {
@@ -451,7 +451,7 @@ describe('mutation-resolver', () => {
         debugCalls: [[`${logPrefix}: removing from session.`]],
       })
     })
-    it('calls to trace if enabled', async () => {
+    it('logs to trace if enabled', async () => {
       testLogout({
         context: {
           session: {
@@ -1088,7 +1088,7 @@ describe('mutation-resolver', () => {
         ],
       })
     })
-    it('calls to trace if enabled', async () => {
+    it('logs to trace if enabled', async () => {
       const unit2 = TestUtil.getDbUnit({})
       const previousRedraw: RedrawDbObject = {
         from: TestUtil.getDbDeckUnit({}),
@@ -1490,7 +1490,7 @@ describe('mutation-resolver', () => {
         ],
       })
     })
-    it('calls to trace if enabled', async () => {
+    it('logs to trace if enabled', async () => {
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -1827,6 +1827,7 @@ async function testAddDeck({
             })}"`,
           ],
           [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} factions: "${JSON.stringify([faction])}"`],
           [`${logPrefix} leaders: "${JSON.stringify([leader])}"`],
           [`${logPrefix} units: "${JSON.stringify([unit])}"`],
@@ -1925,6 +1926,7 @@ async function testAddGame({
             })}"`,
           ],
           [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} creator: "${user.name}"`],
           [`${logPrefix} opponentNames: "${JSON.stringify(opponentNames)}"`],
           [`${logPrefix} opponents: "${JSON.stringify(getUserByNamesResponse)}"`],
@@ -1989,7 +1991,11 @@ async function testAddUser({
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
-      ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} user: "${JSON.stringify(userAddResponse)}"`]]
+      ? [
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
+          [`${logPrefix} user: "${JSON.stringify(userAddResponse)}"`],
+        ]
       : []
   )
 }
@@ -2063,6 +2069,7 @@ async function testLogin({
   if (traceEnabled) {
     traceCalls.push(
       [`${logPrefix} requested fields: "[]"`],
+      [`${logPrefix} requested arguments: "[]"`],
       [`${logPrefix} user: "${JSON.stringify(userValidateResponse)}"`]
     )
   }
@@ -2099,7 +2106,9 @@ function testLogout({
 
   expect(context?.session?.user).toEqual(undefined)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`${logPrefix} requested fields: "[]"`]] : [])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} requested arguments: "[]"`]] : []
+  )
 }
 
 async function testReady({
@@ -2173,6 +2182,7 @@ async function testReady({
             })}"`,
           ],
           [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} game: "${JSON.stringify(gameGetResponse)}"`],
           [
             `${logPrefix} player: "${JSON.stringify(
@@ -2288,6 +2298,7 @@ async function testRedraw({
             })}"`,
           ],
           [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} game: "${JSON.stringify(gameGetResponse)}"`],
           [`${logPrefix} player: "${JSON.stringify(player)}"`],
           [
@@ -2423,6 +2434,7 @@ async function testSetDeck({
             })}"`,
           ],
           [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} deck: "${JSON.stringify(getDeckResponse)}"`],
           [`${logPrefix} game: "${JSON.stringify(getGameResponse)}"`],
           [

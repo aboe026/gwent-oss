@@ -51,6 +51,9 @@ export default class MutationResolver {
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          MutationResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
         }
         const name = args.name
         const factionKey = args.faction
@@ -191,6 +194,9 @@ export default class MutationResolver {
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          MutationResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
           MutationResolver.logger.trace(`${logPrefix} creator: "${creatorName}"`)
         }
         const opponentNames = getUniqueItems<string>(args.opponentNames.filter((name) => name !== creatorName))
@@ -258,6 +264,9 @@ export default class MutationResolver {
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          MutationResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
         }
         try {
           const user = await UserStore.add(name, password)
@@ -284,6 +293,9 @@ export default class MutationResolver {
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          MutationResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
           )
         }
         let user: UserDbObject
@@ -328,6 +340,9 @@ export default class MutationResolver {
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
           )
+          MutationResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
         }
         if (userId) {
           MutationResolver.logger.debug(`${logPrefix}: removing from session.`)
@@ -344,6 +359,9 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          MutationResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
           )
         }
         const gameId = args.game
@@ -406,6 +424,9 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          MutationResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
           )
         }
         const gameId = args.game
@@ -519,6 +540,9 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
           MutationResolver.logger.trace(
             `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          MutationResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
           )
         }
         const gameId = args.game
