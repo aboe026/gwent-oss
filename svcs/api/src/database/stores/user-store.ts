@@ -37,7 +37,7 @@ export default class UserStore extends Store {
           code: 11000,
         })
       ) {
-        const message = `User "${name}" already exists`
+        const message = `User with name "${name}" already exists.`
         UserStore.logger.error(message)
         throw Error(message)
       } else {
@@ -128,10 +128,10 @@ export default class UserStore extends Store {
       },
     })
     if (users.length === 0) {
-      UserStore.logger.debug(`User "${name}" does not exist`)
+      UserStore.logger.debug(`User with name "${name}" does not exist.`)
       throw Error(`Invalid credentials for user "${name}"`)
     } else if (users.length > 1) {
-      const message = `More than 1 user exists with name "${name}": "${JSON.stringify(users)}"`
+      const message = `More than 1 user exists with name "${name}": "${JSON.stringify(users)}".`
       UserStore.logger.error(message)
       throw Error(message)
     }

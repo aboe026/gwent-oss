@@ -20,7 +20,7 @@ test('Shows error for nonexistent user', async () => {
   await LoginPage.verifyNotLoggedIn({
     username,
     password,
-    error: `Invalid credentials for user "${username}"`,
+    error: `Invalid credentials for user "${username}".`,
   })
 })
 
@@ -42,7 +42,7 @@ test('Shows error for wrong password', async () => {
   await LoginPage.verifyNotLoggedIn({
     username,
     password,
-    error: `Invalid credentials for user "${username}"`,
+    error: `Invalid credentials for user "${username}".`,
   })
 })
 

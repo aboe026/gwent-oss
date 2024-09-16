@@ -155,7 +155,7 @@ describe('query-resolver', () => {
     const gameId = new ObjectId().toString()
     const logPrefix = `gameDeck by "${userId}"`
     it('throws error if game does not exist', async () => {
-      const error = `Game "${gameId}" does not exist.`
+      const error = `Game with ID "${gameId}" does not exist.`
       await testGameDeck({
         userId,
         gameId,
@@ -483,7 +483,13 @@ async function testApplication({ traceEnabled }: { traceEnabled?: boolean }) {
 
   expect(getBuildNumberSpy.mock.calls).toEqual([[]])
   expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} build: "${build}"`]] : []
+    traceEnabled
+      ? [
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} build: "${build}"`],
+          [`${logPrefix} version: "${version}"`],
+        ]
+      : []
   )
 }
 

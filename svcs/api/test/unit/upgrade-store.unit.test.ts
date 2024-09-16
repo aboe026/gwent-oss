@@ -102,7 +102,7 @@ describe('upgrade-store', () => {
       await testGetLock({
         locks,
         traceEnabled: true,
-        traces: [[`getLock docs: "${JSON.stringify(locks)}"`]],
+        traceCalls: [[`getLock docs: "${JSON.stringify(locks)}"`]],
       })
     })
   })
@@ -180,7 +180,7 @@ describe('upgrade-store', () => {
         upgrades,
         expected: version,
         traceEnabled: true,
-        traces: [[`getCurrentVersion docs: "${JSON.stringify(upgrades)}"`]],
+        traceCalls: [[`getCurrentVersion docs: "${JSON.stringify(upgrades)}"`]],
       })
     })
   })
@@ -200,7 +200,7 @@ describe('upgrade-store', () => {
         version: attempt.version,
         time: attempt.time,
         traceEnabled: true,
-        traces: [[`addAttempt doc: "${JSON.stringify(attempt)}"`]],
+        traceCalls: [[`addAttempt doc: "${JSON.stringify(attempt)}"`]],
       })
     })
   })
@@ -254,7 +254,7 @@ describe('upgrade-store', () => {
         start: upgrade.start,
         end: upgrade.end,
         traceEnabled: true,
-        traces: [[`addUpgrade doc: "${JSON.stringify(upgrade)}"`]],
+        traceCalls: [[`addUpgrade doc: "${JSON.stringify(upgrade)}"`]],
       })
     })
   })
@@ -295,12 +295,12 @@ describe('upgrade-store', () => {
 async function testGetLock({
   locks,
   traceEnabled,
-  traces = [],
+  traceCalls = [],
   error,
 }: {
   locks: LockDbObject[]
   traceEnabled?: boolean
-  traces?: string[][]
+  traceCalls?: string[][]
   error?: string
 }) {
   const traceSpy = jest.fn().mockImplementation()
@@ -326,20 +326,20 @@ async function testGetLock({
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual(traces)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 
 async function testGetCurrentVersion({
   upgrades,
   expected,
   traceEnabled,
-  traces = [],
+  traceCalls = [],
   error,
 }: {
   upgrades: UpgradeDbObject[]
   expected?: number
   traceEnabled?: boolean
-  traces?: string[][]
+  traceCalls?: string[][]
   error?: string
 }) {
   const traceSpy = jest.fn().mockImplementation()
@@ -373,19 +373,19 @@ async function testGetCurrentVersion({
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual(traces)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 
 async function testAddAttempt({
   version,
   time,
   traceEnabled,
-  traces = [],
+  traceCalls = [],
 }: {
   version: number
   time: Date
   traceEnabled?: boolean
-  traces?: string[][]
+  traceCalls?: string[][]
 }) {
   const traceSpy = jest.fn().mockImplementation()
   UpgradeStore['logger'] = {
@@ -409,7 +409,7 @@ async function testAddAttempt({
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual(traces)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 
 async function testAddUpgrade({
@@ -417,13 +417,13 @@ async function testAddUpgrade({
   start,
   end,
   traceEnabled,
-  traces = [],
+  traceCalls = [],
 }: {
   version: number
   start: Date
   end: Date
   traceEnabled?: boolean
-  traces?: string[][]
+  traceCalls?: string[][]
 }) {
   const traceSpy = jest.fn().mockImplementation()
   UpgradeStore['logger'] = {
@@ -449,5 +449,5 @@ async function testAddUpgrade({
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual(traces)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

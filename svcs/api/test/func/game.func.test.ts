@@ -540,7 +540,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Deck already set.')],
+          errors: [new GraphQLError(`Deck already set for game "${game.id}".`)],
         })
         const gameDeckAfterSet = await getGameDeck({
           gameId: game.id,
@@ -1334,7 +1334,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Cannot redraw before deck is set.')],
+          errors: [new GraphQLError(`Cannot redraw before deck is set for game "${game.id}".`)],
         })
       })
       it('throws error if ready', async () => {
@@ -1381,7 +1381,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Cannot redraw after game is marked as ready.')],
+          errors: [new GraphQLError(`Cannot redraw after game "${game.id}" is marked as ready.`)],
         })
       })
       it('throws error if maximum redraws exceeded', async () => {
@@ -1434,7 +1434,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`)],
+          errors: [new GraphQLError(`Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${game.id}".`)],
         })
       })
       it('throws error if unit does not exist in hand', async () => {
@@ -1456,13 +1456,14 @@ describe('game', () => {
           gameId: game.id,
           userId: user1.id,
         })
+        const unitId = gameDeck.undrawn[0].unit.id
         await expect(
           graphql({
             schema,
             source: `mutation {
               redraw(
                 game: "${game.id}"
-                unit: "${gameDeck.undrawn[0].unit.id}"
+                unit: "${unitId}"
               ) {
                 ${getDeckUnitFragment({})}
               }
@@ -1477,7 +1478,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Invalid unit, does not exist in hand.')],
+          errors: [new GraphQLError(`Unit with ID "${unitId}" does not exist in hand for game "${game.id}".`)],
         })
       })
       it('throws error if try to redraw same card twice', async () => {
@@ -1526,7 +1527,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Invalid unit, does not exist in hand.')],
+          errors: [new GraphQLError(`Unit with ID "${unitToRedraw}" does not exist in hand for game "${game.id}".`)],
         })
       })
     })
@@ -2091,7 +2092,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Must set deck first.')],
+          errors: [new GraphQLError(`Must set deck on game "${game.id}" first.`)],
         })
       })
       it('returns error if already marked as ready', async () => {
@@ -2135,7 +2136,7 @@ describe('game', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Already marked as ready.')],
+          errors: [new GraphQLError(`Game "${game.id}" already marked as ready.`)],
         })
       })
     })

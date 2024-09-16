@@ -12,12 +12,13 @@ describe('user-store', () => {
     })
     it('logs and throws error if duplicate user', async () => {
       const username = 'username'
+      const error = `User with name "${username}" already exists.`
       await testAddUser({
         username,
         createError: Error('Duplicate user'),
         isMongoError: true,
-        error: `User "${username}" already exists`,
-        errors: [[`User "${username}" already exists`]],
+        error: error,
+        errorCalls: [[error]],
       })
     })
     it('logs and throws error not related to duplicate user', async () => {
@@ -26,7 +27,7 @@ describe('user-store', () => {
         createError: Error(error),
         isMongoError: false,
         error,
-        errors: [[Error(error)]],
+        errorCalls: [[Error(error)]],
       })
     })
   })
@@ -118,7 +119,7 @@ describe('user-store', () => {
         username,
         users: [],
         error: `Invalid credentials for user "${username}"`,
-        debugs: [[`User "${username}" does not exist`]],
+        debugCalls: [[`User with name "${username}" does not exist.`]],
       })
     })
     it('throws error if more than one user exists', async () => {
@@ -131,11 +132,12 @@ describe('user-store', () => {
           name: username,
         }),
       ]
+      const error = `More than 1 user exists with name "${username}": "${JSON.stringify(users)}".`
       await testValidate({
         username,
         users,
-        error: `More than 1 user exists with name "${username}": "${JSON.stringify(users)}"`,
-        errors: [[`More than 1 user exists with name "${username}": "${JSON.stringify(users)}"`]],
+        error: error,
+        errorCalls: [[error]],
       })
     })
     it('throws error password does not match hash', async () => {
@@ -150,7 +152,7 @@ describe('user-store', () => {
         ],
         match: false,
         error: `Invalid credentials for user "${username}"`,
-        debugs: [[`User "${username}" entered incorrect password`]],
+        debugCalls: [[`User "${username}" entered incorrect password`]],
       })
     })
     it('returns user if password matches hash', async () => {
@@ -185,14 +187,14 @@ async function testAddUser({
   createError,
   isMongoError,
   error,
-  errors = [],
+  errorCalls = [],
 }: {
   username?: string
   password?: string
   createError?: Error
   isMongoError?: boolean
   error?: string
-  errors?: (string | Error)[][]
+  errorCalls?: (string | Error)[][]
 }) {
   const hashedPassword = 'hashedPassword'
   const _id = new ObjectId()
@@ -256,7 +258,7 @@ async function testAddUser({
       : []
   )
   expect(traceSpy.mock.calls).toEqual([[`Adding user "${username}"`]])
-  expect(errorSpy.mock.calls).toEqual(errors)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(dateSpy.mock.calls).toEqual([[]])
 }
 
@@ -356,16 +358,16 @@ async function testValidate({
   match,
   expected,
   error,
-  errors = [],
-  debugs = [],
+  errorCalls = [],
+  debugCalls = [],
 }: {
   username: string
   users: UserDbObject[]
   match?: boolean
   expected?: UserDbObject
   error?: string
-  errors?: string[][]
-  debugs?: string[][]
+  errorCalls?: string[][]
+  debugCalls?: string[][]
 }) {
   const password = 'password'
   const expectedPassword = match === undefined ? '' : users[0].password
@@ -398,6 +400,6 @@ async function testValidate({
     ],
   ])
   expect(matchSpy.mock.calls).toEqual(match === undefined ? [] : [[password, expectedPassword]])
-  expect(debugSpy.mock.calls).toEqual(debugs)
-  expect(errorSpy.mock.calls).toEqual(errors)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

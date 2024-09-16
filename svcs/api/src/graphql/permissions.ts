@@ -40,7 +40,7 @@ export class Permissions {
   static isAuthenticated(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
     if (!context?.session?.user?._id) {
       Permissions.logger.debug(
-        `isAuthenticated failed operation "${info.fieldName}" due to no user on session: "${JSON.stringify(
+        `isAuthenticated failed operation "${info.fieldName}": No user on session: "${JSON.stringify(
           context?.session?.user
         )}"`
       )
@@ -56,18 +56,15 @@ export class Permissions {
   static async isPlayer(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
     const userId = context?.session?.user?._id
     const gameId = args.game || args.id
+    const logPrefix = `isPlayer check failed operation "${info.fieldName}":`
     if (!userId) {
       Permissions.logger.debug(
-        `isPlayer check failed operation "${
-          info.fieldName
-        }" due to not being able to extract user ID from context: "${JSON.stringify(context?.session?.user)}"`
+        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context?.session?.user)}"`
       )
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     if (!ObjectId.isValid(gameId)) {
-      Permissions.logger.debug(
-        `isPlayer check failed operation "${info.fieldName}" due to gameId "${gameId}" not being a valid ObjectId.`
-      )
+      Permissions.logger.debug(`${logPrefix} gameId "${gameId}" not a valid ObjectId.`)
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     try {
@@ -81,24 +78,18 @@ export class Permissions {
         },
       })
       if (!game) {
-        Permissions.logger.debug(
-          `isPlayer check failed operation "${info.fieldName}" due to game with ID "${gameId}" not existing.`
-        )
+        Permissions.logger.debug(`${logPrefix} Game with ID "${gameId}" does not exist.`)
         return Error(NOT_AUTHORIZED_MESSAGE)
       } else if (!game.players.find((player) => player.user.toString() === userId.toString())) {
         Permissions.logger.debug(
-          `isPlayer check failed operation "${
-            info.fieldName
-          }" due to user "${userId}" not included in game "${gameId}" players: "${JSON.stringify(
+          `${logPrefix} User "${userId}" not included in game "${gameId}" players: "${JSON.stringify(
             game.players.map((player) => player.user.toString())
           )}".`
         )
         return Error(NOT_AUTHORIZED_MESSAGE)
       }
     } catch (error: unknown) {
-      Permissions.logger.error(
-        `isPlayer check failed operation "${info.fieldName}" due to exception attempting to get game with ID "${gameId}": "${error}"`
-      )
+      Permissions.logger.error(`${logPrefix} Exception attempting to get game with ID "${gameId}": "${error}"`)
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     return true
@@ -111,18 +102,15 @@ export class Permissions {
   static async ownsDeck(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
     const userId = context?.session?.user?._id
     const deckId = args.deck || args.id
+    const logPrefix = `ownsDeck check failed operation "${info.fieldName}":`
     if (!userId) {
       Permissions.logger.debug(
-        `ownsDeck check failed operation "${
-          info.fieldName
-        }" due to not being able to extract user ID from context: "${JSON.stringify(context?.session?.user)}"`
+        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context?.session?.user)}"`
       )
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     if (!ObjectId.isValid(deckId)) {
-      Permissions.logger.debug(
-        `ownsDeck check failed operation "${info.fieldName}" due to deckId "${deckId}" not being a valid ObjectId.`
-      )
+      Permissions.logger.debug(`${logPrefix} deckId "${deckId}" not a valid ObjectId.`)
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     try {
@@ -136,21 +124,15 @@ export class Permissions {
         },
       })
       if (!deck) {
-        Permissions.logger.debug(
-          `ownsDeck check failed operation "${info.fieldName}" due to deck with ID "${deckId}" not existing.`
-        )
+        Permissions.logger.debug(`${logPrefix} Deck with ID "${deckId}" does not exist.`)
         return Error(NOT_AUTHORIZED_MESSAGE)
       }
       if (deck.user.toString() !== userId.toString()) {
-        Permissions.logger.debug(
-          `ownsDeck check failed operation "${info.fieldName}" due to deck with ID "${deckId}" not being owned by user "${userId}".`
-        )
+        Permissions.logger.debug(`${logPrefix} Deck with ID "${deckId}" not owned by user "${userId}".`)
         return Error(NOT_AUTHORIZED_MESSAGE)
       }
     } catch (error: unknown) {
-      Permissions.logger.error(
-        `ownsDeck check failed operation "${info.fieldName}" due to exception attempting to get deck with ID "${deckId}": "${error}"`
-      )
+      Permissions.logger.error(`${logPrefix} Exception attempting to get deck with ID "${deckId}": "${error}"`)
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     return true

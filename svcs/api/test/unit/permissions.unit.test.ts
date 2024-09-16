@@ -51,18 +51,13 @@ describe('permissions', () => {
     const info = {
       fieldName: 'currentUser',
     } as any as GraphQLResolveInfo
+    const logPrefix = `isAuthenticated failed operation "${info.fieldName}":`
     it('returns error if context undefined', () => {
       testIsAuthenticated({
         context: undefined,
         info,
         expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        debugCalls: [
-          [
-            `isAuthenticated failed operation "${info.fieldName}" due to no user on session: "${JSON.stringify(
-              undefined
-            )}"`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
       })
     })
     it('returns error if session undefined', () => {
@@ -72,13 +67,7 @@ describe('permissions', () => {
         },
         info,
         expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        debugCalls: [
-          [
-            `isAuthenticated failed operation "${info.fieldName}" due to no user on session: "${JSON.stringify(
-              undefined
-            )}"`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
       })
     })
     it('returns error if user undefined', () => {
@@ -90,13 +79,7 @@ describe('permissions', () => {
         },
         info,
         expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        debugCalls: [
-          [
-            `isAuthenticated failed operation "${info.fieldName}" due to no user on session: "${JSON.stringify(
-              undefined
-            )}"`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
       })
     })
     it('returns error if id undefined', () => {
@@ -110,9 +93,7 @@ describe('permissions', () => {
         },
         info,
         expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        debugCalls: [
-          [`isAuthenticated failed operation "${info.fieldName}" due to no user on session: "${JSON.stringify({})}"`],
-        ],
+        debugCalls: [[`${logPrefix} No user on session: "${JSON.stringify({})}"`]],
       })
     })
     it('returns true if user defined on session', () => {
@@ -131,6 +112,7 @@ describe('permissions', () => {
   })
   describe('isPlayer', () => {
     const fieldName = 'gameDeck'
+    const logPrefix = `isPlayer check failed operation "${fieldName}":`
     it('returns error if no user id on context', async () => {
       await testIsPlayer({
         fieldName,
@@ -139,11 +121,9 @@ describe('permissions', () => {
         getByIdCalls: [],
         debugCalls: [
           [
-            `isPlayer check failed operation "${fieldName}" due to not being able to extract user ID from context: "${JSON.stringify(
-              {
-                _id: null,
-              }
-            )}"`,
+            `${logPrefix} Could not extract user ID from context: "${JSON.stringify({
+              _id: null,
+            })}"`,
           ],
         ],
       })
@@ -155,9 +135,7 @@ describe('permissions', () => {
         gameId,
         error: NOT_AUTHORIZED_MESSAGE,
         getByIdCalls: [],
-        debugCalls: [
-          [`isPlayer check failed operation "${fieldName}" due to gameId "${gameId}" not being a valid ObjectId.`],
-        ],
+        debugCalls: [[`${logPrefix} gameId "${gameId}" not a valid ObjectId.`]],
       })
     })
     it('returns error if error thrown getting game', async () => {
@@ -168,13 +146,7 @@ describe('permissions', () => {
         gameId,
         gameError: error,
         error: NOT_AUTHORIZED_MESSAGE,
-        errorCalls: [
-          [
-            `isPlayer check failed operation "${fieldName}" due to exception attempting to get game with ID "${gameId}": "${Error(
-              error
-            )}"`,
-          ],
-        ],
+        errorCalls: [[`${logPrefix} Exception attempting to get game with ID "${gameId}": "${Error(error)}"`]],
       })
     })
     it('returns error if game does not exist', async () => {
@@ -184,7 +156,7 @@ describe('permissions', () => {
         gameId,
         gameResponse: undefined,
         error: NOT_AUTHORIZED_MESSAGE,
-        debugCalls: [[`isPlayer check failed operation "${fieldName}" due to game with ID "${gameId}" not existing.`]],
+        debugCalls: [[`${logPrefix} Game with ID "${gameId}" does not exist.`]],
       })
     })
     it('returns error if user is not a player on game', async () => {
@@ -211,9 +183,7 @@ describe('permissions', () => {
         gameResponse: game,
         error: NOT_AUTHORIZED_MESSAGE,
         debugCalls: [
-          [
-            `isPlayer check failed operation "${fieldName}" due to user "${userId}" not included in game "${gameId}" players: "["${player1}","${player2}"]".`,
-          ],
+          [`${logPrefix} User "${userId}" not included in game "${gameId}" players: "["${player1}","${player2}"]".`],
         ],
       })
     })
@@ -259,6 +229,7 @@ describe('permissions', () => {
   })
   describe('ownsDeck', () => {
     const fieldName = 'setDeck'
+    const logPrefix = `ownsDeck check failed operation "${fieldName}":`
     it('returns error if no user on session', async () => {
       await testOwnsDeck({
         fieldName,
@@ -267,11 +238,9 @@ describe('permissions', () => {
         getByIdsCalls: [],
         debugCalls: [
           [
-            `ownsDeck check failed operation "${fieldName}" due to not being able to extract user ID from context: "${JSON.stringify(
-              {
-                _id: null,
-              }
-            )}"`,
+            `${logPrefix} Could not extract user ID from context: "${JSON.stringify({
+              _id: null,
+            })}"`,
           ],
         ],
       })
@@ -283,9 +252,7 @@ describe('permissions', () => {
         deckId,
         error: NOT_AUTHORIZED_MESSAGE,
         getByIdsCalls: [],
-        debugCalls: [
-          [`ownsDeck check failed operation "${fieldName}" due to deckId "${deckId}" not being a valid ObjectId.`],
-        ],
+        debugCalls: [[`${logPrefix} deckId "${deckId}" not a valid ObjectId.`]],
       })
     })
     it('returns error if DeckStore getByIds throws error', async () => {
@@ -296,13 +263,7 @@ describe('permissions', () => {
         deckId,
         decksError: error,
         error: NOT_AUTHORIZED_MESSAGE,
-        errorCalls: [
-          [
-            `ownsDeck check failed operation "${fieldName}" due to exception attempting to get deck with ID "${deckId}": "${Error(
-              error
-            )}"`,
-          ],
-        ],
+        errorCalls: [[`${logPrefix} Exception attempting to get deck with ID "${deckId}": "${Error(error)}"`]],
       })
     })
     it('returns error if DeckStore getByIds returns undefined', async () => {
@@ -312,7 +273,7 @@ describe('permissions', () => {
         deckId,
         deckResponse: undefined,
         error: NOT_AUTHORIZED_MESSAGE,
-        debugCalls: [[`ownsDeck check failed operation "${fieldName}" due to deck with ID "${deckId}" not existing.`]],
+        debugCalls: [[`${logPrefix} Deck with ID "${deckId}" does not exist.`]],
       })
     })
     it('returns error if DeckStore getById returns undefined', async () => {
@@ -322,7 +283,7 @@ describe('permissions', () => {
         deckId,
         deckResponse: undefined,
         error: NOT_AUTHORIZED_MESSAGE,
-        debugCalls: [[`ownsDeck check failed operation "${fieldName}" due to deck with ID "${deckId}" not existing.`]],
+        debugCalls: [[`${logPrefix} Deck with ID "${deckId}" does not exist.`]],
       })
     })
     it('returns error if deck user does not match context user', async () => {
@@ -337,11 +298,7 @@ describe('permissions', () => {
         deckId,
         deckResponse: deck,
         error: NOT_AUTHORIZED_MESSAGE,
-        debugCalls: [
-          [
-            `ownsDeck check failed operation "${fieldName}" due to deck with ID "${deckId}" not being owned by user "${userId}".`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} Deck with ID "${deckId}" not owned by user "${userId}".`]],
       })
     })
     it('returns true if deck user matches context user', async () => {

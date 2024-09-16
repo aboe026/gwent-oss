@@ -53,7 +53,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if faction with key does not exist', async () => {
-      const error = `Faction with key "${FactionKey.Monsters}" not found.`
+      const error = `Faction with key "${FactionKey.Monsters}" does not exist.`
       await testAddDeck({
         userId,
         factionGetResponse: [],
@@ -70,7 +70,7 @@ describe('mutation-resolver', () => {
     })
     it('returns error if leader does not exist', async () => {
       const leaderId = new ObjectId()
-      const error = `Leader "${leaderId}" does not exist.`
+      const error = `Leader with ID "${leaderId}" does not exist.`
       await testAddDeck({
         userId,
         leaderId,
@@ -88,7 +88,7 @@ describe('mutation-resolver', () => {
     it('returns error if leader is of wrong faction', async () => {
       const factionId = new ObjectId()
       const leaderId = new ObjectId()
-      const error = `Leader "${leaderId}" faction "${FactionKey.NorthernRealms}" does not match deck faction "${FactionKey.Monsters}".`
+      const error = `Faction key "${FactionKey.NorthernRealms}" for leader "${leaderId}" does not match deck faction key "${FactionKey.Monsters}".`
       await testAddDeck({
         userId,
         factionKey: FactionKey.Monsters,
@@ -120,7 +120,7 @@ describe('mutation-resolver', () => {
     })
     it('returns error if single unit does not exist', async () => {
       const unitId = new ObjectId()
-      const error = `Unit "${unitId}" does not exist.`
+      const error = `Unit with ID "${unitId}" does not exist.`
       await testAddDeck({
         userId,
         unitIds: [unitId],
@@ -137,7 +137,9 @@ describe('mutation-resolver', () => {
     it('returns errors if multiple units do not exist', async () => {
       const unitId1 = new ObjectId()
       const unitId2 = new ObjectId()
-      const error = [`Unit "${unitId1}" does not exist.`, `Unit "${unitId2}" does not exist.`].join('\n')
+      const error = [`Unit with ID "${unitId1}" does not exist.`, `Unit with ID "${unitId2}" does not exist.`].join(
+        '\n'
+      )
       await testAddDeck({
         userId,
         unitIds: [unitId1, unitId2],
@@ -160,7 +162,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed validateDeck: ${error}`]],
+        debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns errors if validateDeck returns multiple errors', async () => {
@@ -173,7 +175,7 @@ describe('mutation-resolver', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed validateDeck: ${error1}\n${error2}`]],
+        debugCalls: [[`${logPrefix} failed: ${error1}\n${error2}`]],
       })
     })
     it('returns error if deck with name already exists', async () => {
@@ -243,7 +245,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if too many opponents', async () => {
-      const error = `Excessive number of opponents for game at "2", maximum is "${PLAYER_COUNTS.Min - 1}".`
+      const error = `Excessive opponents for game at "2", maximum is "${PLAYER_COUNTS.Min - 1}".`
       await testAddGame({
         creatorId: userId,
         opponentNames: ['one', 'two'],
@@ -312,10 +314,10 @@ describe('mutation-resolver', () => {
     const name = 'james.bond@mi6.com'
     const logPrefix = `addUser for user "${name}"`
     it('returns error if user already exists', async () => {
-      const error = 'User already exists.'
+      const error = `User with name "${name}" already exists.`
       await testAddUser({
         name,
-        userAddResponse: Error(`User "${name}" already exists`),
+        userAddResponse: Error(error),
         expected: Error(error),
         debugCalls: [[`${logPrefix} failed: ${error}`]],
       })
@@ -356,12 +358,12 @@ describe('mutation-resolver', () => {
     const name = 'james.bond@mi6.com'
     const logPrefix = `login for user "${name}"`
     it('returns error if credentials invalid', async () => {
-      const error = Error(`Invalid credentials for user "${name}"`)
+      const error = `Invalid credentials for user "${name}"`
       await testLogin({
         name,
-        userValidateResponse: error,
-        expected: error,
-        debugCalls: [[`${logPrefix} failed: Invalid credentials for user "${name}"`]],
+        userValidateResponse: Error(error),
+        expected: Error(`${error}.`),
+        debugCalls: [[`${logPrefix} failed: ${error}.`]],
       })
     })
     it('throws error if not invalid credentials', async () => {
@@ -468,7 +470,7 @@ describe('mutation-resolver', () => {
     const gameId = new ObjectId().toString()
     const logPrefix = `ready by "${userId}"`
     it('returns error if game does not exist', async () => {
-      const error = `Game "${gameId}" does not exist.`
+      const error = `Game with ID "${gameId}" does not exist.`
       await testReady({
         userId,
         gameId,
@@ -484,7 +486,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if not a player on the game', async () => {
-      const error = 'Not a player on game.'
+      const error = `Not a player on game "${gameId}".`
       await testReady({
         userId,
         gameId,
@@ -503,7 +505,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if deck not yet set', async () => {
-      const error = 'Must set deck first.'
+      const error = `Must set deck on game "${gameId}" first.`
       await testReady({
         userId,
         gameId,
@@ -523,7 +525,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if already marked as ready', async () => {
-      const error = 'Already marked as ready.'
+      const error = `Game "${gameId}" already marked as ready.`
       await testReady({
         userId,
         gameId,
@@ -727,7 +729,7 @@ describe('mutation-resolver', () => {
     const unit = TestUtil.getDbUnit({})
     const logPrefix = `redraw by "${userId}"`
     it('returns error if game does not exist', async () => {
-      const error = `Game "${gameId}" does not exist.`
+      const error = `Game with ID "${gameId}" does not exist.`
       await testRedraw({
         userId,
         gameId,
@@ -744,7 +746,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if not a player on game', async () => {
-      const error = 'Not a player on game.'
+      const error = `Not a player on game "${gameId}".`
       await testRedraw({
         userId,
         gameId,
@@ -762,7 +764,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if game marked as ready', async () => {
-      const error = 'Cannot redraw after game is marked as ready.'
+      const error = `Cannot redraw after game "${gameId}" is marked as ready.`
       await testRedraw({
         userId,
         gameId,
@@ -787,7 +789,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if deck not set', async () => {
-      const error = 'Cannot redraw before deck is set.'
+      const error = `Cannot redraw before deck is set for game "${gameId}".`
       await testRedraw({
         userId,
         gameId,
@@ -811,7 +813,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if max redraws already taken', async () => {
-      const error = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`
+      const error = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${gameId}".`
       await testRedraw({
         userId,
         gameId,
@@ -848,7 +850,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if unit not in hand', async () => {
-      const error = 'Invalid unit, does not exist in hand.'
+      const error = `Unit with ID "${unit._id}" does not exist in hand for game "${gameId}".`
       await testRedraw({
         userId,
         gameId,
@@ -875,7 +877,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if updated game undefined', async () => {
-      const error = `Could not update game "${gameId}" to redraw unit "${unit._id}" in probable race condition collision.`
+      const error = `Could not redraw unit "${unit._id}" on game "${gameId}" in probable race condition collision.`
       const unit2 = TestUtil.getDbUnit({})
       await testRedraw({
         userId,
@@ -1234,7 +1236,7 @@ describe('mutation-resolver', () => {
     const deck = TestUtil.getDbDeck({})
     const logPrefix = `setDeck by "${userId}"`
     it('returns error if deck does not exist', async () => {
-      const error = `Deck "${deck._id}" does not exist.`
+      const error = `Deck with ID "${deck._id}" does not exist.`
       await testSetDeck({
         userId,
         gameId: game._id.toString(),
@@ -1251,7 +1253,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if game does not exist', async () => {
-      const error = `Game "${game._id}" does not exist.`
+      const error = `Game with ID "${game._id}" does not exist.`
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -1276,7 +1278,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if not a player on game', async () => {
-      const error = 'Not a player on game.'
+      const error = `Not a player on game "${game._id}".`
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -1305,7 +1307,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if deck is already set', async () => {
-      const error = 'Deck already set.'
+      const error = `Deck already set for game "${game._id}".`
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -1341,7 +1343,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if updated game is undefined', async () => {
-      const error = `Could not update game "${game._id}" in probable race condition collision.`
+      const error = `Could not set deck "${deck._id}" on game "${game._id}" in probable race condition collision.`
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -1369,7 +1371,7 @@ describe('mutation-resolver', () => {
           [
             {
               items: deck.units,
-              subsetSize: STARTING_HAND_SIZE,
+              size: STARTING_HAND_SIZE,
             },
           ],
         ],
@@ -1416,7 +1418,7 @@ describe('mutation-resolver', () => {
           [
             {
               items: deck.units,
-              subsetSize: STARTING_HAND_SIZE,
+              size: STARTING_HAND_SIZE,
             },
           ],
         ],
@@ -1471,7 +1473,7 @@ describe('mutation-resolver', () => {
           [
             {
               items: deck.units,
-              subsetSize: STARTING_HAND_SIZE,
+              size: STARTING_HAND_SIZE,
             },
           ],
         ],
@@ -1525,7 +1527,7 @@ describe('mutation-resolver', () => {
           [
             {
               items: deck.units,
-              subsetSize: STARTING_HAND_SIZE,
+              size: STARTING_HAND_SIZE,
             },
           ],
         ],
@@ -2266,7 +2268,7 @@ async function testRedraw({
           [
             {
               items: redrawPool,
-              subsetSize: 1,
+              size: 1,
             },
           ],
         ]

@@ -5,7 +5,7 @@ describe('getRandomSubset', () => {
     expect(
       getRandomSubset({
         items: [],
-        subsetSize: 1,
+        size: 1,
       })
     ).toEqual([])
   })
@@ -13,7 +13,7 @@ describe('getRandomSubset', () => {
     expect(
       getRandomSubset({
         items: [1],
-        subsetSize: 1,
+        size: 1,
       })
     ).toEqual([1])
   })
@@ -21,7 +21,7 @@ describe('getRandomSubset', () => {
     expect(
       getRandomSubset({
         items: [1],
-        subsetSize: 2,
+        size: 2,
       })
     ).toEqual([1])
   })
@@ -29,14 +29,14 @@ describe('getRandomSubset', () => {
     expect(
       getRandomSubset({
         items: [1, 2],
-        subsetSize: 2,
+        size: 2,
       })
     ).toEqual(expect.arrayContaining([1, 2]))
   })
   it('returns random item in array if multi item array and request one item', () => {
     const response = getRandomSubset({
       items: [1, 2],
-      subsetSize: 1,
+      size: 1,
     })
     expect([1, 2]).toEqual(expect.arrayContaining(response))
     expect(response).toHaveLength(1)
@@ -44,7 +44,7 @@ describe('getRandomSubset', () => {
   it('returns random item in array if multi item array and request two items', () => {
     const response = getRandomSubset({
       items: [1, 2, 3],
-      subsetSize: 2,
+      size: 2,
     })
     expect([1, 2, 3]).toEqual(expect.arrayContaining(response))
     expect(response).toHaveLength(2)

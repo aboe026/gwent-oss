@@ -45,10 +45,11 @@ export default class QueryResolver {
         const build = await AppInfo.getBuildNumber()
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(`${logPrefix} build: "${build}"`)
+          QueryResolver.logger.trace(`${logPrefix} version: "${version}"`)
         }
         return {
           build,
-          version: version,
+          version,
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -138,7 +139,7 @@ export default class QueryResolver {
           QueryResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
         }
         if (!game) {
-          const message = `Game "${gameId}" does not exist.`
+          const message = `Game with ID "${gameId}" does not exist.`
           QueryResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }

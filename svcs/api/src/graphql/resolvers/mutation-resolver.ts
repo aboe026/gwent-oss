@@ -73,7 +73,7 @@ export default class MutationResolver {
         }
         const faction = factions.find((faction) => faction.key === factionKey)
         if (!faction) {
-          const message = `Faction with key "${factionKey}" not found.`
+          const message = `Faction with key "${factionKey}" does not exist.`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -84,14 +84,14 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} leaders: "${JSON.stringify(leaders)}"`)
         }
         if (!leaders || leaders.length === 0) {
-          const message = `Leader "${leaderId}" does not exist.`
+          const message = `Leader with ID "${leaderId}" does not exist.`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         const leader = leaders[0]
         const leaderFaction = factionMap[leader.faction.toString()]
         if (leaderFaction.key !== factionKey) {
-          const message = `Leader "${leader._id}" faction "${leaderFaction.key}" does not match deck faction "${factionKey}".`
+          const message = `Faction key "${leaderFaction.key}" for leader "${leaderId}" does not match deck faction key "${factionKey}".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -105,7 +105,7 @@ export default class MutationResolver {
         for (const unitInput of unitsInput) {
           const dbUnit = units.find((dbUnit) => dbUnit._id.toString() === unitInput.id)
           if (!dbUnit) {
-            errors.push(`Unit "${unitInput.id}" does not exist.`)
+            errors.push(`Unit with ID "${unitInput.id}" does not exist.`)
           }
         }
         if (errors.length > 0) {
@@ -131,7 +131,7 @@ export default class MutationResolver {
         })
         if (errors.length > 0) {
           const message = errors.join('\n')
-          MutationResolver.logger.debug(`${logPrefix} failed validateDeck: ${message}`)
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         let deck: DeckDbObject
@@ -153,9 +153,8 @@ export default class MutationResolver {
           if (err instanceof Error && err.message === `Deck with name "${name}" already exists for user "${userId}"`) {
             const message = `Deck with name "${name}" already exists.` // exclude user ID for security
             MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
-            err.message = message
             // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
-            return err as any // eslint-disable-line @typescript-eslint/no-explicit-any
+            return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
           }
           MutationResolver.logger.error(Error(`${logPrefix} failed: ${err}`))
           throw err
@@ -206,7 +205,7 @@ export default class MutationResolver {
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (opponentNames.length > PLAYER_COUNTS.Max - 1) {
-          const message = `Excessive number of opponents for game at "${opponentNames.length}", maximum is "${
+          const message = `Excessive opponents for game at "${opponentNames.length}", maximum is "${
             PLAYER_COUNTS.Max - 1
           }".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
@@ -267,12 +266,11 @@ export default class MutationResolver {
           }
           return UserResolver.fromObject(user)
         } catch (err: unknown) {
-          const alreadyExistsMessage = `User "${name}" already exists`
+          const alreadyExistsMessage = `User with name "${name}" already exists.`
           if (err instanceof Error && err.message === alreadyExistsMessage) {
-            const message = 'User already exists.'
-            MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+            MutationResolver.logger.debug(`${logPrefix} failed: ${alreadyExistsMessage}`)
             // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
-            return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+            return Error(alreadyExistsMessage) as any // eslint-disable-line @typescript-eslint/no-explicit-any
           }
           MutationResolver.logger.error(Error(`${logPrefix} failed: ${err}`))
           throw err
@@ -296,9 +294,10 @@ export default class MutationResolver {
           }
         } catch (err: unknown) {
           if (err instanceof Error && err.message === `Invalid credentials for user "${name}"`) {
-            MutationResolver.logger.debug(`${logPrefix} failed: ${err.message}`)
+            const message = `Invalid credentials for user "${name}".`
+            MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
             // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
-            return err as any // eslint-disable-line @typescript-eslint/no-explicit-any
+            return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
           }
           MutationResolver.logger.error(Error(`${logPrefix} failed: ${err}`))
           throw err
@@ -355,7 +354,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
         }
         if (!game) {
-          const message = `Game "${gameId}" does not exist.`
+          const message = `Game with ID "${gameId}" does not exist.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -366,17 +365,17 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
         }
         if (!player) {
-          const message = 'Not a player on game.'
+          const message = `Not a player on game "${gameId}".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (!player.deck.from) {
-          const message = 'Must set deck first.'
+          const message = `Must set deck on game "${gameId}" first.`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (player.ready) {
-          const message = 'Already marked as ready.'
+          const message = `Game "${gameId}" already marked as ready.`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -418,7 +417,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
         }
         if (!game) {
-          const message = `Game "${gameId}" does not exist.`
+          const message = `Game with ID "${gameId}" does not exist.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -429,22 +428,22 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
         }
         if (!player) {
-          const message = 'Not a player on game.'
+          const message = `Not a player on game "${gameId}".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (player.ready) {
-          const message = 'Cannot redraw after game is marked as ready.'
+          const message = `Cannot redraw after game "${gameId}" is marked as ready.`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (!player.deck.from) {
-          const message = 'Cannot redraw before deck is set.'
+          const message = `Cannot redraw before deck is set for game "${gameId}".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (player.deck.redraws.length >= MAX_REDRAWS) {
-          const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`
+          const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${gameId}".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -454,7 +453,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} cardToRedraw: "${JSON.stringify(cardToRedraw)}"`)
         }
         if (!cardToRedraw) {
-          const message = 'Invalid unit, does not exist in hand.'
+          const message = `Unit with ID "${unitId}" does not exist in hand for game "${gameId}".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -503,7 +502,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
         }
         if (!updatedGame) {
-          const message = `Could not update game "${gameId}" to redraw unit "${unitId}" in probable race condition collision.`
+          const message = `Could not redraw unit "${unitId}" on game "${gameId}" in probable race condition collision.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -532,7 +531,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
         }
         if (!deck) {
-          const message = `Deck "${deckId}" does not exist.`
+          const message = `Deck with ID "${deckId}" does not exist.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -544,7 +543,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
         }
         if (!game) {
-          const message = `Game "${gameId}" does not exist.`
+          const message = `Game with ID "${gameId}" does not exist.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -554,12 +553,12 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
         }
         if (!player) {
-          const message = 'Not a player on game.'
+          const message = `Not a player on game "${gameId}".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
         if (player.deck.from !== null && player.deck.from !== undefined) {
-          const message = 'Deck already set.'
+          const message = `Deck already set for game "${gameId}".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -589,7 +588,7 @@ export default class MutationResolver {
           MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
         }
         if (!updatedGame) {
-          const message = `Could not update game "${gameId}" in probable race condition collision.`
+          const message = `Could not set deck "${deckId}" on game "${gameId}" in probable race condition collision.`
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }

@@ -127,7 +127,7 @@ describe('Api', () => {
           maxAge: 1000,
         },
         expectedProxy: false,
-        traces: [['Session timeout: "1" second(s)'], ['session cookie proxy: "false"']],
+        traceCalls: [['Session timeout: "1" second(s)'], ['session cookie proxy: "false"']],
       })
     })
     it('calls to create session on app for production node env', () => {
@@ -141,7 +141,7 @@ describe('Api', () => {
         },
         expectedProxy: true,
         setCalls: [['trust proxy', 1]],
-        traces: [['Session timeout: "1" second(s)'], ['session cookie proxy: "true"'], ['enabling "trust proxy"']],
+        traceCalls: [['Session timeout: "1" second(s)'], ['session cookie proxy: "true"'], ['enabling "trust proxy"']],
       })
     })
     it('calls out to trace if enabled', () => {
@@ -156,7 +156,7 @@ describe('Api', () => {
         expectedCookie: cookie,
         expectedProxy: false,
         traceEnabled: true,
-        traces: [
+        traceCalls: [
           ['Session timeout: "1" second(s)'],
           ['session cookie proxy: "false"'],
           [`cookie: "${JSON.stringify(cookie)}"`],
@@ -307,14 +307,14 @@ function testConfigureSession({
   expectedProxy,
   setCalls = [],
   traceEnabled,
-  traces = [],
+  traceCalls = [],
 }: {
   nodeEnv: NODE_ENV
   expectedCookie: CookieOptions
   expectedProxy: boolean
   setCalls?: any[][]
   traceEnabled?: boolean
-  traces: string[][]
+  traceCalls: string[][]
 }) {
   const sessionTimeoutSeconds = 1
   const sessionSecret = 'secret'
@@ -365,5 +365,5 @@ function testConfigureSession({
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual(traces)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

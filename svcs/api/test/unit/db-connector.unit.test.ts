@@ -27,9 +27,9 @@ describe('db-connector', () => {
       await testConnect({
         client: true,
         connected: true,
-        debugs: undefined,
+        debugCalls: undefined,
         traceEnabled: false,
-        traces: undefined,
+        traceCalls: undefined,
         initializeCalled: false,
       })
     })
@@ -37,9 +37,9 @@ describe('db-connector', () => {
       await testConnect({
         client: undefined,
         connected: true,
-        debugs: [['Client not initialized or connecting, initializing']],
+        debugCalls: [['Client not initialized or connecting, initializing']],
         traceEnabled: false,
-        traces: undefined,
+        traceCalls: undefined,
         initializeCalled: true,
       })
     })
@@ -47,9 +47,9 @@ describe('db-connector', () => {
       await testConnect({
         client: true,
         connected: false,
-        debugs: [['Client not initialized or connecting, initializing']],
+        debugCalls: [['Client not initialized or connecting, initializing']],
         traceEnabled: false,
-        traces: undefined,
+        traceCalls: undefined,
         initializeCalled: true,
       })
     })
@@ -57,9 +57,9 @@ describe('db-connector', () => {
       await testConnect({
         client: false,
         connected: false,
-        debugs: [['Client not initialized or connecting, initializing']],
+        debugCalls: [['Client not initialized or connecting, initializing']],
         traceEnabled: false,
-        traces: undefined,
+        traceCalls: undefined,
         initializeCalled: true,
       })
     })
@@ -67,9 +67,9 @@ describe('db-connector', () => {
       await testConnect({
         client: false,
         connected: false,
-        debugs: [['Client not initialized or connecting, initializing']],
+        debugCalls: [['Client not initialized or connecting, initializing']],
         traceEnabled: true,
-        traces: [['client: "undefined"'], ['connected: "false"']],
+        traceCalls: [['client: "undefined"'], ['connected: "false"']],
         initializeCalled: true,
       })
     })
@@ -143,15 +143,15 @@ async function testInitialize() {
 async function testConnect({
   connected,
   client,
-  debugs,
-  traces,
+  debugCalls,
+  traceCalls,
   traceEnabled,
   initializeCalled,
 }: {
   connected: boolean
   client: boolean | undefined
-  debugs: string[][] | undefined
-  traces: string[][] | undefined
+  debugCalls: string[][] | undefined
+  traceCalls: string[][] | undefined
   traceEnabled: boolean
   initializeCalled: boolean
 }) {
@@ -183,8 +183,8 @@ async function testConnect({
 
   await expect(DbConnector.connect()).resolves.toEqual(undefined)
 
-  expect(debugSpy.mock.calls).toEqual(debugs ? debugs : [])
-  expect(traceSpy.mock.calls).toEqual(traces ? traces : [])
+  expect(debugSpy.mock.calls).toEqual(debugCalls ? debugCalls : [])
+  expect(traceSpy.mock.calls).toEqual(traceCalls ? traceCalls : [])
   expect(initializeSpy.mock.calls).toEqual(initializeCalled ? [[]] : [])
   expect(dbSpy.mock.calls).toEqual([[env().MONGO_DB]])
 }

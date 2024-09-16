@@ -97,7 +97,7 @@ describe('games', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Excessive number of opponents for game at "2", maximum is "1".`)],
+          errors: [new GraphQLError(`Excessive opponents for game at "2", maximum is "1".`)],
         })
       })
       it('throws error if opponent does not exist', async () => {
