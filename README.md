@@ -260,7 +260,7 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
-- figure out why "deck-resolver › fromArray" unit tests sometimes fail on units created dates off by a millisecond
+- figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
 - add ability to target resolution of neutrals on each type of DeckUnit gameDeck (undrawn, hand, discard, redraws (from/to))
 - Change "ready" mutation to "readyGame"?
 - Remove @map directive for ID types?
