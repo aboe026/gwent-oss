@@ -30,6 +30,7 @@
     "build-codegen": "graphql-codegen --config codegen.ts",
     "build-node": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo",
+    "convert-eol": "yarn g:ts-node scripts/convert-eol.ts",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
@@ -56,9 +57,12 @@
     "@graphql-codegen/typescript-react-apollo": "4.3.0",
     "@graphql-codegen/typescript-resolvers": "4.0.6",
     "@parcel/watcher": "2.4.1",
+    "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.12",
     "@types/node": "20.12.7",
     "@types/semver": "7.5.8",
+    "eol": "0.10.0",
+    "fs-extra": "11.2.0",
     "jest-junit": "16.0.0",
     "ts-jest": "29.1.2"
   }

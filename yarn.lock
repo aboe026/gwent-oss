@@ -3707,9 +3707,12 @@ __metadata:
     "@graphql-codegen/typescript-resolvers": "npm:4.0.6"
     "@gwent/constants": "workspace:*"
     "@parcel/watcher": "npm:2.4.1"
+    "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.12"
     "@types/node": "npm:20.12.7"
     "@types/semver": "npm:7.5.8"
+    eol: "npm:0.10.0"
+    fs-extra: "npm:11.2.0"
     graphql: "npm:16.8.1"
     graphql-tag: "npm:2.12.6"
     jest-junit: "npm:16.0.0"
@@ -7865,6 +7868,13 @@ __metadata:
   bin:
     envinfo: dist/cli.js
   checksum: 10/d4db29c5a405081759c57c0e74ffa6adab09b7477ca105587252643394f13ab128ad4c8f755b15334b5f1901cef091acc76c71b695ce0f27853ebf147c882075
+  languageName: node
+  linkType: hard
+
+"eol@npm:0.10.0":
+  version: 0.10.0
+  resolution: "eol@npm:0.10.0"
+  checksum: 10/ea19bbf630b871e8344b33a6eb8bff6f0acd133d126ba3c52b16fb4ec197fa7d3690a532bf9e3c1bc53a454f0cd966fec07bbaea8a000bca89eb4117f2e9026d
   languageName: node
   linkType: hard
 

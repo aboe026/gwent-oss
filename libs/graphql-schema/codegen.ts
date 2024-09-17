@@ -14,6 +14,9 @@ const config: CodegenConfig = {
       plugins: ['typescript', 'typescript-operations', 'typescript-react-apollo'],
     },
   },
+  hooks: {
+    afterAllFileWrite: ['yarn convert-eol'],
+  },
 }
 
 export default config
