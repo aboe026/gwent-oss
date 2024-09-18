@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useState } from 'react'
 
 import {
   CurrentUserDocument,
@@ -8,7 +8,7 @@ import {
   useLoginMutation,
 } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from '../util/error-util'
-import { HTML_IDS, ROUTES } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
 import './LoginDialog.css'
 
@@ -48,7 +48,7 @@ export default function LoginDialog({
 
   return (
     <form
-      id={HTML_IDS.LoginForm}
+      id={HTML_IDS.LoginDialogContainer}
       style={{ marginTop: loading ? '30px' : '0' }}
       onSubmit={async (event) => {
         event.preventDefault()
@@ -62,11 +62,11 @@ export default function LoginDialog({
         await login({ variables })
       }}
     >
-      <div id={HTML_IDS.LoginTitle}>
+      <div id={HTML_IDS.LoginDialogTitle}>
         <span>{title}</span>
       </div>
-      <div id="loginFormFields">
-        <div className="login-form-field">
+      <div id="loginDialogFields">
+        <div className="login-dialog-field">
           <label htmlFor="username">
             Username
             <span className="required-field">*</span>
@@ -75,21 +75,21 @@ export default function LoginDialog({
             type="text"
             required
             autoFocus={!initialUsername}
-            id={HTML_IDS.LoginUsername}
+            id={HTML_IDS.LoginDialogUsername}
             name="username"
             value={username}
             disabled={loading || usernameDisabled}
             onChange={(event) => setUsername(event.target.value)}
           />
         </div>
-        <div className="login-form-field">
+        <div className="login-dialog-field">
           <label htmlFor="password">
             Password
             <span className="required-field">*</span>
           </label>
           <input
             type="password"
-            id={HTML_IDS.LoginPassword}
+            id={HTML_IDS.LoginDialogPassword}
             autoFocus={!!initialUsername}
             name="password"
             value={password}
@@ -99,24 +99,24 @@ export default function LoginDialog({
           />
         </div>
       </div>
-      <div id="loginFormLower">
+      <div id="loginDialogLower">
         {resolvedError && (
-          <span id="loginError" className="error-text">
+          <span id={HTML_IDS.LoginDialogError} className={HTML_CLASSES.ErrorText}>
             {resolvedError}
           </span>
         )}
-        <div id="loginFormActions">
+        <div id="loginDialogActions">
           {secondaryText && (
-            <div id="loginFormSwitch">
+            <div id="loginDialogSwitch">
               <span>{secondaryText}</span>
               {secondaryLinkLabel && secondaryLinkPath && (
-                <Link id={HTML_IDS.LoginModeSwitch} to={secondaryLinkPath}>
+                <Link id={HTML_IDS.LoginDialogModeSwitch} to={secondaryLinkPath}>
                   {secondaryLinkLabel}
                 </Link>
               )}
             </div>
           )}
-          <button type="submit" disabled={loading} id={HTML_IDS.LoginSubmit}>
+          <button type="submit" disabled={loading} id={HTML_IDS.LoginDialogSubmit}>
             {submitLabel}
           </button>
         </div>

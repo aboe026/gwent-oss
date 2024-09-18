@@ -5,9 +5,9 @@ import { PropsWithChildren } from 'react'
  *
  * @returns The centering container
  */
-export default function Centered({ children, id }: CenteredProps) {
+export default function Centered({ children, classname, id }: CenteredProps) {
   return (
-    <div id={id} className="centered">
+    <div id={id} className={`centered ${classname || ''}`}>
       {children}
     </div>
   )
@@ -15,4 +15,5 @@ export default function Centered({ children, id }: CenteredProps) {
 
 interface CenteredProps extends PropsWithChildren {
   id?: string
+  classname?: string
 }

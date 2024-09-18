@@ -11,7 +11,7 @@ test('Logs in user after they sign up', async () => {
   await SignupPage.signUp({
     username,
   })
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 })
 
 test('Shows error if signing up for user that already exists', async () => {
@@ -31,7 +31,7 @@ test('Shows error if signing up for user that already exists', async () => {
   await SignupPage.verifyNotLoggedIn({
     username,
     password,
-    error: `User "${username}" already exists`,
+    error: `User with name "${username}" already exists.`,
   })
 })
 
@@ -43,5 +43,5 @@ test('User session persists across refresh after sign up', async () => {
 
   await E2eUtil.reload()
 
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 })

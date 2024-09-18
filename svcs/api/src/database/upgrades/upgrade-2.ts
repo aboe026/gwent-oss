@@ -1,4 +1,4 @@
-import log4js from 'log4js'
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import {
@@ -30,7 +30,7 @@ import { validatePositiveInteger } from '@gwent/validators'
  * Adds resources required to create decks.
  */
 export default class Upgrade2 extends Upgrade {
-  static logger = log4js.getLogger('upgrade-2')
+  static logger = getLogger('upgrade-2')
 
   async run() {
     const dlcMap = await this.createDlcs({
@@ -336,7 +336,12 @@ export default class Upgrade2 extends Upgrade {
     effectMap: KeyIdMap
     factionMap: KeyIdMap
   }): AddUnitInput {
-    // TODO: throw error if no name or quote
+    if (!unit.Name) {
+      throw Error(`Invalid unit "${JSON.stringify(unit)}": Must have "Name".`)
+    }
+    if (!unit.Quote) {
+      throw Error(`Invalid unit "${unit.Name}": Must have "Quote".`)
+    }
     return {
       combats: this.normalizeCombats(unit),
       deckable: this.normalizeDeckable(unit),

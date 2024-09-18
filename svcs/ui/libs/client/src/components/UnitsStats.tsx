@@ -3,11 +3,11 @@ import { Dispatch, SetStateAction } from 'react'
 
 import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
-import { getDeckStats } from '@gwent/utils'
+import { getDeckStats, toTitleCase } from '@gwent/utils'
+import { HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
 import ProgressRing from '../components/ProgressRing'
 import { UnitStats } from '@gwent/graphql-schema/apollo-typings'
 import './UnitsStats.css'
-import { HTML_IDS } from '@gwent/constants'
 
 /**
  * Shows the statistics for the units selected for a deck
@@ -45,11 +45,11 @@ export default function UnitsStats({
   return (
     <>
       <div id="unitsStatsTop">
-        <div className="units-select-all-container">
+        <div className="units-stats-select-all-container">
           <span>{filteredAvailableUnits.length}</span>
           <div
             id={HTML_IDS.DeckUnitSelectAll}
-            className={`units-select-all ${!disabled ? 'pointable' : ''}`}
+            className={`units-stats-select-all ${!disabled ? 'pointable' : ''}`}
             title="Add All"
             onClick={() => {
               if (!disabled) {
@@ -82,11 +82,11 @@ export default function UnitsStats({
         >
           {sortFilterLocked ? <CgLock color="black" /> : <CgLockUnlock color="black" />}
         </div>
-        <div className="units-select-all-container">
+        <div className="units-stats-select-all-container">
           <span>{filteredSelectedUnits.length}</span>
           <div
             id={HTML_IDS.DeckUnitRemoveAll}
-            className={`units-select-all ${!disabled ? 'pointable' : ''}`}
+            className={`units-stats-select-all ${!disabled ? 'pointable' : ''}`}
             title="Remove All"
             onClick={() => {
               if (!disabled) {
@@ -122,11 +122,11 @@ export default function UnitsStats({
             <ProgressRing
               id={HTML_IDS.DeckUnitStatSpecial}
               completed={selectedStats.specials}
-              total={10}
+              total={MAX_SPECIALS}
               remainingColor="darkgray"
-              completedColor={selectedStats.specials > 10 ? 'red' : 'green'}
+              completedColor={selectedStats.specials > MAX_SPECIALS ? 'red' : 'green'}
               label={<img src="images/stats/special.png" title="Special" />}
-              title="Maximum 10"
+              title={`Maximum ${MAX_SPECIALS}`}
               onClick={() => {
                 setAvailableFilterFields([FILTER_FIELD.Special])
                 setSelectedFilterFields([FILTER_FIELD.Special])
@@ -137,7 +137,7 @@ export default function UnitsStats({
               completed={selectedStats.heroes}
               total={factionStats?.heroes || 0}
               remainingColor="darkgray"
-              completedColor="gold"
+              completedColor="#e9a018"
               label={<img src="images/stats/hero.png" title="Heroes" />}
               title="Heroes"
               onClick={() => {
@@ -158,11 +158,11 @@ export default function UnitsStats({
                 setSelectedFilterFields([FILTER_FIELD.Strength])
               }}
             />
-            <div className="units-stat-inline">
+            <div className="units-stats-inline">
               <img
                 src="images/stats/strength-average.png"
                 title="Average Strength"
-                className="units-stat-inline-icon"
+                className="units-stats-inline-icon"
               />
               <span>{(selectedStats.strengthAverage || 0).toFixed(1)}</span>
             </div>
@@ -206,15 +206,6 @@ export default function UnitsStats({
                 total: factionStats?.siege || 0,
                 type: SmallStatType.Combat,
               })}
-              {renderSmallStat({
-                completed: selectedStats.agile,
-                field: FILTER_FIELD.Agile,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Agile',
-                total: factionStats?.agile || 0,
-                type: SmallStatType.Combat,
-              })}
             </div>
           )}
           <div className="units-stats-separator"></div>
@@ -227,6 +218,15 @@ export default function UnitsStats({
           </div>
           {effectsExpanded && (
             <div className="units-stats-section">
+              {renderSmallStat({
+                completed: selectedStats.agile,
+                field: FILTER_FIELD.Agile,
+                setAvailableFilterFields,
+                setSelectedFilterFields,
+                title: 'Agile',
+                total: factionStats?.agile || 0,
+                type: SmallStatType.Effect,
+              })}
               {renderSmallStat({
                 completed: selectedStats.avenger,
                 field: FILTER_FIELD.Avenger,
@@ -363,7 +363,7 @@ function renderSmallStat({
 }) {
   return (
     <ProgressRing
-      id={`deckUnitStat${field.substring(0, 1)}${field.substring(1).toLowerCase()}`}
+      id={`deckUnitStat${toTitleCase(field)}`}
       width="45px"
       height="55px"
       countMargin="-20px"
@@ -375,7 +375,7 @@ function renderSmallStat({
       title={title}
       onClick={() => {
         const fields = [field]
-        if ([FILTER_FIELD.Close, FILTER_FIELD.Ranged, FILTER_FIELD.Siege].includes(field)) {
+        if (type === SmallStatType.Combat) {
           fields.push(FILTER_FIELD.Strength)
         }
         setAvailableFilterFields(fields)

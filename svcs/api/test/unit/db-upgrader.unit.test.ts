@@ -3,9 +3,9 @@ import { MongoError, ObjectId } from 'mongodb'
 import path from 'path'
 
 import DbUpgrader from '../../src/database/db-upgrader'
-import * as utils from '@gwent/utils'
 import Upgrade from '../../src/database/upgrades/upgrade'
 import UpgradeStore from '../../src/database/stores/upgrade-store'
+import * as utils from '@gwent/utils'
 
 describe('db-upgrader', () => {
   describe('getUpgrades', () => {
@@ -35,7 +35,7 @@ describe('db-upgrader', () => {
         currentVersionCalls: [],
         getUpgradesCalls: [],
         deleteLockCalls: [],
-        debugs: [
+        debugCalls: [
           ['Setting running to true to prevent concurrent upgrade runs'],
           ['Setting running to false so other upgrade runs can occur'],
         ],
@@ -47,7 +47,7 @@ describe('db-upgrader', () => {
       await testDbUpgrader({
         currentVersion,
         upgrades,
-        debugs: [
+        debugCalls: [
           ['Setting running to true to prevent concurrent upgrade runs'],
           ['Current version: "0"'],
           ['allUpgrades has "0" upgrade(s)'],
@@ -63,7 +63,7 @@ describe('db-upgrader', () => {
       await testDbUpgrader({
         currentVersion,
         upgrades,
-        debugs: [
+        debugCalls: [
           ['Setting running to true to prevent concurrent upgrade runs'],
           ['Current version: "1"'],
           ['allUpgrades has "1" upgrade(s)'],
@@ -81,7 +81,7 @@ describe('db-upgrader', () => {
       await testDbUpgrader({
         currentVersion,
         upgrades,
-        debugs: [
+        debugCalls: [
           ['Setting running to true to prevent concurrent upgrade runs'],
           ['Current version: "0"'],
           ['allUpgrades has "1" upgrade(s)'],
@@ -96,7 +96,7 @@ describe('db-upgrader', () => {
           ['Deleting lock'],
           ['Setting running to false so other upgrade runs can occur'],
         ],
-        infos: [['Running upgrade "1"...'], ['...upgrade "1" complete']],
+        infoCalls: [['Running upgrade "1"...'], ['...upgrade "1" complete']],
         dates: [start, end],
         addAttemptCalls: [
           [
@@ -124,11 +124,10 @@ describe('db-upgrader', () => {
       const upgrades = [new TestUpgrade(), new TestUpgrade()]
       const start = new Date()
       const end = new Date(start.getTime() + 1000 * 60) // 1 second
-      // TODO: look into changes that had to be made to see if they are legit
       await testDbUpgrader({
         currentVersion,
         upgrades,
-        debugs: [
+        debugCalls: [
           ['Setting running to true to prevent concurrent upgrade runs'],
           ['Current version: "1"'],
           ['allUpgrades has "2" upgrade(s)'],
@@ -143,7 +142,7 @@ describe('db-upgrader', () => {
           ['Deleting lock'],
           ['Setting running to false so other upgrade runs can occur'],
         ],
-        infos: [['Running upgrade "2"...'], ['...upgrade "2" complete']],
+        infoCalls: [['Running upgrade "2"...'], ['...upgrade "2" complete']],
         dates: [start, end],
         addAttemptCalls: [
           [
@@ -177,7 +176,7 @@ describe('db-upgrader', () => {
         currentVersion,
         upgrades,
         error,
-        debugs: [
+        debugCalls: [
           ['Setting running to true to prevent concurrent upgrade runs'],
           ['Current version: "0"'],
           ['allUpgrades has "1" upgrade(s)'],
@@ -189,8 +188,8 @@ describe('db-upgrader', () => {
           ['Deleting lock'],
           ['Setting running to false so other upgrade runs can occur'],
         ],
-        infos: [['Running upgrade "1"...']],
-        errors: [[`Error while running upgrade "1": "${Error(error)}"`]],
+        infoCalls: [['Running upgrade "1"...']],
+        errorCalls: [[`Error while running upgrade "1": "${Error(error)}"`]],
         dates: [start],
         addAttemptCalls: [
           [
@@ -215,7 +214,7 @@ describe('db-upgrader', () => {
         currentVersion,
         upgrades,
         error,
-        debugs: [
+        debugCalls: [
           ['Setting running to true to prevent concurrent upgrade runs'],
           ['Current version: "0"'],
           ['allUpgrades has "2" upgrade(s)'],
@@ -228,8 +227,8 @@ describe('db-upgrader', () => {
           ['Deleting lock'],
           ['Setting running to false so other upgrade runs can occur'],
         ],
-        infos: [['Running upgrade "1"...'], ['...upgrade "1" complete']],
-        errors: [[`Error while waiting and updating lock: "${Error(error)}"`]],
+        infoCalls: [['Running upgrade "1"...'], ['...upgrade "1" complete']],
+        errorCalls: [[`Error while waiting and updating lock: "${Error(error)}"`]],
         dates: [start, end],
         addAttemptCalls: [
           [
@@ -270,12 +269,12 @@ describe('db-upgrader', () => {
               updated: new Date(),
             }),
         ],
-        debugs: [
+        debugCalls: [
           [`Attempting for "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds to aquire lock`],
           [`Attempt "1" to aquire lock`],
           [`Lock aquired in "1" second(s)`],
         ],
-        traces: [['aquired: "true"'], ['sleepBeforeNextTry: "true"']],
+        traceCalls: [['aquired: "true"'], ['sleepBeforeNextTry: "true"']],
       })
     })
     it('aquires lock if expired lock exists', async () => {
@@ -315,7 +314,7 @@ describe('db-upgrader', () => {
           ],
         ],
         deleteLockResponses: [() => Promise.resolve()],
-        debugs: [
+        debugCalls: [
           [`Attempting for "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds to aquire lock`],
           [`Attempt "1" to aquire lock`],
           ['Lock already exists, checking if expired'],
@@ -326,7 +325,7 @@ describe('db-upgrader', () => {
           [`Attempt "2" to aquire lock`],
           [`Lock aquired in "2" second(s)`],
         ],
-        traces: [
+        traceCalls: [
           ['secondsSinceLastUpdate: "61"'],
           ['aquired: "false"'],
           ['sleepBeforeNextTry: "false"'],
@@ -372,7 +371,7 @@ describe('db-upgrader', () => {
           ],
         ],
         sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']]],
-        debugs: [
+        debugCalls: [
           [`Attempting for "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds to aquire lock`],
           [`Attempt "1" to aquire lock`],
           ['Lock already exists, checking if expired'],
@@ -381,7 +380,7 @@ describe('db-upgrader', () => {
           [`Attempt "2" to aquire lock`],
           [`Lock aquired in "3" second(s)`],
         ],
-        traces: [
+        traceCalls: [
           ['secondsSinceLastUpdate: "-29"'],
           ['aquired: "false"'],
           ['sleepBeforeNextTry: "true"'],
@@ -409,7 +408,7 @@ describe('db-upgrader', () => {
           ],
         ],
         error,
-        debugs: [
+        debugCalls: [
           [`Attempting for "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds to aquire lock`],
           [`Attempt "1" to aquire lock`],
         ],
@@ -446,14 +445,14 @@ describe('db-upgrader', () => {
         ],
         sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']]],
         error: 'Could not aquire lock after "60" seconds',
-        debugs: [
+        debugCalls: [
           [`Attempting for "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds to aquire lock`],
           [`Attempt "1" to aquire lock`],
           ['Lock already exists, checking if expired'],
           ['Lock not expired, previous lock still running'],
           [`Lock not aquired after "2" second(s), sleeping for "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s)`],
         ],
-        traces: [['secondsSinceLastUpdate: "-28.999"'], ['aquired: "false"'], ['sleepBeforeNextTry: "true"']],
+        traceCalls: [['secondsSinceLastUpdate: "-28.999"'], ['aquired: "false"'], ['sleepBeforeNextTry: "true"']],
       })
     })
     it('logs out if trace log enabled', async () => {
@@ -488,7 +487,7 @@ describe('db-upgrader', () => {
           ],
         ],
         sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']]],
-        debugs: [
+        debugCalls: [
           [`Attempting for "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds to aquire lock`],
           [`Attempt "1" to aquire lock`],
           ['Lock already exists, checking if expired'],
@@ -498,7 +497,7 @@ describe('db-upgrader', () => {
           [`Lock aquired in "3" second(s)`],
         ],
         isTraceEnabled: true,
-        traces: [
+        traceCalls: [
           [
             `err: "${JSON.stringify({
               code: error.code,
@@ -554,7 +553,7 @@ describe('db-upgrader', () => {
         ],
         deleteLockResponses: [() => Promise.reject(deleteError)],
         sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']]],
-        debugs: [
+        debugCalls: [
           [`Attempting for "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds to aquire lock`],
           [`Attempt "1" to aquire lock`],
           ['Lock already exists, checking if expired'],
@@ -565,14 +564,14 @@ describe('db-upgrader', () => {
           [`Attempt "2" to aquire lock`],
           [`Lock aquired in "2" second(s)`],
         ],
-        traces: [
+        traceCalls: [
           ['secondsSinceLastUpdate: "61"'],
           ['aquired: "false"'],
           ['sleepBeforeNextTry: "true"'],
           ['aquired: "true"'],
           ['sleepBeforeNextTry: "true"'],
         ],
-        errors: [[`Could not delete expired database lock: "${JSON.stringify(deleteError)}"`]],
+        errorCalls: [[`Could not delete expired database lock: "${JSON.stringify(deleteError)}"`]],
       })
     })
   })
@@ -594,9 +593,9 @@ async function testDbUpgrader({
   updateLockCalls = [],
   updateLockResponses,
   aquireLockError,
-  debugs = [],
-  infos = [],
-  errors = [],
+  debugCalls = [],
+  infoCalls = [],
+  errorCalls = [],
 }: {
   running?: boolean
   currentVersion?: number
@@ -613,9 +612,9 @@ async function testDbUpgrader({
   updateLockCalls?: any[][]
   updateLockResponses?: any[]
   aquireLockError?: string
-  debugs?: string[][]
-  infos?: string[][]
-  errors?: string[][]
+  debugCalls?: string[][]
+  infoCalls?: string[][]
+  errorCalls?: string[][]
 }) {
   DbUpgrader['running'] = running
   const debugSpy = jest.fn().mockImplementation()
@@ -655,15 +654,16 @@ async function testDbUpgrader({
     updateLockSpy.mockImplementation()
   }
 
+  const promise = DbUpgrader.run()
   if (error) {
-    await expect(DbUpgrader.run()).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+    await expect(promise).resolves.toEqual(undefined)
   }
 
-  expect(debugSpy.mock.calls).toEqual(debugs)
-  expect(infoSpy.mock.calls).toEqual(infos)
-  expect(errorSpy.mock.calls).toEqual(errors)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(infoSpy.mock.calls).toEqual(infoCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(aquireLockSpy.mock.calls).toEqual(aquireLockCalls)
   expect(currentVersionSpy.mock.calls).toEqual(currentVersionCalls)
   expect(getUpgradesSpy.mock.calls).toEqual(getUpgradesCalls)
@@ -684,10 +684,10 @@ async function testAquireLock({
   deleteLockResponses = [],
   sleepCalls = [],
   error,
-  debugs = [],
-  infos = [],
-  errors = [],
-  traces = [],
+  debugCalls = [],
+  infoCalls = [],
+  errorCalls = [],
+  traceCalls = [],
   isTraceEnabled = false,
 }: {
   dates?: number[]
@@ -698,10 +698,10 @@ async function testAquireLock({
   deleteLockResponses?: any[]
   sleepCalls?: any[][]
   error?: string
-  debugs?: string[][]
-  infos?: string[][]
-  errors?: string[][]
-  traces?: string[][]
+  debugCalls?: string[][]
+  infoCalls?: string[][]
+  errorCalls?: string[][]
+  traceCalls?: string[][]
   isTraceEnabled?: boolean
 }) {
   const traceSpy = jest.fn().mockImplementation()
@@ -737,16 +737,17 @@ async function testAquireLock({
   }
   const sleepSpy = jest.spyOn(utils, 'sleep').mockImplementation()
 
+  const promise = DbUpgrader['aquireLock']()
   if (error) {
-    await expect(DbUpgrader['aquireLock']()).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(DbUpgrader['aquireLock']()).resolves.toEqual(undefined)
+    await expect(promise).resolves.toEqual(undefined)
   }
 
-  expect(debugSpy.mock.calls).toEqual(debugs)
-  expect(infoSpy.mock.calls).toEqual(infos)
-  expect(errorSpy.mock.calls).toEqual(errors)
-  expect(traceSpy.mock.calls).toEqual(traces)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(infoSpy.mock.calls).toEqual(infoCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
   expect(dateSpy.mock.calls).toEqual(dates.length === 0 ? [] : dates.map(() => []))
   expect(addLockSpy.mock.calls).toEqual(addLockResponses.map(() => []))
   expect(isMongoErrorSpy.mock.calls).toEqual(isMongoErrorCalls)

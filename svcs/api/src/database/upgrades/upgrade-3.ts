@@ -1,4 +1,4 @@
-import log4js from 'log4js'
+import { getLogger } from 'log4js'
 
 import DbConnector from '../db-connector'
 import UserStore from '../stores/user-store'
@@ -8,7 +8,7 @@ import Upgrade from './upgrade'
  * Creates collection and indexes for Users.
  */
 export default class Upgrade3 extends Upgrade {
-  static logger = log4js.getLogger('upgrade-3')
+  static logger = getLogger('upgrade-3')
 
   async run() {
     Upgrade3.logger.debug('Connecting to database')

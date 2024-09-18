@@ -36,7 +36,7 @@ export default function ProgressRing({
           />
         </svg>
         <div className="progress-ring-center-text">{label}</div>
-        <div className={'progress-ring-bottom-text'} style={{ marginBottom: countMargin }}>
+        <div className="progress-ring-bottom-text" style={{ marginBottom: countMargin }}>
           <span style={{ color: completedColor }}>{completed}</span>
           <span>/</span>
           <span>{total}</span>

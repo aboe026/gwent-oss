@@ -90,10 +90,12 @@ describe('Api', () => {
       const text = 'Gwent'
       const buildNumber = 0
       const nodeEnv = 'development'
+      const logLevel = 'INFO'
       const textSyncSpy = jest.spyOn(figlet, 'textSync').mockReturnValue(text)
       const getBuildNumberSpy = jest.spyOn(AppInfo, 'getBuildNumber').mockResolvedValue(0)
       const envSpy = jest.spyOn(env, 'default').mockReturnValue({
         NODE_ENV: nodeEnv,
+        LOG_LEVEL: logLevel,
       } as any)
       const infoSpy = jest.fn().mockImplementation()
       const debugSpy = jest.fn().mockImplementation()
@@ -108,8 +110,8 @@ describe('Api', () => {
 
       expect(textSyncSpy.mock.calls).toEqual([['Gwent', 'Tombstone']])
       expect(getBuildNumberSpy.mock.calls).toEqual([[]])
-      expect(envSpy.mock.calls).toEqual([[]])
-      expect(infoSpy.mock.calls).toEqual([[`\n${text}`], [`Version: "${version}"`]])
+      expect(envSpy.mock.calls).toEqual([[], []])
+      expect(infoSpy.mock.calls).toEqual([[`\n${text}`], [`Version: "${version}"`], [`LOG_LEVEL: "${logLevel}"`]])
       expect(debugSpy.mock.calls).toEqual([[`Build: "${buildNumber}"`]])
       expect(traceSpy.mock.calls).toEqual([[`NODE_ENV: "${nodeEnv}"`]])
     })
@@ -125,7 +127,7 @@ describe('Api', () => {
           maxAge: 1000,
         },
         expectedProxy: false,
-        traces: [['Session timeout: "1" second(s)'], ['session cookie proxy: "false"']],
+        traceCalls: [['Session timeout: "1" second(s)'], ['session cookie proxy: "false"']],
       })
     })
     it('calls to create session on app for production node env', () => {
@@ -139,7 +141,7 @@ describe('Api', () => {
         },
         expectedProxy: true,
         setCalls: [['trust proxy', 1]],
-        traces: [['Session timeout: "1" second(s)'], ['session cookie proxy: "true"'], ['enabling "trust proxy"']],
+        traceCalls: [['Session timeout: "1" second(s)'], ['session cookie proxy: "true"'], ['enabling "trust proxy"']],
       })
     })
     it('calls out to trace if enabled', () => {
@@ -154,7 +156,7 @@ describe('Api', () => {
         expectedCookie: cookie,
         expectedProxy: false,
         traceEnabled: true,
-        traces: [
+        traceCalls: [
           ['Session timeout: "1" second(s)'],
           ['session cookie proxy: "false"'],
           [`cookie: "${JSON.stringify(cookie)}"`],
@@ -305,14 +307,14 @@ function testConfigureSession({
   expectedProxy,
   setCalls = [],
   traceEnabled,
-  traces = [],
+  traceCalls = [],
 }: {
   nodeEnv: NODE_ENV
   expectedCookie: CookieOptions
   expectedProxy: boolean
   setCalls?: any[][]
   traceEnabled?: boolean
-  traces: string[][]
+  traceCalls: string[][]
 }) {
   const sessionTimeoutSeconds = 1
   const sessionSecret = 'secret'
@@ -363,5 +365,5 @@ function testConfigureSession({
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual(traces)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

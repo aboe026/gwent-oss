@@ -5,13 +5,12 @@ import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'
 import { useTitle } from '../components/TabTitle'
 import { useUserContext } from '../App'
-
 import './Profile.css'
 
 /**
- * The home page of the application
+ * A page containing information about the authenticated user.
  *
- * @returns The application home page
+ * @returns The users profile page.
  */
 export default function ProfilePage() {
   const { user } = useUserContext()
@@ -29,7 +28,7 @@ export default function ProfilePage() {
 
   return (
     <Centered>
-      <div id={HTML_IDS.Profile}>
+      <div id={HTML_IDS.ProfileContainer}>
         <table>
           <caption>Profile</caption>
           <tbody>

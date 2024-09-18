@@ -12,7 +12,7 @@ test('Redirects to profile page after login', async () => {
   await SignupPage.signUp({
     username,
   })
-  await ProfilePage.verifyContent({
+  await ProfilePage.verify({
     username,
   })
 })
@@ -23,11 +23,11 @@ test('Page refresh stays on profile page', async () => {
     username,
   })
   await E2eUtil.goTo(ProfilePage.getUrl())
-  await ProfilePage.verifyContent({
+  await ProfilePage.verify({
     username,
   })
   await E2eUtil.reload()
-  await ProfilePage.verifyContent({
+  await ProfilePage.verify({
     username,
   })
 })
@@ -38,7 +38,7 @@ test('Logout button redirects to logout page', async () => {
     username,
   })
   await E2eUtil.goTo(ProfilePage.getUrl())
-  await ProfilePage.verifyContent({
+  await ProfilePage.verify({
     username,
   })
   await ProfilePage.logout()

@@ -6,9 +6,9 @@ import { useUserContext } from '../App'
 import './Home.css'
 
 /**
- * The home page of the application
+ * The home page of the application.
  *
- * @returns The application home page
+ * @returns The application home page.
  */
 export default function HomePage() {
   const { user } = useUserContext()
@@ -30,6 +30,19 @@ export default function HomePage() {
               onClick={() => navigate(ROUTES.Deck.path.replace(':deckId', 'new'))}
             >
               Create Deck
+            </button>
+          </div>
+          <div className="home-category">
+            <span className="home-category-header">Games</span>
+            <button id={HTML_IDS.HomeOptionsViewGames} type="button" onClick={() => navigate(ROUTES.Games.path)}>
+              View Games
+            </button>
+            <button
+              id={HTML_IDS.HomeOptionsCreateGame}
+              type="button"
+              onClick={() => navigate(ROUTES.Game.path.replace(':gameId', 'new'))}
+            >
+              Create Game
             </button>
           </div>
           <div className="home-category">

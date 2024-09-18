@@ -2,7 +2,7 @@ import { Selector, t } from 'testcafe'
 
 import { HTML_IDS } from '@gwent/constants'
 
-const container = Selector(`#${HTML_IDS.NotFound}`)
+const container = Selector(`#${HTML_IDS.NotFoundContainer}`)
 
 export default class NotFoundPage {
   static elements = {
@@ -10,7 +10,7 @@ export default class NotFoundPage {
     HomeLink: container.find(`#${HTML_IDS.NotFoundHomeLink}`),
   }
 
-  static async verifyContent(exists = true) {
+  static async verify(exists = true) {
     await t.expect(NotFoundPage.elements.Container.exists).eql(exists)
   }
 

@@ -1,18 +1,5 @@
 /**
- * Converts a string to Title Case where the first letter of every word is capitalized.
- *
- * @param words The words to return as Title Cased.
- * @returns The words with the first letter of every word capitalized.
- */
-export function toTitleCase(words: string): string {
-  return words
-    .split(' ')
-    .map((word) => `${word[0].toUpperCase()}${word.substring(1, word.length + 1).toLowerCase()}`)
-    .join(' ')
-}
-
-/**
- * Convert an array if strings to a punctuated string of the concatenated items.
+ * Convert an array of strings to a punctuated string of the concatenated items.
  *
  * @param options The options for pretty printing.
  * @param options.items The items to pretty print.

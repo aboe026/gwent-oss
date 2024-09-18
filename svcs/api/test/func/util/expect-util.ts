@@ -1,15 +1,25 @@
 import { Db, ObjectId } from 'mongodb'
 
-import { DeckUnit, FactionKey, Unit, UnitStats, User } from '@gwent/graphql-schema/resolver-typings'
+import {
+  DeckUnit,
+  Faction,
+  FactionKey,
+  GamePlayerUnitCounts,
+  GameStatus,
+  Leader,
+  PlayerRound,
+  Unit,
+  UnitStats,
+  User,
+} from '@gwent/graphql-schema/resolver-typings'
 import dlcs from '../../../src/database/upgrades/resources/dlcs.json'
 import effects from '../../../src/database/upgrades/resources/effects.json'
-import EffectStore from '../../../src/database/stores/effect-store'
 import factions from '../../../src/database/upgrades/resources/factions.json'
-import getUnitStats from '@gwent/utils/build/src/get-unit-stats'
+import { getDeckStats, sortObjectArray } from '@gwent/utils'
 import leaders from '../../../src/database/upgrades/resources/leaders.json'
-import Upgrade2, { ImageType } from '../../../src/database/upgrades/upgrade-2'
-import { sortObjectArray } from '@gwent/utils'
+import UnitResolver from '../../../src/graphql/resolvers/unit-resolver'
 import units from '../../../src/database/upgrades/resources/units.json'
+import Upgrade2, { ImageType } from '../../../src/database/upgrades/upgrade-2'
 
 export async function verifyCollectionNames({
   db,
@@ -151,7 +161,7 @@ export function expectizeUnits({ neutrals = false }: { neutrals?: boolean }): Un
       expectedUnits.push({
         ...expectedUnit,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        effects: EffectStore.resolveAbilitiesForUnit(expectedUnit as any, unitEffects),
+        effects: UnitResolver.effectAbilities(expectedUnit as any, unitEffects),
       })
     }
   }
@@ -169,15 +179,7 @@ export function expectizeDeck({
   unitNames,
   user,
   maxArtStyle,
-}: {
-  factionKey: FactionKey
-  leaderName: string
-  name: string
-  neutrals?: boolean
-  unitNames: string[]
-  user: User
-  maxArtStyle?: boolean
-}) {
+}: ExpectizeDeckInput) {
   const allUnits = expectizeUnits({ neutrals })
   const expectedUnits: DeckUnit[] = []
   for (const unitName of unitNames) {
@@ -196,8 +198,12 @@ export function expectizeDeck({
     id: expect.any(String),
     leader: expectizeLeaders({ neutrals }).find((leader) => leader.name === leaderName),
     name,
-    stats: getUnitStats(expectedUnits),
-    units: expectedUnits,
+    stats: getDeckStats(expectedUnits),
+    units: expectizeDeckUnits({
+      unitNames,
+      maxArtStyle,
+      neutrals,
+    }),
     user,
   }
 }
@@ -403,4 +409,133 @@ export function getFactionUnitStats(factionKey: FactionKey, neutrals = false): U
     units: factionStats.units + (addNeutrals ? neutral.units : 0),
     weather: factionStats.weather + (addNeutrals ? neutral.weather : 0),
   }
+}
+
+export function expectizeGame({
+  creator,
+  players,
+  status = GameStatus.Decking,
+}: {
+  creator: User
+  players: {
+    counts?: GamePlayerUnitCounts | null
+    faction?: Faction | null
+    leader?: Leader | null
+    ready?: boolean
+    rounds?: PlayerRound[]
+    user: User
+  }[]
+  status?: GameStatus
+}) {
+  return {
+    created: expect.any(Date),
+    creator,
+    id: expect.any(String),
+    players: players.map((player) => {
+      if (!player.counts) {
+        player.counts = null
+      }
+      if (!player.faction) {
+        player.faction = null
+      }
+      if (!player.leader) {
+        player.leader = null
+      }
+      if (!player.rounds) {
+        player.rounds = []
+      }
+      if (!player.ready) {
+        player.ready = false
+      }
+      return player
+    }),
+    round: {
+      current: 0,
+      maximum: 3,
+    },
+    status,
+    updated: expect.any(Date),
+    victors: [],
+  }
+}
+
+export function expectizeGameDeck({
+  deck,
+  discards,
+  hand,
+  redraws,
+  undrawn,
+}: {
+  deck: ExpectizeDeckInput
+  discards?: string[]
+  hand?: string[]
+  redraws?: string[]
+  undrawn?: string[]
+}) {
+  return {
+    discard: expectizeDeckUnits({
+      unitNames: discards,
+      maxArtStyle: deck.maxArtStyle,
+      neutrals: deck.neutrals,
+    }),
+    from: expectizeDeck(deck),
+    hand: expectizeDeckUnits({
+      unitNames: hand,
+      maxArtStyle: deck.maxArtStyle,
+      neutrals: deck.neutrals,
+    }),
+    redraws: expectizeDeckUnits({
+      unitNames: redraws,
+      maxArtStyle: deck.maxArtStyle,
+      neutrals: deck.neutrals,
+    }),
+    undrawn: expectizeDeckUnits({
+      unitNames: undrawn,
+      maxArtStyle: deck.maxArtStyle,
+      neutrals: deck.neutrals,
+    }),
+  }
+}
+
+export function expectizeDeckUnits({
+  unitNames,
+  maxArtStyle,
+  neutrals = false,
+}: {
+  unitNames?: string[]
+  maxArtStyle?: boolean
+  neutrals?: boolean
+}) {
+  if (unitNames) {
+    const allUnits = expectizeUnits({ neutrals })
+    const expectedUnits: DeckUnit[] = []
+    for (const unitName of unitNames) {
+      const unit = allUnits.find((expectedUnit) => expectedUnit.name === unitName)
+      if (!unit) {
+        throw Error(`Could not find unit with name "${unitName}"`)
+      }
+      expectedUnits.push({
+        artStyle: maxArtStyle ? unit.images.length : 1,
+        unit,
+      })
+    }
+    return expectedUnits
+  } else {
+    return expect.arrayContaining([
+      expect.objectContaining({
+        artStyle: expect.any(Number),
+        unit: expect.any(Object),
+      }),
+    ])
+  }
+}
+
+interface ExpectizeDeckInput {
+  factionKey: FactionKey
+  leaderName: string
+  name: string
+  neutrals?: boolean
+  unitNames: string[]
+  user: User
+  maxArtStyle?: boolean
 }

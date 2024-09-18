@@ -2,17 +2,18 @@ import { Selector, t } from 'testcafe'
 
 import { HTML_IDS } from '@gwent/constants'
 
-const container = Selector(`#${HTML_IDS.Banner}`)
+const container = Selector(`#${HTML_IDS.BannerContainer}`)
 
 export default class Banner {
   static elements = {
     Container: container,
-    MainTitle: container.find(`#${HTML_IDS.MainTitle}`),
-    Menu: container.find(`#${HTML_IDS.Hamburger}`),
-    MenuAbout: Selector(`#${HTML_IDS.MenuItems}`).find(`#${HTML_IDS.MenuItemsAbout}`),
-    MenuDecks: Selector(`#${HTML_IDS.MenuItems}`).find(`#${HTML_IDS.MenuItemsDeck}`),
-    MenuProfile: Selector(`#${HTML_IDS.MenuItems}`).find(`#${HTML_IDS.MenuItemsProfile}`),
-    MenuHome: Selector(`#${HTML_IDS.MenuItems}`).find(`#${HTML_IDS.MenutItemsHome}`),
+    MainTitle: container.find(`#${HTML_IDS.BannerMainTitle}`),
+    Menu: container.find(`#${HTML_IDS.BannerHamburger}`),
+    MenuAbout: Selector(`#${HTML_IDS.BannerMenuItems}`).find(`#${HTML_IDS.BannerMenuItemsAbout}`),
+    MenuDecks: Selector(`#${HTML_IDS.BannerMenuItems}`).find(`#${HTML_IDS.BannerMenuItemsDeck}`),
+    MenuGames: Selector(`#${HTML_IDS.BannerMenuItems}`).find(`#${HTML_IDS.BannerMenuItemsGames}`),
+    MenuProfile: Selector(`#${HTML_IDS.BannerMenuItems}`).find(`#${HTML_IDS.BannerMenuItemsProfile}`),
+    MenuHome: Selector(`#${HTML_IDS.BannerMenuItems}`).find(`#${HTML_IDS.BannerMenutItemsHome}`),
     Username: container.find(`#${HTML_IDS.BannerUsername}`),
   }
 
@@ -44,7 +45,7 @@ export default class Banner {
     }
   }
 
-  static async verifyContent(username: string) {
+  static async verify(username: string) {
     const loggedIn = username !== ''
     await t.expect(Banner.elements.Container.exists).ok()
     await t.expect(Banner.elements.Container.visible).ok()

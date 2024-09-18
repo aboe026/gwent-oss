@@ -1,0 +1,27 @@
+fragment CardUnitFragment on Unit {
+  combats
+  deckable
+  dlc {
+    name
+    image
+    key
+  }
+  effects {
+    ability
+    image
+    key
+    name
+  }
+  faction {
+    image
+    key
+    name
+  }
+  hero
+  id
+  images
+  name
+  quote
+  special
+  strength
+}

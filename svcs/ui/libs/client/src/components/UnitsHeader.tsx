@@ -54,10 +54,10 @@ export default function UnitsHeader({
   FILTERS.faction.title = faction?.name
 
   return (
-    <div className="units-headers">
-      <div className="units-headers-upper">
-        <div className="units-header units-header-outer">
-          <div className="units-header-filter">
+    <div className="units-header-container">
+      <div className="units-header-upper">
+        <div className="units-header-section units-header-section-outer">
+          <div className="units-header-filter-container">
             <input
               id={`${type}NameFilter`}
               type="search"
@@ -128,11 +128,11 @@ export default function UnitsHeader({
             )}
           </div>
         </div>
-        <div className="units-header">
+        <div className="units-header-section">
           <span className="units-header-title">{isAvailable ? 'Available' : 'Selected'}</span>
         </div>
-        <div className="units-header units-header-outer">
-          <div className="units-header-sort">
+        <div className="units-header-section units-header-section-outer">
+          <div className="units-header-sort-container">
             <select
               id={sortFieldId}
               title="Sort Field"
@@ -223,7 +223,7 @@ function renderFilterCheckboxes({
           <span className="units-header-filter-group-name">{group}</span>
           <div
             className={
-              group === FILTER_GROUP.Effect ? 'units-header-filter-group-effects' : 'units-header-filter-group'
+              group === FILTER_GROUP.Effect ? 'units-header-filter-group-effects' : 'units-header-filter-group-values'
             }
           >
             {fields

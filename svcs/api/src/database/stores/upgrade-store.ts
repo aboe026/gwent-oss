@@ -1,4 +1,4 @@
-import log4js from 'log4js'
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import Store from './store'
@@ -9,12 +9,13 @@ import Store from './store'
 export default class UpgradeStore extends Store {
   static readonly COLLECTION_NAME = 'upgrades'
   private static readonly LOCK_ID = new ObjectId('000000000000000000000001')
-  private static logger = log4js.getLogger('upgrade-store')
+  private static logger = getLogger('upgrade-store')
 
   /**
    * Attempts to create a lock on the database for upgrades. Throws an error if a lock already exists.
    *
    * @returns The database lock document.
+   * @throws Error if lock already exists.
    */
   static async addLock(): Promise<LockDbObject> {
     const updated = new Date()
@@ -34,8 +35,14 @@ export default class UpgradeStore extends Store {
     const updated = new Date()
     UpgradeStore.logger.trace(`Updating lock with updated: "${updated}"`)
     return UpgradeStore.update<LockDbObject>({
-      _id: UpgradeStore.LOCK_ID,
-      updated,
+      filter: {
+        _id: UpgradeStore.LOCK_ID,
+      },
+      update: {
+        $set: {
+          updated,
+        },
+      },
     })
   }
 
@@ -43,6 +50,7 @@ export default class UpgradeStore extends Store {
    * Get the database lock document. Throws an error if somehow more than 1 exists in the database.
    *
    * @returns The database lock document.
+   * @throws Error if more than 1 lock found.
    */
   static async getLock(): Promise<LockDbObject> {
     const docs = await UpgradeStore.read<LockDbObject[]>({
@@ -73,6 +81,7 @@ export default class UpgradeStore extends Store {
    * Gets the current version of the database in terms of how many upgrades has successfully been run.
    *
    * @returns The current upgrade version of the database.
+   * @throws Error if more than 1 version found.
    */
   static async getCurrentVersion(): Promise<number> {
     const docs = await UpgradeStore.read<UpgradeDbObject[]>({

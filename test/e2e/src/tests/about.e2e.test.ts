@@ -8,7 +8,7 @@ fixture('About')
 
 test('Shows about page without logging in', async () => {
   await E2eUtil.goTo(AboutPage.getUrl())
-  await AboutPage.verifyContent()
+  await AboutPage.verify()
 })
 
 test('Shows about page when logged in', async () => {
@@ -21,5 +21,5 @@ test('Shows about page when logged in', async () => {
     username,
   })
   await Banner.goTo(Banner.elements.MenuAbout)
-  await AboutPage.verifyContent()
+  await AboutPage.verify()
 })

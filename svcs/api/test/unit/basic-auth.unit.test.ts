@@ -1,8 +1,7 @@
-import { ObjectId } from 'mongodb'
-
 import BasicAuth from '../../src/auth/basic-auth'
-import UserStore from '../../src/database/stores/user-store'
+import TestUtil from '../test-util'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import UserStore from '../../src/database/stores/user-store'
 
 describe('basic-auth', () => {
   describe('authenticate', () => {
@@ -33,11 +32,9 @@ describe('basic-auth', () => {
     })
     it('sets user on session if validate user passes and session does not exist', async () => {
       const password = 'password'
-      const user = {
-        _id: new ObjectId(),
-        name: 'name',
-        created: new Date(),
-      }
+      const user = TestUtil.getDbUser({
+        password: '',
+      })
       await testBasicAuth({
         req: {
           headers: {
@@ -51,11 +48,9 @@ describe('basic-auth', () => {
     })
     it('sets user on session if validate user passes and session not exists', async () => {
       const password = 'password'
-      const user = {
-        _id: new ObjectId(),
-        name: 'name',
-        created: new Date(),
-      }
+      const user = TestUtil.getDbUser({
+        password: '',
+      })
       await testBasicAuth({
         req: {
           headers: {
@@ -97,10 +92,11 @@ async function testBasicAuth({
   }
   const nextSpy = jest.fn().mockImplementation()
 
+  const promise = BasicAuth.authenticate(req, res, nextSpy)
   if (error) {
-    await expect(BasicAuth.authenticate(req, res, nextSpy)).rejects.toThrow(error)
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(BasicAuth.authenticate(req, res, nextSpy)).resolves.toEqual(undefined)
+    await expect(promise).resolves.toEqual(undefined)
   }
 
   expect(validateUserSpy.mock.calls).toEqual(validateUserCalls)

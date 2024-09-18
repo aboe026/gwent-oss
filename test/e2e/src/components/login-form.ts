@@ -1,18 +1,18 @@
 import { Selector, t } from 'testcafe'
 
-import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import { HTML_IDS } from '@gwent/constants'
 
-const container = Selector(`#${HTML_IDS.LoginForm}`)
+const container = Selector(`#${HTML_IDS.LoginDialogContainer}`)
 
 export default class LoginForm {
   static elements = {
     Container: container,
-    Title: container.find(`#${HTML_IDS.LoginTitle}`),
-    Errors: container.find(`.${HTML_CLASSES.ErrorText}`),
-    Mode: container.find(`#${HTML_IDS.LoginModeSwitch}`),
-    Password: container.find(`#${HTML_IDS.LoginPassword}`),
-    Submit: container.find(`#${HTML_IDS.LoginSubmit}`),
-    Username: container.find(`#${HTML_IDS.LoginUsername}`),
+    Title: container.find(`#${HTML_IDS.LoginDialogTitle}`),
+    Errors: container.find(`#${HTML_IDS.LoginDialogError}`),
+    Mode: container.find(`#${HTML_IDS.LoginDialogModeSwitch}`),
+    Password: container.find(`#${HTML_IDS.LoginDialogPassword}`),
+    Submit: container.find(`#${HTML_IDS.LoginDialogSubmit}`),
+    Username: container.find(`#${HTML_IDS.LoginDialogUsername}`),
   }
 
   static async fillIn({

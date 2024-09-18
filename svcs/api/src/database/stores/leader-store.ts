@@ -1,11 +1,11 @@
 import { Document, Filter, ObjectId } from 'mongodb'
+import { getLogger } from 'log4js'
 
 import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
-import { getLogger } from 'log4js'
 import Store from './store'
 
 /**
- * Factory for possible Gwent leaders a user can add to their deck.
+ * Factory for possible Gwent leaders a user can set for their decks.
  */
 export default class LeaderStore extends Store {
   static readonly COLLECTION_NAME = 'leaders'

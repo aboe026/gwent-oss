@@ -1,0 +1,7 @@
+fragment GameFactionFragment on Faction {
+  ability
+  id
+  image
+  key
+  name
+}

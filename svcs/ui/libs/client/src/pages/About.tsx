@@ -1,16 +1,15 @@
 import Centered from '../components/Centered'
+import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import LoadingSpinner from '../components/LoadingSpinner'
 import { useApplicationQuery } from '@gwent/graphql-schema/apollo-typings'
 import { useTitle } from '../components/TabTitle'
-
 import './About.css'
-import { getApolloError } from '../util/error-util'
-import LoadingSpinner from '../components/LoadingSpinner'
 
 /**
- * The about page containing application information
+ * The about page containing application information.
  *
- * @returns The application about page
+ * @returns The application about page.
  */
 export default function AboutPage() {
   useTitle('About | Gwent')
@@ -19,7 +18,7 @@ export default function AboutPage() {
 
   return (
     <Centered>
-      <div id={HTML_IDS.About}>
+      <div id={HTML_IDS.AboutContainer}>
         {loading ? (
           <LoadingSpinner size="50px" />
         ) : error ? (

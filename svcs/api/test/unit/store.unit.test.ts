@@ -106,16 +106,21 @@ describe('store', () => {
         findOneAndUpdate: findOneAndUpdateSpy,
       })
 
-      await expect(Store['update'](doc)).resolves.toEqual(value)
+      await expect(
+        Store['update']({
+          filter: {
+            _id: doc._id,
+          },
+          update: doc,
+        })
+      ).resolves.toEqual(value)
 
       expect(findOneAndUpdateSpy.mock.calls).toEqual([
         [
           {
             _id: doc._id,
           },
-          {
-            $set: doc,
-          },
+          doc,
           {
             returnDocument: 'after',
           },
@@ -132,16 +137,21 @@ describe('store', () => {
         findOneAndUpdate: findOneAndUpdateSpy,
       })
 
-      await expect(Store['update'](doc)).rejects.toThrow(`Invalid ID "${doc._id.toString()}": Does not exist.`)
+      await expect(
+        Store['update']({
+          filter: {
+            _id: doc._id,
+          },
+          update: doc,
+        })
+      ).rejects.toThrow(`Invalid ID "${doc._id.toString()}": Does not exist.`)
 
       expect(findOneAndUpdateSpy.mock.calls).toEqual([
         [
           {
             _id: doc._id,
           },
-          {
-            $set: doc,
-          },
+          doc,
           {
             returnDocument: 'after',
           },

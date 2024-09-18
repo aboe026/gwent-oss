@@ -1,6 +1,5 @@
-import { config } from 'dotenv'
-
 import { bool, CleanedEnv, cleanEnv, CleanOptions, email, host, json, num, port, str, url } from 'envalid'
+import { config } from 'dotenv'
 
 /**
  * Get environment variables while enforcing how values should be parsed.

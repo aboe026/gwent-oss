@@ -38,6 +38,11 @@ button {
 
 .error-text {
   color: red;
+  text-align: center;
+}
+
+.help-text {
+  font-size: small;
 }
 
 .required-field {
@@ -50,6 +55,15 @@ button {
   float: right;
 }
 
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.actions .primary {
+  margin-left: 5px;
+}
+
 .content-block {
   background-color: lightgray;
   margin: 10px;
@@ -60,7 +74,7 @@ button {
 .whole-screen-overlay {
   position: fixed;
   display: flex;
-  z-index: 1;
+  z-index: 100;
   width: 100%;
   height: 100%;
   top: 0;
@@ -92,6 +106,11 @@ button {
 
 .icon-container:hover {
   background-color: 'gray';
+}
+
+.multi-row-cell {
+  display: flex;
+  flex-direction: column;
 }
 
 .monsters-color {

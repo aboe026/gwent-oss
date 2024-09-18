@@ -1,6 +1,7 @@
 import ApiClient from '../util/api-client'
-import DeckPage from '../page-objects/deck-page'
 import { Combat, DlcKey, EffectKey, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
+import DeckEditor from '../components/deck-editor'
+import DeckPage from '../page-objects/deck-page'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
@@ -19,7 +20,7 @@ test('Available filters specials when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -33,15 +34,15 @@ test('Available filters specials when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatSpecial)
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatSpecial)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.filter((unit) => unit.special).map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.filter((unit) => unit.special).map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.filter((unit) => unit.special).map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.filter((unit) => unit.special).map((unit) => unit.name))
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters heroes when locked', async () => {
@@ -56,7 +57,7 @@ test('Available filters heroes when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -70,15 +71,15 @@ test('Available filters heroes when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatHero)
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatHero)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.filter((unit) => unit.hero).map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.filter((unit) => unit.hero).map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.filter((unit) => unit.hero).map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.filter((unit) => unit.hero).map((unit) => unit.name))
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters strength when locked', async () => {
@@ -93,7 +94,7 @@ test('Available filters strength when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -107,21 +108,21 @@ test('Available filters strength when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatStrength)
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatStrength)
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits
       .filter((unit) => unit.strength !== undefined && unit.strength !== null)
       .map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits.filter((unit) => unit.strength !== undefined && unit.strength !== null).map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters close when locked', async () => {
@@ -136,7 +137,7 @@ test('Available filters close when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -150,22 +151,22 @@ test('Available filters close when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleCombatsExpanded()
-  await DeckPage.filterOnAdvancedStat(Combat.Close)
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleCombatsExpanded()
+  await DeckEditor.filterOnAdvancedStat(Combat.Close)
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits
       .filter((unit) => unit.combats?.includes(Combat.Close) && !unit.special)
       .map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits.filter((unit) => unit.combats?.includes(Combat.Close) && !unit.special).map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters ranged when locked', async () => {
@@ -180,7 +181,7 @@ test('Available filters ranged when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -194,24 +195,24 @@ test('Available filters ranged when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleCombatsExpanded()
-  await DeckPage.filterOnAdvancedStat(Combat.Ranged)
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleCombatsExpanded()
+  await DeckEditor.filterOnAdvancedStat(Combat.Ranged)
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits
       .filter((unit) => unit.combats?.includes(Combat.Ranged) && !unit.special)
       .map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits
       .filter((unit) => unit.combats?.includes(Combat.Ranged) && !unit.special)
       .map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters siege when locked', async () => {
@@ -226,7 +227,7 @@ test('Available filters siege when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -240,22 +241,22 @@ test('Available filters siege when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleCombatsExpanded()
-  await DeckPage.filterOnAdvancedStat(Combat.Siege)
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleCombatsExpanded()
+  await DeckEditor.filterOnAdvancedStat(Combat.Siege)
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits
       .filter((unit) => unit.combats?.includes(Combat.Siege) && !unit.special)
       .map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits.filter((unit) => unit.combats?.includes(Combat.Siege) && !unit.special).map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters agile when locked', async () => {
@@ -271,7 +272,7 @@ test('Available filters agile when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -290,24 +291,24 @@ test('Available filters agile when locked', async () => {
   }
   const sortedAvailableUnits = [...sortedUnits.slice(0, halfway), olaf]
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length).filter((unit) => unit.name !== 'Olaf')
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleCombatsExpanded()
-  await DeckPage.filterOnAdvancedStat(EffectKey.Agile)
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleEffectsExpanded()
+  await DeckEditor.filterOnAdvancedStat(EffectKey.Agile)
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits
       .filter((unit) => unit.effects?.map((effect) => effect.key)?.includes(EffectKey.Agile))
       .map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits
       .filter((unit) => unit.effects?.map((effect) => effect.key)?.includes(EffectKey.Agile))
       .map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters avenger when locked', async () => {
@@ -444,7 +445,7 @@ test('Selected filters effects separate from available when unlocked', async () 
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -458,20 +459,20 @@ test('Selected filters effects separate from available when unlocked', async () 
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleUnitsLock()
-  await DeckPage.toggleAvailableFiltersExpanded()
-  await DeckPage.toggleAdvancedFilter('filterAvailableMEDIC')
-  await DeckPage.toggleSelectedFiltersExpanded()
-  await DeckPage.toggleAdvancedFilter('filterSelectedMORALE')
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleUnitsLock()
+  await DeckEditor.toggleAvailableFiltersExpanded()
+  await DeckEditor.toggleAdvancedFilter('filterAvailableMEDIC')
+  await DeckEditor.toggleSelectedFiltersExpanded()
+  await DeckEditor.toggleAdvancedFilter('filterSelectedMORALE')
 
-  await DeckPage.verifyAvailableUnits(['Dun Banner Medic'])
-  await DeckPage.verifySelectedUnits(['Olgierd Von Everec'])
+  await DeckEditor.verifyAvailableUnits(['Dun Banner Medic'])
+  await DeckEditor.verifySelectedUnits(['Olgierd Von Everec'])
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters faction when locked', async () => {
@@ -487,7 +488,7 @@ test('Available filters faction when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -501,21 +502,21 @@ test('Available filters faction when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleAvailableFiltersExpanded()
-  await DeckPage.toggleAdvancedFilter('filterAvailablefaction')
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleAvailableFiltersExpanded()
+  await DeckEditor.toggleAdvancedFilter('filterAvailablefaction')
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits.filter((unit) => unit.faction.key === factionKey).map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits.filter((unit) => unit.faction.key === factionKey).map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Selected filters faction separately when unlocked', async () => {
@@ -531,7 +532,7 @@ test('Selected filters faction separately when unlocked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -545,24 +546,24 @@ test('Selected filters faction separately when unlocked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleUnitsLock()
-  await DeckPage.toggleAvailableFiltersExpanded()
-  await DeckPage.toggleSelectedFiltersExpanded()
-  await DeckPage.toggleAdvancedFilter('filterAvailablefaction')
-  await DeckPage.toggleAdvancedFilter('filterSelectedNEUTRAL')
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleUnitsLock()
+  await DeckEditor.toggleAvailableFiltersExpanded()
+  await DeckEditor.toggleSelectedFiltersExpanded()
+  await DeckEditor.toggleAdvancedFilter('filterAvailablefaction')
+  await DeckEditor.toggleAdvancedFilter('filterSelectedNEUTRAL')
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits.filter((unit) => unit.faction.key === factionKey).map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits.filter((unit) => unit.faction.key === FactionKey.Neutral).map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters DLC when locked', async () => {
@@ -578,7 +579,7 @@ test('Available filters DLC when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -592,21 +593,21 @@ test('Available filters DLC when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleAvailableFiltersExpanded()
-  await DeckPage.toggleAdvancedFilter('filterAvailableHEARTS_OF_STONE')
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleAvailableFiltersExpanded()
+  await DeckEditor.toggleAdvancedFilter('filterAvailableHEARTS_OF_STONE')
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits.filter((unit) => unit.dlc?.key === DlcKey.HeartsOfStone).map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits.filter((unit) => unit.dlc?.key === DlcKey.HeartsOfStone).map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Selected filters DLC separately when unlocked', async () => {
@@ -622,7 +623,7 @@ test('Selected filters DLC separately when unlocked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -636,24 +637,24 @@ test('Selected filters DLC separately when unlocked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleUnitsLock()
-  await DeckPage.toggleAvailableFiltersExpanded()
-  await DeckPage.toggleSelectedFiltersExpanded()
-  await DeckPage.toggleAdvancedFilter('filterAvailableBLOOD_AND_WINE')
-  await DeckPage.toggleAdvancedFilter('filterSelectedGWENT_THE_WITCHER_CARD_GAME')
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleUnitsLock()
+  await DeckEditor.toggleAvailableFiltersExpanded()
+  await DeckEditor.toggleSelectedFiltersExpanded()
+  await DeckEditor.toggleAdvancedFilter('filterAvailableBLOOD_AND_WINE')
+  await DeckEditor.toggleAdvancedFilter('filterSelectedGWENT_THE_WITCHER_CARD_GAME')
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits.filter((unit) => unit.dlc?.key === DlcKey.BloodAndWine).map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits.filter((unit) => unit.dlc?.key === DlcKey.GwentTheWitcherCardGame).map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters Alternate Art when locked', async () => {
@@ -669,7 +670,7 @@ test('Available filters Alternate Art when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -683,21 +684,21 @@ test('Available filters Alternate Art when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleAvailableFiltersExpanded()
-  await DeckPage.toggleAdvancedFilter('filterAvailableart')
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleAvailableFiltersExpanded()
+  await DeckEditor.toggleAdvancedFilter('filterAvailableart')
 
-  await DeckPage.verifyAvailableUnits(
+  await DeckEditor.verifyAvailableUnits(
     sortedAvailableUnits.filter((unit) => unit.images.length > 1).map((unit) => unit.name)
   )
-  await DeckPage.verifySelectedUnits(
+  await DeckEditor.verifySelectedUnits(
     sortedSelectedUnits.filter((unit) => unit.images.length > 1).map((unit) => unit.name)
   )
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Available filters name when locked', async () => {
@@ -713,7 +714,7 @@ test('Available filters name when locked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -727,20 +728,20 @@ test('Available filters name when locked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.filterByName({
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterByName({
     name: 'siege',
   })
 
-  await DeckPage.verifyAvailableUnits(['Kaedweni Siege Expert'])
-  await DeckPage.verifySelectedUnits(['Siege Tower'])
+  await DeckEditor.verifyAvailableUnits(['Kaedweni Siege Expert'])
+  await DeckEditor.verifySelectedUnits(['Siege Tower'])
 
-  await DeckPage.filterByName({
+  await DeckEditor.filterByName({
     name: '',
   })
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 test('Selected filters separately on name when unlocked', async () => {
@@ -756,7 +757,7 @@ test('Selected filters separately on name when unlocked', async () => {
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -770,29 +771,29 @@ test('Selected filters separately on name when unlocked', async () => {
   const halfway = Math.ceil(sortedUnits.length / 2)
   const sortedAvailableUnits = sortedUnits.slice(0, halfway)
   const sortedSelectedUnits = sortedUnits.slice(halfway, sortedUnits.length)
-  await DeckPage.setUnits(sortedSelectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleUnitsLock()
-  await DeckPage.filterByName({
+  await DeckEditor.setUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleUnitsLock()
+  await DeckEditor.filterByName({
     name: 'geralt',
   })
-  await DeckPage.filterByName({
+  await DeckEditor.filterByName({
     name: 'roach',
     available: false,
   })
 
-  await DeckPage.verifyAvailableUnits(['Geralt of Rivia'])
-  await DeckPage.verifySelectedUnits(['Roach'])
+  await DeckEditor.verifyAvailableUnits(['Geralt of Rivia'])
+  await DeckEditor.verifySelectedUnits(['Roach'])
 
-  await DeckPage.filterByName({
+  await DeckEditor.filterByName({
     name: '',
   })
-  await DeckPage.filterByName({
+  await DeckEditor.filterByName({
     name: '',
     available: false,
   })
 
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
 async function testEffectFilter({
@@ -817,7 +818,7 @@ async function testEffectFilter({
   await LoginPage.login({
     username,
   })
-  await DeckPage.setFaction({
+  await DeckEditor.setFaction({
     faction,
   })
   const units = await client.getUnits({
@@ -853,9 +854,9 @@ async function testEffectFilter({
     sortProperties: [SORT_FIELD.Name, SORT_FIELD.Id],
     array: selectedUnits,
   })
-  await DeckPage.setUnits(selectedUnits.map((unit) => unit.name))
-  await DeckPage.toggleEffectsExpanded()
-  await DeckPage.filterOnAdvancedStat(effectKey)
+  await DeckEditor.setUnits(selectedUnits.map((unit) => unit.name))
+  await DeckEditor.toggleEffectsExpanded()
+  await DeckEditor.filterOnAdvancedStat(effectKey)
 
   const expectedAvailableUnits = sortedAvailableUnits
     .filter((unit) => unit.effects?.map((effect) => effect.key)?.includes(effectKey))
@@ -869,10 +870,10 @@ async function testEffectFilter({
   if (expectedSelectedUnits.length < 1) {
     throw Error('Should have at least 1 selected unit to ensure filter is actually working')
   }
-  await DeckPage.verifyAvailableUnits(expectedAvailableUnits)
-  await DeckPage.verifySelectedUnits(expectedSelectedUnits)
+  await DeckEditor.verifyAvailableUnits(expectedAvailableUnits)
+  await DeckEditor.verifySelectedUnits(expectedSelectedUnits)
 
-  await DeckPage.filterOnMainStat(DeckPage.elements.UnitStatUnit)
-  await DeckPage.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
-  await DeckPage.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
+  await DeckEditor.filterOnMainStat(DeckEditor.elements.UnitStatUnit)
+  await DeckEditor.verifyAvailableUnits(sortedAvailableUnits.map((unit) => unit.name))
+  await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 }

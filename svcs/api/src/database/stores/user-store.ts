@@ -1,5 +1,5 @@
+import { FindOptions, ObjectId } from 'mongodb'
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import PasswordHasher from '../../util/password-hasher'
 import Store from './store'
@@ -28,7 +28,7 @@ export default class UserStore extends Store {
         password: await PasswordHasher.hash(password),
         created: new Date(),
       })
-      delete (user as any).password // eslint-disable-line @typescript-eslint/no-explicit-any
+      user.password = '' // for security, ensure password isn't exposed
       return user
     } catch (err: unknown) {
       if (
@@ -37,7 +37,7 @@ export default class UserStore extends Store {
           code: 11000,
         })
       ) {
-        const message = `User "${name}" already exists`
+        const message = `User with name "${name}" already exists.`
         UserStore.logger.error(message)
         throw Error(message)
       } else {
@@ -48,25 +48,69 @@ export default class UserStore extends Store {
   }
 
   /**
-   * Retrieve a user from the database.
+   * Retrieve a user from the database by their ObjectId.
    *
    * @param id The ObjectId of the user to retrieve.
-   * @returns The User database object.
-   * @throws Error if the user with given ID does not exist
+   * @returns The User database object if it exists, undefined otherwise.
+   * @throws Error if more than 1 user found.
    */
-  static async get(id: string | ObjectId): Promise<UserDbObject> {
-    UserStore.logger.trace(`Getting user with ID "${id}"`)
-    const response = await UserStore.read<UserDbObject[]>({
-      filter: {
-        _id: new ObjectId(id),
-      },
-    })
-    if (!response || response.length === 0) {
-      const message = `User with ID "${id}" does not exist`
+  static async getById(id: string | ObjectId): Promise<UserDbObject | undefined> {
+    const users = await UserStore.getByIds([id])
+    if (users.length > 1) {
+      const message = `Multiple users with ID "${id}" found.`
       UserStore.logger.error(message)
       throw Error(message)
     }
-    return response[0]
+    if (users.length === 1) {
+      const user = users[0]
+      user.password = '' // for security, ensure password isn't exposed
+      return user
+    }
+  }
+
+  /**
+   * Retrieve users from the database by their ObjectIds.
+   *
+   * @param ids The ObjectIds of the users to retrieve.
+   * @returns An array of database users found with the given IDs.
+   */
+  static async getByIds(ids: (string | ObjectId)[]): Promise<UserDbObject[]> {
+    UserStore.logger.trace(`Getting users with IDs "${JSON.stringify(ids)}"`)
+    const users = await UserStore.read<UserDbObject[]>({
+      filter: {
+        _id: {
+          $in: ids.map((id) => new ObjectId(id)),
+        },
+      },
+    })
+    return users.map((user) => {
+      user.password = '' // for security, ensure password isn't exposed
+      return user
+    })
+  }
+
+  /**
+   * Retrieve users from the database by their names.
+   *
+   * @param names The names of the users to retrieve.
+   * @returns An array of user database documents found with the given names.
+   */
+  static async getByNames(names: string[], options?: FindOptions<Document>): Promise<UserDbObject[]> {
+    if (UserStore.logger.isTraceEnabled()) {
+      UserStore.logger.trace(`Getting users with names "${JSON.stringify(names)}"`)
+    }
+    const response = await UserStore.read<UserDbObject[]>({
+      filter: {
+        name: {
+          $in: names,
+        },
+      },
+      options,
+    })
+    return response.map((user) => {
+      user.password = '' // for security, ensure password isn't exposed
+      return user
+    })
   }
 
   /**
@@ -75,7 +119,7 @@ export default class UserStore extends Store {
    * @param name The name of the user to check.
    * @param password The password to check against the potentially existing user.
    * @returns The User if they exist with the correct password.
-   * @throws An Error if the user does not exist or if the password is not correct.
+   * @throws Error if the user does not exist, more than 1 user found with the name, or if the password is not correct.
    */
   static async validate(name: string, password: string): Promise<UserDbObject> {
     const users = await UserStore.read<UserDbObject[]>({
@@ -84,17 +128,17 @@ export default class UserStore extends Store {
       },
     })
     if (users.length === 0) {
-      UserStore.logger.debug(`User "${name}" does not exist`)
+      UserStore.logger.debug(`User with name "${name}" does not exist.`)
       throw Error(`Invalid credentials for user "${name}"`)
     } else if (users.length > 1) {
-      const message = `More than 1 user exists with name "${name}": "${JSON.stringify(users)}"`
+      const message = `More than 1 user exists with name "${name}": "${JSON.stringify(users)}".`
       UserStore.logger.error(message)
       throw Error(message)
     }
     const user = users[0]
-    const passwordCorrect = await PasswordHasher.match(password, (user as any).password) // eslint-disable-line @typescript-eslint/no-explicit-any
+    const passwordCorrect = await PasswordHasher.match(password, user.password)
     if (passwordCorrect) {
-      delete (user as any).password // eslint-disable-line @typescript-eslint/no-explicit-any
+      user.password = '' // for security, ensure password isn't exposed
       return user
     }
     UserStore.logger.debug(`User "${name}" entered incorrect password`)

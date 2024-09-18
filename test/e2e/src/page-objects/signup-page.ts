@@ -1,8 +1,8 @@
 import { t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
-import { ROUTES } from '@gwent/constants'
 import LoginForm from '../components/login-form'
+import { ROUTES } from '@gwent/constants'
 
 export default class SignupPage {
   static getUrl(): string {

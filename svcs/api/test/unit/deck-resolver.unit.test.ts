@@ -1,241 +1,383 @@
-import { ObjectId } from 'mongodb'
-
+import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { DeckDbObject, FactionDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckResolver from '../../src/graphql/resolvers/deck-resolver'
-import { FactionDbObject, LeaderDbObject, UnitDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import DeckUnitResolver from '../../src/graphql/resolvers/deck-unit-resolver'
+import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import FactionStore from '../../src/database/stores/faction-store'
-import LeaderStore from '../../src/database/stores/leader-store'
-import UnitStore from '../../src/database/stores/unit-store'
-import UserStore from '../../src/database/stores/user-store'
+import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
+import { getUniqueItems } from '@gwent/utils'
+import TestUtil from '../test-util'
+import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
+import UserResolver from '../../src/graphql/resolvers/user-resolver'
 
 describe('deck-resolver', () => {
-  describe('faction', () => {
-    const faction: FactionDbObject = {
-      _id: new ObjectId(),
-      created: new Date(),
-      image: 'image',
-      key: FactionKey.Monsters,
-      name: 'Monsters',
-      stats: {} as any,
-    }
-    it('does not call to FactionStore if is not ObjectId', async () => {
-      const getSpy = jest.spyOn(FactionStore, 'get')
-
-      await expect(
-        (DeckResolver.faction as any)({
+  describe('fromObject', () => {
+    const deck = TestUtil.getDbDeck({})
+    it('does not call to external resolvers if fields provided', async () => {
+      const faction = TestUtil.getFaction({
+        id: deck.faction,
+      })
+      await testResolveFromObject({
+        deck,
+        faction,
+        leader: TestUtil.getLeader({
+          id: deck.leader,
           faction,
-        })
-      ).resolves.toEqual(faction)
-
-      expect(getSpy.mock.calls).toEqual([])
-    })
-    it('calls to FactionStore if it is ObjectId', async () => {
-      const getSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue([faction])
-
-      await expect(
-        (DeckResolver.faction as any)({
-          faction: faction._id,
-        })
-      ).resolves.toEqual(faction)
-
-      expect(getSpy.mock.calls).toEqual([
-        [
+        }),
+        units: [
           {
-            ids: [faction._id],
+            artStyle: 1,
+            unit: TestUtil.getUnit({
+              faction,
+            }),
           },
         ],
-      ])
+        user: TestUtil.getUser({
+          id: deck.user,
+        }),
+        factionResolverCalled: false,
+        leaderResolverCalled: false,
+        userResolverCalled: false,
+      })
+    })
+    it('calls to external resolvers without neutral stats if only deck provided', async () => {
+      await testResolveFromObject({
+        deck,
+      })
+    })
+    it('calls to external resolvers with neutral stats if explicit false provided', async () => {
+      await testResolveFromObject({
+        deck,
+        neutralDeckStats: false,
+        neutralLeaderStats: false,
+        neutralUnitStats: false,
+      })
+    })
+    it('calls to external resolvers with neutral stats if explicit true provided', async () => {
+      await testResolveFromObject({
+        deck,
+        neutralDeckStats: true,
+        neutralLeaderStats: true,
+        neutralUnitStats: true,
+      })
     })
   })
-  describe('id', () => {
-    it('returns _id as string', () => {
-      const id = '000000000000000000000002'
-      expect(
-        (DeckResolver.id as any)({
-          _id: new ObjectId(id),
-        })
-      ).toEqual(id)
+  describe('fromArray', () => {
+    const deck = TestUtil.getDbDeck({})
+    const faction = TestUtil.getDbFaction({
+      id: deck.faction,
     })
-  })
-  describe('leader', () => {
-    const leader: LeaderDbObject = {
-      ability: 'ability',
-      _id: new ObjectId(),
-      created: new Date(),
-      faction: new ObjectId(),
-      image: 'image',
-      name: 'Monsters',
-      quote: 'quote',
-    }
-    it('does not call to LeaderStore if is not ObjectId', async () => {
-      const getSpy = jest.spyOn(LeaderStore, 'get')
-
-      await expect(
-        (DeckResolver.leader as any)({
-          leader,
-        })
-      ).resolves.toEqual(leader)
-
-      expect(getSpy.mock.calls).toEqual([])
+    const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
+    const leader = TestUtil.getLeader({
+      id: deck.leader,
     })
-    it('calls to FactionStore if it is ObjectId', async () => {
-      const getSpy = jest.spyOn(LeaderStore, 'get').mockResolvedValue([leader])
-
-      await expect(
-        (DeckResolver.leader as any)({
-          leader: leader._id,
-        })
-      ).resolves.toEqual(leader)
-
-      expect(getSpy.mock.calls).toEqual([
-        [
-          {
-            ids: [leader._id],
-          },
-        ],
-      ])
+    const units = deck.units.map((deckUnit) =>
+      TestUtil.getUnit({
+        id: deckUnit.unit,
+        faction: resolvedFaction,
+      })
+    )
+    const user = TestUtil.getUser({
+      id: deck.user,
     })
-  })
-  describe('units', () => {
-    const unit: UnitDbObject = {
-      _id: new ObjectId(),
-      created: new Date(),
-      deckable: true,
-      faction: new ObjectId(),
-      images: [],
-      name: 'name',
-      quote: 'quote',
-    }
-    it('does not call out to UnitStore if all units resolved', async () => {
-      const deckUnit = {
+    const deckUnits = units.map((unit) => {
+      return {
         artStyle: 1,
         unit,
       }
-      const getSpy = jest.spyOn(UnitStore, 'get')
-
-      await expect(
-        (DeckResolver.units as any)({
-          units: [deckUnit],
-        })
-      ).resolves.toEqual([deckUnit])
-
-      expect(getSpy.mock.calls).toEqual([])
     })
-    it('calls out to UnitStore if unit unresolved', async () => {
-      const deckUnit = {
-        artStyle: 1,
-        unit,
-      }
-      const getSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue([unit])
-
-      await expect(
-        (DeckResolver.units as any)({
-          units: [
+    it('returns resolved deck if implicit neutral stats', async () => {
+      await testResolveFromArray({
+        decks: [deck],
+        factionsGetResponse: [faction],
+        factionsResolveResponse: [resolvedFaction],
+        leadersResolveResponse: [leader],
+        unitsResolveResponse: units,
+        userResolveResponse: [user],
+        resolvedDecks: [
+          TestUtil.getDeckFromDbDeck({
+            deck,
+            faction: resolvedFaction,
+            leader,
+            units: deckUnits,
+            user,
+          }),
+        ],
+        deckResolveCalls: [
+          [
             {
-              id: unit._id,
-              artStyle: deckUnit.artStyle,
+              deck,
+              faction: resolvedFaction,
+              leader,
+              units: deckUnits,
+              user,
             },
           ],
-        })
-      ).resolves.toEqual([deckUnit])
-
-      expect(getSpy.mock.calls).toEqual([
-        [
-          {
-            ids: [unit._id.toString()],
-          },
         ],
-      ])
+      })
     })
-    it('only adds unit once when calling to UnitStore if duplicate units unresolved', async () => {
-      const deckUnit = {
-        artStyle: 1,
-        unit,
-      }
-      const getSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue([unit])
-
-      await expect(
-        (DeckResolver.units as any)({
-          units: [
-            {
-              id: unit._id,
-              artStyle: deckUnit.artStyle,
-            },
-            {
-              id: unit._id,
-              artStyle: deckUnit.artStyle,
-            },
-          ],
-        })
-      ).resolves.toEqual([deckUnit, deckUnit])
-
-      expect(getSpy.mock.calls).toEqual([
-        [
-          {
-            ids: [unit._id.toString()],
-          },
+    it('returns resolved deck if explicit false neutral stats', async () => {
+      await testResolveFromArray({
+        decks: [deck],
+        neutralDeckStats: false,
+        neutralLeaderStats: false,
+        neutralUnitStats: false,
+        factionsGetResponse: [faction],
+        factionsResolveResponse: [resolvedFaction],
+        leadersResolveResponse: [leader],
+        unitsResolveResponse: units,
+        userResolveResponse: [user],
+        resolvedDecks: [
+          TestUtil.getDeckFromDbDeck({
+            deck,
+            faction: resolvedFaction,
+            leader,
+            units: deckUnits,
+            user,
+          }),
         ],
-      ])
-    })
-    it('throws error if unit id does not exist in database', async () => {
-      const deckUnit = {
-        artStyle: 1,
-        unit,
-      }
-      const getSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue([
-        {
-          ...unit,
-          _id: new ObjectId(),
-        },
-      ])
-
-      await expect(
-        (DeckResolver.units as any)({
-          units: [
+        deckResolveCalls: [
+          [
             {
-              id: unit._id,
-              artStyle: deckUnit.artStyle,
+              deck,
+              faction: resolvedFaction,
+              leader,
+              units: deckUnits,
+              user,
             },
           ],
-        })
-      ).rejects.toThrow(`Could not find unit with ID "${unit._id}".`)
-
-      expect(getSpy.mock.calls).toEqual([
-        [
-          {
-            ids: [unit._id.toString()],
-          },
         ],
-      ])
+      })
     })
-  })
-  describe('user', () => {
-    const user: UserDbObject = {
-      _id: new ObjectId(),
-      created: new Date(),
-      name: 'name',
-    }
-    it('does not call to UserStore if is not ObjectId', async () => {
-      const getSpy = jest.spyOn(UserStore, 'get')
-
-      await expect(
-        (DeckResolver.user as any)({
-          user,
-        })
-      ).resolves.toEqual(user)
-
-      expect(getSpy.mock.calls).toEqual([])
-    })
-    it('calls to UserStore if it is ObjectId', async () => {
-      const getSpy = jest.spyOn(UserStore, 'get').mockResolvedValue(user)
-
-      await expect(
-        (DeckResolver.user as any)({
-          user: user._id,
-        })
-      ).resolves.toEqual(user)
-
-      expect(getSpy.mock.calls).toEqual([[user._id]])
+    it('returns resolved deck if explicit true neutral stats', async () => {
+      await testResolveFromArray({
+        decks: [deck],
+        neutralDeckStats: true,
+        neutralLeaderStats: true,
+        neutralUnitStats: true,
+        factionsGetResponse: [faction],
+        factionsResolveResponse: [resolvedFaction],
+        leadersResolveResponse: [leader],
+        unitsResolveResponse: units,
+        userResolveResponse: [user],
+        resolvedDecks: [
+          TestUtil.getDeckFromDbDeck({
+            deck,
+            faction: resolvedFaction,
+            leader,
+            units: deckUnits,
+            user,
+          }),
+        ],
+        deckResolveCalls: [
+          [
+            {
+              deck,
+              faction: resolvedFaction,
+              leader,
+              units: deckUnits,
+              user,
+            },
+          ],
+        ],
+      })
     })
   })
 })
+
+async function testResolveFromObject({
+  deck,
+  faction,
+  leader,
+  neutralDeckStats,
+  neutralLeaderStats,
+  neutralUnitStats,
+  units,
+  user,
+  factionResolverCalled = true,
+  leaderResolverCalled = true,
+  userResolverCalled = true,
+}: {
+  deck: DeckDbObject
+  faction?: Faction
+  leader?: Leader
+  units?: DeckUnit[]
+  user?: User
+  neutralDeckStats?: boolean
+  neutralLeaderStats?: boolean
+  neutralUnitStats?: boolean
+  factionResolverCalled?: boolean
+  leaderResolverCalled?: boolean
+  userResolverCalled?: boolean
+}) {
+  const retrievedFaction = TestUtil.getFaction({
+    id: deck.faction,
+  })
+  const factionResolverSpy = jest.spyOn(FactionResolver, 'fromId').mockResolvedValue(retrievedFaction)
+  const retrievedLeader = TestUtil.getLeader({
+    id: deck.leader,
+    faction: faction || retrievedFaction,
+  })
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromId').mockResolvedValue(retrievedLeader)
+  const retrievedUnits: DeckUnit[] = deck.units.map((deckUnit) => {
+    return {
+      artStyle: 1,
+      unit: TestUtil.getUnit({
+        id: deckUnit.unit,
+        faction: faction || retrievedFaction,
+      }),
+    }
+  })
+  const deckUnitResolverSpy = jest.spyOn(DeckUnitResolver, 'fromArray').mockResolvedValue(units || retrievedUnits)
+  const retrievedUser = TestUtil.getUser({
+    id: deck.user,
+  })
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromId').mockResolvedValue(retrievedUser)
+
+  await expect(
+    DeckResolver.fromObject({
+      deck,
+      faction,
+      leader,
+      neutralDeckStats,
+      neutralLeaderStats,
+      neutralUnitStats,
+      units,
+      user,
+    })
+  ).resolves.toEqual({
+    created: deck.created,
+    faction: faction || retrievedFaction,
+    id: deck._id.toString(),
+    leader: leader || retrievedLeader,
+    name: deck.name,
+    stats: deck.stats,
+    units: units || retrievedUnits,
+    user: user || retrievedUser,
+  })
+
+  expect(factionResolverSpy.mock.calls).toEqual(
+    factionResolverCalled
+      ? [
+          [
+            {
+              id: deck.faction,
+              neutrals: neutralDeckStats,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(leaderResolverSpy.mock.calls).toEqual(
+    leaderResolverCalled
+      ? [
+          [
+            {
+              id: deck.leader,
+              neutralStats: neutralLeaderStats,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(deckUnitResolverSpy.mock.calls).toEqual(
+    units
+      ? []
+      : [
+          [
+            {
+              deckUnits: deck.units,
+              neutralStats: neutralUnitStats,
+            },
+          ],
+        ]
+  )
+  expect(userResolverSpy.mock.calls).toEqual(userResolverCalled ? [[deck.user]] : [])
+}
+
+async function testResolveFromArray({
+  decks,
+  neutralDeckStats,
+  neutralLeaderStats,
+  neutralUnitStats,
+  factionsGetResponse = [],
+  factionsResolveResponse = [],
+  leadersResolveResponse = [],
+  unitsResolveResponse = [],
+  userResolveResponse = [],
+  resolvedDecks = [],
+  deckResolveCalls = [],
+}: {
+  decks: DeckDbObject[]
+  neutralDeckStats?: boolean
+  neutralLeaderStats?: boolean
+  neutralUnitStats?: boolean
+  factionsGetResponse?: FactionDbObject[]
+  factionsResolveResponse?: Faction[]
+  leadersResolveResponse?: Leader[]
+  unitsResolveResponse?: Unit[]
+  userResolveResponse?: User[]
+  resolvedDecks?: Deck[]
+  deckResolveCalls?: any[][]
+}) {
+  const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionsGetResponse)
+  const factionResolveSpy = jest.spyOn(FactionResolver, 'fromArray').mockResolvedValue(factionsResolveResponse)
+  const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromIds').mockResolvedValue(leadersResolveResponse)
+  const unitResolverSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue(unitsResolveResponse)
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue(userResolveResponse)
+  const deckResolverSpy = jest.spyOn(DeckResolver, 'fromObject')
+  if (resolvedDecks) {
+    for (const resolvedDeck of resolvedDecks) {
+      deckResolverSpy.mockResolvedValueOnce(resolvedDeck)
+    }
+  }
+
+  await expect(
+    DeckResolver.fromArray({
+      decks,
+      neutralDeckStats,
+      neutralLeaderStats,
+      neutralUnitStats,
+    })
+  ).resolves.toEqual(resolvedDecks)
+
+  expect(factionGetSpy.mock.calls).toEqual([
+    [
+      {
+        ids: decks.map((deck) => deck.faction),
+      },
+    ],
+  ])
+  expect(factionResolveSpy.mock.calls).toEqual([
+    [
+      {
+        factions: factionsGetResponse,
+        neutralStats: neutralDeckStats,
+      },
+    ],
+  ])
+  expect(leaderResolverSpy.mock.calls).toEqual([
+    [
+      {
+        ids: decks.map((deck) => deck.leader),
+        factions: factionsGetResponse,
+        neutralStats: neutralLeaderStats,
+      },
+    ],
+  ])
+  const unitIds: string[] = []
+  for (const deck of decks) {
+    unitIds.push(...deck.units.map((unit) => unit.unit.toString()))
+  }
+  expect(unitResolverSpy.mock.calls).toEqual([
+    [
+      {
+        ids: getUniqueItems<string>(unitIds),
+        factions: factionsGetResponse,
+        neutralStats: neutralUnitStats,
+      },
+    ],
+  ])
+  expect(userResolverSpy.mock.calls).toEqual([[decks.map((deck) => deck.user)]])
+  expect(deckResolverSpy.mock.calls).toEqual(deckResolveCalls)
+}

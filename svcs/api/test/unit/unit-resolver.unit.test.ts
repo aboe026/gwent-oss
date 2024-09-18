@@ -1,105 +1,713 @@
 import { ObjectId } from 'mongodb'
 
+import { Combat, Dlc, Effect, Faction, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
 import {
   DlcDbObject,
-  DlcKey,
   EffectDbObject,
   EffectKey,
   FactionDbObject,
-  FactionKey,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import * as resolverUtil from '../../src/graphql/resolvers/resolver-util'
+import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
+import DlcStore from '../../src/database/stores/dlc-store'
+import EffectResolver from '../../src/graphql/resolvers/effect-resolver'
+import EffectStore from '../../src/database/stores/effect-store'
+import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
+import FactionStore from '../../src/database/stores/faction-store'
+import TestUtil from '../test-util'
 import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
+import UnitStore from '../../src/database/stores/unit-store'
+import Verifier from '../../src/util/verifier'
 
 describe('unit-resolver', () => {
-  describe('dlc', () => {
-    it('calls out to resolveDlc method', async () => {
-      const dlc: DlcDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image',
-        key: DlcKey.BloodAndWine,
-        name: 'name',
-      }
-      const unit: UnitDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        deckable: true,
-        faction: new ObjectId(),
-        images: [],
-        name: 'name',
-        quote: 'quote',
-      }
-      const resolveDlcSpy = jest.spyOn(resolverUtil, 'resolveDlc').mockResolvedValue(dlc)
-
-      await expect((UnitResolver.dlc as any)(unit)).resolves.toEqual(dlc)
-
-      expect(resolveDlcSpy.mock.calls).toEqual([[unit]])
+  describe('fromObject', () => {
+    it('returns resolved unit if no optional fields', async () => {
+      const faction = TestUtil.getFaction({})
+      await testResolveFromObject({
+        unit: TestUtil.getDbUnit({
+          faction: faction.id,
+        }),
+        resolvedFaction: faction,
+        factionResolveIdCalls: [
+          [
+            {
+              id: new ObjectId(faction.id),
+              neutrals: undefined,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns resolved unit if optional fields not provided provided', async () => {
+      const faction = TestUtil.getFaction({})
+      const dlc = TestUtil.getDlc({})
+      const effect = TestUtil.getEffect({})
+      await testResolveFromObject({
+        unit: TestUtil.getDbUnit({
+          faction: faction.id,
+          dlc: dlc.id,
+          effects: [effect.id],
+        }),
+        resolvedFaction: faction,
+        resolvedDlc: dlc,
+        resolvedEffects: [effect],
+        factionResolveIdCalls: [
+          [
+            {
+              id: new ObjectId(faction.id),
+              neutrals: undefined,
+            },
+          ],
+        ],
+        dlcResolveIdCalls: [[new ObjectId(dlc.id)]],
+        effectResolveIdCalls: [[[new ObjectId(effect.id)]]],
+      })
+    })
+    it('returns resolved unit if optional fields provided', async () => {
+      const dlc = TestUtil.getDbDlc()
+      const effect = TestUtil.getDbEffect({})
+      const faction = TestUtil.getDbFaction({})
+      await testResolveFromObject({
+        unit: TestUtil.getDbUnit({
+          faction: faction._id,
+          dlc: dlc._id,
+          effects: [effect._id],
+        }),
+        dlc,
+        effects: [effect],
+        faction,
+        resolvedDlc: TestUtil.getDlcFromDbDlc(dlc),
+        resolvedEffects: [TestUtil.getEffectFromDbEffect(effect)],
+        resolvedFaction: TestUtil.getFactionFromDbFaction(faction),
+        dlcResolveObjectCalls: [[dlc]],
+        effectResolveObjectCalls: [[effect]],
+        factionResolveObjectCalls: [
+          [
+            {
+              faction,
+              neutral: undefined,
+              neutralStats: undefined,
+            },
+          ],
+        ],
+      })
     })
   })
-  describe('effects', () => {
-    it('calls out to resolveEffects method', async () => {
-      const effects: EffectDbObject[] = [
-        {
-          _id: new ObjectId(),
-          ability: 'ability',
-          created: new Date(),
-          image: 'image',
-          key: EffectKey.Agile,
-          name: 'name',
-        },
-      ]
-      const unit: UnitDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        deckable: true,
-        faction: new ObjectId(),
-        images: [],
-        name: 'name',
-        quote: 'quote',
-      }
-      const resolveEffectsSpy = jest.spyOn(resolverUtil, 'resolveEffects').mockResolvedValue(effects)
+  describe('fromId', () => {
+    it('returns first unit from fromIds', async () => {
+      const unit = TestUtil.getUnit({})
+      const fromIdsSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue([unit])
 
-      await expect((UnitResolver.effects as any)(unit)).resolves.toEqual(effects)
-
-      expect(resolveEffectsSpy.mock.calls).toEqual([[unit]])
-    })
-  })
-  describe('faction', () => {
-    it('calls out to resolveFaction method', async () => {
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image',
-        key: FactionKey.Monsters,
-        name: 'name',
-        stats: {} as any,
-      }
-      const unit: UnitDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        deckable: true,
-        faction: new ObjectId(),
-        images: [],
-        name: 'name',
-        quote: 'quote',
-      }
-      const resolveFactionSpy = jest.spyOn(resolverUtil, 'resolveFaction').mockResolvedValue(faction)
-
-      await expect((UnitResolver.faction as any)(unit)).resolves.toEqual(faction)
-
-      expect(resolveFactionSpy.mock.calls).toEqual([[unit]])
-    })
-  })
-  describe('id', () => {
-    it('returns _id as string', () => {
-      const id = '000000000000000000000002'
-      expect(
-        (UnitResolver.id as any)({
-          _id: new ObjectId(id),
+      await expect(
+        UnitResolver.fromId({
+          id: unit.id,
+          neutralStats: undefined,
         })
-      ).toEqual(id)
+      ).resolves.toEqual(unit)
+
+      expect(fromIdsSpy.mock.calls).toEqual([
+        [
+          {
+            ids: [unit.id],
+            neutralStats: undefined,
+          },
+        ],
+      ])
+    })
+  })
+  describe('fromIds', () => {
+    test('throws error if verifyObjects throws error', async () => {
+      const unitId1 = new ObjectId()
+      const unitId2 = new ObjectId()
+      await testResolveFromIds({
+        ids: [unitId1, unitId2],
+        getUnitsResponse: [
+          TestUtil.getDbUnit({
+            id: unitId1,
+          }),
+        ],
+        verifyObjectsResponse: Error('Could not find units "["id"]" to resolve.'),
+        unitGetCalls: [
+          [
+            {
+              ids: [unitId1, unitId2],
+            },
+          ],
+        ],
+      })
+    })
+    test('returns empty array if ids empty array', async () => {
+      await testResolveFromIds({
+        ids: [],
+      })
+    })
+    test('returns resolved unit if matches UnitStore get', async () => {
+      const unit = TestUtil.getDbUnit({})
+      await testResolveFromIds({
+        ids: [unit._id],
+        getUnitsResponse: [unit],
+        resolvedUnits: [
+          TestUtil.getUnitFromDbUnit({
+            unit,
+          }),
+        ],
+        unitGetCalls: [
+          [
+            {
+              ids: [unit._id],
+            },
+          ],
+        ],
+        fromArrayCalls: [
+          [
+            {
+              units: [unit],
+              factions: undefined,
+              neutralStats: undefined,
+            },
+          ],
+        ],
+      })
+    })
+  })
+  describe('fromArray', () => {
+    it('throws error if verifyObjects throws error getting neutral faction', async () => {
+      const unit = TestUtil.getDbUnit({})
+      await testResolveFromArray({
+        units: [unit],
+        neutralStats: true,
+        factionGetResponses: [[], []],
+        verifyObjectsResponse: Error(`Could not find factions "${JSON.stringify(FactionKey.Neutral)}" to resolve.`),
+        factionGetCalls: [
+          [
+            {
+              ids: [unit.faction],
+            },
+          ],
+          [
+            {
+              keys: [FactionKey.Neutral],
+            },
+          ],
+        ],
+      })
+    })
+    it('resolves unit if nothing provided', async () => {
+      const faction = TestUtil.getDbFaction({})
+      const dlc = TestUtil.getDbDlc()
+      const unit = TestUtil.getDbUnit({
+        faction: faction._id,
+        dlc: dlc._id,
+      })
+      await testResolveFromArray({
+        units: [unit],
+        factionGetResponses: [[faction]],
+        dlcGetResponse: [dlc],
+        resolvedUnits: [
+          TestUtil.getUnitFromDbUnit({
+            unit,
+          }),
+        ],
+        factionGetCalls: [
+          [
+            {
+              ids: [faction._id],
+            },
+          ],
+        ],
+        dlcGetCalls: [
+          [
+            {
+              ids: [dlc._id],
+            },
+          ],
+        ],
+        fromObjectCalls: [
+          [
+            {
+              unit,
+              dlc,
+              effects: undefined,
+              faction: faction,
+              neutral: undefined,
+              neutralStats: undefined,
+            },
+          ],
+        ],
+      })
+    })
+    it('resolves unit if faction provided', async () => {
+      const faction = TestUtil.getDbFaction({})
+      const unit = TestUtil.getDbUnit({
+        faction: faction._id,
+      })
+      await testResolveFromArray({
+        units: [unit],
+        factions: [faction],
+        factionGetResponses: [[]],
+        resolvedUnits: [
+          TestUtil.getUnitFromDbUnit({
+            unit,
+          }),
+        ],
+        fromObjectCalls: [
+          [
+            {
+              unit,
+              dlc: undefined,
+              effects: undefined,
+              faction: faction,
+              neutral: undefined,
+              neutralStats: undefined,
+            },
+          ],
+        ],
+      })
+    })
+    it('resolves unit if neutrals requested and provided', async () => {
+      const faction = TestUtil.getDbFaction({
+        key: FactionKey.Neutral,
+      })
+      const unit = TestUtil.getDbUnit({
+        faction: faction._id,
+      })
+      await testResolveFromArray({
+        units: [unit],
+        factions: [faction],
+        neutralStats: true,
+        resolvedUnits: [
+          TestUtil.getUnitFromDbUnit({
+            unit,
+          }),
+        ],
+        fromObjectCalls: [
+          [
+            {
+              unit,
+              dlc: undefined,
+              effects: undefined,
+              faction: faction,
+              neutral: faction,
+              neutralStats: true,
+            },
+          ],
+        ],
+      })
+    })
+    it('resolves unit if neutrals requested and not provided', async () => {
+      const faction = TestUtil.getDbFaction({})
+      const neutralFaction = TestUtil.getDbFaction({
+        key: FactionKey.Neutral,
+      })
+      const unit = TestUtil.getDbUnit({
+        faction: faction._id,
+      })
+      await testResolveFromArray({
+        units: [unit],
+        factions: [faction],
+        neutralStats: true,
+        factionGetResponses: [[neutralFaction]],
+        resolvedUnits: [
+          TestUtil.getUnitFromDbUnit({
+            unit,
+          }),
+        ],
+        factionGetCalls: [
+          [
+            {
+              keys: [FactionKey.Neutral],
+            },
+          ],
+        ],
+        fromObjectCalls: [
+          [
+            {
+              unit,
+              dlc: undefined,
+              effects: undefined,
+              faction: faction,
+              neutral: neutralFaction,
+              neutralStats: true,
+            },
+          ],
+        ],
+      })
+    })
+    it('resolves unit with effects', async () => {
+      const faction = TestUtil.getDbFaction({})
+      const effect = TestUtil.getDbEffect({})
+      const unit = TestUtil.getDbUnit({
+        faction: faction._id,
+        effects: [effect._id],
+      })
+      await testResolveFromArray({
+        units: [unit],
+        factionGetResponses: [[faction]],
+        effectGetResponse: [effect],
+        resolvedUnits: [
+          TestUtil.getUnitFromDbUnit({
+            unit,
+            effects: [effect],
+          }),
+        ],
+        factionGetCalls: [
+          [
+            {
+              ids: [faction._id],
+            },
+          ],
+        ],
+        effectGetCalls: [
+          [
+            {
+              ids: [effect._id.toString()],
+            },
+          ],
+        ],
+        fromObjectCalls: [
+          [
+            {
+              unit,
+              dlc: undefined,
+              effects: [effect],
+              faction: faction,
+              neutral: undefined,
+              neutralStats: undefined,
+            },
+          ],
+        ],
+      })
+    })
+  })
+  describe('effectAbilities', () => {
+    it('returns null if effects are null', () => {
+      expect(UnitResolver.effectAbilities(TestUtil.getDbUnit({}), null)).toEqual(null)
+    })
+    it('returns clear weather text if weather effect with no combat rows', () => {
+      const effect = TestUtil.getEffect({
+        key: EffectKey.Weather,
+      })
+      expect(UnitResolver.effectAbilities(TestUtil.getDbUnit({}), [effect])).toEqual([
+        {
+          ...effect,
+          ability: 'Remove all weather effects which are active on the battlefield, including your own.',
+        },
+      ])
+    })
+    it('returns row specific ability if weather effect with single combat row', () => {
+      const effect = TestUtil.getEffect({
+        key: EffectKey.Weather,
+        ability: 'Reduce the strength of all cards in the given row(s) on the battlefield, including your own.',
+      })
+      expect(
+        UnitResolver.effectAbilities(
+          TestUtil.getDbUnit({
+            combats: [Combat.Close],
+          }),
+          [effect]
+        )
+      ).toEqual([
+        {
+          ...effect,
+          ability: 'Reduce the strength of all cards in the Close row on the battlefield, including your own.',
+        },
+      ])
+    })
+    it('returns row specific ability if weather effect with multiple combat row', () => {
+      const effect = TestUtil.getEffect({
+        key: EffectKey.Weather,
+        ability: 'Reduce the strength of all cards in the given row(s) on the battlefield, including your own.',
+      })
+      expect(
+        UnitResolver.effectAbilities(
+          TestUtil.getDbUnit({
+            combats: [Combat.Close, Combat.Ranged],
+          }),
+          [effect]
+        )
+      ).toEqual([
+        {
+          ...effect,
+          ability:
+            'Reduce the strength of all cards in the Close and Ranged rows on the battlefield, including your own.',
+        },
+      ])
+    })
+    it('returns standard muster text if muster effect with no effectPrefix', () => {
+      const effect = TestUtil.getEffect({
+        key: EffectKey.Muster,
+        ability: 'Find any cards with the same name in your deck and play them instantly.',
+      })
+      expect(UnitResolver.effectAbilities(TestUtil.getDbUnit({}), [effect])).toEqual([
+        {
+          ...effect,
+          ability: 'Find any cards with the same name in your deck and play them instantly.',
+        },
+      ])
+    })
+    it('returns specific muster text if muster effect with effectPrefix', () => {
+      const effect = TestUtil.getEffect({
+        key: EffectKey.Muster,
+        ability: 'Find any cards with the same name in your deck and play them instantly.',
+      })
+      expect(
+        UnitResolver.effectAbilities(
+          TestUtil.getDbUnit({
+            effectPrefix: 'Crone',
+          }),
+          [effect]
+        )
+      ).toEqual([
+        {
+          ...effect,
+          ability: 'Find any cards with the "Crone" prefix in your deck and play them instantly.',
+        },
+      ])
     })
   })
 })
+
+async function testResolveFromObject({
+  dlc,
+  effects,
+  faction,
+  unit,
+  neutral,
+  neutralStats,
+  resolvedDlc = undefined,
+  resolvedEffects = [],
+  resolvedFaction,
+  dlcResolveIdCalls = [],
+  dlcResolveObjectCalls = [],
+  effectResolveIdCalls = [],
+  effectResolveObjectCalls = [],
+  factionResolveIdCalls = [],
+  factionResolveObjectCalls = [],
+}: {
+  unit: UnitDbObject
+  dlc?: DlcDbObject
+  effects?: EffectDbObject[]
+  faction?: FactionDbObject
+  neutral?: FactionDbObject
+  neutralStats?: boolean
+  resolvedDlc?: Dlc
+  resolvedEffects?: Effect[]
+  resolvedFaction?: Faction
+  dlcResolveObjectCalls?: any[][]
+  dlcResolveIdCalls?: any[][]
+  effectResolveObjectCalls?: any[][]
+  effectResolveIdCalls?: any[][]
+  factionResolveObjectCalls?: any[][]
+  factionResolveIdCalls?: any[][]
+}) {
+  const dlcResolveObjectSpy = jest.spyOn(DlcResolver, 'fromObject')
+  const dlcResolveIdSpy = jest.spyOn(DlcResolver, 'fromId')
+  if (resolvedDlc) {
+    dlcResolveObjectSpy.mockReturnValue(resolvedDlc)
+    dlcResolveIdSpy.mockResolvedValue(resolvedDlc)
+  }
+  const effectResolveObjectSpy = jest.spyOn(EffectResolver, 'fromObject')
+  if (resolvedEffects) {
+    for (const effect of resolvedEffects) {
+      effectResolveObjectSpy.mockReturnValueOnce(effect)
+    }
+  }
+  const effectResolveIdSpy = jest.spyOn(EffectResolver, 'fromIds').mockResolvedValue(resolvedEffects)
+  const factionResolveObjectSpy = jest.spyOn(FactionResolver, 'fromObject')
+  if (resolvedFaction) {
+    factionResolveObjectSpy.mockResolvedValue(resolvedFaction)
+  }
+  const factionResolveIdSpy = jest.spyOn(FactionResolver, 'fromId')
+  if (resolvedFaction) {
+    factionResolveIdSpy.mockResolvedValue(resolvedFaction)
+  }
+
+  await expect(
+    UnitResolver.fromObject({
+      unit,
+      dlc,
+      effects,
+      faction,
+      neutral,
+      neutralStats,
+    })
+  ).resolves.toEqual({
+    combats: unit.combats,
+    created: unit.created,
+    deckable: unit.deckable,
+    dlc: resolvedDlc,
+    effectPrefix: unit.effectPrefix,
+    effects: resolvedEffects,
+    faction: resolvedFaction,
+    hero: unit.hero,
+    id: unit._id.toString(),
+    images: unit.images,
+    name: unit.name,
+    quote: unit.quote,
+    scorchMin: unit.scorchMin,
+    scorchScope: unit.scorchScope,
+    special: unit.special,
+    strength: unit.strength,
+  })
+
+  expect(dlcResolveObjectSpy.mock.calls).toEqual(dlcResolveObjectCalls)
+  expect(dlcResolveIdSpy.mock.calls).toEqual(dlcResolveIdCalls)
+  expect(effectResolveObjectSpy.mock.calls).toEqual(effectResolveObjectCalls)
+  expect(effectResolveIdSpy.mock.calls).toEqual(effectResolveIdCalls)
+  expect(factionResolveObjectSpy.mock.calls).toEqual(factionResolveObjectCalls)
+  expect(factionResolveIdSpy.mock.calls).toEqual(factionResolveIdCalls)
+}
+
+async function testResolveFromIds({
+  ids,
+  factions,
+  neutralStats,
+  getUnitsResponse = [],
+  resolvedUnits = [],
+  verifyObjectsResponse,
+  unitGetCalls = [],
+  fromArrayCalls = [],
+}: {
+  ids: (ObjectId | string)[]
+  factions?: FactionDbObject[]
+  neutralStats?: boolean
+  getUnitsResponse?: UnitDbObject[]
+  verifyObjectsResponse?: Error
+  resolvedUnits?: Unit[]
+  unitGetCalls?: any[][]
+  fromArrayCalls?: any[][]
+}) {
+  const unitGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(getUnitsResponse)
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
+  if (verifyObjectsResponse) {
+    verifyObjectsSpy.mockImplementation(() => {
+      throw verifyObjectsResponse
+    })
+  } else {
+    verifyObjectsSpy.mockReturnValue()
+  }
+  const fromArraySpy = jest.spyOn(UnitResolver, 'fromArray').mockResolvedValue(resolvedUnits)
+
+  const promise = UnitResolver.fromIds({
+    ids,
+    factions,
+    neutralStats,
+  })
+  if (verifyObjectsResponse) {
+    await expect(promise).rejects.toThrow(verifyObjectsResponse)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedUnits)
+  }
+
+  expect(unitGetSpy.mock.calls).toEqual(unitGetCalls)
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    ids.length === 0
+      ? []
+      : [
+          [
+            {
+              expectedKeys: ids,
+              objects: getUnitsResponse,
+              field: '_id',
+              logger: UnitResolver['logger'],
+              label: 'units',
+            },
+          ],
+        ]
+  )
+  expect(fromArraySpy.mock.calls).toEqual(fromArrayCalls)
+}
+
+async function testResolveFromArray({
+  factions,
+  units,
+  neutralStats,
+  dlcGetResponse = [],
+  effectGetResponse = [],
+  factionGetResponses = [],
+  verifyObjectsResponse,
+  resolvedUnits = [],
+  dlcGetCalls = [
+    [
+      {
+        ids: [],
+      },
+    ],
+  ],
+  effectGetCalls = [
+    [
+      {
+        ids: [],
+      },
+    ],
+  ],
+  factionGetCalls = [],
+  fromObjectCalls = [],
+}: {
+  factions?: FactionDbObject[]
+  units: UnitDbObject[]
+  neutralStats?: boolean
+  dlcGetResponse?: DlcDbObject[]
+  effectGetResponse?: EffectDbObject[]
+  factionGetResponses?: FactionDbObject[][]
+  verifyObjectsResponse?: Error
+  resolvedUnits?: Unit[]
+  dlcGetCalls?: any[][]
+  effectGetCalls?: any[][]
+  factionGetCalls?: any[][]
+  fromObjectCalls?: any[][]
+}) {
+  const dlcGetSpy = jest.spyOn(DlcStore, 'get').mockResolvedValue(dlcGetResponse)
+  const effectGetSpy = jest.spyOn(EffectStore, 'get').mockResolvedValue(effectGetResponse)
+  const factionGetSpy = jest.spyOn(FactionStore, 'get')
+  if (factionGetResponses) {
+    for (const factionGetResponse of factionGetResponses) {
+      factionGetSpy.mockResolvedValueOnce(factionGetResponse)
+    }
+  }
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
+  if (verifyObjectsResponse) {
+    verifyObjectsSpy.mockImplementation(() => {
+      throw verifyObjectsResponse
+    })
+  } else {
+    verifyObjectsSpy.mockReturnValue()
+  }
+  const fromObjectSpy = jest.spyOn(UnitResolver, 'fromObject')
+  if (resolvedUnits) {
+    for (const resolvedUnit of resolvedUnits) {
+      fromObjectSpy.mockResolvedValueOnce(resolvedUnit)
+    }
+  }
+
+  const promise = UnitResolver.fromArray({
+    units,
+    factions,
+    neutralStats,
+  })
+  if (verifyObjectsResponse) {
+    await expect(promise).rejects.toThrow(verifyObjectsResponse)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedUnits)
+  }
+
+  expect(dlcGetSpy.mock.calls).toEqual(dlcGetCalls)
+  expect(effectGetSpy.mock.calls).toEqual(effectGetCalls)
+  expect(factionGetSpy.mock.calls).toEqual(factionGetCalls)
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    neutralStats && factionGetResponses.length > 0
+      ? [
+          [
+            {
+              expectedKeys: [FactionKey.Neutral],
+              objects: factionGetResponses.at(-1),
+              field: 'key',
+              logger: UnitResolver['logger'],
+              label: 'factions',
+            },
+          ],
+        ]
+      : []
+  )
+  expect(fromObjectSpy.mock.calls).toEqual(fromObjectCalls)
+}

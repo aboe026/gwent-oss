@@ -47,8 +47,14 @@ export default class FactionStore extends Store {
    */
   static async edit({ id, stats }: { id: string | ObjectId; stats: UnitStats }): Promise<FactionDbObject> {
     return FactionStore.update({
-      _id: new ObjectId(id),
-      stats,
+      filter: {
+        _id: new ObjectId(id),
+      },
+      update: {
+        $set: {
+          stats,
+        },
+      },
     })
   }
 

@@ -1,13 +1,13 @@
 import { ApolloServer } from '@apollo/server'
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
-import { createServer, Server } from 'http'
 import cors from 'cors'
+import { createServer, Server } from 'http'
 import express, { Express, Request, Response } from 'express'
 import { expressMiddleware } from '@apollo/server/express4'
 import figlet from 'figlet'
+import { getLogger } from 'log4js'
 import { json } from 'body-parser'
-import log4js from 'log4js'
 import MongoStore from 'connect-mongo'
 import { printSchema } from 'graphql/utilities'
 import session, { CookieOptions } from 'express-session'
@@ -17,15 +17,15 @@ import BasicAuth from './auth/basic-auth'
 import DbConnector from './database/db-connector'
 import DbUpgrader from './database/db-upgrader'
 import env from './env'
+import { NODE_ENV } from '@gwent/env'
 import schema from './graphql/executable-schema'
 import { version } from '../package.json'
-import { NODE_ENV } from '@gwent/env'
 
 /**
  * A class to handle startup and configuration of the API server.
  */
 export default class Api {
-  private static logger = log4js.getLogger('Api')
+  private static logger = getLogger('Api')
   private static app: Express
   private static apolloServer: ApolloServer
   private static httpServer: Server
@@ -55,6 +55,7 @@ export default class Api {
     Api.logger.info(`Version: "${version}"`)
     Api.logger.debug(`Build: "${await AppInfo.getBuildNumber()}"`)
     Api.logger.trace(`NODE_ENV: "${env().NODE_ENV}"`)
+    Api.logger.info(`LOG_LEVEL: "${env().LOG_LEVEL}"`)
   }
 
   /**

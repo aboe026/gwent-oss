@@ -1,0 +1,42 @@
+.unit-game-card-container {
+  position: relative;
+  aspect-ratio: 309 / 444;
+  height: 100%;
+}
+
+.unit-game-card-image {
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+}
+
+.unit-game-card-strength {
+  position: absolute;
+  top: 0;
+}
+
+.unit-game-card-fullscreen {
+  position: absolute;
+  top: 0;
+  right: 0;
+  height: 30px;
+  width: 30px;
+}
+
+.unit-game-card-fullscreen-icon {
+  margin-left: 7px;
+  margin-top: 6px;
+}
+
+.unit-game-card-bottom {
+  position: absolute;
+  bottom: 0;
+}
+
+.unit-game-card-selected {
+  border-style: solid;
+  border-width: 4px;
+  border-radius: 15px;
+  border-color: #e9a018;
+  margin-top: -4px;
+}

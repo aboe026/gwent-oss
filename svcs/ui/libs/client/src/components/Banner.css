@@ -1,9 +1,42 @@
-#banner {
+#bannerContainer {
   width: 100%;
   height: 50px;
   display: flex;
   background-color: darkgray;
   align-items: center;
+}
+
+#bannerUsername {
+  text-align: right;
+  margin-right: 10px;
+}
+
+#bannerHamburger {
+  width: 50px;
+  height: 50px;
+  margin: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#bannerBun {
+  height: 60%;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-flow: column nowrap;
+}
+
+#bannerMenuItems {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  background-color: gray;
 }
 
 .banner-item {
@@ -20,41 +53,8 @@
   justify-content: right;
 }
 
-#bannerUsername {
-  text-align: right;
-  margin-right: 10px;
-}
-
-#hamburger {
-  width: 50px;
-  height: 50px;
-  margin: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  cursor: pointer;
-}
-
-#bun {
-  height: 60%;
-  width: 100%;
-  display: flex;
-  justify-content: space-around;
-  align-items: center;
-  flex-flow: column nowrap;
-}
-
-.patty {
+.banner-patty {
   width: 80%;
   height: 5px;
   background-color: black;
-}
-
-#menuItems {
-  display: flex;
-  justify-content: space-evenly;
-  width: 100%;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  background-color: gray;
 }

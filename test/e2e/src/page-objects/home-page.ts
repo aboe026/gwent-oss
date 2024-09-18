@@ -9,6 +9,8 @@ export default class HomePage {
     Options: Selector(`#${HTML_IDS.HomeOptions}`),
     CreateDeck: Selector(`#${HTML_IDS.HomeOptionsCreateDeck}`),
     ViewDecks: Selector(`#${HTML_IDS.HomeOptionsViewDecks}`),
+    CreateGame: Selector(`#${HTML_IDS.HomeOptionsCreateGame}`),
+    ViewGames: Selector(`#${HTML_IDS.HomeOptionsViewGames}`),
     ViewProfile: Selector(`#${HTML_IDS.HomeOptionsViewProfile}`),
   }
 
@@ -16,7 +18,7 @@ export default class HomePage {
     return E2eUtil.getUrl('')
   }
 
-  static async verifyContent(username: string) {
+  static async verify(username: string) {
     await t.expect(HomePage.elements.Welcome.exists).eql(!!username)
     await t.expect(HomePage.elements.Options.exists).eql(!!username)
     await t.expect(HomePage.elements.CreateDeck.exists).eql(!!username)

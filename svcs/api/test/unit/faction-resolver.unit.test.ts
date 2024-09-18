@@ -1,229 +1,509 @@
 import { ObjectId } from 'mongodb'
 
-import { DlcDbObject, DlcKey, FactionDbObject, FactionKey } from '@gwent/graphql-schema/database-typings'
+import { Dlc, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
+import { Faction, FactionDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
 import FactionStore from '../../src/database/stores/faction-store'
-import * as resolverUtil from '../../src/graphql/resolvers/resolver-util'
+import TestUtil from '../test-util'
+import Verifier from '../../src/util/verifier'
 
 describe('faction-resolver', () => {
-  describe('dlc', () => {
-    it('calls out to resolveDlc method', async () => {
-      const dlc: DlcDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image',
-        key: DlcKey.BloodAndWine,
-        name: 'name',
-      }
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image',
-        key: FactionKey.Monsters,
-        name: 'name',
-        stats: {} as any,
-        dlc: dlc._id,
-      }
-      const resolveDlcSpy = jest.spyOn(resolverUtil, 'resolveDlc').mockResolvedValue(dlc)
-
-      await expect((FactionResolver.dlc as any)(faction)).resolves.toEqual(dlc)
-
-      expect(resolveDlcSpy.mock.calls).toEqual([[faction]])
-    })
-  })
-  describe('id', () => {
-    it('returns _id as string', () => {
-      const id = '000000000000000000000002'
-      expect(
-        (FactionResolver.id as any)({
-          _id: new ObjectId(id),
-        })
-      ).toEqual(id)
-    })
-  })
-  describe('stats', () => {
-    it('does not call to FactionStore if neutral arg not specified', async () => {
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image',
-        key: FactionKey.Monsters,
-        name: 'name',
-        stats: {
-          agile: 1,
-          avenger: 2,
-          berserker: 3,
-          bond: 4,
-          close: 5,
-          decoy: 6,
-          heroes: 7,
-          horn: 8,
-          mardroeme: 9,
-          medic: 10,
-          morale: 11,
-          muster: 12,
-          ranged: 13,
-          scorch: 14,
-          siege: 15,
-          specials: 16,
-          spy: 17,
-          strengthAverage: 18,
-          strengths: 19,
-          strengthTotal: 20,
-          units: 21,
-          weather: 22,
-        },
-      }
-      const getSpy = jest.spyOn(FactionStore, 'get')
-
-      await expect((FactionResolver.stats as any)(faction, {})).resolves.toEqual(faction.stats)
-
-      expect(getSpy.mock.calls).toEqual([])
-    })
-    it('does not call to FactionStore if faction key is neutral', async () => {
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image',
-        key: FactionKey.Neutral,
-        name: 'name',
-        stats: {
-          agile: 1,
-          avenger: 2,
-          berserker: 3,
-          bond: 4,
-          close: 5,
-          decoy: 6,
-          heroes: 7,
-          horn: 8,
-          mardroeme: 9,
-          medic: 10,
-          morale: 11,
-          muster: 12,
-          ranged: 13,
-          scorch: 14,
-          siege: 15,
-          specials: 16,
-          spy: 17,
-          strengthAverage: 18,
-          strengths: 19,
-          strengthTotal: 20,
-          units: 21,
-          weather: 22,
-        },
-      }
-      const args = {
-        neutrals: true,
-      }
-      const getSpy = jest.spyOn(FactionStore, 'get')
-
-      await expect((FactionResolver.stats as any)(faction, args)).resolves.toEqual(faction.stats)
-
-      expect(getSpy.mock.calls).toEqual([])
-    })
-    it('calls to FactionStore if args neutrals true and faction key is not neutral', async () => {
-      const faction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image',
-        key: FactionKey.Monsters,
-        name: 'name',
-        stats: {
-          agile: 1,
-          avenger: 2,
-          berserker: 3,
-          bond: 4,
-          close: 5,
-          decoy: 6,
-          heroes: 7,
-          horn: 8,
-          mardroeme: 9,
-          medic: 10,
-          morale: 11,
-          muster: 12,
-          ranged: 13,
-          scorch: 14,
-          siege: 15,
-          specials: 16,
-          spy: 17,
-          strengthAverage: 18,
-          strengths: 19,
-          strengthTotal: 20,
-          units: 21,
-          weather: 22,
-        },
-      }
-      const args = {
-        neutrals: true,
-      }
-      const neutralFaction: FactionDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image-neutral',
-        key: FactionKey.Neutral,
-        name: 'name-neutral',
-        stats: {
-          agile: 2,
-          avenger: 3,
-          berserker: 4,
-          bond: 5,
-          close: 6,
-          decoy: 7,
-          heroes: 8,
-          horn: 9,
-          mardroeme: 10,
-          medic: 11,
-          morale: 12,
-          muster: 13,
-          ranged: 14,
-          scorch: 15,
-          siege: 16,
-          specials: 17,
-          spy: 18,
-          strengthAverage: 19,
-          strengths: 20,
-          strengthTotal: 21,
-          units: 22,
-          weather: 23,
-        },
-      }
-      const getSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue([neutralFaction])
-
-      await expect((FactionResolver.stats as any)(faction, args)).resolves.toEqual({
-        agile: 3,
-        avenger: 5,
-        berserker: 7,
-        bond: 9,
-        close: 11,
-        decoy: 13,
-        heroes: 15,
-        horn: 17,
-        mardroeme: 19,
-        medic: 21,
-        morale: 23,
-        muster: 25,
-        ranged: 27,
-        scorch: 29,
-        siege: 31,
-        specials: 33,
-        spy: 35,
-        strengthAverage:
-          (faction.stats.strengthAverage * faction.stats.units +
-            neutralFaction.stats.strengthAverage * neutralFaction.stats.units) /
-          (faction.stats.units + neutralFaction.stats.units),
-        strengths: 39,
-        strengthTotal: 41,
-        units: 43,
-        weather: 45,
+  describe('fromObject', () => {
+    const faction = TestUtil.getDbFaction({})
+    it('throws error if verifyObjects throws error', async () => {
+      await testResolveFromObject({
+        faction,
+        neutralStats: true,
+        neutralFactions: [],
+        verifyObjectsResponse: Error(`Could not find factions "["NEUTRAL"]" to resolve.`),
       })
+    })
+    it('returns resolved faction without neutral stats', async () => {
+      await testResolveFromObject({
+        faction,
+      })
+    })
+    it('returns resolved faction with neutral stats without providing them', async () => {
+      await testResolveFromObject({
+        faction,
+        neutralStats: true,
+      })
+    })
+    it('returns resolved faction with neutral stats while providing them', async () => {
+      await testResolveFromObject({
+        faction,
+        neutralStats: true,
+        neutral: TestUtil.getDbFaction({
+          key: FactionKey.Neutral,
+        }),
+      })
+    })
+    it('returns faction without reaching out to DlcResolver if dlc provided', async () => {
+      const dlc = TestUtil.getDlc({})
+      await testResolveFromObject({
+        faction: {
+          ...faction,
+          dlc: new ObjectId(dlc.id),
+        },
+        dlc,
+      })
+    })
+    it('returns faction while reaching out to DlcResolver if dlc not provided', async () => {
+      await testResolveFromObject({
+        faction: {
+          ...faction,
+          dlc: new ObjectId(),
+        },
+      })
+    })
+  })
+  describe('fromId', () => {
+    it('returns first item from fromIds', async () => {
+      const id = new ObjectId()
+      const faction = TestUtil.getFaction({
+        id,
+      })
+      const fromIdsSpy = jest.spyOn(FactionResolver, 'fromIds').mockResolvedValue([faction])
 
-      expect(getSpy.mock.calls).toEqual([
+      await expect(
+        FactionResolver.fromId({
+          id,
+        })
+      ).resolves.toEqual(faction)
+
+      expect(fromIdsSpy.mock.calls).toEqual([
         [
           {
-            keys: [FactionKey.Neutral],
+            ids: [id],
+            neutralStats: undefined,
           },
         ],
       ])
     })
   })
+  describe('fromIds', () => {
+    it('throws error if verifyObjects throws error', async () => {
+      await testResolveFromIds({
+        ids: [new ObjectId()],
+        verifyObjectsResponse: Error(`Could not find factions "["NEUTRAL"]" to resolve.`),
+      })
+    })
+    it('returns empty array if given empty array', async () => {
+      await testResolveFromIds({
+        ids: [],
+      })
+    })
+    it('calls to faction store and resolver if passed ObjectId', async () => {
+      await testResolveFromIds({
+        ids: [new ObjectId()],
+      })
+    })
+    it('calls to faction store and resolver if passed string', async () => {
+      await testResolveFromIds({
+        ids: [new ObjectId().toString()],
+      })
+    })
+  })
+  describe('fromArray', () => {
+    it('throws error verifyObjects throws error on neutral faction', async () => {
+      await testResolveFromArray({
+        factions: [TestUtil.getDbFaction({})],
+        neutralStats: true,
+        factionGetResponse: [],
+        verifyObjectsResponse: Error(`Could not find factions "["NEUTRAL"]" to resolve.`),
+        factionGetCalls: [
+          [
+            {
+              keys: [FactionKey.Neutral],
+            },
+          ],
+        ],
+      })
+    })
+    it('calls to fromObject without neutrals or dlc', async () => {
+      const faction = TestUtil.getDbFaction({})
+      await testResolveFromArray({
+        factions: [faction],
+        factionResolveResponse: {
+          created: faction.created,
+          id: faction._id.toString(),
+          image: faction.image,
+          key: faction.key as FactionKey,
+          name: faction.name,
+          stats: faction.stats,
+        },
+      })
+    })
+    it('calls to fromObject requesting neutrals without providing', async () => {
+      const faction = TestUtil.getDbFaction({})
+      await testResolveFromArray({
+        factions: [faction],
+        factionResolveResponse: {
+          created: faction.created,
+          id: faction._id.toString(),
+          image: faction.image,
+          key: faction.key as FactionKey,
+          name: faction.name,
+          stats: faction.stats,
+        },
+        neutralStats: true,
+        factionGetResponse: [
+          {
+            _id: new ObjectId(),
+            created: new Date(),
+            image: 'faction-neutral-image',
+            key: FactionKey.Neutral,
+            name: 'faction-neutral-name',
+            stats: TestUtil.getStats(1),
+          },
+        ],
+        factionGetCalls: [
+          [
+            {
+              keys: [FactionKey.Neutral],
+            },
+          ],
+        ],
+      })
+    })
+    it('calls to fromObject with dlc without providing', async () => {
+      const dlc = TestUtil.getDlc({})
+      const faction = TestUtil.getDbFaction({
+        dlc: dlc.id,
+      })
+      await testResolveFromArray({
+        factions: [faction],
+        factionResolveResponse: {
+          created: faction.created,
+          id: faction._id.toString(),
+          image: faction.image,
+          key: faction.key as FactionKey,
+          name: faction.name,
+          stats: faction.stats,
+          dlc,
+        },
+        dlcResolveCalls: [[[new ObjectId(dlc.id)]]],
+        dlcResolveResponse: [dlc],
+      })
+    })
+  })
+  describe('resolveStats', () => {
+    it('returns faction stats if not neutral and no neutral requested', () => {
+      expect(
+        FactionResolver.resolveStats({
+          faction: TestUtil.getDbFaction({}),
+        })
+      ).toEqual(TestUtil.getStats())
+    })
+    it('returns faction stats if neutral and no neutral requested', () => {
+      expect(
+        FactionResolver.resolveStats({
+          faction: TestUtil.getDbFaction({
+            key: FactionKey.Neutral,
+          }),
+        })
+      ).toEqual(TestUtil.getStats())
+    })
+    it('returns faction stats if neutral and neutral requested', () => {
+      expect(
+        FactionResolver.resolveStats({
+          faction: TestUtil.getDbFaction({
+            key: FactionKey.Neutral,
+          }),
+          neutral: TestUtil.getDbFaction({
+            key: FactionKey.Neutral,
+          }),
+        })
+      ).toEqual(TestUtil.getStats())
+    })
+    it('returns combined faction stats if not neutral and neutral requested', () => {
+      expect(
+        FactionResolver.resolveStats({
+          faction: TestUtil.getDbFaction({}),
+          neutral: TestUtil.getDbFaction({
+            key: FactionKey.Neutral,
+          }),
+        })
+      ).toEqual({
+        agile: 2,
+        avenger: 4,
+        berserker: 6,
+        bond: 8,
+        close: 10,
+        decoy: 12,
+        heroes: 14,
+        horn: 16,
+        mardroeme: 18,
+        medic: 20,
+        morale: 22,
+        muster: 24,
+        ranged: 26,
+        scorch: 28,
+        siege: 30,
+        specials: 32,
+        spy: 34,
+        strengthAverage: 18,
+        strengthTotal: 40,
+        strengths: 38,
+        units: 42,
+        weather: 44,
+      })
+    })
+  })
 })
+
+async function testResolveFromObject({
+  faction,
+  dlc,
+  neutral,
+  neutralStats,
+  neutralFactions = [
+    TestUtil.getDbFaction({
+      key: FactionKey.Neutral,
+    }),
+  ],
+  verifyObjectsResponse,
+}: {
+  faction: FactionDbObject
+  dlc?: Dlc | undefined
+  neutral?: FactionDbObject
+  neutralStats?: boolean
+  neutralFactions?: FactionDbObject[]
+  verifyObjectsResponse?: Error
+}) {
+  let resolvedDlc: Dlc | undefined = undefined
+  if (faction.dlc) {
+    resolvedDlc =
+      dlc ||
+      TestUtil.getDlc({
+        id: faction.dlc,
+      })
+  }
+  const resolvedStats = TestUtil.getStats(1)
+  const resolvedFaction = TestUtil.getFactionFromDbFaction({
+    ...faction,
+    stats: resolvedStats,
+  })
+  if (resolvedDlc) {
+    resolvedFaction.dlc = resolvedDlc
+  }
+  const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(neutralFactions)
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
+  if (verifyObjectsResponse) {
+    verifyObjectsSpy.mockImplementation(() => {
+      throw verifyObjectsResponse
+    })
+  } else {
+    verifyObjectsSpy.mockReturnValue(undefined)
+  }
+  const dlcResolveSpy = jest.spyOn(DlcResolver, 'fromId')
+  if (resolvedDlc && !dlc) {
+    dlcResolveSpy.mockResolvedValue(resolvedDlc)
+  }
+  const resolveStatsSpy = jest.spyOn(FactionResolver, 'resolveStats').mockReturnValue(resolvedStats)
+
+  const promise = FactionResolver.fromObject({
+    faction,
+    dlc,
+    neutral,
+    neutralStats,
+  })
+
+  if (verifyObjectsResponse) {
+    await expect(promise).rejects.toThrow(verifyObjectsResponse)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedFaction)
+  }
+
+  expect(factionGetSpy.mock.calls).toEqual(
+    neutralStats && !neutral
+      ? [
+          [
+            {
+              keys: [FactionKey.Neutral],
+            },
+          ],
+        ]
+      : []
+  )
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    neutralStats && !neutral
+      ? [
+          [
+            {
+              expectedKeys: [FactionKey.Neutral],
+              objects: neutralFactions,
+              field: 'key',
+              logger: FactionResolver['logger'],
+              label: 'factions',
+            },
+          ],
+        ]
+      : []
+  )
+  expect(dlcResolveSpy.mock.calls).toEqual(faction.dlc && !dlc ? [[faction.dlc]] : [])
+  expect(resolveStatsSpy.mock.calls).toEqual(
+    verifyObjectsResponse
+      ? []
+      : [
+          [
+            {
+              faction,
+              neutral: neutralStats ? neutral || neutralFactions[0] : undefined,
+            },
+          ],
+        ]
+  )
+}
+
+async function testResolveFromIds({
+  ids,
+  verifyObjectsResponse,
+}: {
+  ids: (ObjectId | string)[]
+  verifyObjectsResponse?: Error
+}) {
+  const factions = ids.map((id) =>
+    TestUtil.getDbFaction({
+      id,
+    })
+  )
+  const resolvedFactions: Faction[] = factions.map((faction) => TestUtil.getFactionFromDbFaction(faction))
+  const getSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factions)
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
+  if (verifyObjectsResponse) {
+    verifyObjectsSpy.mockImplementation(() => {
+      throw verifyObjectsResponse
+    })
+  } else {
+    verifyObjectsSpy.mockReturnValue()
+  }
+  const resolveSpy = jest.spyOn(FactionResolver, 'fromArray').mockResolvedValue(resolvedFactions)
+
+  const promise = FactionResolver.fromIds({
+    ids,
+  })
+  if (verifyObjectsResponse) {
+    await expect(promise).rejects.toThrow(verifyObjectsResponse)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedFactions)
+  }
+
+  expect(getSpy.mock.calls).toEqual(
+    ids.length > 0
+      ? [
+          [
+            {
+              ids,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    ids.length === 0
+      ? []
+      : [
+          [
+            {
+              expectedKeys: ids,
+              objects: factions,
+              field: '_id',
+              logger: FactionResolver['logger'],
+              label: 'factions',
+            },
+          ],
+        ]
+  )
+  expect(resolveSpy.mock.calls).toEqual(
+    verifyObjectsResponse || ids.length === 0
+      ? []
+      : [
+          [
+            {
+              factions,
+              neutralStats: undefined,
+            },
+          ],
+        ]
+  )
+}
+
+async function testResolveFromArray({
+  factions,
+  neutralStats,
+  dlcResolveResponse = [],
+  factionGetResponse = [],
+  verifyObjectsResponse,
+  factionResolveResponse,
+  dlcResolveCalls = [[[]]],
+  factionGetCalls = [],
+}: {
+  factions: FactionDbObject[]
+  neutralStats?: boolean
+  dlcResolveResponse?: Dlc[]
+  factionGetResponse?: FactionDbObject[]
+  verifyObjectsResponse?: Error
+  factionResolveResponse?: Faction
+  dlcResolveCalls?: any[][]
+  factionGetCalls?: any[][]
+}) {
+  const dlcResolveSpy = jest.spyOn(DlcResolver, 'fromIds').mockResolvedValue(dlcResolveResponse)
+  const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse)
+  const verifyObjectsSpy = jest.spyOn(Verifier, 'checkObjects')
+  if (verifyObjectsResponse) {
+    verifyObjectsSpy.mockImplementation(() => {
+      throw verifyObjectsResponse
+    })
+  } else {
+    verifyObjectsSpy.mockReturnValue()
+  }
+  const fromObjectSpy = jest.spyOn(FactionResolver, 'fromObject')
+  if (factionResolveResponse) {
+    fromObjectSpy.mockResolvedValue(factionResolveResponse)
+  }
+
+  const promise = FactionResolver.fromArray({
+    factions,
+    neutralStats,
+  })
+  if (verifyObjectsResponse) {
+    await expect(promise).rejects.toThrow(verifyObjectsResponse)
+  } else {
+    await expect(promise).resolves.toEqual([factionResolveResponse])
+  }
+
+  expect(dlcResolveSpy.mock.calls).toEqual(dlcResolveCalls)
+  expect(factionGetSpy.mock.calls).toEqual(factionGetCalls)
+  expect(verifyObjectsSpy.mock.calls).toEqual(
+    neutralStats && factionGetResponse
+      ? [
+          [
+            {
+              expectedKeys: [FactionKey.Neutral],
+              objects: factionGetResponse,
+              field: 'key',
+              logger: FactionResolver['logger'],
+              label: 'factions',
+            },
+          ],
+        ]
+      : []
+  )
+  expect(fromObjectSpy.mock.calls).toEqual(
+    verifyObjectsResponse
+      ? []
+      : [
+          factions.map((faction) => {
+            return {
+              faction,
+              dlc: faction.dlc ? dlcResolveResponse[0] : undefined,
+              neutral: neutralStats ? factionGetResponse[0] : undefined,
+              neutralStats,
+            }
+          }),
+          ,
+        ]
+  )
+}

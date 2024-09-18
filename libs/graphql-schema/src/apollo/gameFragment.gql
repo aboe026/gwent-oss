@@ -1,0 +1,21 @@
+fragment GameFragment on Game {
+  created
+  creator {
+    id
+    name
+  }
+  id
+  players {
+    ...GamePlayerFragment
+  }
+  round {
+    current
+    maximum
+  }
+  status
+  updated
+  victors {
+    id
+    name
+  }
+}

@@ -1,4 +1,4 @@
-import { Document, ObjectId } from 'mongodb'
+import { Document, FindOptions, ObjectId } from 'mongodb'
 
 import { DeckDbObject, UnitStats } from '@gwent/graphql-schema/database-typings'
 import { getLogger } from 'log4js'
@@ -33,7 +33,7 @@ export default class DeckStore extends Store {
       units: units.map((unit) => {
         return {
           artStyle: unit.artStyle,
-          id: new ObjectId(unit.id),
+          unit: new ObjectId(unit.unit),
         }
       }),
       user: new ObjectId(userId),
@@ -54,7 +54,7 @@ export default class DeckStore extends Store {
         DeckStore.logger.error(message)
         throw Error(message)
       } else {
-        DeckStore.logger.error(err)
+        DeckStore.logger.error(`Error adding deck for user "${userId}": ${err}`)
         throw err
       }
     }
@@ -73,6 +73,34 @@ export default class DeckStore extends Store {
       },
     })
   }
+
+  /**
+   * Get decks for the given IDs.
+   *
+   * @param ids The ObjectIds of the decks to retrieve.
+   * @returns The decks of the given IDs.
+   * @throws Error if more than 1 deck found.
+   */
+  static async getById({
+    id,
+    options,
+  }: {
+    id: ObjectId | string
+    options?: FindOptions
+  }): Promise<DeckDbObject | undefined> {
+    const decks = await DeckStore.read<DeckDbObject[]>({
+      filter: {
+        _id: new ObjectId(id),
+      },
+      options,
+    })
+    if (decks.length > 1) {
+      const message = `Multiple decks with ID "${id}" found.`
+      DeckStore.logger.error(message)
+      throw Error(message)
+    }
+    return decks && decks[0]
+  }
 }
 
 export interface AddDeckInput {
@@ -86,5 +114,5 @@ export interface AddDeckInput {
 
 export interface AddDeckUnitInput {
   artStyle: number
-  id: string | ObjectId
+  unit: string | ObjectId
 }

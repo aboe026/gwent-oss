@@ -10,7 +10,6 @@ import {
   FactionKey,
   LeaderDbObject,
   UnitDbObject,
-  UnitStats,
 } from '@gwent/graphql-schema/database-typings'
 import dlcs from '../../src/database/upgrades/resources/dlcs.json'
 import DlcStore, { AddDlcInput } from '../../src/database/stores/dlc-store'
@@ -34,6 +33,7 @@ import Upgrade2, {
 } from '../../src/database/upgrades/upgrade-2'
 import * as utils from '@gwent/utils'
 import * as validators from '@gwent/validators'
+import TestUtil from '../test-util'
 
 describe('upgrade-2', () => {
   const unitRequired: UnitJson = {
@@ -59,15 +59,10 @@ describe('upgrade-2', () => {
       const effectMap: KeyIdMap = {
         'effect-map': effectId,
       }
-      const effectDocs: EffectDbObject[] = [
-        {
-          _id: effectId,
-          ability: 'ability',
-          created: new Date(),
-          image: 'image',
-          key: EffectKey.Agile,
-          name: 'name',
-        },
+      const effectDocs = [
+        TestUtil.getDbEffect({
+          id: effectId,
+        }),
       ]
       const createDlcsSpy = jest.spyOn(upgrade2, 'createDlcs').mockResolvedValue(dlcMap)
       const createEffectsSpy = jest.spyOn(upgrade2, 'createEffects').mockResolvedValue({
@@ -84,45 +79,15 @@ describe('upgrade-2', () => {
         factionMap,
       })
       const createLeadersSpy = jest.spyOn(upgrade2, 'createLeaders').mockImplementation()
-      const unit: UnitDbObject = {
-        _id: new ObjectId(),
-        created: new Date(),
-        deckable: true,
-        faction: new ObjectId(),
-        images: [],
-        name: 'name',
-        quote: 'quote',
+      const unit = TestUtil.getDbUnit({
         effects: [effectId],
-      }
+      })
       const factionUnits: FactionUnits = {
         [factionId.toString()]: [unit],
       }
       const createUnitsSpy = jest.spyOn(upgrade2, 'createUnits').mockResolvedValue(factionUnits)
       const editFactionSpy = jest.spyOn(FactionStore, 'edit').mockImplementation()
-      const stats: UnitStats = {
-        agile: 1,
-        avenger: 2,
-        berserker: 3,
-        bond: 4,
-        close: 5,
-        decoy: 6,
-        heroes: 7,
-        horn: 8,
-        mardroeme: 9,
-        medic: 10,
-        morale: 11,
-        muster: 12,
-        ranged: 13,
-        scorch: 14,
-        siege: 15,
-        specials: 16,
-        spy: 17,
-        strengthAverage: 18,
-        strengths: 19,
-        strengthTotal: 20,
-        units: 21,
-        weather: 22,
-      }
+      const stats = TestUtil.getStats()
       const getDeckStatsSpy = jest.spyOn(utils, 'getDeckStats').mockReturnValue(stats)
 
       await expect(upgrade2.run()).resolves.toEqual(undefined)
@@ -275,25 +240,13 @@ describe('upgrade-2', () => {
     })
   })
   describe('createUnits', () => {
-    const factionDocs: FactionDbObject[] = [
-      {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image',
+    const factionDocs = [
+      TestUtil.getDbFaction({
         key: FactionKey.Monsters,
-        name: 'Monsters',
-        stats: {} as any,
-        ability: 'ability',
-      },
-      {
-        _id: new ObjectId(),
-        created: new Date(),
-        image: 'image',
+      }),
+      TestUtil.getDbFaction({
         key: FactionKey.NorthernRealms,
-        name: 'Northern Realms',
-        stats: {} as any,
-        ability: 'ability',
-      },
+      }),
     ]
     const unit1: UnitJson = {
       'Art Styles': 1,
@@ -641,7 +594,66 @@ describe('upgrade-2', () => {
     })
   })
   describe('normalizeUnit', () => {
-    // TODO: refactor these into shared method?
+    it('throws error if unit does not have name', () => {
+      const unit = {
+        'Art Styles': 1,
+        Deckable: 'Yes',
+        Hero: 'No',
+        Faction: 'faction-name',
+        Occurrences: 1,
+        Quote: 'quote',
+      }
+      const faction = new ObjectId()
+      const dlcMap = {
+        'dlc-name': new ObjectId(),
+      }
+      const effectMap = {
+        'effect-name': new ObjectId(),
+      }
+      const factionMap = {
+        [unit.Faction]: faction,
+      }
+      const upgrade2 = new Upgrade2()
+
+      expect(() =>
+        upgrade2.normalizeUnit({
+          unit: unit as any,
+          dlcMap,
+          effectMap,
+          factionMap,
+        })
+      ).toThrow(`Invalid unit "${JSON.stringify(unit)}": Must have "Name".`)
+    })
+    it('throws error if unit does not have quote', () => {
+      const unit = {
+        'Art Styles': 1,
+        Deckable: 'Yes',
+        Hero: 'No',
+        Faction: 'faction-name',
+        Occurrences: 1,
+        Name: 'name',
+      }
+      const faction = new ObjectId()
+      const dlcMap = {
+        'dlc-name': new ObjectId(),
+      }
+      const effectMap = {
+        'effect-name': new ObjectId(),
+      }
+      const factionMap = {
+        [unit.Faction]: faction,
+      }
+      const upgrade2 = new Upgrade2()
+
+      expect(() =>
+        upgrade2.normalizeUnit({
+          unit: unit as any,
+          dlcMap,
+          effectMap,
+          factionMap,
+        })
+      ).toThrow(`Invalid unit "${unit.Name}": Must have "Quote".`)
+    })
     it('calls to other normalize functions if only required fields', () => {
       const unit: UnitJson = {
         'Art Styles': 1,
@@ -1476,26 +1488,17 @@ async function testCreateUnits({
     }
   }
 
+  const promise = upgrade2.createUnits({
+    dlcMap,
+    effectMap,
+    factionDocs,
+    factionMap,
+    units,
+  })
   if (expectedError) {
-    await expect(
-      upgrade2.createUnits({
-        dlcMap,
-        effectMap,
-        factionDocs,
-        factionMap,
-        units,
-      })
-    ).rejects.toThrow(expectedError)
+    await expect(promise).rejects.toThrow(expectedError)
   } else {
-    await expect(
-      upgrade2.createUnits({
-        dlcMap,
-        effectMap,
-        factionDocs,
-        factionMap,
-        units,
-      })
-    ).resolves.toEqual(expected)
+    await expect(promise).resolves.toEqual(expected)
   }
 
   expect(validatePositiveIntegerSpy.mock.calls).toEqual(validatePositiveIntegerCalls)

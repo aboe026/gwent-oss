@@ -9,9 +9,9 @@ import { ROUTES } from '@gwent/constants'
 import './Logout.css'
 
 /**
- * A page to log the user out of the application
+ * A page to log the user out of the application.
  *
- * @returns The application logout page
+ * @returns The application logout page.
  */
 export default function LogoutPage() {
   const navigate = useNavigate()
@@ -53,11 +53,11 @@ export default function LogoutPage() {
             logout()
           }}
         >
-          <div className="logout-container">
+          <div id="logoutContainer">
             <span id={HTML_IDS.LogoutMessage} className={logoutError ? HTML_CLASSES.ErrorText : ''}>
               {`Error logging out: ${getApolloError(logoutError)}`}
             </span>
-            <button className="pointable" type="reset" onClick={() => logout} autoFocus={true}>
+            <button id="logoutRetry" type="reset" onClick={() => logout} autoFocus={true}>
               Retry
             </button>
           </div>

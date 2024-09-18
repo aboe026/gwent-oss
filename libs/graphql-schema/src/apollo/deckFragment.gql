@@ -1,0 +1,24 @@
+fragment DeckFragment on Deck {
+  id
+  created
+  name
+  faction {
+    ...FactionFragment
+  }
+  leader {
+    name
+    ability
+    image
+  }
+  stats(neutrals: true) {
+    units
+    specials
+    heroes
+    close
+    ranged
+    siege
+    agile
+    strengthTotal
+    strengthAverage
+  }
+}

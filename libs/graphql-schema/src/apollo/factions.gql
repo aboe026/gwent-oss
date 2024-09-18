@@ -1,37 +1,5 @@
 query Factions {
   factions {
-    key
-    id
-    name
-    image
-    ability
-    dlc {
-      name
-      image
-    }
-    stats(neutrals: true) {
-      agile
-      avenger
-      berserker
-      bond
-      decoy
-      horn
-      mardroeme
-      medic
-      morale
-      muster
-      scorch
-      spy
-      weather
-      close
-      ranged
-      siege
-      units
-      specials
-      heroes
-      strengthAverage
-      strengthTotal
-      strengths
-    }
+    ...FactionFragment
   }
 }

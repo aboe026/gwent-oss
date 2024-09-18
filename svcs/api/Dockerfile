@@ -14,7 +14,7 @@ ENV NODE_ENV=production
 COPY . ${APP_DIR}
 
 WORKDIR ${APP_DIR}/svcs/api
-RUN yarn install --immutable
+RUN yarn install
 RUN yarn build
 RUN yarn cache clean --all
 RUN echo "{\"buildNumber\": ${BUILD}}" > app-info.json
@@ -39,4 +39,4 @@ WORKDIR ${APP_DIR}/svcs/api
 RUN yarn workspaces focus --production
 
 EXPOSE 4000
-CMD yarn node build/src/index.js
+CMD ["yarn", "node", "build/src/index.js"]

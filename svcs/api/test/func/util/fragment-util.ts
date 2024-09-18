@@ -1,3 +1,11 @@
+export function getUserFragment(): string {
+  return `
+    created
+    id
+    name
+  `
+}
+
 export function getDlcFragment(): string {
   return `
     created
@@ -128,9 +136,81 @@ export function getDeckFragment({ statsModifier = '' }: { statsModifier?: string
       }
     }
     user {
-      created
-      id
-      name
+      ${getUserFragment()}
+    }
+  `
+}
+
+export function getDeckUnitFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+  return `
+    artStyle
+    unit {
+      ${getUnitFragment({ statsModifier })}
+    }
+  `
+}
+
+export function getGameFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+  return `
+    created
+    creator {
+      ${getUserFragment()}
+    }
+    id
+    players {
+      counts {
+        discard
+        hand
+        undrawn
+      }
+      faction {
+        ${getFactionFragment({ statsModifier })}
+      }
+      leader {
+        ${getLeaderFragment({ statsModifier })}
+      }
+      ready
+      rounds {
+        score
+        won
+      }
+      user {
+        ${getUserFragment()}
+      }
+    }
+    round {
+      current
+      maximum
+    }
+    status
+    updated
+    victors {
+      ${getUserFragment()}
+    }
+  `
+}
+
+export function getGameDeckFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+  return `
+    discard {
+      ${getDeckUnitFragment({ statsModifier })}
+    }
+    from {
+      ${getDeckFragment({ statsModifier })}
+    }
+    hand {
+      ${getDeckUnitFragment({ statsModifier })}
+    }
+    redraws {
+      from {
+        ${getDeckUnitFragment({ statsModifier })}
+      }
+      to {
+        ${getDeckUnitFragment({ statsModifier })}
+      }
+    }
+    undrawn {
+      ${getDeckUnitFragment({ statsModifier })}
     }
   `
 }

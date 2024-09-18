@@ -47,9 +47,7 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
+          data: null,
           errors: [new GraphQLError(`Cannot create Deck with "${FactionKey.Neutral}" faction.`)],
         })
       })
@@ -80,10 +78,8 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
-          errors: [new GraphQLError(`Invalid leader ID "${leaderId}": Does not exist.`)],
+          data: null,
+          errors: [new GraphQLError(`Leader with ID "${leaderId}" does not exist.`)],
         })
       })
       it('throws error if leader is of wrong faction', async () => {
@@ -113,12 +109,10 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
+          data: null,
           errors: [
             new GraphQLError(
-              `Invalid leader ID "${leaderId}": Faction "${FactionKey.Skellige}" does not match deck faction of "${faction}".`
+              `Faction key "${FactionKey.Skellige}" for leader "${leaderId}" does not match deck faction key "${faction}".`
             ),
           ],
         })
@@ -158,10 +152,8 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
-          errors: [new GraphQLError(`Invalid unit ID "${dummyUnitId}": Does not exist.`)],
+          data: null,
+          errors: [new GraphQLError(`Unit with ID "${dummyUnitId}" does not exist.`)],
         })
       })
       it('throws error if units are of wrong faction', async () => {
@@ -201,9 +193,7 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
+          data: null,
           errors: [
             new GraphQLError(
               deckUnits
@@ -253,9 +243,7 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
+          data: null,
           errors: [new GraphQLError(`Invalid number of units at "${length}", minimum is "22".`)],
         })
       })
@@ -297,9 +285,7 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
+          data: null,
           errors: [new GraphQLError(`Invalid number of special units at "${specials}", maximum is "10".`)],
         })
       })
@@ -340,9 +326,7 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
+          data: null,
           errors: [
             new GraphQLError(
               `Invalid artStyle "${units[0].artStyle}" for unit "${units[0].unit.id}", must be positive integer greater than zero.`
@@ -387,9 +371,7 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
+          data: null,
           errors: [
             new GraphQLError(
               `Invalid artStyle "${units[0].artStyle}" for unit "${units[0].unit.id}", must be positive integer greater than zero.`
@@ -434,9 +416,7 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
+          data: null,
           errors: [
             new GraphQLError(
               `Invalid artStyle "${units[0].artStyle}" for unit "${units[0].unit.id}", only "${units[0].unit.images.length}" art styles available for unit.`
@@ -477,10 +457,8 @@ describe('decks', () => {
             },
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
-          errors: [new GraphQLError(`Deck with name "${name}" already exists`)],
+          data: null,
+          errors: [new GraphQLError(`Deck with name "${name}" already exists.`)],
         })
       })
     })
@@ -819,6 +797,87 @@ describe('decks', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
+      it('adding deck with neutral argument false does not add neutral stats', async () => {
+        const faction = FactionKey.Monsters
+        const leader = 'Eredin Bringer of Death'
+        const name = `decks-${Date.now()}`
+        const user = await addUser(name)
+        const response = await graphql({
+          schema,
+          source: `mutation {
+            addDeck(
+              name: "${name}",
+              faction: ${faction},
+              leader: "${await getLeaderId({ name: leader })}",
+              units: [${await getUnitsInput(faction)}]
+            ) {
+              ${getDeckFragment({
+                statsModifier: '(neutrals: false)',
+              })}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user.id,
+              },
+            },
+          },
+        })
+        expect(response).toEqual({
+          data: {
+            addDeck: expectizeDeck({
+              factionKey: faction,
+              leaderName: leader,
+              name,
+              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              user,
+            }),
+          },
+        })
+        verifyMongoIds(response.data?.addDeck)
+      })
+      it('adding deck with neutral argument true adds neutral stats', async () => {
+        const faction = FactionKey.Monsters
+        const leader = 'Eredin Bringer of Death'
+        const name = `decks-${Date.now()}`
+        const user = await addUser(name)
+        const response = await graphql({
+          schema,
+          source: `mutation {
+            addDeck(
+              name: "${name}",
+              faction: ${faction},
+              leader: "${await getLeaderId({ name: leader })}",
+              units: [${await getUnitsInput(faction)}]
+            ) {
+              ${getDeckFragment({
+                statsModifier: '(neutrals: true)',
+              })}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user.id,
+              },
+            },
+          },
+        })
+        expect(response).toEqual({
+          data: {
+            addDeck: expectizeDeck({
+              factionKey: faction,
+              leaderName: leader,
+              name,
+              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              user,
+              neutrals: true,
+            }),
+          },
+        })
+        verifyMongoIds(response.data?.addDeck)
+      })
     })
   })
   describe('decks', () => {
@@ -1005,12 +1064,12 @@ describe('decks', () => {
         const response = await graphql({
           schema,
           source: `{
-          decks {
-            ${getDeckFragment({
-              statsModifier: '(neutrals: false)',
-            })}
-          }
-        }`,
+            decks {
+              ${getDeckFragment({
+                statsModifier: '(neutrals: false)',
+              })}
+            }
+          }`,
           contextValue: {
             session: {
               user: {

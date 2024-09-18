@@ -1,10 +1,11 @@
 import { t } from 'testcafe'
 
 import ApiClient from '../util/api-client'
+import DeckList from '../components/deck-list'
 import DecksPage from '../page-objects/decks-page'
-import LoginPage from '../page-objects/login-page'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { FILTER_FIELD } from '@gwent/graphql-schema/decks-filter'
+import LoginPage from '../page-objects/login-page'
 
 fixture('Decks Filter')
   .page(DecksPage.getUrl())
@@ -63,8 +64,8 @@ fixture('Decks Filter')
       'Shilard Fitz-Oesterlen',
       'Siege Engineer',
       'Siege Technician',
-      'Young Emmisary',
-      'Young Emmisary',
+      'Young Emissary',
+      'Young Emissary',
     ]
     await new ApiClient({}).addUser({
       name: t.ctx.username,
@@ -106,8 +107,8 @@ fixture('Decks Filter')
   })
 
 test('Filters by name', async () => {
-  await DecksPage.filterName(t.ctx.name1)
-  await DecksPage.verifyContent({
+  await DeckList.filterName(t.ctx.name1)
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(t.ctx.deck1.created),
@@ -118,8 +119,8 @@ test('Filters by name', async () => {
       },
     ],
   })
-  await DecksPage.filterName(t.ctx.name2)
-  await DecksPage.verifyContent({
+  await DeckList.filterName(t.ctx.name2)
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(t.ctx.deck2.created),
@@ -130,10 +131,10 @@ test('Filters by name', async () => {
       },
     ],
   })
-  await DecksPage.filterName('invalid')
-  await DecksPage.verifyNoFilterResults()
-  await DecksPage.clearFilterNoneFound()
-  await DecksPage.verifyContent({
+  await DeckList.filterName('invalid')
+  await DeckList.verifyNoFilterResults()
+  await DeckList.clearFilterNoneFound()
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(t.ctx.deck1.created),
@@ -154,9 +155,9 @@ test('Filters by name', async () => {
 })
 
 test('Filters by faction', async () => {
-  await DecksPage.toggleAdvancedFiltersExpanded()
-  await DecksPage.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
-  await DecksPage.verifyContent({
+  await DeckList.toggleAdvancedFiltersExpanded()
+  await DeckList.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(t.ctx.deck2.created),
@@ -167,28 +168,8 @@ test('Filters by faction', async () => {
       },
     ],
   })
-  await DecksPage.toggleAdvancedFilter(FILTER_FIELD.ScoiaTael)
-  await DecksPage.verifyContent({
-    decks: [
-      {
-        created: new Date(t.ctx.deck1.created),
-        faction: t.ctx.faction1,
-        leader: t.ctx.leader1,
-        name: t.ctx.name1,
-        stats: t.ctx.deck1.stats,
-      },
-      {
-        created: new Date(t.ctx.deck2.created),
-        faction: t.ctx.faction2,
-        leader: t.ctx.leader2,
-        name: t.ctx.name2,
-        stats: t.ctx.deck2.stats,
-      },
-    ],
-  })
-  await DecksPage.toggleAdvancedFilter(FILTER_FIELD.ScoiaTael)
-  await DecksPage.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
-  await DecksPage.verifyContent({
+  await DeckList.toggleAdvancedFilter(FILTER_FIELD.ScoiaTael)
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(t.ctx.deck1.created),
@@ -206,10 +187,30 @@ test('Filters by faction', async () => {
       },
     ],
   })
-  await DecksPage.toggleAdvancedFilter(FILTER_FIELD.Monsters)
-  await DecksPage.verifyNoFilterResults()
-  await DecksPage.clearFilterNoneFound()
-  await DecksPage.verifyContent({
+  await DeckList.toggleAdvancedFilter(FILTER_FIELD.ScoiaTael)
+  await DeckList.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
+  await DecksPage.verify({
+    decks: [
+      {
+        created: new Date(t.ctx.deck1.created),
+        faction: t.ctx.faction1,
+        leader: t.ctx.leader1,
+        name: t.ctx.name1,
+        stats: t.ctx.deck1.stats,
+      },
+      {
+        created: new Date(t.ctx.deck2.created),
+        faction: t.ctx.faction2,
+        leader: t.ctx.leader2,
+        name: t.ctx.name2,
+        stats: t.ctx.deck2.stats,
+      },
+    ],
+  })
+  await DeckList.toggleAdvancedFilter(FILTER_FIELD.Monsters)
+  await DeckList.verifyNoFilterResults()
+  await DeckList.clearFilterNoneFound()
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(t.ctx.deck1.created),
@@ -230,11 +231,11 @@ test('Filters by faction', async () => {
 })
 
 test('Filters by name and faction', async () => {
-  await DecksPage.toggleAdvancedFiltersExpanded()
-  await DecksPage.toggleAdvancedFilter(FILTER_FIELD.ScoiaTael)
-  await DecksPage.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
-  await DecksPage.filterName(t.ctx.name2)
-  await DecksPage.verifyContent({
+  await DeckList.toggleAdvancedFiltersExpanded()
+  await DeckList.toggleAdvancedFilter(FILTER_FIELD.ScoiaTael)
+  await DeckList.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
+  await DeckList.filterName(t.ctx.name2)
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(t.ctx.deck2.created),
@@ -245,29 +246,10 @@ test('Filters by name and faction', async () => {
       },
     ],
   })
-  await DecksPage.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
-  await DecksPage.verifyNoFilterResults()
-  await DecksPage.clearFilterNoneFound()
-  await DecksPage.verifyContent({
-    decks: [
-      {
-        created: new Date(t.ctx.deck1.created),
-        faction: t.ctx.faction1,
-        leader: t.ctx.leader1,
-        name: t.ctx.name1,
-        stats: t.ctx.deck1.stats,
-      },
-      {
-        created: new Date(t.ctx.deck2.created),
-        faction: t.ctx.faction2,
-        leader: t.ctx.leader2,
-        name: t.ctx.name2,
-        stats: t.ctx.deck2.stats,
-      },
-    ],
-  })
-  await DecksPage.filterName('decks filter')
-  await DecksPage.verifyContent({
+  await DeckList.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
+  await DeckList.verifyNoFilterResults()
+  await DeckList.clearFilterNoneFound()
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(t.ctx.deck1.created),
@@ -285,8 +267,27 @@ test('Filters by name and faction', async () => {
       },
     ],
   })
-  await DecksPage.toggleAdvancedFilter(FILTER_FIELD.ScoiaTael)
-  await DecksPage.verifyContent({
+  await DeckList.filterName('decks filter')
+  await DecksPage.verify({
+    decks: [
+      {
+        created: new Date(t.ctx.deck1.created),
+        faction: t.ctx.faction1,
+        leader: t.ctx.leader1,
+        name: t.ctx.name1,
+        stats: t.ctx.deck1.stats,
+      },
+      {
+        created: new Date(t.ctx.deck2.created),
+        faction: t.ctx.faction2,
+        leader: t.ctx.leader2,
+        name: t.ctx.name2,
+        stats: t.ctx.deck2.stats,
+      },
+    ],
+  })
+  await DeckList.toggleAdvancedFilter(FILTER_FIELD.ScoiaTael)
+  await DecksPage.verify({
     decks: [
       {
         created: new Date(t.ctx.deck1.created),

@@ -1,4 +1,4 @@
-import log4js from 'log4js'
+import { getLogger } from 'log4js'
 
 import DbConnector from '../db-connector'
 import DeckStore from '../stores/deck-store'
@@ -8,7 +8,7 @@ import Upgrade from './upgrade'
  * Creates collection and indexes for Decks.
  */
 export default class Upgrade4 extends Upgrade {
-  static logger = log4js.getLogger('upgrade-4')
+  static logger = getLogger('upgrade-4')
 
   async run() {
     Upgrade4.logger.debug('Connecting to database')

@@ -12,7 +12,7 @@ if (process.argv.includes('--test-type=unit')) {
   testType = TEST_TYPE.Func
 }
 if (testType === undefined) {
-  throw Error(`Must supply --test-type argument with value of either "${TEST_TYPE.Unit}" or "${TEST_TYPE.Func}"`)
+  throw Error(`Must supply --test-type argument with value of either "${TEST_TYPE.Unit}" or "${TEST_TYPE.Func}".`)
 }
 
 if (testType === TEST_TYPE.Func) {
@@ -21,7 +21,7 @@ if (testType === TEST_TYPE.Func) {
 
 const sharedConfig: Config = {
   clearMocks: true,
-  coveragePathIgnorePatterns: ['.*build.*', '.*generated.*'],
+  coveragePathIgnorePatterns: ['.*build.*', '.*generated.*', '.*test.*'],
   moduleFileExtensions: ['js', 'json', 'node', 'ts', 'tsx'],
   modulePathIgnorePatterns: ['build'],
   preset: 'ts-jest',

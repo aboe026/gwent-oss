@@ -1,7 +1,7 @@
+import DeckPage from '../page-objects/deck-page'
+import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
 import HomePage from '../page-objects/home-page'
-import E2eUtil from '../util/e2e-util'
-import DeckPage from '../page-objects/deck-page'
 import ProfilePage from '../page-objects/profile-page'
 import SignupPage from '../page-objects/signup-page'
 
@@ -12,7 +12,7 @@ test('Home page displays correctly', async () => {
   await SignupPage.signUp({
     username,
   })
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 })
 
 test('Navigate to profile', async () => {
@@ -20,7 +20,7 @@ test('Navigate to profile', async () => {
   await SignupPage.signUp({
     username,
   })
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
   await HomePage.goTo(HomePage.elements.ViewProfile)
   await E2eUtil.verifyCurrentUrl(ProfilePage.getUrl())
 })
@@ -30,7 +30,7 @@ test('Navigate to new deck', async () => {
   await SignupPage.signUp({
     username,
   })
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
   await HomePage.goTo(HomePage.elements.CreateDeck)
   await E2eUtil.verifyCurrentUrl(DeckPage.getUrl())
 })

@@ -10,22 +10,35 @@ import './Form.css'
  * A dialog containing a form with fields the user can fill out
  *
  * @param {Object} config The form configuration.
- * @param config.id The id to give the HTML form element.
+ * @param config.autoFocusIndex The index to give the form autofocus property (set to 0 to ensure the focus is on the form).
  * @param config.cancelLabel The text the button which exits out of the form without submitting should have.
+ * @param config.cancelId The id the cancel button should have.
+ * @param config.closeable Whether or not the user can close the form.
+ * @param config.closeParams Variables to pass to the close method if user closes the form.
  * @param config.error The potential errors returned from the GraphQL query/mutation the form submission triggered.
+ * @param config.errorId The id to give the error text.
+ * @param config.errorPrefix What to prefix potential errors with.
  * @param config.fields The fields to present to the user for input.
+ * @param config.id The id to give the HTML form element.
  * @param config.loading Whether or not the form is waiting on data from the form submission.
  * @param config.onClose A function the form will call when closed by the user without submitting.
  * @param config.onSubmit A function the form will call when the form is successfully submitted by the user.
- * @param config.submitLable The text the button which triggers form submission should have.
+ * @param config.overaly Whether or not the form should obscure the rest of the page behind it.
+ * @param config.style Any CSS styling that should be applied to the form.
+ * @param config.submitLabel The text the button which triggers form submission should have.
+ * @param config.submitLabel The id the submit button should have.
  * @param config.title The title the form should display to the user.
  * @returns A form for the user to fill out.
  */
 export default function Form({
+  autoFocusIndex = 0,
   cancelLabel = 'Cancel',
+  cancelId,
   closeable = true,
   closeParams = false,
   error,
+  errorId,
+  errorPrefix,
   fields,
   id,
   loading,
@@ -34,6 +47,7 @@ export default function Form({
   overlay,
   style,
   submitLabel = 'Save',
+  submitId,
   title,
 }: FormProps) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,9 +71,6 @@ export default function Form({
             }
           }
           await onSubmit({ variables: { ...values } })
-          if (onClose) {
-            onClose(closeParams)
-          }
         }}
       >
         <div className="form-title">{title}</div>
@@ -73,12 +84,15 @@ export default function Form({
                     {field.required && <span className="required-field">*</span>}
                   </label>
                   <input
+                    className="form-field-text-input"
                     type={field.type}
-                    autoFocus={index === 0}
+                    autoFocus={index === autoFocusIndex}
                     id={field.key}
                     name={field.key}
                     value={values[field.key]}
                     required={field.required}
+                    disabled={field.disabled || loading}
+                    placeholder={field.placeholder}
                     onChange={(e) =>
                       setValues((prev) => ({
                         ...prev,
@@ -86,14 +100,20 @@ export default function Form({
                       }))
                     }
                   />
+                  {field.description && <span className="help-text">{field.description}</span>}
                 </div>
               )
           )}
         </div>
-        {resolvedError && <span className={HTML_CLASSES.ErrorText}>{resolvedError}</span>}
+        {resolvedError && (
+          <span id={errorId || undefined} className={HTML_CLASSES.ErrorText}>
+            {`${errorPrefix ? `${errorPrefix}: ` : ''}${resolvedError}`}
+          </span>
+        )}
         <div className="actions">
           {closeable && (
             <button
+              id={cancelId || undefined}
               className={HTML_CLASSES.Secondary}
               type="button"
               disabled={loading}
@@ -102,7 +122,7 @@ export default function Form({
               {cancelLabel}
             </button>
           )}
-          <button className={HTML_CLASSES.Primary} type="submit" disabled={loading}>
+          <button id={submitId || undefined} className={HTML_CLASSES.Primary} type="submit" disabled={loading}>
             {submitLabel}
           </button>
           {loading && <LoadingBar height="25px" style={{ marginTop: '10px' }} />}
@@ -113,10 +133,14 @@ export default function Form({
 }
 
 interface FormProps {
+  autoFocusIndex?: number
   cancelLabel?: string
+  cancelId?: string
   closeable?: boolean
   closeParams?: any // eslint-disable-line @typescript-eslint/no-explicit-any
   error: ApolloError | undefined
+  errorPrefix?: string
+  errorId?: string
   fields: FormField[]
   id?: string
   loading: boolean
@@ -125,14 +149,18 @@ interface FormProps {
   overlay?: boolean
   style?: React.CSSProperties
   submitLabel?: string
+  submitId?: string
   title: string
 }
 
-interface FormField {
+export interface FormField {
   default?: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  description?: string
   hidden?: boolean
   key: string
   label?: string
+  placeholder?: string
   required?: boolean
+  disabled?: boolean
   type: HTMLInputTypeAttribute
 }

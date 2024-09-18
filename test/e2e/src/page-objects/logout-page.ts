@@ -1,7 +1,7 @@
 import { Selector } from 'testcafe'
 
-import { HTML_IDS, ROUTES } from '@gwent/constants'
 import E2eUtil from '../util/e2e-util'
+import { HTML_IDS, ROUTES } from '@gwent/constants'
 
 const container = Selector(`#${HTML_IDS.LogoutForm}`)
 

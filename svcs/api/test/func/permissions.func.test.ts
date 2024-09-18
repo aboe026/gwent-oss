@@ -50,9 +50,7 @@ describe('permissions', () => {
             }`,
           })
         ).resolves.toEqual({
-          data: {
-            decks: null,
-          },
+          data: null,
           errors: [new GraphQLError(NOT_AUTHENTICATED_MESSAGE)],
         })
       })
@@ -148,9 +146,7 @@ describe('permissions', () => {
             }`,
           })
         ).resolves.toEqual({
-          data: {
-            addDeck: null,
-          },
+          data: null,
           errors: [new GraphQLError(NOT_AUTHENTICATED_MESSAGE)],
         })
       })

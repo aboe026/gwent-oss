@@ -15,7 +15,7 @@ test('Redirects to login page on profile logout', async () => {
     username,
   })
   await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verifyContent({
+  await ProfilePage.verify({
     username,
   })
   await ProfilePage.logout()
@@ -29,7 +29,7 @@ test('Direct profile URL after logout from profile goes to login page', async ()
     username,
   })
   await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verifyContent({
+  await ProfilePage.verify({
     username,
   })
   await ProfilePage.logout()
@@ -44,5 +44,5 @@ test('Login after direct logout URL redirects to home', async () => {
   await SignupPage.signUp({
     username,
   })
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 })

@@ -24,7 +24,7 @@ export default function env() {
         default: '../images',
       }),
       LOG_LEVEL: str({
-        desc: 'The minimum granularity level of log messages should be output.',
+        desc: 'The minimum granularity level of log messages should be output. OFF < FATAL < ERROR < WARN < INFO < DEBUG < TRACE < ALL.',
         choices: ['OFF', 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'ALL'],
         default: 'INFO',
       }),

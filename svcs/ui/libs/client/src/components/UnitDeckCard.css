@@ -1,0 +1,80 @@
+.unit-deck-card-container {
+  position: relative;
+  height: calc(230px + 55px);
+  width: 160px;
+  background-color: antiquewhite;
+  border-radius: 10px;
+}
+
+.unit-deck-card-actions-upper {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.unit-deck-card-actions-upper > .unit-deck-card-maximize {
+  padding: 10px;
+}
+
+.unit-deck-card-icons {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.unit-deck-card-icon {
+  height: 40px;
+  width: 40px;
+  z-index: 1;
+}
+
+.unit-deck-card-icons > *:first-child {
+  height: 50px;
+  width: 50px;
+}
+
+.unit-deck-card-image {
+  width: 100%;
+  aspect-ratio: 309 / 444;
+}
+
+.unit-deck-card-actions-lower {
+  position: absolute;
+  display: flex;
+  justify-content: space-between;
+  margin-top: -37px;
+  width: 100%;
+}
+
+.unit-deck-card-art-switcher {
+  height: 30px;
+  width: 30px;
+}
+
+.unit-deck-card-art-switcher-arrow {
+  margin-left: 2px;
+  margin-top: 2px;
+  size: 1.5em;
+}
+
+.unit-deck-card-dlc {
+  height: 33px;
+  width: 100px;
+  margin-left: auto;
+  margin-right: auto;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position: bottom;
+  margin-bottom: -3px;
+}
+
+.unit-deck-card-name {
+  display: table;
+  margin: 0 auto;
+  text-align: center;
+  font-weight: bold;
+  cursor: text;
+  padding-left: 5px;
+  padding-right: 5px;
+}

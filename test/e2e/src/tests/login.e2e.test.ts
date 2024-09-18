@@ -20,7 +20,7 @@ test('Shows error for nonexistent user', async () => {
   await LoginPage.verifyNotLoggedIn({
     username,
     password,
-    error: `Invalid credentials for user "${username}"`,
+    error: `Invalid credentials for user "${username}".`,
   })
 })
 
@@ -42,7 +42,7 @@ test('Shows error for wrong password', async () => {
   await LoginPage.verifyNotLoggedIn({
     username,
     password,
-    error: `Invalid credentials for user "${username}"`,
+    error: `Invalid credentials for user "${username}".`,
   })
 })
 
@@ -59,7 +59,7 @@ test('Logs in existing user', async () => {
     password,
   })
 
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 })
 
 test('User session persists across refresh after login', async () => {
@@ -77,5 +77,5 @@ test('User session persists across refresh after login', async () => {
   await E2eUtil.reload()
 
   await LoginPage.verifyLoggedIn()
-  await HomePage.verifyContent(username)
+  await HomePage.verify(username)
 })

@@ -3,7 +3,7 @@ import { Selector, t } from 'testcafe'
 import E2eUtil from '../util/e2e-util'
 import { HTML_IDS, ROUTES } from '@gwent/constants'
 
-const container = Selector(`#${HTML_IDS.Profile}`)
+const container = Selector(`#${HTML_IDS.ProfileContainer}`)
 
 export default class ProfilePage {
   static elements = {
@@ -35,7 +35,7 @@ export default class ProfilePage {
     await t.expect(ProfilePage.elements.Logout.exists).ok().expect(ProfilePage.elements.Logout.visible).ok()
   }
 
-  static async verifyContent({ username, created = new Date() }: { username: string; created?: Date }) {
+  static async verify({ username, created = new Date() }: { username: string; created?: Date }) {
     await E2eUtil.verifyCurrentUrl(ProfilePage.getUrl())
     await ProfilePage.verifyUsername(username)
     await ProfilePage.verifyCreated(created)

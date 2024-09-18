@@ -14,7 +14,7 @@ ENV NODE_ENV=production
 COPY . ${APP_DIR}
 
 WORKDIR ${APP_DIR}/svcs/ui
-RUN yarn install --immutable
+RUN yarn install
 RUN yarn build
 RUN yarn cache clean --all
 
@@ -40,4 +40,4 @@ RUN yarn workspaces focus --production
 EXPOSE 3000
 ENV CLIENT_DIR=../../libs/client/build
 ENV IMAGES_DIR=../../images
-CMD yarn node build/src/index.js
+CMD ["yarn", "node", "build/src/index.js"]

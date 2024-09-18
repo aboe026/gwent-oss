@@ -1,4 +1,14 @@
-import { Collection, Document, Filter, FindOptions, MongoError, ObjectId, WithId } from 'mongodb'
+import {
+  Collection,
+  Document,
+  Filter,
+  FindOneAndUpdateOptions,
+  FindOptions,
+  MongoError,
+  ObjectId,
+  UpdateFilter,
+  WithId,
+} from 'mongodb'
 
 import DbConnector from '../db-connector'
 
@@ -60,19 +70,24 @@ export default abstract class Store {
    * @returns The updated document.
    * @throws Error if the document does not exist.
    */
-  protected static async update<T extends WithId<Document>>(doc: WithId<Document>): Promise<T> {
+  protected static async update<T extends WithId<Document>>({
+    filter,
+    update,
+    options = {},
+    verifyExistence = true,
+  }: {
+    filter: Filter<Document>
+    update: UpdateFilter<Document>
+    options?: FindOneAndUpdateOptions
+    verifyExistence?: boolean
+  }): Promise<T> {
     const collection = await Store.getCollection<T>(this.COLLECTION_NAME)
-    const response = await collection.findOneAndUpdate(
-      { _id: doc._id },
-      {
-        $set: doc,
-      },
-      {
-        returnDocument: 'after',
-      }
-    )
-    if (response === null) {
-      throw Error(`Invalid ID "${doc._id.toString()}": Does not exist.`)
+    if (!options.returnDocument) {
+      options.returnDocument = 'after'
+    }
+    const response = await collection.findOneAndUpdate(filter, update, options)
+    if (verifyExistence && response === null && filter._id) {
+      throw Error(`Invalid ID "${filter._id.toString()}": Does not exist.`)
     }
     return response as T
   }

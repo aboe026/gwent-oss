@@ -1,0 +1,30 @@
+fragment GameDeckFragment on GameDeck {
+  discard {
+    ...DeckUnitFragment
+  }
+  from {
+    created
+    faction {
+      ...GameFactionFragment
+    }
+    id
+    leader {
+      ...GameLeaderFragment
+    }
+    name
+  }
+  hand {
+    ...DeckUnitFragment
+  }
+  redraws {
+    from {
+      ...DeckUnitFragment
+    }
+    to {
+      ...DeckUnitFragment
+    }
+  }
+  undrawn {
+    ...DeckUnitFragment
+  }
+}

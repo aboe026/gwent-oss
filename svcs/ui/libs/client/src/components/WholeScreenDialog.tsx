@@ -3,11 +3,11 @@ import { PropsWithChildren } from 'react'
 import Centered from './Centered'
 
 /**
- * A container which centers content
+ * A dialog which occupies the entire screen, obscuring everything behind it.
  *
- * @returns The centering container
+ * @returns The obscuring screen-size dialog.
  */
-export default function WholeScreenDialog({ children, onClose }: WholeScreenDialogProps) {
+export default function WholeScreenDialog({ children, onClose, style }: WholeScreenDialogProps) {
   const id = 'wholeScreenDialog'
 
   return (
@@ -18,6 +18,7 @@ export default function WholeScreenDialog({ children, onClose }: WholeScreenDial
           onClose()
         }
       }}
+      style={style}
     >
       <Centered id={id}>{children}</Centered>
     </div>
@@ -26,4 +27,5 @@ export default function WholeScreenDialog({ children, onClose }: WholeScreenDial
 
 interface WholeScreenDialogProps extends PropsWithChildren {
   onClose?: Function // eslint-disable-line @typescript-eslint/ban-types
+  style?: React.CSSProperties
 }

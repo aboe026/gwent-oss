@@ -54,7 +54,7 @@
     "Hero": "No",
     "Combat 1": "Siege",
     "Strength": 6,
-    "Art Styles": 1,
+    "Art Styles": 2,
     "Quote": "\"Usually we give 'em female names.\" \"Like Jenny?\" \"More like Bertha.\""
   },
   {
@@ -1898,7 +1898,7 @@
     "Quote": "\"Want some?\""
   },
   {
-    "Name": "Young Emmisary",
+    "Name": "Young Emissary",
     "Occurrences": 2,
     "Deckable": "Yes",
     "Faction": "Nilfgaardian Empire",

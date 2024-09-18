@@ -28,8 +28,11 @@ export type Application = {
 };
 
 export enum Combat {
+  /** Close */
   Close = 'CLOSE',
+  /** Ranged */
   Ranged = 'RANGED',
+  /** Siege */
   Siege = 'SIEGE'
 }
 
@@ -43,6 +46,11 @@ export type Deck = {
   stats: UnitStats;
   units: Array<DeckUnit>;
   user: User;
+};
+
+
+export type DeckStatsArgs = {
+  neutrals?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type DeckUnit = {
@@ -67,8 +75,11 @@ export type Dlc = {
 };
 
 export enum DlcKey {
+  /** Blood and Wine */
   BloodAndWine = 'BLOOD_AND_WINE',
+  /** Gwent: The Witcher Card Game */
   GwentTheWitcherCardGame = 'GWENT_THE_WITCHER_CARD_GAME',
+  /** Hearts of Stone */
   HeartsOfStone = 'HEARTS_OF_STONE'
 }
 
@@ -83,18 +94,31 @@ export type Effect = {
 };
 
 export enum EffectKey {
+  /** Agile */
   Agile = 'AGILE',
+  /** Summon Avenger */
   Avenger = 'AVENGER',
+  /** Berserker */
   Berserker = 'BERSERKER',
+  /** Tight Bond */
   Bond = 'BOND',
+  /** Decoy */
   Decoy = 'DECOY',
+  /** Commander's Horn */
   Horn = 'HORN',
+  /** Mardroeme */
   Mardroeme = 'MARDROEME',
+  /** Medic */
   Medic = 'MEDIC',
+  /** Morale Boost */
   Morale = 'MORALE',
+  /** Muster */
   Muster = 'MUSTER',
+  /** Scorch */
   Scorch = 'SCORCH',
+  /** Spy */
   Spy = 'SPY',
+  /** Weather */
   Weather = 'WEATHER'
 }
 
@@ -116,12 +140,94 @@ export type FactionStatsArgs = {
 };
 
 export enum FactionKey {
+  /** Monsters */
   Monsters = 'MONSTERS',
+  /** Neutral */
   Neutral = 'NEUTRAL',
+  /** Nilfgaardian Empire */
   NilfgaardianEmpire = 'NILFGAARDIAN_EMPIRE',
+  /** Northern Realms */
   NorthernRealms = 'NORTHERN_REALMS',
+  /** Scoia'tael */
   ScoiaTael = 'SCOIA_TAEL',
+  /** Skellige */
   Skellige = 'SKELLIGE'
+}
+
+export type Game = {
+  __typename?: 'Game';
+  created: Scalars['DateTime']['output'];
+  creator: User;
+  id: Scalars['ID']['output'];
+  players: Array<GamePlayer>;
+  round: GameRound;
+  status: GameStatus;
+  updated: Scalars['DateTime']['output'];
+  victors: Array<User>;
+};
+
+export type GameDeck = {
+  __typename?: 'GameDeck';
+  /** The units which have been sent to the graveyard */
+  discard: Array<DeckUnit>;
+  /** A snapshot of the user deck when it was selected for the game */
+  from?: Maybe<Deck>;
+  /** The currently playable units */
+  hand: Array<DeckUnit>;
+  /** Units which the player has chosen to redraw to be replaced by a different random undrawn unit. */
+  redraws: Array<Redraw>;
+  /** The units which have not yet been drawn */
+  undrawn: Array<DeckUnit>;
+};
+
+export enum GameDeckStatus {
+  /** Player is choosing their deck to use for the game. */
+  Choosing = 'CHOOSING',
+  /** Player is optionally selecting units to redraw from their selected deck. */
+  Redrawing = 'REDRAWING',
+  /** Player game deck is finalized and ready to play. */
+  Set = 'SET'
+}
+
+export type GamePlayer = {
+  __typename?: 'GamePlayer';
+  /** The number of cards in the game deck of the player. Only visible once all players are ready. */
+  counts?: Maybe<GamePlayerUnitCounts>;
+  /** The faction the player chose for the game. Only visible once all players are ready. */
+  faction?: Maybe<Faction>;
+  /** The leader the player chose for the game. Only visible once all players are ready. */
+  leader?: Maybe<Leader>;
+  /** Whether or not a user has their game deck set to play the game. */
+  ready: Scalars['Boolean']['output'];
+  rounds: Array<PlayerRound>;
+  user: User;
+};
+
+export type GamePlayerInput = {
+  deck: Scalars['ID']['input'];
+  user: Scalars['ID']['input'];
+};
+
+export type GamePlayerUnitCounts = {
+  __typename?: 'GamePlayerUnitCounts';
+  discard: Scalars['Int']['output'];
+  hand: Scalars['Int']['output'];
+  undrawn: Scalars['Int']['output'];
+};
+
+export type GameRound = {
+  __typename?: 'GameRound';
+  current: Scalars['Int']['output'];
+  maximum: Scalars['Int']['output'];
+};
+
+export enum GameStatus {
+  /** Players are choosing the decks and hand to use for the game. */
+  Decking = 'DECKING',
+  /** Play has ended. */
+  Done = 'DONE',
+  /** Players are playing rounds of the game. */
+  Playing = 'PLAYING'
 }
 
 export type Leader = {
@@ -139,13 +245,21 @@ export type Leader = {
 export type Mutation = {
   __typename?: 'Mutation';
   /** Create a user-defined deck. */
-  addDeck?: Maybe<Deck>;
+  addDeck: Deck;
+  /** Create a game of Gwent between the authenticated user and another player. */
+  addGame: Game;
   /** Create a user. */
-  addUser?: Maybe<User>;
+  addUser: User;
   /** Authenticate a user. */
-  login?: Maybe<User>;
+  login: User;
   /** De-authenticate a user. */
-  logout?: Maybe<Scalars['Boolean']['output']>;
+  logout: Scalars['Boolean']['output'];
+  /** Mark player as ready to play the game, no more deck modifications allowed. */
+  ready: Game;
+  /** Replace a card in hand with a random one from the deck, before a game starts. */
+  redraw: DeckUnit;
+  /** Choose which deck will be used for the game. */
+  setDeck: GameDeck;
 };
 
 
@@ -154,6 +268,11 @@ export type MutationAddDeckArgs = {
   leader: Scalars['ID']['input'];
   name: Scalars['String']['input'];
   units: Array<DeckUnitInput>;
+};
+
+
+export type MutationAddGameArgs = {
+  opponentNames: Array<Scalars['String']['input']>;
 };
 
 
@@ -168,6 +287,29 @@ export type MutationLoginArgs = {
   password: Scalars['String']['input'];
 };
 
+
+export type MutationReadyArgs = {
+  game: Scalars['ID']['input'];
+};
+
+
+export type MutationRedrawArgs = {
+  game: Scalars['ID']['input'];
+  unit: Scalars['ID']['input'];
+};
+
+
+export type MutationSetDeckArgs = {
+  deck: Scalars['ID']['input'];
+  game: Scalars['ID']['input'];
+};
+
+export type PlayerRound = {
+  __typename?: 'PlayerRound';
+  score: Scalars['Int']['output'];
+  won: Scalars['Boolean']['output'];
+};
+
 export type Query = {
   __typename?: 'Query';
   /** Information about the application running. */
@@ -175,15 +317,31 @@ export type Query = {
   /** The current user on the session if they are authenticated. */
   currentUser?: Maybe<User>;
   /** All decks created by the authenticated user. */
-  decks?: Maybe<Array<Deck>>;
+  decks: Array<Deck>;
   /** All factions which a leader, unit or deck can belong to. */
   factions: Array<Faction>;
+  /** A game by its ID. */
+  game: Game;
+  /** The deck selected to be played for the given game. */
+  gameDeck?: Maybe<GameDeck>;
+  /** All games which a user created or is part of. */
+  games: Array<Game>;
   /** All leaders available to build decks with. */
   leaders: Array<Leader>;
   /** The settings configured for the application. */
   settings: Array<Setting>;
   /** All units available to build decks with. */
   units: Array<Unit>;
+};
+
+
+export type QueryGameArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGameDeckArgs = {
+  game: Scalars['ID']['input'];
 };
 
 
@@ -195,6 +353,12 @@ export type QueryLeadersArgs = {
 export type QueryUnitsArgs = {
   deckable?: InputMaybe<Scalars['Boolean']['input']>;
   factions?: InputMaybe<Array<FactionKey>>;
+};
+
+export type Redraw = {
+  __typename?: 'Redraw';
+  from: DeckUnit;
+  to: DeckUnit;
 };
 
 export type Setting = {
@@ -274,7 +438,14 @@ export type AddDeckMutationVariables = Exact<{
 }>;
 
 
-export type AddDeckMutation = { __typename?: 'Mutation', addDeck?: { __typename?: 'Deck', id: string } | null };
+export type AddDeckMutation = { __typename?: 'Mutation', addDeck: { __typename?: 'Deck', id: string, created: any, name: string, faction: { __typename?: 'Faction', key: FactionKey, id: string, name: string, image: string, ability?: string | null, dlc?: { __typename?: 'Dlc', name: string, image: string } | null, stats: { __typename?: 'UnitStats', agile: number, avenger: number, berserker: number, bond: number, decoy: number, horn: number, mardroeme: number, medic: number, morale: number, muster: number, scorch: number, spy: number, weather: number, close: number, ranged: number, siege: number, units: number, specials: number, heroes: number, strengthAverage: number, strengthTotal: number, strengths: number } }, leader: { __typename?: 'Leader', name: string, ability: string, image: string }, stats: { __typename?: 'UnitStats', units: number, specials: number, heroes: number, close: number, ranged: number, siege: number, agile: number, strengthTotal: number, strengthAverage: number } } };
+
+export type AddGameMutationVariables = Exact<{
+  opponentNames: Array<Scalars['String']['input']> | Scalars['String']['input'];
+}>;
+
+
+export type AddGameMutation = { __typename?: 'Mutation', addGame: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type AddUserMutationVariables = Exact<{
   name: Scalars['String']['input'];
@@ -282,27 +453,64 @@ export type AddUserMutationVariables = Exact<{
 }>;
 
 
-export type AddUserMutation = { __typename?: 'Mutation', addUser?: { __typename?: 'User', id: string, name: string } | null };
+export type AddUserMutation = { __typename?: 'Mutation', addUser: { __typename?: 'User', id: string, name: string } };
 
 export type ApplicationQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type ApplicationQuery = { __typename?: 'Query', application: { __typename?: 'Application', build: number, version: any } };
 
+export type CardUnitFragmentFragment = { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } };
+
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, name: string, created: any } | null };
 
+export type DeckFragmentFragment = { __typename?: 'Deck', id: string, created: any, name: string, faction: { __typename?: 'Faction', key: FactionKey, id: string, name: string, image: string, ability?: string | null, dlc?: { __typename?: 'Dlc', name: string, image: string } | null, stats: { __typename?: 'UnitStats', agile: number, avenger: number, berserker: number, bond: number, decoy: number, horn: number, mardroeme: number, medic: number, morale: number, muster: number, scorch: number, spy: number, weather: number, close: number, ranged: number, siege: number, units: number, specials: number, heroes: number, strengthAverage: number, strengthTotal: number, strengths: number } }, leader: { __typename?: 'Leader', name: string, ability: string, image: string }, stats: { __typename?: 'UnitStats', units: number, specials: number, heroes: number, close: number, ranged: number, siege: number, agile: number, strengthTotal: number, strengthAverage: number } };
+
+export type DeckUnitFragmentFragment = { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } };
+
 export type DecksQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type DecksQuery = { __typename?: 'Query', decks?: Array<{ __typename?: 'Deck', id: string, created: any, name: string, faction: { __typename?: 'Faction', key: FactionKey, name: string, image: string, ability?: string | null, stats: { __typename?: 'UnitStats', units: number, specials: number, heroes: number, close: number, ranged: number, siege: number, agile: number, strengthTotal: number } }, leader: { __typename?: 'Leader', name: string, ability: string, image: string }, stats: { __typename?: 'UnitStats', units: number, specials: number, heroes: number, close: number, ranged: number, siege: number, agile: number, strengthTotal: number, strengthAverage: number } }> | null };
+export type DecksQuery = { __typename?: 'Query', decks: Array<{ __typename?: 'Deck', id: string, created: any, name: string, faction: { __typename?: 'Faction', key: FactionKey, id: string, name: string, image: string, ability?: string | null, dlc?: { __typename?: 'Dlc', name: string, image: string } | null, stats: { __typename?: 'UnitStats', agile: number, avenger: number, berserker: number, bond: number, decoy: number, horn: number, mardroeme: number, medic: number, morale: number, muster: number, scorch: number, spy: number, weather: number, close: number, ranged: number, siege: number, units: number, specials: number, heroes: number, strengthAverage: number, strengthTotal: number, strengths: number } }, leader: { __typename?: 'Leader', name: string, ability: string, image: string }, stats: { __typename?: 'UnitStats', units: number, specials: number, heroes: number, close: number, ranged: number, siege: number, agile: number, strengthTotal: number, strengthAverage: number } }> };
+
+export type FactionFragmentFragment = { __typename?: 'Faction', key: FactionKey, id: string, name: string, image: string, ability?: string | null, dlc?: { __typename?: 'Dlc', name: string, image: string } | null, stats: { __typename?: 'UnitStats', agile: number, avenger: number, berserker: number, bond: number, decoy: number, horn: number, mardroeme: number, medic: number, morale: number, muster: number, scorch: number, spy: number, weather: number, close: number, ranged: number, siege: number, units: number, specials: number, heroes: number, strengthAverage: number, strengthTotal: number, strengths: number } };
 
 export type FactionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type FactionsQuery = { __typename?: 'Query', factions: Array<{ __typename?: 'Faction', key: FactionKey, id: string, name: string, image: string, ability?: string | null, dlc?: { __typename?: 'Dlc', name: string, image: string } | null, stats: { __typename?: 'UnitStats', agile: number, avenger: number, berserker: number, bond: number, decoy: number, horn: number, mardroeme: number, medic: number, morale: number, muster: number, scorch: number, spy: number, weather: number, close: number, ranged: number, siege: number, units: number, specials: number, heroes: number, strengthAverage: number, strengthTotal: number, strengths: number } }> };
+
+export type GameQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GameQuery = { __typename?: 'Query', game: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type GameDeckQueryVariables = Exact<{
+  game: Scalars['ID']['input'];
+}>;
+
+
+export type GameDeckQuery = { __typename?: 'Query', gameDeck?: { __typename?: 'GameDeck', discard: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, from?: { __typename?: 'Deck', created: any, id: string, name: string, faction: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string }, leader: { __typename?: 'Leader', ability: string, image: string, name: string } } | null, hand: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, redraws: Array<{ __typename?: 'Redraw', from: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }, to: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } } }>, undrawn: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } | null };
+
+export type GameDeckFragmentFragment = { __typename?: 'GameDeck', discard: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, from?: { __typename?: 'Deck', created: any, id: string, name: string, faction: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string }, leader: { __typename?: 'Leader', ability: string, image: string, name: string } } | null, hand: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, redraws: Array<{ __typename?: 'Redraw', from: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }, to: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } } }>, undrawn: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> };
+
+export type GameFactionFragmentFragment = { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string };
+
+export type GameFragmentFragment = { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, victors: Array<{ __typename?: 'User', id: string, name: string }> };
+
+export type GameLeaderFragmentFragment = { __typename?: 'Leader', ability: string, image: string, name: string };
+
+export type GamePlayerFragmentFragment = { __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } };
+
+export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, victors: Array<{ __typename?: 'User', id: string, name: string }> }> };
 
 export type LeadersQueryVariables = Exact<{
   factions?: InputMaybe<Array<FactionKey> | FactionKey>;
@@ -317,12 +525,35 @@ export type LoginMutationVariables = Exact<{
 }>;
 
 
-export type LoginMutation = { __typename?: 'Mutation', login?: { __typename?: 'User', id: string, name: string, created: any } | null };
+export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'User', id: string, name: string, created: any } };
 
 export type LogoutMutationVariables = Exact<{ [key: string]: never; }>;
 
 
-export type LogoutMutation = { __typename?: 'Mutation', logout?: boolean | null };
+export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
+
+export type ReadyMutationVariables = Exact<{
+  game: Scalars['ID']['input'];
+}>;
+
+
+export type ReadyMutation = { __typename?: 'Mutation', ready: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type RedrawMutationVariables = Exact<{
+  game: Scalars['ID']['input'];
+  unit: Scalars['ID']['input'];
+}>;
+
+
+export type RedrawMutation = { __typename?: 'Mutation', redraw: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } } };
+
+export type SetDeckMutationVariables = Exact<{
+  game: Scalars['ID']['input'];
+  deck: Scalars['ID']['input'];
+}>;
+
+
+export type SetDeckMutation = { __typename?: 'Mutation', setDeck: { __typename?: 'GameDeck', discard: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, from?: { __typename?: 'Deck', created: any, id: string, name: string, faction: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string }, leader: { __typename?: 'Leader', ability: string, image: string, name: string } } | null, hand: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, redraws: Array<{ __typename?: 'Redraw', from: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }, to: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } } }>, undrawn: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } };
 
 export type UnitsQueryVariables = Exact<{
   deckable?: InputMaybe<Scalars['Boolean']['input']>;
@@ -330,16 +561,212 @@ export type UnitsQueryVariables = Exact<{
 }>;
 
 
-export type UnitsQuery = { __typename?: 'Query', units: Array<{ __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', key: EffectKey, name: string, ability: string }> | null, faction: { __typename?: 'Faction', key: FactionKey } }> };
+export type UnitsQuery = { __typename?: 'Query', units: Array<{ __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } }> };
 
-
-export const AddDeckDocument = gql`
-    mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckUnitInput!]!) {
-  addDeck(name: $name, faction: $faction, leader: $leader, units: $units) {
-    id
+export const FactionFragmentFragmentDoc = gql`
+    fragment FactionFragment on Faction {
+  key
+  id
+  name
+  image
+  ability
+  dlc {
+    name
+    image
+  }
+  stats(neutrals: true) {
+    agile
+    avenger
+    berserker
+    bond
+    decoy
+    horn
+    mardroeme
+    medic
+    morale
+    muster
+    scorch
+    spy
+    weather
+    close
+    ranged
+    siege
+    units
+    specials
+    heroes
+    strengthAverage
+    strengthTotal
+    strengths
   }
 }
     `;
+export const DeckFragmentFragmentDoc = gql`
+    fragment DeckFragment on Deck {
+  id
+  created
+  name
+  faction {
+    ...FactionFragment
+  }
+  leader {
+    name
+    ability
+    image
+  }
+  stats(neutrals: true) {
+    units
+    specials
+    heroes
+    close
+    ranged
+    siege
+    agile
+    strengthTotal
+    strengthAverage
+  }
+}
+    ${FactionFragmentFragmentDoc}`;
+export const CardUnitFragmentFragmentDoc = gql`
+    fragment CardUnitFragment on Unit {
+  combats
+  deckable
+  dlc {
+    name
+    image
+    key
+  }
+  effects {
+    ability
+    image
+    key
+    name
+  }
+  faction {
+    image
+    key
+    name
+  }
+  hero
+  id
+  images
+  name
+  quote
+  special
+  strength
+}
+    `;
+export const DeckUnitFragmentFragmentDoc = gql`
+    fragment DeckUnitFragment on DeckUnit {
+  artStyle
+  unit {
+    ...CardUnitFragment
+  }
+}
+    ${CardUnitFragmentFragmentDoc}`;
+export const GameFactionFragmentFragmentDoc = gql`
+    fragment GameFactionFragment on Faction {
+  ability
+  id
+  image
+  key
+  name
+}
+    `;
+export const GameLeaderFragmentFragmentDoc = gql`
+    fragment GameLeaderFragment on Leader {
+  ability
+  image
+  name
+}
+    `;
+export const GameDeckFragmentFragmentDoc = gql`
+    fragment GameDeckFragment on GameDeck {
+  discard {
+    ...DeckUnitFragment
+  }
+  from {
+    created
+    faction {
+      ...GameFactionFragment
+    }
+    id
+    leader {
+      ...GameLeaderFragment
+    }
+    name
+  }
+  hand {
+    ...DeckUnitFragment
+  }
+  redraws {
+    from {
+      ...DeckUnitFragment
+    }
+    to {
+      ...DeckUnitFragment
+    }
+  }
+  undrawn {
+    ...DeckUnitFragment
+  }
+}
+    ${DeckUnitFragmentFragmentDoc}
+${GameFactionFragmentFragmentDoc}
+${GameLeaderFragmentFragmentDoc}`;
+export const GamePlayerFragmentFragmentDoc = gql`
+    fragment GamePlayerFragment on GamePlayer {
+  counts {
+    discard
+    hand
+    undrawn
+  }
+  faction {
+    ...GameFactionFragment
+  }
+  leader {
+    ...GameLeaderFragment
+  }
+  ready
+  rounds {
+    score
+  }
+  user {
+    id
+    name
+  }
+}
+    ${GameFactionFragmentFragmentDoc}
+${GameLeaderFragmentFragmentDoc}`;
+export const GameFragmentFragmentDoc = gql`
+    fragment GameFragment on Game {
+  created
+  creator {
+    id
+    name
+  }
+  id
+  players {
+    ...GamePlayerFragment
+  }
+  round {
+    current
+    maximum
+  }
+  status
+  updated
+  victors {
+    id
+    name
+  }
+}
+    ${GamePlayerFragmentFragmentDoc}`;
+export const AddDeckDocument = gql`
+    mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckUnitInput!]!) {
+  addDeck(name: $name, faction: $faction, leader: $leader, units: $units) {
+    ...DeckFragment
+  }
+}
+    ${DeckFragmentFragmentDoc}`;
 export type AddDeckMutationFn = Apollo.MutationFunction<AddDeckMutation, AddDeckMutationVariables>;
 
 /**
@@ -369,6 +796,39 @@ export function useAddDeckMutation(baseOptions?: Apollo.MutationHookOptions<AddD
 export type AddDeckMutationHookResult = ReturnType<typeof useAddDeckMutation>;
 export type AddDeckMutationResult = Apollo.MutationResult<AddDeckMutation>;
 export type AddDeckMutationOptions = Apollo.BaseMutationOptions<AddDeckMutation, AddDeckMutationVariables>;
+export const AddGameDocument = gql`
+    mutation AddGame($opponentNames: [String!]!) {
+  addGame(opponentNames: $opponentNames) {
+    ...GameFragment
+  }
+}
+    ${GameFragmentFragmentDoc}`;
+export type AddGameMutationFn = Apollo.MutationFunction<AddGameMutation, AddGameMutationVariables>;
+
+/**
+ * __useAddGameMutation__
+ *
+ * To run a mutation, you first call `useAddGameMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddGameMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addGameMutation, { data, loading, error }] = useAddGameMutation({
+ *   variables: {
+ *      opponentNames: // value for 'opponentNames'
+ *   },
+ * });
+ */
+export function useAddGameMutation(baseOptions?: Apollo.MutationHookOptions<AddGameMutation, AddGameMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddGameMutation, AddGameMutationVariables>(AddGameDocument, options);
+      }
+export type AddGameMutationHookResult = ReturnType<typeof useAddGameMutation>;
+export type AddGameMutationResult = Apollo.MutationResult<AddGameMutation>;
+export type AddGameMutationOptions = Apollo.BaseMutationOptions<AddGameMutation, AddGameMutationVariables>;
 export const AddUserDocument = gql`
     mutation AddUser($name: String!, $password: String!) {
   addUser(name: $name, password: $password) {
@@ -488,44 +948,10 @@ export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, Curren
 export const DecksDocument = gql`
     query Decks {
   decks {
-    id
-    created
-    name
-    faction {
-      key
-      name
-      image
-      ability
-      stats(neutrals: true) {
-        units
-        specials
-        heroes
-        close
-        ranged
-        siege
-        agile
-        strengthTotal
-      }
-    }
-    leader {
-      name
-      ability
-      image
-    }
-    stats {
-      units
-      specials
-      heroes
-      close
-      ranged
-      siege
-      agile
-      strengthTotal
-      strengthAverage
-    }
+    ...DeckFragment
   }
 }
-    `;
+    ${DeckFragmentFragmentDoc}`;
 
 /**
  * __useDecksQuery__
@@ -561,42 +987,10 @@ export type DecksQueryResult = Apollo.QueryResult<DecksQuery, DecksQueryVariable
 export const FactionsDocument = gql`
     query Factions {
   factions {
-    key
-    id
-    name
-    image
-    ability
-    dlc {
-      name
-      image
-    }
-    stats(neutrals: true) {
-      agile
-      avenger
-      berserker
-      bond
-      decoy
-      horn
-      mardroeme
-      medic
-      morale
-      muster
-      scorch
-      spy
-      weather
-      close
-      ranged
-      siege
-      units
-      specials
-      heroes
-      strengthAverage
-      strengthTotal
-      strengths
-    }
+    ...FactionFragment
   }
 }
-    `;
+    ${FactionFragmentFragmentDoc}`;
 
 /**
  * __useFactionsQuery__
@@ -629,6 +1023,125 @@ export type FactionsQueryHookResult = ReturnType<typeof useFactionsQuery>;
 export type FactionsLazyQueryHookResult = ReturnType<typeof useFactionsLazyQuery>;
 export type FactionsSuspenseQueryHookResult = ReturnType<typeof useFactionsSuspenseQuery>;
 export type FactionsQueryResult = Apollo.QueryResult<FactionsQuery, FactionsQueryVariables>;
+export const GameDocument = gql`
+    query Game($id: ID!) {
+  game(id: $id) {
+    ...GameFragment
+  }
+}
+    ${GameFragmentFragmentDoc}`;
+
+/**
+ * __useGameQuery__
+ *
+ * To run a query within a React component, call `useGameQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGameQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGameQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGameQuery(baseOptions: Apollo.QueryHookOptions<GameQuery, GameQueryVariables> & ({ variables: GameQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GameQuery, GameQueryVariables>(GameDocument, options);
+      }
+export function useGameLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GameQuery, GameQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GameQuery, GameQueryVariables>(GameDocument, options);
+        }
+export function useGameSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GameQuery, GameQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GameQuery, GameQueryVariables>(GameDocument, options);
+        }
+export type GameQueryHookResult = ReturnType<typeof useGameQuery>;
+export type GameLazyQueryHookResult = ReturnType<typeof useGameLazyQuery>;
+export type GameSuspenseQueryHookResult = ReturnType<typeof useGameSuspenseQuery>;
+export type GameQueryResult = Apollo.QueryResult<GameQuery, GameQueryVariables>;
+export const GameDeckDocument = gql`
+    query GameDeck($game: ID!) {
+  gameDeck(game: $game) {
+    ...GameDeckFragment
+  }
+}
+    ${GameDeckFragmentFragmentDoc}`;
+
+/**
+ * __useGameDeckQuery__
+ *
+ * To run a query within a React component, call `useGameDeckQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGameDeckQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGameDeckQuery({
+ *   variables: {
+ *      game: // value for 'game'
+ *   },
+ * });
+ */
+export function useGameDeckQuery(baseOptions: Apollo.QueryHookOptions<GameDeckQuery, GameDeckQueryVariables> & ({ variables: GameDeckQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GameDeckQuery, GameDeckQueryVariables>(GameDeckDocument, options);
+      }
+export function useGameDeckLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GameDeckQuery, GameDeckQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GameDeckQuery, GameDeckQueryVariables>(GameDeckDocument, options);
+        }
+export function useGameDeckSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GameDeckQuery, GameDeckQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GameDeckQuery, GameDeckQueryVariables>(GameDeckDocument, options);
+        }
+export type GameDeckQueryHookResult = ReturnType<typeof useGameDeckQuery>;
+export type GameDeckLazyQueryHookResult = ReturnType<typeof useGameDeckLazyQuery>;
+export type GameDeckSuspenseQueryHookResult = ReturnType<typeof useGameDeckSuspenseQuery>;
+export type GameDeckQueryResult = Apollo.QueryResult<GameDeckQuery, GameDeckQueryVariables>;
+export const GamesDocument = gql`
+    query Games {
+  games {
+    ...GameFragment
+  }
+}
+    ${GameFragmentFragmentDoc}`;
+
+/**
+ * __useGamesQuery__
+ *
+ * To run a query within a React component, call `useGamesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGamesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGamesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGamesQuery(baseOptions?: Apollo.QueryHookOptions<GamesQuery, GamesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GamesQuery, GamesQueryVariables>(GamesDocument, options);
+      }
+export function useGamesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GamesQuery, GamesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GamesQuery, GamesQueryVariables>(GamesDocument, options);
+        }
+export function useGamesSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GamesQuery, GamesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GamesQuery, GamesQueryVariables>(GamesDocument, options);
+        }
+export type GamesQueryHookResult = ReturnType<typeof useGamesQuery>;
+export type GamesLazyQueryHookResult = ReturnType<typeof useGamesLazyQuery>;
+export type GamesSuspenseQueryHookResult = ReturnType<typeof useGamesSuspenseQuery>;
+export type GamesQueryResult = Apollo.QueryResult<GamesQuery, GamesQueryVariables>;
 export const LeadersDocument = gql`
     query Leaders($factions: [FactionKey!]) {
   leaders(factions: $factions) {
@@ -743,34 +1256,114 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
+export const ReadyDocument = gql`
+    mutation Ready($game: ID!) {
+  ready(game: $game) {
+    ...GameFragment
+  }
+}
+    ${GameFragmentFragmentDoc}`;
+export type ReadyMutationFn = Apollo.MutationFunction<ReadyMutation, ReadyMutationVariables>;
+
+/**
+ * __useReadyMutation__
+ *
+ * To run a mutation, you first call `useReadyMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useReadyMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [readyMutation, { data, loading, error }] = useReadyMutation({
+ *   variables: {
+ *      game: // value for 'game'
+ *   },
+ * });
+ */
+export function useReadyMutation(baseOptions?: Apollo.MutationHookOptions<ReadyMutation, ReadyMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ReadyMutation, ReadyMutationVariables>(ReadyDocument, options);
+      }
+export type ReadyMutationHookResult = ReturnType<typeof useReadyMutation>;
+export type ReadyMutationResult = Apollo.MutationResult<ReadyMutation>;
+export type ReadyMutationOptions = Apollo.BaseMutationOptions<ReadyMutation, ReadyMutationVariables>;
+export const RedrawDocument = gql`
+    mutation Redraw($game: ID!, $unit: ID!) {
+  redraw(game: $game, unit: $unit) {
+    ...DeckUnitFragment
+  }
+}
+    ${DeckUnitFragmentFragmentDoc}`;
+export type RedrawMutationFn = Apollo.MutationFunction<RedrawMutation, RedrawMutationVariables>;
+
+/**
+ * __useRedrawMutation__
+ *
+ * To run a mutation, you first call `useRedrawMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRedrawMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [redrawMutation, { data, loading, error }] = useRedrawMutation({
+ *   variables: {
+ *      game: // value for 'game'
+ *      unit: // value for 'unit'
+ *   },
+ * });
+ */
+export function useRedrawMutation(baseOptions?: Apollo.MutationHookOptions<RedrawMutation, RedrawMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RedrawMutation, RedrawMutationVariables>(RedrawDocument, options);
+      }
+export type RedrawMutationHookResult = ReturnType<typeof useRedrawMutation>;
+export type RedrawMutationResult = Apollo.MutationResult<RedrawMutation>;
+export type RedrawMutationOptions = Apollo.BaseMutationOptions<RedrawMutation, RedrawMutationVariables>;
+export const SetDeckDocument = gql`
+    mutation SetDeck($game: ID!, $deck: ID!) {
+  setDeck(game: $game, deck: $deck) {
+    ...GameDeckFragment
+  }
+}
+    ${GameDeckFragmentFragmentDoc}`;
+export type SetDeckMutationFn = Apollo.MutationFunction<SetDeckMutation, SetDeckMutationVariables>;
+
+/**
+ * __useSetDeckMutation__
+ *
+ * To run a mutation, you first call `useSetDeckMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetDeckMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setDeckMutation, { data, loading, error }] = useSetDeckMutation({
+ *   variables: {
+ *      game: // value for 'game'
+ *      deck: // value for 'deck'
+ *   },
+ * });
+ */
+export function useSetDeckMutation(baseOptions?: Apollo.MutationHookOptions<SetDeckMutation, SetDeckMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SetDeckMutation, SetDeckMutationVariables>(SetDeckDocument, options);
+      }
+export type SetDeckMutationHookResult = ReturnType<typeof useSetDeckMutation>;
+export type SetDeckMutationResult = Apollo.MutationResult<SetDeckMutation>;
+export type SetDeckMutationOptions = Apollo.BaseMutationOptions<SetDeckMutation, SetDeckMutationVariables>;
 export const UnitsDocument = gql`
     query Units($deckable: Boolean, $factions: [FactionKey!]) {
   units(deckable: $deckable, factions: $factions) {
-    combats
-    deckable
-    dlc {
-      name
-      image
-      key
-    }
-    effects {
-      key
-      name
-      ability
-    }
-    faction {
-      key
-    }
-    hero
-    id
-    images
-    name
-    quote
-    special
-    strength
+    ...CardUnitFragment
   }
 }
-    `;
+    ${CardUnitFragmentFragmentDoc}`;
 
 /**
  * __useUnitsQuery__

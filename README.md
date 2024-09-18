@@ -2,14 +2,146 @@
 
 ![build](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent/main/build.json)
 ![coverage](https://img.shields.io/endpoint?url=https://aboe026.github.io/shields.io-badge-results/badge-results/gwent/main/coverage.json)
+[![Common Changelog](https://common-changelog.org/badge.svg)](https://common-changelog.org)
 
 A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
 
-## Prerequisites
+## Containerization
+
+The fastest way to utilize the project is by running it in a containerized environment.
+
+To run the project "locally" (i.e. not in containers) or to develop on the project, see [Running Locally](#running-locally).
+
+Note that all compose commands have equivalent [script](./package.json) targets for node/yarn.
+
+### Prereqs
+
+- [Docker](https://www.docker.com/)
+
+### Build
+
+To build the docker images, run
+
+```sh
+cd compose
+docker compose build
+```
+
+### Up
+
+To bring up the containers for the first time (or if the existing containers have been deleted), run
+
+```sh
+cd compose
+docker compose up -d
+```
+
+### Stop
+
+To stop the running containers, run
+
+```sh
+cd compose
+docker compose stop
+```
+
+This will perserve the containers in a stopped state
+
+### Start
+
+To start containers in a stopped state, run
+
+```sh
+cd compose
+docker compose start
+```
+
+### Down
+
+To delete the containers, run
+
+```sh
+cd compose
+docker compose down -v
+```
+
+This will stop and remove all containers for the project and any data associated with them
+
+## Running Locally
+
+This project can be run with Node.js locally (without containerization).
+
+This is less secure (as it runs HTTP instead of HTTPS) but is easier for development.
+
+### Prereqs
 
 - [NodeJS](https://nodejs.org/)
 - [Yarn](https://yarnpkg.com/)
 - [MongoDB](https://www.mongodb.com/)
+
+### Install
+
+To install dependencies, run
+
+```sh
+yarn install
+```
+
+### Build
+
+To build the source code into transpiled javascript, run
+
+```sh
+yarn build
+```
+
+To remove any previously built code, run
+
+```sh
+yarn clean
+```
+
+### Start
+
+To run code from non-built source code (libraries still need to be [built](#build) first), run
+
+```sh
+yarn start
+```
+
+### Watch
+
+To automatically restart the app on file changes, run
+
+```sh
+yarn watch
+```
+
+### Run
+
+To run transpiled javascript bundles, run:
+
+```sh
+yarn run-built
+```
+
+or directly with
+
+```sh
+yarn node services/api/build/api.js
+CLIENT_DIR=../../libs/client/build yarn node services/ui/build/src/index.js
+```
+
+## Development
+
+In order to develop on the project, ensure the [Install](#install) and [Build](#build-1) steps have been performed.
+
+For quick cycle time on changes, it is recommended to run the project in [Watch](#watch) mode while developing.
+
+### Prereqs
+
+All the [Local Prereqs](#prereqs-1) apply, along with:
+
 - [VSCode](https://code.visualstudio.com/)
 
   - To enable [Editor SDK](https://yarnpkg.com/getting-started/editor-sdks), run
@@ -30,60 +162,7 @@ A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
 
     `Use Workspace Version`
 
-## Install
-
-To install dependencies, run
-
-```sh
-yarn install
-```
-
-## Build
-
-To build the source code into transpiled javascript, run
-
-```sh
-yarn build
-```
-
-To remove any previously built code, run
-
-```sh
-yarn clean
-```
-
-## Start
-
-To run code from non-built source code (libraries still need to be [built](#build) first), run
-
-```sh
-yarn start
-```
-
-## Watch
-
-To automatically restart the app on file changes, run
-
-```sh
-yarn watch
-```
-
-## Run
-
-To run transpiled javascript bundles, run:
-
-```sh
-yarn run-built
-```
-
-or directly with
-
-```sh
-yarn node services/api/build/api.js
-CLIENT_DIR=../../libs/client/build yarn node services/ui/build/src/index.js
-```
-
-## Lint
+### Lint
 
 to check code for programmatic or stylistic problems, run
 
@@ -97,9 +176,9 @@ To automatically fix problems, run
 yarn lint-fix
 ```
 
-## Test
+### Test
 
-### Unit
+#### Unit
 
 To run unit tests, run
 
@@ -119,7 +198,7 @@ To view test code coverage, run
 yarn coverage-view
 ```
 
-### Functional
+#### Functional
 
 Functional tests require a running instance of [MongoDB](https://www.mongodb.com/) they can connect to in order to run tests against a functional database (rather than mocking out responses).
 
@@ -137,7 +216,7 @@ _Note_: To run a specific test, execute
 yarn test-unit -t 'test name'
 ```
 
-### E2E
+#### E2E
 
 To run End-To-End (E2E) tests, make sure the services and libraries are [built](#build), then run
 
@@ -147,13 +226,15 @@ yarn test-e2e
 
 _Note_: Source code for e2e tests must first be built with `yarn build` in `test/e2e`
 
+_Note_: To run a specific test, place a `.only` after the test/fixture
+
 This will start Gwent for you. To only run the tests (without starting Gwent), go to the `test/e2e` directory and run
 
 ```sh
 yarn test
 ```
 
-## Upgrade Dependencies
+### Upgrade Dependencies
 
 To upgrade dependencies, run
 
@@ -165,7 +246,7 @@ then run `yarn install` to apply package updates
 
 _Note_: Might need to [upgrade yarn](#upgrade-yarn) if upgrading TypeScript as it has some dependency on Yarn integrating with it.
 
-## Upgrade Yarn
+### Upgrade Yarn
 
 To upgrade the version of yarn used in the project, run
 
@@ -175,10 +256,28 @@ yarn set version latest
 
 then [install](#install) to have the change picked up.
 
-## ToDo
+### ToDo
 
 A list of things to be done in the future:
 
+- figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
+- add ability to target resolution of neutrals on each type of DeckUnit gameDeck (undrawn, hand, discard, redraws (from/to))
+- Change "ready" mutation to "readyGame"?
+- Remove @map directive for ID types?
+- Figure out why mutation resolvers don't show typescript error when returning Db object instead of resolved object
+- have Graphql context be typed: https://the-guild.dev/graphql/codegen/plugins/typescript/typescript-resolvers#contexttype
+- Switch DeckUnit to be same as Unit but single image instead of array
+  - Have Unit interface with AvailableUnit and DeckUnit implementations
+  - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
+  - change schema input to be just an optional image instead of artStyle
+- carry over username (and password?) when switching between log-in and sign-up
+- more accurately type front-end results based on their return fragments
+  - type Game = GameQuery['game']
+  - this seems to mess up nested objects though :/
+- Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
+- Have "DateTime" on resolver object map to javascript Date object?
+- add Error to returns types for all queries/mutations?
+- Make Combat a type (because of image)
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
@@ -186,19 +285,23 @@ A list of things to be done in the future:
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
 - Change schema.ts to schema.gql
-- Figure out how to do \_id -> id mapping in automated way. Is @map not working correctly?
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
 - Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
+- Fix root "yarn build"
+  - right now it runs "yarn build" in all workspaces simultaneously.
+  - This is a problem because there are explicit dependencies on libraries being built first
+  - Need to have a script generate dependency tree, then perform builds in reverse order
 
-## External Bugs
+### External Bugs
 
 Bugs found in external dependencies that have not been resolved (and require workarounds):
 
-| Description                                                                                     | Workaround                                                                                                                                                                                                                          | Issue Link                                          |
-| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| Webpack cannot reference parent yarn workspace g:ts-node script                                 | Need to list duplicate `ts-node` devDependency in [services/ui/libs/client/package.json](./services/ui/libs/client/package.json)                                                                                                    | https://github.com/TypeStrong/ts-loader/issues/1510 |
-| Webpack cannot use typescript references in webpack.config.ts without first building references | Need to have `yarn g:tsc --build` before webpack commands in [services/ui/libs/client/package.json](./services/ui/libs/client/package.json) `build` script (and have to run `yarn g:rimraf build/src` after webpack build finishes) | https://github.com/webpack/webpack/issues/16324     |
-| Nodemon not restarting on file creation                                                         | Need to run `yarn build` in [services/api](./services/api/) before running `yarn watch` for first time                                                                                                                              | https://github.com/remy/nodemon/issues/2074         |
-| TestCafe not working on TypeScript files                                                        | Need to run `yarn build` on e2e TypeScript files and have TestCafe run using the compiled javascript                                                                                                                                |                                                     |
-| TestCafe image not working with Yarn PnP                                                        | Need to run `yarn build-image` in [test/e2e](./test/e2e/) to build custom docker image to work with Yarn PnP.                                                                                                                       | https://github.com/DevExpress/testcafe/issues/7419  |
+| Description                                                                                     | Workaround                                                                                                                                                                                                                          | Issue Link                                                       |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Webpack cannot reference parent yarn workspace g:ts-node script                                 | Need to list duplicate `ts-node` devDependency in [services/ui/libs/client/package.json](./services/ui/libs/client/package.json)                                                                                                    | https://github.com/TypeStrong/ts-loader/issues/1510              |
+| Webpack cannot use typescript references in webpack.config.ts without first building references | Need to have `yarn g:tsc --build` before webpack commands in [services/ui/libs/client/package.json](./services/ui/libs/client/package.json) `build` script (and have to run `yarn g:rimraf build/src` after webpack build finishes) | https://github.com/webpack/webpack/issues/16324                  |
+| Nodemon not restarting on file creation                                                         | Need to run `yarn build` in [services/api](./services/api/) before running `yarn watch` for first time                                                                                                                              | https://github.com/remy/nodemon/issues/2074                      |
+| TestCafe not working on TypeScript files                                                        | Need to run `yarn build` on e2e TypeScript files and have TestCafe run using the compiled javascript                                                                                                                                |                                                                  |
+| TestCafe image not working with Yarn PnP                                                        | Need to run `yarn build-image` in [test/e2e](./test/e2e/) to build custom docker image to work with Yarn PnP.                                                                                                                       | https://github.com/DevExpress/testcafe/issues/7419               |
+| Line endings LF on Windows for codegen output                                                   | Installed https://www.npmjs.com/package/eol and added as a hook in the [codegen.ts](./libs/graphql-schema/codegen.ts)                                                                                                               | https://github.com/dotansimha/graphql-code-generator/issues/5154 |
