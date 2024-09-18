@@ -875,7 +875,6 @@ function renderRedraw({
                     <div className={HTML_CLASSES.GameDeckRedrawPair}>
                       <UnitGameCard
                         deckUnit={fromCard}
-                        iconSize="30px"
                         cursor={'unset'}
                         setFullUnit={() => {
                           setFullUnit(fromCard)
@@ -888,7 +887,6 @@ function renderRedraw({
                       {index < gameDeck.redraws.length ? (
                         <UnitGameCard
                           deckUnit={toCard}
-                          iconSize="30px"
                           cursor={'unset'}
                           setFullUnit={() => {
                             setFullUnit(toCard)
@@ -1028,7 +1026,6 @@ function renderHand({
               >
                 <UnitGameCard
                   deckUnit={deckUnit}
-                  iconSize="30px"
                   selected={deckUnit.unit.id === cardSelected?.unit.id}
                   setFullUnit={setFullUnit}
                 />

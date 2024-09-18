@@ -13,7 +13,7 @@ import './UnitGameCard.css'
  */
 export default function UnitGameCard({
   deckUnit,
-  iconSize,
+  iconSize = '34px',
   selected,
   cursor = 'pointer',
   setFullUnit,
@@ -58,7 +58,7 @@ export default function UnitGameCard({
 
 interface UnitGameCardProps {
   deckUnit: DeckUnit
-  iconSize: string
+  iconSize?: string
   selected?: boolean
   cursor?: string
   setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
