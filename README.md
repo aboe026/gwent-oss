@@ -270,6 +270,7 @@ A list of things to be done in the future:
   - Have Unit interface with AvailableUnit and DeckUnit implementations
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
   - change schema input to be just an optional image instead of artStyle
+- carry over username (and password?) when switching between log-in and sign-up
 - more accurately type front-end results based on their return fragments
   - type Game = GameQuery['game']
   - this seems to mess up nested objects though :/
