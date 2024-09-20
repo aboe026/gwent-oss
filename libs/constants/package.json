@@ -15,8 +15,8 @@
     "watch": "yarn g:tsc --watch"
   },
   "devDependencies": {
-    "@types/jest": "29.5.12",
+    "@types/jest": "29.5.13",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.1.2"
+    "ts-jest": "29.2.5"
   }
 }
