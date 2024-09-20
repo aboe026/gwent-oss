@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 - 2024-09-20
+
+### Fixed
+
+- Update dependencies (#10) (Adam Boe)
+
 ## 0.4.0 - 2024-09-18
 
 ### Added
