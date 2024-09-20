@@ -224,7 +224,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types
+// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
 async function testGet({ expectedFilter, input }: { expectedFilter: Object; input: GetUnitsInput }) {
   const readSpy = jest.spyOn(UnitStore as any, 'read').mockResolvedValue([])
 

@@ -31,7 +31,7 @@ export { useUserContext }
  */
 export default function App() {
   const { pathname } = useLocation()
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [reAuthFuncs, setReAuthFuncs] = useState<Function[]>([])
   const [preLoginPath] = useState(pathname === ROUTES.Logout.path ? ROUTES.Home.path : pathname)
   const { loading: currentUserLoading, data: currentUserData } = useCurrentUserQuery({
@@ -90,7 +90,7 @@ export default function App() {
   return (
     <ApolloConsumer>
       {(client: ApolloClient<object>) => {
-        // eslint-disable-next-line @typescript-eslint/ban-types
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
         function checkAuth(error: ApolloError | undefined, callbackAfterReauth?: Function) {
           const resolvedError = getApolloError(error)
           if (resolvedError.includes(NOT_AUTHENTICATED_MESSAGE)) {
@@ -143,6 +143,6 @@ export default function App() {
 
 type UserContextType = {
   user: User | undefined | null
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
 }
