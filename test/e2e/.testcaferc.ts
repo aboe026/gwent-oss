@@ -9,8 +9,8 @@ const profiler = new DbProfiler({
 })
 
 const config: any = {
-  browsers: ['edge'],
-  concurrency: 2,
+  browsers: [env.BROWSER],
+  concurrency: env.CONCURRENCY,
   hooks: {
     testRun: {
       before: async (ctx: any) => {

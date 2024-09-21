@@ -13,9 +13,18 @@ export default getEnv({
       desc: 'The URL the Gwent website is running on',
       default: 'http://localhost:3000',
     }),
+    BROWSER: str({
+      desc: 'The browser to run tests against.',
+      choices: ['chrome', 'edge', 'firefox', 'safari'],
+      default: 'edge',
+    }),
     BUILD: num({
       desc: 'The build number of the application running',
       default: 0,
+    }),
+    CONCURRENCY: num({
+      desc: 'The number of e2e tests to run simultaneously.',
+      default: 2,
     }),
     MONGO_DB: str({
       desc: 'The name of the MongoDB database to interact with',
