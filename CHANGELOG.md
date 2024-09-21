@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0 - 2024-09-21
+
+### Added
+
+- E2E configuration via environment variables (#11) (Adam Boe)
+
 ## 0.4.1 - 2024-09-20
 
 ### Fixed
