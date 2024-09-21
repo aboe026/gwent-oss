@@ -3711,7 +3711,7 @@ __metadata:
     jest-environment-jsdom: "npm:29.7.0"
     jest-junit: "npm:16.0.0"
     nodemon: "npm:3.1.6"
-    npm-groovy-lint: "npm:15.0.2"
+    npm-groovy-lint: "npm:15.0.0"
     npm-run-all: "npm:4.1.5"
     open: "npm:8.4.2"
     prettier: "npm:2.8.8"
@@ -10448,7 +10448,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"java-caller@npm:^4.1.1":
+"java-caller@npm:^4.0.0":
   version: 4.1.1
   resolution: "java-caller@npm:4.1.1"
   dependencies:
@@ -12237,9 +12237,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"npm-groovy-lint@npm:15.0.2":
-  version: 15.0.2
-  resolution: "npm-groovy-lint@npm:15.0.2"
+"npm-groovy-lint@npm:15.0.0":
+  version: 15.0.0
+  resolution: "npm-groovy-lint@npm:15.0.0"
   dependencies:
     ansi-colors: "npm:^4.1.1"
     axios: "npm:^1.6.2"
@@ -12252,7 +12252,7 @@ __metadata:
     fs-extra: "npm:^11.0.0"
     glob: "npm:^11.0.0"
     import-fresh: "npm:^3.2.1"
-    java-caller: "npm:^4.1.1"
+    java-caller: "npm:^4.0.0"
     js-yaml: "npm:^4.1.0"
     node-sarif-builder: "npm:^3.0.0"
     optionator: "npm:^0.9.0"
@@ -12260,7 +12260,7 @@ __metadata:
     uuid: "npm:^10.0.0"
   bin:
     npm-groovy-lint: lib/index.js
-  checksum: 10/d441c82bc7869b8d688701de7e6d316a23546aae98bfc78cca156f6dfd73dd76f6efad21abeb7d99ad4d7b443efd77ffb24253523fba128109f74023672cb60b
+  checksum: 10/a51b731c457c9205619b598a867ee7991ffc270c88c7a81d43cbea892cc0478d448f010de0ec2679ad739a705b1f27270f39a6b2282f05d42e9e76f7155152a6
   languageName: node
   linkType: hard
 
