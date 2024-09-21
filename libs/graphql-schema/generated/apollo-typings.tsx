@@ -896,8 +896,8 @@ export function useApplicationLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<ApplicationQuery, ApplicationQueryVariables>(ApplicationDocument, options);
         }
-export function useApplicationSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<ApplicationQuery, ApplicationQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
+export function useApplicationSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ApplicationQuery, ApplicationQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return Apollo.useSuspenseQuery<ApplicationQuery, ApplicationQueryVariables>(ApplicationDocument, options);
         }
 export type ApplicationQueryHookResult = ReturnType<typeof useApplicationQuery>;
@@ -937,8 +937,8 @@ export function useCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOption
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<CurrentUserQuery, CurrentUserQueryVariables>(CurrentUserDocument, options);
         }
-export function useCurrentUserSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<CurrentUserQuery, CurrentUserQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
+export function useCurrentUserSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CurrentUserQuery, CurrentUserQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return Apollo.useSuspenseQuery<CurrentUserQuery, CurrentUserQueryVariables>(CurrentUserDocument, options);
         }
 export type CurrentUserQueryHookResult = ReturnType<typeof useCurrentUserQuery>;
@@ -976,8 +976,8 @@ export function useDecksLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Deck
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<DecksQuery, DecksQueryVariables>(DecksDocument, options);
         }
-export function useDecksSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<DecksQuery, DecksQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
+export function useDecksSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<DecksQuery, DecksQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return Apollo.useSuspenseQuery<DecksQuery, DecksQueryVariables>(DecksDocument, options);
         }
 export type DecksQueryHookResult = ReturnType<typeof useDecksQuery>;
@@ -1015,8 +1015,8 @@ export function useFactionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<F
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<FactionsQuery, FactionsQueryVariables>(FactionsDocument, options);
         }
-export function useFactionsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<FactionsQuery, FactionsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
+export function useFactionsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<FactionsQuery, FactionsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return Apollo.useSuspenseQuery<FactionsQuery, FactionsQueryVariables>(FactionsDocument, options);
         }
 export type FactionsQueryHookResult = ReturnType<typeof useFactionsQuery>;
@@ -1055,8 +1055,8 @@ export function useGameLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GameQ
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GameQuery, GameQueryVariables>(GameDocument, options);
         }
-export function useGameSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GameQuery, GameQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
+export function useGameSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GameQuery, GameQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return Apollo.useSuspenseQuery<GameQuery, GameQueryVariables>(GameDocument, options);
         }
 export type GameQueryHookResult = ReturnType<typeof useGameQuery>;
@@ -1095,8 +1095,8 @@ export function useGameDeckLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<G
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GameDeckQuery, GameDeckQueryVariables>(GameDeckDocument, options);
         }
-export function useGameDeckSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GameDeckQuery, GameDeckQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
+export function useGameDeckSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GameDeckQuery, GameDeckQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return Apollo.useSuspenseQuery<GameDeckQuery, GameDeckQueryVariables>(GameDeckDocument, options);
         }
 export type GameDeckQueryHookResult = ReturnType<typeof useGameDeckQuery>;
@@ -1134,8 +1134,8 @@ export function useGamesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Game
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<GamesQuery, GamesQueryVariables>(GamesDocument, options);
         }
-export function useGamesSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<GamesQuery, GamesQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
+export function useGamesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GamesQuery, GamesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return Apollo.useSuspenseQuery<GamesQuery, GamesQueryVariables>(GamesDocument, options);
         }
 export type GamesQueryHookResult = ReturnType<typeof useGamesQuery>;
@@ -1182,8 +1182,8 @@ export function useLeadersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Le
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<LeadersQuery, LeadersQueryVariables>(LeadersDocument, options);
         }
-export function useLeadersSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<LeadersQuery, LeadersQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
+export function useLeadersSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<LeadersQuery, LeadersQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return Apollo.useSuspenseQuery<LeadersQuery, LeadersQueryVariables>(LeadersDocument, options);
         }
 export type LeadersQueryHookResult = ReturnType<typeof useLeadersQuery>;
@@ -1390,8 +1390,8 @@ export function useUnitsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Unit
           const options = {...defaultOptions, ...baseOptions}
           return Apollo.useLazyQuery<UnitsQuery, UnitsQueryVariables>(UnitsDocument, options);
         }
-export function useUnitsSuspenseQuery(baseOptions?: Apollo.SuspenseQueryHookOptions<UnitsQuery, UnitsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
+export function useUnitsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<UnitsQuery, UnitsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
           return Apollo.useSuspenseQuery<UnitsQuery, UnitsQueryVariables>(UnitsDocument, options);
         }
 export type UnitsQueryHookResult = ReturnType<typeof useUnitsQuery>;

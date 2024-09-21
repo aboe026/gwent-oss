@@ -27,6 +27,7 @@ export default function validateDeck({ faction, deckUnits }: { faction: FactionK
         validatePositiveInteger(deckUnit.artStyle, {
           allowZero: false,
         })
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (err) {
         errors.push(
           `Invalid artStyle "${deckUnit.artStyle}" for unit "${deckUnit.unit.id}", must be positive integer greater than zero.`

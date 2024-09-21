@@ -50,7 +50,7 @@ export async function retryCheckingAuth({
   checkAuth,
   method,
 }: {
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
   method: () => Promise<any> // eslint-disable-line @typescript-eslint/no-explicit-any
 }) {

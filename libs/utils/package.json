@@ -1,6 +1,6 @@
 {
   "name": "@gwent/utils",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": "Adam Boe",
   "description": "Utility functions",
   "main": "build/src/index.js",
@@ -18,9 +18,9 @@
     "@gwent/graphql-schema": "workspace:*"
   },
   "devDependencies": {
-    "@types/jest": "29.5.12",
-    "@types/node": "20.12.7",
+    "@types/jest": "29.5.13",
+    "@types/node": "22.5.5",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.1.2"
+    "ts-jest": "29.2.5"
   }
 }

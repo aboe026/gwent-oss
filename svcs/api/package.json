@@ -1,6 +1,6 @@
 {
   "name": "@gwent/api",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "author": "Adam Boe",
   "description": "GraphQL backend to play Gwent.",
   "main": "src/index.ts",
@@ -20,27 +20,27 @@
     "watch-tsc": "yarn build --watch"
   },
   "dependencies": {
-    "@apollo/server": "4.10.4",
-    "@graphql-tools/schema": "10.0.3",
+    "@apollo/server": "4.11.0",
+    "@graphql-tools/schema": "10.0.6",
     "@gwent/constants": "workspace:*",
     "@gwent/env": "workspace:*",
     "@gwent/graphql-schema": "workspace:*",
     "@gwent/utils": "workspace:*",
     "@gwent/validators": "workspace:*",
     "basic-auth": "2.0.1",
-    "body-parser": "1.20.2",
+    "body-parser": "1.20.3",
     "connect-mongo": "5.1.0",
     "connection-string": "4.4.0",
     "cors": "2.8.5",
-    "express": "4.19.2",
+    "express": "4.21.0",
     "express-session": "1.18.0",
     "figlet": "1.7.0",
     "fs-extra": "11.2.0",
-    "graphql": "16.8.1",
+    "graphql": "16.9.0",
     "graphql-middleware": "6.1.35",
     "graphql-shield": "7.6.5",
     "log4js": "6.9.1",
-    "mongodb": "6.5.0"
+    "mongodb": "6.9.0"
   },
   "devDependencies": {
     "@types/basic-auth": "1.1.8",
@@ -50,9 +50,9 @@
     "@types/express-session": "1.18.0",
     "@types/figlet": "1.5.8",
     "@types/fs-extra": "11.0.4",
-    "@types/jest": "29.5.12",
+    "@types/jest": "29.5.13",
     "@types/semver": "7.5.8",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.1.2"
+    "ts-jest": "29.2.5"
   }
 }

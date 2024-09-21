@@ -26,6 +26,6 @@ export default function WholeScreenDialog({ children, onClose, style }: WholeScr
 }
 
 interface WholeScreenDialogProps extends PropsWithChildren {
-  onClose?: Function // eslint-disable-line @typescript-eslint/ban-types
+  onClose?: Function // eslint-disable-line @typescript-eslint/no-unsafe-function-type
   style?: React.CSSProperties
 }

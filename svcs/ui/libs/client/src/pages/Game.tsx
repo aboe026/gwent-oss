@@ -233,7 +233,7 @@ function renderNewGame({
   user,
 }: {
   addGame: AddGameProps
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
   navigate: NavigateFunction
   user: User | null | undefined
@@ -316,7 +316,7 @@ function renderExistingGame({
   fullUnit,
   setFullUnit,
 }: {
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
   deckListOpen: boolean
   setDeckListOpen: Dispatch<SetStateAction<boolean>>
@@ -737,7 +737,7 @@ function renderCenter({
   gameDeck: GameDeck | undefined
   self: GamePlayer
   cardSelected: DeckUnit | undefined
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
   redraw: RedrawProps
   ready: ReadyProps
@@ -840,7 +840,7 @@ function renderRedraw({
   game: Game
   gameDeck: GameDeck | undefined
   cardSelected: DeckUnit | undefined
-  // eslint-disable-next-line @typescript-eslint/ban-types
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
   redraw: RedrawProps
   ready: ReadyProps
