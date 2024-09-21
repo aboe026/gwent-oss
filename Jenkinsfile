@@ -383,7 +383,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                 -e BUILD=${env.BUILD_ID} \
                 -e WEBGL_UNSUPPORTED=${browser == 'firefox' ? 'true' : 'false'} \
                 -e NODE_TLS_REJECT_UNAUTHORIZED=0 \
-                -e CONCURRENCY=4 \
+                -e CONCURRENCY=8 \
                 -i testcafe/testcafe:${testcafeImageTag} \
                     \'${browser} --ignore-certificate-errors\' \
                     build/src/tests \
