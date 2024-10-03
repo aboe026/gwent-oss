@@ -11,7 +11,7 @@
     "build": "yarn workspaces foreach --worktree --parallel --interlaced run build",
     "build-images": "yarn workspaces foreach --worktree --parallel --interlaced run build-image",
     "build-libs": "yarn build-subset libs",
-    "build-subset": "yarn g:tsx scripts/build-subset.mts",
+    "build-subset": "yarn g:ts-node scripts/build-subset.mts",
     "clean": "npm-run-all clean-children clean-root",
     "clean-children": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent/core run clean",
     "clean-root": "rimraf coverage test-results",
@@ -27,7 +27,7 @@
     "lint-groovy-fix": "yarn lint-groovy --fix",
     "lint-node": "yarn g:lint",
     "lint-node-fix": "yarn g:lint-fix",
-    "g:coverage-view": "yarn g:tsx $PROJECT_CWD/scripts/open-in-browser.ts $INIT_CWD/coverage/unit/lcov-report/index.html",
+    "g:coverage-view": "yarn g:ts-node $PROJECT_CWD/scripts/open-in-browser.ts $INIT_CWD/coverage/unit/lcov-report/index.html",
     "g:eslint": "cd $INIT_CWD && eslint --config $PROJECT_CWD/.eslintrc.json",
     "g:jest": "cd $INIT_CWD && yarn node --experimental-vm-modules $(yarn bin jest) --config $PROJECT_CWD/jest.config.ts --rootDir=$INIT_CWD",
     "g:lint": "yarn g:eslint $INIT_CWD && yarn g:prettier --check $INIT_CWD",
@@ -36,7 +36,7 @@
     "g:npm-run-all": "cd $INIT_CWD && npm-run-all",
     "g:prettier": "cd $INIT_CWD && prettier --config $PROJECT_CWD/.prettierrc.json --ignore-path $PROJECT_CWD/.prettierignore",
     "g:rimraf": "cd $INIT_CWD && rimraf",
-    "g:tsx": "cd $INIT_CWD && tsx",
+    "g:ts-node": "cd $INIT_CWD && yarn node --no-warnings=ExperimentalWarning --loader ts-node/esm",
     "g:tsc": "cd $INIT_CWD && tsc",
     "run-built": "yarn workspaces foreach --worktree --parallel --interlaced run run-built",
     "start": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent/e2e-tests run start",
@@ -44,7 +44,7 @@
     "test-e2e": "cd test/e2e && yarn start",
     "test-func": "yarn g:jest --test-type=func --runInBand",
     "test-unit": "yarn g:jest --test-type=unit",
-    "upgrade-dependencies": "yarn g:tsx scripts/upgrade-dependencies",
+    "upgrade-dependencies": "yarn g:ts-node scripts/upgrade-dependencies",
     "watch": "yarn workspaces foreach --worktree --parallel --interlaced run watch"
   },
   "devDependencies": {
@@ -69,7 +69,7 @@
     "replace-in-file": "7.2.0",
     "rimraf": "6.0.1",
     "ts-jest": "29.2.5",
-    "tsx": "4.19.1",
+    "ts-node": "10.9.2",
     "typescript": "5.6.2"
   },
   "workspaces": [

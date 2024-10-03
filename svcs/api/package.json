@@ -13,11 +13,11 @@
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
     "run-built": "yarn node build/src/index.mjs",
-    "start": "yarn g:tsx src/index.mts",
+    "start": "yarn g:ts-node src/index.mts",
     "test-func": "yarn g:jest --test-type=func --runInBand",
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",
-    "watch-built": "yarn g:tsx scripts/wait-for-initial-build.mts && yarn g:nodemon --watch build --exec 'yarn node build/src/index.mjs'",
+    "watch-built": "yarn g:ts-node scripts/wait-for-initial-build.mts && yarn g:nodemon --watch build --exec 'yarn node build/src/index.mjs'",
     "watch-tsc": "yarn build --watch"
   },
   "dependencies": {

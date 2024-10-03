@@ -1,9 +1,9 @@
 import type { Configuration } from 'webpack'
 import CopyWebpackPlugin from 'copy-webpack-plugin'
+import fs from 'fs/promises'
 import HtmlWebpackPlugin from 'html-webpack-plugin'
 import path from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
-import WebpackShellPluginNext from 'webpack-shell-plugin-next'
 
 import { NODE_ENV } from '@gwent/env'
 
@@ -55,19 +55,15 @@ export default (env: any, argv: any) => {
       new CopyWebpackPlugin({
         patterns: [{ from: 'libs/env/build/src' }],
       }),
-      new WebpackShellPluginNext({
-        logging: false,
-        onBuildEnd: {
-          scripts: ['yarn g:rimraf build/src'],
-          blocking: false,
-          parallel: true,
+      {
+        apply: (compiler) => {
+          compiler.hooks.afterEmit.tap('AfterEmitPlugin', async (compilation) => {
+            await fs.rm(path.join(import.meta.dirname, 'build', 'src'), {
+              recursive: true,
+            })
+          })
         },
-        onDoneWatch: {
-          scripts: ['yarn g:rimraf build/src'],
-          blocking: false,
-          parallel: true,
-        },
-      }),
+      },
     ],
   }
   return config

@@ -15,7 +15,7 @@
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
     "run-built": "cross-env CLIENT_DIR=../../libs/client/build IMAGES_DIR=../../images yarn node build/src/index.mjs",
-    "start": "yarn g:tsx src/index.mts",
+    "start": "yarn g:ts-node src/index.mts",
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-client watch-built",
     "watch-built": "cross-env CLIENT_DIR=../../libs/client/build IMAGES_DIR=../../images yarn g:nodemon --watch build --watch libs/client/build/dynamic-env.js --exec 'yarn node build/src/index.mjs'",

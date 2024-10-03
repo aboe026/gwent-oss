@@ -7,7 +7,7 @@
   "main": "build/src/index.mjs",
   "types": "build/src/index.d.mts",
   "scripts": {
-    "analyze": "yarn g:tsx scripts/analyze.ts",
+    "analyze": "yarn g:ts-node scripts/analyze.ts",
     "build": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
     "lint": "yarn g:lint",

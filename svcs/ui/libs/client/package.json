@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "yarn g:npm-run-all --sequential build-node build-webpack",
-    "build-webpack": "cross-env NODE_OPTIONS='--import=tsx' webpack --config webpack.config.mts --mode production",
+    "build-webpack": "cross-env NODE_OPTIONS='--loader ts-node/esm' webpack --config webpack.config.mts --mode production",
     "build-node": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo && yarn workspaces foreach --worktree --parallel --interlaced run clean",
     "coverage-view": "yarn g:coverage-view",
@@ -47,8 +47,7 @@
     "ts-loader": "9.5.1",
     "tsx": "4.19.1",
     "webpack": "5.94.0",
-    "webpack-cli": "5.1.4",
-    "webpack-shell-plugin-next": "2.3.2"
+    "webpack-cli": "5.1.4"
   },
   "workspaces": [
     "libs/*"
