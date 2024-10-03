@@ -3,8 +3,9 @@
   "version": "0.5.0",
   "author": "Adam Boe",
   "description": "Parse process.env",
-  "main": "build/src/env.js",
-  "types": "build/src/env.d.ts",
+  "type": "module",
+  "main": "build/src/env.mjs",
+  "types": "build/src/env.d.mts",
   "scripts": {
     "build": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo",

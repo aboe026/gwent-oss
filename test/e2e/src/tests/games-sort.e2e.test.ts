@@ -4,7 +4,7 @@ import ApiClient from '../util/api-client'
 import { FactionKey, GamePlayer } from '@gwent/graphql-schema/resolver-typings'
 import GamesPage, { GameInList } from '../page-objects/games-page'
 import LoginPage from '../page-objects/login-page'
-import { SORT_FIELD } from '@gwent/graphql-schema/games-filter'
+import { SORT_FIELD } from '@gwent/graphql-schema/games-filter.mjs'
 
 fixture('Games Sort')
   .page(GamesPage.getUrl())

@@ -1,7 +1,7 @@
 import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
-import { FILTER_FIELD, SORT_FIELD } from '@gwent/graphql-schema/games-filter'
+import { FILTER_FIELD, SORT_FIELD } from '@gwent/graphql-schema/games-filter.mjs'
 import { formatDay, formatTime } from '@gwent/utils'
 import { GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'

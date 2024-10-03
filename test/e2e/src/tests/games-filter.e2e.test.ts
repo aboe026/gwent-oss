@@ -2,7 +2,7 @@ import { t } from 'testcafe'
 
 import ApiClient from '../util/api-client'
 import { FactionKey, GamePlayer } from '@gwent/graphql-schema/resolver-typings'
-import { FILTER_FIELD } from '@gwent/graphql-schema/games-filter'
+import { FILTER_FIELD } from '@gwent/graphql-schema/games-filter.mjs'
 import GamesPage, { GameInList } from '../page-objects/games-page'
 import LoginPage from '../page-objects/login-page'
 

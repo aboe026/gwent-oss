@@ -1,12 +1,12 @@
 import { CgChevronLeft, CgChevronRight } from 'react-icons/cg'
 
-import CloseButton from './CloseButton'
+import CloseButton from './CloseButton.jsx'
 import { DeckUnit, EffectKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { getCombatImage, getWeatherImage, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
-import { Key, useKeyDown } from '../util/keyboard-listener'
-import StrengthCircle from './StrengthCircle'
-import WholeScreenDialog from './WholeScreenDialog'
+import { Key, useKeyDown } from '../util/keyboard-listener.mjs'
+import StrengthCircle from './StrengthCircle.jsx'
+import WholeScreenDialog from './WholeScreenDialog.jsx'
 import './UnitFullCard.css'
 
 /**

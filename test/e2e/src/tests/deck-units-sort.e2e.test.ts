@@ -4,7 +4,7 @@ import DeckPage from '../page-objects/deck-page'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
-import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
+import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter.mjs'
 
 fixture('Deck Units Sort').page(DeckPage.getUrl())
 

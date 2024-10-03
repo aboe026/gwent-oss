@@ -3,12 +3,13 @@
   "version": "0.5.0",
   "author": "Adam Boe",
   "description": "Schema definitions for GraphQL API",
-  "main": "build/src/index.js",
-  "types": "build/src/index.d.ts",
+  "type": "module",
+  "main": "build/src/index.mjs",
+  "types": "build/src/index.d.mts",
   "typesVersions": {
     "*": {
-      "build/src/index.d.ts": [
-        "build/src/index.d.ts"
+      "build/src/index.d.mts": [
+        "build/src/index.d.mts"
       ],
       "*": [
         "build/generated/*",
@@ -17,23 +18,24 @@
     }
   },
   "exports": {
-    ".": "./build/src/index.js",
-    "./deck-filter": "./build/src/deck-filter.js",
-    "./decks-filter": "./build/src/decks-filter.js",
-    "./games-filter": "./build/src/games-filter.js",
+    ".": "./build/src/index.mjs",
+    "./deck-filter": "./build/src/deck-filter.mjs",
+    "./decks-filter": "./build/src/decks-filter.mjs",
+    "./games-filter": "./build/src/games-filter.mjs",
     "./apollo-typings": "./build/generated/apollo-typings.js",
-    "./database-typings": "./build/generated/database-typings.js",
-    "./resolver-typings": "./build/generated/resolver-typings.js"
+    "./database-typings": "./build/generated/database-typings.mjs",
+    "./resolver-typings": "./build/generated/resolver-typings.mjs"
   },
   "scripts": {
     "build": "yarn g:npm-run-all --sequential build-codegen build-node",
-    "build-codegen": "graphql-codegen --config codegen.ts",
+    "build-codegen": "graphql-codegen --config codegen.mts",
     "build-node": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo",
-    "convert-eol": "yarn g:ts-node scripts/convert-eol.ts",
+    "convert-eol": "yarn g:tsx scripts/convert-eol.mts",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
+    "rename-ts-to-mts": "yarn g:tsx scripts/rename-ts-to-mts.mts",
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-codegen watch-node",
     "watch-codegen": "yarn build-codegen --watch",

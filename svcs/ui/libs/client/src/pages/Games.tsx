@@ -2,8 +2,8 @@ import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye } from 'react-icons/cg
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 
-import { Button } from '../util/keyboard-listener'
-import Centered from '../components/Centered'
+import { Button } from '../util/keyboard-listener.mjs'
+import Centered from '../components/Centered.jsx'
 import { FactionKey, Game, GameStatus, useGamesQuery } from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
@@ -14,11 +14,11 @@ import {
   SORT_ORDER,
 } from '@gwent/graphql-schema/games-filter'
 import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
-import { getApolloError } from '../util/error-util'
+import { getApolloError } from '../util/error-util.mjs'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
-import LoadingSpinner from '../components/LoadingSpinner'
-import { useTitle } from '../components/TabTitle'
-import { useUserContext } from '../App'
+import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import { useTitle } from '../components/TabTitle.jsx'
+import { useUserContext } from '../App.jsx'
 import './Games.css'
 
 /**

@@ -39,4 +39,4 @@ WORKDIR ${APP_DIR}/svcs/api
 RUN yarn workspaces focus --production
 
 EXPOSE 4000
-CMD ["yarn", "node", "build/src/index.js"]
+CMD ["yarn", "node", "build/src/index.mjs"]

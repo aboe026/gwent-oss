@@ -1,9 +1,9 @@
-import Centered from '../components/Centered'
-import { getApolloError } from '../util/error-util'
+import Centered from '../components/Centered.jsx'
+import { getApolloError } from '../util/error-util.mjs'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import LoadingSpinner from '../components/LoadingSpinner'
+import LoadingSpinner from '../components/LoadingSpinner.jsx'
 import { useApplicationQuery } from '@gwent/graphql-schema/apollo-typings'
-import { useTitle } from '../components/TabTitle'
+import { useTitle } from '../components/TabTitle.jsx'
 import './About.css'
 
 /**

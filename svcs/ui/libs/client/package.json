@@ -3,9 +3,11 @@
   "version": "0.5.0",
   "author": "Adam Boe",
   "description": "React bundle for Gwent website",
-  "main": "src/index.ts",
+  "type": "module",
   "scripts": {
-    "build": "yarn g:tsc --build && webpack --mode=production",
+    "build": "yarn g:npm-run-all --sequential build-node build-webpack",
+    "build-webpack": "cross-env NODE_OPTIONS='--import=tsx' webpack --config webpack.config.mts --mode production",
+    "build-node": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo && yarn workspaces foreach --worktree --parallel --interlaced run clean",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
@@ -13,7 +15,7 @@
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-webpack",
     "watch-tsc": "yarn g:tsc --build --watch",
-    "watch-webpack": "webpack --watch --progress"
+    "watch-webpack": "cross-env NODE_OPTIONS='--import=tsx' webpack --config webpack.config.mts --watch --progress"
   },
   "dependencies": {
     "@apollo/client": "3.11.8",
@@ -36,13 +38,14 @@
     "@types/react-dom": "18.3.0",
     "@types/react-router-dom": "5.3.3",
     "copy-webpack-plugin": "12.0.2",
+    "cross-env": "7.0.3",
     "css-loader": "7.1.2",
     "html-webpack-plugin": "5.6.0",
     "jest-junit": "16.0.0",
     "mini-css-extract-plugin": "2.9.1",
     "ts-jest": "29.2.5",
     "ts-loader": "9.5.1",
-    "ts-node": "10.9.2",
+    "tsx": "4.19.1",
     "webpack": "5.94.0",
     "webpack-cli": "5.1.4",
     "webpack-shell-plugin-next": "2.3.2"

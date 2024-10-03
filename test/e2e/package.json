@@ -3,6 +3,7 @@
   "version": "0.5.0",
   "author": "Adam Boe",
   "description": "E2E browser testing for Gwent website",
+  "type": "module",
   "scripts": {
     "build": "yarn g:tsc --build",
     "build-image": "docker build --tag=testcafe/testcafe:${IMAGE_TAG:-yarn-pnp} --progress=plain ${BUILD_OPTIONS:-} .",

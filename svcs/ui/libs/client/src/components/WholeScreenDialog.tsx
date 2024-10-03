@@ -1,6 +1,6 @@
 import { PropsWithChildren } from 'react'
 
-import Centered from './Centered'
+import Centered from './Centered.jsx'
 
 /**
  * A dialog which occupies the entire screen, obscuring everything behind it.

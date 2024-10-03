@@ -1,0 +1,23 @@
+import env from './env.mjs' // import env first so any dependent packages/code get correct/resolved environment variables
+
+import log4js from 'log4js'
+
+import Api from './api.mjs'
+
+log4js.configure({
+  appenders: { out: { type: 'stdout' } },
+  categories: { default: { appenders: ['out'], level: env().LOG_LEVEL } },
+})
+const logger = log4js.getLogger('index')
+
+/**
+ * The entrypoint of the API Server.
+ */
+;(async () => {
+  try {
+    await Api.run()
+  } catch (err) {
+    logger.fatal(err)
+    process.exitCode = 1
+  }
+})()

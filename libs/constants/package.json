@@ -3,8 +3,9 @@
   "version": "0.5.0",
   "author": "Adam Boe",
   "description": "Defined constants to share between microservices",
-  "main": "build/src/constants.js",
-  "types": "build/src/constants.d.ts",
+  "type": "module",
+  "main": "build/src/constants.mjs",
+  "types": "build/src/constants.d.mts",
   "scripts": {
     "build": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo",

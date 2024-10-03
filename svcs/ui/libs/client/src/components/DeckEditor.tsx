@@ -1,7 +1,7 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useState } from 'react'
 
-import Centered from '../components/Centered'
-import CloseButton from './CloseButton'
+import Centered from '../components/Centered.jsx'
+import CloseButton from './CloseButton.jsx'
 import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 import {
   DecksQuery,
@@ -18,7 +18,7 @@ import {
   Faction,
   Deck,
 } from '@gwent/graphql-schema/apollo-typings'
-import DlcTag from '../components/DlcTag'
+import DlcTag from '../components/DlcTag.jsx'
 import {
   FILTERS,
   FILTER_FIELD,
@@ -27,19 +27,19 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/deck-filter'
-import { getApolloError } from '../util/error-util'
+import { getApolloError } from '../util/error-util.mjs'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import LoadingBar from '../components/LoadingBar'
-import LoadingSpinner from '../components/LoadingSpinner'
-import ProgressBar from '../components/ProgressBar'
+import LoadingBar from '../components/LoadingBar.jsx'
+import LoadingSpinner from '../components/LoadingSpinner.jsx'
+import ProgressBar from '../components/ProgressBar.jsx'
 import { sortObjectArray } from '@gwent/utils'
-import UnitDeckCard from './UnitDeckCard'
-import UnitFullCard from './UnitFullCard'
-import UnitsHeader from '../components/UnitsHeader'
-import UnitsStats from '../components/UnitsStats'
-import { useUserContext } from '../App'
+import UnitDeckCard from './UnitDeckCard.jsx'
+import UnitFullCard from './UnitFullCard.jsx'
+import UnitsHeader from '../components/UnitsHeader.jsx'
+import UnitsStats from '../components/UnitsStats.jsx'
+import { useUserContext } from '../App.jsx'
 import { validateDeck } from '@gwent/validators'
-import WholeScreenDialog from '../components/WholeScreenDialog'
+import WholeScreenDialog from '../components/WholeScreenDialog.jsx'
 import './DeckEditor.css'
 
 /**

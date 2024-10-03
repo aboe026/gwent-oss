@@ -4,7 +4,7 @@ import ApiClient from '../util/api-client'
 import DeckList from '../components/deck-list'
 import DecksPage from '../page-objects/decks-page'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import { FILTER_FIELD } from '@gwent/graphql-schema/decks-filter'
+import { FILTER_FIELD } from '@gwent/graphql-schema/decks-filter.mjs'
 import LoginPage from '../page-objects/login-page'
 
 fixture('Decks Filter')

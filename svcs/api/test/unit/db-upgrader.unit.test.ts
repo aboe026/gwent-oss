@@ -10,7 +10,7 @@ import * as utils from '@gwent/utils'
 describe('db-upgrader', () => {
   describe('getUpgrades', () => {
     it('returns the same length as there are upgrade scripts', async () => {
-      const upgradeFiles = await fs.readdir(path.join(__dirname, '../../src/database/upgrades'))
+      const upgradeFiles = await fs.readdir(path.join(__dirname, '..', '..', 'src', 'database', 'upgrades'))
       const upgradeScripts = upgradeFiles.filter((upgradeFile) => upgradeFile.match(/^upgrade-\d+\.ts$/))
 
       expect(DbUpgrader['getUpgrades']()).toHaveLength(upgradeScripts.length)

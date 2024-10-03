@@ -12,6 +12,7 @@
 #!.yarn/cache
 .pnp.*
 
+node_modules
 logback.log
 
 **/build

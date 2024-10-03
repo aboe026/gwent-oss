@@ -3,7 +3,8 @@
   "version": "0.5.0",
   "author": "Adam Boe",
   "description": "GraphQL backend to play Gwent.",
-  "main": "src/index.ts",
+  "type": "module",
+  "main": "src/index.mts",
   "scripts": {
     "build": "yarn g:tsc --build",
     "build-image": "docker build --tag=gwent-api:${IMAGE_TAG:-latest} --progress=plain --file=Dockerfile --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0} ${BUILD_OPTIONS:-} ../../",
@@ -11,12 +12,12 @@
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
-    "run-built": "yarn node build/src/index.js",
-    "start": "yarn g:ts-node src/index.ts",
+    "run-built": "yarn node build/src/index.mjs",
+    "start": "yarn g:tsx src/index.mts",
     "test-func": "yarn g:jest --test-type=func --runInBand",
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",
-    "watch-built": "yarn g:ts-node scripts/wait-for-initial-build.ts && yarn g:nodemon --watch build --exec 'yarn node build/src/index.js'",
+    "watch-built": "yarn g:tsx scripts/wait-for-initial-build.mts && yarn g:nodemon --watch build --exec 'yarn node build/src/index.mjs'",
     "watch-tsc": "yarn build --watch"
   },
   "dependencies": {

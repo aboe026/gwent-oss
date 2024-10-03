@@ -5,7 +5,7 @@ import DeckList from '../components/deck-list'
 import DecksPage from '../page-objects/decks-page'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import LoginPage from '../page-objects/login-page'
-import { SORT_FIELD } from '@gwent/graphql-schema/decks-filter'
+import { SORT_FIELD } from '@gwent/graphql-schema/decks-filter.mjs'
 
 fixture('Decks Sort')
   .page(DecksPage.getUrl())

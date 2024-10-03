@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
     "composite": true,
-    "outDir": "build"
+    "outDir": "build",
+    "module": "NodeNext"
   },
   "extends": "../../tsconfig",
   "include": ["package.json", "src/**/*", "src/database/upgrades/resources/*.json"],

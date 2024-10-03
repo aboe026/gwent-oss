@@ -1,6 +1,6 @@
 import { ApolloError } from '@apollo/client'
 
-import { getApolloError } from '../util/error-util'
+import { getApolloError } from '../util/error-util.mjs'
 import { HTML_CLASSES } from '@gwent/constants'
 
 /**

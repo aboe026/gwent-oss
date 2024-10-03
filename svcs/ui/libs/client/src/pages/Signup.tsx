@@ -1,5 +1,5 @@
-import Centered from '../components/Centered'
-import LoginDialog from '../components/LoginDialog'
+import Centered from '../components/Centered.jsx'
+import LoginDialog from '../components/LoginDialog.jsx'
 import { ROUTES } from '@gwent/constants'
 
 /**

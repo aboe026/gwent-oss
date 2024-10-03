@@ -1,8 +1,8 @@
 import fs from 'fs-extra'
 import path from 'path'
 
-import AppInfo from '../../src/app-info'
-import * as env from '../../src/env'
+import AppInfo from '../../src/app-info.mjs'
+import * as env from '../../src/env.mjs'
 
 describe('app-info', () => {
   describe('getFile', () => {
@@ -17,7 +17,7 @@ describe('app-info', () => {
       const filePath = 'relative/path'
       testGetPath({
         filePath,
-        expectedPath: path.join(__dirname, '../../src', filePath),
+        expectedPath: path.join(import.meta.dirname, '..', '..', 'src', filePath),
       })
     })
   })

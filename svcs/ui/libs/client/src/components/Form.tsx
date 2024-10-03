@@ -1,9 +1,9 @@
 import { ApolloError } from '@apollo/client'
 import { HTMLInputTypeAttribute, useState } from 'react'
 
-import { getApolloError } from '../util/error-util'
+import { getApolloError } from '../util/error-util.mjs'
 import { HTML_CLASSES } from '@gwent/constants'
-import LoadingBar from './LoadingBar'
+import LoadingBar from './LoadingBar.jsx'
 import './Form.css'
 
 /**

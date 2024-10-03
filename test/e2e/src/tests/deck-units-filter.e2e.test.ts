@@ -4,7 +4,7 @@ import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
-import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
+import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter.mjs'
 
 fixture('Deck Units Filter').page(DeckPage.getUrl())
 

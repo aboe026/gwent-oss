@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
-import { Button } from '../util/keyboard-listener'
+import { Button } from '../util/keyboard-listener.mjs'
 import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'
-import { useUserContext } from '../App'
+import { useUserContext } from '../App.jsx'
 import './Banner.css'
 
 /**

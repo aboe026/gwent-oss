@@ -2,7 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "build",
-    "module": "ESNext",
+    "module": "Node16",
     "target": "es5",
     "resolveJsonModule": false
   },

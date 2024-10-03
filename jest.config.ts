@@ -1,4 +1,4 @@
-import type { Config } from 'jest'
+import { JestConfigWithTsJest } from 'ts-jest'
 
 enum TEST_TYPE {
   Unit = 'unit',
@@ -19,19 +19,32 @@ if (testType === TEST_TYPE.Func) {
   process.env.MONGO_DB = 'gwent-func'
 }
 
-const sharedConfig: Config = {
+const sharedConfig: JestConfigWithTsJest = {
   clearMocks: true,
   coveragePathIgnorePatterns: ['.*build.*', '.*generated.*', '.*test.*'],
-  moduleFileExtensions: ['js', 'json', 'node', 'ts', 'tsx'],
+  extensionsToTreatAsEsm: ['.mts'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
+  moduleFileExtensions: ['mts', 'mjs', 'ts', 'js', 'tsx', 'json', 'node'],
   modulePathIgnorePatterns: ['build'],
   preset: 'ts-jest',
   resetMocks: true,
   resetModules: true,
   restoreMocks: true,
   testPathIgnorePatterns: ['e2e'],
+  testRegex: '.*\\.test\\.mts$',
+  transform: {
+    '^.+\\.(mt|t|cj|j)s$': [
+      'ts-jest',
+      {
+        useESM: true,
+      },
+    ],
+  },
 }
 
-const config: Config = {
+const config: JestConfigWithTsJest = {
   collectCoverage: true,
   coverageDirectory: `<rootDir>/coverage/${testType}`,
   coverageReporters: ['cobertura', 'lcov'],

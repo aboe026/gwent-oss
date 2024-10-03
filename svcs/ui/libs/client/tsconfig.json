@@ -3,17 +3,12 @@
     "composite": true,
     "jsx": "react-jsx",
     "lib": ["dom", "esnext"],
-    "module": "esnext",
-    "moduleResolution": "node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "outDir": "build"
   },
   "extends": "../../../../tsconfig",
   "include": ["src/**/*"],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "CommonJS"
-    }
-  },
   "references": [
     { "path": "../../../../libs/constants" },
     { "path": "../../../../libs/env" },

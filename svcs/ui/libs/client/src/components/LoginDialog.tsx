@@ -7,9 +7,9 @@ import {
   useAddUserMutation,
   useLoginMutation,
 } from '@gwent/graphql-schema/apollo-typings'
-import { getApolloError } from '../util/error-util'
+import { getApolloError } from '../util/error-util.mjs'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
-import LoadingBar from '../components/LoadingBar'
+import LoadingBar from '../components/LoadingBar.jsx'
 import './LoginDialog.css'
 
 /**

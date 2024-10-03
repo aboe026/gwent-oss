@@ -5,7 +5,7 @@ import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
 import { getDeckStats, toTitleCase } from '@gwent/utils'
 import { HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
-import ProgressRing from '../components/ProgressRing'
+import ProgressRing from '../components/ProgressRing.jsx'
 import { UnitStats } from '@gwent/graphql-schema/apollo-typings'
 import './UnitsStats.css'
 
