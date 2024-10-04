@@ -57,7 +57,7 @@ export default (env: any, argv: any) => {
       }),
       {
         apply: (compiler) => {
-          compiler.hooks.afterEmit.tap('AfterEmitPlugin', async (compilation) => {
+          compiler.hooks.afterEmit.tap('AfterEmitPlugin', async () => {
             await fs.rm(path.join(import.meta.dirname, 'build', 'src'), {
               recursive: true,
             })

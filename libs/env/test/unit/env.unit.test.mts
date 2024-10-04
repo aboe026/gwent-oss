@@ -1,14 +1,28 @@
+import { jest } from '@jest/globals'
+
+jest.unstable_mockModule('envalid', () => ({
+  cleanEnv: () => 'mocked',
+}))
+
 import dotenv from 'dotenv'
 import * as envalid from 'envalid'
 
 import getEnv, { bool, email, host, json, num, port, str, url } from '../../src/env.mjs'
 
-jest.mock('envalid', () => {
-  return {
-    __esModule: true,
-    ...jest.requireActual('envalid'),
-  }
-})
+// jest.mock('envalid', () => {
+//   const originalModule: any = jest.requireActual('envalid')
+//   return {
+//     __esModule: true,
+//     ...originalModule,
+//     cleanEnv: () => 'mocked',
+//   }
+// })
+
+// jest.unstable_mockModule('envalid', async function () {
+//   return {
+//     cleanEnv: () => 'mocked',
+//   }
+// })
 
 describe('env', () => {
   describe('getEnv', () => {
@@ -149,7 +163,7 @@ describe('env', () => {
         try {
           process.env.HELLO = 'world'
           const override = 'earth'
-          const cleanEnvSpy = jest.spyOn(envalid, 'cleanEnv').mockImplementation()
+          const cleanEnvSpy = jest.spyOn(envalid, 'cleanEnv').mockImplementation(() => {})
           getEnv({
             specs: {
               HELLO: str({}),
@@ -177,7 +191,7 @@ describe('env', () => {
         try {
           const value = 'world'
           process.env.HELLO = value
-          const cleanEnvSpy = jest.spyOn(envalid, 'cleanEnv').mockImplementation()
+          const cleanEnvSpy = jest.spyOn(envalid, 'cleanEnv').mockImplementation(() => {})
           getEnv({
             specs: {
               HELLO: str({}),

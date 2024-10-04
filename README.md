@@ -260,8 +260,11 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
-- switch back tsx for ts-node?
-- switch back to pnp
+- get unit tests working with ESM
+- get func tests working with ESM
+- get E2E tests working with ESM
+- upgrade dependencies that were held back due to ESM
+- switch back to pnp nodeLinker
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
 - add ability to target resolution of neutrals on each type of DeckUnit gameDeck (undrawn, hand, discard, redraws (from/to))
 - Change "ready" mutation to "readyGame"?

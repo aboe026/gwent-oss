@@ -1,11 +1,11 @@
-import type { Config } from 'jest'
+const path = require('path') // eslint-disable-line @typescript-eslint/no-require-imports
 
-enum TEST_TYPE {
-  Unit = 'unit',
-  Func = 'func',
+const TEST_TYPE = {
+  Unit: 'unit',
+  Func: 'func',
 }
 
-let testType: TEST_TYPE | undefined
+let testType
 if (process.argv.includes('--test-type=unit')) {
   testType = TEST_TYPE.Unit
 } else if (process.argv.includes('--test-type=func')) {
@@ -19,7 +19,7 @@ if (testType === TEST_TYPE.Func) {
   process.env.MONGO_DB = 'gwent-func'
 }
 
-const sharedConfig: Config = {
+const sharedConfig = {
   clearMocks: true,
   coveragePathIgnorePatterns: ['.*build.*', '.*generated.*', '.*test.*'],
   extensionsToTreatAsEsm: ['.mts'],
@@ -32,9 +32,9 @@ const sharedConfig: Config = {
   resetMocks: true,
   resetModules: true,
   restoreMocks: true,
-  resolver: '<rootDir>/jest-resolver.cjs',
+  resolver: path.join('D:\\Repos\\gwent', 'jest-resolver.cjs'), // '<rootDir>/jest-resolver.cjs',
   testPathIgnorePatterns: ['e2e'],
-  testRegex: '.*\\.test\\.mts$',
+  // testRegex: '.*\\.test\\.mts$',
   transform: {
     '^.+\\.(mt|t|cj|j)s$': [
       'ts-jest',
@@ -45,7 +45,7 @@ const sharedConfig: Config = {
   },
 }
 
-const config: Config = {
+const config = {
   collectCoverage: true,
   coverageDirectory: `<rootDir>/coverage/${testType}`,
   coverageReporters: ['cobertura', 'lcov'],
@@ -65,9 +65,9 @@ const config: Config = {
   projects: [
     {
       ...sharedConfig,
-      collectCoverageFrom: ['**/src/**/*.ts'],
+      collectCoverageFrom: ['**/src/**/*.mts'],
       testEnvironment: 'node',
-      testMatch: [`**/*.${testType}.test.ts`],
+      testMatch: [`**/*.${testType}.test.mts`],
     },
     {
       ...sharedConfig,
@@ -82,4 +82,4 @@ if (testType === TEST_TYPE.Func) {
   config.testTimeout = 30000
 }
 
-export default config
+module.exports = config

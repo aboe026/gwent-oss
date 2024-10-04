@@ -3848,7 +3848,6 @@ __metadata:
     tsx: "npm:4.19.1"
     webpack: "npm:5.94.0"
     webpack-cli: "npm:5.1.4"
-    webpack-shell-plugin: "npm:0.5.0"
   languageName: unknown
   linkType: soft
 
@@ -16222,13 +16221,6 @@ __metadata:
     flat: "npm:^5.0.2"
     wildcard: "npm:^2.0.0"
   checksum: 10/fa46ab200f17d06c7cb49fc37ad91f15769753953c9724adac1061fa305a2a223cb37c3ed25a5f501580c91f11a0800990fe3814c70a77bf1aa5b3fca45a2ac6
-  languageName: node
-  linkType: hard
-
-"webpack-shell-plugin@npm:0.5.0":
-  version: 0.5.0
-  resolution: "webpack-shell-plugin@npm:0.5.0"
-  checksum: 10/8546fe53334595a17e6cec46b76e255f1793c091fa68a68f3a5875f9e9a344b386d326d3f645d3f2d4ef90d3e56114c9f2b65927c23a9942183286fc9786decb
   languageName: node
   linkType: hard
 

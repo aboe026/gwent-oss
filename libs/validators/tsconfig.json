@@ -4,6 +4,6 @@
     "outDir": "build"
   },
   "extends": "../../tsconfig",
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "test/**/*"],
   "references": [{ "path": "../../libs/constants" }, { "path": "../../libs/graphql-schema" }]
 }

@@ -1,3 +1,5 @@
+import { jest } from '@jest/globals'
+
 import { DeckUnit, FactionKey, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import validateDeck from '../../src/validate-deck.mjs'
 import * as validatePositiveInteger from '../../src/validate-positive-integer.mjs'
