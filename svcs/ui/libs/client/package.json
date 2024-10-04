@@ -5,7 +5,9 @@
   "description": "React bundle for Gwent website",
   "main": "src/index.ts",
   "scripts": {
-    "build": "yarn g:tsc --build && webpack --mode=production",
+    "build": "yarn g:npm-run-all --sequential build-node build-webpack",
+    "build-node": "yarn g:tsc --build",
+    "build-webpack": "webpack --mode=production",
     "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo && yarn workspaces foreach --worktree --parallel --interlaced run clean",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",

@@ -9,6 +9,8 @@
   "scripts": {
     "build": "yarn workspaces foreach --worktree --parallel --interlaced run build",
     "build-images": "yarn workspaces foreach --worktree --parallel --interlaced run build-image",
+    "build-libs": "yarn build-subset libs",
+    "build-subset": "yarn g:ts-node scripts/build-subset.ts",
     "clean": "npm-run-all clean-children clean-root",
     "clean-children": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent/core run clean",
     "clean-root": "rimraf coverage test-results",
@@ -24,7 +26,7 @@
     "lint-groovy-fix": "yarn lint-groovy --fix",
     "lint-node": "yarn g:lint",
     "lint-node-fix": "yarn g:lint-fix",
-    "g:coverage-view": "ts-node $PROJECT_CWD/scripts/open-in-browser.ts $INIT_CWD/coverage/unit/lcov-report/index.html",
+    "g:coverage-view": "yarn g:ts-node $PROJECT_CWD/scripts/open-in-browser.ts $INIT_CWD/coverage/unit/lcov-report/index.html",
     "g:eslint": "cd $INIT_CWD && eslint --config $PROJECT_CWD/.eslintrc.json",
     "g:jest": "cd $INIT_CWD && jest --config $PROJECT_CWD/jest.config.ts --rootDir=$INIT_CWD",
     "g:lint": "yarn g:eslint $INIT_CWD && yarn g:prettier --check $INIT_CWD",
@@ -41,7 +43,7 @@
     "test-e2e": "cd test/e2e && yarn start",
     "test-func": "yarn g:jest --test-type=func --runInBand",
     "test-unit": "yarn g:jest --test-type=unit",
-    "upgrade-dependencies": "ts-node scripts/upgrade-dependencies",
+    "upgrade-dependencies": "yarn g:ts-node scripts/upgrade-dependencies",
     "watch": "yarn workspaces foreach --worktree --parallel --interlaced run watch"
   },
   "devDependencies": {

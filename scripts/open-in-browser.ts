@@ -7,5 +7,5 @@ import open from 'open'
   })
 })().catch((err) => {
   console.error(err)
-  process.exit(1)
+  process.exitCode = 1
 })

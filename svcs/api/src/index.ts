@@ -17,7 +17,7 @@ const logger = log4js.getLogger('index')
   try {
     await Api.run()
   } catch (err) {
-    logger.error(err)
-    process.exit(1)
+    logger.fatal(err)
+    process.exitCode = 1
   }
 })()

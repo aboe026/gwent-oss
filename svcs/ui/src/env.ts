@@ -9,7 +9,7 @@ import getEnv, { NODE_ENV, port, str, url } from '@gwent/env'
  */
 export default function env() {
   return getEnv({
-    dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '../.env') : '',
+    dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
     specs: {
       API_URL: url({
         desc: 'The URL to reach out to for API requests',

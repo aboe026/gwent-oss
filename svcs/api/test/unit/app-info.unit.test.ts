@@ -17,7 +17,7 @@ describe('app-info', () => {
       const filePath = 'relative/path'
       testGetPath({
         filePath,
-        expectedPath: path.join(__dirname, '../../src', filePath),
+        expectedPath: path.join(__dirname, '..', '..', 'src', filePath),
       })
     })
   })
