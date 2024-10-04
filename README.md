@@ -164,7 +164,7 @@ All the [Local Prereqs](#prereqs-1) apply, along with:
 
 ### Lint
 
-to check code for programmatic or stylistic problems, run
+To check code for programmatic or stylistic problems, run
 
 ```sh
 yarn lint

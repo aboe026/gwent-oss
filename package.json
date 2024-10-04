@@ -3,9 +3,6 @@
   "version": "0.5.0",
   "author": "Adam Boe",
   "description": "A recreation of the card game Gwent from The Witcher 3: Wild Hunt",
-  "engines": {
-    "node": ">=20"
-  },
   "scripts": {
     "build": "yarn workspaces foreach --worktree --parallel --interlaced run build",
     "build-images": "yarn workspaces foreach --worktree --parallel --interlaced run build-image",
@@ -30,7 +27,7 @@
     "g:eslint": "cd $INIT_CWD && eslint --config $PROJECT_CWD/.eslintrc.json",
     "g:jest": "cd $INIT_CWD && jest --config $PROJECT_CWD/jest.config.ts --rootDir=$INIT_CWD",
     "g:lint": "yarn g:eslint $INIT_CWD && yarn g:prettier --check $INIT_CWD",
-    "g:lint-fix": "yarn g:eslint --fix . && yarn g:prettier --write .",
+    "g:lint-fix": "yarn g:eslint --fix $INIT_CWD && yarn g:prettier --write $INIT_CWD",
     "g:nodemon": "cd $INIT_CWD && nodemon",
     "g:npm-run-all": "cd $INIT_CWD && npm-run-all",
     "g:prettier": "cd $INIT_CWD && prettier --config $PROJECT_CWD/.prettierrc.json --ignore-path $PROJECT_CWD/.prettierignore",
