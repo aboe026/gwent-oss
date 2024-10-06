@@ -9,7 +9,7 @@ import getEnv, { NODE_ENV, num, port, str, url } from '@gwent/env'
  */
 export default function env() {
   return getEnv({
-    dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '../.env') : '',
+    dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
     specs: {
       APP_INFO_FILE_PATH: str({
         desc: 'The path to the file containing information for the application to ingest',

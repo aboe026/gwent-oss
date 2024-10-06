@@ -49,7 +49,7 @@ describe('client-util', () => {
     })
     it('returns client directory if relative path', async () => {
       const clientDir = 'path/to/dir'
-      const resolvedDir = path.join(__dirname, '../../src', clientDir)
+      const resolvedDir = path.join(__dirname, '..', '..', 'src', clientDir)
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(true))
       jest.spyOn(env, 'default').mockReturnValue({
         CLIENT_DIR: clientDir,

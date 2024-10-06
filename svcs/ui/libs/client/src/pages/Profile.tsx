@@ -45,7 +45,6 @@ export default function ProfilePage() {
         <button
           type="button"
           id={HTML_IDS.ProfileLogout}
-          className="pointable"
           onClick={() => {
             navigate(ROUTES.Logout.path)
           }}

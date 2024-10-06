@@ -22,13 +22,13 @@ const DENY_LIST: string[] = [
       command: 'yarn workspaces list --recursive --json',
     })
     for (const line of stdout.trim().split(/\r?\n/g)) {
-      const workspace = JSON.parse(line)
-      await upgradeDependencies(path.join(__dirname, '../', workspace.location, 'package.json'))
+      const workspace: YarnWorkspace = JSON.parse(line)
+      await upgradeDependencies(path.join(__dirname, '..', workspace.location, 'package.json'))
     }
     console.log('Dependencies updated! Run "yarn install" to install new dependencies.')
   } catch (err) {
     console.error(err)
-    process.exit(1)
+    process.exitCode = 1
   }
 })()
 
@@ -73,6 +73,11 @@ async function upgradePackages(
   } else {
     console.log(`Package JSON for "${packageJson.name}" does not have "${key}"`)
   }
+}
+
+interface YarnWorkspace {
+  location: string
+  name: string
 }
 
 interface PackageJson {

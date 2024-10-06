@@ -11,13 +11,13 @@ import { sleep } from '@gwent/utils'
     const start = Date.now()
     while (!builtExists && (Date.now() - start) / 1000 < timeoutSeconds) {
       await sleep(1)
-      builtExists = await fs.exists(path.join(__dirname, '../build/src/index.js'))
+      builtExists = await fs.exists(path.join(__dirname, '..', 'build', 'src', 'index.js'))
     }
     if (!builtExists) {
       throw Error(`App not successfully built after "${timeoutSeconds}" seconds`)
     }
   } catch (err) {
     console.error(err)
-    process.exit(1)
+    process.exitCode = 1
   }
 })()

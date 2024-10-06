@@ -15,7 +15,7 @@ export default (env: any, argv: any) => {
     mode: isProduction ? 'production' : 'development',
     entry: './src/index.tsx',
     output: {
-      path: path.join(__dirname, '/build'),
+      path: path.join(__dirname, 'build'),
     },
     module: {
       rules: [

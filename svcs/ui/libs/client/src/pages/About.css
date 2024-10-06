@@ -1,15 +1,19 @@
-#about {
+#aboutContainer {
   display: flex;
   flex-direction: column;
+  background-color: lightgray;
+  padding: 20px;
+  border-radius: 5px;
 }
 
-#about table caption {
+#aboutContainer table caption {
   font-weight: bold;
   margin-left: -10px;
   margin-right: -10px;
   margin-bottom: 10px;
+  text-decoration: underline;
 }
 
-#about table tr td:first-child {
+#aboutContainer table tr td:first-child {
   text-align: right;
 }

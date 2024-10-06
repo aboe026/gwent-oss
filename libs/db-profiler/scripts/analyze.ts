@@ -23,5 +23,5 @@ import DbProfiler from '../src/index'
   }
 })().catch((err) => {
   console.error(err)
-  process.exit(1)
+  process.exitCode = 1
 })

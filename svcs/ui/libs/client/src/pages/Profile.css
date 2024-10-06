@@ -1,21 +1,24 @@
-#profile {
+#profileContainer {
   display: flex;
   flex-direction: column;
+  background-color: lightgray;
+  padding: 20px;
+  border-radius: 5px;
 }
 
-#profile table caption {
+#profileContainer table caption {
   font-weight: bold;
   margin-left: -10px;
   margin-right: -10px;
   margin-bottom: 10px;
+  text-decoration: underline;
 }
 
-#profile table tr td:first-child {
+#profileContainer table tr td:first-child {
   text-align: right;
 }
 
 #profileLogout {
   margin-top: 10px;
   margin-left: auto;
-  margin-right: auto;
 }

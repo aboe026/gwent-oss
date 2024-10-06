@@ -1,10 +1,11 @@
-import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye } from 'react-icons/cg'
+import { ApolloQueryResult } from '@apollo/client'
+import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 
 import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
-import { FactionKey, Game, GameStatus, useGamesQuery } from '@gwent/graphql-schema/apollo-typings'
+import { Exact, FactionKey, Game, GamesQuery, GameStatus, useGamesQuery } from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FILTER_FIELD,
@@ -61,6 +62,7 @@ export default function GamesPage() {
         filterFields,
         filtersExpanded,
         navigate,
+        refetch,
         setFilterFields,
         setFiltersExpanded,
         setSortField,
@@ -169,6 +171,7 @@ function renderHeader({
   filterFields,
   filtersExpanded,
   navigate,
+  refetch,
   setFilterFields,
   setFiltersExpanded,
   setSortField,
@@ -181,6 +184,15 @@ function renderHeader({
   filterFields: FILTER_FIELD[]
   filtersExpanded: boolean
   navigate: NavigateFunction
+  refetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            [key: string]: never
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<GamesQuery>>
   setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setSortField: Dispatch<SetStateAction<SORT_FIELD>>
@@ -286,10 +298,15 @@ function renderHeader({
             )}
           </div>
         </div>
-        {renderCreateGameButton({
-          id: HTML_IDS.GamesCreate,
-          navigate,
-        })}
+        <div id="gamesHeaderActions">
+          <div id={HTML_IDS.GamesRefresh} className="pointable" title="Refresh" onClick={() => refetch()}>
+            <CgSync color={buttonColor} />
+          </div>
+          {renderCreateGameButton({
+            id: HTML_IDS.GamesCreate,
+            navigate,
+          })}
+        </div>
       </div>
       {filtersExpanded &&
         renderFilterCheckboxes({

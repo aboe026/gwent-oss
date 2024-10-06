@@ -22,4 +22,8 @@ export default class DecksPage {
       decks,
     })
   }
+
+  static async clickRefresh() {
+    await DeckList.refresh()
+  }
 }

@@ -6,8 +6,7 @@ import org.aboe026.Xml
 
 node {
     def workDir = "${WORKSPACE}/${env.BRANCH_NAME}-${env.BUILD_ID}"
-    def nodeImage = 'node:20'
-    def baseImage = 'node:20-alpine'
+    def nodeImage
     def composeVersion = '2.14.0'
     def dockerRegistry = 'localhost:5000'
     def composeFileName = 'docker-compose.yaml'
@@ -41,6 +40,9 @@ node {
                 dir(workDir) {
                     stage('Prep') {
                         checkout scm
+
+                        def nvmrc = readFile '.nvmrc'
+                        nodeImage = "node:${nvmrc.trim()}"
 
                         def packageJsonName = 'package.json'
                         packageJson = readJSON file: packageJsonName
@@ -94,7 +96,7 @@ node {
                     stage('Pull Images') {
                         sh "docker pull ${mongoImage}"
                         sh "docker pull ${nodeImage}"
-                        sh "docker pull ${baseImage}"
+                        sh "docker pull ${nodeImage}-alpine"
                         sh "docker pull testcafe/testcafe:${testcafeVersion}"
                     }
 

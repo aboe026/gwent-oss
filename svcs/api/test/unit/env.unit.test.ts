@@ -28,7 +28,7 @@ describe('env', () => {
     expect(getEnvSpy.mock.calls).toEqual([
       [
         {
-          dotEnvFilePath: path.join(__dirname, '../../.env'),
+          dotEnvFilePath: path.join(__dirname, '..', '..', '.env'),
           specs: expect.any(Object),
         },
       ],
