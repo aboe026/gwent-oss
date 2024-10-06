@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 - 2024-10-05
+
+### Added
+
+- Manually refresh Deck and Game lists (#12) (Adam Boe)
+
 ## 0.5.0 - 2024-09-21
 
 ### Added
