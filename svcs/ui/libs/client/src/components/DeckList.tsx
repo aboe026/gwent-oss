@@ -1,11 +1,12 @@
-import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye } from 'react-icons/cg'
+import { ApolloQueryResult } from '@apollo/client'
+import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 
 import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
-import { Deck, FactionKey, useDecksQuery } from '@gwent/graphql-schema/apollo-typings'
+import { Deck, DecksQuery, Exact, FactionKey, useDecksQuery } from '@gwent/graphql-schema/apollo-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
@@ -63,6 +64,7 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
         sortField,
         sortOrder,
         navigate,
+        refetch,
         onCreate,
         onClose,
       })}
@@ -230,6 +232,7 @@ function renderHeader({
   filterFields,
   setFilterFields,
   navigate,
+  refetch,
   onCreate,
   onClose,
 }: {
@@ -244,6 +247,15 @@ function renderHeader({
   filterFields: FILTER_FIELD[]
   setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   navigate: NavigateFunction
+  refetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            [key: string]: never
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<DecksQuery>>
   onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
   onClose?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }) {
@@ -338,13 +350,18 @@ function renderHeader({
             )}
           </div>
         </div>
-        <div id="deckListHeaderRight">
-          {renderCreateDeckButton({
-            id: HTML_IDS.DeckListCreate,
-            navigate,
-            onCreate,
-          })}
-          {onClose && <CloseButton id={HTML_IDS.DeckListClose} onClose={() => onClose()} />}
+        <div className="deck-list-header-actions">
+          <div id={HTML_IDS.DeckListRefresh} className="pointable" title="Refresh" onClick={() => refetch()}>
+            <CgSync color={buttonColor} />
+          </div>
+          <div id="deckListHeaderRight">
+            {renderCreateDeckButton({
+              id: HTML_IDS.DeckListCreate,
+              navigate,
+              onCreate,
+            })}
+            {onClose && <CloseButton id={HTML_IDS.DeckListClose} onClose={() => onClose()} />}
+          </div>
         </div>
       </div>
       {filtersExpanded &&

@@ -121,3 +121,68 @@ test('List gets updated after game created', async () => {
     ],
   })
 })
+
+test('Shows game created by api after list refresh button clicked', async () => {
+  const scenario = 'games-refresh'
+  const username = `${scenario}-user-${Date.now()}`
+  const opponent = `${scenario}-opponent-${Date.now()}`
+  await new ApiClient({}).addUser({
+    name: username,
+  })
+  await new ApiClient({}).addUser({
+    name: opponent,
+  })
+  const client1 = new ApiClient({
+    username,
+  })
+  const game1 = await client1.addGame([opponent])
+  const client2 = new ApiClient({
+    username: opponent,
+  })
+
+  await LoginPage.login({
+    username,
+  })
+  await GamesPage.verify({
+    games: [
+      {
+        created: game1.created,
+        owner: username,
+        players: [username, opponent],
+        status: GameStatus.Decking,
+      },
+    ],
+  })
+
+  const game2 = await client2.addGame([username])
+
+  await GamesPage.verify({
+    games: [
+      {
+        created: game1.created,
+        owner: username,
+        players: [username, opponent],
+        status: GameStatus.Decking,
+      },
+    ],
+  })
+
+  await GamesPage.refresh()
+
+  await GamesPage.verify({
+    games: [
+      {
+        created: game2.created,
+        owner: opponent,
+        players: [opponent, username],
+        status: GameStatus.Decking,
+      },
+      {
+        created: game1.created,
+        owner: username,
+        players: [username, opponent],
+        status: GameStatus.Decking,
+      },
+    ],
+  })
+})

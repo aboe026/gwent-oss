@@ -21,6 +21,7 @@ export default class DeckList {
     CreateNew: container.find(`#${HTML_IDS.DeckListCreate}`),
     CreateNone: container.find(`#${HTML_IDS.DeckListCreateNone}`),
     Close: container.find(`#${HTML_IDS.DeckListClose}`),
+    Refresh: container.find(`#${HTML_IDS.DeckListRefresh}`),
   }
 
   static async clickCreate() {
@@ -182,6 +183,10 @@ export default class DeckList {
 
   static async close() {
     await t.click(DeckList.elements.Close)
+  }
+
+  static async refresh() {
+    await t.click(DeckList.elements.Refresh)
   }
 }
 

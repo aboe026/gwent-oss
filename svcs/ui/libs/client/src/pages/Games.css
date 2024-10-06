@@ -19,6 +19,18 @@
   width: 100%;
 }
 
+#gamesHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#gamesRefresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 #gamesList {
   overflow-y: auto;
   scrollbar-gutter: stable;

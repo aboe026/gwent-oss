@@ -23,6 +23,7 @@ export default class GamesPage {
     NoneInFilter: container.find(`#${HTML_IDS.GamesNoneInFilter}`),
     NoneClearFilter: container.find(`#${HTML_IDS.GamesNoneClearFilter}`),
     FilterAdvanced: container.find(`#${HTML_IDS.GamesFilterAdvanced}`),
+    Refresh: container.find(`#${HTML_IDS.GamesRefresh}`),
   }
 
   static getUrl(): string {
@@ -139,6 +140,10 @@ export default class GamesPage {
 
   static async toggleAdvancedFilter(name: FILTER_FIELD) {
     await t.click(GamesPage.elements.Container.find(`#filter${name}`))
+  }
+
+  static async refresh() {
+    await t.click(GamesPage.elements.Refresh)
   }
 }
 

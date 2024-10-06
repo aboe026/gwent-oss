@@ -16,6 +16,12 @@
   gap: 10px;
 }
 
+#deckListRefresh {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 #deckListFilterSort {
   display: flex;
   gap: 10px;
@@ -46,6 +52,12 @@
 .deck-list-message {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.deck-list-header-actions {
+  display: flex;
   align-items: center;
   gap: 10px;
 }

@@ -25,7 +25,7 @@ export default function AboutPage() {
           <div className={HTML_CLASSES.ErrorText}>{`Error getting application information: ${resolvedError}`}</div>
         ) : (
           <table>
-            <caption>About Gwent</caption>
+            <caption>About</caption>
             <tbody>
               <tr>
                 <td>Version:</td>

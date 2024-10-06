@@ -337,3 +337,150 @@ test('List gets updated after deck created from game page', async () => {
     ],
   })
 })
+
+test('Shows deck created by api after list refresh button clicked', async () => {
+  const username = `decks-refresh-${Date.now()}`
+  const name1 = 'two decks first'
+  const name2 = 'two decks second'
+  const faction1 = FactionKey.ScoiaTael
+  const faction2 = FactionKey.NilfgaardianEmpire
+  const leader1 = 'Francesca Findabair Queen of Dol Blathanna'
+  const leader2 = 'Emhyr var Emreis the Relentless'
+  const units1 = [
+    'Barclay Els',
+    'Ciaran aep Easnillien',
+    'Cirilla Fiona Elen Riannon',
+    'Dol Blathanna Archer',
+    'Dol Blathanna Scout',
+    'Dol Blathanna Scout',
+    'Dol Blathanna Scout',
+    'Dwarven Skirmisher',
+    'Dwarven Skirmisher',
+    'Dwarven Skirmisher',
+    'Eithne',
+    'Elven Skirmisher',
+    'Elven Skirmisher',
+    'Elven Skirmisher',
+    'Emiel Regis Rohellec Terzieff',
+    'Filavandrel aen Fidhail',
+    'Havekar Healer',
+    'Havekar Healer',
+    'Havekar Healer',
+    'Havekar Smuggler',
+    'Havekar Smuggler',
+    'Havekar Smuggler',
+  ]
+  const units2 = [
+    'Albrich',
+    'Assire var Anahid',
+    'Black Infantry Archer',
+    'Black Infantry Archer',
+    'Emiel Regis Rohellec Terzieff',
+    'Etolian Auxiliary Archers',
+    'Etolian Auxiliary Archers',
+    'Heavy Zerrikanian Fire Scorpion',
+    'Impera Brigade Guard',
+    'Impera Brigade Guard',
+    'Impera Brigade Guard',
+    'Impera Brigade Guard',
+    'Nausicaa Cavalry Rider',
+    'Nausicaa Cavalry Rider',
+    'Nausicaa Cavalry Rider',
+    'Renuald aep Matsen',
+    'Rotten Mangonel',
+    'Shilard Fitz-Oesterlen',
+    'Siege Engineer',
+    'Siege Technician',
+    'Young Emissary',
+    'Young Emissary',
+  ]
+  await new ApiClient({}).addUser({
+    name: username,
+  })
+  const client = new ApiClient({ username })
+  const deck1 = await client.addDeck({
+    faction: faction1,
+    leaderName: leader1,
+    name: name1,
+    unitNames: units1,
+  })
+
+  await LoginPage.login({
+    username,
+  })
+  await DecksPage.verify({
+    decks: [
+      {
+        created: new Date(),
+        faction: await client.getFaction({
+          key: faction1,
+          neutrals: true,
+        }),
+        leader: await client.getLeader({
+          faction: faction1,
+          name: leader1,
+        }),
+        name: name1,
+        stats: deck1.stats,
+      },
+    ],
+  })
+
+  const deck2 = await client.addDeck({
+    faction: faction2,
+    leaderName: leader2,
+    name: name2,
+    unitNames: units2,
+  })
+
+  await DecksPage.verify({
+    decks: [
+      {
+        created: new Date(),
+        faction: await client.getFaction({
+          key: faction1,
+          neutrals: true,
+        }),
+        leader: await client.getLeader({
+          faction: faction1,
+          name: leader1,
+        }),
+        name: name1,
+        stats: deck1.stats,
+      },
+    ],
+  })
+
+  await DecksPage.clickRefresh()
+
+  await DecksPage.verify({
+    decks: [
+      {
+        created: new Date(),
+        faction: await client.getFaction({
+          key: faction1,
+          neutrals: true,
+        }),
+        leader: await client.getLeader({
+          faction: faction1,
+          name: leader1,
+        }),
+        name: name1,
+        stats: deck1.stats,
+      },
+      {
+        created: new Date(),
+        faction: await client.getFaction({
+          key: faction2,
+          neutrals: true,
+        }),
+        leader: await client.getLeader({
+          faction: faction2,
+          name: leader2,
+        }),
+        name: name2,
+        stats: deck2.stats,
+      },
+    ],
+  })
+})
