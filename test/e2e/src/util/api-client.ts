@@ -18,14 +18,14 @@ import env from './env'
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/esm/types'
 
 export default class ApiClient {
-  private _client = new GraphQLClient(env.API_URL)
+  private _client = new GraphQLClient(env.API_BASE_URL)
 
   constructor({ username, password = 'password' }: { username?: string; password?: string }) {
     const headers: GraphQLClientRequestHeaders = {}
     if (username && password) {
       headers.authorization = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
     }
-    this._client = new GraphQLClient(env.API_URL, {
+    this._client = new GraphQLClient(env.API_BASE_URL, {
       headers,
     })
   }

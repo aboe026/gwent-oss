@@ -75,7 +75,7 @@ describe('client-util', () => {
       const apiUrl = 'http://localhost:4000'
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(false))
       jest.spyOn(env, 'default').mockReturnValue({
-        API_URL: apiUrl,
+        API_BASE_URL: apiUrl,
       } as any)
       const traceSpy = jest.fn().mockImplementation()
       ClientUtil['logger'] = {
@@ -87,7 +87,7 @@ describe('client-util', () => {
       )
 
       expect(pathExistsSpy.mock.calls).toEqual([[envFile]])
-      expect(traceSpy.mock.calls).toEqual([[`envFile: "${envFile}"`], [`env.API_URL: "${apiUrl}"`]])
+      expect(traceSpy.mock.calls).toEqual([[`envFile: "${envFile}"`], [`env.API_BASE_URL: "${apiUrl}"`]])
     })
     it('calls to replaceInFile if file exists', async () => {
       const clientDir = 'path/to/dir'
@@ -95,7 +95,7 @@ describe('client-util', () => {
       const apiUrl = 'http://localhost:4000'
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(true))
       jest.spyOn(env, 'default').mockReturnValue({
-        API_URL: apiUrl,
+        API_BASE_URL: apiUrl,
       } as any)
       const traceSpy = jest.fn().mockImplementation()
       ClientUtil['logger'] = {
@@ -106,14 +106,14 @@ describe('client-util', () => {
       await expect(ClientUtil.setEnvVars(clientDir)).resolves.toEqual(undefined)
 
       expect(pathExistsSpy.mock.calls).toEqual([[envFile]])
-      expect(traceSpy.mock.calls).toEqual([[`envFile: "${envFile}"`], [`env.API_URL: "${apiUrl}"`]])
+      expect(traceSpy.mock.calls).toEqual([[`envFile: "${envFile}"`], [`env.API_BASE_URL: "${apiUrl}"`]])
       expect(replaceInFileSpy.mock.calls).toEqual([
         [
           {
             files: [envFile],
             disableGlobs: true,
-            from: /API_URL:(\s*)(['"]).*?(['"])/,
-            to: `API_URL:$1$2${apiUrl}$3`,
+            from: /API_BASE_URL:(\s*)(['"]).*?(['"])/,
+            to: `API_BASE_URL:$1$2${apiUrl}$3`,
           },
         ],
       ])

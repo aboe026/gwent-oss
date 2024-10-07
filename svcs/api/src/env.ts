@@ -20,7 +20,7 @@ export default function env() {
         default: 'http://localhost:3000',
       }),
       GRAPHQL_PATH: str({
-        desc: 'The URL path where the GraphQL server can be accessed',
+        desc: 'The URL path where the GraphQL server Queries and Mutations can be accessed.',
         default: 'graphql',
       }),
       LOG_LEVEL: str({
@@ -52,6 +52,10 @@ export default function env() {
       SESSION_TIMEOUT_SECONDS: num({
         desc: 'The time in seconds after which the session for a user expires',
         default: 30 * 60, // 30 minutes
+      }),
+      SUBSCRIPTION_PATH: str({
+        desc: 'The URL path where the GraphQL server Subscriptions can be accessed.',
+        default: 'subscribe',
       }),
     },
   })

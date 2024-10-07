@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 
 import '@gwent/client-env' // get typings/access to window.env
 import AboutPage from './pages/About'
+import ApolloLink from './apollo-link'
 import App from './App'
 import DeckPage from './pages/Deck'
 import DecksPage from './pages/Decks'
@@ -73,7 +74,7 @@ const router = createBrowserRouter([
 if (typeof window !== 'undefined') {
   const root = createRoot(document.getElementById('root') as Element)
   const client = new ApolloClient({
-    uri: window.env.API_URL,
+    link: ApolloLink,
     cache: new InMemoryCache(),
     credentials: process.env.NODE_ENV === 'development' ? 'include' : 'same-origin', // process.env.NODE_ENV overwritten/hard-coded at build time,
     connectToDevTools: process.env.NODE_ENV === 'development' ? true : false, // process.env.NODE_ENV overwritten/hard-coded at build time

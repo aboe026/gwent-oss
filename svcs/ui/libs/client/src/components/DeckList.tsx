@@ -1,12 +1,19 @@
 import { ApolloQueryResult } from '@apollo/client'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router-dom'
 
 import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
-import { Deck, DecksQuery, Exact, FactionKey, useDecksQuery } from '@gwent/graphql-schema/apollo-typings'
+import {
+  Deck,
+  DeckAddedDocument,
+  DecksQuery,
+  Exact,
+  FactionKey,
+  useDecksQuery,
+} from '@gwent/graphql-schema/apollo-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
@@ -29,7 +36,7 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   const [filterFields, setFilterFields] = useState<FILTER_FIELD[]>([])
   const [filtersExpanded, setFiltersExpanded] = useState(false)
   const { checkAuth } = useUserContext()
-  const { loading, error, data, refetch } = useDecksQuery({
+  const { loading, error, data, refetch, subscribeToMore } = useDecksQuery({
     onError: (error) => {
       checkAuth(error, refetch)
     },
@@ -48,6 +55,30 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
       fields: filterFields,
       name: nameFilter,
     })
+  )
+
+  useEffect(
+    () =>
+      subscribeToMore({
+        document: DeckAddedDocument,
+        updateQuery: (prev, { subscriptionData }) => {
+          console.log(`TEST subscriptionData: "${JSON.stringify(subscriptionData)}"`)
+          if (subscriptionData.data) {
+            return {
+              ...prev,
+              // TODO: figure out why type of subscriptionData is for
+              // decks query and not for deckAdded subcription
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              decks: [...(prev.decks || []), (subscriptionData.data as any).deckAdded],
+            }
+          }
+          return prev
+        },
+        onError: (error: Error) => {
+          console.log(`TEST error: "${error}"`)
+        },
+      }),
+    []
   )
 
   return (

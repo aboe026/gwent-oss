@@ -377,6 +377,11 @@ export enum SettingType {
   Number = 'NUMBER'
 }
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  deckAdded: Deck;
+};
+
 export type Unit = {
   __typename?: 'Unit';
   combats?: Maybe<Array<Combat>>;
@@ -466,6 +471,11 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type CurrentUserQuery = { __typename?: 'Query', currentUser?: { __typename?: 'User', id: string, name: string, created: any } | null };
+
+export type DeckAddedSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type DeckAddedSubscription = { __typename?: 'Subscription', deckAdded: { __typename?: 'Deck', id: string, created: any, name: string, faction: { __typename?: 'Faction', key: FactionKey, id: string, name: string, image: string, ability?: string | null, dlc?: { __typename?: 'Dlc', name: string, image: string } | null, stats: { __typename?: 'UnitStats', agile: number, avenger: number, berserker: number, bond: number, decoy: number, horn: number, mardroeme: number, medic: number, morale: number, muster: number, scorch: number, spy: number, weather: number, close: number, ranged: number, siege: number, units: number, specials: number, heroes: number, strengthAverage: number, strengthTotal: number, strengths: number } }, leader: { __typename?: 'Leader', name: string, ability: string, image: string }, stats: { __typename?: 'UnitStats', units: number, specials: number, heroes: number, close: number, ranged: number, siege: number, agile: number, strengthTotal: number, strengthAverage: number } } };
 
 export type DeckFragmentFragment = { __typename?: 'Deck', id: string, created: any, name: string, faction: { __typename?: 'Faction', key: FactionKey, id: string, name: string, image: string, ability?: string | null, dlc?: { __typename?: 'Dlc', name: string, image: string } | null, stats: { __typename?: 'UnitStats', agile: number, avenger: number, berserker: number, bond: number, decoy: number, horn: number, mardroeme: number, medic: number, morale: number, muster: number, scorch: number, spy: number, weather: number, close: number, ranged: number, siege: number, units: number, specials: number, heroes: number, strengthAverage: number, strengthTotal: number, strengths: number } }, leader: { __typename?: 'Leader', name: string, ability: string, image: string }, stats: { __typename?: 'UnitStats', units: number, specials: number, heroes: number, close: number, ranged: number, siege: number, agile: number, strengthTotal: number, strengthAverage: number } };
 
@@ -945,6 +955,35 @@ export type CurrentUserQueryHookResult = ReturnType<typeof useCurrentUserQuery>;
 export type CurrentUserLazyQueryHookResult = ReturnType<typeof useCurrentUserLazyQuery>;
 export type CurrentUserSuspenseQueryHookResult = ReturnType<typeof useCurrentUserSuspenseQuery>;
 export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, CurrentUserQueryVariables>;
+export const DeckAddedDocument = gql`
+    subscription DeckAdded {
+  deckAdded {
+    ...DeckFragment
+  }
+}
+    ${DeckFragmentFragmentDoc}`;
+
+/**
+ * __useDeckAddedSubscription__
+ *
+ * To run a query within a React component, call `useDeckAddedSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useDeckAddedSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDeckAddedSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useDeckAddedSubscription(baseOptions?: Apollo.SubscriptionHookOptions<DeckAddedSubscription, DeckAddedSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<DeckAddedSubscription, DeckAddedSubscriptionVariables>(DeckAddedDocument, options);
+      }
+export type DeckAddedSubscriptionHookResult = ReturnType<typeof useDeckAddedSubscription>;
+export type DeckAddedSubscriptionResult = Apollo.SubscriptionResult<DeckAddedSubscription>;
 export const DecksDocument = gql`
     query Decks {
   decks {

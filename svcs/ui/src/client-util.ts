@@ -43,15 +43,15 @@ export default class ClientUtil {
   static async setEnvVars(clientDir: string) {
     const envFile = path.join(clientDir, 'dynamic-env.js')
     ClientUtil.logger.trace(`envFile: "${envFile}"`)
-    ClientUtil.logger.trace(`env.API_URL: "${env().API_URL}"`)
+    ClientUtil.logger.trace(`env.API_BASE_URL: "${env().API_BASE_URL}"`)
     if (!(await fs.pathExists(envFile))) {
       throw Error(`Client env file "${envFile}" does not exist, ensure it has been built properly.`)
     }
     await replaceInFile({
       files: [envFile],
       disableGlobs: true,
-      from: /API_URL:(\s*)(['"]).*?(['"])/,
-      to: `API_URL:$1$2${env().API_URL}$3`,
+      from: /API_BASE_URL:(\s*)(['"]).*?(['"])/,
+      to: `API_BASE_URL:$1$2${env().API_BASE_URL}$3`,
     })
   }
 }

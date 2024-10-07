@@ -374,6 +374,11 @@ export enum SettingType {
   Number = 'NUMBER'
 }
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  deckAdded: Deck;
+};
+
 export type Unit = {
   __typename?: 'Unit';
   combats?: Maybe<Array<Combat>>;

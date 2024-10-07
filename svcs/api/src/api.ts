@@ -3,6 +3,7 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 import cors from 'cors'
 import { createServer, Server } from 'http'
+import { Disposable } from 'graphql-ws'
 import express, { Express, Request, Response } from 'express'
 import { expressMiddleware } from '@apollo/server/express4'
 import figlet from 'figlet'
@@ -11,6 +12,8 @@ import { json } from 'body-parser'
 import MongoStore from 'connect-mongo'
 import { printSchema } from 'graphql/utilities'
 import session, { CookieOptions } from 'express-session'
+import { useServer } from 'graphql-ws/lib/use/ws'
+import { WebSocketServer } from 'ws'
 
 import AppInfo from './app-info'
 import BasicAuth from './auth/basic-auth'
@@ -42,7 +45,8 @@ export default class Api {
 
     Api.configureSession()
     Api.exposePlainSchema()
-    await Api.configureApolloServer()
+    const subscriptionCleanup = Api.configureSubscriptionServer()
+    await Api.configureApolloServer(subscriptionCleanup)
 
     await Api.serve()
   }
@@ -107,10 +111,19 @@ export default class Api {
     Api.logger.debug(`GraphQL Schema is available at http://localhost:${env().PORT}/schema`)
   }
 
+  private static configureSubscriptionServer(): Disposable {
+    const wsServer = new WebSocketServer({
+      server: Api.httpServer,
+      path: '/subscribe',
+    })
+
+    return useServer({ schema }, wsServer)
+  }
+
   /**
    * Configure the Apollo Server for UI connections.
    */
-  private static async configureApolloServer() {
+  private static async configureApolloServer(subscriptionCleanup: Disposable) {
     Api.logger.debug('starting ApolloServer')
     Api.apolloServer = new ApolloServer({
       schema,
@@ -123,6 +136,15 @@ export default class Api {
         ApolloServerPluginLandingPageLocalDefault({
           embed: true,
         }),
+        {
+          async serverWillStart() {
+            return {
+              async drainServer() {
+                await subscriptionCleanup.dispose()
+              },
+            }
+          },
+        },
       ],
       introspection: true,
     })
@@ -165,6 +187,11 @@ export default class Api {
     Api.logger.debug(`CORS accepting requests from "${env().CORS_ORIGIN}"`)
     Api.logger.trace(`PORT: "${env().PORT}"`)
     await new Promise<void>((resolve) => Api.httpServer.listen({ port: env().PORT }, resolve))
-    Api.logger.info(`GraphQL API listening at: "http://localhost:${env().PORT}/${env().GRAPHQL_PATH}"`)
+    Api.logger.info(
+      `GraphQL Queries and Mutations listening at: "http://localhost:${env().PORT}/${env().GRAPHQL_PATH}"`
+    )
+    Api.logger.info(
+      `GraphQL Subscription Websocket available at: "ws://localhost:${env().PORT}/${env().SUBSCRIPTION_PATH}"`
+    )
   }
 }

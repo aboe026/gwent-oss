@@ -260,6 +260,10 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
+- enforce auth for subscriptions (so can't see other users decks created)
+- have websocket reconnect if connection fails (add option to GraphQLWsLink constructor?)
+- allow introspection without
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
 - add ability to target resolution of neutrals on each type of DeckUnit gameDeck (undrawn, hand, discard, redraws (from/to))
 - Change "ready" mutation to "readyGame"?
