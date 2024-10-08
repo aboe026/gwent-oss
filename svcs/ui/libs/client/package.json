@@ -28,7 +28,8 @@
     "react-dom": "18.3.1",
     "react-icons": "5.3.0",
     "react-router-dom": "6.26.2",
-    "url-join": "5.0.0"
+    "url-join": "5.0.0",
+    "ws": "8.18.0"
   },
   "devDependencies": {
     "@gwent/client-env": "workspace:*",
@@ -38,6 +39,7 @@
     "@types/react": "18.3.8",
     "@types/react-dom": "18.3.0",
     "@types/react-router-dom": "5.3.3",
+    "@types/ws": "8.5.12",
     "copy-webpack-plugin": "12.0.2",
     "css-loader": "7.1.2",
     "graphql-ws": "5.16.0",

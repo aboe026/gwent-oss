@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 import { Button } from '../util/keyboard-listener'
+import { CONNECTION_STATUS } from '../util/ConnectionStatus'
 import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'
 import { useUserContext } from '../App'
@@ -12,7 +13,7 @@ import './Banner.css'
  *
  * @returns The application banner
  */
-export default function Banner() {
+export default function Banner({ connectionStatus }: BannerProps) {
   const [menuOpen, toggleMenu] = useState(false)
   const { user } = useUserContext()
   const navigate = useNavigate()
@@ -20,6 +21,13 @@ export default function Banner() {
   const clickMenuItem = (path: string) => {
     toggleMenu(!menuOpen)
     navigate(path)
+  }
+
+  let connectionStatusTitle = 'Online'
+  let connectionStatusColor = 'green'
+  if (connectionStatus === CONNECTION_STATUS.Failed) {
+    connectionStatusTitle = 'Offline'
+    connectionStatusColor = 'red'
   }
 
   return (
@@ -49,8 +57,13 @@ export default function Banner() {
           Gwent
         </h1>
         <div className="banner-item">
+          <div
+            id="bannerConnectionStatus"
+            title={`Connection Status: ${connectionStatusTitle}`}
+            style={{ backgroundColor: connectionStatusColor }}
+          ></div>
           <h3
-            className="banner-item pointable"
+            className="pointable"
             id={HTML_IDS.BannerUsername}
             onClick={() => navigate(ROUTES.Profile.path)}
             onMouseDown={(event) => {
@@ -129,4 +142,8 @@ export default function Banner() {
       )}
     </>
   )
+}
+
+interface BannerProps {
+  connectionStatus: CONNECTION_STATUS
 }

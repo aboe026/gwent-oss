@@ -8,7 +8,7 @@
 
 #bannerUsername {
   text-align: right;
-  margin-right: 10px;
+  margin: 10px;
 }
 
 #bannerHamburger {
@@ -37,6 +37,14 @@
   padding-top: 5px;
   padding-bottom: 5px;
   background-color: gray;
+}
+
+#bannerConnectionStatus {
+  height: 10px;
+  width: 10px;
+  margin-top: auto;
+  margin-bottom: auto;
+  border-radius: 50%;
 }
 
 .banner-item {

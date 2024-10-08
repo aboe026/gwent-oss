@@ -5,6 +5,7 @@ import { Outlet, useLocation, Navigate } from 'react-router-dom'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
+import { CONNECTION_STATUS } from './util/ConnectionStatus'
 import { CurrentUserDocument, CurrentUserQuery, useCurrentUserQuery, User } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from './util/error-util'
 import { getRouteFromPath } from './util/route-util'
@@ -29,7 +30,7 @@ export { useUserContext }
  *
  * @returns The main application component.
  */
-export default function App() {
+export default function App({ connectionStatus }: AppProps) {
   const { pathname } = useLocation()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [reAuthFuncs, setReAuthFuncs] = useState<Function[]>([])
@@ -117,7 +118,7 @@ export default function App() {
         return (
           <UserContext.Provider value={{ user: loggedIn || authTimedOut ? user : undefined, checkAuth }}>
             <IconContext.Provider value={{ color: 'white' }}>
-              <Banner />
+              <Banner connectionStatus={connectionStatus} />
               {authTimedOut && (
                 <WholeScreenDialog style={{ zIndex: 200 }}>
                   <Centered>
@@ -145,4 +146,8 @@ type UserContextType = {
   user: User | undefined | null
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+}
+
+interface AppProps {
+  connectionStatus: CONNECTION_STATUS
 }

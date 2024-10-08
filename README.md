@@ -261,9 +261,12 @@ then [install](#install) to have the change picked up.
 A list of things to be done in the future:
 
 - fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
+  - happens when adding deck through API and not requesting neutral stats?
 - enforce auth for subscriptions (so can't see other users decks created)
 - have websocket reconnect if connection fails (add option to GraphQLWsLink constructor?)
-- allow introspection without
+- allow introspection without authentication
+- Do not have "neutralStats" as a field (or if so, only allow it for Factions, not Decks)
+  - just do that math on the front end, already have neutral faction guaranteed queried
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
 - add ability to target resolution of neutrals on each type of DeckUnit gameDeck (undrawn, hand, discard, redraws (from/to))
 - Change "ready" mutation to "readyGame"?

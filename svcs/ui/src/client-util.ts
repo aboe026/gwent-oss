@@ -44,6 +44,7 @@ export default class ClientUtil {
     const envFile = path.join(clientDir, 'dynamic-env.js')
     ClientUtil.logger.trace(`envFile: "${envFile}"`)
     ClientUtil.logger.trace(`env.API_BASE_URL: "${env().API_BASE_URL}"`)
+    ClientUtil.logger.trace(`env.WEB_SOCKET_PING_INTERVAL_SECONDS: "${env().WEB_SOCKET_PING_INTERVAL_SECONDS}"`)
     if (!(await fs.pathExists(envFile))) {
       throw Error(`Client env file "${envFile}" does not exist, ensure it has been built properly.`)
     }
@@ -52,6 +53,12 @@ export default class ClientUtil {
       disableGlobs: true,
       from: /API_BASE_URL:(\s*)(['"]).*?(['"])/,
       to: `API_BASE_URL:$1$2${env().API_BASE_URL}$3`,
+    })
+    await replaceInFile({
+      files: [envFile],
+      disableGlobs: true,
+      from: /WEB_SOCKET_PING_INTERVAL_SECONDS:(\s*)(['"]).*?(['"])/,
+      to: `WEB_SOCKET_PING_INTERVAL_SECONDS:$1$2${env().WEB_SOCKET_PING_INTERVAL_SECONDS}$3`,
     })
   }
 }
