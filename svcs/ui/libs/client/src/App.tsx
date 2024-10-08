@@ -5,7 +5,6 @@ import { Outlet, useLocation, Navigate } from 'react-router-dom'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
-import { CONNECTION_STATUS } from './util/ConnectionStatus'
 import { CurrentUserDocument, CurrentUserQuery, useCurrentUserQuery, User } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from './util/error-util'
 import { getRouteFromPath } from './util/route-util'
@@ -13,6 +12,8 @@ import LoadingSpinner from './components/LoadingSpinner'
 import LoginDialog from './components/LoginDialog'
 import { NOT_AUTHENTICATED_MESSAGE, ROUTES } from '@gwent/constants'
 import WholeScreenDialog from './components/WholeScreenDialog'
+import ConnectionStatus from './ConnectionStatus'
+import Subscriptions from './Subscriptions'
 
 const AUTH_TIMEOUT_ID = 'AUTH_TIMEOUT_ID'
 
@@ -30,7 +31,8 @@ export { useUserContext }
  *
  * @returns The main application component.
  */
-export default function App({ connectionStatus }: AppProps) {
+export default function App() {
+  console.log('TEST App')
   const { pathname } = useLocation()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [reAuthFuncs, setReAuthFuncs] = useState<Function[]>([])
@@ -118,22 +120,26 @@ export default function App({ connectionStatus }: AppProps) {
         return (
           <UserContext.Provider value={{ user: loggedIn || authTimedOut ? user : undefined, checkAuth }}>
             <IconContext.Provider value={{ color: 'white' }}>
-              <Banner connectionStatus={connectionStatus} />
-              {authTimedOut && (
-                <WholeScreenDialog style={{ zIndex: 200 }}>
-                  <Centered>
-                    <LoginDialog
-                      initialUsername={user?.name}
-                      secondaryLinkLabel="Change User"
-                      secondaryLinkPath={ROUTES.Logout.path}
-                      secondaryText="Not You?"
-                      title="Session Timed Out"
-                      usernameDisabled={true}
-                    />
-                  </Centered>
-                </WholeScreenDialog>
-              )}
-              <Outlet />
+              <ConnectionStatus>
+                <Subscriptions>
+                  <Banner />
+                  {authTimedOut && (
+                    <WholeScreenDialog style={{ zIndex: 200 }}>
+                      <Centered>
+                        <LoginDialog
+                          initialUsername={user?.name}
+                          secondaryLinkLabel="Change User"
+                          secondaryLinkPath={ROUTES.Logout.path}
+                          secondaryText="Not You?"
+                          title="Session Timed Out"
+                          usernameDisabled={true}
+                        />
+                      </Centered>
+                    </WholeScreenDialog>
+                  )}
+                  <Outlet />
+                </Subscriptions>
+              </ConnectionStatus>
             </IconContext.Provider>
           </UserContext.Provider>
         )
@@ -146,8 +152,4 @@ type UserContextType = {
   user: User | undefined | null
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
-}
-
-interface AppProps {
-  connectionStatus: CONNECTION_STATUS
 }

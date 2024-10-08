@@ -1,9 +1,7 @@
 import { createRoot } from 'react-dom/client'
-import { useState } from 'react'
 
-import '@gwent/client-env' // get typings/access to window.env
+import '@gwent/client-env' // get typings/access to window.env throughout project
 import Apollo from './Apollo'
-import { CONNECTION_STATUS } from './util/ConnectionStatus'
 import Router from './Router'
 import './index.css'
 
@@ -17,11 +15,9 @@ if (typeof window !== 'undefined') {
 }
 
 function Index() {
-  const [connectionStatus, setConnectionStatus] = useState<CONNECTION_STATUS>(CONNECTION_STATUS.Connected)
-
   return (
-    <Apollo setConnectionStatus={setConnectionStatus}>
-      <Router connectionStatus={connectionStatus} />
+    <Apollo>
+      <Router />
     </Apollo>
   )
 }

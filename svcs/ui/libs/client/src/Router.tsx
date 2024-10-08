@@ -13,14 +13,14 @@ import NotFoundPage from './pages/NotFound'
 import ProfilePage from './pages/Profile'
 import { ROUTES } from '@gwent/constants'
 import SignupPage from './pages/Signup'
-import { CONNECTION_STATUS } from './util/ConnectionStatus'
 
-export default function Router({ connectionStatus }: RouterProps) {
+export default function Router() {
+  console.log('TEST Router')
   return (
     <RouterProvider
       router={createBrowserRouter([
         {
-          element: <App connectionStatus={connectionStatus} />,
+          element: <App />,
           errorElement: <NotFoundPage />,
           children: [
             {
@@ -68,8 +68,4 @@ export default function Router({ connectionStatus }: RouterProps) {
       ])}
     />
   )
-}
-
-interface RouterProps {
-  connectionStatus: CONNECTION_STATUS
 }
