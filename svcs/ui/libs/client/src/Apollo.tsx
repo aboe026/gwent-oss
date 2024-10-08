@@ -11,14 +11,14 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 export default function Apollo({ children, setConnectionStatus }: ApolloProps) {
   const [socket, setSocket] = useState<WebSocket>()
   const timeoutMilliseconds = Number(window.env.WEB_SOCKET_PING_INTERVAL_SECONDS) * 1000
-  let timeout: NodeJS.Timeout
+  let timeoutForInterrupts: NodeJS.Timeout
+  let timeoutForFailures: NodeJS.Timeout
 
   const httpLink = new HttpLink({
     uri: urlJoin(window.env.API_BASE_URL, 'graphql'),
     credentials: process.env.NODE_ENV === 'development' ? 'include' : 'same-origin', // process.env.NODE_ENV overwritten/hard-coded at build time
   })
 
-  // TODO: get interrupted/failure logic working with https://the-guild.dev/graphql/ws/docs/interfaces/client.ClientOptions#keepalive
   const wsLink = new GraphQLWsLink(
     createClient({
       url: urlJoin(window.env.API_BASE_URL.replace(/http:/, 'ws:').replace(/https:/, 'wss:'), 'subscribe'),
@@ -27,18 +27,20 @@ export default function Apollo({ children, setConnectionStatus }: ApolloProps) {
       on: {
         connected: (connectedSocket: unknown) => {
           if (!socket) {
-            console.log(`TEST setting socket`)
+            setConnectionStatus(CONNECTION_STATUS.Connected)
             setSocket(connectedSocket as WebSocket)
           }
         },
         ping: (received) => {
           if (!received) {
-            timeout = setTimeout(() => {
+            timeoutForInterrupts = setTimeout(() => {
+              setConnectionStatus(CONNECTION_STATUS.Interrupted)
+            }, timeoutMilliseconds / 2)
+            timeoutForFailures = setTimeout(() => {
+              setConnectionStatus(CONNECTION_STATUS.Failed)
               // for some reason WebSocket.OPEN was giving undefined here
               // so had to hard code in its value (1)
               if (socket?.readyState === 1) {
-                // TODO: figure out why this doesn't get picked up by Banner
-                setConnectionStatus(CONNECTION_STATUS.Failed)
                 socket.close(4408, 'Request Timeout')
               }
             }, timeoutMilliseconds)
@@ -46,7 +48,20 @@ export default function Apollo({ children, setConnectionStatus }: ApolloProps) {
         },
         pong: (received) => {
           if (received) {
-            clearTimeout(timeout)
+            clearTimeout(timeoutForInterrupts)
+            clearTimeout(timeoutForFailures)
+          }
+        },
+        closed: () => {
+          if (socket) {
+            setConnectionStatus(CONNECTION_STATUS.Failed)
+            setSocket(undefined)
+          }
+        },
+        error: () => {
+          if (socket) {
+            setConnectionStatus(CONNECTION_STATUS.Failed)
+            setSocket(undefined)
           }
         },
       },

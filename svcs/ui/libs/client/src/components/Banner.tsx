@@ -25,7 +25,10 @@ export default function Banner({ connectionStatus }: BannerProps) {
 
   let connectionStatusTitle = 'Online'
   let connectionStatusColor = 'green'
-  if (connectionStatus === CONNECTION_STATUS.Failed) {
+  if (connectionStatus === CONNECTION_STATUS.Interrupted) {
+    connectionStatusTitle = 'Laggy'
+    connectionStatusColor = 'orange'
+  } else if (connectionStatus === CONNECTION_STATUS.Failed) {
     connectionStatusTitle = 'Offline'
     connectionStatusColor = 'red'
   }
