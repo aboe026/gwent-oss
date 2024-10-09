@@ -32,7 +32,6 @@ export { useUserContext }
  * @returns The main application component.
  */
 export default function App() {
-  console.log('TEST App')
   const { pathname } = useLocation()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [reAuthFuncs, setReAuthFuncs] = useState<Function[]>([])

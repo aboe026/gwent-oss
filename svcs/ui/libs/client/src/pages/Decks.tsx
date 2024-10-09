@@ -10,7 +10,6 @@ import './Decks.css'
  */
 export default function DecksPage() {
   useTitle('Decks | Gwent')
-  console.log('TEST DecksPage')
 
   return (
     <div id={HTML_IDS.DecksContainer}>

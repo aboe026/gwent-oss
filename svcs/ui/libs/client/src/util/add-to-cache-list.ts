@@ -1,4 +1,4 @@
-export default function updateCacheList<T>({ previous, add }: { previous?: T[]; add?: T }): T[] {
+export default function addToCacheList<T>({ previous, add }: { previous?: T[]; add?: T }): T[] {
   const newItems = previous ? [...previous] : [] // cannot directly modify previous, need to create new object
 
   if (add) {

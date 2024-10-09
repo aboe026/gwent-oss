@@ -1,7 +1,7 @@
 import { PropsWithChildren } from 'react'
 
 import { DecksDocument, DecksQuery, useDeckAddedSubscription } from '@gwent/graphql-schema/apollo-typings'
-import updateCacheList from './util/update-cache-list'
+import addToCacheList from './util/add-to-cache-list'
 
 export default function Subscriptions({ children }: PropsWithChildren) {
   useDeckAddedSubscription({
@@ -16,7 +16,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             query: DecksDocument,
           },
           (previous) => ({
-            decks: updateCacheList({
+            decks: addToCacheList({
               add: data.data?.deckAdded,
               previous: previous?.decks,
             }),

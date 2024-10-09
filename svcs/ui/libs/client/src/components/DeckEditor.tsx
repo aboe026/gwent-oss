@@ -37,7 +37,7 @@ import UnitDeckCard from './UnitDeckCard'
 import UnitFullCard from './UnitFullCard'
 import UnitsHeader from '../components/UnitsHeader'
 import UnitsStats from '../components/UnitsStats'
-import updateCacheList from '../util/update-cache-list'
+import addToCacheList from '../util/add-to-cache-list'
 import { useUserContext } from '../App'
 import { validateDeck } from '@gwent/validators'
 import WholeScreenDialog from '../components/WholeScreenDialog'
@@ -83,7 +83,7 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
         cache.writeQuery({
           query: DecksDocument,
           data: {
-            decks: updateCacheList({
+            decks: addToCacheList({
               add: data?.addDeck,
               previous: previous.decks,
             }),

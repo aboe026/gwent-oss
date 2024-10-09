@@ -1,5 +1,5 @@
 import { createClient } from 'graphql-ws'
-import { createContext, memo, PropsWithChildren } from 'react'
+import { createContext, PropsWithChildren } from 'react'
 import { split, HttpLink, ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client'
 import urlJoin from 'url-join'
 
@@ -13,10 +13,8 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
  * which would then cause those pages to redo their useEffect (which would create another WebSocket unnecessarily)
  */
 export const WebSocketLinkContext = createContext<GraphQLWsLink | undefined>(undefined)
-// const [WebSocketLinkContext, WebSocketLinkProvider] = createContextWithoutDefault<GraphQLWsLink>('WebSocketLinkContext')
 
-export default memo(function Apollo({ children }: PropsWithChildren) {
-  console.log('TEST Apollo')
+export default function Apollo({ children }: PropsWithChildren) {
   const timeoutMilliseconds = Number(window.env.WEB_SOCKET_PING_INTERVAL_SECONDS) * 1000
 
   const httpLink = new HttpLink({
@@ -51,4 +49,4 @@ export default memo(function Apollo({ children }: PropsWithChildren) {
       <WebSocketLinkContext.Provider value={wsLink}>{children}</WebSocketLinkContext.Provider>
     </ApolloProvider>
   )
-})
+}

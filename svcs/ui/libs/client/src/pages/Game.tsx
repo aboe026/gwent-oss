@@ -43,7 +43,7 @@ import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import UnitFullCard from '../components/UnitFullCard'
 import UnitGameCard from '../components/UnitGameCard'
-import updateCacheList from '../util/update-cache-list'
+import addToCacheList from '../util/add-to-cache-list'
 import { useTitle } from '../components/TabTitle'
 import { useUserContext } from '../App'
 import WholeScreenDialog from '../components/WholeScreenDialog'
@@ -82,7 +82,7 @@ export default function GamePage() {
           cache.writeQuery({
             query: GamesDocument,
             data: {
-              games: updateCacheList({
+              games: addToCacheList({
                 previous: previousGames.games,
                 add: data.addGame,
               }),

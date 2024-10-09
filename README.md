@@ -262,6 +262,7 @@ A list of things to be done in the future:
 
 - fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
   - happens when adding deck through API and not requesting neutral stats?
+  - fix by not allowing neutral stats on factions
 - enforce auth for subscriptions (so can't see other users decks created)
 - have websocket reconnect if connection fails (add option to GraphQLWsLink constructor?)
 - allow introspection without authentication

@@ -11,11 +11,7 @@ import './index.css'
 if (typeof window !== 'undefined') {
   const root = createRoot(document.getElementById('root') as Element)
 
-  root.render(<Index />)
-}
-
-function Index() {
-  return (
+  root.render(
     <Apollo>
       <Router />
     </Apollo>

@@ -15,7 +15,6 @@ import { ROUTES } from '@gwent/constants'
 import SignupPage from './pages/Signup'
 
 export default function Router() {
-  console.log('TEST Router')
   return (
     <RouterProvider
       router={createBrowserRouter([
