@@ -377,6 +377,7 @@ export enum SettingType {
 export type Subscription = {
   __typename?: 'Subscription';
   deckAdded: Deck;
+  gameAdded: Game;
 };
 
 export type Unit = {

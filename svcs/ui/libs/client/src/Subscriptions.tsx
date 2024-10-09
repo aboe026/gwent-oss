@@ -1,6 +1,13 @@
 import { PropsWithChildren } from 'react'
 
-import { DecksDocument, DecksQuery, useDeckAddedSubscription } from '@gwent/graphql-schema/apollo-typings'
+import {
+  DecksDocument,
+  DecksQuery,
+  GamesDocument,
+  GamesQuery,
+  useDeckAddedSubscription,
+  useGameAddedSubscription,
+} from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from './util/add-to-cache-list'
 
 export default function Subscriptions({ children }: PropsWithChildren) {
@@ -19,6 +26,27 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             decks: addToCacheList({
               add: data.data?.deckAdded,
               previous: previous?.decks,
+            }),
+          })
+        )
+      }
+    },
+  })
+  useGameAddedSubscription({
+    onData: ({ data, client }) => {
+      const previousGames = client.cache.readQuery<GamesQuery>({ query: GamesDocument })
+      if (previousGames) {
+        // only update cache if the query has already been run (there is something in the cache)
+        // otherwise when navigating to games, it will not fire the query, so would only show the
+        // new created game, and not all games for the user
+        client.cache.updateQuery<GamesQuery>(
+          {
+            query: GamesDocument,
+          },
+          (previous) => ({
+            games: addToCacheList({
+              add: data.data?.gameAdded,
+              previous: previous?.games,
             }),
           })
         )

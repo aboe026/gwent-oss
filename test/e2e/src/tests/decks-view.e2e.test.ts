@@ -484,3 +484,9 @@ test('Shows deck created by api after list refresh button clicked', async () => 
     ],
   })
 })
+
+// verify deck added through api for user on deck page shows without refresh
+// verify deck added through api for other user on deck page does not show
+// verify deck added through api for user on home page shows when navigate to deck page
+// verify deck added through api for user on home page after they have already seen deck list shows when navigate to deck page
+// verify deck added through api for user on home page shows after user create a deck in UI (without going to deck list, should have deck already created)

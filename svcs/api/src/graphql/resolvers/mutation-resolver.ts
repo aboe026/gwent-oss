@@ -255,12 +255,18 @@ export default class MutationResolver {
         }
         // neutral stats resolving not really needed here (since no decks are set when game initially created)
         // but left in for good measure
-        return GameResolver.fromObject({
+        const resolvedGame = await GameResolver.fromObject({
           game,
           users: resolvedOpponents,
           neutralFactionStats: RequestedFields.getArgument(info, 'addGame.players.faction.stats.neutrals'),
           neutralLeaderStats: RequestedFields.getArgument(info, 'addGame.players.leader.faction.stats.neutrals'),
         })
+
+        EventManager.pubsub.publish(PubSubEvents.GameAdded, {
+          gameAdded: resolvedGame,
+        })
+
+        return resolvedGame
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       addUser: async (parent, args, context, info) => {
