@@ -380,6 +380,7 @@ export type Subscription = {
   __typename?: 'Subscription';
   deckAdded: Deck;
   gameAdded: Game;
+  gameReady: Game;
 };
 
 export type Unit = {
@@ -746,6 +747,7 @@ export type SettingResolvers<ContextType = any, ParentType extends ResolversPare
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   deckAdded?: SubscriptionResolver<ResolversTypes['Deck'], "deckAdded", ParentType, ContextType>;
   gameAdded?: SubscriptionResolver<ResolversTypes['Game'], "gameAdded", ParentType, ContextType>;
+  gameReady?: SubscriptionResolver<ResolversTypes['Game'], "gameReady", ParentType, ContextType>;
 };
 
 export type UnitResolvers<ContextType = any, ParentType extends ResolversParentTypes['Unit'] = ResolversParentTypes['Unit']> = {

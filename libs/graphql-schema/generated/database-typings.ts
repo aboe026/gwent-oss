@@ -378,6 +378,7 @@ export type Subscription = {
   __typename?: 'Subscription';
   deckAdded: Deck;
   gameAdded: Game;
+  gameReady: Game;
 };
 
 export type Unit = {

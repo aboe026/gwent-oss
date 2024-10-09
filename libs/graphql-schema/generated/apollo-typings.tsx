@@ -381,6 +381,7 @@ export type Subscription = {
   __typename?: 'Subscription';
   deckAdded: Deck;
   gameAdded: Game;
+  gameReady: Game;
 };
 
 export type Unit = {
@@ -522,6 +523,11 @@ export type GameFragmentFragment = { __typename?: 'Game', created: any, id: stri
 export type GameLeaderFragmentFragment = { __typename?: 'Leader', ability: string, image: string, name: string };
 
 export type GamePlayerFragmentFragment = { __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } };
+
+export type GameReadySubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GameReadySubscription = { __typename?: 'Subscription', gameReady: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1177,6 +1183,35 @@ export type GameDeckQueryHookResult = ReturnType<typeof useGameDeckQuery>;
 export type GameDeckLazyQueryHookResult = ReturnType<typeof useGameDeckLazyQuery>;
 export type GameDeckSuspenseQueryHookResult = ReturnType<typeof useGameDeckSuspenseQuery>;
 export type GameDeckQueryResult = Apollo.QueryResult<GameDeckQuery, GameDeckQueryVariables>;
+export const GameReadyDocument = gql`
+    subscription GameReady {
+  gameReady {
+    ...GameFragment
+  }
+}
+    ${GameFragmentFragmentDoc}`;
+
+/**
+ * __useGameReadySubscription__
+ *
+ * To run a query within a React component, call `useGameReadySubscription` and pass it any options that fit your needs.
+ * When your component renders, `useGameReadySubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGameReadySubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGameReadySubscription(baseOptions?: Apollo.SubscriptionHookOptions<GameReadySubscription, GameReadySubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<GameReadySubscription, GameReadySubscriptionVariables>(GameReadyDocument, options);
+      }
+export type GameReadySubscriptionHookResult = ReturnType<typeof useGameReadySubscription>;
+export type GameReadySubscriptionResult = Apollo.SubscriptionResult<GameReadySubscription>;
 export const GamesDocument = gql`
     query Games {
   games {

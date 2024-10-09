@@ -3,10 +3,14 @@ import { PropsWithChildren } from 'react'
 import {
   DecksDocument,
   DecksQuery,
+  Game,
+  GameDocument,
+  GameQuery,
   GamesDocument,
   GamesQuery,
   useDeckAddedSubscription,
   useGameAddedSubscription,
+  useGameReadySubscription,
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from './util/add-to-cache-list'
 
@@ -48,6 +52,27 @@ export default function Subscriptions({ children }: PropsWithChildren) {
               add: data.data?.gameAdded,
               previous: previous?.games,
             }),
+          })
+        )
+      }
+    },
+  })
+  useGameReadySubscription({
+    onData: ({ data, client }) => {
+      const updatedGame = data.data?.gameReady
+      const previousGame = client.cache.readQuery<GameQuery>({
+        query: GameDocument,
+        variables: {
+          id: updatedGame?.id,
+        },
+      })
+      if (previousGame) {
+        client.cache.updateQuery<GameQuery>(
+          {
+            query: GameDocument,
+          },
+          () => ({
+            game: updatedGame as Game,
           })
         )
       }

@@ -342,5 +342,6 @@ export default gql`
   type Subscription {
     deckAdded: Deck!
     gameAdded: Game!
+    gameReady: Game!
   }
 `

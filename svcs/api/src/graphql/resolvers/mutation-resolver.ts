@@ -423,11 +423,17 @@ export default class MutationResolver {
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
-        return GameResolver.fromObject({
+        const resolvedGame = await GameResolver.fromObject({
           game: updatedGame,
           neutralFactionStats: RequestedFields.getArgument(info, 'ready.players.faction.stats.neutrals'),
           neutralLeaderStats: RequestedFields.getArgument(info, 'ready.players.leader.faction.stats.neutrals'),
         })
+
+        EventManager.pubsub.publish(PubSubEvents.GameReady, {
+          gameReady: resolvedGame,
+        })
+
+        return resolvedGame
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       redraw: async (parent, args, context, info) => {

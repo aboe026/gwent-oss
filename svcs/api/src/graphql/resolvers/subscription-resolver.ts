@@ -14,6 +14,10 @@ export default class SubscriptionResolver {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         subscribe: () => EventManager.pubsub.asyncIterator([PubSubEvents.GameAdded]) as unknown as AsyncIterable<any>,
       },
+      gameReady: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        subscribe: () => EventManager.pubsub.asyncIterator([PubSubEvents.GameReady]) as unknown as AsyncIterable<any>,
+      },
     }
   }
 }
