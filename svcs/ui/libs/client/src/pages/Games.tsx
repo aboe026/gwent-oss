@@ -39,6 +39,7 @@ export default function GamesPage() {
     onError: (error) => {
       checkAuth(error, refetch)
     },
+    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
   })
   const navigate = useNavigate()
   const resolvedError = getApolloError(error)
@@ -61,6 +62,7 @@ export default function GamesPage() {
       {renderHeader({
         filterFields,
         filtersExpanded,
+        loading,
         navigate,
         refetch,
         setFilterFields,
@@ -170,6 +172,7 @@ export default function GamesPage() {
 function renderHeader({
   filterFields,
   filtersExpanded,
+  loading,
   navigate,
   refetch,
   setFilterFields,
@@ -183,6 +186,7 @@ function renderHeader({
 }: {
   filterFields: FILTER_FIELD[]
   filtersExpanded: boolean
+  loading: boolean
   navigate: NavigateFunction
   refetch: (
     variables?:
@@ -299,8 +303,13 @@ function renderHeader({
           </div>
         </div>
         <div id="gamesHeaderActions">
-          <div id={HTML_IDS.GamesRefresh} className="pointable" title="Refresh" onClick={() => refetch()}>
-            <CgSync color={buttonColor} />
+          <div
+            id={HTML_IDS.GamesRefresh}
+            style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
+            title="Refresh"
+            onClick={() => !loading && refetch()}
+          >
+            <CgSync color={loading ? 'gray' : 'black'} />
           </div>
           {renderCreateGameButton({
             id: HTML_IDS.GamesCreate,

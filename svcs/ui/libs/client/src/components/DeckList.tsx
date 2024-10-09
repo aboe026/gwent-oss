@@ -33,6 +33,7 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
     onError: (error) => {
       checkAuth(error, refetch)
     },
+    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
   })
   const navigate = useNavigate()
   const resolvedError = getApolloError(error)
@@ -55,7 +56,12 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
       {renderHeader({
         filterFields,
         filtersExpanded,
+        loading,
         nameFilter,
+        navigate,
+        onClose,
+        onCreate,
+        refetch,
         setFilterFields,
         setFiltersExpanded,
         setNameFilter,
@@ -63,10 +69,6 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
         setSortOrder,
         sortField,
         sortOrder,
-        navigate,
-        refetch,
-        onCreate,
-        onClose,
       })}
       {loading ? (
         <Centered>
@@ -221,32 +223,29 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
 }
 
 function renderHeader({
-  nameFilter,
-  setNameFilter,
-  sortField,
-  setSortField,
-  sortOrder,
-  setSortOrder,
-  filtersExpanded,
-  setFiltersExpanded,
   filterFields,
-  setFilterFields,
+  filtersExpanded,
+  loading,
+  nameFilter,
   navigate,
-  refetch,
-  onCreate,
   onClose,
+  onCreate,
+  refetch,
+  setFilterFields,
+  setFiltersExpanded,
+  setNameFilter,
+  setSortField,
+  setSortOrder,
+  sortField,
+  sortOrder,
 }: {
-  nameFilter: string
-  setNameFilter: Dispatch<SetStateAction<string>>
-  sortField: SORT_FIELD
-  setSortField: Dispatch<SetStateAction<SORT_FIELD>>
-  sortOrder: SORT_ORDER
-  setSortOrder: Dispatch<SetStateAction<SORT_ORDER>>
-  filtersExpanded: boolean
-  setFiltersExpanded: Dispatch<SetStateAction<boolean>>
   filterFields: FILTER_FIELD[]
-  setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
+  filtersExpanded: boolean
+  loading: boolean
+  nameFilter: string
   navigate: NavigateFunction
+  onClose?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
   refetch: (
     variables?:
       | Partial<
@@ -256,8 +255,13 @@ function renderHeader({
         >
       | undefined
   ) => Promise<ApolloQueryResult<DecksQuery>>
-  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClose?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
+  setFiltersExpanded: Dispatch<SetStateAction<boolean>>
+  setNameFilter: Dispatch<SetStateAction<string>>
+  setSortField: Dispatch<SetStateAction<SORT_FIELD>>
+  setSortOrder: Dispatch<SetStateAction<SORT_ORDER>>
+  sortField: SORT_FIELD
+  sortOrder: SORT_ORDER
 }) {
   const buttonColor = 'black'
   const filters = [
@@ -351,8 +355,13 @@ function renderHeader({
           </div>
         </div>
         <div className="deck-list-header-actions">
-          <div id={HTML_IDS.DeckListRefresh} className="pointable" title="Refresh" onClick={() => refetch()}>
-            <CgSync color={buttonColor} />
+          <div
+            id={HTML_IDS.DeckListRefresh}
+            style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
+            title="Refresh"
+            onClick={() => !loading && refetch()}
+          >
+            <CgSync color={loading ? 'gray' : 'black'} />
           </div>
           <div id="deckListHeaderRight">
             {renderCreateDeckButton({
