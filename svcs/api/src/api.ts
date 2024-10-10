@@ -23,6 +23,7 @@ import env from './env'
 import { NODE_ENV } from '@gwent/env'
 import schema from './graphql/executable-schema'
 import { version } from '../package.json'
+import WebSocketAuth from './auth/websocket-auth'
 
 /**
  * A class to handle startup and configuration of the API server.
@@ -32,6 +33,7 @@ export default class Api {
   private static app: Express
   private static apolloServer: ApolloServer
   private static httpServer: Server
+  private static sessionMongoStore: MongoStore
 
   /**
    * Bring up the API server.
@@ -83,6 +85,10 @@ export default class Api {
       Api.logger.trace('enabling "trust proxy"')
       Api.app.set('trust proxy', 1)
     }
+    Api.sessionMongoStore = MongoStore.create({
+      clientPromise: Promise.resolve(DbConnector.getClient()),
+      dbName: env().MONGO_DB,
+    })
     Api.app.use(
       session({
         cookie,
@@ -92,10 +98,7 @@ export default class Api {
         rolling: true,
         saveUninitialized: false,
         secret: env().SESSION_SECRET,
-        store: MongoStore.create({
-          clientPromise: Promise.resolve(DbConnector.getClient()),
-          dbName: env().MONGO_DB,
-        }),
+        store: Api.sessionMongoStore,
       })
     )
   }
@@ -117,7 +120,26 @@ export default class Api {
       path: '/subscribe',
     })
 
-    return useServer({ schema }, wsServer)
+    return useServer(
+      {
+        schema,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        context: async (ctx, msg, args) => {
+          const user = await WebSocketAuth.authenticate({
+            req: ctx.extra.request,
+            mongoStore: Api.sessionMongoStore,
+          })
+          if (Api.logger.isTraceEnabled()) {
+            Api.logger.trace(`user: "${JSON.stringify(user)}"`)
+          }
+
+          return {
+            user,
+          }
+        },
+      },
+      wsServer
+    )
   }
 
   /**

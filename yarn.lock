@@ -3612,6 +3612,7 @@ __metadata:
     "@gwent/validators": "workspace:*"
     "@types/basic-auth": "npm:1.1.8"
     "@types/body-parser": "npm:1.19.5"
+    "@types/cookie-parser": "npm:1.4.7"
     "@types/cors": "npm:2.8.17"
     "@types/express": "npm:4.17.21"
     "@types/express-session": "npm:1.18.0"
@@ -3624,6 +3625,7 @@ __metadata:
     body-parser: "npm:1.20.3"
     connect-mongo: "npm:5.1.0"
     connection-string: "npm:4.4.0"
+    cookie-parser: "npm:1.4.7"
     cors: "npm:2.8.5"
     express: "npm:4.21.0"
     express-session: "npm:1.18.0"
@@ -3664,6 +3666,7 @@ __metadata:
     "@gwent/utils": "workspace:*"
     "@gwent/validators": "workspace:*"
     "@types/jest": "npm:29.5.13"
+    "@types/js-cookie": "npm:3.0.6"
     "@types/node": "npm:22.5.5"
     "@types/react": "npm:18.3.8"
     "@types/react-dom": "npm:18.3.0"
@@ -3675,6 +3678,7 @@ __metadata:
     graphql-ws: "npm:5.16.0"
     html-webpack-plugin: "npm:5.6.0"
     jest-junit: "npm:16.0.0"
+    js-cookie: "npm:3.0.5"
     mini-css-extract-plugin: "npm:2.9.1"
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
@@ -4688,6 +4692,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/cookie-parser@npm:1.4.7":
+  version: 1.4.7
+  resolution: "@types/cookie-parser@npm:1.4.7"
+  dependencies:
+    "@types/express": "npm:*"
+  checksum: 10/7b87c59420598e686a57e240be6e0db53967c3c8814be9326bf86609ee2fc39c4b3b9f2263e1deba43526090121d1df88684b64c19f7b494a80a4437caf3d40b
+  languageName: node
+  linkType: hard
+
 "@types/cors@npm:2.8.17":
   version: 2.8.17
   resolution: "@types/cors@npm:2.8.17"
@@ -4857,6 +4870,13 @@ __metadata:
     expect: "npm:^29.0.0"
     pretty-format: "npm:^29.0.0"
   checksum: 10/7d6e3e4ef4b1cab0f61270d55764709512fdfbcb1bd47c0ef44117d48490529c1f264dacf3440b9188363e99e290b80b79c529eadc3af2184116a90f6856b192
+  languageName: node
+  linkType: hard
+
+"@types/js-cookie@npm:3.0.6":
+  version: 3.0.6
+  resolution: "@types/js-cookie@npm:3.0.6"
+  checksum: 10/272d551687547445cb210213c73e72e0e5d58ad73e2e444a65d688b8ff9425529779ee0cd6492aaa1f070161916d4254ef2b1a76d64179100437f60749d094ef
   languageName: node
   linkType: hard
 
@@ -7124,6 +7144,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"cookie-parser@npm:1.4.7":
+  version: 1.4.7
+  resolution: "cookie-parser@npm:1.4.7"
+  dependencies:
+    cookie: "npm:0.7.2"
+    cookie-signature: "npm:1.0.6"
+  checksum: 10/243fa13f217e793d20a57675e6552beea08c5989fcc68495d543997a31646875335e0e82d687b42dcfd466df57891d22bae7f5ba6ab33b7705ed2dd6eb989105
+  languageName: node
+  linkType: hard
+
 "cookie-signature@npm:1.0.6":
   version: 1.0.6
   resolution: "cookie-signature@npm:1.0.6"
@@ -7149,6 +7179,13 @@ __metadata:
   version: 0.6.0
   resolution: "cookie@npm:0.6.0"
   checksum: 10/c1f8f2ea7d443b9331680598b0ae4e6af18a618c37606d1bbdc75bec8361cce09fe93e727059a673f2ba24467131a9fb5a4eec76bb1b149c1b3e1ccb268dc583
+  languageName: node
+  linkType: hard
+
+"cookie@npm:0.7.2":
+  version: 0.7.2
+  resolution: "cookie@npm:0.7.2"
+  checksum: 10/24b286c556420d4ba4e9bc09120c9d3db7d28ace2bd0f8ccee82422ce42322f73c8312441271e5eefafbead725980e5996cc02766dbb89a90ac7f5636ede608f
   languageName: node
   linkType: hard
 
@@ -11009,6 +11046,13 @@ __metadata:
   version: 5.1.0
   resolution: "jose@npm:5.1.0"
   checksum: 10/aba6fbb2f9aae47fd1d99de9657ad8835cb710ba3755486cb98616486372dd60a9c8698f7a464b5071b106d09cbcb67d4498994b8325f64252a1c66cf3e56026
+  languageName: node
+  linkType: hard
+
+"js-cookie@npm:3.0.5":
+  version: 3.0.5
+  resolution: "js-cookie@npm:3.0.5"
+  checksum: 10/366494b1630b9fb8abaef3659748db5dfd52c58c6fc3459b9f0a03b492593bc1b01c6dfcc066b46f6413c28edb3a00cc68fb61ea8cdf6991bedf1f100f8a389d
   languageName: node
   linkType: hard
 
