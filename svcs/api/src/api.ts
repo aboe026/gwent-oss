@@ -89,11 +89,13 @@ export default class Api {
       clientPromise: Promise.resolve(DbConnector.getClient()),
       dbName: env().MONGO_DB,
     })
+    const sessionCookieName = env().SESSION_COOKIE_NAME
+    Api.logger.trace(`session cookie name: "${sessionCookieName}"`)
     Api.app.use(
       session({
         cookie,
         proxy,
-        name: 'gwent.sid',
+        name: sessionCookieName,
         resave: false,
         rolling: true,
         saveUninitialized: false,

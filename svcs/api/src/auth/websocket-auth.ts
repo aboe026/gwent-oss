@@ -30,8 +30,7 @@ export default class WebSocketAuth {
         if (WebSocketAuth.logger.isTraceEnabled()) {
           WebSocketAuth.logger.trace(`cookieMap: "${JSON.stringify(cookieMap)}"`)
         }
-        // TODO: make cookie name env var?
-        const encodedSessionId = cookieMap['gwent.sid']
+        const encodedSessionId = cookieMap[env().SESSION_COOKIE_NAME]
         WebSocketAuth.logger.trace(`encodedSessionId: "${encodedSessionId}"`)
         if (encodedSessionId) {
           const sessionId = signedCookie(decodeURIComponent(encodedSessionId), env().SESSION_SECRET)

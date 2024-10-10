@@ -45,6 +45,10 @@ export default function env() {
         desc: 'The port to run the GraphQL server on',
         default: 4000,
       }),
+      SESSION_COOKIE_NAME: str({
+        desc: 'The name of the Cookie for the user session.',
+        default: 'gwent.sid',
+      }),
       SESSION_SECRET: str({
         desc: 'The secret to use for securing user sessions',
         default: 'youshouldreallychangethisforproductionusage',
