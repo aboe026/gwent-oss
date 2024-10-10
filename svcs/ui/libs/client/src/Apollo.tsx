@@ -28,6 +28,9 @@ export default function Apollo({ children }: PropsWithChildren) {
       connectionAckWaitTimeout: timeoutMilliseconds, // How long to wait for server to acknowlege the initial connection is established.
       keepAlive: timeoutMilliseconds, // How often to ping server for connection status. Does not actually terminate connection if response not positive, that needs to be done manually.
       lazy: true, // prevent socket from being created until user defined on session (so server can authenticate/authorize via the session cookie)
+      shouldRetry: () => true, // always attempt to re-connect
+      retryAttempts: Number.MAX_SAFE_INTEGER, // "infinity"
+      retryWait: () => new Promise((resolve) => setTimeout(resolve, timeoutMilliseconds)),
     })
   )
 

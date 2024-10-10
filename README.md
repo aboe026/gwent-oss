@@ -260,12 +260,11 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- get 3rd party package to parse cookies from string instead of parseCookies
 - fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
   - happens when adding deck through API and not requesting neutral stats?
   - fix by not allowing neutral stats on factions
-- enforce auth for subscriptions (so can't see other users decks created)
 - secure websocket (wss) for docker-compose
-- have websocket reconnect if connection fails (add option to GraphQLWsLink constructor? https://the-guild.dev/graphql/ws/docs/interfaces/client.ClientOptions)
 - allow introspection without authentication
 - Do not have "neutralStats" as a field (or if so, only allow it for Factions, not Decks)
   - just do that math on the front end, already have neutral faction guaranteed queried
