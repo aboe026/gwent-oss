@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react'
 
+import addToCacheList from './util/add-to-cache-list'
 import {
   DecksDocument,
   DecksQuery,
@@ -12,10 +13,13 @@ import {
   useGameAddedSubscription,
   useGameReadySubscription,
 } from '@gwent/graphql-schema/apollo-typings'
-import addToCacheList from './util/add-to-cache-list'
+import { useUserContext } from './App'
 
 export default function Subscriptions({ children }: PropsWithChildren) {
+  const { user } = useUserContext()
+
   useDeckAddedSubscription({
+    skip: !user,
     onData: ({ data, client }) => {
       const previousDecks = client.cache.readQuery<DecksQuery>({ query: DecksDocument })
       if (previousDecks) {
@@ -37,6 +41,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     },
   })
   useGameAddedSubscription({
+    skip: !user,
     onData: ({ data, client }) => {
       const previousGames = client.cache.readQuery<GamesQuery>({ query: GamesDocument })
       if (previousGames) {
@@ -58,6 +63,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     },
   })
   useGameReadySubscription({
+    skip: !user,
     onData: ({ data, client }) => {
       const updatedGame = data.data?.gameReady
       const previousGame = client.cache.readQuery<GameQuery>({

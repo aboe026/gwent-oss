@@ -3666,7 +3666,6 @@ __metadata:
     "@gwent/utils": "workspace:*"
     "@gwent/validators": "workspace:*"
     "@types/jest": "npm:29.5.13"
-    "@types/js-cookie": "npm:3.0.6"
     "@types/node": "npm:22.5.5"
     "@types/react": "npm:18.3.8"
     "@types/react-dom": "npm:18.3.0"
@@ -3678,7 +3677,6 @@ __metadata:
     graphql-ws: "npm:5.16.0"
     html-webpack-plugin: "npm:5.6.0"
     jest-junit: "npm:16.0.0"
-    js-cookie: "npm:3.0.5"
     mini-css-extract-plugin: "npm:2.9.1"
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
@@ -4870,13 +4868,6 @@ __metadata:
     expect: "npm:^29.0.0"
     pretty-format: "npm:^29.0.0"
   checksum: 10/7d6e3e4ef4b1cab0f61270d55764709512fdfbcb1bd47c0ef44117d48490529c1f264dacf3440b9188363e99e290b80b79c529eadc3af2184116a90f6856b192
-  languageName: node
-  linkType: hard
-
-"@types/js-cookie@npm:3.0.6":
-  version: 3.0.6
-  resolution: "@types/js-cookie@npm:3.0.6"
-  checksum: 10/272d551687547445cb210213c73e72e0e5d58ad73e2e444a65d688b8ff9425529779ee0cd6492aaa1f070161916d4254ef2b1a76d64179100437f60749d094ef
   languageName: node
   linkType: hard
 
@@ -11046,13 +11037,6 @@ __metadata:
   version: 5.1.0
   resolution: "jose@npm:5.1.0"
   checksum: 10/aba6fbb2f9aae47fd1d99de9657ad8835cb710ba3755486cb98616486372dd60a9c8698f7a464b5071b106d09cbcb67d4498994b8325f64252a1c66cf3e56026
-  languageName: node
-  linkType: hard
-
-"js-cookie@npm:3.0.5":
-  version: 3.0.5
-  resolution: "js-cookie@npm:3.0.5"
-  checksum: 10/366494b1630b9fb8abaef3659748db5dfd52c58c6fc3459b9f0a03b492593bc1b01c6dfcc066b46f6413c28edb3a00cc68fb61ea8cdf6991bedf1f100f8a389d
   languageName: node
   linkType: hard
 
