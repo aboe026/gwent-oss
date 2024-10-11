@@ -1,5 +1,6 @@
 import { GraphQLClient, gql } from 'graphql-request'
 import { ObjectId } from 'mongodb'
+import urljoin from 'url-join'
 
 import {
   Deck,
@@ -18,14 +19,14 @@ import env from './env'
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/esm/types'
 
 export default class ApiClient {
-  private _client = new GraphQLClient(env.API_BASE_URL)
+  private _client = new GraphQLClient(urljoin(env.API_BASE_URL, 'graphql'))
 
   constructor({ username, password = 'password' }: { username?: string; password?: string }) {
     const headers: GraphQLClientRequestHeaders = {}
     if (username && password) {
       headers.authorization = `Basic ${Buffer.from(`${username}:${password}`).toString('base64')}`
     }
-    this._client = new GraphQLClient(env.API_BASE_URL, {
+    this._client = new GraphQLClient(urljoin(env.API_BASE_URL, 'graphql'), {
       headers,
     })
   }
@@ -260,17 +261,7 @@ export default class ApiClient {
     return unit
   }
 
-  async addDeck({
-    faction,
-    leaderName,
-    name,
-    unitNames,
-  }: {
-    faction: FactionKey
-    leaderName: string
-    name: string
-    unitNames: string[]
-  }): Promise<Deck> {
+  async addDeck({ faction, leaderName, name, unitNames }: AddDeckInput): Promise<Deck> {
     const leader = await this.getLeader({
       faction,
       name: leaderName,
@@ -489,6 +480,10 @@ export default class ApiClient {
                 key
                 name
               }
+              id
+              image
+              name
+              quote
             }
             name
             stats {
@@ -1256,4 +1251,11 @@ export default class ApiClient {
     }
     return setting.value as T
   }
+}
+
+export interface AddDeckInput {
+  faction: FactionKey
+  leaderName: string
+  name: string
+  unitNames: string[]
 }
