@@ -6,7 +6,7 @@ export default getEnv({
   dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
   specs: {
     API_BASE_URL: url({
-      desc: 'The base URL the Gwent API is running on (should contain /graphl and /subscribe endpoints)',
+      desc: 'The base URL the Gwent API is running on (should contain /graphql and /subscribe endpoints)',
       default: 'http://localhost:4000',
     }),
     BASE_URL: url({

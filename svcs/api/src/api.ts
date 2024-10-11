@@ -119,7 +119,7 @@ export default class Api {
   private static configureSubscriptionServer(): Disposable {
     const wsServer = new WebSocketServer({
       server: Api.httpServer,
-      path: '/subscribe',
+      path: `/${env().SUBSCRIPTION_PATH}`,
     })
 
     return useServer(
