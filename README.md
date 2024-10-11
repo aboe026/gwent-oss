@@ -264,7 +264,6 @@ A list of things to be done in the future:
 - fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
   - happens when adding deck through API and not requesting neutral stats?
   - fix by not allowing neutral stats on factions
-- secure websocket (wss) for docker-compose
 - allow introspection without authentication
 - Do not have "neutralStats" as a field (or if so, only allow it for Factions, not Decks)
   - just do that math on the front end, already have neutral faction guaranteed queried
