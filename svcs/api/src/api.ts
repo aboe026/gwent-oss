@@ -127,16 +127,36 @@ export default class Api {
         schema,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         context: async (ctx, msg, args) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const user = (ctx.extra as any).user
+          if (Api.logger.isTraceEnabled()) {
+            Api.logger.trace(`WebSocket context user: "${JSON.stringify(user)}"`)
+          }
+
+          return {
+            user,
+          }
+        },
+        onConnect: async (ctx) => {
           const user = await WebSocketAuth.authenticate({
             req: ctx.extra.request,
             mongoStore: Api.sessionMongoStore,
           })
           if (Api.logger.isTraceEnabled()) {
-            Api.logger.trace(`user: "${JSON.stringify(user)}"`)
+            Api.logger.trace(`WebSocket onConnect user: "${JSON.stringify(user)}"`)
           }
 
-          return {
-            user,
+          if (user) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(ctx.extra as any).user = user
+          } else {
+            Api.logger.debug(
+              `Rejecting WebSocket connection from "${ctx.extra.request.headers.host}" due to auth failure.`
+            )
+            if (Api.logger.isTraceEnabled()) {
+              Api.logger.trace(`WebSocket onConnect headers: "${JSON.stringify(ctx.extra.request.headers)}"`)
+            }
+            return false // reject connection
           }
         },
       },
