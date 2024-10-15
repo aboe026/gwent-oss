@@ -10,8 +10,8 @@ fixture('Games Sort')
   .page(GamesPage.getUrl())
   .beforeEach(async () => {
     const scenario = 'games-sort'
-    t.ctx.username = `${scenario}-user-${Date.now()}`
-    t.ctx.opponent = `${scenario}-opponent-${Date.now()}`
+    t.ctx.username = `${scenario}-user-${t.ctx.start}`
+    t.ctx.opponent = `${scenario}-opponent-${t.ctx.start}`
     await new ApiClient({}).addUser({
       name: t.ctx.username,
     })
@@ -29,7 +29,7 @@ fixture('Games Sort')
     const deck1 = await client1.addDeck({
       faction: FactionKey.Monsters,
       leaderName: 'Eredin Bringer of Death',
-      name: `${scenario}-deck-1-${Date.now()}`,
+      name: `${scenario}-deck-1-${t.ctx.start}`,
       unitNames: [
         'Arachas',
         'Biting Frost',
@@ -58,7 +58,7 @@ fixture('Games Sort')
     const deck2 = await client2.addDeck({
       faction: FactionKey.Skellige,
       leaderName: 'King Bran',
-      name: `${scenario}-deck-2-${Date.now()}`,
+      name: `${scenario}-deck-2-${t.ctx.start}`,
       unitNames: [
         'Berserker',
         'Birna Bran',

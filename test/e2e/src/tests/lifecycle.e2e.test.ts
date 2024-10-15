@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
 import DeckEditor from '../components/deck-editor'
@@ -70,8 +72,8 @@ const units2 = [
 
 test('Speed Run', async () => {
   const scenario = 'lifecycle-speed-run'
-  const username1 = `${scenario}-user-1-${Date.now()}`
-  const deckName1 = `${scenario}-deck-1-${Date.now()}`
+  const username1 = `${scenario}-user-1-${t.ctx.start}`
+  const deckName1 = `${scenario}-deck-1-${t.ctx.start}`
   await SignupPage.signUp({
     username: username1,
   })
@@ -94,8 +96,8 @@ test('Speed Run', async () => {
   await ProfilePage.logout()
   await LoginPage.verifyNotLoggedIn({})
 
-  const username2 = `${scenario}-user-2-${Date.now()}`
-  const deckName2 = `${scenario}-deck-2-${Date.now()}`
+  const username2 = `${scenario}-user-2-${t.ctx.start}`
+  const deckName2 = `${scenario}-deck-2-${t.ctx.start}`
   await SignupPage.signUp({
     username: username2,
   })
@@ -277,8 +279,8 @@ test('Speed Run', async () => {
 
 test('Scenic Route', async () => {
   const scenario = 'lifecycle-scenic-route'
-  const username1 = `${scenario}-user-1-${Date.now()}`
-  const deckName1 = `${scenario}-deck-1-${Date.now()}`
+  const username1 = `${scenario}-user-1-${t.ctx.start}`
+  const deckName1 = `${scenario}-deck-1-${t.ctx.start}`
   await SignupPage.signUp({
     username: username1,
   })
@@ -327,8 +329,8 @@ test('Scenic Route', async () => {
   await ProfilePage.logout()
   await LoginPage.verifyNotLoggedIn({})
 
-  const username2 = `${scenario}-user-2-${Date.now()}`
-  const deckName2 = `${scenario}-deck-2-${Date.now()}`
+  const username2 = `${scenario}-user-2-${t.ctx.start}`
+  const deckName2 = `${scenario}-deck-2-${t.ctx.start}`
   await SignupPage.signUp({
     username: username2,
   })

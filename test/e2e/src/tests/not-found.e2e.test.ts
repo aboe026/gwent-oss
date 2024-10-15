@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
 import HomePage from '../page-objects/home-page'
@@ -20,7 +22,7 @@ test('Displays not found page with home link if user navigates to unknown page w
 
 test('Displays not found page with home link if user navigates to unknown page after login', async () => {
   const unknownPath = 'toast'
-  const username = `not-found-after-login-${Date.now()}`
+  const username = `not-found-after-login-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })

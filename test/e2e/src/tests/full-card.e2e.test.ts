@@ -14,7 +14,7 @@ fixture('Full Card')
   .page(DeckPage.getUrl())
   .beforeEach(async () => {
     const scenario = 'full-card'
-    t.ctx.username = `${scenario}-user-${Date.now()}`
+    t.ctx.username = `${scenario}-user-${t.ctx.start}`
     await new ApiClient({}).addUser({
       name: t.ctx.username,
     })
@@ -608,12 +608,12 @@ test('Moving to previous and next units works for a game card', async () => {
     username: t.ctx.username,
   })
   const opponent = await client.addUser({
-    name: `full-card-game-opponent-${Date.now()}`,
+    name: `full-card-game-opponent-${t.ctx.start}`,
   })
   const deck = await client.addDeck({
     faction: FactionKey.Monsters,
     leaderName: 'Eredin Destroyer of Worlds',
-    name: `full-card-game-${Date.now()}`,
+    name: `full-card-game-${t.ctx.start}`,
     unitNames: [
       'Botchling',
       'Celaeno Harpy',

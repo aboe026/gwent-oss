@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import ApiClient, { AddDeckInput } from '../util/api-client'
 import Banner from '../components/banner'
 import DeckPage from '../page-objects/deck-page'
@@ -100,7 +102,7 @@ const deckInput3: AddDeckInput = {
 }
 
 test('Deck added through API appears for user on decks page without any decks', async () => {
-  const username = `decks-subscription-deck-page-none-${Date.now()}`
+  const username = `decks-subscription-deck-page-none-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -130,7 +132,7 @@ test('Deck added through API appears for user on decks page without any decks', 
 })
 
 test('Deck added through API appears for user on decks page with existing deck', async () => {
-  const username = `decks-subscription-deck-page-existing-${Date.now()}`
+  const username = `decks-subscription-deck-page-existing-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -176,7 +178,7 @@ test('Deck added through API appears for user on decks page with existing deck',
 })
 
 test('Deck added through API appears for user without decks navigating to decks page from home page', async () => {
-  const username = `decks-subscription-home-page-none-${Date.now()}`
+  const username = `decks-subscription-home-page-none-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -204,7 +206,7 @@ test('Deck added through API appears for user without decks navigating to decks 
 })
 
 test('Deck added through API appears for user with existing deck navigating to decks page from home page', async () => {
-  const username = `decks-subscription-home-page-existing-${Date.now()}`
+  const username = `decks-subscription-home-page-existing-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -239,7 +241,7 @@ test('Deck added through API appears for user with existing deck navigating to d
 })
 
 test('Deck added through API appears for user without decks navigating from decks page to home page and back to decks page', async () => {
-  const username = `decks-subscription-deck-page-home-page-none-${Date.now()}`
+  const username = `decks-subscription-deck-page-home-page-none-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -271,7 +273,7 @@ test('Deck added through API appears for user without decks navigating from deck
 })
 
 test('Deck added through API appears for user with existing deck navigating from decks page to home page and back to decks page', async () => {
-  const username = `decks-subscription-deck-page-home-page-existing-${Date.now()}`
+  const username = `decks-subscription-deck-page-home-page-existing-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -318,7 +320,7 @@ test('Deck added through API appears for user with existing deck navigating from
 })
 
 test('Deck added through API appears for user without any decks after they create a deck from decks page', async () => {
-  const username = `decks-subscription-create-deck-none-decks-page-${Date.now()}`
+  const username = `decks-subscription-create-deck-none-decks-page-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -368,7 +370,7 @@ test('Deck added through API appears for user without any decks after they creat
 })
 
 test('Deck added through API appears for user without any decks after they create a deck from home page', async () => {
-  const username = `decks-subscription-create-deck-none-home-page-${Date.now()}`
+  const username = `decks-subscription-create-deck-none-home-page-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -416,7 +418,7 @@ test('Deck added through API appears for user without any decks after they creat
 })
 
 test('Deck added through API appears for user with existing deck after they create a deck from decks page', async () => {
-  const username = `decks-subscription-create-deck-existing-decks-page-${Date.now()}`
+  const username = `decks-subscription-create-deck-existing-decks-page-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -482,8 +484,8 @@ test('Deck added through API appears for user with existing deck after they crea
 })
 
 test('Deck added for other user through API does not appear on deck page', async () => {
-  const username1 = `decks-subscription-decks-page-different-owner-1-${Date.now()}`
-  const username2 = `decks-subscription-decks-page-different-owner-2-${Date.now()}`
+  const username1 = `decks-subscription-decks-page-different-owner-1-${t.ctx.start}`
+  const username2 = `decks-subscription-decks-page-different-owner-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username1,
   })

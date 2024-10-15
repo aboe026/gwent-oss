@@ -10,9 +10,9 @@ fixture('Games Filter')
   .page(GamesPage.getUrl())
   .beforeEach(async () => {
     const scenario = 'games-filter'
-    const username1 = `${scenario}-user-1-${Date.now()}`
-    const username2 = `${scenario}-user-2-${Date.now()}`
-    const username3 = `${scenario}-user-3-${Date.now()}`
+    const username1 = `${scenario}-user-1-${t.ctx.start}`
+    const username2 = `${scenario}-user-2-${t.ctx.start}`
+    const username3 = `${scenario}-user-3-${t.ctx.start}`
     await new ApiClient({}).addUser({
       name: username1,
     })
@@ -35,7 +35,7 @@ fixture('Games Filter')
     const deck1 = await client1.addDeck({
       faction: FactionKey.Monsters,
       leaderName: 'Eredin Bringer of Death',
-      name: `${scenario}-deck-1-${Date.now()}`,
+      name: `${scenario}-deck-1-${t.ctx.start}`,
       unitNames: [
         'Arachas',
         'Biting Frost',
@@ -64,7 +64,7 @@ fixture('Games Filter')
     const deck2 = await client2.addDeck({
       faction: FactionKey.Skellige,
       leaderName: 'King Bran',
-      name: `${scenario}-deck-2-${Date.now()}`,
+      name: `${scenario}-deck-2-${t.ctx.start}`,
       unitNames: [
         'Berserker',
         'Birna Bran',
@@ -93,7 +93,7 @@ fixture('Games Filter')
     const deck3 = await client2.addDeck({
       faction: FactionKey.Monsters,
       leaderName: 'Eredin Bringer of Death',
-      name: `${scenario}-deck-1-${Date.now()}`,
+      name: `${scenario}-deck-1-${t.ctx.start}`,
       unitNames: [
         'Arachas',
         'Biting Frost',

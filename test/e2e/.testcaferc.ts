@@ -26,6 +26,11 @@ const config: any = {
         }
       },
     },
+    fixture: {
+      before: async (ctx: any) => {
+        ctx.start = new Date().getTime()
+      },
+    },
     test: {
       before: async (t: any) => {
         t.ctx.start = new Date().getTime()

@@ -601,7 +601,7 @@ test('Game added through API appears for creator without any games after they cr
   })
 })
 
-test.only('Game added through API appears for creator with existing game after they create a game from games page', async () => {
+test('Game added through API appears for creator with existing game after they create a game from games page', async () => {
   const username1 = `games-subscription-create-game-existing-games-page-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-create-game-existing-games-page-creator-2-${t.ctx.start}`
   const username3 = `games-subscription-create-game-existing-games-page-creator-3-${t.ctx.start}`

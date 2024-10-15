@@ -15,10 +15,10 @@ fixture('Game Decking')
   .page(HomePage.getUrl())
   .beforeEach(async () => {
     const scenario = 'game-decking'
-    t.ctx.username = `${scenario}-self-${Date.now()}`
-    t.ctx.opponent = `${scenario}-opponent-${Date.now()}`
-    t.ctx.deckName1 = `${scenario}-deck-self-${Date.now()}`
-    t.ctx.deckName2 = `${scenario}-deck-opponent-${Date.now()}`
+    t.ctx.username = `${scenario}-self-${t.ctx.start}`
+    t.ctx.opponent = `${scenario}-opponent-${t.ctx.start}`
+    t.ctx.deckName1 = `${scenario}-deck-self-${t.ctx.start}`
+    t.ctx.deckName2 = `${scenario}-deck-opponent-${t.ctx.start}`
     const faction1 = FactionKey.ScoiaTael
     const faction2 = FactionKey.NilfgaardianEmpire
     const leader1 = 'Francesca Findabair Queen of Dol Blathanna'

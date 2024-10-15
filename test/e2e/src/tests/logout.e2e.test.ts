@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import Banner from '../components/banner'
 import E2eUtil from '../util/e2e-util'
 import HomePage from '../page-objects/home-page'
@@ -9,7 +11,7 @@ import SignupPage from '../page-objects/signup-page'
 fixture('Logout')
 
 test('Redirects to login page on profile logout', async () => {
-  const username = `logout-profile-${Date.now()}`
+  const username = `logout-profile-${t.ctx.start}`
   await E2eUtil.goTo(HomePage.getUrl())
   await SignupPage.signUp({
     username,
@@ -23,7 +25,7 @@ test('Redirects to login page on profile logout', async () => {
 })
 
 test('Direct profile URL after logout from profile goes to login page', async () => {
-  const username = `direct-profile-after-logout-${Date.now()}`
+  const username = `direct-profile-after-logout-${t.ctx.start}`
   await E2eUtil.goTo(HomePage.getUrl())
   await SignupPage.signUp({
     username,
@@ -39,7 +41,7 @@ test('Direct profile URL after logout from profile goes to login page', async ()
 })
 
 test('Login after direct logout URL redirects to home', async () => {
-  const username = `login-after-direct-logout-${Date.now()}`
+  const username = `login-after-direct-logout-${t.ctx.start}`
   await E2eUtil.goTo(LogoutPage.getUrl())
   await SignupPage.signUp({
     username,

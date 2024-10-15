@@ -10,7 +10,7 @@ import { SORT_FIELD } from '@gwent/graphql-schema/decks-filter'
 fixture('Decks Sort')
   .page(DecksPage.getUrl())
   .beforeEach(async () => {
-    t.ctx.username = `decks-sort-${Date.now()}`
+    t.ctx.username = `decks-sort-${t.ctx.start}`
     t.ctx.name1 = 'decks sort first'
     t.ctx.name2 = 'decks sort second'
     const faction1 = FactionKey.ScoiaTael

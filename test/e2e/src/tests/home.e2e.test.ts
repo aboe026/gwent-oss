@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import DeckPage from '../page-objects/deck-page'
 import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
@@ -8,7 +10,7 @@ import SignupPage from '../page-objects/signup-page'
 fixture('Home').page(env.BASE_URL)
 
 test('Home page displays correctly', async () => {
-  const username = `homepage-disaplys-${Date.now()}`
+  const username = `homepage-disaplys-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })
@@ -16,7 +18,7 @@ test('Home page displays correctly', async () => {
 })
 
 test('Navigate to profile', async () => {
-  const username = `homepage-navigate-new-deck-${Date.now()}`
+  const username = `homepage-navigate-new-deck-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })
@@ -26,7 +28,7 @@ test('Navigate to profile', async () => {
 })
 
 test('Navigate to new deck', async () => {
-  const username = `homepage-navigate-new-deck-${Date.now()}`
+  const username = `homepage-navigate-new-deck-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })

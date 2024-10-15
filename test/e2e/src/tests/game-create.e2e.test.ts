@@ -10,7 +10,7 @@ import LoginPage from '../page-objects/login-page'
 fixture('Game Create').page(GamePage.getUrl())
 
 test('Errors if opponent does not exist', async () => {
-  const username = `game-create-opponent-dne-${Date.now()}`
+  const username = `game-create-opponent-dne-${t.ctx.start}`
   const opponent = 'does-not-exist'
   await new ApiClient({}).addUser({
     name: username,
@@ -27,8 +27,8 @@ test('Errors if opponent does not exist', async () => {
 })
 
 test('Create game with valid opponent', async () => {
-  const username = `game-create-1-${Date.now()}`
-  const opponent = `game-create-2-${Date.now()}`
+  const username = `game-create-1-${t.ctx.start}`
+  const opponent = `game-create-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -61,7 +61,7 @@ test('Create game with valid opponent', async () => {
 })
 
 test('Cancel brings user to games list', async () => {
-  const username = `game-create-cancel-${Date.now()}`
+  const username = `game-create-cancel-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })

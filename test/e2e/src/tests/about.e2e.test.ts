@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import AboutPage from '../page-objects/about-page'
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
@@ -12,7 +14,7 @@ test('Shows about page without logging in', async () => {
 })
 
 test('Shows about page when logged in', async () => {
-  const username = `about-page-logged-in-${Date.now()}`
+  const username = `about-page-logged-in-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })

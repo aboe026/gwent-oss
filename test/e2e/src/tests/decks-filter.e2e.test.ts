@@ -10,7 +10,7 @@ import LoginPage from '../page-objects/login-page'
 fixture('Decks Filter')
   .page(DecksPage.getUrl())
   .beforeEach(async () => {
-    t.ctx.username = `decks-filter-${Date.now()}`
+    t.ctx.username = `decks-filter-${t.ctx.start}`
     t.ctx.name1 = 'decks filter first'
     t.ctx.name2 = 'decks filter second'
     const faction1 = FactionKey.ScoiaTael

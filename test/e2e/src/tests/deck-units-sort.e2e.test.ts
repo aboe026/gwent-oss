@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import ApiClient from '../util/api-client'
 import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
@@ -9,7 +11,7 @@ import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
 fixture('Deck Units Sort').page(DeckPage.getUrl())
 
 test('Available sorts selected by name ascending when locked', async () => {
-  const username = `deck-available-sort-selected-by-name-ascending-locked-${Date.now()}`
+  const username = `deck-available-sort-selected-by-name-ascending-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -41,7 +43,7 @@ test('Available sorts selected by name ascending when locked', async () => {
 })
 
 test('Available sorts selected by strength ascending when locked', async () => {
-  const username = `deck-available-sort-selected-by-strength-ascending-locked-${Date.now()}`
+  const username = `deck-available-sort-selected-by-strength-ascending-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -74,7 +76,7 @@ test('Available sorts selected by strength ascending when locked', async () => {
 })
 
 test('Available sorts selected by name descending when locked', async () => {
-  const username = `deck-available-sort-selected-by-name-descending-locked-${Date.now()}`
+  const username = `deck-available-sort-selected-by-name-descending-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -108,7 +110,7 @@ test('Available sorts selected by name descending when locked', async () => {
 })
 
 test('Available sorts selected by strength descending when locked', async () => {
-  const username = `deck-available-sort-selected-by-strength-descending-locked-${Date.now()}`
+  const username = `deck-available-sort-selected-by-strength-descending-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -143,7 +145,7 @@ test('Available sorts selected by strength descending when locked', async () => 
 })
 
 test('Selected independently sorts by name ascending when unlocked', async () => {
-  const username = `deck-selected-sort-by-name-ascending-unlocked-${Date.now()}`
+  const username = `deck-selected-sort-by-name-ascending-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -180,7 +182,7 @@ test('Selected independently sorts by name ascending when unlocked', async () =>
 })
 
 test('Selected independently sorts by strength ascending when unlocked', async () => {
-  const username = `deck-selected-sort-by-strength-ascending-unlocked-${Date.now()}`
+  const username = `deck-selected-sort-by-strength-ascending-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -217,7 +219,7 @@ test('Selected independently sorts by strength ascending when unlocked', async (
 })
 
 test('Selected independently sorts by name descending when unlocked', async () => {
-  const username = `deck-selected-sort-by-name-descending-unlocked-${Date.now()}`
+  const username = `deck-selected-sort-by-name-descending-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -254,7 +256,7 @@ test('Selected independently sorts by name descending when unlocked', async () =
 })
 
 test('Selected independently sorts by strength descending when unlocked', async () => {
-  const username = `deck-selected-sort-by-strength-descending-unlocked-${Date.now()}`
+  const username = `deck-selected-sort-by-strength-descending-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })

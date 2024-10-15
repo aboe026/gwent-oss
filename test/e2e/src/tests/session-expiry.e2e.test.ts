@@ -16,7 +16,7 @@ import { NOT_AUTHENTICATED_MESSAGE, STARTING_HAND_SIZE } from '@gwent/constants'
 import { sortObjectArray } from '@gwent/utils'
 
 fixture('Session Expiry').before(async (ctx) => {
-  const username = `session-expiry-${Date.now()}`
+  const username = `session-expiry-${ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -64,7 +64,7 @@ fixture('Session Expiry').before(async (ctx) => {
 
 test('Viewing decks after session expires shows login dialog', async () => {
   const name = 'session-expiry-decks'
-  const username = `${name}-${Date.now()}`
+  const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -99,7 +99,7 @@ test('Viewing decks after session expires shows login dialog', async () => {
 
 test('Viewing new deck after session expires shows login dialog', async () => {
   const name = 'session-expiry-deck-new'
-  const username = `${name}-${Date.now()}`
+  const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -135,7 +135,7 @@ test('Viewing new deck after session expires shows login dialog', async () => {
 
 test('Selecting faction for new deck after session expires shows login dialog', async () => {
   const name = 'session-expiry-deck-set-faction'
-  const username = `${name}-${Date.now()}`
+  const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -197,7 +197,7 @@ test('Selecting faction for new deck after session expires shows login dialog', 
 
 test('Changing faction for new deck after session expires shows login dialog', async () => {
   const name = 'session-expiry-deck-change-faction'
-  const username = `${name}-${Date.now()}`
+  const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -270,8 +270,8 @@ test('Changing faction for new deck after session expires shows login dialog', a
 
 test('Creating new deck after session expires shows login dialog', async () => {
   const scenario = 'session-expiry-deck-create'
-  const username = `${scenario}-user-${Date.now()}`
-  const deckName = `${scenario}-deck-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const deckName = `${scenario}-deck-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -322,8 +322,8 @@ test('Creating new deck after session expires shows login dialog', async () => {
 
 test('Creating new game after session expires shows login dialog', async () => {
   const scenario = 'session-expiry-game-create'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -354,8 +354,8 @@ test('Creating new game after session expires shows login dialog', async () => {
 
 test('Viewing games after session expires shows login dialog', async () => {
   const scenario = 'session-expiry-games'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -387,8 +387,8 @@ test('Viewing games after session expires shows login dialog', async () => {
 
 test('Listing decks for game after session expires shows login dialog', async () => {
   const scenario = 'session-expiry-listing-decks-for-game'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -400,7 +400,7 @@ test('Listing decks for game after session expires shows login dialog', async ()
   const deck = await client.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${Date.now()}`,
+    name: `${scenario}-deck-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
@@ -428,8 +428,8 @@ test('Listing decks for game after session expires shows login dialog', async ()
 
 test('Setting deck for game after session expires shows login dialog', async () => {
   const scenario = 'session-expiry-games-choosing-deck-for-game'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -441,7 +441,7 @@ test('Setting deck for game after session expires shows login dialog', async () 
   const deck = await client.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${Date.now()}`,
+    name: `${scenario}-deck-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
@@ -497,8 +497,8 @@ test('Setting deck for game after session expires shows login dialog', async () 
 
 test('Creating deck for game after session expires shows login dialog', async () => {
   const scenario = 'session-expiry-games-create-deck-for-game'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -525,7 +525,7 @@ test('Creating deck for game after session expires shows login dialog', async ()
     decks: [],
   })
   await DeckList.clickCreateNone()
-  const deckName = `${scenario}-deck-${Date.now()}`
+  const deckName = `${scenario}-deck-${t.ctx.start}`
   await DeckEditor.createDeck({
     faction: t.fixtureCtx.faction,
     leader: t.fixtureCtx.leader,
@@ -571,8 +571,8 @@ test('Creating deck for game after session expires shows login dialog', async ()
 
 test('Redrawing unit for game after session expires shows login dialog', async () => {
   const scenario = 'session-expiry-game-redraw'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -584,7 +584,7 @@ test('Redrawing unit for game after session expires shows login dialog', async (
   const deck = await client.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${Date.now()}`,
+    name: `${scenario}-deck-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
@@ -661,8 +661,8 @@ test('Redrawing unit for game after session expires shows login dialog', async (
 
 test('Readying game after session expires shows login dialog', async () => {
   const scenario = 'session-expiry-game-ready'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -674,7 +674,7 @@ test('Readying game after session expires shows login dialog', async () => {
   const deck = await client.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${Date.now()}`,
+    name: `${scenario}-deck-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
@@ -743,8 +743,8 @@ test('Readying game after session expires shows login dialog', async () => {
 })
 
 test('Change user after session expires shows new users data', async () => {
-  const username1 = `session-expiry-change-user-1-${Date.now()}`
-  const username2 = `session-expiry-change-user-2-${Date.now()}`
+  const username1 = `session-expiry-change-user-1-${t.ctx.start}`
+  const username2 = `session-expiry-change-user-2-${t.ctx.start}`
   const name = 'session-expiry-decks'
   await new ApiClient({}).addUser({
     name: username1,

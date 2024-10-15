@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import env from '../util/env'
 import E2eUtil from '../util/e2e-util'
 import LoginPage from '../page-objects/login-page'
@@ -7,7 +9,7 @@ import SignupPage from '../page-objects/signup-page'
 fixture('Profile').page(env.BASE_URL)
 
 test('Redirects to profile page after login', async () => {
-  const username = `profile-redirect-${Date.now()}`
+  const username = `profile-redirect-${t.ctx.start}`
   await E2eUtil.goTo(ProfilePage.getUrl())
   await SignupPage.signUp({
     username,
@@ -18,7 +20,7 @@ test('Redirects to profile page after login', async () => {
 })
 
 test('Page refresh stays on profile page', async () => {
-  const username = `profile-refresh-${Date.now()}`
+  const username = `profile-refresh-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })
@@ -33,7 +35,7 @@ test('Page refresh stays on profile page', async () => {
 })
 
 test('Logout button redirects to logout page', async () => {
-  const username = `profile-logout-${Date.now()}`
+  const username = `profile-logout-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })

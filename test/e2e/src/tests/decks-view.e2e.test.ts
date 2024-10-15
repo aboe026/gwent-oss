@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
 import DeckEditor from '../components/deck-editor'
@@ -12,7 +14,7 @@ import LoginPage from '../page-objects/login-page'
 fixture('Decks View').page(DecksPage.getUrl())
 
 test('Shows message if no decks', async () => {
-  const username = `decks-none-${Date.now()}`
+  const username = `decks-none-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -25,7 +27,7 @@ test('Shows message if no decks', async () => {
 })
 
 test('Displays single deck', async () => {
-  const username = `decks-single-${Date.now()}`
+  const username = `decks-single-${t.ctx.start}`
   const name = 'single deck'
   const faction = FactionKey.NorthernRealms
   const leader = 'Foltest Son of Medell'
@@ -87,7 +89,7 @@ test('Displays single deck', async () => {
 })
 
 test('Displays two decks', async () => {
-  const username = `decks-two-${Date.now()}`
+  const username = `decks-two-${t.ctx.start}`
   const name1 = 'two decks first'
   const name2 = 'two decks second'
   const faction1 = FactionKey.ScoiaTael
@@ -195,7 +197,7 @@ test('Displays two decks', async () => {
 })
 
 test('List gets updated after deck created from deck page', async () => {
-  const username = `decks-list-updated-on-create-deck-page-${Date.now()}`
+  const username = `decks-list-updated-on-create-deck-page-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -262,8 +264,8 @@ test('List gets updated after deck created from deck page', async () => {
 
 test('List gets updated after deck created from game page', async () => {
   const scenario = 'decks-list-updated-on-create-game-page'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -341,7 +343,7 @@ test('List gets updated after deck created from game page', async () => {
 })
 
 test('Shows deck created by api after list refresh button clicked', async () => {
-  const username = `decks-refresh-${Date.now()}`
+  const username = `decks-refresh-${t.ctx.start}`
   const name1 = 'two decks first'
   const name2 = 'two decks second'
   const faction1 = FactionKey.ScoiaTael

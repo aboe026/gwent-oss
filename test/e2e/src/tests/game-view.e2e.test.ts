@@ -1,4 +1,5 @@
 import { ObjectId } from 'mongodb'
+import { t } from 'testcafe'
 
 import ApiClient from '../util/api-client'
 import E2eUtil from '../util/e2e-util'
@@ -9,7 +10,7 @@ import LoginPage from '../page-objects/login-page'
 fixture('Game View').page(GamePage.getUrl())
 
 test('Show not authorized if invalid ID', async () => {
-  const username = `game-view-invalid-${Date.now()}`
+  const username = `game-view-invalid-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -27,7 +28,7 @@ test('Show not authorized if invalid ID', async () => {
 })
 
 test('Show not authorized if game does not exist', async () => {
-  const username = `game-view-dne-${Date.now()}`
+  const username = `game-view-dne-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -45,9 +46,9 @@ test('Show not authorized if game does not exist', async () => {
 })
 
 test('Show not authorized if not participant of game', async () => {
-  const username1 = `game-view-not-participant-${Date.now()}`
-  const username2 = `game-view-participant-1-${Date.now()}`
-  const username3 = `game-view-participant-2-${Date.now()}`
+  const username1 = `game-view-not-participant-${t.ctx.start}`
+  const username2 = `game-view-participant-1-${t.ctx.start}`
+  const username3 = `game-view-participant-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username1,
   })

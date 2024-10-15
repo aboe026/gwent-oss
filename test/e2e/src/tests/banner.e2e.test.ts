@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import AboutPage from '../page-objects/about-page'
 import Banner from '../components/banner'
 import DecksPage from '../page-objects/decks-page'
@@ -17,7 +19,7 @@ test('Main title does not redirect to home page when not logged in', async () =>
 })
 
 test('Main title redirects to home page when logged in', async () => {
-  const username = `banner-main-title-redirect-${Date.now()}`
+  const username = `banner-main-title-redirect-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })
@@ -41,7 +43,7 @@ test('About page does not show menu or username when not logged in', async () =>
 })
 
 test('Main page shows menu and username when logged in', async () => {
-  const username = `banner-menu-username-${Date.now()}`
+  const username = `banner-menu-username-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })
@@ -49,7 +51,7 @@ test('Main page shows menu and username when logged in', async () => {
 })
 
 test('Username redirects to profile when logged in', async () => {
-  const username = `banner-username-redirect-${Date.now()}`
+  const username = `banner-username-redirect-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })
@@ -62,7 +64,7 @@ test('Username redirects to profile when logged in', async () => {
 })
 
 test('Menu navigates to correct pages', async () => {
-  const username = `banner-menu-naviagation-${Date.now()}`
+  const username = `banner-menu-naviagation-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })

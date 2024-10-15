@@ -1,3 +1,5 @@
+import { t } from 'testcafe'
+
 import ApiClient from '../util/api-client'
 import { Combat, DlcKey, EffectKey, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
 import DeckEditor from '../components/deck-editor'
@@ -9,7 +11,7 @@ import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
 fixture('Deck Units Filter').page(DeckPage.getUrl())
 
 test('Available filters specials when locked', async () => {
-  const username = `deck-available-filter-specials-locked-${Date.now()}`
+  const username = `deck-available-filter-specials-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -46,7 +48,7 @@ test('Available filters specials when locked', async () => {
 })
 
 test('Available filters heroes when locked', async () => {
-  const username = `deck-available-filter-heroes-locked-${Date.now()}`
+  const username = `deck-available-filter-heroes-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -83,7 +85,7 @@ test('Available filters heroes when locked', async () => {
 })
 
 test('Available filters strength when locked', async () => {
-  const username = `deck-available-filter-strength-locked-${Date.now()}`
+  const username = `deck-available-filter-strength-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -126,7 +128,7 @@ test('Available filters strength when locked', async () => {
 })
 
 test('Available filters close when locked', async () => {
-  const username = `deck-available-filter-close-locked-${Date.now()}`
+  const username = `deck-available-filter-close-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -170,7 +172,7 @@ test('Available filters close when locked', async () => {
 })
 
 test('Available filters ranged when locked', async () => {
-  const username = `deck-available-filter-ranged-locked-${Date.now()}`
+  const username = `deck-available-filter-ranged-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -216,7 +218,7 @@ test('Available filters ranged when locked', async () => {
 })
 
 test('Available filters siege when locked', async () => {
-  const username = `deck-available-filter-siege-locked-${Date.now()}`
+  const username = `deck-available-filter-siege-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -260,7 +262,7 @@ test('Available filters siege when locked', async () => {
 })
 
 test('Available filters agile when locked', async () => {
-  const username = `deck-available-filter-agile-locked-${Date.now()}`
+  const username = `deck-available-filter-agile-locked-${t.ctx.start}`
   const factionKey = FactionKey.Skellige
   await new ApiClient({}).addUser({
     name: username,
@@ -434,7 +436,7 @@ test('Available filters weather when locked', async () => {
 })
 
 test('Selected filters effects separate from available when unlocked', async () => {
-  const username = `deck-selected-filter-effect-unlocked-${Date.now()}`
+  const username = `deck-selected-filter-effect-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -476,7 +478,7 @@ test('Selected filters effects separate from available when unlocked', async () 
 })
 
 test('Available filters faction when locked', async () => {
-  const username = `deck-available-filter-faction-locked-${Date.now()}`
+  const username = `deck-available-filter-faction-locked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -520,7 +522,7 @@ test('Available filters faction when locked', async () => {
 })
 
 test('Selected filters faction separately when unlocked', async () => {
-  const username = `deck-selected-filter-faction-unlocked-${Date.now()}`
+  const username = `deck-selected-filter-faction-unlocked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -567,7 +569,7 @@ test('Selected filters faction separately when unlocked', async () => {
 })
 
 test('Available filters DLC when locked', async () => {
-  const username = `deck-available-filter-dlc-locked-${Date.now()}`
+  const username = `deck-available-filter-dlc-locked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -611,7 +613,7 @@ test('Available filters DLC when locked', async () => {
 })
 
 test('Selected filters DLC separately when unlocked', async () => {
-  const username = `deck-selected-filter-dlc-unlocked-${Date.now()}`
+  const username = `deck-selected-filter-dlc-unlocked-${t.ctx.start}`
   const factionKey = FactionKey.Skellige
   await new ApiClient({}).addUser({
     name: username,
@@ -658,7 +660,7 @@ test('Selected filters DLC separately when unlocked', async () => {
 })
 
 test('Available filters Alternate Art when locked', async () => {
-  const username = `deck-available-filter-alt-art-locked-${Date.now()}`
+  const username = `deck-available-filter-alt-art-locked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -702,7 +704,7 @@ test('Available filters Alternate Art when locked', async () => {
 })
 
 test('Available filters name when locked', async () => {
-  const username = `deck-available-filter-name-locked-${Date.now()}`
+  const username = `deck-available-filter-name-locked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -745,7 +747,7 @@ test('Available filters name when locked', async () => {
 })
 
 test('Selected filters separately on name when unlocked', async () => {
-  const username = `deck-selected-filter-name-unlocked-${Date.now()}`
+  const username = `deck-selected-filter-name-unlocked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -807,7 +809,7 @@ async function testEffectFilter({
   available: string[]
   selected: string[]
 }) {
-  const username = `deck-available-filter-${effectKey.toLowerCase()}-locked-${Date.now()}`
+  const username = `deck-available-filter-${effectKey.toLowerCase()}-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
