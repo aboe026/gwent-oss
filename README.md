@@ -294,6 +294,7 @@ A list of things to be done in the future:
 - Change schema.ts to schema.gql
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
+- ensure client and server are on same version
 - Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 - Fix root "yarn build"
   - right now it runs "yarn build" in all workspaces simultaneously.

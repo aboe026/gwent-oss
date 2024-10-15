@@ -30,6 +30,10 @@ export default class GamesPage {
     return E2eUtil.getUrl(ROUTES.Games.path)
   }
 
+  static async clickCreateNew() {
+    await t.click(GamesPage.elements.CreateNew)
+  }
+
   static async clickCreateNone() {
     await t.click(GamesPage.elements.CreateNone)
   }

@@ -99,7 +99,7 @@ const deckInput3: AddDeckInput = {
   ],
 }
 
-test('Deck added through API appears for user on deck page without any decks', async () => {
+test('Deck added through API appears for user on decks page without any decks', async () => {
   const username = `decks-subscription-deck-page-none-${Date.now()}`
   await new ApiClient({}).addUser({
     name: username,
@@ -129,7 +129,7 @@ test('Deck added through API appears for user on deck page without any decks', a
   })
 })
 
-test('Deck added through API appears for user on deck page with existing deck', async () => {
+test('Deck added through API appears for user on decks page with existing deck', async () => {
   const username = `decks-subscription-deck-page-existing-${Date.now()}`
   await new ApiClient({}).addUser({
     name: username,
@@ -481,9 +481,9 @@ test('Deck added through API appears for user with existing deck after they crea
   })
 })
 
-test('Deck added for other user through API does not appears on deck page', async () => {
-  const username1 = `decks-subscription-deck-page-different-owner-1-${Date.now()}`
-  const username2 = `decks-subscription-deck-page-different-owner-2-${Date.now()}`
+test('Deck added for other user through API does not appear on deck page', async () => {
+  const username1 = `decks-subscription-decks-page-different-owner-1-${Date.now()}`
+  const username2 = `decks-subscription-decks-page-different-owner-2-${Date.now()}`
   await new ApiClient({}).addUser({
     name: username1,
   })
