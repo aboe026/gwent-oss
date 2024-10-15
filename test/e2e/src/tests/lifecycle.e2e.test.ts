@@ -311,7 +311,7 @@ test('Scenic Route', async () => {
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck1.created,
         faction: faction1,
         leader: leader1,
         name: deckName1,

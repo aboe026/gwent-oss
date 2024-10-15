@@ -26,6 +26,11 @@ const config: any = {
         }
       },
     },
+    test: {
+      before: async (t: any) => {
+        t.ctx.start = new Date().getTime()
+      },
+    },
   },
   reporter: [
     {

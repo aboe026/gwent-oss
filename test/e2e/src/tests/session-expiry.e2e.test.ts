@@ -87,7 +87,7 @@ test('Viewing decks after session expires shows login dialog', async () => {
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name,
@@ -123,7 +123,7 @@ test('Viewing new deck after session expires shows login dialog', async () => {
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name,
@@ -185,7 +185,7 @@ test('Selecting faction for new deck after session expires shows login dialog', 
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name,
@@ -258,7 +258,7 @@ test('Changing faction for new deck after session expires shows login dialog', a
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name,
@@ -310,7 +310,7 @@ test('Creating new deck after session expires shows login dialog', async () => {
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name: deckName,

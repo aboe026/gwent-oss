@@ -70,7 +70,7 @@ test('Displays single deck', async () => {
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: await client.getFaction({
           key: faction,
           neutrals: true,
@@ -165,7 +165,7 @@ test('Displays two decks', async () => {
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
           neutrals: true,
@@ -178,7 +178,7 @@ test('Displays two decks', async () => {
         stats: deck1.stats,
       },
       {
-        created: new Date(),
+        created: deck2.created,
         faction: await client.getFaction({
           key: faction2,
           neutrals: true,
@@ -246,10 +246,11 @@ test('List gets updated after deck created from deck page', async () => {
       'Young Emissary',
     ],
   })
+  const deck = await client.getDeck(name)
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction,
         leader,
         name,
@@ -325,10 +326,11 @@ test('List gets updated after deck created from game page', async () => {
     verify: false,
   })
   await Banner.goTo(Banner.elements.MenuDecks)
+  const deck = await client.getDeck(name)
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction,
         leader,
         name,
@@ -411,7 +413,7 @@ test('Shows deck created by api after list refresh button clicked', async () => 
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
           neutrals: true,
@@ -436,7 +438,7 @@ test('Shows deck created by api after list refresh button clicked', async () => 
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
           neutrals: true,
@@ -456,7 +458,7 @@ test('Shows deck created by api after list refresh button clicked', async () => 
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
           neutrals: true,
@@ -469,7 +471,7 @@ test('Shows deck created by api after list refresh button clicked', async () => 
         stats: deck1.stats,
       },
       {
-        created: new Date(),
+        created: deck2.created,
         faction: await client.getFaction({
           key: faction2,
           neutrals: true,

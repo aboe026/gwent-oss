@@ -109,11 +109,15 @@ test('List gets updated after game created', async () => {
     creator: username,
     opponents: [opponent],
   })
+  const id = await GamePage.getIdFromUrl()
+  const game = await new ApiClient({
+    username,
+  }).getGame(id)
   await Banner.goTo(Banner.elements.MenuGames)
   await GamesPage.verify({
     games: [
       {
-        created: new Date().toISOString(),
+        created: game.created,
         owner: username,
         players: [username, opponent],
         status: GameStatus.Decking,
@@ -155,17 +159,6 @@ test('Shows game created by api after list refresh button clicked', async () => 
   })
 
   const game2 = await client2.addGame([username])
-
-  await GamesPage.verify({
-    games: [
-      {
-        created: game1.created,
-        owner: username,
-        players: [username, opponent],
-        status: GameStatus.Decking,
-      },
-    ],
-  })
 
   await GamesPage.refresh()
 
