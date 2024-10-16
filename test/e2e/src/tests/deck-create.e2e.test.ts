@@ -1,18 +1,20 @@
-import { t } from 'testcafe'
-
 import ApiClient from '../util/api-client'
 import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
 
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
+
 fixture('Deck Create').page(DeckPage.getUrl())
 
-test('Create deck with dropdowns', async () => {
+test('Create deck with dropdowns', async (t) => {
   const username = `deck-create-dropdowns-${t.ctx.start}`
   const name = 'Create deck dropdowns'
   const factionKey = FactionKey.NorthernRealms
@@ -65,7 +67,7 @@ test('Create deck with dropdowns', async () => {
   })
 })
 
-test('Create deck with pickers', async () => {
+test('Create deck with pickers', async (t) => {
   const username = `deck-create-pickers-${t.ctx.start}`
   const password = 'password'
   const name = 'Create deck pickers'
@@ -121,7 +123,7 @@ test('Create deck with pickers', async () => {
   })
 })
 
-test('Create disabled if invalid', async () => {
+test('Create disabled if invalid', async (t) => {
   const username = `deck--create-disabled-if-invalid-${t.ctx.start}`
   const password = 'password'
   const name = 'Create deck disabled if invalid'
@@ -196,7 +198,7 @@ test('Create disabled if invalid', async () => {
   await DeckEditor.verifyValid(false)
 })
 
-test('Change leader', async () => {
+test('Change leader', async (t) => {
   const username = `deck-create-change-leader-${t.ctx.start}`
   const password = 'password'
   const name = 'Create deck change leader'
@@ -266,7 +268,7 @@ test('Change leader', async () => {
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
 })
 
-test('Change faction', async () => {
+test('Change faction', async (t) => {
   const username = `deck-create-change-faction-${t.ctx.start}`
   const password = 'password'
   const name = 'Create deck change faction'
@@ -369,7 +371,7 @@ test('Change faction', async () => {
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
 })
 
-test('Create deck with Select All button', async () => {
+test('Create deck with Select All button', async (t) => {
   const username = `deck-create-select-all-${t.ctx.start}`
   const name = 'Create deck select all'
   const factionKey = FactionKey.NorthernRealms
@@ -424,7 +426,7 @@ test('Create deck with Select All button', async () => {
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
 })
 
-test('Cannot create deck with existing name', async () => {
+test('Cannot create deck with existing name', async (t) => {
   const username = `deck-create-existing-name-${t.ctx.start}`
   const name = 'Create deck select all'
   const factionKey = FactionKey.NorthernRealms
@@ -474,7 +476,7 @@ test('Cannot create deck with existing name', async () => {
   await DeckEditor.verifyCreateError(`Error creating deck: Deck with name "${name}" already exists.`)
 })
 
-test('Cancel brings user to decks list', async () => {
+test('Cancel brings user to decks list', async (t) => {
   const username = `deck-create-cancel-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,

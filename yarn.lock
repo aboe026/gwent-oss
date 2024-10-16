@@ -3753,11 +3753,13 @@ __metadata:
     "@gwent/env": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
     "@gwent/utils": "workspace:*"
+    "@types/node": "npm:22.5.5"
     "@types/url-join": "npm:4.0.3"
     cross-env: "npm:7.0.3"
     graphql: "npm:16.9.0"
     graphql-request: "npm:6.1.0"
     mongodb: "npm:6.9.0"
+    replace-in-file: "npm:7.2.0"
     testcafe: "npm:3.6.2"
     url-join: "npm:4.0.1"
   languageName: unknown
@@ -3770,6 +3772,17 @@ __metadata:
     "@types/jest": "npm:29.5.13"
     dotenv: "npm:16.4.5"
     envalid: "npm:8.0.0"
+    jest-junit: "npm:16.0.0"
+    ts-jest: "npm:29.2.5"
+  languageName: unknown
+  linkType: soft
+
+"@gwent/execute-async@workspace:libs/execute-async":
+  version: 0.0.0-use.local
+  resolution: "@gwent/execute-async@workspace:libs/execute-async"
+  dependencies:
+    "@types/jest": "npm:29.5.13"
+    "@types/node": "npm:22.5.5"
     jest-junit: "npm:16.0.0"
     ts-jest: "npm:29.2.5"
   languageName: unknown

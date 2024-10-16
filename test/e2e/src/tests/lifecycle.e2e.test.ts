@@ -1,11 +1,10 @@
-import { t } from 'testcafe'
-
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
@@ -17,6 +16,9 @@ import ProfilePage from '../page-objects/profile-page'
 import SignupPage from '../page-objects/signup-page'
 import { sortObjectArray } from '@gwent/utils'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
+
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Lifecycle').page(env.BASE_URL)
 
@@ -70,7 +72,7 @@ const units2 = [
   'Zerrikanian Fire Scorpion',
 ]
 
-test('Speed Run', async () => {
+test('Speed Run', async (t) => {
   const scenario = 'lifecycle-speed-run'
   const username1 = `${scenario}-user-1-${t.ctx.start}`
   const deckName1 = `${scenario}-deck-1-${t.ctx.start}`
@@ -277,7 +279,7 @@ test('Speed Run', async () => {
   })
 })
 
-test('Scenic Route', async () => {
+test('Scenic Route', async (t) => {
   const scenario = 'lifecycle-scenic-route'
   const username1 = `${scenario}-user-1-${t.ctx.start}`
   const deckName1 = `${scenario}-deck-1-${t.ctx.start}`

@@ -1,14 +1,16 @@
-import { t } from 'testcafe'
-
 import AboutPage from '../page-objects/about-page'
 import Banner from '../components/banner'
 import DecksPage from '../page-objects/decks-page'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import ProfilePage from '../page-objects/profile-page'
 import SignupPage from '../page-objects/signup-page'
+
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Banner').page(env.BASE_URL)
 
@@ -18,7 +20,7 @@ test('Main title does not redirect to home page when not logged in', async () =>
   await LoginPage.verifyNotLoggedIn({})
 })
 
-test('Main title redirects to home page when logged in', async () => {
+test('Main title redirects to home page when logged in', async (t) => {
   const username = `banner-main-title-redirect-${t.ctx.start}`
   await SignupPage.signUp({
     username,
@@ -42,7 +44,7 @@ test('About page does not show menu or username when not logged in', async () =>
   await Banner.verify('')
 })
 
-test('Main page shows menu and username when logged in', async () => {
+test('Main page shows menu and username when logged in', async (t) => {
   const username = `banner-menu-username-${t.ctx.start}`
   await SignupPage.signUp({
     username,
@@ -50,7 +52,7 @@ test('Main page shows menu and username when logged in', async () => {
   await Banner.verify(username)
 })
 
-test('Username redirects to profile when logged in', async () => {
+test('Username redirects to profile when logged in', async (t) => {
   const username = `banner-username-redirect-${t.ctx.start}`
   await SignupPage.signUp({
     username,
@@ -63,7 +65,7 @@ test('Username redirects to profile when logged in', async () => {
   })
 })
 
-test('Menu navigates to correct pages', async () => {
+test('Menu navigates to correct pages', async (t) => {
   const username = `banner-menu-naviagation-${t.ctx.start}`
   await SignupPage.signUp({
     username,

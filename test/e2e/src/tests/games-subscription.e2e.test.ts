@@ -1,7 +1,6 @@
-import { t } from 'testcafe'
-
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
@@ -9,9 +8,12 @@ import { GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import LoginPage from '../page-objects/login-page'
 import HomePage from '../page-objects/home-page'
 
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
+
 fixture('Games Subscription')
 
-test('Game added through API appears for creator on games page without any games', async () => {
+test('Game added through API appears for creator on games page without any games', async (t) => {
   const username1 = `games-subscription-none-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-none-creator-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -43,7 +45,7 @@ test('Game added through API appears for creator on games page without any games
   })
 })
 
-test('Game added through API appears for participant on games page without any games', async () => {
+test('Game added through API appears for participant on games page without any games', async (t) => {
   const username1 = `games-subscription-none-participant-1-${t.ctx.start}`
   const username2 = `games-subscription-none-participant-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -75,7 +77,7 @@ test('Game added through API appears for participant on games page without any g
   })
 })
 
-test('Game added through API appears for creator on games page with existing game', async () => {
+test('Game added through API appears for creator on games page with existing game', async (t) => {
   const username1 = `games-subscription-existing-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-existing-creator-2-${t.ctx.start}`
   const username3 = `games-subscription-existing-creator-3-${t.ctx.start}`
@@ -127,7 +129,7 @@ test('Game added through API appears for creator on games page with existing gam
   })
 })
 
-test('Game added through API appears for participant on games page with existing game', async () => {
+test('Game added through API appears for participant on games page with existing game', async (t) => {
   const username1 = `games-subscription-existing-participant-1-${t.ctx.start}`
   const username2 = `games-subscription-existing-participant-2-${t.ctx.start}`
   const username3 = `games-subscription-existing-participant-3-${t.ctx.start}`
@@ -179,7 +181,7 @@ test('Game added through API appears for participant on games page with existing
   })
 })
 
-test('Game added through API appears for creator without games navigating to games page from home page', async () => {
+test('Game added through API appears for creator without games navigating to games page from home page', async (t) => {
   const username1 = `games-subscription-home-page-none-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-home-page-none-creator-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -210,7 +212,7 @@ test('Game added through API appears for creator without games navigating to gam
   })
 })
 
-test('Game added through API appears for participant without games navigating to games page from home page', async () => {
+test('Game added through API appears for participant without games navigating to games page from home page', async (t) => {
   const username1 = `games-subscription-home-page-none-participant-1-${t.ctx.start}`
   const username2 = `games-subscription-home-page-none-participant-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -241,7 +243,7 @@ test('Game added through API appears for participant without games navigating to
   })
 })
 
-test('Game added through API appears for creator with existing game navigating to games page from home page', async () => {
+test('Game added through API appears for creator with existing game navigating to games page from home page', async (t) => {
   const username1 = `games-subscription-home-page-existing-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-home-page-existing-creator-2-${t.ctx.start}`
   const username3 = `games-subscription-home-page-existing-creator-3-${t.ctx.start}`
@@ -285,7 +287,7 @@ test('Game added through API appears for creator with existing game navigating t
   })
 })
 
-test('Game added through API appears for participant with existing game navigating to games page from home page', async () => {
+test('Game added through API appears for participant with existing game navigating to games page from home page', async (t) => {
   const username1 = `games-subscription-home-page-existing-participant-1-${t.ctx.start}`
   const username2 = `games-subscription-home-page-existing-participant-2-${t.ctx.start}`
   const username3 = `games-subscription-home-page-existing-participant-3-${t.ctx.start}`
@@ -329,7 +331,7 @@ test('Game added through API appears for participant with existing game navigati
   })
 })
 
-test('Game added through API appears for creator without games navigating from games page to home page and back to games page', async () => {
+test('Game added through API appears for creator without games navigating from games page to home page and back to games page', async (t) => {
   const username1 = `games-subscription-game-page-home-page-none-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-game-page-home-page-none-creator-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -364,7 +366,7 @@ test('Game added through API appears for creator without games navigating from g
   })
 })
 
-test('Game added through API appears for participant without games navigating from games page to home page and back to games page', async () => {
+test('Game added through API appears for participant without games navigating from games page to home page and back to games page', async (t) => {
   const username1 = `games-subscription-game-page-home-page-none-participant-1-${t.ctx.start}`
   const username2 = `games-subscription-game-page-home-page-none-participant-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -399,7 +401,7 @@ test('Game added through API appears for participant without games navigating fr
   })
 })
 
-test('Game added through API appears for creator with existing game navigating from games page to home page and back to games page', async () => {
+test('Game added through API appears for creator with existing game navigating from games page to home page and back to games page', async (t) => {
   const username1 = `games-subscription-game-page-home-page-existing-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-game-page-home-page-existing-creator-2-${t.ctx.start}`
   const username3 = `games-subscription-game-page-home-page-existing-creator-3-${t.ctx.start}`
@@ -454,7 +456,7 @@ test('Game added through API appears for creator with existing game navigating f
   })
 })
 
-test('Game added through API appears for participant with existing game navigating from games page to home page and back to games page', async () => {
+test('Game added through API appears for participant with existing game navigating from games page to home page and back to games page', async (t) => {
   const username1 = `games-subscription-game-page-home-page-existing-participant-1-${t.ctx.start}`
   const username2 = `games-subscription-game-page-home-page-existing-participant-2-${t.ctx.start}`
   const username3 = `games-subscription-game-page-home-page-existing-participant-3-${t.ctx.start}`
@@ -509,7 +511,7 @@ test('Game added through API appears for participant with existing game navigati
   })
 })
 
-test('Game added through API appears for creator without any games after they create a game from games page', async () => {
+test('Game added through API appears for creator without any games after they create a game from games page', async (t) => {
   const username1 = `games-subscription-create-game-none-games-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-create-game-none-games-creator-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -556,7 +558,7 @@ test('Game added through API appears for creator without any games after they cr
   })
 })
 
-test('Game added through API appears for creator without any games after they create a game from home page', async () => {
+test('Game added through API appears for creator without any games after they create a game from home page', async (t) => {
   const username1 = `games-subscription-create-game-none-home-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-create-game-none-home-creator-2-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -601,7 +603,7 @@ test('Game added through API appears for creator without any games after they cr
   })
 })
 
-test('Game added through API appears for creator with existing game after they create a game from games page', async () => {
+test('Game added through API appears for creator with existing game after they create a game from games page', async (t) => {
   const username1 = `games-subscription-create-game-existing-games-page-creator-1-${t.ctx.start}`
   const username2 = `games-subscription-create-game-existing-games-page-creator-2-${t.ctx.start}`
   const username3 = `games-subscription-create-game-existing-games-page-creator-3-${t.ctx.start}`
@@ -681,7 +683,7 @@ test('Game added through API appears for creator with existing game after they c
   })
 })
 
-test('Game added for other user through API does not appear on games page', async () => {
+test('Game added for other user through API does not appear on games page', async (t) => {
   const username1 = `games-subscription-games-page-different-user-1-${t.ctx.start}`
   const username2 = `games-subscription-games-page-different-user-2-${t.ctx.start}`
   const username3 = `games-subscription-games-page-different-user-3-${t.ctx.start}`

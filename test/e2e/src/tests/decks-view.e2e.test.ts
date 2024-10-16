@@ -1,19 +1,21 @@
-import { t } from 'testcafe'
-
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import LoginPage from '../page-objects/login-page'
 
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
+
 fixture('Decks View').page(DecksPage.getUrl())
 
-test('Shows message if no decks', async () => {
+test('Shows message if no decks', async (t) => {
   const username = `decks-none-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
@@ -26,7 +28,7 @@ test('Shows message if no decks', async () => {
   })
 })
 
-test('Displays single deck', async () => {
+test('Displays single deck', async (t) => {
   const username = `decks-single-${t.ctx.start}`
   const name = 'single deck'
   const faction = FactionKey.NorthernRealms
@@ -88,7 +90,7 @@ test('Displays single deck', async () => {
   })
 })
 
-test('Displays two decks', async () => {
+test('Displays two decks', async (t) => {
   const username = `decks-two-${t.ctx.start}`
   const name1 = 'two decks first'
   const name2 = 'two decks second'
@@ -196,7 +198,7 @@ test('Displays two decks', async () => {
   })
 })
 
-test('List gets updated after deck created from deck page', async () => {
+test('List gets updated after deck created from deck page', async (t) => {
   const username = `decks-list-updated-on-create-deck-page-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
@@ -262,7 +264,7 @@ test('List gets updated after deck created from deck page', async () => {
   })
 })
 
-test('List gets updated after deck created from game page', async () => {
+test('List gets updated after deck created from game page', async (t) => {
   const scenario = 'decks-list-updated-on-create-game-page'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
@@ -342,7 +344,7 @@ test('List gets updated after deck created from game page', async () => {
   })
 })
 
-test('Shows deck created by api after list refresh button clicked', async () => {
+test('Shows deck created by api after list refresh button clicked', async (t) => {
   const username = `decks-refresh-${t.ctx.start}`
   const name1 = 'two decks first'
   const name2 = 'two decks second'

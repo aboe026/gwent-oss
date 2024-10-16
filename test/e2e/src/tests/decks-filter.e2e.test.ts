@@ -1,15 +1,28 @@
-import { t } from 'testcafe'
-
 import ApiClient from '../util/api-client'
 import DeckList from '../components/deck-list'
 import DecksPage from '../page-objects/decks-page'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, Faction, FactionKey, Leader } from '@gwent/graphql-schema/resolver-typings'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { FILTER_FIELD } from '@gwent/graphql-schema/decks-filter'
 import LoginPage from '../page-objects/login-page'
 
+interface DeckFilterTestCtx extends E2eCtx {
+  username: string
+  name1: string
+  name2: string
+  faction1: Faction
+  faction2: Faction
+  leader1: Leader
+  leader2: Leader
+  deck1: Deck
+  deck2: Deck
+}
+const fixture = getFixtureCtx<E2eCtx, DeckFilterTestCtx>()
+const test = getTestCtx<E2eCtx, DeckFilterTestCtx>()
+
 fixture('Decks Filter')
   .page(DecksPage.getUrl())
-  .beforeEach(async () => {
+  .beforeEach(async (t) => {
     t.ctx.username = `decks-filter-${t.ctx.start}`
     t.ctx.name1 = 'decks filter first'
     t.ctx.name2 = 'decks filter second'
@@ -106,7 +119,7 @@ fixture('Decks Filter')
     })
   })
 
-test('Filters by name', async () => {
+test('Filters by name', async (t) => {
   await DeckList.filterName(t.ctx.name1)
   await DecksPage.verify({
     decks: [
@@ -154,7 +167,7 @@ test('Filters by name', async () => {
   })
 })
 
-test('Filters by faction', async () => {
+test('Filters by faction', async (t) => {
   await DeckList.toggleAdvancedFiltersExpanded()
   await DeckList.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
   await DecksPage.verify({
@@ -230,7 +243,7 @@ test('Filters by faction', async () => {
   })
 })
 
-test('Filters by name and faction', async () => {
+test('Filters by name and faction', async (t) => {
   await DeckList.toggleAdvancedFiltersExpanded()
   await DeckList.toggleAdvancedFilter(FILTER_FIELD.ScoiaTael)
   await DeckList.toggleAdvancedFilter(FILTER_FIELD.NilfgaardianEmpire)
