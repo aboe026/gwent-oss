@@ -201,8 +201,6 @@ test('Ready before opponent shows loading message until opponent ready', async (
     gameId: t.ctx.game.id,
   })
   await client2.ready(t.ctx.game.id)
-  // TODO: Remove refresh when subscriptions implemented to automatically update
-  await E2eUtil.reload()
   await GamePage.verify({
     opponent: {
       name: t.ctx.opponent,
@@ -587,5 +585,102 @@ test('Cancel on deck create closes decks dialog and remains on game page', async
     self: {
       name: t.ctx.username,
     },
+  })
+})
+
+// test choosing deck via API gets reflected after refresh button clicked
+// test marking ready via API gets reflected after refresh button clicked
+
+test('Game not marked as ready if use API to mark other game as ready', async (t) => {
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+    },
+  })
+  await GamePage.setDeck({
+    created: t.ctx.deck1.created,
+    faction: t.ctx.deck1.faction,
+    leader: t.ctx.deck1.leader,
+    name: t.ctx.deck1.name,
+    stats: t.ctx.deck1.stats,
+  })
+  const client1 = new ApiClient({
+    username: t.ctx.username,
+  })
+  const game2 = await client1.addGame([t.ctx.opponent])
+  await client1.setDeck({
+    deckId: t.ctx.deck1.id,
+    gameId: game2.id,
+  })
+  await client1.ready(game2.id)
+  const gameDeck = await client1.getGameDeck(t.ctx.game.id)
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+  await GamePage.ready()
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      ready: true,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+  const client2 = new ApiClient({
+    username: t.ctx.opponent,
+  })
+  await client2.setDeck({
+    deckId: t.ctx.deck2.id,
+    gameId: game2.id,
+  })
+  await client2.ready(game2.id)
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      ready: true,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
   })
 })

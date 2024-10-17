@@ -260,6 +260,9 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- e2e test for game page refresh
+- subscriptions unit tests
+- subscriptions func test (websocket reject if not authenticated?)
 - get 3rd party package to parse cookies from string instead of parseCookies
 - fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
   - happens when adding deck through API and not requesting neutral stats?

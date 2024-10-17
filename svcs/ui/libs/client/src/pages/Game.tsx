@@ -1,5 +1,12 @@
-import { ApolloCache, ApolloError, DefaultContext, FetchResult, MutationFunctionOptions } from '@apollo/client'
-import { CgArrowLongRight, CgPlayButton, CgTime } from 'react-icons/cg'
+import {
+  ApolloCache,
+  ApolloError,
+  ApolloQueryResult,
+  DefaultContext,
+  FetchResult,
+  MutationFunctionOptions,
+} from '@apollo/client'
+import { CgArrowLongRight, CgPlayButton, CgSync, CgTime } from 'react-icons/cg'
 import { Link } from 'react-router-dom'
 import { NavigateFunction, useLocation, useNavigate } from 'react-router-dom'
 
@@ -30,6 +37,8 @@ import {
   ReadyMutation,
   Faction,
   Leader,
+  Scalars,
+  GameQuery,
 } from '@gwent/graphql-schema/apollo-typings'
 import Centered from '../components/Centered'
 import DeckEditor from '../components/DeckEditor'
@@ -227,6 +236,8 @@ export default function GamePage() {
         },
         fullUnit,
         setFullUnit,
+        gameRefetch,
+        gameDeckRefetch,
       })
 }
 
@@ -319,6 +330,8 @@ function renderExistingGame({
   ready,
   fullUnit,
   setFullUnit,
+  gameRefetch,
+  gameDeckRefetch,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
@@ -340,6 +353,24 @@ function renderExistingGame({
   ready: ReadyProps
   fullUnit: DeckUnit | undefined
   setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  gameRefetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            id: Scalars['ID']['input']
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<GameQuery>>
+  gameDeckRefetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            game: Scalars['ID']['input']
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<GameDeckQuery>>
 }) {
   const resolvedGameError = getApolloError(gameError)
   const resolvedGameDeckError = getApolloError(gameDeckError)
@@ -417,6 +448,10 @@ function renderExistingGame({
           opponent,
           self,
           gameDeck,
+          gameLoading,
+          gameDeckLoading,
+          gameRefetch,
+          gameDeckRefetch,
         })}
         {renderCenter({
           cardSelected,
@@ -517,11 +552,35 @@ function renderGameInfo({
   opponent,
   game,
   gameDeck,
+  gameLoading,
+  gameDeckLoading,
+  gameRefetch,
+  gameDeckRefetch,
 }: {
   self: GamePlayer
   opponent: GamePlayer
   game: Game
   gameDeck: GameDeck | undefined
+  gameLoading: boolean
+  gameDeckLoading: boolean
+  gameRefetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            id: Scalars['ID']['input']
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<GameQuery>>
+  gameDeckRefetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            game: Scalars['ID']['input']
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<GameDeckQuery>>
 }) {
   return (
     <div id="gameInfoContainer" className="game-edge-container">
@@ -536,10 +595,13 @@ function renderGameInfo({
         undrawn: opponent.counts?.undrawn,
         leader: opponent.leader,
       })}
-      <div id="gameInfoWeatherContainer" className="game-section">
-        <img id="gameWeatherIcon" src="images/effects/weather.png" title="Weather" />
-        <div className="game-sub-section"></div>
-      </div>
+      {renderSharedInfo({
+        game,
+        gameLoading,
+        gameDeckLoading,
+        gameRefetch,
+        gameDeckRefetch,
+      })}
       {renderPlayerInfo({
         game,
         id: HTML_IDS.GameInfoSelfContainer,
@@ -552,6 +614,66 @@ function renderGameInfo({
         deckName: gameDeck?.from?.name,
         deckUpdated: gameDeck?.from?.created,
       })}
+    </div>
+  )
+}
+
+function renderSharedInfo({
+  game,
+  gameDeckLoading,
+  gameLoading,
+  gameRefetch,
+  gameDeckRefetch,
+}: {
+  game: Game
+  gameLoading: boolean
+  gameDeckLoading: boolean
+  gameRefetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            id: Scalars['ID']['input']
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<GameQuery>>
+  gameDeckRefetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            game: Scalars['ID']['input']
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<GameDeckQuery>>
+}) {
+  return (
+    <div id="gameInfoSharedContainer">
+      <div id="gameInfoSharedDetails" className="game-section">
+        {game.status === GameStatus.Playing && (
+          <div>
+            <span>Round:</span>
+            <span>{`${game.round.current + 1}/${game.round.maximum}`}</span>
+          </div>
+        )}
+        <div
+          id={HTML_IDS.GameRefresh}
+          className={game.status === GameStatus.Decking ? 'decking' : 'playing'}
+          style={{ cursor: gameLoading || gameDeckLoading ? 'not-allowed' : 'pointer' }}
+          title="Refresh"
+          onClick={async () =>
+            !gameLoading && !gameDeckLoading && (await Promise.all([gameRefetch(), gameDeckRefetch()]))
+          }
+        >
+          <CgSync color={false ? 'gray' : 'black'} />
+        </div>
+      </div>
+      {game.status === GameStatus.Playing && (
+        <div id="gameWeatherContainer" className="game-section">
+          <img id="gameWeatherIcon" src="images/effects/weather.png" title="Weather" />
+          <div id="gameWeatherCardSpot" className="game-sub-section"></div>
+        </div>
+      )}
     </div>
   )
 }

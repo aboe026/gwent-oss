@@ -128,6 +128,7 @@ export const HTML_IDS = {
   GameInfoSelfContainer: 'gameInfoSelfContainer',
   GameRedrawContainer: 'gameRedrawContainer',
   GameReady: 'gameReady',
+  GameRefresh: 'gameRefresh',
   GameDeckError: 'gameDeckError',
   GameRedrawError: 'gameRedrawError',
   GameReadyError: 'gameReadyError',
