@@ -73,9 +73,11 @@ describe('client-util', () => {
       const clientDir = 'path/to/dir'
       const envFile = path.join(clientDir, 'dynamic-env.js')
       const apiUrl = 'http://localhost:4000'
+      const webSocketPingIntervalSeconds = 5
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(false))
       jest.spyOn(env, 'default').mockReturnValue({
         API_BASE_URL: apiUrl,
+        WEB_SOCKET_PING_INTERVAL_SECONDS: webSocketPingIntervalSeconds,
       } as any)
       const traceSpy = jest.fn().mockImplementation()
       ClientUtil['logger'] = {
@@ -87,15 +89,21 @@ describe('client-util', () => {
       )
 
       expect(pathExistsSpy.mock.calls).toEqual([[envFile]])
-      expect(traceSpy.mock.calls).toEqual([[`envFile: "${envFile}"`], [`env.API_BASE_URL: "${apiUrl}"`]])
+      expect(traceSpy.mock.calls).toEqual([
+        [`envFile: "${envFile}"`],
+        [`env.API_BASE_URL: "${apiUrl}"`],
+        [`env.WEB_SOCKET_PING_INTERVAL_SECONDS: "${webSocketPingIntervalSeconds}"`],
+      ])
     })
     it('calls to replaceInFile if file exists', async () => {
       const clientDir = 'path/to/dir'
       const envFile = path.join(clientDir, 'dynamic-env.js')
       const apiUrl = 'http://localhost:4000'
+      const webSocketPingIntervalSeconds = 5
       const pathExistsSpy = jest.spyOn(fs, 'pathExists').mockImplementation(() => Promise.resolve(true))
       jest.spyOn(env, 'default').mockReturnValue({
         API_BASE_URL: apiUrl,
+        WEB_SOCKET_PING_INTERVAL_SECONDS: webSocketPingIntervalSeconds,
       } as any)
       const traceSpy = jest.fn().mockImplementation()
       ClientUtil['logger'] = {
@@ -106,7 +114,11 @@ describe('client-util', () => {
       await expect(ClientUtil.setEnvVars(clientDir)).resolves.toEqual(undefined)
 
       expect(pathExistsSpy.mock.calls).toEqual([[envFile]])
-      expect(traceSpy.mock.calls).toEqual([[`envFile: "${envFile}"`], [`env.API_BASE_URL: "${apiUrl}"`]])
+      expect(traceSpy.mock.calls).toEqual([
+        [`envFile: "${envFile}"`],
+        [`env.API_BASE_URL: "${apiUrl}"`],
+        [`env.WEB_SOCKET_PING_INTERVAL_SECONDS: "${webSocketPingIntervalSeconds}"`],
+      ])
       expect(replaceInFileSpy.mock.calls).toEqual([
         [
           {
@@ -114,6 +126,14 @@ describe('client-util', () => {
             disableGlobs: true,
             from: /API_BASE_URL:(\s*)(['"]).*?(['"])/,
             to: `API_BASE_URL:$1$2${apiUrl}$3`,
+          },
+        ],
+        [
+          {
+            files: [envFile],
+            disableGlobs: true,
+            from: /WEB_SOCKET_PING_INTERVAL_SECONDS:(\s*)(['"]).*?(['"])/,
+            to: `WEB_SOCKET_PING_INTERVAL_SECONDS:$1$2${webSocketPingIntervalSeconds}$3`,
           },
         ],
       ])

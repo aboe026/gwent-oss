@@ -392,6 +392,22 @@ export default class TestUtil {
     }
   }
 
+  static getDeck(): Deck {
+    return {
+      created: new Date(),
+      faction: TestUtil.getFaction({}),
+      id: new ObjectId().toString(),
+      leader: TestUtil.getLeader({}),
+      name: 'deck-name',
+      stats: TestUtil.getStats(),
+      units: Array(STARTING_HAND_SIZE).fill({
+        artStyle: 1,
+        unit: TestUtil.getUnit({}),
+      }),
+      user: TestUtil.getUser({}),
+    }
+  }
+
   static getDbGame({
     id,
     created,

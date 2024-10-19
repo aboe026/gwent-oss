@@ -1,0 +1,634 @@
+import * as graphqlSubscriptions from 'graphql-subscriptions'
+import { Logger } from 'log4js'
+import { ObjectId } from 'mongodb'
+
+import EventManager from '../../src/graphql/resolvers/event-manager'
+import { GamePlayer, User } from '@gwent/graphql-schema/resolver-typings'
+import { PubSubEvents } from '@gwent/constants'
+import SubscriptionResolver, {
+  DeckAddedPayload,
+  GameAddedPayload,
+  GameReadyPayload,
+  SubscriptionContext,
+} from '../../src/graphql/resolvers/subscription-resolver'
+import TestUtil from '../test-util'
+import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+
+describe('subscription-resolver', () => {
+  describe('getResolvers', () => {
+    it('returns subscriptions with calls to withFilter', () => {
+      const withFilterSpy = jest.spyOn(graphqlSubscriptions, 'withFilter').mockReturnValue((() => {}) as any)
+      const asyncIteratorSpy = jest.spyOn(EventManager.pubsub, 'asyncIterator').mockReturnValue('' as any)
+      const filterDeckAddedSpy = jest.spyOn(SubscriptionResolver as any, 'filterDeckAdded').mockResolvedValue('')
+      const filterGameAddedSpy = jest.spyOn(SubscriptionResolver as any, 'filterGameAdded').mockResolvedValue('')
+      const filterGameReadySpy = jest.spyOn(SubscriptionResolver as any, 'filterGameReady').mockResolvedValue('')
+      const result = SubscriptionResolver.getResolvers()
+      expect(result).toEqual({
+        deckAdded: {
+          subscribe: expect.any(Function),
+        },
+        gameAdded: {
+          subscribe: expect.any(Function),
+        },
+        gameReady: {
+          subscribe: expect.any(Function),
+        },
+      })
+
+      if (result.deckAdded && result.gameAdded && result.gameReady) {
+        expect((result.deckAdded as any).subscribe()).toEqual(undefined)
+        expect((result.gameAdded as any).subscribe()).toEqual(undefined)
+        expect((result.gameReady as any).subscribe()).toEqual(undefined)
+
+        expect(withFilterSpy.mock.calls).toEqual([
+          [expect.any(Function), expect.any(Function)],
+          [expect.any(Function), expect.any(Function)],
+          [expect.any(Function), expect.any(Function)],
+        ])
+        expect(asyncIteratorSpy.mock.calls).toEqual([])
+
+        withFilterSpy.mock.calls[0][0]()
+        withFilterSpy.mock.calls[1][0]()
+        withFilterSpy.mock.calls[2][0]()
+
+        expect(asyncIteratorSpy.mock.calls).toEqual([
+          [[PubSubEvents.DeckAdded]],
+          [[PubSubEvents.GameAdded]],
+          [[PubSubEvents.GameReady]],
+        ])
+        expect(filterDeckAddedSpy.mock.calls).toEqual([])
+        expect(filterGameAddedSpy.mock.calls).toEqual([])
+        expect(filterGameReadySpy.mock.calls).toEqual([])
+
+        const deckAddedPayload: DeckAddedPayload = { deckAdded: TestUtil.getDeck() }
+        const gameAddedPayload: GameAddedPayload = { gameAdded: TestUtil.getGame({}) }
+        const gameReadyPayload: GameReadyPayload = { gameReady: TestUtil.getGame({}) }
+        const context: SubscriptionContext = {
+          user: TestUtil.getDbUser({}),
+        }
+        withFilterSpy.mock.calls[0][1](deckAddedPayload, undefined, context)
+        withFilterSpy.mock.calls[1][1](gameAddedPayload, undefined, context)
+        withFilterSpy.mock.calls[2][1](gameReadyPayload, undefined, context)
+
+        expect(filterDeckAddedSpy.mock.calls).toEqual([[deckAddedPayload, context]])
+        expect(filterGameAddedSpy.mock.calls).toEqual([[gameAddedPayload, context]])
+        expect(filterGameReadySpy.mock.calls).toEqual([[gameReadyPayload, context]])
+      }
+    })
+  })
+  describe('filterDeckAdded', () => {
+    it('returns false if no user on context', () => {
+      const deckId = new ObjectId()
+      testFilterDeckAdded({
+        deckId: deckId.toString(),
+        deckOwner: new ObjectId().toString(),
+        userId: undefined,
+        expected: false,
+        debugCalls: [[`Not publishing deckAdded for deck "${deckId}": No user on context.`]],
+      })
+    })
+    it('returns false if user does not match deck owner', () => {
+      const deckId = new ObjectId()
+      const deckOwner = new ObjectId()
+      const userId = new ObjectId()
+      testFilterDeckAdded({
+        deckId: deckId.toString(),
+        deckOwner: deckOwner.toString(),
+        userId,
+        expected: false,
+        debugCalls: [
+          [`Not publishing deckAdded for deck "${deckId}": User "${userId}" is not the deck owner "${deckOwner}".`],
+        ],
+      })
+    })
+    it('returns true if user matches deck owner', () => {
+      const deckId = new ObjectId()
+      const deckOwner = new ObjectId()
+      testFilterDeckAdded({
+        deckId: deckId.toString(),
+        deckOwner: deckOwner.toString(),
+        userId: deckOwner,
+        expected: true,
+        debugCalls: [[`Publishing deckAdded for deck "${deckId}" to user "${deckOwner}".`]],
+      })
+    })
+    it('calls to trace if enabled', () => {
+      const deckId = new ObjectId()
+      const deckOwner = new ObjectId()
+      testFilterDeckAdded({
+        deckId: deckId.toString(),
+        deckOwner: deckOwner.toString(),
+        userId: deckOwner,
+        expected: true,
+        debugCalls: [[`Publishing deckAdded for deck "${deckId}" to user "${deckOwner}".`]],
+        traceEnabled: true,
+      })
+    })
+  })
+  describe('filterGameAdded', () => {
+    it('returns false if no user on context', () => {
+      const gameId = new ObjectId()
+      testFilterGameAdded({
+        gameId: gameId.toString(),
+        playerIds: [],
+        userId: undefined,
+        expected: false,
+        debugCalls: [[`Not publishing gameAdded for game "${gameId}": No user on context.`]],
+      })
+    })
+    it('returns false if user not a player on game', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      testFilterGameAdded({
+        gameId: gameId.toString(),
+        playerIds: [new ObjectId().toString(), new ObjectId().toString()],
+        userId,
+        expected: false,
+        debugCalls: [[`Not publishing gameAdded for game "${gameId}": User "${userId}" not a player on game.`]],
+      })
+    })
+    it('returns true if user is first player on game', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      testFilterGameAdded({
+        gameId: gameId.toString(),
+        playerIds: [userId.toString(), new ObjectId().toString()],
+        userId,
+        expected: true,
+        debugCalls: [[`Publishing gameAdded for game "${gameId}" to user "${userId}".`]],
+      })
+    })
+    it('returns true if user is last player on game', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      testFilterGameAdded({
+        gameId: gameId.toString(),
+        playerIds: [new ObjectId().toString(), userId.toString()],
+        userId,
+        expected: true,
+        debugCalls: [[`Publishing gameAdded for game "${gameId}" to user "${userId}".`]],
+      })
+    })
+    it('calls to trace if enabled', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      testFilterGameAdded({
+        gameId: gameId.toString(),
+        playerIds: [userId.toString(), new ObjectId().toString()],
+        userId,
+        expected: true,
+        debugCalls: [[`Publishing gameAdded for game "${gameId}" to user "${userId}".`]],
+        traceEnabled: true,
+      })
+    })
+  })
+  describe('filterGameReady', () => {
+    it('returns false if no user on context', () => {
+      const gameId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [],
+        userId: undefined,
+        expected: false,
+        debugCalls: [[`Not publishing gameReady for game "${gameId}": No user on context.`]],
+      })
+    })
+    it('returns false if user not a player on game', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: new ObjectId().toString(),
+            } as unknown as User,
+          },
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: new ObjectId().toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: false,
+        debugCalls: [[`Not publishing gameReady for game "${gameId}": User "${userId}" not a player on game.`]],
+      })
+    })
+    it('returns false if user is first player but no players ready', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      const opponentId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: userId.toString(),
+            } as unknown as User,
+          },
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: opponentId.toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: false,
+        debugCalls: [
+          [
+            `Not publishing gameReady for game "${gameId}": Player(s) "${JSON.stringify([
+              userId,
+              opponentId,
+            ])}" not ready.`,
+          ],
+        ],
+      })
+    })
+    it('returns false if user is first player but user is not ready', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      const opponentId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: userId.toString(),
+            } as unknown as User,
+          },
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: opponentId.toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: false,
+        debugCalls: [
+          [`Not publishing gameReady for game "${gameId}": Player(s) "${JSON.stringify([userId])}" not ready.`],
+        ],
+      })
+    })
+    it('returns false if user is first player but opponent is not ready', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      const opponentId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: userId.toString(),
+            } as unknown as User,
+          },
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: opponentId.toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: false,
+        debugCalls: [
+          [`Not publishing gameReady for game "${gameId}": Player(s) "${JSON.stringify([opponentId])}" not ready.`],
+        ],
+      })
+    })
+    it('returns false if user is last player but no players ready', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      const opponentId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: opponentId.toString(),
+            } as unknown as User,
+          },
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: userId.toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: false,
+        debugCalls: [
+          [
+            `Not publishing gameReady for game "${gameId}": Player(s) "${JSON.stringify([
+              opponentId,
+              userId,
+            ])}" not ready.`,
+          ],
+        ],
+      })
+    })
+    it('returns false if user is last player but user is not ready', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      const opponentId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: opponentId.toString(),
+            } as unknown as User,
+          },
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: userId.toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: false,
+        debugCalls: [
+          [`Not publishing gameReady for game "${gameId}": Player(s) "${JSON.stringify([userId])}" not ready.`],
+        ],
+      })
+    })
+    it('returns false if user is last player but opponent is not ready', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      const opponentId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: false,
+            rounds: [],
+            user: {
+              id: opponentId.toString(),
+            } as unknown as User,
+          },
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: userId.toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: false,
+        debugCalls: [
+          [`Not publishing gameReady for game "${gameId}": Player(s) "${JSON.stringify([opponentId])}" not ready.`],
+        ],
+      })
+    })
+    it('returns false if user is first player and all players ready', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      const opponentId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: userId.toString(),
+            } as unknown as User,
+          },
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: opponentId.toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: true,
+        debugCalls: [[`Publishing gameReady for game "${gameId}" to user "${userId}".`]],
+      })
+    })
+    it('returns false if user is lase player and all players ready', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      const opponentId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: opponentId.toString(),
+            } as unknown as User,
+          },
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: userId.toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: true,
+        debugCalls: [[`Publishing gameReady for game "${gameId}" to user "${userId}".`]],
+      })
+    })
+    it('returns false if user is first player and all players ready', () => {
+      const gameId = new ObjectId()
+      const userId = new ObjectId()
+      const opponentId = new ObjectId()
+      testFilterGameReady({
+        gameId: gameId.toString(),
+        players: [
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: userId.toString(),
+            } as unknown as User,
+          },
+          {
+            ready: true,
+            rounds: [],
+            user: {
+              id: opponentId.toString(),
+            } as unknown as User,
+          },
+        ],
+        userId,
+        expected: true,
+        debugCalls: [[`Publishing gameReady for game "${gameId}" to user "${userId}".`]],
+        traceEnabled: true,
+      })
+    })
+  })
+})
+
+function testFilterDeckAdded({
+  deckId,
+  deckOwner,
+  userId,
+  expected,
+  debugCalls = [],
+  traceEnabled,
+}: {
+  deckId: string
+  deckOwner: string
+  userId?: ObjectId
+  expected: boolean
+  debugCalls?: string[][]
+  traceEnabled?: boolean
+}) {
+  const payload = {
+    deckAdded: {
+      id: deckId,
+      user: {
+        id: deckOwner,
+      },
+    },
+  } as DeckAddedPayload
+  const ctx = {} as unknown as SubscriptionContext
+  if (userId) {
+    ctx.user = {
+      _id: userId,
+    } as UserDbObject
+  }
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  SubscriptionResolver['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as unknown as Logger
+
+  expect(SubscriptionResolver['filterDeckAdded'](payload, ctx)).toEqual(expected)
+
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [[`deckAdded payload: "${JSON.stringify(payload)}"`], [`deckAdded ctx: "${JSON.stringify(ctx)}"`]]
+      : []
+  )
+}
+
+function testFilterGameAdded({
+  gameId,
+  playerIds,
+  userId,
+  expected,
+  debugCalls = [],
+  traceEnabled,
+}: {
+  gameId: string
+  playerIds: string[]
+  userId?: ObjectId
+  expected: boolean
+  debugCalls?: string[][]
+  traceEnabled?: boolean
+}) {
+  const payload = {
+    gameAdded: {
+      id: gameId,
+      players: playerIds.map((playerId) => {
+        return {
+          ready: false,
+          rounds: [],
+          user: {
+            id: playerId,
+          } as unknown as User,
+        }
+      }),
+    },
+  } as unknown as GameAddedPayload
+  const ctx = {} as unknown as SubscriptionContext
+  if (userId) {
+    ctx.user = {
+      _id: userId,
+    } as UserDbObject
+  }
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  SubscriptionResolver['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as unknown as Logger
+
+  expect(SubscriptionResolver['filterGameAdded'](payload, ctx)).toEqual(expected)
+
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [[`gameAdded payload: "${JSON.stringify(payload)}"`], [`gameAdded ctx: "${JSON.stringify(ctx)}"`]]
+      : []
+  )
+}
+
+function testFilterGameReady({
+  gameId,
+  players,
+  userId,
+  expected,
+  debugCalls = [],
+  traceEnabled,
+}: {
+  gameId: string
+  players: GamePlayer[]
+  userId?: ObjectId
+  expected: boolean
+  debugCalls?: string[][]
+  traceEnabled?: boolean
+}) {
+  const payload = {
+    gameReady: {
+      id: gameId,
+      players,
+    },
+  } as unknown as GameReadyPayload
+  const ctx = {} as unknown as SubscriptionContext
+  if (userId) {
+    ctx.user = {
+      _id: userId,
+    } as UserDbObject
+  }
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  SubscriptionResolver['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as unknown as Logger
+
+  expect(SubscriptionResolver['filterGameReady'](payload, ctx)).toEqual(expected)
+
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [[`gameReady payload: "${JSON.stringify(payload)}"`], [`gameReady ctx: "${JSON.stringify(ctx)}"`]]
+      : []
+  )
+}

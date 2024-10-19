@@ -17,54 +17,71 @@ export default class WebSocketAuth {
     req: IncomingMessage
     mongoStore: MongoStore
   }): Promise<UserDbObject | undefined> {
+    const corsOrigin = env().CORS_ORIGIN
+    const sessionCookieName = env().SESSION_COOKIE_NAME
+    const sessionSecret = env().SESSION_SECRET
+
     const origin = req.headers['origin']
     if (WebSocketAuth.logger.isTraceEnabled()) {
       WebSocketAuth.logger.trace(`origin: "${origin}"`)
     }
     // prevent XSS
-    if (origin === env().CORS_ORIGIN) {
+    if (origin === corsOrigin) {
       const cookies = req.headers['cookie']
-      WebSocketAuth.logger.trace(`cookies: "${cookies}"`)
+      if (WebSocketAuth.logger.isTraceEnabled()) {
+        WebSocketAuth.logger.trace(`cookies: "${cookies}"`)
+      }
       if (cookies) {
         const cookieMap = parseCookies(cookies)
         if (WebSocketAuth.logger.isTraceEnabled()) {
           WebSocketAuth.logger.trace(`cookieMap: "${JSON.stringify(cookieMap)}"`)
         }
-        const encodedSessionId = cookieMap[env().SESSION_COOKIE_NAME]
-        WebSocketAuth.logger.trace(`encodedSessionId: "${encodedSessionId}"`)
+        const encodedSessionId = cookieMap[sessionCookieName]
+        if (WebSocketAuth.logger.isTraceEnabled()) {
+          WebSocketAuth.logger.trace(`encodedSessionId: "${encodedSessionId}"`)
+        }
         if (encodedSessionId) {
-          const sessionId = signedCookie(decodeURIComponent(encodedSessionId), env().SESSION_SECRET)
-          WebSocketAuth.logger.trace(`sessionId: "${sessionId}"`)
+          const sessionId = signedCookie(decodeURIComponent(encodedSessionId), sessionSecret)
+          if (WebSocketAuth.logger.isTraceEnabled()) {
+            WebSocketAuth.logger.trace(`sessionId: "${sessionId}"`)
+          }
 
           if (sessionId && sessionId !== encodedSessionId) {
-            const session: SessionDataWithUser | null | undefined = await new Promise((resolve, reject) => {
-              mongoStore.get(sessionId, (err, session) => {
-                if (err) {
-                  reject(err)
-                } else {
-                  resolve(session as SessionDataWithUser)
-                }
+            let session: SessionDataWithUser | null | undefined = undefined
+            try {
+              session = await new Promise((resolve, reject) => {
+                mongoStore.get(sessionId, (err, session) => {
+                  if (err) {
+                    reject(err)
+                  } else {
+                    resolve(session as SessionDataWithUser)
+                  }
+                })
               })
-            })
+            } catch (err) {
+              WebSocketAuth.logger.error(`Could not get user with session ID "${sessionId}": "${err}"`)
+              return undefined
+            }
             if (WebSocketAuth.logger.isTraceEnabled()) {
               WebSocketAuth.logger.trace(`session: "${JSON.stringify(session)}"`)
             }
-
-            return session?.user
+            if (session?.user) {
+              return session.user
+            } else {
+              WebSocketAuth.logger.error(`Rejecting connection because no user on session "${sessionId}"`)
+            }
           } else {
-            WebSocketAuth.logger.debug(
-              'Rejecting connection due to decoded session id not being different than encoded session id.'
-            )
+            WebSocketAuth.logger.error('Rejecting connection due to session id not decoding correctly.')
           }
         } else {
-          WebSocketAuth.logger.debug('Rejecting connection due to no sid cookie set')
+          WebSocketAuth.logger.error('Rejecting connection due to no session ID cookie set.')
         }
       } else {
-        WebSocketAuth.logger.debug('Rejecting connection due to header "cookies" not existing on request.')
+        WebSocketAuth.logger.error('Rejecting connection due to header "cookie" not existing on request.')
       }
     } else {
-      WebSocketAuth.logger.debug(
-        `Rejecting connection due to origin "${origin}" not matching CORS origin "${env().CORS_ORIGIN}"`
+      WebSocketAuth.logger.error(
+        `Rejecting connection due to origin "${origin}" not matching CORS origin "${corsOrigin}".`
       )
     }
 
@@ -73,19 +90,23 @@ export default class WebSocketAuth {
 }
 
 export function parseCookies(cookies: string): CookieMap {
-  const pairs = cookies.split(';')
   const map: CookieMap = {}
+  const pairs = cookies.split(';')
   for (const pair of pairs) {
-    const [key, value] = pair.split('=')
-    map[key.trim()] = value.trim()
+    if (pair) {
+      const [key, value] = pair.split('=')
+      if (key && value !== undefined) {
+        map[key.trim()] = value.trim()
+      }
+    }
   }
   return map
 }
 
-interface CookieMap {
+export interface CookieMap {
   [x: string]: string
 }
 
-interface SessionDataWithUser extends SessionData {
+export interface SessionDataWithUser extends SessionData {
   user: UserDbObject
 }

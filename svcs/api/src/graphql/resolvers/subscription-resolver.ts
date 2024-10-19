@@ -33,20 +33,21 @@ export default class SubscriptionResolver {
     }
   }
 
-  private static filterDeckAdded(payload: { deckAdded: Deck }, ctx: SubscriptionContext): boolean {
+  private static filterDeckAdded(payload: DeckAddedPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`deckAdded payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`deckAdded ctx: "${JSON.stringify(ctx)}"`)
     }
     const userId = ctx.user?._id.toString()
     const deckId = payload.deckAdded.id
+    const deckOwner = payload.deckAdded.user.id
     if (userId) {
-      if (userId === payload.deckAdded.user.id) {
+      if (userId === deckOwner) {
         SubscriptionResolver.logger.debug(`Publishing deckAdded for deck "${deckId}" to user "${userId}".`)
         return true
       } else {
         SubscriptionResolver.logger.debug(
-          `Not publishing deckAdded for deck "${deckId}": User "${userId}" is not the deck owner "${payload.deckAdded.user.id}".`
+          `Not publishing deckAdded for deck "${deckId}": User "${userId}" is not the deck owner "${deckOwner}".`
         )
       }
     } else {
@@ -55,7 +56,7 @@ export default class SubscriptionResolver {
     return false
   }
 
-  private static filterGameAdded(payload: { gameAdded: Game }, ctx: SubscriptionContext): boolean {
+  private static filterGameAdded(payload: GameAddedPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`gameAdded payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`gameAdded ctx: "${JSON.stringify(ctx)}"`)
@@ -77,7 +78,7 @@ export default class SubscriptionResolver {
     return false
   }
 
-  private static filterGameReady(payload: { gameReady: Game }, ctx: SubscriptionContext): boolean {
+  private static filterGameReady(payload: GameReadyPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`gameReady payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`gameReady ctx: "${JSON.stringify(ctx)}"`)
@@ -92,9 +93,9 @@ export default class SubscriptionResolver {
           return true
         } else {
           SubscriptionResolver.logger.debug(
-            `Not publishing gameReady for game "${gameId}": Player "${JSON.stringify(
+            `Not publishing gameReady for game "${gameId}": Player(s) "${JSON.stringify(
               notReadyPlayers.map((player) => player.user.id)
-            )}" are still not ready.`
+            )}" not ready.`
           )
         }
       } else {
@@ -109,6 +110,18 @@ export default class SubscriptionResolver {
   }
 }
 
-interface SubscriptionContext {
+export interface SubscriptionContext {
   user?: UserDbObject
+}
+
+export interface DeckAddedPayload {
+  deckAdded: Deck
+}
+
+export interface GameAddedPayload {
+  gameAdded: Game
+}
+
+export interface GameReadyPayload {
+  gameReady: Game
 }

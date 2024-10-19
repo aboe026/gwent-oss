@@ -47,7 +47,7 @@ export default class Api {
 
     Api.configureSession()
     Api.exposePlainSchema()
-    const subscriptionCleanup = Api.configureSubscriptionServer()
+    const subscriptionCleanup = Api.configureWebsocketServer()
     await Api.configureApolloServer(subscriptionCleanup)
 
     await Api.serve()
@@ -116,7 +116,7 @@ export default class Api {
     Api.logger.debug(`GraphQL Schema is available at http://localhost:${env().PORT}/schema`)
   }
 
-  private static configureSubscriptionServer(): Disposable {
+  private static configureWebsocketServer(): Disposable {
     const wsServer = new WebSocketServer({
       server: Api.httpServer,
       path: `/${env().SUBSCRIPTION_PATH}`,
@@ -126,7 +126,7 @@ export default class Api {
       {
         schema,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        context: async (ctx, msg, args) => {
+        context: (ctx, msg, args) => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const user = (ctx.extra as any).user
           if (Api.logger.isTraceEnabled()) {
@@ -147,11 +147,12 @@ export default class Api {
           }
 
           if (user) {
+            Api.logger.debug(`Allowing WebSocket connection for user "${user._id}"`)
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(ctx.extra as any).user = user
           } else {
             Api.logger.debug(
-              `Rejecting WebSocket connection from "${ctx.extra.request.headers.host}" due to auth failure.`
+              `Rejecting WebSocket connection from "${ctx.extra.request.headers.host}" due to authentication failure.`
             )
             if (Api.logger.isTraceEnabled()) {
               Api.logger.trace(`WebSocket onConnect headers: "${JSON.stringify(ctx.extra.request.headers)}"`)
@@ -180,20 +181,24 @@ export default class Api {
         ApolloServerPluginLandingPageLocalDefault({
           embed: true,
         }),
-        {
-          async serverWillStart() {
-            return {
-              async drainServer() {
-                await subscriptionCleanup.dispose()
-              },
-            }
-          },
-        },
+        Api.ensureWebsocketDisposed(subscriptionCleanup),
       ],
       introspection: true,
     })
     await Api.apolloServer.start()
     Api.logger.debug('ApolloServer started')
+  }
+
+  private static ensureWebsocketDisposed(subscriptionCleanup: Disposable) {
+    return {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await subscriptionCleanup.dispose()
+          },
+        }
+      },
+    }
   }
 
   /**
