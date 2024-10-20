@@ -34,5 +34,13 @@ export default getEnv({
       desc: 'Connection string for MongoDB instance',
       default: 'mongodb://localhost',
     }),
+    SESSION_COOKIE_NAME: str({
+      desc: 'The name of the Cookie for the user session.',
+      default: 'gwent.sid',
+    }),
+    SESSION_SECRET: str({
+      desc: 'The secret to use for securing user sessions',
+      default: 'youshouldreallychangethisforproductionusage',
+    }),
   },
 })

@@ -3754,14 +3754,19 @@ __metadata:
     "@gwent/graphql-schema": "workspace:*"
     "@gwent/utils": "workspace:*"
     "@types/node": "npm:22.5.5"
+    "@types/uid-safe": "npm:2.1.5"
     "@types/url-join": "npm:4.0.3"
+    "@types/ws": "npm:8.5.12"
     cross-env: "npm:7.0.3"
     graphql: "npm:16.9.0"
     graphql-request: "npm:6.1.0"
+    graphql-ws: "npm:5.16.0"
     mongodb: "npm:6.9.0"
     replace-in-file: "npm:7.2.0"
     testcafe: "npm:3.6.2"
+    uid-safe: "npm:2.1.5"
     url-join: "npm:4.0.1"
+    ws: "npm:8.18.0"
   languageName: unknown
   linkType: soft
 
@@ -3772,17 +3777,6 @@ __metadata:
     "@types/jest": "npm:29.5.13"
     dotenv: "npm:16.4.5"
     envalid: "npm:8.0.0"
-    jest-junit: "npm:16.0.0"
-    ts-jest: "npm:29.2.5"
-  languageName: unknown
-  linkType: soft
-
-"@gwent/execute-async@workspace:libs/execute-async":
-  version: 0.0.0-use.local
-  resolution: "@gwent/execute-async@workspace:libs/execute-async"
-  dependencies:
-    "@types/jest": "npm:29.5.13"
-    "@types/node": "npm:22.5.5"
     jest-junit: "npm:16.0.0"
     ts-jest: "npm:29.2.5"
   languageName: unknown
@@ -5136,6 +5130,13 @@ __metadata:
   version: 4.0.3
   resolution: "@types/tough-cookie@npm:4.0.3"
   checksum: 10/32d17b50766357b0297762d4ee0e42b430f36f0397eec38559b9ce18120f64f07922cca3ecc6bdb5a097ba75ec71e91879bdb89a7c532de43b5eff6775625334
+  languageName: node
+  linkType: hard
+
+"@types/uid-safe@npm:2.1.5":
+  version: 2.1.5
+  resolution: "@types/uid-safe@npm:2.1.5"
+  checksum: 10/3526120fb25d6424cbf52f1daa8baa1c021e212b2e0e248f7c7358053a4e52c0a8bd73fbca23e6de52141608269fab808f9936a2909f05dfdde613cd089d0b4f
   languageName: node
   linkType: hard
 
@@ -15557,7 +15558,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uid-safe@npm:~2.1.5":
+"uid-safe@npm:2.1.5, uid-safe@npm:~2.1.5":
   version: 2.1.5
   resolution: "uid-safe@npm:2.1.5"
   dependencies:

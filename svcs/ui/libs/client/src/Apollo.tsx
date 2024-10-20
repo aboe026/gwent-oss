@@ -1,10 +1,9 @@
 import { createClient } from 'graphql-ws'
 import { createContext, PropsWithChildren } from 'react'
-import { split, HttpLink, ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client'
-import urlJoin from 'url-join'
-
 import { getMainDefinition } from '@apollo/client/utilities'
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
+import { split, HttpLink, ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client'
+import urlJoin from 'url-join'
 
 /**
  * Need to pass management of WebSocket status to a lower-order component
