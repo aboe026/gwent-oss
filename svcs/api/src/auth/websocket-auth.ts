@@ -90,24 +90,6 @@ export default class WebSocketAuth {
   }
 }
 
-export function parseCookies(cookies: string): CookieMap {
-  const map: CookieMap = {}
-  const pairs = cookies.split(';')
-  for (const pair of pairs) {
-    if (pair) {
-      const [key, value] = pair.split('=')
-      if (key && value !== undefined) {
-        map[key.trim()] = value.trim()
-      }
-    }
-  }
-  return map
-}
-
-export interface CookieMap {
-  [x: string]: string
-}
-
 export interface SessionDataWithUser extends SessionData {
   user: UserDbObject
 }

@@ -5,7 +5,7 @@ import MongoStore from 'connect-mongo'
 
 import * as env from '../../src/env'
 import TestUtil from '../test-util'
-import WebSocketAuth, { parseCookies, SessionDataWithUser } from '../../src/auth/websocket-auth'
+import WebSocketAuth, { SessionDataWithUser } from '../../src/auth/websocket-auth'
 
 describe('websocket-auth', () => {
   describe('authenticate', () => {
@@ -175,47 +175,6 @@ describe('websocket-auth', () => {
           user: TestUtil.getDbUser({}),
         } as unknown as SessionDataWithUser,
         traceEnabled: true,
-      })
-    })
-  })
-  describe('parseCookies', () => {
-    it('returns empty object if empty string', () => {
-      expect(parseCookies('')).toEqual({})
-    })
-    it('returns empty object if no semicolon', () => {
-      expect(parseCookies('foo')).toEqual({})
-    })
-    it('returns empty object if no equal sign', () => {
-      expect(parseCookies('foo;')).toEqual({})
-    })
-    it('returns empty object if no key', () => {
-      expect(parseCookies('=foo;')).toEqual({})
-    })
-    it('returns object with single property if single cookie supplied without value', () => {
-      expect(parseCookies('foo=')).toEqual({
-        foo: '',
-      })
-    })
-    it('returns object with single property if single cookie supplied with value', () => {
-      expect(parseCookies('foo=bar')).toEqual({
-        foo: 'bar',
-      })
-    })
-    it('returns object with single property if multiple cookies with same key using last value', () => {
-      expect(parseCookies('foo=bar;foo=world')).toEqual({
-        foo: 'world',
-      })
-    })
-    it('returns object with multiple properties if multiple cookies supplied without values', () => {
-      expect(parseCookies('foo=;hello=')).toEqual({
-        foo: '',
-        hello: '',
-      })
-    })
-    it('returns object with multiple properties if multiple cookies with values', () => {
-      expect(parseCookies('foo=bar;hello=world')).toEqual({
-        foo: 'bar',
-        hello: 'world',
       })
     })
   })
