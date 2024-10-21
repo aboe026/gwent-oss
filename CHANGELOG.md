@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.0 - 2024-10-21
+
+### Added
+
+- Subscriptions (#13) (Adam Boe)
+
 ## 0.6.0 - 2024-10-05
 
 ### Added
