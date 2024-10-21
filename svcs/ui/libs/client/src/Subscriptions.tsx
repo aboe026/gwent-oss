@@ -15,6 +15,13 @@ import {
 } from '@gwent/graphql-schema/apollo-typings'
 import { useUserContext } from './App'
 
+/**
+ * A class to listen to GraphQL subscriptions and update Apollo cache accordingly.
+ *
+ * @param config The configuration for the component
+ * @param config.children The children to render underneath the component.
+ * @returns A component which updates the Apollo cache with Subscription events.
+ */
 export default function Subscriptions({ children }: PropsWithChildren) {
   const { user } = useUserContext()
 

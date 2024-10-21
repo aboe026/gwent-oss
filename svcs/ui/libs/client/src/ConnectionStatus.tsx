@@ -22,7 +22,14 @@ export const ConnectionStatusContext = createContext({
   setConnectionStatus: (() => {}) as Dispatch<SetStateAction<CONNECTION_STATUS>>,
 })
 
-export default function SubscriptionConnectionStatus({ children }: PropsWithChildren) {
+/**
+ * A component to keep track of the status of the GraphQL Subscription connection.
+ *
+ * @param config The configuration for rendering the component
+ * @param config.children The child components to render underneath this one
+ * @returns A component tracking the status of the subscription connection
+ */
+export default function ConnectionStatus({ children }: PropsWithChildren) {
   const graphqlQsLink = useContext(WebSocketLinkContext)
   const [socket, setSocket] = useState<WebSocket>()
   const [connectionStatus, setConnectionStatus] = useState<CONNECTION_STATUS>(CONNECTION_STATUS.Connected)

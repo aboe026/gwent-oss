@@ -116,6 +116,11 @@ export default class Api {
     Api.logger.debug(`GraphQL Schema is available at http://localhost:${env().PORT}/schema`)
   }
 
+  /**
+   * Configure the WebSocket for Subscription connections.
+   *
+   * @returns A Disposable instance required for draining the WebSocket.
+   */
   private static configureWebsocketServer(): Disposable {
     const wsServer = new WebSocketServer({
       server: Api.httpServer,
@@ -167,6 +172,8 @@ export default class Api {
 
   /**
    * Configure the Apollo Server for UI connections.
+   *
+   * @param subscriptionCleanup The Disposable object to ensure WebSocket is properly cleaned up.
    */
   private static async configureApolloServer(subscriptionCleanup: Disposable) {
     Api.logger.debug('starting ApolloServer')
@@ -189,6 +196,12 @@ export default class Api {
     Api.logger.debug('ApolloServer started')
   }
 
+  /**
+   * When server is going down, ensure WebSocket connections are disposed.
+   *
+   * @param subscriptionCleanup The Disposable instance to call dispose on.
+   * @returns The methods to call for disposing the WebSocket on server draining.
+   */
   private static ensureWebsocketDisposed(subscriptionCleanup: Disposable) {
     return {
       async serverWillStart() {

@@ -14,6 +14,11 @@ import ProfilePage from './pages/Profile'
 import { ROUTES } from '@gwent/constants'
 import SignupPage from './pages/Signup'
 
+/**
+ * The URL paths the application supports and their corresponding React components.
+ *
+ * @returns The router to direct URL paths to their correct component.
+ */
 export default function Router() {
   return (
     <RouterProvider

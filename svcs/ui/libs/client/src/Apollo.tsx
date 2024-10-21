@@ -13,6 +13,13 @@ import urlJoin from 'url-join'
  */
 export const WebSocketLinkContext = createContext<GraphQLWsLink | undefined>(undefined)
 
+/**
+ * A component which utilizes Apollo to interface the browser client to the backend server.
+ *
+ * @param config The configuration of the component.
+ * @param config.children The children to render underneath this component.
+ * @returns A component which configures the browser client to the backend server.
+ */
 export default function Apollo({ children }: PropsWithChildren) {
   const timeoutMilliseconds = Number(window.env.WEB_SOCKET_PING_INTERVAL_SECONDS) * 1000
 

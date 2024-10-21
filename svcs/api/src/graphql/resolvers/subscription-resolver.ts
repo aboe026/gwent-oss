@@ -6,9 +6,17 @@ import EventManager from './event-manager'
 import { PubSubEvents } from '@gwent/constants'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 
+/**
+ * A class for publising the events of the GraphQL Subscriptions defined in the schema.
+ */
 export default class SubscriptionResolver {
   private static logger = getLogger('SubscriptionResolver')
 
+  /**
+   * Get the methods correlating to the GraphQL Subscriptions defined in the schema.
+   *
+   * @returns The methods used to resolve Subscriptions defined in the GraphQL schema.
+   */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static getResolvers(): SubscriptionResolvers<any, any> {
     return {
@@ -33,6 +41,13 @@ export default class SubscriptionResolver {
     }
   }
 
+  /**
+   * Filter out added Decks that are not relevant for the user.
+   *
+   * @param payload The deck to potentially publish.
+   * @param ctx The context of the connection contiaining user information.
+   * @returns True if the deck should be published for the user, false if not.
+   */
   private static filterDeckAdded(payload: DeckAddedPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`deckAdded payload: "${JSON.stringify(payload)}"`)
@@ -56,6 +71,13 @@ export default class SubscriptionResolver {
     return false
   }
 
+  /**
+   * Filter out added Games that are not relevant for the user.
+   *
+   * @param payload The game to potentially publish.
+   * @param ctx The context of the connection contiaining user information.
+   * @returns True if the game should be published for the user, false if not.
+   */
   private static filterGameAdded(payload: GameAddedPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`gameAdded payload: "${JSON.stringify(payload)}"`)
@@ -78,6 +100,13 @@ export default class SubscriptionResolver {
     return false
   }
 
+  /**
+   * Filter out ready Games that are not relevant for the user.
+   *
+   * @param payload The ready game to potentially publish.
+   * @param ctx The context of the connection contiaining user information.
+   * @returns True if the ready game should be published for the user, false if not.
+   */
   private static filterGameReady(payload: GameReadyPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`gameReady payload: "${JSON.stringify(payload)}"`)

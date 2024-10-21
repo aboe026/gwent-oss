@@ -8,9 +8,21 @@ import { signedCookie } from 'cookie-parser'
 import env from '../env'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 
+/**
+ * A class for handling authentication for WebSockets.
+ */
 export default class WebSocketAuth {
   private static logger = getLogger('WebSocketAuth')
 
+  /**
+   * Attempt to authenticate a WebSocket.
+   * Relies on a valid session cookie being passed as a header.
+   *
+   * @param config The configuration to authenticate.
+   * @param config.req The incoming Request to authenticate.
+   * @param config.mongoStore The MongoStore to use for looking up sessions in the database.
+   * @returns The User database object if authentication is valid, undefined otherwise.
+   */
   static async authenticate({
     req,
     mongoStore,
