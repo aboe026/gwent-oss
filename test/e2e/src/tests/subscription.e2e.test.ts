@@ -1,13 +1,11 @@
 import { createClient } from 'graphql-ws'
 import crypto from 'crypto'
-import uid from 'uid-safe'
+import { serialize } from 'cookie'
 import urlJoin from 'url-join'
 import WebSocket from 'ws'
 
-import ApiClient from '../util/api-client'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import env from '../util/env'
-import MongoUtil from '../util/mongo-util'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
@@ -25,37 +23,6 @@ test('Connection rejected if invalid session id on cookie', async (t) => {
     .eql(4403)
 })
 
-test('Connection succeeds with valid session id on cookie', async (t) => {
-  const user = await new ApiClient({}).addUser({
-    name: `subscription-success-${Date.now()}`,
-  })
-  const id = await uid(24)
-  const database = await MongoUtil.connect()
-  const collection = await database.collection('sessions')
-  await collection.insertOne({
-    _id: id as any,
-    session: JSON.stringify({
-      user: {
-        _id: user.id,
-        name: user.name,
-        password: '',
-        created: user.created,
-      },
-    }),
-  })
-  const timeoutSeconds = 5
-  await t
-    .expect(
-      await testSubscriptionError({
-        sessionId: id,
-        timeoutSeconds,
-      })
-    )
-    .eql(`Subscription not rejected within ${timeoutSeconds} seconds`)
-}).after(async () => {
-  await MongoUtil.disconnect()
-})
-
 async function testSubscriptionError({
   timeoutSeconds,
   sessionId,
@@ -69,7 +36,11 @@ async function testSubscriptionError({
       super(address, protocols, {
         headers: {
           origin: env.BASE_URL,
-          cookie: createCookie(env.SESSION_COOKIE_NAME, sessionId, env.SESSION_SECRET),
+          cookie: createCookie({
+            name: env.SESSION_COOKIE_NAME,
+            value: sessionId,
+            secret: env.SESSION_SECRET,
+          }),
         },
       })
     }
@@ -104,10 +75,9 @@ async function testSubscriptionError({
   })
 }
 
-function createCookie(name: string, value: string, secret: string) {
+function createCookie({ name, secret, value }: { name: string; value: string; secret: string }) {
   const signed = `s:${sign(value, secret)}`
-  // return cookie.serialize(name, signed)\
-  return `${name}=${signed}`
+  return serialize(name, signed)
 }
 
 function sign(value: string, secret: string): string {

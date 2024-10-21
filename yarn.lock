@@ -3625,6 +3625,7 @@ __metadata:
     body-parser: "npm:1.20.3"
     connect-mongo: "npm:5.1.0"
     connection-string: "npm:4.4.0"
+    cookie: "npm:1.0.1"
     cookie-parser: "npm:1.4.7"
     cors: "npm:2.8.5"
     express: "npm:4.21.0"
@@ -3754,9 +3755,9 @@ __metadata:
     "@gwent/graphql-schema": "workspace:*"
     "@gwent/utils": "workspace:*"
     "@types/node": "npm:22.5.5"
-    "@types/uid-safe": "npm:2.1.5"
     "@types/url-join": "npm:4.0.3"
     "@types/ws": "npm:8.5.12"
+    cookie: "npm:1.0.1"
     cross-env: "npm:7.0.3"
     graphql: "npm:16.9.0"
     graphql-request: "npm:6.1.0"
@@ -3764,7 +3765,6 @@ __metadata:
     mongodb: "npm:6.9.0"
     replace-in-file: "npm:7.2.0"
     testcafe: "npm:3.6.2"
-    uid-safe: "npm:2.1.5"
     url-join: "npm:4.0.1"
     ws: "npm:8.18.0"
   languageName: unknown
@@ -5130,13 +5130,6 @@ __metadata:
   version: 4.0.3
   resolution: "@types/tough-cookie@npm:4.0.3"
   checksum: 10/32d17b50766357b0297762d4ee0e42b430f36f0397eec38559b9ce18120f64f07922cca3ecc6bdb5a097ba75ec71e91879bdb89a7c532de43b5eff6775625334
-  languageName: node
-  linkType: hard
-
-"@types/uid-safe@npm:2.1.5":
-  version: 2.1.5
-  resolution: "@types/uid-safe@npm:2.1.5"
-  checksum: 10/3526120fb25d6424cbf52f1daa8baa1c021e212b2e0e248f7c7358053a4e52c0a8bd73fbca23e6de52141608269fab808f9936a2909f05dfdde613cd089d0b4f
   languageName: node
   linkType: hard
 
@@ -7191,6 +7184,13 @@ __metadata:
   version: 0.7.2
   resolution: "cookie@npm:0.7.2"
   checksum: 10/24b286c556420d4ba4e9bc09120c9d3db7d28ace2bd0f8ccee82422ce42322f73c8312441271e5eefafbead725980e5996cc02766dbb89a90ac7f5636ede608f
+  languageName: node
+  linkType: hard
+
+"cookie@npm:1.0.1":
+  version: 1.0.1
+  resolution: "cookie@npm:1.0.1"
+  checksum: 10/4b24d4fad5ba94ab76d74a8fc33ae1dcdb5dc02013e03e9577b26f019d9dfe396ffb9b3711ba1726bcfa1b93c33d117db0f31e187838aed7753dee1abc691688
   languageName: node
   linkType: hard
 
@@ -15558,7 +15558,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uid-safe@npm:2.1.5, uid-safe@npm:~2.1.5":
+"uid-safe@npm:~2.1.5":
   version: 2.1.5
   resolution: "uid-safe@npm:2.1.5"
   dependencies:

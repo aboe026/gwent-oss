@@ -18,7 +18,7 @@ interface E2eTest<FixtureCtxType, TestCtxType> extends TestFn {
   >
   page(url: string): this
   httpAuth(credentials: HTTPAuthCredentials): this
-  before(fn: (t: E2ETestController<FixtureCtxType, TestCtxType>) => Promise<any>): this // TODO: revert back?
+  before(fn: (t: E2ETestController<FixtureCtxType, TestCtxType>) => Promise<any>): this
   after(fn: (t: E2ETestController<FixtureCtxType, TestCtxType>) => Promise<any>): this
   skip: this
   only: this

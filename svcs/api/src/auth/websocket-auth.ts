@@ -1,6 +1,7 @@
 import { getLogger } from 'log4js'
 import { IncomingMessage } from 'http'
 import MongoStore from 'connect-mongo'
+import { parse } from 'cookie'
 import { SessionData } from 'express-session'
 import { signedCookie } from 'cookie-parser'
 
@@ -32,7 +33,7 @@ export default class WebSocketAuth {
         WebSocketAuth.logger.trace(`cookies: "${cookies}"`)
       }
       if (cookies) {
-        const cookieMap = parseCookies(cookies)
+        const cookieMap = parse(cookies)
         if (WebSocketAuth.logger.isTraceEnabled()) {
           WebSocketAuth.logger.trace(`cookieMap: "${JSON.stringify(cookieMap)}"`)
         }
@@ -41,7 +42,7 @@ export default class WebSocketAuth {
           WebSocketAuth.logger.trace(`encodedSessionId: "${encodedSessionId}"`)
         }
         if (encodedSessionId) {
-          const sessionId = signedCookie(decodeURIComponent(encodedSessionId), sessionSecret)
+          const sessionId = signedCookie(encodedSessionId, sessionSecret)
           if (WebSocketAuth.logger.isTraceEnabled()) {
             WebSocketAuth.logger.trace(`sessionId: "${sessionId}"`)
           }
