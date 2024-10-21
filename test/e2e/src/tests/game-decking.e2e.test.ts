@@ -588,8 +588,119 @@ test('Cancel on deck create closes decks dialog and remains on game page', async
   })
 })
 
-// test choosing deck via API gets reflected after refresh button clicked
-// test marking ready via API gets reflected after refresh button clicked
+test('Refresh button updates page after deck chosen via API', async (t) => {
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+    },
+  })
+  const client = new ApiClient({
+    username: t.ctx.username,
+  })
+  const gameDeck = await client.setDeck({
+    deckId: t.ctx.deck1.id,
+    gameId: t.ctx.game.id,
+  })
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+    },
+  })
+  await GamePage.refresh()
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+})
+
+test('Refresh button updates page after game ready via API', async (t) => {
+  const client = new ApiClient({
+    username: t.ctx.username,
+  })
+  const gameDeck = await client.setDeck({
+    deckId: t.ctx.deck1.id,
+    gameId: t.ctx.game.id,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+  await client.ready(t.ctx.game.id)
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+  await GamePage.refresh()
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+      ready: true,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+})
 
 test('Game not marked as ready if use API to mark other game as ready', async (t) => {
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))

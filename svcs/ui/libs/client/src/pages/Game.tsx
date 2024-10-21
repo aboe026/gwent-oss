@@ -121,6 +121,7 @@ export default function GamePage() {
     },
     variables: gameQueryVariables,
     skip: isNew,
+    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
   })
   const {
     loading: gameDeckLoading,
@@ -134,6 +135,7 @@ export default function GamePage() {
     variables: gameDeckQueryVariables,
     nextFetchPolicy: 'cache-only', // prevents re-fetch after setDeck called
     skip: isNew,
+    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
   })
   const [setDeck, { loading: setDeckLoading, error: setDeckError }] = useSetDeckMutation({
     update(cache, { data }) {
@@ -1148,7 +1150,7 @@ function renderHand({
                 onClick={() => {
                   setCardSelected(selected ? undefined : deckUnit)
                 }}
-                style={index === sortedUnits.length - 1 ? { marginRight: '-25px' } : {}}
+                style={index === sortedUnits.length - 1 ? { marginRight: '-18px' } : {}}
               >
                 <UnitGameCard
                   deckUnit={deckUnit}
