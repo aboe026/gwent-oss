@@ -254,10 +254,17 @@ describe('Api', () => {
         authenticateResponse: TestUtil.getDbUser({}),
       })
     })
-    it('calls out to trace on failed authentication if enabled', async () => {
+    it('calls out to trace on failed authentication if enabled without forwarded ip', async () => {
       await testConfigureWebsocketServer({
         testOnConnect: true,
         traceEnabled: true,
+      })
+    })
+    it('calls out to trace on failed authentication if enabled with forwarded ip', async () => {
+      await testConfigureWebsocketServer({
+        testOnConnect: true,
+        traceEnabled: true,
+        requestForwarded: true,
       })
     })
     it('calls out to trace on successful authentication if enabled', async () => {
@@ -482,10 +489,12 @@ async function testConfigureWebsocketServer({
   authenticateResponse,
   testOnConnect,
   traceEnabled,
+  requestForwarded,
 }: {
   authenticateResponse?: UserDbObject
   testOnConnect?: boolean
   traceEnabled?: boolean
+  requestForwarded?: boolean
 }) {
   const subscriptionPath = 'subscribe'
   const envSpy = jest.spyOn(env, 'default').mockReturnValue({
@@ -535,27 +544,38 @@ async function testConfigureWebsocketServer({
   traceCalls.push([`WebSocket context user: "${JSON.stringify(authenticateResponse)}"`])
 
   if (testOnConnect) {
+    const clientIp = '1.2.3.4'
+    const forwardedIp = '5.6.7.8'
     const onConnect = useServerSpy.mock.calls[0][0].onConnect
     const ctx = {
       extra: {
         request: {
-          headers: {
-            host: 'earth',
+          socket: {
+            remoteAddress: clientIp,
           },
+          headers: {},
         },
       },
+    }
+    if (requestForwarded) {
+      ctx.extra.request.headers = {
+        'x-forwarded-for': forwardedIp,
+      }
     }
     const sessionMongoStore = {
       hello: 'world',
     } as unknown as MongoStore
     Api['sessionMongoStore'] = sessionMongoStore
     const authenticateSpy = jest.spyOn(WebSocketAuth, 'authenticate').mockResolvedValue(authenticateResponse)
+    traceCalls.push([`WebSocket onConnect clientIp: "${requestForwarded ? forwardedIp : clientIp}"`])
     traceCalls.push([`WebSocket onConnect user: "${JSON.stringify(authenticateResponse)}"`])
     if (authenticateResponse) {
       debugCalls.push([`Allowing WebSocket connection for user "${authenticateResponse._id}"`])
     } else {
       debugCalls.push([
-        `Rejecting WebSocket connection from "${ctx.extra.request.headers.host}" due to authentication failure.`,
+        `Rejecting WebSocket connection from "${
+          requestForwarded ? forwardedIp : clientIp
+        }" due to authentication failure.`,
       ])
       traceCalls.push([`WebSocket onConnect headers: "${JSON.stringify(ctx.extra.request.headers)}"`])
     }
