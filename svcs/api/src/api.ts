@@ -157,7 +157,9 @@ export default class Api {
             ;(ctx.extra as any).user = user
           } else {
             Api.logger.debug(
-              `Rejecting WebSocket connection from "${ctx.extra.request.headers.host}" due to authentication failure.`
+              `Rejecting WebSocket connection from "${
+                ctx.extra.request.headers['x-forwarded-for'] || ctx.extra.request.socket.remoteAddress
+              }" due to authentication failure.`
             )
             if (Api.logger.isTraceEnabled()) {
               Api.logger.trace(`WebSocket onConnect headers: "${JSON.stringify(ctx.extra.request.headers)}"`)
