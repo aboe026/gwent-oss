@@ -260,11 +260,10 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
-- correctly get remote client to print on websocket rejection
+- allow introspection without authentication
 - fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
   - happens when adding deck through API and not requesting neutral stats?
   - fix by not allowing neutral stats on factions
-- allow introspection without authentication
 - Do not have "neutralStats" as a field (or if so, only allow it for Factions, not Decks)
   - just do that math on the front end, already have neutral faction guaranteed queried
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
