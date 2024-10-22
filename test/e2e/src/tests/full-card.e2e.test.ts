@@ -1,8 +1,7 @@
-import { t } from 'testcafe'
-
 import ApiClient from '../util/api-client'
 import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import FullCard from '../components/full-card'
@@ -10,11 +9,17 @@ import GamePage from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
 
+interface FullCardTestCtx extends E2eCtx {
+  username: string
+}
+const fixture = getFixtureCtx<E2eCtx, FullCardTestCtx>()
+const test = getTestCtx<E2eCtx, FullCardTestCtx>()
+
 fixture('Full Card')
   .page(DeckPage.getUrl())
-  .beforeEach(async () => {
+  .beforeEach(async (t) => {
     const scenario = 'full-card'
-    t.ctx.username = `${scenario}-user-${Date.now()}`
+    t.ctx.username = `${scenario}-user-${t.ctx.start}`
     await new ApiClient({}).addUser({
       name: t.ctx.username,
     })
@@ -23,7 +28,7 @@ fixture('Full Card')
     })
   })
 
-test('Shows correct info for Monster faction', async () => {
+test('Shows correct info for Monster faction', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -40,7 +45,7 @@ test('Shows correct info for Monster faction', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Nilfgaardian Empire faction', async () => {
+test('Shows correct info for Nilfgaardian Empire faction', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -57,7 +62,7 @@ test('Shows correct info for Nilfgaardian Empire faction', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Northern Realms faction', async () => {
+test('Shows correct info for Northern Realms faction', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -74,7 +79,7 @@ test('Shows correct info for Northern Realms faction', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Scoiatael faction', async () => {
+test('Shows correct info for Scoiatael faction', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -91,7 +96,7 @@ test('Shows correct info for Scoiatael faction', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Skellige faction', async () => {
+test('Shows correct info for Skellige faction', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -108,7 +113,7 @@ test('Shows correct info for Skellige faction', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Neutral faction', async () => {
+test('Shows correct info for Neutral faction', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -127,7 +132,7 @@ test('Shows correct info for Neutral faction', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for special', async () => {
+test('Shows correct info for special', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -146,7 +151,7 @@ test('Shows correct info for special', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for hero', async () => {
+test('Shows correct info for hero', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -163,7 +168,7 @@ test('Shows correct info for hero', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for alternative art', async () => {
+test('Shows correct info for alternative art', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -185,7 +190,7 @@ test('Shows correct info for alternative art', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Hearts of Stone dlc', async () => {
+test('Shows correct info for Hearts of Stone dlc', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -204,7 +209,7 @@ test('Shows correct info for Hearts of Stone dlc', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Blood and Wine dlc', async () => {
+test('Shows correct info for Blood and Wine dlc', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -223,7 +228,7 @@ test('Shows correct info for Blood and Wine dlc', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Gwent the Witcher Card Game dlc', async () => {
+test('Shows correct info for Gwent the Witcher Card Game dlc', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -242,7 +247,7 @@ test('Shows correct info for Gwent the Witcher Card Game dlc', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Agile effect', async () => {
+test('Shows correct info for Agile effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -259,7 +264,7 @@ test('Shows correct info for Agile effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Avenger effect', async () => {
+test('Shows correct info for Avenger effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -276,7 +281,7 @@ test('Shows correct info for Avenger effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Avenger effect', async () => {
+test('Shows correct info for Avenger effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -293,7 +298,7 @@ test('Shows correct info for Avenger effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Bond effect', async () => {
+test('Shows correct info for Bond effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -310,7 +315,7 @@ test('Shows correct info for Bond effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Decoy effect', async () => {
+test('Shows correct info for Decoy effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -329,7 +334,7 @@ test('Shows correct info for Decoy effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Horn effect', async () => {
+test('Shows correct info for Horn effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -348,7 +353,7 @@ test('Shows correct info for Horn effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Mardroeme effect', async () => {
+test('Shows correct info for Mardroeme effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -365,7 +370,7 @@ test('Shows correct info for Mardroeme effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Medic effect', async () => {
+test('Shows correct info for Medic effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -382,7 +387,7 @@ test('Shows correct info for Medic effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Morale effect', async () => {
+test('Shows correct info for Morale effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -399,7 +404,7 @@ test('Shows correct info for Morale effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Muster effect', async () => {
+test('Shows correct info for Muster effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -416,7 +421,7 @@ test('Shows correct info for Muster effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Scorch effect', async () => {
+test('Shows correct info for Scorch effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -433,7 +438,7 @@ test('Shows correct info for Scorch effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Scorch effect', async () => {
+test('Shows correct info for Scorch effect', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -450,7 +455,7 @@ test('Shows correct info for Scorch effect', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Biting Frost weather', async () => {
+test('Shows correct info for Biting Frost weather', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -469,7 +474,7 @@ test('Shows correct info for Biting Frost weather', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Clear Weather weather', async () => {
+test('Shows correct info for Clear Weather weather', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -488,7 +493,7 @@ test('Shows correct info for Clear Weather weather', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Impenetrable Fog weather', async () => {
+test('Shows correct info for Impenetrable Fog weather', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -507,7 +512,7 @@ test('Shows correct info for Impenetrable Fog weather', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Skellige Storm weather', async () => {
+test('Shows correct info for Skellige Storm weather', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -526,7 +531,7 @@ test('Shows correct info for Skellige Storm weather', async () => {
   await FullCard.verify({})
 })
 
-test('Shows correct info for Torrential Rain weather', async () => {
+test('Shows correct info for Torrential Rain weather', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -545,7 +550,7 @@ test('Shows correct info for Torrential Rain weather', async () => {
   await FullCard.verify({})
 })
 
-test('Moving to previous and next units works for a deck card', async () => {
+test('Moving to previous and next units works for a deck card', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -574,7 +579,7 @@ test('Moving to previous and next units works for a deck card', async () => {
   await FullCard.verify({})
 })
 
-test('Can select card for deck', async () => {
+test('Can select card for deck', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
@@ -603,17 +608,17 @@ test('Can select card for deck', async () => {
   })
 })
 
-test('Moving to previous and next units works for a game card', async () => {
+test('Moving to previous and next units works for a game card', async (t) => {
   const client = new ApiClient({
     username: t.ctx.username,
   })
   const opponent = await client.addUser({
-    name: `full-card-game-opponent-${Date.now()}`,
+    name: `full-card-game-opponent-${t.ctx.start}`,
   })
   const deck = await client.addDeck({
     faction: FactionKey.Monsters,
     leaderName: 'Eredin Destroyer of Worlds',
-    name: `full-card-game-${Date.now()}`,
+    name: `full-card-game-${t.ctx.start}`,
     unitNames: [
       'Botchling',
       'Celaeno Harpy',

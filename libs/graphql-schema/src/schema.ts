@@ -338,4 +338,10 @@ export default gql`
     "Choose which deck will be used for the game."
     setDeck(game: ID!, deck: ID!): GameDeck!
   }
+
+  type Subscription {
+    deckAdded: Deck!
+    gameAdded: Game!
+    gameReady: Game!
+  }
 `

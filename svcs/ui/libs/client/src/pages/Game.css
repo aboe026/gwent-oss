@@ -32,11 +32,46 @@
   height: 100%;
 }
 
-#gameInfoWeatherContainer {
+#gameInfoSharedContainer {
   display: flex;
   height: 10%;
   gap: 10px;
+  justify-content: space-between;
+  overflow-x: auto;
+}
+
+#gameInfoSharedDetails {
+  flex-grow: 1;
   padding: 10px;
+}
+
+#gameRefresh.decking {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#gameRefresh.playing {
+  width: 20px;
+}
+
+#gameWeatherContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+}
+
+#gameWeatherIcon {
+  max-height: 50%;
+}
+
+#gameWeatherCardSpot {
+  height: 100%;
+  aspect-ratio: 309 / 444;
+  flex-grow: 0;
 }
 
 #gameInfoOpponentContainer {
@@ -75,15 +110,8 @@
   display: flex;
   padding: 10px;
   height: calc(100% - 20px);
-  width: 100%;
+  width: calc(100% - 20px);
   justify-content: center;
-}
-
-#gameWeatherIcon {
-  max-width: 25%;
-  max-height: 50%;
-  margin-top: auto;
-  margin-bottom: auto;
 }
 
 #gameDeckOverlay {

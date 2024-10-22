@@ -2,16 +2,20 @@ import ApiClient from '../util/api-client'
 import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
 
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
+
 fixture('Deck Create').page(DeckPage.getUrl())
 
-test('Create deck with dropdowns', async () => {
-  const username = `deck-create-dropdowns-${Date.now()}`
+test('Create deck with dropdowns', async (t) => {
+  const username = `deck-create-dropdowns-${t.ctx.start}`
   const name = 'Create deck dropdowns'
   const factionKey = FactionKey.NorthernRealms
   const leaderName = 'Foltest Son of Medell'
@@ -63,8 +67,8 @@ test('Create deck with dropdowns', async () => {
   })
 })
 
-test('Create deck with pickers', async () => {
-  const username = `deck-create-pickers-${Date.now()}`
+test('Create deck with pickers', async (t) => {
+  const username = `deck-create-pickers-${t.ctx.start}`
   const password = 'password'
   const name = 'Create deck pickers'
   const factionKey = FactionKey.ScoiaTael
@@ -119,8 +123,8 @@ test('Create deck with pickers', async () => {
   })
 })
 
-test('Create disabled if invalid', async () => {
-  const username = `deck--create-disabled-if-invalid-${Date.now()}`
+test('Create disabled if invalid', async (t) => {
+  const username = `deck--create-disabled-if-invalid-${t.ctx.start}`
   const password = 'password'
   const name = 'Create deck disabled if invalid'
   const factionKey = FactionKey.NilfgaardianEmpire
@@ -194,8 +198,8 @@ test('Create disabled if invalid', async () => {
   await DeckEditor.verifyValid(false)
 })
 
-test('Change leader', async () => {
-  const username = `deck-create-change-leader-${Date.now()}`
+test('Change leader', async (t) => {
+  const username = `deck-create-change-leader-${t.ctx.start}`
   const password = 'password'
   const name = 'Create deck change leader'
   const factionKey = FactionKey.Skellige
@@ -264,8 +268,8 @@ test('Change leader', async () => {
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
 })
 
-test('Change faction', async () => {
-  const username = `deck-create-change-faction-${Date.now()}`
+test('Change faction', async (t) => {
+  const username = `deck-create-change-faction-${t.ctx.start}`
   const password = 'password'
   const name = 'Create deck change faction'
   const factionKey1 = FactionKey.Monsters
@@ -367,8 +371,8 @@ test('Change faction', async () => {
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
 })
 
-test('Create deck with Select All button', async () => {
-  const username = `deck-create-select-all-${Date.now()}`
+test('Create deck with Select All button', async (t) => {
+  const username = `deck-create-select-all-${t.ctx.start}`
   const name = 'Create deck select all'
   const factionKey = FactionKey.NorthernRealms
   const leaderName = 'Foltest Son of Medell'
@@ -422,8 +426,8 @@ test('Create deck with Select All button', async () => {
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
 })
 
-test('Cannot create deck with existing name', async () => {
-  const username = `deck-create-existing-name-${Date.now()}`
+test('Cannot create deck with existing name', async (t) => {
+  const username = `deck-create-existing-name-${t.ctx.start}`
   const name = 'Create deck select all'
   const factionKey = FactionKey.NorthernRealms
   const leaderName = 'Foltest Son of Medell'
@@ -472,8 +476,8 @@ test('Cannot create deck with existing name', async () => {
   await DeckEditor.verifyCreateError(`Error creating deck: Deck with name "${name}" already exists.`)
 })
 
-test('Cancel brings user to decks list', async () => {
-  const username = `deck-create-cancel-${Date.now()}`
+test('Cancel brings user to decks list', async (t) => {
+  const username = `deck-create-cancel-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })

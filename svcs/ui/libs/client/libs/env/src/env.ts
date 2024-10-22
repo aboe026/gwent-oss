@@ -4,7 +4,8 @@
 declare global {
   interface Window {
     env: {
-      API_URL: string
+      API_BASE_URL: string
+      WEB_SOCKET_PING_INTERVAL_SECONDS: string
     }
   }
 }

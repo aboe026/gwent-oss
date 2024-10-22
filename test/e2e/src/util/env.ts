@@ -5,9 +5,9 @@ import getEnv, { NODE_ENV, num, str, url } from '@gwent/env'
 export default getEnv({
   dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
   specs: {
-    API_URL: url({
-      desc: 'The URL the Gwent GraphQL API is running on',
-      default: 'http://localhost:4000/graphql',
+    API_BASE_URL: url({
+      desc: 'The base URL the Gwent API is running on (should contain /graphql and /subscribe endpoints)',
+      default: 'http://localhost:4000',
     }),
     BASE_URL: url({
       desc: 'The URL the Gwent website is running on',
@@ -33,6 +33,14 @@ export default getEnv({
     MONGO_URL: url({
       desc: 'Connection string for MongoDB instance',
       default: 'mongodb://localhost',
+    }),
+    SESSION_COOKIE_NAME: str({
+      desc: 'The name of the Cookie for the user session.',
+      default: 'gwent.sid',
+    }),
+    SESSION_SECRET: str({
+      desc: 'The secret to use for securing user sessions',
+      default: 'youshouldreallychangethisforproductionusage',
     }),
   },
 })

@@ -2,14 +2,18 @@ import ApiClient from '../util/api-client'
 import { Combat, DlcKey, EffectKey, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
 import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
 
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
+
 fixture('Deck Units Filter').page(DeckPage.getUrl())
 
-test('Available filters specials when locked', async () => {
-  const username = `deck-available-filter-specials-locked-${Date.now()}`
+test('Available filters specials when locked', async (t) => {
+  const username = `deck-available-filter-specials-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -45,8 +49,8 @@ test('Available filters specials when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters heroes when locked', async () => {
-  const username = `deck-available-filter-heroes-locked-${Date.now()}`
+test('Available filters heroes when locked', async (t) => {
+  const username = `deck-available-filter-heroes-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -82,8 +86,8 @@ test('Available filters heroes when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters strength when locked', async () => {
-  const username = `deck-available-filter-strength-locked-${Date.now()}`
+test('Available filters strength when locked', async (t) => {
+  const username = `deck-available-filter-strength-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -125,8 +129,8 @@ test('Available filters strength when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters close when locked', async () => {
-  const username = `deck-available-filter-close-locked-${Date.now()}`
+test('Available filters close when locked', async (t) => {
+  const username = `deck-available-filter-close-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -169,8 +173,8 @@ test('Available filters close when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters ranged when locked', async () => {
-  const username = `deck-available-filter-ranged-locked-${Date.now()}`
+test('Available filters ranged when locked', async (t) => {
+  const username = `deck-available-filter-ranged-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -215,8 +219,8 @@ test('Available filters ranged when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters siege when locked', async () => {
-  const username = `deck-available-filter-siege-locked-${Date.now()}`
+test('Available filters siege when locked', async (t) => {
+  const username = `deck-available-filter-siege-locked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -259,8 +263,8 @@ test('Available filters siege when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters agile when locked', async () => {
-  const username = `deck-available-filter-agile-locked-${Date.now()}`
+test('Available filters agile when locked', async (t) => {
+  const username = `deck-available-filter-agile-locked-${t.ctx.start}`
   const factionKey = FactionKey.Skellige
   await new ApiClient({}).addUser({
     name: username,
@@ -311,23 +315,25 @@ test('Available filters agile when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters avenger when locked', async () => {
+test('Available filters avenger when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Avenger,
     available: ['Cow'],
     selected: ['Kambi'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters berserker when locked', async () => {
+test('Available filters berserker when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Berserker,
     available: ['Berserker'],
     selected: ['Young Berserker', 'Young Berserker', 'Young Berserker'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters bond when locked', async () => {
+test('Available filters bond when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Bond,
     available: [
@@ -339,50 +345,56 @@ test('Available filters bond when locked', async () => {
       'Clan Drummond Shield Maiden',
     ],
     selected: ['War Longship', 'War Longship', 'War Longship'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters decoy when locked', async () => {
+test('Available filters decoy when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Decoy,
     available: ['Decoy', 'Decoy'],
     selected: ['Decoy'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters horn when locked', async () => {
+test('Available filters horn when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Horn,
     available: ["Commander's Horn", "Commander's Horn", "Commander's Horn", 'Dandelion'],
     selected: ['Draig Bon-Dhu'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters mardroeme when locked', async () => {
+test('Available filters mardroeme when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Mardroeme,
     available: ['Ermion', 'Mardroeme'],
     selected: ['Mardroeme', 'Mardroeme'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters medic when locked', async () => {
+test('Available filters medic when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Medic,
     available: ['Birna Bran'],
     selected: ['Yennefer of Vengerberg'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters morale when locked', async () => {
+test('Available filters morale when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Morale,
     available: ['Olaf'],
     selected: ['Olgierd Von Everec'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters muster when locked', async () => {
+test('Available filters muster when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Muster,
     available: [
@@ -394,27 +406,30 @@ test('Available filters muster when locked', async () => {
       "Gaunter O'Dimm Darkness",
     ],
     selected: ['Geralt of Rivia', 'Light Longship', 'Light Longship', 'Light Longship'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters scorch when locked', async () => {
+test('Available filters scorch when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Scorch,
     available: ['Clan Dimun Pirate', 'Scorch', 'Scorch', 'Scorch'],
     selected: ['Villentretenmerth'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters spy when locked', async () => {
+test('Available filters spy when locked', async (t) => {
   await testEffectFilter({
     factionKey: FactionKey.NilfgaardianEmpire,
     effectKey: EffectKey.Spy,
     available: ['Mysterious Elf', 'Shilard Fitz-Oesterlen', 'Stefan Skellen'],
     selected: ['Vattier de Rideaux'],
+    start: t.ctx.start,
   })
 })
 
-test('Available filters weather when locked', async () => {
+test('Available filters weather when locked', async (t) => {
   await testEffectFilter({
     effectKey: EffectKey.Weather,
     available: [
@@ -430,11 +445,12 @@ test('Available filters weather when locked', async () => {
       'Skellige Storm',
     ],
     selected: ['Torrential Rain', 'Torrential Rain'],
+    start: t.ctx.start,
   })
 })
 
-test('Selected filters effects separate from available when unlocked', async () => {
-  const username = `deck-selected-filter-effect-unlocked-${Date.now()}`
+test('Selected filters effects separate from available when unlocked', async (t) => {
+  const username = `deck-selected-filter-effect-unlocked-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -475,8 +491,8 @@ test('Selected filters effects separate from available when unlocked', async () 
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters faction when locked', async () => {
-  const username = `deck-available-filter-faction-locked-${Date.now()}`
+test('Available filters faction when locked', async (t) => {
+  const username = `deck-available-filter-faction-locked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -519,8 +535,8 @@ test('Available filters faction when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Selected filters faction separately when unlocked', async () => {
-  const username = `deck-selected-filter-faction-unlocked-${Date.now()}`
+test('Selected filters faction separately when unlocked', async (t) => {
+  const username = `deck-selected-filter-faction-unlocked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -566,8 +582,8 @@ test('Selected filters faction separately when unlocked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters DLC when locked', async () => {
-  const username = `deck-available-filter-dlc-locked-${Date.now()}`
+test('Available filters DLC when locked', async (t) => {
+  const username = `deck-available-filter-dlc-locked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -610,8 +626,8 @@ test('Available filters DLC when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Selected filters DLC separately when unlocked', async () => {
-  const username = `deck-selected-filter-dlc-unlocked-${Date.now()}`
+test('Selected filters DLC separately when unlocked', async (t) => {
+  const username = `deck-selected-filter-dlc-unlocked-${t.ctx.start}`
   const factionKey = FactionKey.Skellige
   await new ApiClient({}).addUser({
     name: username,
@@ -657,8 +673,8 @@ test('Selected filters DLC separately when unlocked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters Alternate Art when locked', async () => {
-  const username = `deck-available-filter-alt-art-locked-${Date.now()}`
+test('Available filters Alternate Art when locked', async (t) => {
+  const username = `deck-available-filter-alt-art-locked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -701,8 +717,8 @@ test('Available filters Alternate Art when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Available filters name when locked', async () => {
-  const username = `deck-available-filter-name-locked-${Date.now()}`
+test('Available filters name when locked', async (t) => {
+  const username = `deck-available-filter-name-locked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -744,8 +760,8 @@ test('Available filters name when locked', async () => {
   await DeckEditor.verifySelectedUnits(sortedSelectedUnits.map((unit) => unit.name))
 })
 
-test('Selected filters separately on name when unlocked', async () => {
-  const username = `deck-selected-filter-name-unlocked-${Date.now()}`
+test('Selected filters separately on name when unlocked', async (t) => {
+  const username = `deck-selected-filter-name-unlocked-${t.ctx.start}`
   const factionKey = FactionKey.NorthernRealms
   await new ApiClient({}).addUser({
     name: username,
@@ -801,13 +817,15 @@ async function testEffectFilter({
   effectKey,
   available,
   selected,
+  start,
 }: {
   factionKey?: FactionKey
   effectKey: EffectKey
   available: string[]
   selected: string[]
+  start: number
 }) {
-  const username = `deck-available-filter-${effectKey.toLowerCase()}-locked-${Date.now()}`
+  const username = `deck-available-filter-${effectKey.toLowerCase()}-locked-${start}`
   await new ApiClient({}).addUser({
     name: username,
   })

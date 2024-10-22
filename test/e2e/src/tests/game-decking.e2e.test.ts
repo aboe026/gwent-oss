@@ -1,24 +1,39 @@
-import { t } from 'testcafe'
-
 import ApiClient from '../util/api-client'
-import E2eUtil from '../util/e2e-util'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, Faction, FactionKey, Game, Leader } from '@gwent/graphql-schema/resolver-typings'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import E2eUtil from '../util/e2e-util'
 import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 
+interface GameDeckingTestCtx extends E2eCtx {
+  username: string
+  opponent: string
+  deckName1: string
+  deckName2: string
+  faction1: Faction
+  faction2: Faction
+  leader1: Leader
+  leader2: Leader
+  deck1: Deck
+  deck2: Deck
+  game: Game
+}
+const fixture = getFixtureCtx<E2eCtx, GameDeckingTestCtx>()
+const test = getTestCtx<E2eCtx, GameDeckingTestCtx>()
+
 fixture('Game Decking')
   .page(HomePage.getUrl())
-  .beforeEach(async () => {
+  .beforeEach(async (t) => {
     const scenario = 'game-decking'
-    t.ctx.username = `${scenario}-self-${Date.now()}`
-    t.ctx.opponent = `${scenario}-opponent-${Date.now()}`
-    t.ctx.deckName1 = `${scenario}-deck-self-${Date.now()}`
-    t.ctx.deckName2 = `${scenario}-deck-opponent-${Date.now()}`
+    t.ctx.username = `${scenario}-self-${t.ctx.start}`
+    t.ctx.opponent = `${scenario}-opponent-${t.ctx.start}`
+    t.ctx.deckName1 = `${scenario}-deck-self-${t.ctx.start}`
+    t.ctx.deckName2 = `${scenario}-deck-opponent-${t.ctx.start}`
     const faction1 = FactionKey.ScoiaTael
     const faction2 = FactionKey.NilfgaardianEmpire
     const leader1 = 'Francesca Findabair Queen of Dol Blathanna'
@@ -119,7 +134,7 @@ fixture('Game Decking')
     })
   })
 
-test('Ready before opponent shows loading message until opponent ready', async () => {
+test('Ready before opponent shows loading message until opponent ready', async (t) => {
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verify({
     opponent: {
@@ -186,8 +201,6 @@ test('Ready before opponent shows loading message until opponent ready', async (
     gameId: t.ctx.game.id,
   })
   await client2.ready(t.ctx.game.id)
-  // TODO: Remove refresh when subscriptions implemented to automatically update
-  await E2eUtil.reload()
   await GamePage.verify({
     opponent: {
       name: t.ctx.opponent,
@@ -215,7 +228,7 @@ test('Ready before opponent shows loading message until opponent ready', async (
   })
 })
 
-test('Ready after opponent enters playing', async () => {
+test('Ready after opponent enters playing', async (t) => {
   const client2 = new ApiClient({
     username: t.ctx.opponent,
   })
@@ -290,7 +303,7 @@ test('Ready after opponent enters playing', async () => {
   })
 })
 
-test('Can set ready after redrawing 1 card', async () => {
+test('Can set ready after redrawing 1 card', async (t) => {
   const client2 = new ApiClient({
     username: t.ctx.opponent,
   })
@@ -393,7 +406,7 @@ test('Can set ready after redrawing 1 card', async () => {
   })
 })
 
-test('Can set ready after redrawing 2 cards', async () => {
+test('Can set ready after redrawing 2 cards', async (t) => {
   const client2 = new ApiClient({
     username: t.ctx.opponent,
   })
@@ -527,7 +540,7 @@ test('Can set ready after redrawing 2 cards', async () => {
   })
 })
 
-test('Cancel on decks list closes decks dialog and remains on game page', async () => {
+test('Cancel on decks list closes decks dialog and remains on game page', async (t) => {
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verify({
     opponent: {
@@ -550,7 +563,7 @@ test('Cancel on decks list closes decks dialog and remains on game page', async 
   })
 })
 
-test('Cancel on deck create closes decks dialog and remains on game page', async () => {
+test('Cancel on deck create closes decks dialog and remains on game page', async (t) => {
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verify({
     opponent: {
@@ -572,5 +585,213 @@ test('Cancel on deck create closes decks dialog and remains on game page', async
     self: {
       name: t.ctx.username,
     },
+  })
+})
+
+test('Refresh button updates page after deck chosen via API', async (t) => {
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+    },
+  })
+  const client = new ApiClient({
+    username: t.ctx.username,
+  })
+  const gameDeck = await client.setDeck({
+    deckId: t.ctx.deck1.id,
+    gameId: t.ctx.game.id,
+  })
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+    },
+  })
+  await GamePage.refresh()
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+})
+
+test('Refresh button updates page after game ready via API', async (t) => {
+  const client = new ApiClient({
+    username: t.ctx.username,
+  })
+  const gameDeck = await client.setDeck({
+    deckId: t.ctx.deck1.id,
+    gameId: t.ctx.game.id,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+  await client.ready(t.ctx.game.id)
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+  await GamePage.refresh()
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+      ready: true,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+})
+
+test('Game not marked as ready if use API to mark other game as ready', async (t) => {
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+    },
+  })
+  await GamePage.setDeck({
+    created: t.ctx.deck1.created,
+    faction: t.ctx.deck1.faction,
+    leader: t.ctx.deck1.leader,
+    name: t.ctx.deck1.name,
+    stats: t.ctx.deck1.stats,
+  })
+  const client1 = new ApiClient({
+    username: t.ctx.username,
+  })
+  const game2 = await client1.addGame([t.ctx.opponent])
+  await client1.setDeck({
+    deckId: t.ctx.deck1.id,
+    gameId: game2.id,
+  })
+  await client1.ready(game2.id)
+  const gameDeck = await client1.getGameDeck(t.ctx.game.id)
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+  await GamePage.ready()
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      ready: true,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
+  })
+  const client2 = new ApiClient({
+    username: t.ctx.opponent,
+  })
+  await client2.setDeck({
+    deckId: t.ctx.deck2.id,
+    gameId: game2.id,
+  })
+  await client2.ready(game2.id)
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      ready: true,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
   })
 })

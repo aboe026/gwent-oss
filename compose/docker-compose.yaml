@@ -25,7 +25,7 @@ services:
       - api
     environment:
       - LOG_LEVEL=${LOG_LEVEL}
-      - API_URL=https://${HOST_NAME}/graphql
+      - API_BASE_URL=https://${HOST_NAME}
 
   router:
     build: ./nginx

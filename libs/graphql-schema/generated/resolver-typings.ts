@@ -376,6 +376,13 @@ export enum SettingType {
   Number = 'NUMBER'
 }
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  deckAdded: Deck;
+  gameAdded: Game;
+  gameReady: Game;
+};
+
 export type Unit = {
   __typename?: 'Unit';
   combats?: Maybe<Array<Combat>>;
@@ -534,6 +541,7 @@ export type ResolversTypes = {
   SettingKey: SettingKey;
   SettingType: SettingType;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
+  Subscription: ResolverTypeWrapper<{}>;
   Unit: ResolverTypeWrapper<Unit>;
   UnitStats: ResolverTypeWrapper<UnitStats>;
   User: ResolverTypeWrapper<User>;
@@ -567,6 +575,7 @@ export type ResolversParentTypes = {
   SemVer: Scalars['SemVer']['output'];
   Setting: Setting;
   String: Scalars['String']['output'];
+  Subscription: {};
   Unit: Unit;
   UnitStats: UnitStats;
   User: User;
@@ -735,6 +744,12 @@ export type SettingResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
+  deckAdded?: SubscriptionResolver<ResolversTypes['Deck'], "deckAdded", ParentType, ContextType>;
+  gameAdded?: SubscriptionResolver<ResolversTypes['Game'], "gameAdded", ParentType, ContextType>;
+  gameReady?: SubscriptionResolver<ResolversTypes['Game'], "gameReady", ParentType, ContextType>;
+};
+
 export type UnitResolvers<ContextType = any, ParentType extends ResolversParentTypes['Unit'] = ResolversParentTypes['Unit']> = {
   combats?: Resolver<Maybe<Array<ResolversTypes['Combat']>>, ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -808,6 +823,7 @@ export type Resolvers<ContextType = any> = {
   Redraw?: RedrawResolvers<ContextType>;
   SemVer?: GraphQLScalarType;
   Setting?: SettingResolvers<ContextType>;
+  Subscription?: SubscriptionResolvers<ContextType>;
   Unit?: UnitResolvers<ContextType>;
   UnitStats?: UnitStatsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

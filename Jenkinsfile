@@ -379,7 +379,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                 -v ${mountDir}:/app \
                 -w /app/test/e2e \
                 -e BASE_URL=https://${uniqueName}-router-1 \
-                -e API_URL=https://${uniqueName}-router-1/graphql \
+                -e API_BASE_URL=https://${uniqueName}-router-1 \
                 -e MONGO_URL=mongodb://${uniqueName}-database-1:27017 \
                 -e MONGO_DB=${dbName} \
                 -e BUILD=${env.BUILD_ID} \

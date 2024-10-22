@@ -1,8 +1,12 @@
 import AboutPage from '../page-objects/about-page'
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import LoginPage from '../page-objects/login-page'
+
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('About')
 
@@ -11,8 +15,8 @@ test('Shows about page without logging in', async () => {
   await AboutPage.verify()
 })
 
-test('Shows about page when logged in', async () => {
-  const username = `about-page-logged-in-${Date.now()}`
+test('Shows about page when logged in', async (t) => {
+  const username = `about-page-logged-in-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })

@@ -1,6 +1,6 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, port, str, url } from '@gwent/env'
+import getEnv, { NODE_ENV, num, port, str, url } from '@gwent/env'
 
 /**
  * Gets the environment variables that relate to how the UI server operates.
@@ -11,9 +11,9 @@ export default function env() {
   return getEnv({
     dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
     specs: {
-      API_URL: url({
-        desc: 'The URL to reach out to for API requests',
-        default: 'http://localhost:4000/graphql',
+      API_BASE_URL: url({
+        desc: 'The base URL the Gwent API is running on (should contain /graphql and /subscribe endpoints)',
+        default: 'http://localhost:4000',
       }),
       CLIENT_DIR: str({
         desc: 'Path to directory containing client files to serve',
@@ -36,6 +36,10 @@ export default function env() {
       PORT: port({
         desc: 'The port to run the WebServer server on',
         default: 3000,
+      }),
+      WEB_SOCKET_PING_INTERVAL_SECONDS: num({
+        desc: 'The interval (in seconds) that the client reaches out to the server to verify the WebSocket connection.',
+        default: 5,
       }),
     },
   })

@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb'
 import { Selector, t } from 'testcafe'
 
 import { Deck, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
@@ -35,6 +36,7 @@ export default class GamePage {
     ReadyError: existingGameContainer.find(`#${HTML_IDS.GameReadyError}`),
     AuthErrorContainer: authErrorContainer,
     AuthErrorViewGames: authErrorContainer.find(`#${HTML_IDS.GameAuthErrorViewGames}`),
+    Refresh: existingGameContainer.find(`#${HTML_IDS.GameRefresh}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -365,6 +367,17 @@ export default class GamePage {
 
   static async viewGames() {
     await t.click(GamePage.elements.AuthErrorViewGames)
+  }
+
+  static async getIdFromUrl() {
+    const url = await E2eUtil.getCurrentUrl()
+    const id = url.substring(url.lastIndexOf('/') + 1)
+    await t.expect(ObjectId.isValid(id)).ok()
+    return id
+  }
+
+  static async refresh() {
+    await t.click(GamePage.elements.Refresh)
   }
 }
 

@@ -4,15 +4,19 @@ import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import LoginPage from '../page-objects/login-page'
 
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
+
 fixture('Decks View').page(DecksPage.getUrl())
 
-test('Shows message if no decks', async () => {
-  const username = `decks-none-${Date.now()}`
+test('Shows message if no decks', async (t) => {
+  const username = `decks-none-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -24,8 +28,8 @@ test('Shows message if no decks', async () => {
   })
 })
 
-test('Displays single deck', async () => {
-  const username = `decks-single-${Date.now()}`
+test('Displays single deck', async (t) => {
+  const username = `decks-single-${t.ctx.start}`
   const name = 'single deck'
   const faction = FactionKey.NorthernRealms
   const leader = 'Foltest Son of Medell'
@@ -70,7 +74,7 @@ test('Displays single deck', async () => {
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: await client.getFaction({
           key: faction,
           neutrals: true,
@@ -86,8 +90,8 @@ test('Displays single deck', async () => {
   })
 })
 
-test('Displays two decks', async () => {
-  const username = `decks-two-${Date.now()}`
+test('Displays two decks', async (t) => {
+  const username = `decks-two-${t.ctx.start}`
   const name1 = 'two decks first'
   const name2 = 'two decks second'
   const faction1 = FactionKey.ScoiaTael
@@ -165,7 +169,7 @@ test('Displays two decks', async () => {
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
           neutrals: true,
@@ -178,7 +182,7 @@ test('Displays two decks', async () => {
         stats: deck1.stats,
       },
       {
-        created: new Date(),
+        created: deck2.created,
         faction: await client.getFaction({
           key: faction2,
           neutrals: true,
@@ -194,8 +198,8 @@ test('Displays two decks', async () => {
   })
 })
 
-test('List gets updated after deck created from deck page', async () => {
-  const username = `decks-list-updated-on-create-deck-page-${Date.now()}`
+test('List gets updated after deck created from deck page', async (t) => {
+  const username = `decks-list-updated-on-create-deck-page-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -246,10 +250,11 @@ test('List gets updated after deck created from deck page', async () => {
       'Young Emissary',
     ],
   })
+  const deck = await client.getDeck(name)
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction,
         leader,
         name,
@@ -259,10 +264,10 @@ test('List gets updated after deck created from deck page', async () => {
   })
 })
 
-test('List gets updated after deck created from game page', async () => {
+test('List gets updated after deck created from game page', async (t) => {
   const scenario = 'decks-list-updated-on-create-game-page'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -325,10 +330,11 @@ test('List gets updated after deck created from game page', async () => {
     verify: false,
   })
   await Banner.goTo(Banner.elements.MenuDecks)
+  const deck = await client.getDeck(name)
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction,
         leader,
         name,
@@ -338,8 +344,8 @@ test('List gets updated after deck created from game page', async () => {
   })
 })
 
-test('Shows deck created by api after list refresh button clicked', async () => {
-  const username = `decks-refresh-${Date.now()}`
+test('Shows deck created by api after list refresh button clicked', async (t) => {
+  const username = `decks-refresh-${t.ctx.start}`
   const name1 = 'two decks first'
   const name2 = 'two decks second'
   const faction1 = FactionKey.ScoiaTael
@@ -411,7 +417,7 @@ test('Shows deck created by api after list refresh button clicked', async () => 
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
           neutrals: true,
@@ -436,7 +442,7 @@ test('Shows deck created by api after list refresh button clicked', async () => 
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
           neutrals: true,
@@ -456,7 +462,7 @@ test('Shows deck created by api after list refresh button clicked', async () => 
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
           neutrals: true,
@@ -469,7 +475,7 @@ test('Shows deck created by api after list refresh button clicked', async () => 
         stats: deck1.stats,
       },
       {
-        created: new Date(),
+        created: deck2.created,
         faction: await client.getFaction({
           key: faction2,
           neutrals: true,

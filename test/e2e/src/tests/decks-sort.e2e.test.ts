@@ -1,16 +1,29 @@
-import { t } from 'testcafe'
-
 import ApiClient from '../util/api-client'
 import DeckList from '../components/deck-list'
 import DecksPage from '../page-objects/decks-page'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, Faction, FactionKey, Leader } from '@gwent/graphql-schema/resolver-typings'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import LoginPage from '../page-objects/login-page'
 import { SORT_FIELD } from '@gwent/graphql-schema/decks-filter'
 
+interface DecksSortTestCtx extends E2eCtx {
+  username: string
+  name1: string
+  name2: string
+  faction1: Faction
+  faction2: Faction
+  leader1: Leader
+  leader2: Leader
+  deck1: Deck
+  deck2: Deck
+}
+const fixture = getFixtureCtx<E2eCtx, DecksSortTestCtx>()
+const test = getTestCtx<E2eCtx, DecksSortTestCtx>()
+
 fixture('Decks Sort')
   .page(DecksPage.getUrl())
-  .beforeEach(async () => {
-    t.ctx.username = `decks-sort-${Date.now()}`
+  .beforeEach(async (t) => {
+    t.ctx.username = `decks-sort-${t.ctx.start}`
     t.ctx.name1 = 'decks sort first'
     t.ctx.name2 = 'decks sort second'
     const faction1 = FactionKey.ScoiaTael
@@ -106,129 +119,189 @@ fixture('Decks Sort')
     })
   })
 
-test('Sorts by agile descending', async () => {
+test('Sorts by agile descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Agile)
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by agile ascending', async () => {
+test('Sorts by agile ascending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Agile)
   await DeckList.changeSortOrder()
-  await verifySortOrder(true)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-test('Sorts by close descending', async () => {
+test('Sorts by close descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Close)
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by close ascending', async () => {
+test('Sorts by close ascending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Close)
   await DeckList.changeSortOrder()
-  await verifySortOrder(true)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-test('Sorts by created descending', async () => {
+test('Sorts by created descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Created)
-  await verifySortOrder(true)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-test('Sorts by created ascending', async () => {
+test('Sorts by created ascending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Created)
   await DeckList.changeSortOrder()
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by heroes descending', async () => {
+test('Sorts by heroes descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Heroes)
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by heroes ascending', async () => {
+test('Sorts by heroes ascending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Heroes)
   await DeckList.changeSortOrder()
-  await verifySortOrder(true)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-test('Sorts by name descending by default', async () => {
-  await verifySortOrder(true)
+test('Sorts by name descending by default', async (t) => {
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-test('Sorts by name ascending', async () => {
+test('Sorts by name ascending', async (t) => {
   await DeckList.changeSortOrder()
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by ranged descending', async () => {
+test('Sorts by ranged descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Ranged)
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by ranged ascending', async () => {
+test('Sorts by ranged ascending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Ranged)
   await DeckList.changeSortOrder()
-  await verifySortOrder(true)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-test('Sorts by siege descending', async () => {
+test('Sorts by siege descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Siege)
-  await verifySortOrder(true)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-test('Sorts by siege ascending', async () => {
+test('Sorts by siege ascending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Siege)
   await DeckList.changeSortOrder()
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by specials descending', async () => {
+test('Sorts by specials descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Specials)
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by specials ascending', async () => {
+test('Sorts by specials ascending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Specials)
   await DeckList.changeSortOrder()
-  await verifySortOrder(true)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-test('Sorts by strength average descending', async () => {
+test('Sorts by strength average descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.StrengthAverage)
-  await verifySortOrder(true)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-test('Sorts by strength total ascending', async () => {
+test('Sorts by strength total ascending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.StrengthAverage)
   await DeckList.changeSortOrder()
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by units descending', async () => {
+test('Sorts by units descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Units)
-  await verifySortOrder(false)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
+  })
 })
 
-test('Sorts by units ascending', async () => {
+test('Sorts by units ascending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.Units)
   await DeckList.changeSortOrder()
-  await verifySortOrder(true)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: true,
+  })
 })
 
-async function verifySortOrder(first: boolean) {
+async function verifySortOrder({ ctx, first }: { first: boolean; ctx: DecksSortTestCtx }) {
   const decks = []
   const deck1 = {
-    created: new Date(t.ctx.deck1.created),
-    faction: t.ctx.faction1,
-    leader: t.ctx.leader1,
-    name: t.ctx.name1,
-    stats: t.ctx.deck1.stats,
+    created: new Date(ctx.deck1.created),
+    faction: ctx.faction1,
+    leader: ctx.leader1,
+    name: ctx.name1,
+    stats: ctx.deck1.stats,
   }
   const deck2 = {
-    created: new Date(t.ctx.deck2.created),
-    faction: t.ctx.faction2,
-    leader: t.ctx.leader2,
-    name: t.ctx.name2,
-    stats: t.ctx.deck2.stats,
+    created: new Date(ctx.deck2.created),
+    faction: ctx.faction2,
+    leader: ctx.leader2,
+    name: ctx.name2,
+    stats: ctx.deck2.stats,
   }
   decks.push(first ? deck1 : deck2)
   decks.push(first ? deck2 : deck1)

@@ -1,6 +1,7 @@
 import path from 'path'
 
 import DbProfiler from '@gwent/db-profiler'
+import { E2eCtx, E2ETestController } from './src/util/e2e-ctx'
 import env from './src/util/env'
 
 const profiler = new DbProfiler({
@@ -24,6 +25,16 @@ const config: any = {
         if (violations.length > 0) {
           throw Error(`Violations when analyzing DB: "${JSON.stringify(violations)}"`)
         }
+      },
+    },
+    fixture: {
+      before: async (ctx: E2eCtx) => {
+        ctx.start = new Date().getTime()
+      },
+    },
+    test: {
+      before: async (t: E2ETestController<E2eCtx, E2eCtx>) => {
+        t.ctx.start = new Date().getTime()
       },
     },
   },

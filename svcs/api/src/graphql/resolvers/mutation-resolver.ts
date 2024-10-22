@@ -11,6 +11,7 @@ import {
 import DeckResolver from './deck-resolver'
 import DeckStore from '../../database/stores/deck-store'
 import DeckUnitResolver from './deck-unit-resolver'
+import EventManager from './event-manager'
 import { FactionKey, MutationResolvers, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
 import FactionStore from '../../database/stores/faction-store'
@@ -21,7 +22,7 @@ import { getDeckStats, getUniqueItems } from '@gwent/utils'
 import { getRandomSubset } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
 import LeaderStore from '../../database/stores/leader-store'
-import { MAX_REDRAWS, PLAYER_COUNTS, STARTING_HAND_SIZE } from '@gwent/constants'
+import { MAX_REDRAWS, PLAYER_COUNTS, PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
 import UnitStore from '../../database/stores/unit-store'
 import UserResolver from './user-resolver'
@@ -172,7 +173,7 @@ export default class MutationResolver {
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} resolvedFaction: "${JSON.stringify(resolvedFaction)}"`)
         }
-        return DeckResolver.fromObject({
+        const resolvedDeck = await DeckResolver.fromObject({
           deck,
           faction: resolvedFaction,
           leader: await LeaderResolver.fromObject({
@@ -183,6 +184,12 @@ export default class MutationResolver {
           units: deckUnits,
           neutralDeckStats: RequestedFields.getArgument(info, 'addDeck.faction.stats.neutrals'),
         })
+
+        EventManager.pubsub.publish(PubSubEvents.DeckAdded, {
+          deckAdded: resolvedDeck,
+        })
+
+        return resolvedDeck
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       addGame: async (parent, args, context, info) => {
@@ -248,12 +255,18 @@ export default class MutationResolver {
         }
         // neutral stats resolving not really needed here (since no decks are set when game initially created)
         // but left in for good measure
-        return GameResolver.fromObject({
+        const resolvedGame = await GameResolver.fromObject({
           game,
           users: resolvedOpponents,
           neutralFactionStats: RequestedFields.getArgument(info, 'addGame.players.faction.stats.neutrals'),
           neutralLeaderStats: RequestedFields.getArgument(info, 'addGame.players.leader.faction.stats.neutrals'),
         })
+
+        EventManager.pubsub.publish(PubSubEvents.GameAdded, {
+          gameAdded: resolvedGame,
+        })
+
+        return resolvedGame
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       addUser: async (parent, args, context, info) => {
@@ -410,11 +423,17 @@ export default class MutationResolver {
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
-        return GameResolver.fromObject({
+        const resolvedGame = await GameResolver.fromObject({
           game: updatedGame,
           neutralFactionStats: RequestedFields.getArgument(info, 'ready.players.faction.stats.neutrals'),
           neutralLeaderStats: RequestedFields.getArgument(info, 'ready.players.leader.faction.stats.neutrals'),
         })
+
+        EventManager.pubsub.publish(PubSubEvents.GameReady, {
+          gameReady: resolvedGame,
+        })
+
+        return resolvedGame
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       redraw: async (parent, args, context, info) => {

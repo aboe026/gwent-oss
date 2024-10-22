@@ -3,6 +3,7 @@ import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHt
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 import cors from 'cors'
 import { createServer, Server } from 'http'
+import { Disposable } from 'graphql-ws'
 import express, { Express, Request, Response } from 'express'
 import { expressMiddleware } from '@apollo/server/express4'
 import figlet from 'figlet'
@@ -11,6 +12,8 @@ import { json } from 'body-parser'
 import MongoStore from 'connect-mongo'
 import { printSchema } from 'graphql/utilities'
 import session, { CookieOptions } from 'express-session'
+import { useServer } from 'graphql-ws/lib/use/ws'
+import { WebSocketServer } from 'ws'
 
 import AppInfo from './app-info'
 import BasicAuth from './auth/basic-auth'
@@ -20,6 +23,7 @@ import env from './env'
 import { NODE_ENV } from '@gwent/env'
 import schema from './graphql/executable-schema'
 import { version } from '../package.json'
+import WebSocketAuth from './auth/websocket-auth'
 
 /**
  * A class to handle startup and configuration of the API server.
@@ -29,6 +33,7 @@ export default class Api {
   private static app: Express
   private static apolloServer: ApolloServer
   private static httpServer: Server
+  private static sessionMongoStore: MongoStore
 
   /**
    * Bring up the API server.
@@ -42,7 +47,8 @@ export default class Api {
 
     Api.configureSession()
     Api.exposePlainSchema()
-    await Api.configureApolloServer()
+    const subscriptionCleanup = Api.configureWebsocketServer()
+    await Api.configureApolloServer(subscriptionCleanup)
 
     await Api.serve()
   }
@@ -79,19 +85,22 @@ export default class Api {
       Api.logger.trace('enabling "trust proxy"')
       Api.app.set('trust proxy', 1)
     }
+    Api.sessionMongoStore = MongoStore.create({
+      clientPromise: Promise.resolve(DbConnector.getClient()),
+      dbName: env().MONGO_DB,
+    })
+    const sessionCookieName = env().SESSION_COOKIE_NAME
+    Api.logger.trace(`session cookie name: "${sessionCookieName}"`)
     Api.app.use(
       session({
         cookie,
         proxy,
-        name: 'gwent.sid',
+        name: sessionCookieName,
         resave: false,
         rolling: true,
         saveUninitialized: false,
         secret: env().SESSION_SECRET,
-        store: MongoStore.create({
-          clientPromise: Promise.resolve(DbConnector.getClient()),
-          dbName: env().MONGO_DB,
-        }),
+        store: Api.sessionMongoStore,
       })
     )
   }
@@ -108,9 +117,65 @@ export default class Api {
   }
 
   /**
-   * Configure the Apollo Server for UI connections.
+   * Configure the WebSocket for Subscription connections.
+   *
+   * @returns A Disposable instance required for draining the WebSocket.
    */
-  private static async configureApolloServer() {
+  private static configureWebsocketServer(): Disposable {
+    const wsServer = new WebSocketServer({
+      server: Api.httpServer,
+      path: `/${env().SUBSCRIPTION_PATH}`,
+    })
+
+    return useServer(
+      {
+        schema,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        context: (ctx, msg, args) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const user = (ctx.extra as any).user
+          if (Api.logger.isTraceEnabled()) {
+            Api.logger.trace(`WebSocket context user: "${JSON.stringify(user)}"`)
+          }
+
+          return {
+            user,
+          }
+        },
+        onConnect: async (ctx) => {
+          const user = await WebSocketAuth.authenticate({
+            req: ctx.extra.request,
+            mongoStore: Api.sessionMongoStore,
+          })
+          const clientIp = ctx.extra.request.headers['x-forwarded-for'] || ctx.extra.request.socket.remoteAddress
+          if (Api.logger.isTraceEnabled()) {
+            Api.logger.trace(`WebSocket onConnect clientIp: "${clientIp}"`)
+            Api.logger.trace(`WebSocket onConnect user: "${JSON.stringify(user)}"`)
+          }
+
+          if (user) {
+            Api.logger.debug(`Allowing WebSocket connection for user "${user._id}"`)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(ctx.extra as any).user = user
+          } else {
+            Api.logger.debug(`Rejecting WebSocket connection from "${clientIp}" due to authentication failure.`)
+            if (Api.logger.isTraceEnabled()) {
+              Api.logger.trace(`WebSocket onConnect headers: "${JSON.stringify(ctx.extra.request.headers)}"`)
+            }
+            return false // reject connection
+          }
+        },
+      },
+      wsServer
+    )
+  }
+
+  /**
+   * Configure the Apollo Server for UI connections.
+   *
+   * @param subscriptionCleanup The Disposable object to ensure WebSocket is properly cleaned up.
+   */
+  private static async configureApolloServer(subscriptionCleanup: Disposable) {
     Api.logger.debug('starting ApolloServer')
     Api.apolloServer = new ApolloServer({
       schema,
@@ -123,11 +188,30 @@ export default class Api {
         ApolloServerPluginLandingPageLocalDefault({
           embed: true,
         }),
+        Api.ensureWebsocketDisposed(subscriptionCleanup),
       ],
       introspection: true,
     })
     await Api.apolloServer.start()
     Api.logger.debug('ApolloServer started')
+  }
+
+  /**
+   * When server is going down, ensure WebSocket connections are disposed.
+   *
+   * @param subscriptionCleanup The Disposable instance to call dispose on.
+   * @returns The methods to call for disposing the WebSocket on server draining.
+   */
+  private static ensureWebsocketDisposed(subscriptionCleanup: Disposable) {
+    return {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await subscriptionCleanup.dispose()
+          },
+        }
+      },
+    }
   }
 
   /**
@@ -165,6 +249,11 @@ export default class Api {
     Api.logger.debug(`CORS accepting requests from "${env().CORS_ORIGIN}"`)
     Api.logger.trace(`PORT: "${env().PORT}"`)
     await new Promise<void>((resolve) => Api.httpServer.listen({ port: env().PORT }, resolve))
-    Api.logger.info(`GraphQL API listening at: "http://localhost:${env().PORT}/${env().GRAPHQL_PATH}"`)
+    Api.logger.info(
+      `GraphQL Queries and Mutations listening at: "http://localhost:${env().PORT}/${env().GRAPHQL_PATH}"`
+    )
+    Api.logger.info(
+      `GraphQL Subscription Websocket available at: "ws://localhost:${env().PORT}/${env().SUBSCRIPTION_PATH}"`
+    )
   }
 }

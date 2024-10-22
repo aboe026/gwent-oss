@@ -12,6 +12,8 @@ import LoadingSpinner from './components/LoadingSpinner'
 import LoginDialog from './components/LoginDialog'
 import { NOT_AUTHENTICATED_MESSAGE, ROUTES } from '@gwent/constants'
 import WholeScreenDialog from './components/WholeScreenDialog'
+import ConnectionStatus from './ConnectionStatus'
+import Subscriptions from './Subscriptions'
 
 const AUTH_TIMEOUT_ID = 'AUTH_TIMEOUT_ID'
 
@@ -117,22 +119,26 @@ export default function App() {
         return (
           <UserContext.Provider value={{ user: loggedIn || authTimedOut ? user : undefined, checkAuth }}>
             <IconContext.Provider value={{ color: 'white' }}>
-              <Banner />
-              {authTimedOut && (
-                <WholeScreenDialog style={{ zIndex: 200 }}>
-                  <Centered>
-                    <LoginDialog
-                      initialUsername={user?.name}
-                      secondaryLinkLabel="Change User"
-                      secondaryLinkPath={ROUTES.Logout.path}
-                      secondaryText="Not You?"
-                      title="Session Timed Out"
-                      usernameDisabled={true}
-                    />
-                  </Centered>
-                </WholeScreenDialog>
-              )}
-              <Outlet />
+              <ConnectionStatus>
+                <Subscriptions>
+                  <Banner />
+                  {authTimedOut && (
+                    <WholeScreenDialog style={{ zIndex: 200 }}>
+                      <Centered>
+                        <LoginDialog
+                          initialUsername={user?.name}
+                          secondaryLinkLabel="Change User"
+                          secondaryLinkPath={ROUTES.Logout.path}
+                          secondaryText="Not You?"
+                          title="Session Timed Out"
+                          usernameDisabled={true}
+                        />
+                      </Centered>
+                    </WholeScreenDialog>
+                  )}
+                  <Outlet />
+                </Subscriptions>
+              </ConnectionStatus>
             </IconContext.Provider>
           </UserContext.Provider>
         )

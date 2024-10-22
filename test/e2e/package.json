@@ -1,20 +1,25 @@
 {
   "name": "@gwent/e2e-tests",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "author": "Adam Boe",
   "description": "E2E browser testing for Gwent website",
   "scripts": {
-    "build": "yarn g:tsc --build",
+    "build": "yarn g:npm-run-all --sequential build-tsc remove-context-overrides",
+    "build-tsc": "yarn g:tsc --build",
     "build-image": "docker build --tag=testcafe/testcafe:${IMAGE_TAG:-yarn-pnp} --progress=plain ${BUILD_OPTIONS:-} .",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
     "debug": "yarn start --debug-on-fail",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
-    "start": "yarn build && cross-env START_APP=true testcafe --config-file=build/.testcaferc.js",
+    "remove-context-overrides": "yarn g:ts-node scripts/remove-context-overrides.ts",
+    "start": "yarn g:npm-run-all --sequential build start-testcafe",
+    "start-testcafe": "cross-env START_APP=true testcafe --config-file=build/.testcaferc.js",
     "start-gwent": "cd $PROJECT_CWD && cross-env SESSION_TIMEOUT_SECONDS=20 MONGO_DB=gwent-e2e yarn start",
     "test": "testcafe --config-file=build/.testcaferc.js --debug-on-fail",
-    "start-docker": "docker run --rm -v $PROJECT_CWD:/gwent -w /gwent/test/e2e -it testcafe/testcafe:yarn-pnp chromium build/tests --config-file=build/.testcaferc.js",
-    "watch": "yarn g:tsc --build --watch"
+    "start-docker": "yarn remove-context-overrides && docker run --rm -v $PROJECT_CWD:/gwent -w /gwent/test/e2e -it testcafe/testcafe:yarn-pnp chromium build/tests --config-file=build/.testcaferc.js",
+    "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",
+    "watch-built": "yarn g:ts-node scripts/wait-for-initial-build.ts && yarn g:nodemon --watch build --exec 'yarn remove-context-overrides'",
+    "watch-tsc": "yarn build-tsc --watch"
   },
   "dependencies": {
     "@gwent/constants": "workspace:*",
@@ -22,14 +27,20 @@
     "@gwent/env": "workspace:*",
     "@gwent/graphql-schema": "workspace:*",
     "@gwent/utils": "workspace:*",
+    "cookie": "1.0.1",
     "cross-env": "7.0.3",
     "graphql": "16.9.0",
     "graphql-request": "6.1.0",
+    "graphql-ws": "5.16.0",
     "mongodb": "6.9.0",
     "testcafe": "3.6.2",
-    "url-join": "4.0.1"
+    "url-join": "4.0.1",
+    "ws": "8.18.0"
   },
   "devDependencies": {
-    "@types/url-join": "4.0.3"
+    "@types/node": "22.5.5",
+    "@types/url-join": "4.0.3",
+    "@types/ws": "8.5.12",
+    "replace-in-file": "7.2.0"
   }
 }

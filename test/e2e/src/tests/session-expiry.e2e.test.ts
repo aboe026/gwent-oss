@@ -1,12 +1,11 @@
-import { t } from 'testcafe'
-
 import ApiClient from '../util/api-client'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
 import E2eUtil from '../util/e2e-util'
-import { FactionKey, GameStatus, Leader, SettingKey } from '@gwent/graphql-schema/resolver-typings'
+import { E2eCtx, E2ETestController, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { Faction, FactionKey, GameStatus, Leader, SettingKey } from '@gwent/graphql-schema/resolver-typings'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
@@ -15,8 +14,18 @@ import LoginPage from '../page-objects/login-page'
 import { NOT_AUTHENTICATED_MESSAGE, STARTING_HAND_SIZE } from '@gwent/constants'
 import { sortObjectArray } from '@gwent/utils'
 
+interface SessionExpiryFixtureCtx extends E2eCtx {
+  sessionTimeoutSeconds: number
+  faction: Faction
+  leader: Leader
+  units: string[]
+}
+
+const fixture = getFixtureCtx<SessionExpiryFixtureCtx, E2eCtx>()
+const test = getTestCtx<SessionExpiryFixtureCtx, E2eCtx>()
+
 fixture('Session Expiry').before(async (ctx) => {
-  const username = `session-expiry-${Date.now()}`
+  const username = `session-expiry-${ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -62,9 +71,9 @@ fixture('Session Expiry').before(async (ctx) => {
   ]
 })
 
-test('Viewing decks after session expires shows login dialog', async () => {
+test('Viewing decks after session expires shows login dialog', async (t) => {
   const name = 'session-expiry-decks'
-  const username = `${name}-${Date.now()}`
+  const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -83,11 +92,11 @@ test('Viewing decks after session expires shows login dialog', async () => {
   await HomePage.goTo(HomePage.elements.ViewDecks)
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
   await DeckList.verifyError(`Error getting decks: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name,
@@ -97,9 +106,9 @@ test('Viewing decks after session expires shows login dialog', async () => {
   })
 })
 
-test('Viewing new deck after session expires shows login dialog', async () => {
+test('Viewing new deck after session expires shows login dialog', async (t) => {
   const name = 'session-expiry-deck-new'
-  const username = `${name}-${Date.now()}`
+  const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -111,7 +120,7 @@ test('Viewing new deck after session expires shows login dialog', async () => {
   await HomePage.goTo(HomePage.elements.CreateDeck)
   await E2eUtil.verifyCurrentUrl(DeckPage.getUrl())
   await DeckEditor.verifyFactionError(`Error getting factions: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   await DeckPage.verify({})
   await DeckPage.createDeck({
     faction: t.fixtureCtx.faction,
@@ -123,7 +132,7 @@ test('Viewing new deck after session expires shows login dialog', async () => {
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name,
@@ -133,9 +142,9 @@ test('Viewing new deck after session expires shows login dialog', async () => {
   })
 })
 
-test('Selecting faction for new deck after session expires shows login dialog', async () => {
+test('Selecting faction for new deck after session expires shows login dialog', async (t) => {
   const name = 'session-expiry-deck-set-faction'
-  const username = `${name}-${Date.now()}`
+  const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -160,7 +169,7 @@ test('Selecting faction for new deck after session expires shows login dialog', 
     factionsError: `Error getting faction units: ${NOT_AUTHENTICATED_MESSAGE}`,
     neutralError: `Error getting neutral units: ${NOT_AUTHENTICATED_MESSAGE}`,
   })
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   await DeckPage.verify({
     name,
     faction: t.fixtureCtx.faction,
@@ -185,7 +194,7 @@ test('Selecting faction for new deck after session expires shows login dialog', 
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name,
@@ -195,9 +204,9 @@ test('Selecting faction for new deck after session expires shows login dialog', 
   })
 })
 
-test('Changing faction for new deck after session expires shows login dialog', async () => {
+test('Changing faction for new deck after session expires shows login dialog', async (t) => {
   const name = 'session-expiry-deck-change-faction'
-  const username = `${name}-${Date.now()}`
+  const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -232,7 +241,7 @@ test('Changing faction for new deck after session expires shows login dialog', a
   await DeckEditor.verifyUnitsError({
     factionsError: `Error getting faction units: ${NOT_AUTHENTICATED_MESSAGE}`,
   })
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   await LoginForm.verifyAbscence()
   await DeckPage.verify({
     name,
@@ -258,7 +267,7 @@ test('Changing faction for new deck after session expires shows login dialog', a
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name,
@@ -268,10 +277,10 @@ test('Changing faction for new deck after session expires shows login dialog', a
   })
 })
 
-test('Creating new deck after session expires shows login dialog', async () => {
+test('Creating new deck after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-deck-create'
-  const username = `${scenario}-user-${Date.now()}`
-  const deckName = `${scenario}-deck-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const deckName = `${scenario}-deck-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -304,13 +313,13 @@ test('Creating new deck after session expires shows login dialog', async () => {
   await DeckEditor.save()
   await E2eUtil.verifyCurrentUrl(DeckPage.getUrl())
   await DeckEditor.verifyCreateError(`Error creating deck: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
   const deck = await new ApiClient({ username }).getDeck(deckName)
   await DecksPage.verify({
     decks: [
       {
-        created: new Date(),
+        created: deck.created,
         faction: t.fixtureCtx.faction,
         leader: t.fixtureCtx.leader,
         name: deckName,
@@ -320,10 +329,10 @@ test('Creating new deck after session expires shows login dialog', async () => {
   })
 })
 
-test('Creating new game after session expires shows login dialog', async () => {
+test('Creating new game after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-game-create'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -341,7 +350,7 @@ test('Creating new game after session expires shows login dialog', async () => {
   await GamePage.clickCreate()
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl())
   await t.expect(GamePage.elements.NewGameError.innerText).eql(`Error adding game: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   await GamePage.verify({
     self: {
       name: username,
@@ -352,10 +361,10 @@ test('Creating new game after session expires shows login dialog', async () => {
   })
 })
 
-test('Viewing games after session expires shows login dialog', async () => {
+test('Viewing games after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-games'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -372,7 +381,7 @@ test('Viewing games after session expires shows login dialog', async () => {
   await HomePage.goTo(HomePage.elements.ViewGames)
   await E2eUtil.verifyCurrentUrl(GamesPage.getUrl())
   await GamesPage.verifyError(`Error getting games: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   await GamesPage.verify({
     games: [
       {
@@ -385,10 +394,10 @@ test('Viewing games after session expires shows login dialog', async () => {
   })
 })
 
-test('Listing decks for game after session expires shows login dialog', async () => {
+test('Listing decks for game after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-listing-decks-for-game'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -400,7 +409,7 @@ test('Listing decks for game after session expires shows login dialog', async ()
   const deck = await client.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${Date.now()}`,
+    name: `${scenario}-deck-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
@@ -412,7 +421,7 @@ test('Listing decks for game after session expires shows login dialog', async ()
   await GamePage.clickSetDeck()
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await DeckList.verifyError(`Error getting decks: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   await DeckList.verify({
     decks: [
       {
@@ -426,10 +435,10 @@ test('Listing decks for game after session expires shows login dialog', async ()
   })
 })
 
-test('Setting deck for game after session expires shows login dialog', async () => {
+test('Setting deck for game after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-games-choosing-deck-for-game'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -441,7 +450,7 @@ test('Setting deck for game after session expires shows login dialog', async () 
   const deck = await client.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${Date.now()}`,
+    name: `${scenario}-deck-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
@@ -473,7 +482,7 @@ test('Setting deck for game after session expires shows login dialog', async () 
   await DeckList.selectDeckForGame(deck.name)
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await GamePage.verifyDeckError(`Error choosing deck: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   const gameDeck = await client.getGameDeck(game.id)
   await GamePage.verify({
     opponent: {
@@ -495,10 +504,10 @@ test('Setting deck for game after session expires shows login dialog', async () 
   })
 })
 
-test('Creating deck for game after session expires shows login dialog', async () => {
+test('Creating deck for game after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-games-create-deck-for-game'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -525,7 +534,7 @@ test('Creating deck for game after session expires shows login dialog', async ()
     decks: [],
   })
   await DeckList.clickCreateNone()
-  const deckName = `${scenario}-deck-${Date.now()}`
+  const deckName = `${scenario}-deck-${t.ctx.start}`
   await DeckEditor.createDeck({
     faction: t.fixtureCtx.faction,
     leader: t.fixtureCtx.leader,
@@ -544,7 +553,7 @@ test('Creating deck for game after session expires shows login dialog', async ()
   await DeckEditor.save()
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await DeckEditor.verifyCreateError(`Error creating deck: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   const gameDeck = await client.getGameDeck(game.id)
   if (!gameDeck.from) {
     throw Error('Could not get game deck')
@@ -569,10 +578,10 @@ test('Creating deck for game after session expires shows login dialog', async ()
   })
 })
 
-test('Redrawing unit for game after session expires shows login dialog', async () => {
+test('Redrawing unit for game after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-game-redraw'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -584,7 +593,7 @@ test('Redrawing unit for game after session expires shows login dialog', async (
   const deck = await client.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${Date.now()}`,
+    name: `${scenario}-deck-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
@@ -631,7 +640,7 @@ test('Redrawing unit for game after session expires shows login dialog', async (
   await GamePage.redraw(unitToRedraw)
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await GamePage.verifyRedrawError(`Error redrawing card: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   const updatedGameDeck = await client.getGameDeck(game.id)
   await GamePage.verify({
     opponent: {
@@ -659,10 +668,10 @@ test('Redrawing unit for game after session expires shows login dialog', async (
   })
 })
 
-test('Readying game after session expires shows login dialog', async () => {
+test('Readying game after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-game-ready'
-  const username = `${scenario}-user-${Date.now()}`
-  const opponent = `${scenario}-opponent-${Date.now()}`
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponent = `${scenario}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -674,7 +683,7 @@ test('Readying game after session expires shows login dialog', async () => {
   const deck = await client.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${Date.now()}`,
+    name: `${scenario}-deck-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
@@ -720,7 +729,7 @@ test('Readying game after session expires shows login dialog', async () => {
   await GamePage.ready()
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await GamePage.verifyReadyError(`Error marking self as ready: ${NOT_AUTHENTICATED_MESSAGE}`)
-  await reAuthenticate(username)
+  await reAuthenticate(username, t)
   await GamePage.verify({
     opponent: {
       name: opponent,
@@ -742,9 +751,9 @@ test('Readying game after session expires shows login dialog', async () => {
   })
 })
 
-test('Change user after session expires shows new users data', async () => {
-  const username1 = `session-expiry-change-user-1-${Date.now()}`
-  const username2 = `session-expiry-change-user-2-${Date.now()}`
+test('Change user after session expires shows new users data', async (t) => {
+  const username1 = `session-expiry-change-user-1-${t.ctx.start}`
+  const username2 = `session-expiry-change-user-2-${t.ctx.start}`
   const name = 'session-expiry-decks'
   await new ApiClient({}).addUser({
     name: username1,
@@ -782,7 +791,7 @@ test('Change user after session expires shows new users data', async () => {
   })
 })
 
-async function reAuthenticate(username: string) {
+async function reAuthenticate(username: string, t: E2ETestController<SessionExpiryFixtureCtx, E2eCtx>) {
   await LoginForm.verifyPresence({
     title: 'Session Timed Out',
     username,

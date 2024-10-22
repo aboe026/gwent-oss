@@ -1,9 +1,13 @@
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import NotFoundPage from '../page-objects/not-found-page'
 import SignupPage from '../page-objects/signup-page'
+
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Not Found').page(env.BASE_URL)
 
@@ -18,9 +22,9 @@ test('Displays not found page with home link if user navigates to unknown page w
   await LoginPage.verifyNotLoggedIn({})
 })
 
-test('Displays not found page with home link if user navigates to unknown page after login', async () => {
+test('Displays not found page with home link if user navigates to unknown page after login', async (t) => {
   const unknownPath = 'toast'
-  const username = `not-found-after-login-${Date.now()}`
+  const username = `not-found-after-login-${t.ctx.start}`
   await SignupPage.signUp({
     username,
   })
