@@ -147,7 +147,9 @@ export default class Api {
             req: ctx.extra.request,
             mongoStore: Api.sessionMongoStore,
           })
+          const clientIp = ctx.extra.request.headers['x-forwarded-for'] || ctx.extra.request.socket.remoteAddress
           if (Api.logger.isTraceEnabled()) {
+            Api.logger.trace(`WebSocket onConnect clientIp: "${clientIp}"`)
             Api.logger.trace(`WebSocket onConnect user: "${JSON.stringify(user)}"`)
           }
 
@@ -156,11 +158,7 @@ export default class Api {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(ctx.extra as any).user = user
           } else {
-            Api.logger.debug(
-              `Rejecting WebSocket connection from "${
-                ctx.extra.request.headers['x-forwarded-for'] || ctx.extra.request.socket.remoteAddress
-              }" due to authentication failure.`
-            )
+            Api.logger.debug(`Rejecting WebSocket connection from "${clientIp}" due to authentication failure.`)
             if (Api.logger.isTraceEnabled()) {
               Api.logger.trace(`WebSocket onConnect headers: "${JSON.stringify(ctx.extra.request.headers)}"`)
             }
