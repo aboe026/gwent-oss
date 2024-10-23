@@ -101,7 +101,7 @@ export default class Api {
         saveUninitialized: false,
         secret: env().SESSION_SECRET,
         store: Api.sessionMongoStore,
-      })
+      }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     )
   }
 
@@ -244,7 +244,7 @@ export default class Api {
       json(),
       expressMiddleware(Api.apolloServer, {
         context: Api.setContext,
-      })
+      }) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     )
     Api.logger.debug(`CORS accepting requests from "${env().CORS_ORIGIN}"`)
     Api.logger.trace(`PORT: "${env().PORT}"`)
