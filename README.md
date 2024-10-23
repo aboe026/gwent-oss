@@ -260,6 +260,8 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- do not store yarn binary in source
+- do not store yarn sdks in source?
 - allow introspection without authentication
 - fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
   - happens when adding deck through API and not requesting neutral stats?
