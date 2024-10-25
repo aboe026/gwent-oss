@@ -1,4 +1,4 @@
-import { Document, FindOptions, ObjectId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId, UpdateFilter } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
@@ -139,6 +139,46 @@ export default class GameStore extends Store {
           'players.$.deck.hand': hand,
           'players.$.deck.undrawn': undrawn,
         },
+      },
+      verifyExistence: false,
+    })
+  }
+
+  static async setOrder({ gameId, order }: { gameId: string | ObjectId; order: (string | ObjectId)[] }) {
+    // TODO: make other method declarations debugs
+    // TODO: add traces to other methods for filters/updates
+    if (GameStore.logger.isDebugEnabled()) {
+      GameStore.logger.debug(`Setting order to "${JSON.stringify(order)}" on game "${gameId}"`)
+    }
+    const filter: Filter<Document> = {
+      _id: new ObjectId(gameId),
+      turn: null,
+    }
+    const arrayFilters: Document[] = []
+    const update: UpdateFilter<Document> = {
+      $set: {
+        updated: new Date(),
+        turn: new ObjectId(order[0]),
+      },
+    }
+    if (update.$set) {
+      for (let i = 0; i < order.length; i++) {
+        update.$set[`players.$[p${i}].order`] = i
+        arrayFilters.push({
+          [`p${i}.user`]: new ObjectId(order[i]),
+        })
+      }
+    }
+    if (GameStore.logger.isTraceEnabled()) {
+      GameStore.logger.trace(`setOrder filter: "${JSON.stringify(filter)}"`)
+      GameStore.logger.trace(`setOrder update: "${JSON.stringify(update)}"`)
+      GameStore.logger.trace(`setOrder arrayFilters: "${JSON.stringify(arrayFilters)}"`)
+    }
+    return GameStore.update<GameDbObject>({
+      filter,
+      update,
+      options: {
+        arrayFilters,
       },
       verifyExistence: false,
     })

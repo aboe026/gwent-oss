@@ -25,7 +25,7 @@ export default class GamePlayerResolver {
    * @returns The resolved GamePlayer object matching its GraphQL schema definition.
    */
   static async fromObject({
-    everyoneReady,
+    allDecksChosen,
     faction,
     leader,
     player,
@@ -33,7 +33,7 @@ export default class GamePlayerResolver {
     neutralLeaderStats,
     user,
   }: {
-    everyoneReady: boolean
+    allDecksChosen: boolean
     faction?: Faction | undefined
     leader?: Leader | undefined
     player: GamePlayerDbObject
@@ -42,7 +42,7 @@ export default class GamePlayerResolver {
     user?: User
   }): Promise<GamePlayer> {
     let counts: GamePlayerUnitCounts | undefined = undefined
-    if (everyoneReady) {
+    if (allDecksChosen) {
       if (!faction && player.deck.from?.faction) {
         faction = await FactionResolver.fromId({
           id: player.deck.from.faction,
@@ -63,8 +63,9 @@ export default class GamePlayerResolver {
     }
     return {
       counts,
-      faction: everyoneReady ? faction : undefined,
-      leader: everyoneReady ? leader : undefined,
+      faction: allDecksChosen ? faction : undefined,
+      leader: allDecksChosen ? leader : undefined,
+      order: player.order,
       ready: player.ready,
       rounds: player.rounds,
       user: user || (await UserResolver.fromId(player.user)),
@@ -83,13 +84,13 @@ export default class GamePlayerResolver {
    * @returns The resolved Deck array matching the GraphQL schema definition.
    */
   static async fromArray({
-    everyoneReady,
+    allDecksChosen,
     players,
     neutralFactionStats,
     neutralLeaderStats,
     users,
   }: {
-    everyoneReady: boolean
+    allDecksChosen: boolean
     players: GamePlayerDbObject[]
     neutralFactionStats?: boolean
     neutralLeaderStats?: boolean
@@ -137,7 +138,7 @@ export default class GamePlayerResolver {
           leader,
           neutralFactionStats,
           neutralLeaderStats,
-          everyoneReady,
+          allDecksChosen,
         })
       )
     }

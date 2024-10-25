@@ -150,6 +150,31 @@ export function getDeckUnitFragment({ statsModifier = '' }: { statsModifier?: st
   `
 }
 
+export function getGamePlayerFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+  return `
+    counts {
+      discard
+      hand
+      undrawn
+    }
+    faction {
+      ${getFactionFragment({ statsModifier })}
+    }
+    leader {
+      ${getLeaderFragment({ statsModifier })}
+    }
+    order
+    ready
+    rounds {
+      score
+      won
+    }
+    user {
+      ${getUserFragment()}
+    }
+  `
+}
+
 export function getGameFragment({ statsModifier = '' }: { statsModifier?: string }): string {
   return `
     created
@@ -158,31 +183,16 @@ export function getGameFragment({ statsModifier = '' }: { statsModifier?: string
     }
     id
     players {
-      counts {
-        discard
-        hand
-        undrawn
-      }
-      faction {
-        ${getFactionFragment({ statsModifier })}
-      }
-      leader {
-        ${getLeaderFragment({ statsModifier })}
-      }
-      ready
-      rounds {
-        score
-        won
-      }
-      user {
-        ${getUserFragment()}
-      }
+      ${getGamePlayerFragment({ statsModifier })}
     }
     round {
       current
       maximum
     }
     status
+    turn {
+      ${getGamePlayerFragment({ statsModifier })}
+    }
     updated
     victors {
       ${getUserFragment()}

@@ -161,6 +161,8 @@ export type Game = {
   players: Array<GamePlayer>;
   round: GameRound;
   status: GameStatus;
+  /** Whose turn it currently is to make a move. */
+  turn?: Maybe<GamePlayer>;
   updated: Scalars['DateTime']['output'];
   victors: Array<User>;
 };
@@ -196,6 +198,8 @@ export type GamePlayer = {
   faction?: Maybe<Faction>;
   /** The leader the player chose for the game. Only visible once all players are ready. */
   leader?: Maybe<Leader>;
+  /** The precedence of order the player takes their turn relative to other players. Zero based indexing. */
+  order?: Maybe<Scalars['Int']['output']>;
   /** Whether or not a user has their game deck set to play the game. */
   ready: Scalars['Boolean']['output'];
   rounds: Array<PlayerRound>;
@@ -221,12 +225,16 @@ export type GameRound = {
 };
 
 export enum GameStatus {
-  /** Players are choosing the decks and hand to use for the game. */
+  /** Players are choosing their decks to use for the game. */
   Decking = 'DECKING',
   /** Play has ended. */
   Done = 'DONE',
+  /** The order of player turns is being decided. Happens automatically unless there is a single player with a Scoia'tael faction deck who can then choose which player starts. */
+  Ordering = 'ORDERING',
   /** Players are playing rounds of the game. */
-  Playing = 'PLAYING'
+  Playing = 'PLAYING',
+  /** Players are potentially redrawing their hand cards. */
+  Redrawing = 'REDRAWING'
 }
 
 export type Leader = {
@@ -259,6 +267,8 @@ export type Mutation = {
   redraw: DeckUnit;
   /** Choose which deck will be used for the game. */
   setDeck: GameDeck;
+  /** Set the order in which players will take turns during a game. */
+  setOrder: Game;
 };
 
 
@@ -301,6 +311,12 @@ export type MutationRedrawArgs = {
 export type MutationSetDeckArgs = {
   deck: Scalars['ID']['input'];
   game: Scalars['ID']['input'];
+};
+
+
+export type MutationSetOrderArgs = {
+  game: Scalars['ID']['input'];
+  order?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type PlayerRound = {
@@ -647,6 +663,7 @@ export type GameResolvers<ContextType = any, ParentType extends ResolversParentT
   players?: Resolver<Array<ResolversTypes['GamePlayer']>, ParentType, ContextType>;
   round?: Resolver<ResolversTypes['GameRound'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['GameStatus'], ParentType, ContextType>;
+  turn?: Resolver<Maybe<ResolversTypes['GamePlayer']>, ParentType, ContextType>;
   updated?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   victors?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -665,6 +682,7 @@ export type GamePlayerResolvers<ContextType = any, ParentType extends ResolversP
   counts?: Resolver<Maybe<ResolversTypes['GamePlayerUnitCounts']>, ParentType, ContextType>;
   faction?: Resolver<Maybe<ResolversTypes['Faction']>, ParentType, ContextType>;
   leader?: Resolver<Maybe<ResolversTypes['Leader']>, ParentType, ContextType>;
+  order?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   ready?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   rounds?: Resolver<Array<ResolversTypes['PlayerRound']>, ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
@@ -705,6 +723,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   ready?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationReadyArgs, 'game'>>;
   redraw?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType, RequireFields<MutationRedrawArgs, 'game' | 'unit'>>;
   setDeck?: Resolver<ResolversTypes['GameDeck'], ParentType, ContextType, RequireFields<MutationSetDeckArgs, 'deck' | 'game'>>;
+  setOrder?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationSetOrderArgs, 'game'>>;
 };
 
 export type PlayerRoundResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlayerRound'] = ResolversParentTypes['PlayerRound']> = {

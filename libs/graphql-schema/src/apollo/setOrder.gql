@@ -1,0 +1,5 @@
+mutation SetOrder($game: ID!, $order: [ID!]) {
+  setOrder(game: $game, order: $order) {
+    ...GameFragment
+  }
+}

@@ -54,20 +54,22 @@ export default class GameResolver {
       }
     }
     resolvedUsers.push(...(await UserResolver.fromIds(userIdsToResolve)))
+    const resolvedPlayers = await GamePlayerResolver.fromArray({
+      players: game.players,
+      users: resolvedUsers,
+      allDecksChosen: GameResolver.allDecksChosen(game),
+      neutralFactionStats,
+      neutralLeaderStats,
+    })
 
     return {
       created: game.created,
       creator: creator || (resolvedUsers?.find((user) => user.id === game.creator.toString()) as User),
       id: game._id.toString(),
-      players: await GamePlayerResolver.fromArray({
-        players: game.players,
-        users: resolvedUsers,
-        everyoneReady: GameResolver.isEveryoneReady(game),
-        neutralFactionStats,
-        neutralLeaderStats,
-      }),
+      players: resolvedPlayers,
       round: game.round,
       status: GameResolver.getStatus(game),
+      turn: game.turn && resolvedPlayers.find((player) => player.user.id.toString() === game.turn?.toString()),
       updated: game.updated,
       victors: game.victors.map((victor) => resolvedUsers.find((user) => user.id === victor.toString()) as User),
     }
@@ -141,6 +143,10 @@ export default class GameResolver {
     return game.players.length > 0 && game.players.filter((player) => player.ready).length === game.players.length
   }
 
+  static allDecksChosen(game: GameDbObject): boolean {
+    return game.players.length > 0 && game.players.filter((player) => player.deck.from).length === game.players.length
+  }
+
   /**
    * Calculate the Status that a Game is in.
    *
@@ -148,12 +154,15 @@ export default class GameResolver {
    * @returns The Status the Game is currently in.
    */
   static getStatus(game: GameDbObject): GameStatus {
-    if (game.victors.length > 0) {
-      return GameStatus.Done
-    }
-    if (!GameResolver.isEveryoneReady(game)) {
+    if (!GameResolver.allDecksChosen(game)) {
       return GameStatus.Decking
+    } else if (!game.turn) {
+      return GameStatus.Ordering
+    } else if (!GameResolver.isEveryoneReady(game)) {
+      return GameStatus.Redrawing
+    } else if (game.victors.length === 0) {
+      return GameStatus.Playing
     }
-    return GameStatus.Playing
+    return GameStatus.Done
   }
 }

@@ -424,6 +424,7 @@ export function expectizeGame({
     ready?: boolean
     rounds?: PlayerRound[]
     user: User
+    order?: number
   }[]
   status?: GameStatus
 }) {
@@ -447,12 +448,16 @@ export function expectizeGame({
       if (!player.ready) {
         player.ready = false
       }
+      if (status === GameStatus.Playing && player.order === undefined) {
+        player.order = expect.any(Number)
+      }
       return player
     }),
     round: {
       current: 0,
       maximum: 3,
     },
+    turn: status === GameStatus.Playing ? expect.any(Object) : null,
     status,
     updated: expect.any(Date),
     victors: [],

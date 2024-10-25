@@ -134,6 +134,40 @@
   text-align: center;
 }
 
+#gameSetOrderContainer {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+#gameSetOrderTable {
+  border-collapse: collapse;
+}
+
+#gameSetOrderTable td,
+th {
+  border: 1px solid black;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#gameSetOrderTitle {
+  white-space: nowrap;
+  margin-bottom: 10px;
+}
+
+#gameOrderError {
+  margin-bottom: -31px;
+}
+
+#setGameOrder {
+  margin-top: 10px;
+}
+
 .game-edge-container {
   display: flex;
   flex-direction: column;
@@ -195,6 +229,18 @@
   overflow-y: auto;
 }
 
+.game-info-player-turn {
+  flex-direction: column;
+  border-width: 5px;
+  border-color: #e9a018;
+  border-style: solid;
+  border-radius: 5px;
+}
+
+.game-info-player-future-turn {
+  border-style: dotted;
+}
+
 .game-player-round-score {
   display: flex;
 }
@@ -219,6 +265,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.game-set-order-ordering {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 5px;
 }
 
 .game-unit-board-side {
@@ -434,4 +487,11 @@
 .game-history-icon {
   height: 50px;
   width: 50px;
+}
+
+.waiting-container {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  gap: 10px;
 }

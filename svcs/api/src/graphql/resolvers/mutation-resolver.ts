@@ -18,7 +18,7 @@ import FactionStore from '../../database/stores/faction-store'
 import GameDeckResolver from './game-deck-resolver'
 import GameResolver from './game-resolver'
 import GameStore from '../../database/stores/game-store'
-import { getDeckStats, getUniqueItems } from '@gwent/utils'
+import { getDeckStats, getUniqueItems, randomizeOrder } from '@gwent/utils'
 import { getRandomSubset } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
 import LeaderStore from '../../database/stores/leader-store'
@@ -206,6 +206,7 @@ export default class MutationResolver {
           )
           MutationResolver.logger.trace(`${logPrefix} creator: "${creatorName}"`)
         }
+        // TODO: throw error if duplicate opponentNames
         const opponentNames = getUniqueItems<string>(args.opponentNames.filter((name) => name !== creatorName))
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} opponentNames: "${JSON.stringify(opponentNames)}"`)
@@ -649,6 +650,111 @@ export default class MutationResolver {
           neutralDeckStats: RequestedFields.getArgument(info, 'setDeck.from.faction.stats.neutrals'),
           neutralLeaderStats: RequestedFields.getArgument(info, 'setDeck.from.leader.faction.stats.neutrals'),
           neutralUnitStats: RequestedFields.getArgument(info, 'setDeck.from.units.unit.faction.stats.neutrals'),
+        })
+      },
+      setOrder: async (parent, args, context, info) => {
+        const userId = context.session.user._id
+        const logPrefix = `setOrder by "${userId}"`
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
+          MutationResolver.logger.trace(
+            `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+          )
+          MutationResolver.logger.trace(
+            `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+          )
+        }
+        const gameId = args.game
+        const order = args.order
+
+        const game = await GameStore.getById({
+          id: gameId,
+        })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+        }
+        if (!game) {
+          const message = `Game with ID "${gameId}" does not exist.`
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+
+        const player = game.players.find((player) => player.user.toString() === userId.toString())
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
+        }
+        if (!player) {
+          const message = `Not a player on game "${gameId}".`
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+
+        // cannot set order before all players choose deck
+        // because cannot tell if there is only 1 user with ScoiaTael deck
+        // (and therefore can choose the order for the game)
+        // until all players have chosen decks
+        if (game.players.some((player) => !player.deck.from)) {
+          const message = `Not all players have chosen decks yet for game "${gameId}".`
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+
+        const factions = await FactionStore.get({
+          keys: [FactionKey.ScoiaTael],
+        })
+        if (!factions || factions.length === 0) {
+          const message = `Could not find faction with key "${FactionKey.ScoiaTael}".`
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        } else if (factions.length > 1) {
+          const message = `Found more than 1 faction with key "${FactionKey.ScoiaTael}".`
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+        // TODO: show player decks from resolver after all players have chosen decks
+        const scoiaTaelId = factions[0]._id.toString()
+        const scoiaTaelPlayers = game.players.filter((player) => player.deck.from?.faction.toString() === scoiaTaelId)
+        if (scoiaTaelPlayers.length > 1 && order && order.length > 0) {
+          const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${gameId}".`
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+        if (scoiaTaelPlayers.length === 0 && order && order.length > 0) {
+          const message = `Cannot set explicit order as deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+        if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
+          const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+        // TODO: func test scenario where nobody has scoiatael so anyone can set order
+
+        if (game.turn) {
+          const message = `Game with ID "${gameId}" already has order set.`
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+
+        // TODO: make sure all IDs in order are players on game
+        // TODO: make sure not duplicate ids
+
+        const updatedGame = await GameStore.setOrder({
+          gameId,
+          order: order && order.length > 0 ? order : randomizeOrder(game.players.map((player) => player.user)),
+        })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
+        }
+        if (!updatedGame) {
+          const message = `Could set order on game "${gameId}" in probable race condition collision.`
+          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+
+        return GameResolver.fromObject({
+          game: updatedGame,
         })
       },
     }

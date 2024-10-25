@@ -130,6 +130,7 @@ export const HTML_IDS = {
   GameReady: 'gameReady',
   GameRefresh: 'gameRefresh',
   GameDeckError: 'gameDeckError',
+  GameOrderError: 'gameOrderError',
   GameRedrawError: 'gameRedrawError',
   GameReadyError: 'gameReadyError',
   Games: 'games',

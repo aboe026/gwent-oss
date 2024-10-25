@@ -155,6 +155,7 @@ export default shield(
       ready: chain(isAuthenticatedRule, isPlayerRule),
       redraw: chain(isAuthenticatedRule, isPlayerRule),
       setDeck: chain(isAuthenticatedRule, and(ownsDeckRule, isPlayerRule)),
+      setOrder: chain(isAuthenticatedRule, isPlayerRule),
     },
     Query: {
       application: allow,

@@ -260,6 +260,7 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- enter key does not create game in UI?
 - do not store yarn binary in source
 - do not store yarn sdks in source?
 - allow introspection without authentication

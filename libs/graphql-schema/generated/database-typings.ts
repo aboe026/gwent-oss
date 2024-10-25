@@ -159,6 +159,8 @@ export type Game = {
   players: Array<GamePlayer>;
   round: GameRound;
   status: GameStatus;
+  /** Whose turn it currently is to make a move. */
+  turn?: Maybe<GamePlayer>;
   updated: Scalars['DateTime']['output'];
   victors: Array<User>;
 };
@@ -194,6 +196,8 @@ export type GamePlayer = {
   faction?: Maybe<Faction>;
   /** The leader the player chose for the game. Only visible once all players are ready. */
   leader?: Maybe<Leader>;
+  /** The precedence of order the player takes their turn relative to other players. Zero based indexing. */
+  order?: Maybe<Scalars['Int']['output']>;
   /** Whether or not a user has their game deck set to play the game. */
   ready: Scalars['Boolean']['output'];
   rounds: Array<PlayerRound>;
@@ -219,12 +223,16 @@ export type GameRound = {
 };
 
 export enum GameStatus {
-  /** Players are choosing the decks and hand to use for the game. */
+  /** Players are choosing their decks to use for the game. */
   Decking = 'DECKING',
   /** Play has ended. */
   Done = 'DONE',
+  /** The order of player turns is being decided. Happens automatically unless there is a single player with a Scoia'tael faction deck who can then choose which player starts. */
+  Ordering = 'ORDERING',
   /** Players are playing rounds of the game. */
-  Playing = 'PLAYING'
+  Playing = 'PLAYING',
+  /** Players are potentially redrawing their hand cards. */
+  Redrawing = 'REDRAWING'
 }
 
 export type Leader = {
@@ -257,6 +265,8 @@ export type Mutation = {
   redraw: DeckUnit;
   /** Choose which deck will be used for the game. */
   setDeck: GameDeck;
+  /** Set the order in which players will take turns during a game. */
+  setOrder: Game;
 };
 
 
@@ -299,6 +309,12 @@ export type MutationRedrawArgs = {
 export type MutationSetDeckArgs = {
   deck: Scalars['ID']['input'];
   game: Scalars['ID']['input'];
+};
+
+
+export type MutationSetOrderArgs = {
+  game: Scalars['ID']['input'];
+  order?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type PlayerRound = {
@@ -490,6 +506,7 @@ export type GameDbObject = {
   _id: ObjectId,
   players: Array<GamePlayerDbObject>,
   round: GameRound,
+  turn?: ObjectId,
   updated: any,
   victors: Array<ObjectId>,
 };
@@ -503,6 +520,7 @@ export type GameDeckDbObject = {
 };
 
 export type GamePlayerDbObject = {
+  order?: Maybe<number>,
   ready: boolean,
   rounds: Array<PlayerRound>,
   user: ObjectId,

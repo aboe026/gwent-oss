@@ -114,6 +114,10 @@ export default function GamesPage() {
             let status = ''
             if (game.status === GameStatus.Decking) {
               status = 'Choosing Decks'
+            } else if (game.status === GameStatus.Ordering) {
+              status = 'Ordering'
+            } else if (game.status === GameStatus.Redrawing) {
+              status = 'Redrawing'
             } else if (game.status === GameStatus.Playing) {
               status = 'Playing'
             } else if (game.status === GameStatus.Done) {
