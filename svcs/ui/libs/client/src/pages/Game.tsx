@@ -764,9 +764,9 @@ function renderPlayerInfo({
   }
   let borderClass = ''
   if (isTurn) {
-    borderClass = 'game-info-player-turn'
+    borderClass = HTML_CLASSES.GamePlayerTurn
     if (game.status === GameStatus.Redrawing) {
-      borderClass += ' game-info-player-future-turn'
+      borderClass += ` ${HTML_CLASSES.GamePlayerFutureTurn}`
     }
   }
   return (
@@ -1085,14 +1085,14 @@ function renderSetOrder({
     self.faction?.key === FactionKey.ScoiaTael
 
   return (
-    <div id="gameOrderingContainer" className="game-section">
+    <div id={HTML_IDS.GameOrderContainer} className="game-section">
       <Centered>
         {setOrderLoading ? (
           <LoadingSpinner size="50px" />
         ) : canSetOrder ? (
           <div id="gameSetOrderContainer">
             {canChooseOrder && (
-              <table id="gameSetOrderTable">
+              <table id={HTML_IDS.GameOrderTable}>
                 <caption id="gameSetOrderTitle">Set player turn order:</caption>
                 <thead>
                   <tr>
@@ -1103,11 +1103,11 @@ function renderSetOrder({
                 <tbody>
                   {playerOrder.map((player, index) => (
                     <tr key={player.user.id}>
-                      <td>
+                      <td className={HTML_CLASSES.GameOrderRowIndex}>
                         <div className="game-set-order-ordering">
                           {index > 0 && (
                             <div
-                              className="pointable"
+                              className={`pointable ${HTML_CLASSES.GameOrderRowEarlier}`}
                               title="Move Earlier"
                               onClick={() => {
                                 const newOrder = [...playerOrder]
@@ -1121,7 +1121,7 @@ function renderSetOrder({
                           )}
                           {index < playerOrder.length - 1 && (
                             <div
-                              className="pointable"
+                              className={`pointable ${HTML_CLASSES.GameOrderRowLater}`}
                               title="Move Later"
                               onClick={() => {
                                 const newOrder = [...playerOrder]
@@ -1136,14 +1136,14 @@ function renderSetOrder({
                           {index + 1}
                         </div>
                       </td>
-                      <td>{player.user.name}</td>
+                      <td className={HTML_CLASSES.GameOrderRowUsername}>{player.user.name}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
             <button
-              id="setGameOrder"
+              id={HTML_IDS.GameOrderSet}
               type="button"
               className="pointable"
               autoFocus
@@ -1172,7 +1172,9 @@ function renderSetOrder({
           </div>
         ) : (
           <div className="waiting-container">
-            <div>{`Waiting for opponent${game.players.length > 2 ? 's' : ''} to set turn order...`}</div>
+            <div id={HTML_IDS.GameOrderWaiting}>{`Waiting for opponent${
+              game.players.length > 2 ? 's' : ''
+            } to set turn order...`}</div>
             <LoadingBar height="25px" />
           </div>
         )}

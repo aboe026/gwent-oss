@@ -260,6 +260,7 @@ then [install](#install) to have the change picked up.
 
 A list of things to be done in the future:
 
+- change setOrder mutation input from order to users
 - enter key does not create game in UI?
 - do not store yarn binary in source
 - do not store yarn sdks in source?
@@ -297,6 +298,10 @@ A list of things to be done in the future:
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
 - ensure client and server are on same version
+- have game creation in UI have searcheable field for opponent
+  - need query to get users
+    - restrict to users "friends"?
+  - change addGame mutation to accept ids instead of usernames
 - Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 - Fix root "yarn build"
   - right now it runs "yarn build" in all workspaces simultaneously.

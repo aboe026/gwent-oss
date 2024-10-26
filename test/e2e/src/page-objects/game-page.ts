@@ -4,7 +4,7 @@ import { Selector, t } from 'testcafe'
 import { Deck, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import DeckList from '../components/deck-list'
 import E2eUtil from '../util/e2e-util'
-import GamePlayerInfo from '../components/game-player-info'
+import GamePlayerInfo, { PlayerTurn } from '../components/game-player-info'
 import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
 import { Leader } from '@gwent/graphql-schema/resolver-typings'
 
@@ -37,6 +37,10 @@ export default class GamePage {
     AuthErrorContainer: authErrorContainer,
     AuthErrorViewGames: authErrorContainer.find(`#${HTML_IDS.GameAuthErrorViewGames}`),
     Refresh: existingGameContainer.find(`#${HTML_IDS.GameRefresh}`),
+    OrderContainer: existingGameContainer.find(`#${HTML_IDS.GameOrderContainer}`),
+    OrderTable: existingGameContainer.find(`#${HTML_IDS.GameOrderTable}`),
+    OrderSet: existingGameContainer.find(`#${HTML_IDS.GameOrderSet}`),
+    OrderWaiting: existingGameContainer.find(`#${HTML_IDS.GameOrderWaiting}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -126,6 +130,7 @@ export default class GamePage {
     hand?: number
     discards?: number
     from?: Deck | null
+    turn?: PlayerTurn
   }) {
     const info = new GamePlayerInfo(GamePage.elements.InfoSelfContainer)
     await info.verify({
@@ -159,6 +164,7 @@ export default class GamePage {
     undrawn?: number
     hand?: number
     discards?: number
+    turn?: PlayerTurn
   }) {
     const info = new GamePlayerInfo(GamePage.elements.InfoOpponentContainer)
     await info.verify({
@@ -201,6 +207,7 @@ export default class GamePage {
     selfReady,
     opponentReady,
     redraws,
+    turnOrder,
   }: {
     selfReady?: boolean
     opponentReady?: boolean
@@ -208,6 +215,7 @@ export default class GamePage {
       from: string
       to: string
     }[]
+    turnOrder?: string[] | boolean
   }) {
     if (selfReady && opponentReady) {
       await t.expect(GamePage.elements.UnitBoard.exists).ok()
@@ -238,9 +246,40 @@ export default class GamePage {
                 MAX_REDRAWS - redraws.length === 1 ? '' : 's'
               } from your hand to redraw. When satisfied with deck:`
         )
+    } else if (turnOrder) {
+      await GamePage.verifyOrder({
+        turnOrder,
+      })
     } else {
       await t.expect(GamePage.elements.SetDeck.exists).ok()
       await t.expect(GamePage.elements.SetDeck.visible).ok()
+    }
+  }
+
+  static async verifyOrder({ turnOrder }: { turnOrder: string[] | boolean }) {
+    const canSelectOrder = Array.isArray(turnOrder) && turnOrder.length > 0
+    const waitingOnOpponent = Array.isArray(turnOrder) && turnOrder.length === 0
+    const canSet = typeof turnOrder === 'boolean' && turnOrder
+    await t.expect(GamePage.elements.OrderContainer.exists).ok()
+    await t.expect(GamePage.elements.OrderContainer.visible).ok()
+    await t.expect(GamePage.elements.OrderTable.exists).eql(canSelectOrder)
+    await t.expect(GamePage.elements.OrderWaiting.exists).eql(waitingOnOpponent)
+    await t.expect(GamePage.elements.OrderSet.exists).eql(canSelectOrder || canSet)
+    if (canSelectOrder) {
+      await t.expect(GamePage.elements.OrderTable.visible).ok()
+      const actualUsernames = []
+      const usernamesCount = await GamePage.elements.OrderTable.find(`.${HTML_CLASSES.GameOrderRowUsername}`).count
+      for (let i = 0; i < usernamesCount; i++) {
+        actualUsernames.push(
+          await GamePage.elements.OrderTable.find(`.${HTML_CLASSES.GameOrderRowUsername}`).nth(i).innerText
+        )
+      }
+      await t.expect(actualUsernames).eql(turnOrder)
+    } else if (waitingOnOpponent) {
+      await t.expect(GamePage.elements.OrderWaiting.visible).ok()
+    }
+    if (canSelectOrder || canSet) {
+      await t.expect(GamePage.elements.OrderSet.visible).ok()
     }
   }
 
@@ -249,11 +288,13 @@ export default class GamePage {
     opponent,
     hand,
     redraws,
+    turnOrder,
   }: {
     self: GamePlayerExpected
     opponent: GamePlayerExpected
     hand?: string[]
     redraws?: Redraws[]
+    turnOrder?: string[] | boolean
   }) {
     await GamePage.verifySelf({
       name: self.name,
@@ -265,6 +306,7 @@ export default class GamePage {
       score: self.score,
       losses: self.losses,
       from: self.from,
+      turn: self.turn,
     })
     await GamePage.verifyOpponent({
       name: opponent.name,
@@ -275,13 +317,15 @@ export default class GamePage {
       undrawn: opponent.undrawn,
       score: opponent.score,
       losses: opponent.losses,
+      turn: opponent.turn,
     })
     await GamePage.verifyHand({
       names: hand,
     })
     await GamePage.verifyHistory()
     await GamePage.verifyCenter({
-      redraws: !redraws && hand ? [] : redraws,
+      redraws,
+      turnOrder,
       opponentReady: opponent.ready,
       selfReady: self.ready,
     })
@@ -379,9 +423,27 @@ export default class GamePage {
   static async refresh() {
     await t.click(GamePage.elements.Refresh)
   }
+
+  static async moveTurnOrderEarlier(username: string) {
+    const usernameCell = GamePage.elements.OrderTable.find(`.${HTML_CLASSES.GameOrderRowUsername}`).withText(username)
+    await t.expect(usernameCell.exists).ok()
+    await t.expect(usernameCell.visible).ok()
+    await t.click(usernameCell.parent('tr').find(`.${HTML_CLASSES.GameOrderRowEarlier}`))
+  }
+
+  static async moveTurnOrderLater(username: string) {
+    const usernameCell = GamePage.elements.OrderTable.find(`.${HTML_CLASSES.GameOrderRowUsername}`).withText(username)
+    await t.expect(usernameCell.exists).ok()
+    await t.expect(usernameCell.visible).ok()
+    await t.click(usernameCell.parent('tr').find(`.${HTML_CLASSES.GameOrderRowLater}`))
+  }
+
+  static async setOrder() {
+    await t.click(GamePage.elements.OrderSet)
+  }
 }
 
-interface GamePlayerExpected {
+export interface GamePlayerExpected {
   name: string
   faction?: Faction
   leader?: Leader
@@ -392,6 +454,7 @@ interface GamePlayerExpected {
   losses?: number
   ready?: boolean
   from?: Deck | null
+  turn?: PlayerTurn
 }
 
 interface Redraws {

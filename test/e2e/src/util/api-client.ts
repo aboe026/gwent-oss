@@ -770,6 +770,12 @@ export default class ApiClient {
               maximum
             }
             status
+            turn {
+              user {
+                id
+                name
+              }
+            }
             updated
             victors {
               created
@@ -1130,6 +1136,104 @@ export default class ApiClient {
       }
     )
     return response.gameDeck
+  }
+
+  async setOrder({ gameId, userIds }: { gameId: string | ObjectId; userIds: (string | ObjectId)[] }): Promise<Game> {
+    const response: any = await this._client.request(
+      gql`
+        fragment UserFragment on User {
+          created
+          id
+          name
+        }
+        mutation SetOrder($game: ID!, $order: [ID!]) {
+          setOrder(game: $game, order: $order) {
+            created
+            creator {
+              ...UserFragment
+            }
+            id
+            players {
+              counts {
+                discard
+                hand
+                undrawn
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  id
+                  image
+                  key
+                  name
+                }
+                id
+                image
+                key
+                name
+                stats(neutrals: true) {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengths
+                  strengthTotal
+                  units
+                  weather
+                }
+              }
+              leader {
+                ability
+                created
+                dlc {
+                  id
+                  image
+                  key
+                  name
+                }
+              }
+              ready
+              rounds {
+                score
+                won
+              }
+              user {
+                ...UserFragment
+              }
+            }
+            round {
+              current
+              maximum
+            }
+            status
+            updated
+            victors {
+              ...UserFragment
+            }
+          }
+        }
+      `,
+      {
+        game: gameId.toString(),
+        order: userIds.map((userId) => userId.toString()),
+      }
+    )
+    return response.setOrder
   }
 
   async ready(gameId: string | ObjectId): Promise<Game> {
