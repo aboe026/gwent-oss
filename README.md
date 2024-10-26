@@ -256,58 +256,6 @@ yarn set version latest
 
 then [install](#install) to have the change picked up.
 
-### ToDo
-
-A list of things to be done in the future:
-
-- change setOrder mutation input from order to users
-- enter key does not create game in UI?
-- do not store yarn binary in source
-- do not store yarn sdks in source?
-- allow introspection without authentication
-- fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
-  - happens when adding deck through API and not requesting neutral stats?
-  - fix by not allowing neutral stats on factions
-- Do not have "neutralStats" as a field (or if so, only allow it for Factions, not Decks)
-  - just do that math on the front end, already have neutral faction guaranteed queried
-- figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
-- add ability to target resolution of neutrals on each type of DeckUnit gameDeck (undrawn, hand, discard, redraws (from/to))
-- Change "ready" mutation to "readyGame"?
-- Remove @map directive for ID types?
-- Figure out why mutation resolvers don't show typescript error when returning Db object instead of resolved object
-- have Graphql context be typed: https://the-guild.dev/graphql/codegen/plugins/typescript/typescript-resolvers#contexttype
-- Switch DeckUnit to be same as Unit but single image instead of array
-  - Have Unit interface with AvailableUnit and DeckUnit implementations
-  - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
-  - change schema input to be just an optional image instead of artStyle
-- carry over username (and password?) when switching between log-in and sign-up
-- more accurately type front-end results based on their return fragments
-  - type Game = GameQuery['game']
-  - this seems to mess up nested objects though :/
-- Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
-- Have "DateTime" on resolver object map to javascript Date object?
-- add Error to returns types for all queries/mutations?
-- Make Combat a type (because of image)
-- look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
-- run index analyzer during func tests?
-- change artStyle to 0 based indexing?
-- Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
-- Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
-- Get unit test coverage working for .tsx files
-- Change schema.ts to schema.gql
-- Introspect GraphQL queries/mutations to determine which fields to project/return from DB
-- Have api and ui use same Dockerfile (just with different build args)
-- ensure client and server are on same version
-- have game creation in UI have searcheable field for opponent
-  - need query to get users
-    - restrict to users "friends"?
-  - change addGame mutation to accept ids instead of usernames
-- Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
-- Fix root "yarn build"
-  - right now it runs "yarn build" in all workspaces simultaneously.
-  - This is a problem because there are explicit dependencies on libraries being built first
-  - Need to have a script generate dependency tree, then perform builds in reverse order
-
 ### External Bugs
 
 Bugs found in external dependencies that have not been resolved (and require workarounds):
