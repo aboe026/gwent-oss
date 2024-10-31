@@ -1225,7 +1225,13 @@ function renderCoinFlip({
   return (
     <div id="gameOrderCoinFlip" className="game-section">
       <Centered>
-        <CoinFlip heads={winFlip} size="100px" onClick={() => setCoinFlipVisible(false)} resultText={resultText} />
+        <CoinFlip
+          heads={winFlip}
+          size="100px"
+          bounce={true}
+          onClick={() => setCoinFlipVisible(false)}
+          resultText={resultText}
+        />
       </Centered>
     </div>
   )

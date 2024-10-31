@@ -6,6 +6,7 @@ import './CoinFlip.css'
  * @returns A coin flip animation.
  */
 export default function CoinFlip({
+  bounce,
   heads = true,
   delay = '0.5s',
   duration = '4s',
@@ -19,25 +20,40 @@ export default function CoinFlip({
   return (
     <div className="coin-flip-container">
       <div
-        className="coin-flip"
+        className="coin-flip-bounce"
         style={{
-          ...{
-            animationDelay: delay,
-            animationDuration: duration,
-            height: size,
-            width: size,
-            cursor: onClick ? 'pointer' : 'inherit',
-          },
-          ...style,
+          animationName: bounce ? 'coin-flip-bouncing' : '',
+          animationDelay: delay,
+          animationDuration: duration,
         }}
-        onClick={() => (onClick ? onClick() : {})}
       >
         <div
-          className="coin-flip-side coin-flip-placeholder"
-          style={{ animationDuration: delay, backgroundColor: headsColor }}
-        />
-        <div className="coin-flip-side coin-flip-heads" style={{ backgroundColor: heads ? headsColor : tailsColor }} />
-        <div className="coin-flip-side coin-flip-tails" style={{ backgroundColor: heads ? tailsColor : headsColor }} />
+          className="coin-flip"
+          style={{
+            ...{
+              animationDelay: delay,
+              animationDuration: duration,
+              height: size,
+              width: size,
+              cursor: onClick ? 'pointer' : 'inherit',
+            },
+            ...style,
+          }}
+          onClick={() => (onClick ? onClick() : {})}
+        >
+          <div
+            className="coin-flip-side coin-flip-placeholder"
+            style={{ animationDuration: delay, backgroundColor: headsColor }}
+          />
+          <div
+            className="coin-flip-side coin-flip-heads"
+            style={{ backgroundColor: heads ? headsColor : tailsColor }}
+          />
+          <div
+            className="coin-flip-side coin-flip-tails"
+            style={{ backgroundColor: heads ? tailsColor : headsColor }}
+          />
+        </div>
       </div>
       {resultText && (
         <span className="coin-flip-result-text" style={{ animationDelay: delay, animationDuration: duration }}>
@@ -50,6 +66,7 @@ export default function CoinFlip({
 
 interface CoinFlipProps {
   heads?: boolean
+  bounce?: boolean
   delay?: string
   duration?: string
   size?: string

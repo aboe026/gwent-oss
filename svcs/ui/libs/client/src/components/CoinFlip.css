@@ -5,6 +5,10 @@
   gap: 10px;
 }
 
+.coin-flip-bounce {
+  animation-iteration-count: 1;
+}
+
 .coin-flip {
   position: relative;
   border-radius: 50%;
@@ -69,37 +73,58 @@
   1% {
     transform: rotateY(180deg);
   }
-  1.5% {
+  2% {
     transform: rotateY(0deg);
   }
-  2.25% {
+  4% {
     transform: rotateY(180deg);
   }
-  3% {
+  6% {
     transform: rotateY(0deg);
   }
-  5% {
+  9% {
     transform: rotateY(180deg);
   }
-  7% {
+  12% {
     transform: rotateY(0deg);
   }
-  11% {
+  16% {
     transform: rotateY(180deg);
   }
-  17% {
+  20% {
     transform: rotateY(0deg);
   }
-  25% {
+  24% {
     transform: rotateY(180deg);
   }
-  38% {
+  28% {
     transform: rotateY(0deg);
   }
-  57% {
+  35% {
     transform: rotateY(180deg);
   }
-  86% {
+  40% {
     transform: rotateY(0deg);
+  }
+  60% {
+    transform: rotateY(180deg);
+  }
+  80% {
+    transform: rotateY(0deg);
+  }
+}
+
+@keyframes coin-flip-bouncing {
+  0% {
+    transform: translateY(0);
+    animation-timing-function: ease-out;
+  }
+  20% {
+    transform: translateY(-200px);
+    animation-timing-function: ease-in;
+  }
+  45% {
+    transform: translateY(0);
+    animation-timing-function: ease-out;
   }
 }
