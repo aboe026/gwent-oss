@@ -2,6 +2,8 @@
 
 A list of things to be done in the future
 
+- change CoinFlip to CoinToss
+- make coin rotate horizontally, not vertically
 - change setOrder mutation input from order to users
 - enter key does not create game in UI?
 - do not store yarn binary in source

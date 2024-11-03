@@ -89,14 +89,10 @@ export default class GamePlayerInfo {
         await t.expect(this.elements.DeckName.exists).notOk()
         await t.expect(this.elements.DeckDate.exists).notOk()
       }
-      await t.expect(this.elements.Container.find(`.${HTML_CLASSES.GamePlayerTurn}`).exists).eql(turn !== undefined)
-      if (turn) {
-        await t.expect(this.elements.Container.find(`.${HTML_CLASSES.GamePlayerTurn}`).visible).ok()
-        if (turn === PlayerTurn.Future) {
-          await t.expect(this.elements.Container.find(`.${HTML_CLASSES.GamePlayerFutureTurn}`).exists).ok()
-          await t.expect(this.elements.Container.find(`.${HTML_CLASSES.GamePlayerFutureTurn}`).visible).ok()
-        }
-      }
+      await t.expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerTurn)).eql(turn !== undefined)
+      await t
+        .expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerFutureTurn))
+        .eql(turn === PlayerTurn.Future)
     }
   }
 }

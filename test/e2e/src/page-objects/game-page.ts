@@ -5,7 +5,7 @@ import { Deck, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings
 import DeckList from '../components/deck-list'
 import E2eUtil from '../util/e2e-util'
 import GamePlayerInfo, { PlayerTurn } from '../components/game-player-info'
-import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
+import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
 import { Leader } from '@gwent/graphql-schema/resolver-typings'
 
 const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)
@@ -41,6 +41,7 @@ export default class GamePage {
     OrderTable: existingGameContainer.find(`#${HTML_IDS.GameOrderTable}`),
     OrderSet: existingGameContainer.find(`#${HTML_IDS.GameOrderSet}`),
     OrderWaiting: existingGameContainer.find(`#${HTML_IDS.GameOrderWaiting}`),
+    CoinFlipContainer: existingGameContainer.find(`#${HTML_IDS.GameOrderCoinFlip}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -120,6 +121,7 @@ export default class GamePage {
     undrawn,
     losses,
     from,
+    turn,
   }: {
     name: string
     losses?: number
@@ -143,6 +145,7 @@ export default class GamePage {
       undrawn,
       losses,
       from,
+      turn,
     })
   }
 
@@ -155,6 +158,7 @@ export default class GamePage {
     score,
     undrawn,
     losses,
+    turn,
   }: {
     name: string
     losses?: number
@@ -176,6 +180,7 @@ export default class GamePage {
       score,
       undrawn,
       losses,
+      turn,
     })
   }
 
@@ -280,6 +285,18 @@ export default class GamePage {
     }
     if (canSelectOrder || canSet) {
       await t.expect(GamePage.elements.OrderSet.visible).ok()
+    }
+  }
+
+  static async verifyCoinFlip({ won, wait = true }: { won: boolean; wait?: boolean }) {
+    await t.expect(GamePage.elements.CoinFlipContainer.exists).ok()
+    await t.expect(GamePage.elements.CoinFlipContainer.visible).ok()
+    const coinFlipResult = GamePage.elements.CoinFlipContainer.find(`.${HTML_CLASSES.COIN_FLIP_RESULT_TEXT}`)
+    await t.expect(coinFlipResult.exists).ok()
+    await t.expect(coinFlipResult.visible).ok()
+    await t.expect(coinFlipResult.innerText).eql(won ? 'You will go first' : 'Your opponent will go first')
+    if (wait) {
+      await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
     }
   }
 

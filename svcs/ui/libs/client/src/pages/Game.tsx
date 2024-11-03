@@ -52,7 +52,15 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import Form from '../components/Form'
 import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
 import { getApolloError, retryCheckingAuth } from '../util/error-util'
-import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE, PLAYER_COUNTS, ROUTES } from '@gwent/constants'
+import {
+  GAME_ORDER_COIN_FLIP_DURATION_SECONDS,
+  HTML_CLASSES,
+  HTML_IDS,
+  MAX_REDRAWS,
+  NOT_AUTHORIZED_MESSAGE,
+  PLAYER_COUNTS,
+  ROUTES,
+} from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import UnitFullCard from '../components/UnitFullCard'
@@ -133,7 +141,7 @@ export default function GamePage() {
         }
         if (data.game.status === GameStatus.Redrawing) {
           setCoinFlipVisible(true)
-          setTimeout(() => setCoinFlipVisible(false), 5000)
+          setTimeout(() => setCoinFlipVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
         }
       }
     },
@@ -182,6 +190,12 @@ export default function GamePage() {
           },
           variables: gameQueryVariables,
         })
+      }
+    },
+    onCompleted: (data) => {
+      if (data.setOrder.status === GameStatus.Redrawing) {
+        setCoinFlipVisible(true)
+        setTimeout(() => setCoinFlipVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
       }
     },
   })
@@ -1223,7 +1237,7 @@ function renderCoinFlip({
 }) {
   const resultText = winFlip ? 'You will go first' : 'Your opponent will go first'
   return (
-    <div id="gameOrderCoinFlip" className="game-section">
+    <div id={HTML_IDS.GameOrderCoinFlip} className="game-section">
       <Centered>
         <CoinFlip
           heads={winFlip}

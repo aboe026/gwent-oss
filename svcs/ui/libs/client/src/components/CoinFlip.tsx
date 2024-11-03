@@ -1,3 +1,4 @@
+import { HTML_CLASSES } from '@gwent/constants'
 import './CoinFlip.css'
 
 /**
@@ -56,7 +57,10 @@ export default function CoinFlip({
         </div>
       </div>
       {resultText && (
-        <span className="coin-flip-result-text" style={{ animationDelay: delay, animationDuration: duration }}>
+        <span
+          className={HTML_CLASSES.COIN_FLIP_RESULT_TEXT}
+          style={{ animationDelay: delay, animationDuration: duration }}
+        >
           {resultText}
         </span>
       )}

@@ -1,4 +1,5 @@
 export const HTML_CLASSES = {
+  COIN_FLIP_RESULT_TEXT: 'coin-flip-result-text',
   DeckEditorFactionPickerName: 'deck-editor-faction-picker-name',
   DeckEditorLeaderPickerName: 'deck-editor-leader-picker-name',
   DeckListDeckName: 'deck-list-deck-name',
@@ -143,6 +144,7 @@ export const HTML_IDS = {
   GameOrderTable: 'gameSetOrderTable',
   GameOrderSet: 'gameOrderSet',
   GameOrderWaiting: 'gameOrderWaiting',
+  GameOrderCoinFlip: 'gameOrderCoinFlip',
   Games: 'games',
   GamesCreate: 'gamesCreate',
   GamesNoneCreate: 'gamesNoneCreate',
