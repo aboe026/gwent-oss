@@ -38,6 +38,12 @@ export default class SubscriptionResolver {
           async (payload, args, ctx) => SubscriptionResolver.filterGameReady(payload, ctx)
         ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       },
+      orderSet: {
+        subscribe: withFilter(
+          () => EventManager.pubsub.asyncIterator([PubSubEvents.OrderSet]),
+          async (payload, args, ctx) => SubscriptionResolver.filterOrderSet(payload, ctx)
+        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      },
     }
   }
 
@@ -137,6 +143,29 @@ export default class SubscriptionResolver {
     }
     return false
   }
+
+  private static filterOrderSet(payload: OrderSetPayload, ctx: SubscriptionContext): boolean {
+    if (SubscriptionResolver.logger.isTraceEnabled()) {
+      SubscriptionResolver.logger.trace(`orderSet payload: "${JSON.stringify(payload)}"`)
+      SubscriptionResolver.logger.trace(`orderSet ctx: "${JSON.stringify(ctx)}"`)
+    }
+    const userId = ctx.user?._id.toString()
+    const gameId = payload.orderSet.id
+    SubscriptionResolver.logger.debug(`orderSet userId: "${userId}", gameId: "${gameId}"`)
+    if (userId) {
+      if (payload.orderSet.players.some((player) => player.user.id === userId)) {
+        SubscriptionResolver.logger.debug(`Publishing orderSet for game "${gameId}" to user "${userId}".`)
+        return true
+      } else {
+        SubscriptionResolver.logger.debug(
+          `Not publishing orderSet for game "${gameId}": User "${userId}" not a player on game.`
+        )
+      }
+    } else {
+      SubscriptionResolver.logger.debug(`Not publishing orderSet for game "${gameId}": No user on context.`)
+    }
+    return false
+  }
 }
 
 export interface SubscriptionContext {
@@ -153,4 +182,8 @@ export interface GameAddedPayload {
 
 export interface GameReadyPayload {
   gameReady: Game
+}
+
+export interface OrderSetPayload {
+  orderSet: Game
 }

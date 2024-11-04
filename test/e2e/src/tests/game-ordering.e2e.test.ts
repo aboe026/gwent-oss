@@ -321,8 +321,6 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
     gameId: t.ctx.game.id,
     userIds: [t.ctx.opponent.user.id, t.ctx.self.user.id],
   })
-  // TODO: remove reload once subscription in place
-  await GamePage.refresh()
   await GamePage.verifyCoinFlip({
     won: false,
   })
@@ -393,8 +391,6 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
     gameId: t.ctx.game.id,
     userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
   })
-  // TODO: remove reload once subscription in place
-  await GamePage.refresh()
   await GamePage.verifyCoinFlip({
     won: true,
   })
@@ -464,8 +460,6 @@ test('Cannot choose order if both are ScoiaTael', async (t) => {
     turnOrder: true,
   })
   await GamePage.setOrder()
-  // TODO: remove reload once subscription in place
-  await GamePage.refresh()
   const updatedGame = await t.ctx.self.client.getGame(t.ctx.game.id)
   await t.expect(updatedGame.turn).notEql(null)
   await t.expect(updatedGame.turn).notEql(undefined)
@@ -538,8 +532,6 @@ test('Cannot choose order if none are ScoiaTael', async (t) => {
     turnOrder: true,
   })
   await GamePage.setOrder()
-  // TODO: remove reload once subscription in place
-  await GamePage.refresh()
   const updatedGame = await t.ctx.self.client.getGame(t.ctx.game.id)
   await t.expect(updatedGame.turn).notEql(null)
   await t.expect(updatedGame.turn).notEql(undefined)

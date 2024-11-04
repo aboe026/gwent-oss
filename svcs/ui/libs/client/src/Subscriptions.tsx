@@ -12,6 +12,7 @@ import {
   useDeckAddedSubscription,
   useGameAddedSubscription,
   useGameReadySubscription,
+  useOrderSetSubscription,
 } from '@gwent/graphql-schema/apollo-typings'
 import { useUserContext } from './App'
 
@@ -69,25 +70,51 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
+  useOrderSetSubscription({
+    skip: !user,
+    onData: ({ data, client }) => {
+      const updatedGame = data.data?.orderSet
+      if (updatedGame) {
+        const previousGame = client.cache.readQuery<GameQuery>({
+          query: GameDocument,
+          variables: {
+            id: updatedGame?.id,
+          },
+        })
+        if (previousGame) {
+          client.cache.updateQuery<GameQuery>(
+            {
+              query: GameDocument,
+            },
+            () => ({
+              game: updatedGame as Game,
+            })
+          )
+        }
+      }
+    },
+  })
   useGameReadySubscription({
     skip: !user,
     onData: ({ data, client }) => {
       const updatedGame = data.data?.gameReady
-      const previousGame = client.cache.readQuery<GameQuery>({
-        query: GameDocument,
-        variables: {
-          id: updatedGame?.id,
-        },
-      })
-      if (previousGame) {
-        client.cache.updateQuery<GameQuery>(
-          {
-            query: GameDocument,
+      if (updatedGame) {
+        const previousGame = client.cache.readQuery<GameQuery>({
+          query: GameDocument,
+          variables: {
+            id: updatedGame?.id,
           },
-          () => ({
-            game: updatedGame as Game,
-          })
-        )
+        })
+        if (previousGame) {
+          client.cache.updateQuery<GameQuery>(
+            {
+              query: GameDocument,
+            },
+            () => ({
+              game: updatedGame as Game,
+            })
+          )
+        }
       }
     },
   })

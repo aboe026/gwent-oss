@@ -354,5 +354,6 @@ export default gql`
     deckAdded: Deck!
     gameAdded: Game!
     gameReady: Game!
+    orderSet: Game!
   }
 `

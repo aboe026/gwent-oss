@@ -753,9 +753,15 @@ export default class MutationResolver {
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
 
-        return GameResolver.fromObject({
+        const resolvedGame = await GameResolver.fromObject({
           game: updatedGame,
         })
+
+        EventManager.pubsub.publish(PubSubEvents.OrderSet, {
+          orderSet: resolvedGame,
+        })
+
+        return resolvedGame
       },
     }
   }

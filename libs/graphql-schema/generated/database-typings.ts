@@ -395,6 +395,7 @@ export type Subscription = {
   deckAdded: Deck;
   gameAdded: Game;
   gameReady: Game;
+  orderSet: Game;
 };
 
 export type Unit = {

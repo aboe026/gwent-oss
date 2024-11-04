@@ -44,11 +44,12 @@ import {
   SetOrderMutation,
   InputMaybe,
 } from '@gwent/graphql-schema/apollo-typings'
+import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
 import CoinFlip from '../components/CoinFlip'
 import DeckEditor from '../components/DeckEditor'
 import DeckList from '../components/DeckList'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import Form from '../components/Form'
 import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
 import { getApolloError, retryCheckingAuth } from '../util/error-util'
@@ -65,7 +66,7 @@ import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import UnitFullCard from '../components/UnitFullCard'
 import UnitGameCard from '../components/UnitGameCard'
-import addToCacheList from '../util/add-to-cache-list'
+import { usePrevious } from '../util/usePrevious'
 import { useTitle } from '../components/TabTitle'
 import { useUserContext } from '../App'
 import WholeScreenDialog from '../components/WholeScreenDialog'
@@ -139,10 +140,6 @@ export default function GamePage() {
         if (data.game.players) {
           setPlayerOrder(data.game.players as GamePlayer[])
         }
-        if (data.game.status === GameStatus.Redrawing) {
-          setCoinFlipVisible(true)
-          setTimeout(() => setCoinFlipVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
-        }
       }
     },
     variables: gameQueryVariables,
@@ -192,12 +189,6 @@ export default function GamePage() {
         })
       }
     },
-    onCompleted: (data) => {
-      if (data.setOrder.status === GameStatus.Redrawing) {
-        setCoinFlipVisible(true)
-        setTimeout(() => setCoinFlipVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
-      }
-    },
   })
   const [redraw, { loading: redrawLoading, error: redrawError }] = useRedrawMutation({
     update(cache, { data }) {
@@ -241,6 +232,14 @@ export default function GamePage() {
     },
   })
   const [ready, { loading: readyLoading, error: readyError }] = useReadyMutation()
+  const currentGame = gameData?.game as Game | undefined
+  const previousGame = usePrevious(currentGame)
+  useEffect(() => {
+    if (currentGame?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing) {
+      setCoinFlipVisible(true)
+      setTimeout(() => setCoinFlipVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+    }
+  }, [currentGame])
 
   return isNew
     ? renderNewGame({
@@ -260,7 +259,7 @@ export default function GamePage() {
         deckEditorOpen,
         setDeckEditorOpen,
         gameError,
-        game: gameData?.game as Game | undefined,
+        game: currentGame,
         gameLoading,
         setDeck: {
           setDeck,
