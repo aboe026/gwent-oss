@@ -177,7 +177,7 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
     turnOrder: [t.ctx.self.user.name, t.ctx.opponent.user.name],
   })
   await GamePage.setOrder()
-  await GamePage.verifyCoinFlip({
+  await GamePage.verifyCoinToss({
     won: true,
   })
   await GamePage.verify({
@@ -251,7 +251,7 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
     turnOrder: [t.ctx.opponent.user.name, t.ctx.self.user.name],
   })
   await GamePage.setOrder()
-  await GamePage.verifyCoinFlip({
+  await GamePage.verifyCoinToss({
     won: false,
   })
   await GamePage.verify({
@@ -321,7 +321,7 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
     gameId: t.ctx.game.id,
     userIds: [t.ctx.opponent.user.id, t.ctx.self.user.id],
   })
-  await GamePage.verifyCoinFlip({
+  await GamePage.verifyCoinToss({
     won: false,
   })
   await GamePage.verify({
@@ -391,7 +391,7 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
     gameId: t.ctx.game.id,
     userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
   })
-  await GamePage.verifyCoinFlip({
+  await GamePage.verifyCoinToss({
     won: true,
   })
   await GamePage.verify({
@@ -468,7 +468,7 @@ test('Cannot choose order if both are ScoiaTael', async (t) => {
   } else if (updatedGame.turn?.user.id === t.ctx.opponent.user.id) {
     opponentPlayer.turn = PlayerTurn.Future
   }
-  await GamePage.verifyCoinFlip({
+  await GamePage.verifyCoinToss({
     won: selfPlayer.turn === PlayerTurn.Future,
   })
   await GamePage.verify({
@@ -540,7 +540,7 @@ test('Cannot choose order if none are ScoiaTael', async (t) => {
   } else if (updatedGame.turn?.user.id === t.ctx.opponent.user.id) {
     opponentPlayer.turn = PlayerTurn.Future
   }
-  await GamePage.verifyCoinFlip({
+  await GamePage.verifyCoinToss({
     won: selfPlayer.turn === PlayerTurn.Future,
   })
   await GamePage.verify({

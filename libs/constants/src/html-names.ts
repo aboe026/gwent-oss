@@ -144,7 +144,7 @@ export const HTML_IDS = {
   GameOrderTable: 'gameSetOrderTable',
   GameOrderSet: 'gameOrderSet',
   GameOrderWaiting: 'gameOrderWaiting',
-  GameOrderCoinFlip: 'gameOrderCoinFlip',
+  GameOrderCoinToss: 'gameOrderCoinToss',
   Games: 'games',
   GamesCreate: 'gamesCreate',
   GamesNoneCreate: 'gamesNoneCreate',

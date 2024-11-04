@@ -46,7 +46,7 @@ import {
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
-import CoinFlip from '../components/CoinFlip'
+import CoinToss from '../components/CoinToss'
 import DeckEditor from '../components/DeckEditor'
 import DeckList from '../components/DeckList'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
@@ -84,7 +84,7 @@ export default function GamePage() {
   const [cardSelected, setCardSelected] = useState<DeckUnit | undefined>()
   const [fullUnit, setFullUnit] = useState<DeckUnit | undefined>()
   const [playerOrder, setPlayerOrder] = useState<GamePlayer[]>([])
-  const [coinFlipVisible, setCoinFlipVisible] = useState(false)
+  const [coinTossVisible, setCoinTossVisible] = useState(false)
   const { checkAuth, user } = useUserContext()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -236,8 +236,8 @@ export default function GamePage() {
   const previousGame = usePrevious(currentGame)
   useEffect(() => {
     if (currentGame?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing) {
-      setCoinFlipVisible(true)
-      setTimeout(() => setCoinFlipVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+      setCoinTossVisible(true)
+      setTimeout(() => setCoinTossVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
     }
   }, [currentGame])
 
@@ -293,8 +293,8 @@ export default function GamePage() {
         gameDeckRefetch,
         playerOrder,
         setPlayerOrder,
-        coinFlipVisible,
-        setCoinFlipVisible,
+        coinTossVisible,
+        setCoinTossVisible,
       })
 }
 
@@ -392,8 +392,8 @@ function renderExistingGame({
   gameDeckRefetch,
   playerOrder,
   setPlayerOrder,
-  coinFlipVisible,
-  setCoinFlipVisible,
+  coinTossVisible,
+  setCoinTossVisible,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
@@ -436,8 +436,8 @@ function renderExistingGame({
   ) => Promise<ApolloQueryResult<GameDeckQuery>>
   playerOrder: GamePlayer[]
   setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
-  coinFlipVisible: boolean
-  setCoinFlipVisible: Dispatch<SetStateAction<boolean>>
+  coinTossVisible: boolean
+  setCoinTossVisible: Dispatch<SetStateAction<boolean>>
 }) {
   const resolvedGameError = getApolloError(gameError)
   const resolvedGameDeckError = getApolloError(gameDeckError)
@@ -519,7 +519,7 @@ function renderExistingGame({
           gameDeckLoading,
           gameRefetch,
           gameDeckRefetch,
-          coinFlipVisible,
+          coinTossVisible,
         })}
         {renderCenter({
           cardSelected,
@@ -540,8 +540,8 @@ function renderExistingGame({
           setOrder,
           playerOrder,
           setPlayerOrder,
-          coinFlipVisible,
-          setCoinFlipVisible,
+          coinTossVisible,
+          setCoinTossVisible,
         })}
         {renderHistory()}
       </div>
@@ -629,7 +629,7 @@ function renderGameInfo({
   gameDeckLoading,
   gameRefetch,
   gameDeckRefetch,
-  coinFlipVisible,
+  coinTossVisible,
 }: {
   self: GamePlayer
   opponent: GamePlayer
@@ -655,7 +655,7 @@ function renderGameInfo({
         >
       | undefined
   ) => Promise<ApolloQueryResult<GameDeckQuery>>
-  coinFlipVisible: boolean
+  coinTossVisible: boolean
 }) {
   return (
     <div id="gameInfoContainer" className="game-edge-container">
@@ -669,7 +669,7 @@ function renderGameInfo({
         hand: opponent.counts?.hand,
         undrawn: opponent.counts?.undrawn,
         leader: opponent.leader,
-        coinFlipVisible,
+        coinTossVisible,
       })}
       {renderSharedInfo({
         game,
@@ -690,7 +690,7 @@ function renderGameInfo({
         undrawn: gameDeck?.undrawn.length,
         deckName: gameDeck?.from?.name,
         deckUpdated: gameDeck?.from?.created,
-        coinFlipVisible,
+        coinTossVisible,
       })}
     </div>
   )
@@ -768,7 +768,7 @@ function renderPlayerInfo({
   deckName,
   deckUpdated,
   isSelf,
-  coinFlipVisible,
+  coinTossVisible,
 }: {
   id: string
   player: GamePlayer
@@ -781,12 +781,12 @@ function renderPlayerInfo({
   deckName?: string
   deckUpdated?: Date
   isSelf: boolean
-  coinFlipVisible: boolean
+  coinTossVisible: boolean
 }) {
   const isTurn = game.turn && game.turn.user.name === player.user.name
   let title = ''
   let borderClass = ''
-  if (!coinFlipVisible) {
+  if (!coinTossVisible) {
     if (game.status === GameStatus.Playing) {
       if (isTurn) {
         title = isSelf ? 'It is your turn' : 'Your opponent is taking their turn'
@@ -968,8 +968,8 @@ function renderCenter({
   setOrder,
   playerOrder,
   setPlayerOrder,
-  coinFlipVisible,
-  setCoinFlipVisible,
+  coinTossVisible,
+  setCoinTossVisible,
 }: {
   game: Game
   gameDeck: GameDeck | undefined
@@ -986,8 +986,8 @@ function renderCenter({
   setOrder: SetOrderProps
   playerOrder: GamePlayer[]
   setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
-  coinFlipVisible: boolean
-  setCoinFlipVisible: Dispatch<SetStateAction<boolean>>
+  coinTossVisible: boolean
+  setCoinTossVisible: Dispatch<SetStateAction<boolean>>
 }) {
   return (
     <div id={HTML_IDS.GameCenterContainer}>
@@ -1020,8 +1020,8 @@ function renderCenter({
           setFullUnit,
           setCardSelected,
           self,
-          coinFlipVisible,
-          setCoinFlipVisible,
+          coinTossVisible,
+          setCoinTossVisible,
         })
       ) : (
         <div className="game-section"></div>
@@ -1227,23 +1227,23 @@ function renderSetOrder({
   )
 }
 
-function renderCoinFlip({
-  setCoinFlipVisible,
+function renderCoinToss({
+  setCoinTossVisible,
   winFlip,
 }: {
-  setCoinFlipVisible: Dispatch<SetStateAction<boolean>>
+  setCoinTossVisible: Dispatch<SetStateAction<boolean>>
   winFlip: boolean
 }) {
   const resultText = winFlip ? 'You will go first' : 'Your opponent will go first'
   return (
-    <div id={HTML_IDS.GameOrderCoinFlip} className="game-section">
+    <div id={HTML_IDS.GameOrderCoinToss} className="game-section">
       <Centered>
-        <CoinFlip
+        <CoinToss
           duration={`${GAME_ORDER_COIN_FLIP_DURATION_SECONDS - 1}s`}
           heads={winFlip}
           size="100px"
           bounce={true}
-          onClick={() => setCoinFlipVisible(false)}
+          onClick={() => setCoinTossVisible(false)}
           resultText={resultText}
         />
       </Centered>
@@ -1261,8 +1261,8 @@ function renderRedraw({
   setFullUnit,
   setCardSelected,
   self,
-  coinFlipVisible,
-  setCoinFlipVisible,
+  coinTossVisible,
+  setCoinTossVisible,
 }: {
   game: Game
   gameDeck: GameDeck | undefined
@@ -1274,8 +1274,8 @@ function renderRedraw({
   setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   self: GamePlayer
-  coinFlipVisible: boolean
-  setCoinFlipVisible: Dispatch<SetStateAction<boolean>>
+  coinTossVisible: boolean
+  setCoinTossVisible: Dispatch<SetStateAction<boolean>>
 }) {
   const redrawsLeft = MAX_REDRAWS - (gameDeck?.redraws || []).length
   const instructions =
@@ -1286,9 +1286,9 @@ function renderRedraw({
       : 'All allowed redraws made. To begin the game:'
   const resolvedRedrawError = getApolloError(redrawError)
   const resolvedReadyError = getApolloError(readyError)
-  return coinFlipVisible ? (
-    renderCoinFlip({
-      setCoinFlipVisible,
+  return coinTossVisible ? (
+    renderCoinToss({
+      setCoinTossVisible,
       winFlip: game.turn?.user.name === self.user.name,
     })
   ) : (

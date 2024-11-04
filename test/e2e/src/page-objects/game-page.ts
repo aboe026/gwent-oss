@@ -41,7 +41,7 @@ export default class GamePage {
     OrderTable: existingGameContainer.find(`#${HTML_IDS.GameOrderTable}`),
     OrderSet: existingGameContainer.find(`#${HTML_IDS.GameOrderSet}`),
     OrderWaiting: existingGameContainer.find(`#${HTML_IDS.GameOrderWaiting}`),
-    CoinFlipContainer: existingGameContainer.find(`#${HTML_IDS.GameOrderCoinFlip}`),
+    CoinTossContainer: existingGameContainer.find(`#${HTML_IDS.GameOrderCoinToss}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -288,13 +288,13 @@ export default class GamePage {
     }
   }
 
-  static async verifyCoinFlip({ won, wait = true }: { won: boolean; wait?: boolean }) {
-    await t.expect(GamePage.elements.CoinFlipContainer.exists).ok()
-    await t.expect(GamePage.elements.CoinFlipContainer.visible).ok()
-    const coinFlipResult = GamePage.elements.CoinFlipContainer.find(`.${HTML_CLASSES.COIN_FLIP_RESULT_TEXT}`)
-    await t.expect(coinFlipResult.exists).ok()
-    await t.expect(coinFlipResult.visible).ok()
-    await t.expect(coinFlipResult.innerText).eql(won ? 'You will go first' : 'Your opponent will go first')
+  static async verifyCoinToss({ won, wait = true }: { won: boolean; wait?: boolean }) {
+    await t.expect(GamePage.elements.CoinTossContainer.exists).ok()
+    await t.expect(GamePage.elements.CoinTossContainer.visible).ok()
+    const coinTossResult = GamePage.elements.CoinTossContainer.find(`.${HTML_CLASSES.COIN_FLIP_RESULT_TEXT}`)
+    await t.expect(coinTossResult.exists).ok()
+    await t.expect(coinTossResult.visible).ok()
+    await t.expect(coinTossResult.innerText).eql(won ? 'You will go first' : 'Your opponent will go first')
     if (wait) {
       await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
     }

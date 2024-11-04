@@ -1,12 +1,12 @@
 import { HTML_CLASSES } from '@gwent/constants'
-import './CoinFlip.css'
+import './CoinToss.css'
 
 /**
  * A coin flip animation to indicate a decision has been made.
  *
  * @returns A coin flip animation.
  */
-export default function CoinFlip({
+export default function CoinToss({
   bounce,
   heads = true,
   delay = '0.5s',
@@ -15,7 +15,7 @@ export default function CoinFlip({
   style,
   onClick,
   resultText,
-}: CoinFlipProps) {
+}: CoinTossProps) {
   const headsColor = '#e9a018'
   const tailsColor = 'silver'
   return (
@@ -68,7 +68,7 @@ export default function CoinFlip({
   )
 }
 
-interface CoinFlipProps {
+interface CoinTossProps {
   heads?: boolean
   bounce?: boolean
   delay?: string

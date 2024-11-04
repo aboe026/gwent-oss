@@ -6,8 +6,6 @@ A list of things to be done in the future
 - test setting order for game user is not apart of, make sure it doesn't update their game in UI
 - test going to game in UI, going to games list, doing something to game that would trigger subscription (setOrder), go back to game. is it properly updated?
   - if not, should we always reload game whenever navigate to it?
-- change CoinFlip to CoinToss
-- make coin rotate horizontally, not vertically
 - change setOrder mutation input from order to users
 - implement history?
 - change error log to debug for when websocket rejected due to no session? (since happens when session expires, which can happen often)
