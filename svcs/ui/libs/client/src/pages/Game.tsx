@@ -1239,6 +1239,7 @@ function renderCoinFlip({
     <div id={HTML_IDS.GameOrderCoinFlip} className="game-section">
       <Centered>
         <CoinFlip
+          duration={`${GAME_ORDER_COIN_FLIP_DURATION_SECONDS - 1}s`}
           heads={winFlip}
           size="100px"
           bounce={true}

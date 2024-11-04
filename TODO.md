@@ -2,6 +2,7 @@
 
 A list of things to be done in the future
 
+- in "setDeck" mutation, set order if all decks set and no lone scoiatael deck (make sure subscription published so clients get update)
 - test setting order for game user is not apart of, make sure it doesn't update their game in UI
 - test going to game in UI, going to games list, doing something to game that would trigger subscription (setOrder), go back to game. is it properly updated?
   - if not, should we always reload game whenever navigate to it?
