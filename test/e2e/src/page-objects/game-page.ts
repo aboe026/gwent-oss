@@ -2,7 +2,8 @@ import { ObjectId } from 'mongodb'
 import { Selector, t } from 'testcafe'
 
 import { Deck, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
-import DeckList from '../components/deck-list'
+import DeckEditor from '../components/deck-editor'
+import DeckList, { DeckInfo } from '../components/deck-list'
 import E2eUtil from '../util/e2e-util'
 import GamePlayerInfo, { PlayerTurn } from '../components/game-player-info'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
@@ -360,6 +361,38 @@ export default class GamePage {
     await t.click(GamePage.elements.SetDeck)
   }
 
+  static async setNewDeck({
+    name,
+    faction,
+    leader,
+    units,
+    existingDecks = [],
+    verify = true,
+  }: {
+    name: string
+    faction: Faction
+    leader: Leader
+    units: string[]
+    existingDecks?: DeckInfo[]
+    verify?: boolean
+  }) {
+    await t.click(GamePage.elements.SetDeck)
+    if (verify) {
+      await DeckList.verify({
+        decks: existingDecks,
+      })
+    }
+    await DeckList.clickCreate()
+    await DeckEditor.createDeck({
+      faction,
+      leader,
+      name,
+      units,
+      verify,
+      verifyRedirect: false,
+    })
+  }
+
   static async setDeck({
     created,
     faction,
@@ -367,6 +400,7 @@ export default class GamePage {
     name,
     stats,
     verifyCloses = true,
+    additionalExistingDecks = [],
   }: {
     created: Date | string
     name: string
@@ -374,6 +408,7 @@ export default class GamePage {
     leader: Leader
     stats: UnitStats
     verifyCloses?: boolean
+    additionalExistingDecks?: DeckInfo[]
   }) {
     await t.click(GamePage.elements.SetDeck)
     await DeckList.verify({
@@ -385,6 +420,7 @@ export default class GamePage {
           name,
           stats,
         },
+        ...additionalExistingDecks,
       ],
     })
     await DeckList.selectDeckForGame(name)
