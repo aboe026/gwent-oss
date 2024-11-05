@@ -366,12 +366,14 @@ export default class GamePage {
     leader,
     name,
     stats,
+    verifyCloses = true,
   }: {
     created: Date | string
     name: string
     faction: Faction
     leader: Leader
     stats: UnitStats
+    verifyCloses?: boolean
   }) {
     await t.click(GamePage.elements.SetDeck)
     await DeckList.verify({
@@ -386,7 +388,9 @@ export default class GamePage {
       ],
     })
     await DeckList.selectDeckForGame(name)
-    await DeckList.verifyNotShown()
+    if (verifyCloses) {
+      await DeckList.verifyNotShown()
+    }
   }
 
   static async ready() {

@@ -12,7 +12,7 @@ import DeckResolver from './deck-resolver'
 import DeckStore from '../../database/stores/deck-store'
 import DeckUnitResolver from './deck-unit-resolver'
 import EventManager from './event-manager'
-import { FactionKey, MutationResolvers, User } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, Game, MutationResolvers, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
 import FactionStore from '../../database/stores/faction-store'
 import GameDeckResolver from './game-deck-resolver'
@@ -667,6 +667,12 @@ export default class MutationResolver {
           EventManager.pubsub.publish(PubSubEvents.GameSet, {
             gameSet: resolvedGame,
           })
+          await MutationResolver.setOrder({
+            userId,
+            gameId,
+            logPrefix: `setOrder via ${logPrefix}`,
+            allowImplicit: false,
+          })
         }
 
         return resolvedDeck
@@ -686,102 +692,129 @@ export default class MutationResolver {
         const gameId = args.game
         const order = args.order
 
-        const game = await GameStore.getById({
-          id: gameId,
-        })
-        if (MutationResolver.logger.isTraceEnabled()) {
-          MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
-        }
-        if (!game) {
-          const message = `Game with ID "${gameId}" does not exist.`
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-
-        const player = game.players.find((player) => player.user.toString() === userId.toString())
-        if (MutationResolver.logger.isTraceEnabled()) {
-          MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
-        }
-        if (!player) {
-          const message = `Not a player on game "${gameId}".`
-          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-
-        // cannot set order before all players choose deck
-        // because cannot tell if there is only 1 user with ScoiaTael deck
-        // (and therefore can choose the order for the game)
-        // until all players have chosen decks
-        if (game.players.some((player) => !player.deck.from)) {
-          const message = `Not all players have chosen decks yet for game "${gameId}".`
-          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-
-        const factions = await FactionStore.get({
-          keys: [FactionKey.ScoiaTael],
-        })
-        if (!factions || factions.length === 0) {
-          const message = `Could not find faction with key "${FactionKey.ScoiaTael}".`
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        } else if (factions.length > 1) {
-          const message = `Found more than 1 faction with key "${FactionKey.ScoiaTael}".`
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-        // TODO: show player decks from resolver after all players have chosen decks
-        const scoiaTaelId = factions[0]._id.toString()
-        const scoiaTaelPlayers = game.players.filter((player) => player.deck.from?.faction.toString() === scoiaTaelId)
-        if (scoiaTaelPlayers.length > 1 && order && order.length > 0) {
-          const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${gameId}".`
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-        if (scoiaTaelPlayers.length === 0 && order && order.length > 0) {
-          const message = `Cannot set explicit order as deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-        if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
-          const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-        // TODO: func test scenario where nobody has scoiatael so anyone can set order
-
-        if (game.turn) {
-          const message = `Game with ID "${gameId}" already has order set.`
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-
-        // TODO: make sure all IDs in order are players on game
-        // TODO: make sure not duplicate ids
-
-        const updatedGame = await GameStore.setOrder({
+        return MutationResolver.setOrder({
+          userId,
           gameId,
-          order: order && order.length > 0 ? order : randomizeOrder(game.players.map((player) => player.user)),
+          logPrefix,
+          order,
+          allowImplicit: true,
         })
-        if (MutationResolver.logger.isTraceEnabled()) {
-          MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
-        }
-        if (!updatedGame) {
-          const message = `Could set order on game "${gameId}" in probable race condition collision.`
-          MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-
-        const resolvedGame = await GameResolver.fromObject({
-          game: updatedGame,
-        })
-
-        EventManager.pubsub.publish(PubSubEvents.OrderSet, {
-          orderSet: resolvedGame,
-        })
-
-        return resolvedGame
       },
     }
+  }
+  private static async setOrder({
+    userId,
+    gameId,
+    order,
+    logPrefix,
+    allowImplicit,
+  }: {
+    userId: string
+    gameId: string
+    order?: string[] | null
+    logPrefix: string
+    allowImplicit: boolean
+  }): Promise<Game> {
+    const game = await GameStore.getById({
+      id: gameId,
+    })
+    if (MutationResolver.logger.isTraceEnabled()) {
+      MutationResolver.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+    }
+    if (!game) {
+      const message = `Game with ID "${gameId}" does not exist.`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+
+    const player = game.players.find((player) => player.user.toString() === userId.toString())
+    if (MutationResolver.logger.isTraceEnabled()) {
+      MutationResolver.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
+    }
+    if (!player) {
+      const message = `Not a player on game "${gameId}".`
+      MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+
+    // cannot set order before all players choose deck
+    // because cannot tell if there is only 1 user with ScoiaTael deck
+    // (and therefore can choose the order for the game)
+    // until all players have chosen decks
+    if (game.players.some((player) => !player.deck.from)) {
+      const message = `Not all players have chosen decks yet for game "${gameId}".`
+      MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+
+    const factions = await FactionStore.get({
+      keys: [FactionKey.ScoiaTael],
+    })
+    if (!factions || factions.length === 0) {
+      const message = `Could not find faction with key "${FactionKey.ScoiaTael}".`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    } else if (factions.length > 1) {
+      const message = `Found more than 1 faction with key "${FactionKey.ScoiaTael}".`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    // TODO: show player decks from resolver after all players have chosen decks
+    const scoiaTaelId = factions[0]._id.toString()
+    const scoiaTaelPlayers = game.players.filter((player) => player.deck.from?.faction.toString() === scoiaTaelId)
+    if (scoiaTaelPlayers.length > 1 && order && order.length > 0) {
+      const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${gameId}".`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (scoiaTaelPlayers.length === 0 && order && order.length > 0) {
+      const message = `Cannot set explicit order as deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
+      const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (scoiaTaelPlayers.length === 1 && (!order || order.length === 0) && !allowImplicit) {
+      const message = `Cannot set order randomly as player "${scoiaTaelPlayers[0].user}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    // TODO: func test scenario where nobody has scoiatael so anyone can set order
+
+    if (game.turn) {
+      const message = `Game with ID "${gameId}" already has order set.`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+
+    // TODO: make sure all IDs in order are players on game
+    // TODO: make sure if order set, it is the same length as game players
+    // TODO: make sure not duplicate ids
+
+    const updatedGame = await GameStore.setOrder({
+      gameId,
+      order: order && order.length > 0 ? order : randomizeOrder(game.players.map((player) => player.user)),
+    })
+    if (MutationResolver.logger.isTraceEnabled()) {
+      MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
+    }
+    if (!updatedGame) {
+      const message = `Could set order on game "${gameId}" in probable race condition collision.`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+
+    const resolvedGame = await GameResolver.fromObject({
+      game: updatedGame,
+    })
+
+    EventManager.pubsub.publish(PubSubEvents.OrderSet, {
+      orderSet: resolvedGame,
+    })
+
+    return resolvedGame
   }
 }

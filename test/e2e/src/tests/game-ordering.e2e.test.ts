@@ -407,7 +407,7 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
   })
 })
 
-test('Cannot choose order if both are ScoiaTael', async (t) => {
+test('Order automatically set if both are ScoiaTael', async (t) => {
   const deckSelf = await t.ctx.self.client.addDeck({
     faction: t.ctx.scoiaTael.faction,
     leaderName: t.ctx.scoiaTael.leader,
@@ -420,17 +420,29 @@ test('Cannot choose order if both are ScoiaTael', async (t) => {
     name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
     unitNames: t.ctx.scoiaTael.units,
   })
-  await t.ctx.self.client.setDeck({
-    deckId: deckSelf.id,
-    gameId: t.ctx.game.id,
-  })
   await t.ctx.opponent.client.setDeck({
     deckId: deckOpponent.id,
     gameId: t.ctx.game.id,
   })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    self: {
+      name: t.ctx.self.user.name,
+    },
+    opponent: {
+      name: t.ctx.opponent.user.name,
+    },
+  })
+  await GamePage.setDeck({
+    created: deckSelf.created,
+    faction: deckSelf.faction,
+    leader: deckSelf.leader,
+    name: deckSelf.name,
+    stats: deckSelf.stats,
+    verifyCloses: false,
+  })
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   const selfPlayer: GamePlayerExpected = {
     name: t.ctx.self.user.name,
     discard: 0,
@@ -453,13 +465,6 @@ test('Cannot choose order if both are ScoiaTael', async (t) => {
     sortProperties: ['unit.strength', 'unit.id'],
     array: gameDeckSelf.hand,
   }).map((deckUnit) => deckUnit.unit.name)
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand,
-    turnOrder: true,
-  })
-  await GamePage.setOrder()
   const updatedGame = await t.ctx.self.client.getGame(t.ctx.game.id)
   await t.expect(updatedGame.turn).notEql(null)
   await t.expect(updatedGame.turn).notEql(undefined)
@@ -479,7 +484,7 @@ test('Cannot choose order if both are ScoiaTael', async (t) => {
   })
 })
 
-test('Cannot choose order if none are ScoiaTael', async (t) => {
+test('Order automatically set if none are ScoiaTael', async (t) => {
   const deckSelf = await t.ctx.self.client.addDeck({
     faction: t.ctx.nilfgaard.faction,
     leaderName: t.ctx.nilfgaard.leader,
@@ -492,17 +497,29 @@ test('Cannot choose order if none are ScoiaTael', async (t) => {
     name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
     unitNames: t.ctx.nilfgaard.units,
   })
-  await t.ctx.self.client.setDeck({
-    deckId: deckSelf.id,
-    gameId: t.ctx.game.id,
-  })
   await t.ctx.opponent.client.setDeck({
     deckId: deckOpponent.id,
     gameId: t.ctx.game.id,
   })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    self: {
+      name: t.ctx.self.user.name,
+    },
+    opponent: {
+      name: t.ctx.opponent.user.name,
+    },
+  })
+  await GamePage.setDeck({
+    created: deckSelf.created,
+    faction: deckSelf.faction,
+    leader: deckSelf.leader,
+    name: deckSelf.name,
+    stats: deckSelf.stats,
+    verifyCloses: false,
+  })
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   const selfPlayer: GamePlayerExpected = {
     name: t.ctx.self.user.name,
     discard: 0,
@@ -525,13 +542,6 @@ test('Cannot choose order if none are ScoiaTael', async (t) => {
     sortProperties: ['unit.strength', 'unit.id'],
     array: gameDeckSelf.hand,
   }).map((deckUnit) => deckUnit.unit.name)
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand,
-    turnOrder: true,
-  })
-  await GamePage.setOrder()
   const updatedGame = await t.ctx.self.client.getGame(t.ctx.game.id)
   await t.expect(updatedGame.turn).notEql(null)
   await t.expect(updatedGame.turn).notEql(undefined)
