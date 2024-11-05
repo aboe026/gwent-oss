@@ -5,13 +5,18 @@ import {
   DecksDocument,
   DecksQuery,
   Game,
+  GameDeck,
+  GameDeckDocument,
+  GameDeckQuery,
   GameDocument,
   GameQuery,
   GamesDocument,
   GamesQuery,
   useDeckAddedSubscription,
+  useDeckSetSubscription,
   useGameAddedSubscription,
   useGameReadySubscription,
+  useGameSetSubscription,
   useOrderSetSubscription,
 } from '@gwent/graphql-schema/apollo-typings'
 import { useUserContext } from './App'
@@ -48,6 +53,31 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
+  useDeckSetSubscription({
+    skip: !user,
+    onData: ({ data, client }) => {
+      const updatedGameDeck = data.data?.deckSet.deck
+      const updatedGame = data.data?.deckSet.game
+      if (updatedGameDeck) {
+        const previousGameDeck = client.cache.readQuery<GameDeckQuery>({
+          query: GameDeckDocument,
+          variables: {
+            game: updatedGame?.id,
+          },
+        })
+        if (previousGameDeck) {
+          client.cache.updateQuery<GameDeckQuery>(
+            {
+              query: GameDeckDocument,
+            },
+            () => ({
+              gameDeck: updatedGameDeck as GameDeck,
+            })
+          )
+        }
+      }
+    },
+  })
   useGameAddedSubscription({
     skip: !user,
     onData: ({ data, client }) => {
@@ -70,10 +100,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useOrderSetSubscription({
+  useGameReadySubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const updatedGame = data.data?.orderSet
+      const updatedGame = data.data?.gameReady
       if (updatedGame) {
         const previousGame = client.cache.readQuery<GameQuery>({
           query: GameDocument,
@@ -94,10 +124,34 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useGameReadySubscription({
+  useGameSetSubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const updatedGame = data.data?.gameReady
+      const updatedGame = data.data?.gameSet
+      if (updatedGame) {
+        const previousGame = client.cache.readQuery<GameQuery>({
+          query: GameDocument,
+          variables: {
+            id: updatedGame?.id,
+          },
+        })
+        if (previousGame) {
+          client.cache.updateQuery<GameQuery>(
+            {
+              query: GameDocument,
+            },
+            () => ({
+              game: updatedGame as Game,
+            })
+          )
+        }
+      }
+    },
+  })
+  useOrderSetSubscription({
+    skip: !user,
+    onData: ({ data, client }) => {
+      const updatedGame = data.data?.orderSet
       if (updatedGame) {
         const previousGame = client.cache.readQuery<GameQuery>({
           query: GameDocument,

@@ -278,6 +278,11 @@ export default gql`
     name: String! @column
   }
 
+  type GameDeckSet {
+    deck: GameDeck!
+    game: Game!
+  }
+
   input DeckUnitInput {
     "For units with multiple art styles, the art style to use (1-based indexing)."
     artStyle: Int = 1
@@ -351,9 +356,17 @@ export default gql`
   }
 
   type Subscription {
+    "A deck has been added for a user."
     deckAdded: Deck!
+    "A deck has been set for a game the user is a player on."
+    deckSet: GameDeckSet!
+    "A game has been added that the user is player on."
     gameAdded: Game!
+    "A game the user is a player on has been marked as ready by a player."
     gameReady: Game!
+    "All decks have been set for a game the user is a player on."
+    gameSet: Game!
+    "The order has been set for a game the user is a player on."
     orderSet: Game!
   }
 `

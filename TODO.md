@@ -10,6 +10,7 @@ A list of things to be done in the future
 - implement history?
 - change error log to debug for when websocket rejected due to no session? (since happens when session expires, which can happen often)
 - enter key does not create game in UI?
+- How to handle GameCard with more than 2 icons (eg Olgierd)? The 3rd on gets rendered off the card underneath
 - do not store yarn binary in source
 - do not store yarn sdks in source?
 - allow introspection without authentication

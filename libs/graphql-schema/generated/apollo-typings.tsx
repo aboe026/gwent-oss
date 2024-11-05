@@ -182,6 +182,12 @@ export type GameDeck = {
   undrawn: Array<DeckUnit>;
 };
 
+export type GameDeckSet = {
+  __typename?: 'GameDeckSet';
+  deck: GameDeck;
+  game: Game;
+};
+
 export enum GameDeckStatus {
   /** Player is choosing their deck to use for the game. */
   Choosing = 'CHOOSING',
@@ -395,9 +401,17 @@ export enum SettingType {
 
 export type Subscription = {
   __typename?: 'Subscription';
+  /** A deck has been added for a user. */
   deckAdded: Deck;
+  /** A deck has been set for a game the user is a player on. */
+  deckSet: GameDeckSet;
+  /** A game has been added that the user is player on. */
   gameAdded: Game;
+  /** A game the user is a player on has been marked as ready by a player. */
   gameReady: Game;
+  /** All decks have been set for a game the user is a player on. */
+  gameSet: Game;
+  /** The order has been set for a game the user is a player on. */
   orderSet: Game;
 };
 
@@ -498,6 +512,11 @@ export type DeckAddedSubscription = { __typename?: 'Subscription', deckAdded: { 
 
 export type DeckFragmentFragment = { __typename?: 'Deck', id: string, created: any, name: string, faction: { __typename?: 'Faction', key: FactionKey, id: string, name: string, image: string, ability?: string | null, dlc?: { __typename?: 'Dlc', name: string, image: string } | null, stats: { __typename?: 'UnitStats', agile: number, avenger: number, berserker: number, bond: number, decoy: number, horn: number, mardroeme: number, medic: number, morale: number, muster: number, scorch: number, spy: number, weather: number, close: number, ranged: number, siege: number, units: number, specials: number, heroes: number, strengthAverage: number, strengthTotal: number, strengths: number } }, leader: { __typename?: 'Leader', name: string, ability: string, image: string }, stats: { __typename?: 'UnitStats', units: number, specials: number, heroes: number, close: number, ranged: number, siege: number, agile: number, strengthTotal: number, strengthAverage: number } };
 
+export type DeckSetSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type DeckSetSubscription = { __typename?: 'Subscription', deckSet: { __typename?: 'GameDeckSet', deck: { __typename?: 'GameDeck', discard: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, from?: { __typename?: 'Deck', created: any, id: string, name: string, faction: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string }, leader: { __typename?: 'Leader', ability: string, image: string, name: string } } | null, hand: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, redraws: Array<{ __typename?: 'Redraw', from: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }, to: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } } }>, undrawn: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, game: { __typename?: 'Game', id: string } } };
+
 export type DeckUnitFragmentFragment = { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } };
 
 export type DecksQueryVariables = Exact<{ [key: string]: never; }>;
@@ -545,6 +564,11 @@ export type GameReadySubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GameReadySubscription = { __typename?: 'Subscription', gameReady: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type GameSetSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GameSetSubscription = { __typename?: 'Subscription', gameSet: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1032,6 +1056,40 @@ export function useDeckAddedSubscription(baseOptions?: Apollo.SubscriptionHookOp
       }
 export type DeckAddedSubscriptionHookResult = ReturnType<typeof useDeckAddedSubscription>;
 export type DeckAddedSubscriptionResult = Apollo.SubscriptionResult<DeckAddedSubscription>;
+export const DeckSetDocument = gql`
+    subscription DeckSet {
+  deckSet {
+    deck {
+      ...GameDeckFragment
+    }
+    game {
+      id
+    }
+  }
+}
+    ${GameDeckFragmentFragmentDoc}`;
+
+/**
+ * __useDeckSetSubscription__
+ *
+ * To run a query within a React component, call `useDeckSetSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useDeckSetSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useDeckSetSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useDeckSetSubscription(baseOptions?: Apollo.SubscriptionHookOptions<DeckSetSubscription, DeckSetSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<DeckSetSubscription, DeckSetSubscriptionVariables>(DeckSetDocument, options);
+      }
+export type DeckSetSubscriptionHookResult = ReturnType<typeof useDeckSetSubscription>;
+export type DeckSetSubscriptionResult = Apollo.SubscriptionResult<DeckSetSubscription>;
 export const DecksDocument = gql`
     query Decks {
   decks {
@@ -1248,6 +1306,35 @@ export function useGameReadySubscription(baseOptions?: Apollo.SubscriptionHookOp
       }
 export type GameReadySubscriptionHookResult = ReturnType<typeof useGameReadySubscription>;
 export type GameReadySubscriptionResult = Apollo.SubscriptionResult<GameReadySubscription>;
+export const GameSetDocument = gql`
+    subscription GameSet {
+  gameSet {
+    ...GameFragment
+  }
+}
+    ${GameFragmentFragmentDoc}`;
+
+/**
+ * __useGameSetSubscription__
+ *
+ * To run a query within a React component, call `useGameSetSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useGameSetSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGameSetSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGameSetSubscription(baseOptions?: Apollo.SubscriptionHookOptions<GameSetSubscription, GameSetSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<GameSetSubscription, GameSetSubscriptionVariables>(GameSetDocument, options);
+      }
+export type GameSetSubscriptionHookResult = ReturnType<typeof useGameSetSubscription>;
+export type GameSetSubscriptionResult = Apollo.SubscriptionResult<GameSetSubscription>;
 export const GamesDocument = gql`
     query Games {
   games {

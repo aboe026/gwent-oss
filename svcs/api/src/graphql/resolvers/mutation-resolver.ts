@@ -645,12 +645,31 @@ export default class MutationResolver {
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
-        return GameDeckResolver.fromObject({
+        const resolvedDeck = await GameDeckResolver.fromObject({
           gameDeck: updatedPlayer.deck,
           neutralDeckStats: RequestedFields.getArgument(info, 'setDeck.from.faction.stats.neutrals'),
           neutralLeaderStats: RequestedFields.getArgument(info, 'setDeck.from.leader.faction.stats.neutrals'),
           neutralUnitStats: RequestedFields.getArgument(info, 'setDeck.from.units.unit.faction.stats.neutrals'),
         })
+        const resolvedGame = await GameResolver.fromObject({
+          game: updatedGame,
+        })
+
+        EventManager.pubsub.publish(PubSubEvents.DeckSet, {
+          deckSet: {
+            deck: resolvedDeck,
+            game: resolvedGame,
+          },
+        })
+
+        if (!updatedGame.players.find((player) => !player.deck.from)) {
+          // all players have chosen decks, notify clients
+          EventManager.pubsub.publish(PubSubEvents.GameSet, {
+            gameSet: resolvedGame,
+          })
+        }
+
+        return resolvedDeck
       },
       setOrder: async (parent, args, context, info) => {
         const userId = context.session.user._id

@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { withFilter } from 'graphql-subscriptions'
 
-import { Deck, Game, SubscriptionResolvers } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, Game, GameDeck, SubscriptionResolvers } from '@gwent/graphql-schema/resolver-typings'
 import EventManager from './event-manager'
 import { PubSubEvents } from '@gwent/constants'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
@@ -26,6 +26,12 @@ export default class SubscriptionResolver {
           async (payload, args, ctx) => SubscriptionResolver.filterDeckAdded(payload, ctx)
         ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       },
+      deckSet: {
+        subscribe: withFilter(
+          () => EventManager.pubsub.asyncIterator([PubSubEvents.DeckSet]),
+          async (payload, args, ctx) => SubscriptionResolver.filterDeckSet(payload, ctx)
+        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      },
       gameAdded: {
         subscribe: withFilter(
           () => EventManager.pubsub.asyncIterator([PubSubEvents.GameAdded]),
@@ -36,6 +42,12 @@ export default class SubscriptionResolver {
         subscribe: withFilter(
           () => EventManager.pubsub.asyncIterator([PubSubEvents.GameReady]),
           async (payload, args, ctx) => SubscriptionResolver.filterGameReady(payload, ctx)
+        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      },
+      gameSet: {
+        subscribe: withFilter(
+          () => EventManager.pubsub.asyncIterator([PubSubEvents.GameSet]),
+          async (payload, args, ctx) => SubscriptionResolver.filterGameSet(payload, ctx)
         ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       },
       orderSet: {
@@ -73,6 +85,37 @@ export default class SubscriptionResolver {
       }
     } else {
       SubscriptionResolver.logger.debug(`Not publishing deckAdded for deck "${deckId}": No user on context.`)
+    }
+    return false
+  }
+
+  private static filterDeckSet(payload: DeckSetPayload, ctx: SubscriptionContext): boolean {
+    if (SubscriptionResolver.logger.isTraceEnabled()) {
+      SubscriptionResolver.logger.trace(`deckSet payload: "${JSON.stringify(payload)}"`)
+      SubscriptionResolver.logger.trace(`deckSet ctx: "${JSON.stringify(ctx)}"`)
+    }
+    const userId = ctx.user?._id.toString()
+    const gameId = payload.deckSet.game.id
+    const deckId = payload.deckSet.deck.from?.id
+    const deckOwner = payload.deckSet.deck.from?.user.id
+    SubscriptionResolver.logger.debug(`deckSet userId: "${userId}", gameId: "${gameId}", deckId: "${deckId}"`)
+    if (userId) {
+      if (payload.deckSet.game.players.some((player) => player.user.id === userId)) {
+        if (userId === deckOwner) {
+          SubscriptionResolver.logger.debug(`Publishing deckSet for deck "${deckId}" to user "${userId}".`)
+          return true
+        } else {
+          SubscriptionResolver.logger.debug(
+            `Not publishing deckSet for deck "${deckId}": User "${userId}" is not the deck owner "${deckOwner}".`
+          )
+        }
+      } else {
+        SubscriptionResolver.logger.debug(
+          `Not publishing deckSet for game "${gameId}": User "${userId}" not a player on game.`
+        )
+      }
+    } else {
+      SubscriptionResolver.logger.debug(`Not publishing deckSet for deck "${deckId}": No user on context.`)
     }
     return false
   }
@@ -144,6 +187,37 @@ export default class SubscriptionResolver {
     return false
   }
 
+  private static filterGameSet(payload: GameSetPayload, ctx: SubscriptionContext): boolean {
+    if (SubscriptionResolver.logger.isTraceEnabled()) {
+      SubscriptionResolver.logger.trace(`gameSet payload: "${JSON.stringify(payload)}"`)
+      SubscriptionResolver.logger.trace(`gameSet ctx: "${JSON.stringify(ctx)}"`)
+    }
+    const userId = ctx.user?._id.toString()
+    const gameId = payload.gameSet.id
+    if (userId) {
+      if (payload.gameSet.players.some((player) => player.user.id === userId)) {
+        const notReadyPlayers = payload.gameSet.players.filter((player) => !player.faction)
+        if (notReadyPlayers.length === 0) {
+          SubscriptionResolver.logger.debug(`Publishing gameSet for game "${gameId}" to user "${userId}".`)
+          return true
+        } else {
+          SubscriptionResolver.logger.debug(
+            `Not publishing gameSet for game "${gameId}": Player(s) "${JSON.stringify(
+              notReadyPlayers.map((player) => player.user.id)
+            )}" not set.`
+          )
+        }
+      } else {
+        SubscriptionResolver.logger.debug(
+          `Not publishing gameSet for game "${gameId}": User "${userId}" not a player on game.`
+        )
+      }
+    } else {
+      SubscriptionResolver.logger.debug(`Not publishing gameReady for game "${gameId}": No user on context.`)
+    }
+    return false
+  }
+
   private static filterOrderSet(payload: OrderSetPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`orderSet payload: "${JSON.stringify(payload)}"`)
@@ -176,12 +250,23 @@ export interface DeckAddedPayload {
   deckAdded: Deck
 }
 
+export interface DeckSetPayload {
+  deckSet: {
+    deck: GameDeck
+    game: Game
+  }
+}
+
 export interface GameAddedPayload {
   gameAdded: Game
 }
 
 export interface GameReadyPayload {
   gameReady: Game
+}
+
+export interface GameSetPayload {
+  gameSet: Game
 }
 
 export interface OrderSetPayload {

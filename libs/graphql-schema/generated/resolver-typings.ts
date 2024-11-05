@@ -181,6 +181,12 @@ export type GameDeck = {
   undrawn: Array<DeckUnit>;
 };
 
+export type GameDeckSet = {
+  __typename?: 'GameDeckSet';
+  deck: GameDeck;
+  game: Game;
+};
+
 export enum GameDeckStatus {
   /** Player is choosing their deck to use for the game. */
   Choosing = 'CHOOSING',
@@ -394,9 +400,17 @@ export enum SettingType {
 
 export type Subscription = {
   __typename?: 'Subscription';
+  /** A deck has been added for a user. */
   deckAdded: Deck;
+  /** A deck has been set for a game the user is a player on. */
+  deckSet: GameDeckSet;
+  /** A game has been added that the user is player on. */
   gameAdded: Game;
+  /** A game the user is a player on has been marked as ready by a player. */
   gameReady: Game;
+  /** All decks have been set for a game the user is a player on. */
+  gameSet: Game;
+  /** The order has been set for a game the user is a player on. */
   orderSet: Game;
 };
 
@@ -540,6 +554,7 @@ export type ResolversTypes = {
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Game: ResolverTypeWrapper<Game>;
   GameDeck: ResolverTypeWrapper<GameDeck>;
+  GameDeckSet: ResolverTypeWrapper<GameDeckSet>;
   GameDeckStatus: GameDeckStatus;
   GamePlayer: ResolverTypeWrapper<GamePlayer>;
   GamePlayerInput: GamePlayerInput;
@@ -578,6 +593,7 @@ export type ResolversParentTypes = {
   Float: Scalars['Float']['output'];
   Game: Game;
   GameDeck: GameDeck;
+  GameDeckSet: GameDeckSet;
   GamePlayer: GamePlayer;
   GamePlayerInput: GamePlayerInput;
   GamePlayerUnitCounts: GamePlayerUnitCounts;
@@ -679,6 +695,12 @@ export type GameDeckResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type GameDeckSetResolvers<ContextType = any, ParentType extends ResolversParentTypes['GameDeckSet'] = ResolversParentTypes['GameDeckSet']> = {
+  deck?: Resolver<ResolversTypes['GameDeck'], ParentType, ContextType>;
+  game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type GamePlayerResolvers<ContextType = any, ParentType extends ResolversParentTypes['GamePlayer'] = ResolversParentTypes['GamePlayer']> = {
   counts?: Resolver<Maybe<ResolversTypes['GamePlayerUnitCounts']>, ParentType, ContextType>;
   faction?: Resolver<Maybe<ResolversTypes['Faction']>, ParentType, ContextType>;
@@ -766,8 +788,10 @@ export type SettingResolvers<ContextType = any, ParentType extends ResolversPare
 
 export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   deckAdded?: SubscriptionResolver<ResolversTypes['Deck'], "deckAdded", ParentType, ContextType>;
+  deckSet?: SubscriptionResolver<ResolversTypes['GameDeckSet'], "deckSet", ParentType, ContextType>;
   gameAdded?: SubscriptionResolver<ResolversTypes['Game'], "gameAdded", ParentType, ContextType>;
   gameReady?: SubscriptionResolver<ResolversTypes['Game'], "gameReady", ParentType, ContextType>;
+  gameSet?: SubscriptionResolver<ResolversTypes['Game'], "gameSet", ParentType, ContextType>;
   orderSet?: SubscriptionResolver<ResolversTypes['Game'], "orderSet", ParentType, ContextType>;
 };
 
@@ -834,6 +858,7 @@ export type Resolvers<ContextType = any> = {
   Faction?: FactionResolvers<ContextType>;
   Game?: GameResolvers<ContextType>;
   GameDeck?: GameDeckResolvers<ContextType>;
+  GameDeckSet?: GameDeckSetResolvers<ContextType>;
   GamePlayer?: GamePlayerResolvers<ContextType>;
   GamePlayerUnitCounts?: GamePlayerUnitCountsResolvers<ContextType>;
   GameRound?: GameRoundResolvers<ContextType>;
