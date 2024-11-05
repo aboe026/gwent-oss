@@ -98,24 +98,27 @@ export default class SubscriptionResolver {
     const gameId = payload.deckSet.game.id
     const deckId = payload.deckSet.deck.from?.id
     const deckOwner = payload.deckSet.deck.from?.user.id
-    SubscriptionResolver.logger.debug(`deckSet userId: "${userId}", gameId: "${gameId}", deckId: "${deckId}"`)
     if (userId) {
       if (payload.deckSet.game.players.some((player) => player.user.id === userId)) {
         if (userId === deckOwner) {
-          SubscriptionResolver.logger.debug(`Publishing deckSet for deck "${deckId}" to user "${userId}".`)
+          SubscriptionResolver.logger.debug(
+            `Publishing deckSet for deck "${deckId}" on game "${gameId}" to user "${userId}".`
+          )
           return true
         } else {
           SubscriptionResolver.logger.debug(
-            `Not publishing deckSet for deck "${deckId}": User "${userId}" is not the deck owner "${deckOwner}".`
+            `Not publishing deckSet for deck "${deckId}" on game "${gameId}": User "${userId}" is not the deck owner "${deckOwner}".`
           )
         }
       } else {
         SubscriptionResolver.logger.debug(
-          `Not publishing deckSet for game "${gameId}": User "${userId}" not a player on game.`
+          `Not publishing deckSet for deck "${deckId}" on game "${gameId}": User "${userId}" not a player on game.`
         )
       }
     } else {
-      SubscriptionResolver.logger.debug(`Not publishing deckSet for deck "${deckId}": No user on context.`)
+      SubscriptionResolver.logger.debug(
+        `Not publishing deckSet for deck "${deckId}" on game "${gameId}": No user on context.`
+      )
     }
     return false
   }

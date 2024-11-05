@@ -1,7 +1,7 @@
 import ApiClient from '../util/api-client'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
-import { Deck, Faction, FactionKey, Game, Leader } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import GamePage from '../page-objects/game-page'
@@ -15,10 +15,6 @@ interface GameDeckingTestCtx extends E2eCtx {
   opponent: string
   deckName1: string
   deckName2: string
-  faction1: Faction
-  faction2: Faction
-  leader1: Leader
-  leader2: Leader
   deck1: Deck
   deck2: Deck
   game: Game
@@ -97,14 +93,6 @@ fixture('Game Decking')
     const client1 = new ApiClient({
       username: t.ctx.username,
     })
-    t.ctx.faction1 = await client1.getFaction({
-      key: faction1,
-      neutrals: true,
-    })
-    t.ctx.leader1 = await client1.getLeader({
-      faction: faction1,
-      name: leader1,
-    })
     t.ctx.deck1 = await client1.addDeck({
       faction: faction1,
       leaderName: leader1,
@@ -113,14 +101,6 @@ fixture('Game Decking')
     })
     const client2 = new ApiClient({
       username: t.ctx.opponent,
-    })
-    t.ctx.faction2 = await client2.getFaction({
-      key: faction2,
-      neutrals: true,
-    })
-    t.ctx.leader2 = await client2.getLeader({
-      faction: faction2,
-      name: leader2,
     })
     t.ctx.deck2 = await client2.addDeck({
       faction: faction2,
@@ -585,6 +565,43 @@ test('Cancel on deck create closes decks dialog and remains on game page', async
     self: {
       name: t.ctx.username,
     },
+  })
+})
+
+test('Page updates automatically with deck set via API', async (t) => {
+  const client = new ApiClient({
+    username: t.ctx.username,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+    },
+  })
+  const gameDeck = await client.setDeck({
+    deckId: t.ctx.deck1.id,
+    gameId: t.ctx.game.id,
+  })
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent,
+    },
+    self: {
+      name: t.ctx.username,
+      discard: 0,
+      faction: t.ctx.deck1.faction,
+      leader: t.ctx.deck1.leader,
+      hand: STARTING_HAND_SIZE,
+      undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
+      from: gameDeck.from,
+    },
+    hand: sortObjectArray({
+      sortProperties: ['unit.strength', 'unit.id'],
+      array: gameDeck.hand,
+    }).map((deckUnit) => deckUnit.unit.name),
   })
 })
 

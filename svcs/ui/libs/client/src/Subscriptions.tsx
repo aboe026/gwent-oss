@@ -58,17 +58,19 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     onData: ({ data, client }) => {
       const updatedGameDeck = data.data?.deckSet.deck
       const updatedGame = data.data?.deckSet.game
+      const variables = {
+        game: updatedGame?.id,
+      }
       if (updatedGameDeck) {
         const previousGameDeck = client.cache.readQuery<GameDeckQuery>({
           query: GameDeckDocument,
-          variables: {
-            game: updatedGame?.id,
-          },
+          variables,
         })
-        if (previousGameDeck) {
+        if (!previousGameDeck?.gameDeck) {
           client.cache.updateQuery<GameDeckQuery>(
             {
               query: GameDeckDocument,
+              variables,
             },
             () => ({
               gameDeck: updatedGameDeck as GameDeck,
@@ -104,17 +106,19 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     skip: !user,
     onData: ({ data, client }) => {
       const updatedGame = data.data?.gameReady
+      const variables = {
+        id: updatedGame?.id,
+      }
       if (updatedGame) {
         const previousGame = client.cache.readQuery<GameQuery>({
           query: GameDocument,
-          variables: {
-            id: updatedGame?.id,
-          },
+          variables,
         })
         if (previousGame) {
           client.cache.updateQuery<GameQuery>(
             {
               query: GameDocument,
+              variables,
             },
             () => ({
               game: updatedGame as Game,
@@ -128,17 +132,19 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     skip: !user,
     onData: ({ data, client }) => {
       const updatedGame = data.data?.gameSet
+      const variables = {
+        id: updatedGame?.id,
+      }
       if (updatedGame) {
         const previousGame = client.cache.readQuery<GameQuery>({
           query: GameDocument,
-          variables: {
-            id: updatedGame?.id,
-          },
+          variables,
         })
         if (previousGame) {
           client.cache.updateQuery<GameQuery>(
             {
               query: GameDocument,
+              variables,
             },
             () => ({
               game: updatedGame as Game,
@@ -152,17 +158,19 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     skip: !user,
     onData: ({ data, client }) => {
       const updatedGame = data.data?.orderSet
+      const variables = {
+        id: updatedGame?.id,
+      }
       if (updatedGame) {
         const previousGame = client.cache.readQuery<GameQuery>({
           query: GameDocument,
-          variables: {
-            id: updatedGame?.id,
-          },
+          variables,
         })
         if (previousGame) {
           client.cache.updateQuery<GameQuery>(
             {
               query: GameDocument,
+              variables,
             },
             () => ({
               game: updatedGame as Game,

@@ -209,11 +209,15 @@ export default class GamePage {
   }
 
   static async verifyCenter({
+    selfSet,
+    opponentSet,
     selfReady,
     opponentReady,
     redraws,
     turnOrder,
   }: {
+    selfSet?: boolean
+    opponentSet?: boolean
     selfReady?: boolean
     opponentReady?: boolean
     redraws?: {
@@ -255,6 +259,8 @@ export default class GamePage {
       await GamePage.verifyOrder({
         turnOrder,
       })
+    } else if (selfSet && !opponentSet) {
+      await t.expect(GamePage.elements.CenterContainer.innerText).eql('Waiting for opponent to choose deck...')
     } else {
       await t.expect(GamePage.elements.SetDeck.exists).ok()
       await t.expect(GamePage.elements.SetDeck.visible).ok()
@@ -345,6 +351,8 @@ export default class GamePage {
       turnOrder,
       opponentReady: opponent.ready,
       selfReady: self.ready,
+      selfSet: !!self.from,
+      opponentSet: !!opponent.from,
     })
   }
 
