@@ -36,7 +36,7 @@ const fixture = getFixtureCtx<E2eCtx, GameDeckingTestCtx>()
 const test = getTestCtx<E2eCtx, GameDeckingTestCtx>()
 
 fixture('Game Decking')
-  .only.page(HomePage.getUrl())
+  .page(HomePage.getUrl())
   .beforeEach(async (t) => {
     t.ctx.scenario = 'game-decking'
     const selfUsername = `${t.ctx.scenario}-self-${t.ctx.start}`

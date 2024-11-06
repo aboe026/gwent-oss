@@ -168,17 +168,8 @@ export default class SubscriptionResolver {
     const gameId = payload.gameReady.id
     if (userId) {
       if (payload.gameReady.players.some((player) => player.user.id === userId)) {
-        const notReadyPlayers = payload.gameReady.players.filter((player) => !player.ready)
-        if (notReadyPlayers.length === 0) {
-          SubscriptionResolver.logger.debug(`Publishing gameReady for game "${gameId}" to user "${userId}".`)
-          return true
-        } else {
-          SubscriptionResolver.logger.debug(
-            `Not publishing gameReady for game "${gameId}": Player(s) "${JSON.stringify(
-              notReadyPlayers.map((player) => player.user.id)
-            )}" not ready.`
-          )
-        }
+        SubscriptionResolver.logger.debug(`Publishing gameReady for game "${gameId}" to user "${userId}".`)
+        return true
       } else {
         SubscriptionResolver.logger.debug(
           `Not publishing gameReady for game "${gameId}": User "${userId}" not a player on game.`

@@ -563,7 +563,7 @@ export type GamePlayerFragmentFragment = { __typename?: 'GamePlayer', ready: boo
 export type GameReadySubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GameReadySubscription = { __typename?: 'Subscription', gameReady: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type GameReadySubscription = { __typename?: 'Subscription', gameReady: { __typename?: 'Game', id: string, status: GameStatus, players: Array<{ __typename?: 'GamePlayer', ready: boolean, user: { __typename?: 'User', id: string } }> } };
 
 export type GameSetSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
@@ -1280,10 +1280,17 @@ export type GameDeckQueryResult = Apollo.QueryResult<GameDeckQuery, GameDeckQuer
 export const GameReadyDocument = gql`
     subscription GameReady {
   gameReady {
-    ...GameFragment
+    id
+    players {
+      ready
+      user {
+        id
+      }
+    }
+    status
   }
 }
-    ${GameFragmentFragmentDoc}`;
+    `;
 
 /**
  * __useGameReadySubscription__

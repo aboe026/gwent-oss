@@ -1,5 +1,12 @@
 subscription GameReady {
   gameReady {
-    ...GameFragment
+    id
+    players {
+      ready
+      user {
+        id
+      }
+    }
+    status
   }
 }

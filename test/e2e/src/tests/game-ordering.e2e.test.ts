@@ -116,9 +116,7 @@ fixture('Game Ordering')
       ],
     }
 
-    t.ctx.game = await new ApiClient({
-      username: t.ctx.self.user.name,
-    }).addGame([t.ctx.opponent.user.name])
+    t.ctx.game = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
     await LoginPage.login({
       username: t.ctx.self.user.name,
     })
