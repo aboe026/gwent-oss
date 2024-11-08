@@ -2,11 +2,19 @@
 
 A list of things to be done in the future
 
-- in "setDeck" mutation, set order if all decks set and no lone scoiatael deck (make sure subscription published so clients get update)
+- switch sortObjectArray for GamePage verify hand to just be the DeckUnit array
+- Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - test setting order for game user is not apart of, make sure it doesn't update their game in UI
 - test going to game in UI, going to games list, doing something to game that would trigger subscription (setOrder), go back to game. is it properly updated?
   - if not, should we always reload game whenever navigate to it?
 - change setOrder mutation input from order to users
+- sub-directories for resolvers
+  - types
+  - queries
+    - put each in its own file
+  - mutations
+    - put each in its own file
+  - subscriptions
 - implement history?
 - change error log to debug for when websocket rejected due to no session? (since happens when session expires, which can happen often)
 - enter key does not create game in UI?

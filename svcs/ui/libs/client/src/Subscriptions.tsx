@@ -9,7 +9,6 @@ import {
   GameDeckDocument,
   GameDeckQuery,
   GameDocument,
-  GamePlayer,
   GameQuery,
   GamesDocument,
   GamesQuery,
@@ -122,26 +121,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
               variables,
             },
             () => ({
-              game: {
-                ...previousGame.game,
-                players: previousGame.game.players.map((player) => {
-                  const updatedPlayer = updatedGame.players.find(
-                    (updatedPlayer) => player.user.id === updatedPlayer.user.id
-                  ) as GamePlayer
-                  if (!updatedPlayer) {
-                    console.error(
-                      `Could not find updated player in response "${JSON.stringify(data)}" for player "${
-                        player.user.id
-                      }" on game "${previousGame.game.id}"`
-                    )
-                  }
-                  return {
-                    ...player,
-                    ready: updatedPlayer.ready,
-                  }
-                }),
-                status: updatedGame.status,
-              },
+              game: updatedGame as Game,
             })
           )
         }
