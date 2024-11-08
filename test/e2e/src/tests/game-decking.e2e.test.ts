@@ -7,7 +7,6 @@ import E2eUtil from '../util/e2e-util'
 import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
-import { sortObjectArray } from '@gwent/utils'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 
 interface GameDeckingTestCtx extends E2eCtx {
@@ -157,10 +156,7 @@ test('Set deck from new one without any existing', async (t) => {
       undrawn: (gameDeck.from as Deck).units.length - STARTING_HAND_SIZE,
       from: gameDeck.from,
     },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: gameDeck.hand,
   })
 })
 
@@ -214,10 +210,7 @@ test('Set deck from new one with single existing', async (t) => {
       undrawn: (gameDeck.from as Deck).units.length - STARTING_HAND_SIZE,
       from: gameDeck.from,
     },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: gameDeck.hand,
   })
 })
 
@@ -258,10 +251,7 @@ test('Set deck from existing one with single existing', async (t) => {
       undrawn: (gameDeck.from as Deck).units.length - STARTING_HAND_SIZE,
       from: gameDeck.from,
     },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: gameDeck.hand,
   })
 })
 
@@ -317,10 +307,7 @@ test('Set deck from existing one with multiple existing', async (t) => {
       undrawn: (gameDeck.from as Deck).units.length - STARTING_HAND_SIZE,
       from: gameDeck.from,
     },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: gameDeck.hand,
   })
 })
 
@@ -408,11 +395,40 @@ test('Page updates automatically with deck set via API', async (t) => {
       undrawn: deck.units.length - STARTING_HAND_SIZE,
       from: gameDeck.from,
     },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: gameDeck.hand,
   })
 })
 
-// TODO: deck not set if use API to set deck for other game
+test('Page does not update with deck set for other game via API', async (t) => {
+  const client = new ApiClient({
+    username: t.ctx.self.user.name,
+  })
+  const game2 = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent.user.name,
+    },
+    self: {
+      name: t.ctx.self.user.name,
+    },
+  })
+  const deck = await t.ctx.self.client.addDeck({
+    faction: t.ctx.nilfgaard.faction,
+    leaderName: t.ctx.nilfgaard.leader,
+    name: `${t.ctx.scenario}-deck-${Date.now()}`,
+    unitNames: t.ctx.nilfgaard.units,
+  })
+  await client.setDeck({
+    deckId: deck.id,
+    gameId: game2.id,
+  })
+  await GamePage.verify({
+    opponent: {
+      name: t.ctx.opponent.user.name,
+    },
+    self: {
+      name: t.ctx.self.user.name,
+    },
+  })
+})

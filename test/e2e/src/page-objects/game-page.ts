@@ -324,16 +324,14 @@ export default class GamePage {
     redraws?: Redraws[]
     turnOrder?: string[] | boolean
   }) {
-    const handUnitNames: string[] = []
+    let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
-      handUnitNames.push(...(hand as string[]))
-    } else {
-      handUnitNames.push(
-        ...(sortObjectArray({
-          sortProperties: ['unit.strength', 'unit.id'],
-          array: hand,
-        }).map((deckUnit) => (deckUnit as DeckUnit).unit.name) as string[])
-      )
+      handUnitNames = hand as string[]
+    } else if (hand) {
+      handUnitNames = sortObjectArray({
+        sortProperties: ['unit.strength', 'unit.id'],
+        array: hand,
+      }).map((deckUnit) => (deckUnit as DeckUnit).unit.name) as string[]
     }
     await GamePage.verifySelf({
       name: self.name,
