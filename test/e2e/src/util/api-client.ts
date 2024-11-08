@@ -4,6 +4,7 @@ import urljoin from 'url-join'
 
 import {
   Deck,
+  DeckUnit,
   Faction,
   FactionKey,
   Game,
@@ -1234,6 +1235,67 @@ export default class ApiClient {
       }
     )
     return response.setOrder
+  }
+
+  async redraw({ gameId, unitId }: { gameId: string | ObjectId; unitId: string | ObjectId }): Promise<DeckUnit> {
+    const response: any = await this._client.request(
+      gql`
+        fragment DlcFragment on Dlc {
+          created
+          id
+          image
+          key
+          name
+        }
+        mutation Redraw($game: ID!, $unit: ID!) {
+          redraw(game: $game, unit: $unit) {
+            artStyle
+            unit {
+              combats
+              created
+              deckable
+              dlc {
+                ...DlcFragment
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  ...DlcFragment
+                }
+                id
+                image
+                key
+                name
+              }
+              hero
+              id
+              images
+              name
+              quote
+              scorchMin
+              scorchScope
+              special
+              strength
+            }
+          }
+        }
+      `,
+      {
+        game: gameId.toString(),
+        unit: unitId.toString(),
+      }
+    )
+    return response.redraw
   }
 
   async ready(gameId: string | ObjectId): Promise<Game> {

@@ -1236,14 +1236,13 @@ function renderCoinToss({
 }) {
   const resultText = winFlip ? 'You will go first' : 'Your opponent will go first'
   return (
-    <div id={HTML_IDS.GameOrderCoinToss} className="game-section">
+    <div id={HTML_IDS.GameOrderCoinToss} className="game-section pointable" onClick={() => setCoinTossVisible(false)}>
       <Centered>
         <CoinToss
           duration={`${GAME_ORDER_COIN_FLIP_DURATION_SECONDS - 1}s`}
           heads={winFlip}
           size="100px"
           bounce={true}
-          onClick={() => setCoinTossVisible(false)}
           resultText={resultText}
         />
       </Centered>
@@ -1289,7 +1288,7 @@ function renderRedraw({
   return coinTossVisible ? (
     renderCoinToss({
       setCoinTossVisible,
-      winFlip: game.turn?.user.name === self.user.name,
+      winFlip: game.turn?.user.name === self.user.name, // go off of name instead of id, because id gets set to AUTH_TIMEOUT_ID when auth times out
     })
   ) : (
     <div id={HTML_IDS.GameRedrawContainer} className="game-section">

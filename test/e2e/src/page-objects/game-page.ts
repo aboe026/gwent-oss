@@ -1,13 +1,14 @@
 import { ObjectId } from 'mongodb'
 import { Selector, t } from 'testcafe'
 
-import { Deck, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, DeckUnit, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import DeckEditor from '../components/deck-editor'
 import DeckList, { DeckInfo } from '../components/deck-list'
 import E2eUtil from '../util/e2e-util'
 import GamePlayerInfo, { PlayerTurn } from '../components/game-player-info'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
 import { Leader } from '@gwent/graphql-schema/resolver-typings'
+import { sortObjectArray } from '@gwent/utils'
 
 const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)
 const existingGameContainer = Selector(`#${HTML_IDS.GameContainer}`)
@@ -295,7 +296,7 @@ export default class GamePage {
     }
   }
 
-  static async verifyCoinToss({ won, wait = true }: { won: boolean; wait?: boolean }) {
+  static async verifyCoinToss({ won, wait = false }: { won: boolean; wait?: boolean }) {
     await t.expect(GamePage.elements.CoinTossContainer.exists).ok()
     await t.expect(GamePage.elements.CoinTossContainer.visible).ok()
     const coinTossResult = GamePage.elements.CoinTossContainer.find(`.${HTML_CLASSES.COIN_FLIP_RESULT_TEXT}`)
@@ -304,7 +305,10 @@ export default class GamePage {
     await t.expect(coinTossResult.innerText).eql(won ? 'You will go first' : 'Your opponent will go first')
     if (wait) {
       await t.wait(GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+    } else {
+      await t.click(GamePage.elements.CoinTossContainer)
     }
+    await t.expect(GamePage.elements.CoinTossContainer.exists).notOk()
   }
 
   static async verify({
@@ -316,10 +320,21 @@ export default class GamePage {
   }: {
     self: GamePlayerExpected
     opponent: GamePlayerExpected
-    hand?: string[]
+    hand?: string[] | DeckUnit[]
     redraws?: Redraws[]
     turnOrder?: string[] | boolean
   }) {
+    const handUnitNames: string[] = []
+    if (hand && typeof hand[0] === 'string') {
+      handUnitNames.push(...(hand as string[]))
+    } else {
+      handUnitNames.push(
+        ...(sortObjectArray({
+          sortProperties: ['unit.strength', 'unit.id'],
+          array: hand,
+        }).map((deckUnit) => (deckUnit as DeckUnit).unit.name) as string[])
+      )
+    }
     await GamePage.verifySelf({
       name: self.name,
       faction: self.faction,
@@ -344,7 +359,7 @@ export default class GamePage {
       turn: opponent.turn,
     })
     await GamePage.verifyHand({
-      names: hand,
+      names: handUnitNames,
     })
     await GamePage.verifyHistory()
     await GamePage.verifyCenter({

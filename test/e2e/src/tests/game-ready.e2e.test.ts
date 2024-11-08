@@ -6,23 +6,19 @@ import GamePage, { GamePlayerExpected } from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
-import { sortObjectArray } from '@gwent/utils'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
+
+interface ContextGamePlayer {
+  user: User
+  client: ApiClient
+  deck: Deck
+  gameDeck: GameDeck
+}
 
 interface GameReadyTestCtx extends E2eCtx {
   scenario: string
-  self: {
-    user: User
-    client: ApiClient
-    deck: Deck
-    gameDeck: GameDeck
-  }
-  opponent: {
-    user: User
-    client: ApiClient
-    deck: Deck
-    gameDeck: GameDeck
-  }
+  self: ContextGamePlayer
+  opponent: ContextGamePlayer
   northerRealms: {
     faction: FactionKey
     leader: string
@@ -154,451 +150,306 @@ fixture('Game Ready')
     })
   })
 
-// TODO: Can set ready after 1 card redrawn
-
-// TODO: replace redraws with API calls
-// test('Can set ready after 1 card redrawn', async (t) => {
-//   const client2 = new ApiClient({
-//     username: t.ctx.opponent,
-//   })
-//   await client2.setDeck({
-//     deckId: t.ctx.deck2.id,
-//     gameId: t.ctx.game.id,
-//   })
-//   await client2.ready(t.ctx.game.id)
-//   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//     },
-//   })
-//   await GamePage.setDeck({
-//     created: t.ctx.deck1.created,
-//     faction: t.ctx.deck1.faction,
-//     leader: t.ctx.deck1.leader,
-//     name: t.ctx.deck1.name,
-//     stats: t.ctx.deck1.stats,
-//   })
-//   const client1 = new ApiClient({
-//     username: t.ctx.username,
-//   })
-//   const gameDeck = await client1.getGameDeck(t.ctx.game.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//     redraws: [],
-//   })
-//   const unitToRedraw = gameDeck.hand[0].unit.name
-//   await GamePage.redraw(unitToRedraw)
-//   const redrawnGameDeck = await client1.getGameDeck(t.ctx.game.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: redrawnGameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//     redraws: [
-//       {
-//         from: unitToRedraw,
-//         to: redrawnGameDeck.redraws[0].to.unit.name,
-//       },
-//     ],
-//   })
-//   await GamePage.ready()
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//       discard: 0,
-//       faction: t.ctx.deck2.faction,
-//       leader: t.ctx.deck2.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck2.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: redrawnGameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-// })
-
-// test('Can set ready after 2 cards redrawn', async (t) => {
-//   const client2 = new ApiClient({
-//     username: t.ctx.opponent,
-//   })
-//   await client2.setDeck({
-//     deckId: t.ctx.deck2.id,
-//     gameId: t.ctx.game.id,
-//   })
-//   await client2.ready(t.ctx.game.id)
-//   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//     },
-//   })
-//   await GamePage.setDeck({
-//     created: t.ctx.deck1.created,
-//     faction: t.ctx.deck1.faction,
-//     leader: t.ctx.deck1.leader,
-//     name: t.ctx.deck1.name,
-//     stats: t.ctx.deck1.stats,
-//   })
-//   const client1 = new ApiClient({
-//     username: t.ctx.username,
-//   })
-//   const gameDeck = await client1.getGameDeck(t.ctx.game.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//     redraws: [],
-//   })
-//   const unitToRedraw1 = gameDeck.hand[0].unit.name
-//   await GamePage.redraw(unitToRedraw1)
-//   const redrawnGameDeck1 = await client1.getGameDeck(t.ctx.game.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: redrawnGameDeck1.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//     redraws: [
-//       {
-//         from: unitToRedraw1,
-//         to: redrawnGameDeck1.redraws[0].to.unit.name,
-//       },
-//     ],
-//   })
-//   const unitToRedraw2 = gameDeck.hand[gameDeck.hand.length - 1].unit.name
-//   await GamePage.redraw(unitToRedraw2)
-//   const redrawnGameDeck2 = await client1.getGameDeck(t.ctx.game.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: redrawnGameDeck2.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//     redraws: [
-//       {
-//         from: unitToRedraw1,
-//         to: redrawnGameDeck1.redraws[0].to.unit.name,
-//       },
-//       {
-//         from: unitToRedraw2,
-//         to: redrawnGameDeck2.redraws[1].to.unit.name,
-//       },
-//     ],
-//   })
-//   await GamePage.ready()
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//       discard: 0,
-//       faction: t.ctx.deck2.faction,
-//       leader: t.ctx.deck2.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck2.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: redrawnGameDeck2.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-// })
-
-// test('Ready before opponent shows loading message until opponent ready', async (t) => {
-//   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//     },
-//   })
-//   await GamePage.setDeck({
-//     created: t.ctx.deck1.created,
-//     faction: t.ctx.deck1.faction,
-//     leader: t.ctx.deck1.leader,
-//     name: t.ctx.deck1.name,
-//     stats: t.ctx.deck1.stats,
-//   })
-//   const client1 = new ApiClient({
-//     username: t.ctx.username,
-//   })
-//   const gameDeck = await client1.getGameDeck(t.ctx.game.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-//   await GamePage.ready()
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-//   const client2 = new ApiClient({
-//     username: t.ctx.opponent,
-//   })
-//   await client2.setDeck({
-//     deckId: t.ctx.deck2.id,
-//     gameId: t.ctx.game.id,
-//   })
-//   await client2.ready(t.ctx.game.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//       discard: 0,
-//       faction: t.ctx.deck2.faction,
-//       leader: t.ctx.deck2.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck2.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-// })
-
-// test('Ready after opponent enters playing', async (t) => {
-//   const client2 = new ApiClient({
-//     username: t.ctx.opponent,
-//   })
-//   await client2.setDeck({
-//     deckId: t.ctx.deck2.id,
-//     gameId: t.ctx.game.id,
-//   })
-//   await client2.ready(t.ctx.game.id)
-//   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//     },
-//   })
-//   await GamePage.setDeck({
-//     created: t.ctx.deck1.created,
-//     faction: t.ctx.deck1.faction,
-//     leader: t.ctx.deck1.leader,
-//     name: t.ctx.deck1.name,
-//     stats: t.ctx.deck1.stats,
-//   })
-//   const client1 = new ApiClient({
-//     username: t.ctx.username,
-//   })
-//   const gameDeck = await client1.getGameDeck(t.ctx.game.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-//   await GamePage.ready()
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//       discard: 0,
-//       faction: t.ctx.deck2.faction,
-//       leader: t.ctx.deck2.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck2.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-// })
-
-test('Page automatically updates after game ready via API before opponent ready', async (t) => {
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+test('Can set ready without redrawing any cards before opponent is ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer: GamePlayerExpected = {
-    name: t.ctx.self.user.name,
-    discard: 0,
-    faction: t.ctx.self.deck.faction,
-    leader: t.ctx.self.deck.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: t.ctx.self.deck.units.length - STARTING_HAND_SIZE,
-    from: t.ctx.self.deck,
-  }
-  const opponentPlayer: GamePlayerExpected = {
-    name: t.ctx.opponent.user.name,
-    discard: 0,
-    faction: t.ctx.opponent.deck.faction,
-    leader: t.ctx.opponent.deck.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: t.ctx.opponent.deck.units.length - STARTING_HAND_SIZE,
-    from: t.ctx.opponent.deck,
-  }
+  const selfPlayer = getGamePlayer(t.ctx.self)
+  const opponentPlayer = getGamePlayer(t.ctx.opponent)
   if (won) {
     selfPlayer.turn = PlayerTurn.Future
   } else {
     opponentPlayer.turn = PlayerTurn.Future
   }
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
   })
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: t.ctx.self.gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: t.ctx.self.gameDeck.hand,
+    redraws: [],
+  })
+  await GamePage.ready()
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: {
+      ...selfPlayer,
+      ready: true,
+    },
+    hand: t.ctx.self.gameDeck.hand,
+  })
+})
+
+test('Can set ready without redrawing any cards after opponent is ready', async (t) => {
+  const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
+  const selfPlayer = getGamePlayer(t.ctx.self)
+  const opponentPlayer = getGamePlayer(t.ctx.opponent)
+  opponentPlayer.ready = true
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Future
+  } else {
+    opponentPlayer.turn = PlayerTurn.Future
+  }
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verifyCoinToss({
+    won,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    redraws: [],
+  })
+  await GamePage.ready()
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Current
+  } else {
+    opponentPlayer.turn = PlayerTurn.Current
+  }
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: {
+      ...selfPlayer,
+      ready: true,
+    },
+    hand: t.ctx.self.gameDeck.hand,
+  })
+})
+
+test('Can set ready after redrawing once before opponent is ready', async (t) => {
+  const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
+  const selfPlayer = getGamePlayer(t.ctx.self)
+  const opponentPlayer = getGamePlayer(t.ctx.opponent)
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Future
+  } else {
+    opponentPlayer.turn = PlayerTurn.Future
+  }
+  await t.ctx.opponent.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
+  })
+  const unitToRedraw = t.ctx.self.gameDeck.hand[0].unit
+  const redraw = await t.ctx.self.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: unitToRedraw.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verifyCoinToss({
+    won,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    redraws: [
+      {
+        from: unitToRedraw.name,
+        to: redraw.unit.name,
+      },
+    ],
+  })
+  await GamePage.ready()
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: {
+      ...selfPlayer,
+      ready: true,
+    },
+    hand: t.ctx.self.gameDeck.hand,
+  })
+})
+
+test('Can set ready after redrawing once after opponent is ready', async (t) => {
+  const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
+  const selfPlayer = getGamePlayer(t.ctx.self)
+  const opponentPlayer = getGamePlayer(t.ctx.opponent)
+  opponentPlayer.ready = true
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Future
+  } else {
+    opponentPlayer.turn = PlayerTurn.Future
+  }
+  await t.ctx.opponent.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
+  })
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  const unitToRedraw = t.ctx.self.gameDeck.hand[0].unit
+  const redraw = await t.ctx.self.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: unitToRedraw.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verifyCoinToss({
+    won,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    redraws: [
+      {
+        from: unitToRedraw.name,
+        to: redraw.unit.name,
+      },
+    ],
+  })
+  await GamePage.ready()
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Current
+  } else {
+    opponentPlayer.turn = PlayerTurn.Current
+  }
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: {
+      ...selfPlayer,
+      ready: true,
+    },
+    hand: t.ctx.self.gameDeck.hand,
+  })
+})
+
+test('Can set ready after redrawing twice before opponent is ready', async (t) => {
+  const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
+  const selfPlayer = getGamePlayer(t.ctx.self)
+  const opponentPlayer = getGamePlayer(t.ctx.opponent)
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Future
+  } else {
+    opponentPlayer.turn = PlayerTurn.Future
+  }
+  await t.ctx.opponent.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
+  })
+  const unitToRedraw1 = t.ctx.self.gameDeck.hand[0].unit
+  const unitToRedraw2 = t.ctx.self.gameDeck.hand[1].unit
+  const redraw1 = await t.ctx.self.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: unitToRedraw1.id,
+  })
+  const redraw2 = await t.ctx.self.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: unitToRedraw2.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verifyCoinToss({
+    won,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    redraws: [
+      {
+        from: unitToRedraw1.name,
+        to: redraw1.unit.name,
+      },
+      {
+        from: unitToRedraw2.name,
+        to: redraw2.unit.name,
+      },
+    ],
+  })
+  await GamePage.ready()
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: {
+      ...selfPlayer,
+      ready: true,
+    },
+    hand: t.ctx.self.gameDeck.hand,
+  })
+})
+
+test('Can set ready after redrawing twice after opponent is ready', async (t) => {
+  const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
+  const selfPlayer = getGamePlayer(t.ctx.self)
+  const opponentPlayer = getGamePlayer(t.ctx.opponent)
+  opponentPlayer.ready = true
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Future
+  } else {
+    opponentPlayer.turn = PlayerTurn.Future
+  }
+  await t.ctx.opponent.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
+  })
+  await t.ctx.opponent.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: t.ctx.opponent.gameDeck.hand[1].unit.id,
+  })
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  const unitToRedraw1 = t.ctx.self.gameDeck.hand[0].unit
+  const unitToRedraw2 = t.ctx.self.gameDeck.hand[1].unit
+  const redraw1 = await t.ctx.self.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: unitToRedraw1.id,
+  })
+  const redraw2 = await t.ctx.self.client.redraw({
+    gameId: t.ctx.game.id,
+    unitId: unitToRedraw2.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verifyCoinToss({
+    won,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    redraws: [
+      {
+        from: unitToRedraw1.name,
+        to: redraw1.unit.name,
+      },
+      {
+        from: unitToRedraw2.name,
+        to: redraw2.unit.name,
+      },
+    ],
+  })
+  await GamePage.ready()
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Current
+  } else {
+    opponentPlayer.turn = PlayerTurn.Current
+  }
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: {
+      ...selfPlayer,
+      ready: true,
+    },
+    hand: t.ctx.self.gameDeck.hand,
+  })
+})
+
+test('Page automatically updates after game ready via API before opponent ready', async (t) => {
+  const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
+  const selfPlayer = getGamePlayer(t.ctx.self)
+  const opponentPlayer = getGamePlayer(t.ctx.opponent)
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Future
+  } else {
+    opponentPlayer.turn = PlayerTurn.Future
+  }
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verifyCoinToss({
+    won,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
     redraws: [],
   })
   await t.ctx.self.client.ready(t.ctx.game.id)
@@ -608,103 +459,92 @@ test('Page automatically updates after game ready via API before opponent ready'
       ...selfPlayer,
       ready: true,
     },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: t.ctx.self.gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: t.ctx.self.gameDeck.hand,
   })
 })
 
-// test('Game not marked as ready if use API to mark other game as ready', async (t) => {
-//   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//     },
-//   })
-//   await GamePage.setDeck({
-//     created: t.ctx.deck1.created,
-//     faction: t.ctx.deck1.faction,
-//     leader: t.ctx.deck1.leader,
-//     name: t.ctx.deck1.name,
-//     stats: t.ctx.deck1.stats,
-//   })
-//   const client1 = new ApiClient({
-//     username: t.ctx.username,
-//   })
-//   const game2 = await client1.addGame([t.ctx.opponent])
-//   await client1.setDeck({
-//     deckId: t.ctx.deck1.id,
-//     gameId: game2.id,
-//   })
-//   await client1.ready(game2.id)
-//   const gameDeck = await client1.getGameDeck(t.ctx.game.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-//   await GamePage.ready()
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-//   const client2 = new ApiClient({
-//     username: t.ctx.opponent,
-//   })
-//   await client2.setDeck({
-//     deckId: t.ctx.deck2.id,
-//     gameId: game2.id,
-//   })
-//   await client2.ready(game2.id)
-//   await GamePage.verify({
-//     opponent: {
-//       name: t.ctx.opponent,
-//     },
-//     self: {
-//       name: t.ctx.username,
-//       discard: 0,
-//       faction: t.ctx.deck1.faction,
-//       leader: t.ctx.deck1.leader,
-//       hand: STARTING_HAND_SIZE,
-//       undrawn: t.ctx.deck1.units.length - STARTING_HAND_SIZE,
-//       ready: true,
-//       from: gameDeck.from,
-//     },
-//     hand: sortObjectArray({
-//       sortProperties: ['unit.strength', 'unit.id'],
-//       array: gameDeck.hand,
-//     }).map((deckUnit) => deckUnit.unit.name),
-//   })
-// })
+test('Page automatically updates after game ready via API after opponent ready', async (t) => {
+  const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
+  const selfPlayer = getGamePlayer(t.ctx.self)
+  const opponentPlayer = getGamePlayer(t.ctx.opponent)
+  opponentPlayer.ready = true
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Future
+  } else {
+    opponentPlayer.turn = PlayerTurn.Future
+  }
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verifyCoinToss({
+    won,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    redraws: [],
+  })
+  await t.ctx.self.client.ready(t.ctx.game.id)
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Current
+  } else {
+    opponentPlayer.turn = PlayerTurn.Current
+  }
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: {
+      ...selfPlayer,
+      ready: true,
+    },
+    hand: t.ctx.self.gameDeck.hand,
+  })
+})
+
+test('Game not marked as ready if use API to mark other game as ready', async (t) => {
+  const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
+  const selfPlayer = getGamePlayer(t.ctx.self)
+  const opponentPlayer = getGamePlayer(t.ctx.opponent)
+  if (won) {
+    selfPlayer.turn = PlayerTurn.Future
+  } else {
+    opponentPlayer.turn = PlayerTurn.Future
+  }
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verifyCoinToss({
+    won,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    redraws: [],
+  })
+  const game2 = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
+  await t.ctx.self.client.setDeck({
+    deckId: t.ctx.self.deck.id,
+    gameId: game2.id,
+  })
+  await t.ctx.opponent.client.setDeck({
+    deckId: t.ctx.opponent.deck.id,
+    gameId: game2.id,
+  })
+  await t.ctx.self.client.ready(game2.id)
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    redraws: [],
+  })
+})
+
+function getGamePlayer(player: ContextGamePlayer): GamePlayerExpected {
+  return {
+    name: player.user.name,
+    discard: 0,
+    faction: player.deck.faction,
+    leader: player.deck.leader,
+    hand: STARTING_HAND_SIZE,
+    undrawn: player.deck.units.length - STARTING_HAND_SIZE,
+    from: player.deck,
+  }
+}

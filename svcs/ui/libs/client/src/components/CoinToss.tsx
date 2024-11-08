@@ -13,7 +13,6 @@ export default function CoinToss({
   duration = '4s',
   size = '100%',
   style,
-  onClick,
   resultText,
 }: CoinTossProps) {
   const headsColor = '#e9a018'
@@ -36,11 +35,9 @@ export default function CoinToss({
               animationDuration: duration,
               height: size,
               width: size,
-              cursor: onClick ? 'pointer' : 'inherit',
             },
             ...style,
           }}
-          onClick={() => (onClick ? onClick() : {})}
         >
           <div
             className="coin-flip-side coin-flip-placeholder"
@@ -75,6 +72,5 @@ interface CoinTossProps {
   duration?: string
   size?: string
   style?: React.CSSProperties
-  onClick?: () => void
   resultText?: string
 }
