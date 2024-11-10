@@ -241,6 +241,13 @@ export enum GameStatus {
   Redrawing = 'REDRAWING'
 }
 
+export type GameUnitRedrawn = {
+  __typename?: 'GameUnitRedrawn';
+  from: DeckUnit;
+  game: Game;
+  to: DeckUnit;
+};
+
 export type Leader = {
   __typename?: 'Leader';
   ability: Scalars['String']['output'];
@@ -410,6 +417,8 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
+  /** A unit was redrawn for a game deck the user owns. */
+  unitRedrawn: GameUnitRedrawn;
 };
 
 export type Unit = {

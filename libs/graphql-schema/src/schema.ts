@@ -283,6 +283,12 @@ export default gql`
     game: Game!
   }
 
+  type GameUnitRedrawn {
+    from: DeckUnit!
+    game: Game!
+    to: DeckUnit!
+  }
+
   input DeckUnitInput {
     "For units with multiple art styles, the art style to use (1-based indexing)."
     artStyle: Int = 1
@@ -368,5 +374,7 @@ export default gql`
     gameSet: Game!
     "The order has been set for a game the user is a player on."
     orderSet: Game!
+    "A unit was redrawn for a game deck the user owns."
+    unitRedrawn: GameUnitRedrawn!
   }
 `

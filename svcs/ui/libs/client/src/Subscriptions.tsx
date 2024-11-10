@@ -4,6 +4,7 @@ import addToCacheList from './util/add-to-cache-list'
 import {
   DecksDocument,
   DecksQuery,
+  DeckUnit,
   Game,
   GameDeck,
   GameDeckDocument,
@@ -18,6 +19,7 @@ import {
   useGameReadySubscription,
   useGameSetSubscription,
   useOrderSetSubscription,
+  useUnitRedrawnSubscription,
 } from '@gwent/graphql-schema/apollo-typings'
 import { useUserContext } from './App'
 
@@ -34,22 +36,25 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useDeckAddedSubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const previousDecks = client.cache.readQuery<DecksQuery>({ query: DecksDocument })
-      if (previousDecks) {
-        // only update cache if the query has already been run (there is something in the cache)
-        // otherwise when navigating to decks, it will not fire the query, so would only show the
-        // new created deck, and not all decks for the user
-        client.cache.updateQuery<DecksQuery>(
-          {
-            query: DecksDocument,
-          },
-          (previous) => ({
-            decks: addToCacheList({
-              add: data.data?.deckAdded,
-              previous: previous?.decks,
-            }),
-          })
-        )
+      const newDeck = data.data?.deckAdded
+      if (newDeck) {
+        const previousDecks = client.cache.readQuery<DecksQuery>({ query: DecksDocument })
+        if (previousDecks) {
+          // only update cache if the query has already been run (there is something in the cache)
+          // otherwise when navigating to decks, it will not fire the query, so would only show the
+          // new created deck, and not all decks for the user
+          client.cache.updateQuery<DecksQuery>(
+            {
+              query: DecksDocument,
+            },
+            (previous) => ({
+              decks: addToCacheList({
+                add: data.data?.deckAdded,
+                previous: previous?.decks,
+              }),
+            })
+          )
+        }
       }
     },
   })
@@ -58,10 +63,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     onData: ({ data, client }) => {
       const updatedGameDeck = data.data?.deckSet.deck
       const updatedGame = data.data?.deckSet.game
-      const variables = {
-        game: updatedGame?.id,
-      }
-      if (updatedGameDeck) {
+      if (updatedGameDeck && updatedGame) {
+        const variables = {
+          game: updatedGame.id,
+        }
         const previousGameDeck = client.cache.readQuery<GameDeckQuery>({
           query: GameDeckDocument,
           variables,
@@ -106,10 +111,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     skip: !user,
     onData: ({ data, client }) => {
       const updatedGame = data.data?.gameReady
-      const variables = {
-        id: updatedGame?.id,
-      }
       if (updatedGame) {
+        const variables = {
+          id: updatedGame.id,
+        }
         const previousGame = client.cache.readQuery<GameQuery>({
           query: GameDocument,
           variables,
@@ -132,10 +137,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     skip: !user,
     onData: ({ data, client }) => {
       const updatedGame = data.data?.gameSet
-      const variables = {
-        id: updatedGame?.id,
-      }
       if (updatedGame) {
+        const variables = {
+          id: updatedGame.id,
+        }
         const previousGame = client.cache.readQuery<GameQuery>({
           query: GameDocument,
           variables,
@@ -158,10 +163,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     skip: !user,
     onData: ({ data, client }) => {
       const updatedGame = data.data?.orderSet
-      const variables = {
-        id: updatedGame?.id,
-      }
       if (updatedGame) {
+        const variables = {
+          id: updatedGame.id,
+        }
         const previousGame = client.cache.readQuery<GameQuery>({
           query: GameDocument,
           variables,
@@ -174,6 +179,57 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             },
             () => ({
               game: updatedGame as Game,
+            })
+          )
+        }
+      }
+    },
+  })
+  useUnitRedrawnSubscription({
+    skip: !user,
+    onData: ({ data, client }) => {
+      const from = data.data?.unitRedrawn.from as DeckUnit
+      const to = data.data?.unitRedrawn.to as DeckUnit
+      const game = data.data?.unitRedrawn.game
+      if (from && to && game) {
+        const variables = {
+          game: game.id,
+        }
+        const previousGameDeck = client.cache.readQuery<GameDeckQuery>({
+          query: GameDeckDocument,
+          variables,
+        })?.gameDeck as GameDeck | undefined
+        if (previousGameDeck) {
+          client.cache.updateQuery<GameDeckQuery>(
+            {
+              query: GameDeckDocument,
+              variables,
+            },
+            (previous) => ({
+              gameDeck: {
+                ...previous?.gameDeck,
+                hand: [
+                  ...(previous?.gameDeck?.hand || []).filter(
+                    (deckUnit) => deckUnit.unit.id !== from?.unit.id && deckUnit.unit.id !== to.unit.id
+                  ),
+                  to,
+                ],
+                undrawn: [
+                  ...(previous?.gameDeck?.undrawn || []).filter(
+                    (deckUnit) => deckUnit.unit.id !== to?.unit.id && deckUnit.unit.id !== from.unit.id
+                  ),
+                  from,
+                ],
+                redraws: [
+                  ...(previous?.gameDeck?.redraws || []).filter(
+                    (deckUnit) => deckUnit.from.unit.id !== from.unit.id && deckUnit.to.unit.id !== to.unit.id
+                  ),
+                  {
+                    from,
+                    to,
+                  },
+                ],
+              } as GameDeck,
             })
           )
         }

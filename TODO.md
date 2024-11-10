@@ -2,6 +2,7 @@
 
 A list of things to be done in the future
 
+- replace cache.writeQuery with cache.updateQuery and use (previous) to avoid race conditions
 - switch sortObjectArray for GamePage verify hand to just be the DeckUnit array
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - test setting order for game user is not apart of, make sure it doesn't update their game in UI
@@ -45,6 +46,7 @@ A list of things to be done in the future
 - Have "DateTime" on resolver object map to javascript Date object?
 - add Error to returns types for all queries/mutations?
 - Make Combat a type (because of image)
+- If ever want to increase MAX_REDRAWS to greater than 2, need to have different unique constraint than just from/to id. Probably need an id for the redraw object itself.
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?

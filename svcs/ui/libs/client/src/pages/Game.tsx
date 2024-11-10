@@ -31,7 +31,6 @@ import {
   Game,
   GameDeck,
   GameDeckQuery,
-  Redraw,
   GameStatus,
   useReadyMutation,
   ReadyMutation,
@@ -197,36 +196,41 @@ export default function GamePage() {
           query: GameDeckDocument,
           variables: gameDeckQueryVariables,
         })
-        if (previousGameDeck?.gameDeck) {
-          const newRedraws: Redraw[] = [
-            ...(previousGameDeck.gameDeck.redraws as Redraw[]),
+        if (previousGameDeck?.gameDeck && cardSelected) {
+          cache.updateQuery<GameDeckQuery>(
             {
-              from: cardSelected as DeckUnit,
-              to: data.redraw as DeckUnit,
+              query: GameDeckDocument,
+              variables: gameDeckQueryVariables,
             },
-          ]
-          cache.writeQuery({
-            query: GameDeckDocument,
-            variables: gameDeckQueryVariables,
-            data: {
+            (previous) => ({
               gameDeck: {
-                ...previousGameDeck.gameDeck,
+                ...previous?.gameDeck,
                 hand: [
-                  ...previousGameDeck.gameDeck?.hand.filter((deckUnit) => deckUnit.unit.id !== cardSelected?.unit.id),
+                  ...(previous?.gameDeck?.hand || []).filter(
+                    (deckUnit) => deckUnit.unit.id !== cardSelected.unit.id && deckUnit.unit.id !== data.redraw.unit.id
+                  ),
                   data.redraw,
                 ],
                 undrawn: [
-                  ...previousGameDeck.gameDeck.undrawn.filter((deckUnit) => deckUnit.unit.id !== data.redraw.unit.id),
+                  ...(previous?.gameDeck?.undrawn || []).filter(
+                    (deckUnit) => deckUnit.unit.id !== data.redraw.unit.id && deckUnit.unit.id !== cardSelected.unit.id
+                  ),
                   cardSelected,
                 ],
-                redraws: newRedraws,
-              },
-            },
-          })
+                redraws: [
+                  ...(previous?.gameDeck?.redraws || []).filter(
+                    (prevRedraw) =>
+                      prevRedraw.from.unit.id !== cardSelected.unit.id && prevRedraw.to.unit.id !== data.redraw.unit.id
+                  ),
+                  {
+                    from: cardSelected,
+                    to: data.redraw,
+                  },
+                ],
+              } as GameDeck,
+            })
+          )
           setCardSelected(undefined)
-          if (newRedraws.length >= MAX_REDRAWS) {
-            gameRefetch(gameQueryVariables)
-          }
         }
       }
     },

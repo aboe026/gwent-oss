@@ -2,11 +2,11 @@ import ApiClient from '../util/api-client'
 import { Deck, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
-import GamePage, { GamePlayerExpected } from '../page-objects/game-page'
+import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
+import { E2eHelper } from '../util/e2e-helper'
 
 interface ContextGamePlayer {
   user: User
@@ -152,13 +152,14 @@ fixture('Game Ready')
 
 test('Can set ready without redrawing any cards before opponent is ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer = getGamePlayer(t.ctx.self)
-  const opponentPlayer = getGamePlayer(t.ctx.opponent)
-  if (won) {
-    selfPlayer.turn = PlayerTurn.Future
-  } else {
-    opponentPlayer.turn = PlayerTurn.Future
-  }
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: won ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    turn: won ? undefined : PlayerTurn.Future,
+  })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -182,14 +183,15 @@ test('Can set ready without redrawing any cards before opponent is ready', async
 
 test('Can set ready without redrawing any cards after opponent is ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer = getGamePlayer(t.ctx.self)
-  const opponentPlayer = getGamePlayer(t.ctx.opponent)
-  opponentPlayer.ready = true
-  if (won) {
-    selfPlayer.turn = PlayerTurn.Future
-  } else {
-    opponentPlayer.turn = PlayerTurn.Future
-  }
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: won ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    turn: won ? undefined : PlayerTurn.Future,
+    ready: true,
+  })
   await t.ctx.opponent.client.ready(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
@@ -219,13 +221,14 @@ test('Can set ready without redrawing any cards after opponent is ready', async 
 
 test('Can set ready after redrawing once before opponent is ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer = getGamePlayer(t.ctx.self)
-  const opponentPlayer = getGamePlayer(t.ctx.opponent)
-  if (won) {
-    selfPlayer.turn = PlayerTurn.Future
-  } else {
-    opponentPlayer.turn = PlayerTurn.Future
-  }
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: won ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    turn: won ? undefined : PlayerTurn.Future,
+  })
   await t.ctx.opponent.client.redraw({
     gameId: t.ctx.game.id,
     unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
@@ -264,14 +267,15 @@ test('Can set ready after redrawing once before opponent is ready', async (t) =>
 
 test('Can set ready after redrawing once after opponent is ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer = getGamePlayer(t.ctx.self)
-  const opponentPlayer = getGamePlayer(t.ctx.opponent)
-  opponentPlayer.ready = true
-  if (won) {
-    selfPlayer.turn = PlayerTurn.Future
-  } else {
-    opponentPlayer.turn = PlayerTurn.Future
-  }
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: won ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    turn: won ? undefined : PlayerTurn.Future,
+    ready: true,
+  })
   await t.ctx.opponent.client.redraw({
     gameId: t.ctx.game.id,
     unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
@@ -316,13 +320,14 @@ test('Can set ready after redrawing once after opponent is ready', async (t) => 
 
 test('Can set ready after redrawing twice before opponent is ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer = getGamePlayer(t.ctx.self)
-  const opponentPlayer = getGamePlayer(t.ctx.opponent)
-  if (won) {
-    selfPlayer.turn = PlayerTurn.Future
-  } else {
-    opponentPlayer.turn = PlayerTurn.Future
-  }
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: won ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    turn: won ? undefined : PlayerTurn.Future,
+  })
   await t.ctx.opponent.client.redraw({
     gameId: t.ctx.game.id,
     unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
@@ -370,14 +375,15 @@ test('Can set ready after redrawing twice before opponent is ready', async (t) =
 
 test('Can set ready after redrawing twice after opponent is ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer = getGamePlayer(t.ctx.self)
-  const opponentPlayer = getGamePlayer(t.ctx.opponent)
-  opponentPlayer.ready = true
-  if (won) {
-    selfPlayer.turn = PlayerTurn.Future
-  } else {
-    opponentPlayer.turn = PlayerTurn.Future
-  }
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: won ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    turn: won ? undefined : PlayerTurn.Future,
+    ready: true,
+  })
   await t.ctx.opponent.client.redraw({
     gameId: t.ctx.game.id,
     unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
@@ -435,13 +441,14 @@ test('Can set ready after redrawing twice after opponent is ready', async (t) =>
 
 test('Page automatically updates after game ready via API before opponent ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer = getGamePlayer(t.ctx.self)
-  const opponentPlayer = getGamePlayer(t.ctx.opponent)
-  if (won) {
-    selfPlayer.turn = PlayerTurn.Future
-  } else {
-    opponentPlayer.turn = PlayerTurn.Future
-  }
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: won ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    turn: won ? undefined : PlayerTurn.Future,
+  })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -465,14 +472,15 @@ test('Page automatically updates after game ready via API before opponent ready'
 
 test('Page automatically updates after game ready via API after opponent ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer = getGamePlayer(t.ctx.self)
-  const opponentPlayer = getGamePlayer(t.ctx.opponent)
-  opponentPlayer.ready = true
-  if (won) {
-    selfPlayer.turn = PlayerTurn.Future
-  } else {
-    opponentPlayer.turn = PlayerTurn.Future
-  }
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: won ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    turn: won ? undefined : PlayerTurn.Future,
+    ready: true,
+  })
   await t.ctx.opponent.client.ready(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
@@ -502,13 +510,14 @@ test('Page automatically updates after game ready via API after opponent ready',
 
 test('Game not marked as ready if use API to mark other game as ready', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
-  const selfPlayer = getGamePlayer(t.ctx.self)
-  const opponentPlayer = getGamePlayer(t.ctx.opponent)
-  if (won) {
-    selfPlayer.turn = PlayerTurn.Future
-  } else {
-    opponentPlayer.turn = PlayerTurn.Future
-  }
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: won ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    turn: won ? undefined : PlayerTurn.Future,
+  })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -536,15 +545,3 @@ test('Game not marked as ready if use API to mark other game as ready', async (t
     redraws: [],
   })
 })
-
-function getGamePlayer(player: ContextGamePlayer): GamePlayerExpected {
-  return {
-    name: player.user.name,
-    discard: 0,
-    faction: player.deck.faction,
-    leader: player.deck.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: player.deck.units.length - STARTING_HAND_SIZE,
-    from: player.deck,
-  }
-}

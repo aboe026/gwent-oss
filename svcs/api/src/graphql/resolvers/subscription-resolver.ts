@@ -1,7 +1,8 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 import { withFilter } from 'graphql-subscriptions'
 
-import { Deck, Game, GameDeck, SubscriptionResolvers } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, DeckUnit, Game, GameDeck, SubscriptionResolvers } from '@gwent/graphql-schema/resolver-typings'
 import EventManager from './event-manager'
 import { PubSubEvents } from '@gwent/constants'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
@@ -54,6 +55,12 @@ export default class SubscriptionResolver {
         subscribe: withFilter(
           () => EventManager.pubsub.asyncIterator([PubSubEvents.OrderSet]),
           async (payload, args, ctx) => SubscriptionResolver.filterOrderSet(payload, ctx)
+        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      },
+      unitRedrawn: {
+        subscribe: withFilter(
+          () => EventManager.pubsub.asyncIterator([PubSubEvents.UnitRedrawn]),
+          async (payload, args, ctx) => SubscriptionResolver.filterUnitRedrawn(payload, ctx)
         ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       },
     }
@@ -234,6 +241,44 @@ export default class SubscriptionResolver {
     }
     return false
   }
+
+  private static filterUnitRedrawn(payload: UnitRedrawnPayload, ctx: SubscriptionContext): boolean {
+    if (SubscriptionResolver.logger.isTraceEnabled()) {
+      SubscriptionResolver.logger.trace(`unitRedrawn payload: "${JSON.stringify(payload)}"`)
+      SubscriptionResolver.logger.trace(`unitRedrawn ctx: "${JSON.stringify(ctx)}"`)
+    }
+    const userId = ctx.user?._id.toString()
+    const gameId = payload.unitRedrawn.game.id
+    const fromId = payload.unitRedrawn.from.unit.id
+    const toId = payload.unitRedrawn.to.unit.id
+    const ownerId = payload.unitRedrawn.ownerId
+    SubscriptionResolver.logger.debug(
+      `unitRedrawn userId: "${userId}", gameId: "${gameId}", fromId: "${fromId}", toId: "${toId}", ownerId: "${ownerId}"`
+    )
+    if (userId) {
+      if (payload.unitRedrawn.game.players.some((player) => player.user.id === userId)) {
+        if (userId === ownerId.toString()) {
+          SubscriptionResolver.logger.debug(
+            `Publishing unitRedrawn for unit "${fromId}" on game "${gameId}" to user "${userId}".`
+          )
+          return true
+        } else {
+          SubscriptionResolver.logger.debug(
+            `Not publishing unitRedrawn for unit "${fromId}" on game "${gameId}": User "${userId}" is not deck owner "${ownerId}".`
+          )
+        }
+      } else {
+        SubscriptionResolver.logger.debug(
+          `Not publishing unitRedrawn for unit "${fromId}" on game "${gameId}": User "${userId}" not a player on game.`
+        )
+      }
+    } else {
+      SubscriptionResolver.logger.debug(
+        `Not publishing unitRedrawn for unit "${fromId}" on game "${gameId}": No user on context.`
+      )
+    }
+    return false
+  }
 }
 
 export interface SubscriptionContext {
@@ -265,4 +310,13 @@ export interface GameSetPayload {
 
 export interface OrderSetPayload {
   orderSet: Game
+}
+
+export interface UnitRedrawnPayload {
+  unitRedrawn: {
+    from: DeckUnit
+    game: Game
+    to: DeckUnit
+    ownerId: ObjectId | string
+  }
 }

@@ -244,6 +244,13 @@ export enum GameStatus {
   Redrawing = 'REDRAWING'
 }
 
+export type GameUnitRedrawn = {
+  __typename?: 'GameUnitRedrawn';
+  from: DeckUnit;
+  game: Game;
+  to: DeckUnit;
+};
+
 export type Leader = {
   __typename?: 'Leader';
   ability: Scalars['String']['output'];
@@ -413,6 +420,8 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
+  /** A unit was redrawn for a game deck the user owns. */
+  unitRedrawn: GameUnitRedrawn;
 };
 
 export type Unit = {
@@ -630,6 +639,11 @@ export type SetOrderMutationVariables = Exact<{
 
 
 export type SetOrderMutation = { __typename?: 'Mutation', setOrder: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type UnitRedrawnSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UnitRedrawnSubscription = { __typename?: 'Subscription', unitRedrawn: { __typename?: 'GameUnitRedrawn', from: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }, game: { __typename?: 'Game', id: string }, to: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } } } };
 
 export type UnitsQueryVariables = Exact<{
   deckable?: InputMaybe<Scalars['Boolean']['input']>;
@@ -1652,6 +1666,43 @@ export function useSetOrderMutation(baseOptions?: Apollo.MutationHookOptions<Set
 export type SetOrderMutationHookResult = ReturnType<typeof useSetOrderMutation>;
 export type SetOrderMutationResult = Apollo.MutationResult<SetOrderMutation>;
 export type SetOrderMutationOptions = Apollo.BaseMutationOptions<SetOrderMutation, SetOrderMutationVariables>;
+export const UnitRedrawnDocument = gql`
+    subscription UnitRedrawn {
+  unitRedrawn {
+    from {
+      ...DeckUnitFragment
+    }
+    game {
+      id
+    }
+    to {
+      ...DeckUnitFragment
+    }
+  }
+}
+    ${DeckUnitFragmentFragmentDoc}`;
+
+/**
+ * __useUnitRedrawnSubscription__
+ *
+ * To run a query within a React component, call `useUnitRedrawnSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useUnitRedrawnSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUnitRedrawnSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useUnitRedrawnSubscription(baseOptions?: Apollo.SubscriptionHookOptions<UnitRedrawnSubscription, UnitRedrawnSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<UnitRedrawnSubscription, UnitRedrawnSubscriptionVariables>(UnitRedrawnDocument, options);
+      }
+export type UnitRedrawnSubscriptionHookResult = ReturnType<typeof useUnitRedrawnSubscription>;
+export type UnitRedrawnSubscriptionResult = Apollo.SubscriptionResult<UnitRedrawnSubscription>;
 export const UnitsDocument = gql`
     query Units($deckable: Boolean, $factions: [FactionKey!]) {
   units(deckable: $deckable, factions: $factions) {

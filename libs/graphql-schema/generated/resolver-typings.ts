@@ -243,6 +243,13 @@ export enum GameStatus {
   Redrawing = 'REDRAWING'
 }
 
+export type GameUnitRedrawn = {
+  __typename?: 'GameUnitRedrawn';
+  from: DeckUnit;
+  game: Game;
+  to: DeckUnit;
+};
+
 export type Leader = {
   __typename?: 'Leader';
   ability: Scalars['String']['output'];
@@ -412,6 +419,8 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
+  /** A unit was redrawn for a game deck the user owns. */
+  unitRedrawn: GameUnitRedrawn;
 };
 
 export type Unit = {
@@ -561,6 +570,7 @@ export type ResolversTypes = {
   GamePlayerUnitCounts: ResolverTypeWrapper<GamePlayerUnitCounts>;
   GameRound: ResolverTypeWrapper<GameRound>;
   GameStatus: GameStatus;
+  GameUnitRedrawn: ResolverTypeWrapper<GameUnitRedrawn>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Leader: ResolverTypeWrapper<Leader>;
@@ -598,6 +608,7 @@ export type ResolversParentTypes = {
   GamePlayerInput: GamePlayerInput;
   GamePlayerUnitCounts: GamePlayerUnitCounts;
   GameRound: GameRound;
+  GameUnitRedrawn: GameUnitRedrawn;
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   Leader: Leader;
@@ -725,6 +736,13 @@ export type GameRoundResolvers<ContextType = any, ParentType extends ResolversPa
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type GameUnitRedrawnResolvers<ContextType = any, ParentType extends ResolversParentTypes['GameUnitRedrawn'] = ResolversParentTypes['GameUnitRedrawn']> = {
+  from?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
+  game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
+  to?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type LeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['Leader'] = ResolversParentTypes['Leader']> = {
   ability?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -793,6 +811,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   gameReady?: SubscriptionResolver<ResolversTypes['Game'], "gameReady", ParentType, ContextType>;
   gameSet?: SubscriptionResolver<ResolversTypes['Game'], "gameSet", ParentType, ContextType>;
   orderSet?: SubscriptionResolver<ResolversTypes['Game'], "orderSet", ParentType, ContextType>;
+  unitRedrawn?: SubscriptionResolver<ResolversTypes['GameUnitRedrawn'], "unitRedrawn", ParentType, ContextType>;
 };
 
 export type UnitResolvers<ContextType = any, ParentType extends ResolversParentTypes['Unit'] = ResolversParentTypes['Unit']> = {
@@ -862,6 +881,7 @@ export type Resolvers<ContextType = any> = {
   GamePlayer?: GamePlayerResolvers<ContextType>;
   GamePlayerUnitCounts?: GamePlayerUnitCountsResolvers<ContextType>;
   GameRound?: GameRoundResolvers<ContextType>;
+  GameUnitRedrawn?: GameUnitRedrawnResolvers<ContextType>;
   Leader?: LeaderResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   PlayerRound?: PlayerRoundResolvers<ContextType>;

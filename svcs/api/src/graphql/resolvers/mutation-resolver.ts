@@ -547,10 +547,37 @@ export default class MutationResolver {
           MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
-        return DeckUnitResolver.fromObject({
+        const resolvedTo = await DeckUnitResolver.fromObject({
           deckUnit: newCard,
           neutralStats: RequestedFields.getArgument(info, 'redraw.unit.faction.stats.neutrals'),
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} resolvedTo: "${JSON.stringify(resolvedTo)}"`)
+        }
+
+        const resolvedGame = await GameResolver.fromObject({
+          game: updatedGame,
+        })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)
+        }
+        const resolvedFrom = await DeckUnitResolver.fromObject({
+          deckUnit: cardToRedraw,
+        })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} resolvedFrom: "${JSON.stringify(resolvedFrom)}"`)
+        }
+
+        EventManager.pubsub.publish(PubSubEvents.UnitRedrawn, {
+          unitRedrawn: {
+            from: resolvedFrom,
+            game: resolvedGame,
+            to: resolvedTo,
+            ownerId: userId,
+          },
+        })
+
+        return resolvedTo
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       setDeck: async (parent, args, context, info) => {
@@ -654,6 +681,9 @@ export default class MutationResolver {
         const resolvedGame = await GameResolver.fromObject({
           game: updatedGame,
         })
+        if (MutationResolver.logger.isTraceEnabled()) {
+          MutationResolver.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)
+        }
 
         EventManager.pubsub.publish(PubSubEvents.DeckSet, {
           deckSet: {
