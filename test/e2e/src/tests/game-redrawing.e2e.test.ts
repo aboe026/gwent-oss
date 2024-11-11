@@ -532,7 +532,7 @@ test('Page automatically updates after second redraw via API', async (t) => {
   })
 })
 
-test.only('Page not updated if use API to redraw from other game', async (t) => {
+test('Page not updated if use API to redraw from other game', async (t) => {
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,

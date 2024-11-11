@@ -5,13 +5,13 @@ import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
-import E2eUtil from '../util/e2e-util'
 import env from '../util/env'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
-import GamePage from '../page-objects/game-page'
+import GamePage, { GamePlayerExpected } from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
+import { PlayerTurn } from '../components/game-player-info'
 import ProfilePage from '../page-objects/profile-page'
 import SignupPage from '../page-objects/signup-page'
 import { sortObjectArray } from '@gwent/utils'
@@ -140,50 +140,26 @@ test('Speed Run', async (t) => {
     leader: leader2,
     name: deckName2,
     units: units2,
-    verify: false,
+    verifyRedirect: false,
   })
-  const gameUrl = await E2eUtil.getCurrentUrl()
-  const gameId = gameUrl.substring(gameUrl.lastIndexOf('/') + 1)
+  const gameId = await GamePage.getIdFromUrl()
   const gameDeck2 = await client2.getGameDeck(gameId)
+  const gamePlayer2: GamePlayerExpected = {
+    name: username2,
+    discard: 0,
+    faction: faction2,
+    hand: STARTING_HAND_SIZE,
+    leader: leader2,
+    losses: 0,
+    undrawn: gameDeck2.undrawn.length,
+    from: gameDeck2.from,
+  }
   await GamePage.verify({
-    self: {
-      name: username2,
-      discard: 0,
-      faction: faction2,
-      hand: STARTING_HAND_SIZE,
-      leader: leader2,
-      losses: 0,
-      undrawn: gameDeck2.undrawn.length,
-      from: gameDeck2.from,
-    },
+    self: gamePlayer2,
     opponent: {
       name: username1,
     },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck2.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
-  })
-  await GamePage.ready()
-  await GamePage.verify({
-    self: {
-      name: username2,
-      discard: 0,
-      faction: faction2,
-      hand: STARTING_HAND_SIZE,
-      leader: leader2,
-      losses: 0,
-      undrawn: gameDeck2.undrawn.length,
-      ready: true,
-      from: gameDeck2.from,
-    },
-    opponent: {
-      name: username1,
-    },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck2.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: gameDeck2.hand,
   })
 
   await Banner.goTo(Banner.elements.MenuProfile)
@@ -227,55 +203,84 @@ test('Speed Run', async (t) => {
     leader: leader1,
     name: deckName1,
     units: units1,
-    verify: false,
+    verifyRedirect: false,
   })
   const gameDeck1 = await client1.getGameDeck(gameId)
+  const updatedGame = await client1.getGame(gameId)
+  await GamePage.verifyCoinToss({
+    won: updatedGame.turn?.user.name === username1,
+  })
+  const gamePlayer1: GamePlayerExpected = {
+    name: username1,
+    discard: 0,
+    faction: faction1,
+    hand: STARTING_HAND_SIZE,
+    leader: leader1,
+    losses: 0,
+    undrawn: gameDeck1.undrawn.length,
+    from: gameDeck1.from,
+    turn: updatedGame.turn?.user.name === username1 ? PlayerTurn.Future : undefined,
+  }
+  gamePlayer2.turn = updatedGame.turn?.user.name === username2 ? PlayerTurn.Future : undefined
   await GamePage.verify({
-    self: {
-      name: username1,
-      discard: 0,
-      faction: faction1,
-      hand: STARTING_HAND_SIZE,
-      leader: leader1,
-      losses: 0,
-      undrawn: gameDeck1.undrawn.length,
-      from: gameDeck1.from,
-    },
-    opponent: {
-      name: username2,
-    },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck1.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: gameDeck1.hand,
+    redraws: [],
   })
   await GamePage.ready()
+  gamePlayer1.ready = true
   await GamePage.verify({
-    self: {
-      name: username1,
-      discard: 0,
-      faction: faction1,
-      hand: STARTING_HAND_SIZE,
-      leader: leader1,
-      losses: 0,
-      undrawn: gameDeck1.undrawn.length,
-      ready: true,
-      from: gameDeck1.from,
-    },
-    opponent: {
-      name: username2,
-      discard: 0,
-      faction: faction2,
-      hand: STARTING_HAND_SIZE,
-      leader: leader2,
-      losses: 0,
-      undrawn: gameDeck2.undrawn.length,
-      ready: true,
-    },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck1.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: gameDeck1.hand,
+    redraws: [],
+  })
+
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username1,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+
+  await LoginPage.login({
+    username: username2,
+  })
+  await Banner.verify(username2)
+  await HomePage.verify(username2)
+
+  await HomePage.goTo(HomePage.elements.ViewGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Redrawing,
+        factions: ['Nilfgaardian Empire', 'Skellige'],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  await GamePage.verifyCoinToss({
+    won: updatedGame.turn?.user.name === username2,
+  })
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: gameDeck2.hand,
+    redraws: [],
+  })
+  await GamePage.ready()
+  gamePlayer2.ready = true
+  gamePlayer2.turn = updatedGame.turn?.user.name === username2 ? PlayerTurn.Current : undefined
+  gamePlayer1.turn = updatedGame.turn?.user.name === username1 ? PlayerTurn.Current : undefined
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: gameDeck2.hand,
+    redraws: [],
   })
 })
 
@@ -402,8 +407,7 @@ test('Scenic Route', async (t) => {
     name: deck2.name,
     stats: deck2.stats,
   })
-  const gameUrl = await E2eUtil.getCurrentUrl()
-  const gameId = gameUrl.substring(gameUrl.lastIndexOf('/') + 1)
+  const gameId = await GamePage.getIdFromUrl()
   const gameDeck2 = await client2.getGameDeck(gameId)
   await GamePage.verify({
     self: {

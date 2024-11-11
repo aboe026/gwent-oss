@@ -88,12 +88,18 @@ export default class GamesPage {
           }
         }
         await t.expect(actualFactions).eql(game.factions || [])
-        const expectedStatus =
-          game.status === GameStatus.Decking
-            ? 'Choosing Decks'
-            : game.status === GameStatus.Done
-            ? 'Finished'
-            : 'Playing'
+        let expectedStatus = ''
+        if (game.status === GameStatus.Decking) {
+          expectedStatus = 'Choosing Decks'
+        } else if (game.status === GameStatus.Ordering) {
+          expectedStatus = 'Ordering'
+        } else if (game.status === GameStatus.Redrawing) {
+          expectedStatus = 'Redrawing'
+        } else if (game.status === GameStatus.Playing) {
+          expectedStatus = 'Playing'
+        } else {
+          expectedStatus = 'Finished'
+        }
         await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowStatus}`).innerText).eql(expectedStatus)
         const victorsCount = await gameRow.find(`.${HTML_CLASSES.GameRowVictor}`).count
         const actualVictors: string[] = []

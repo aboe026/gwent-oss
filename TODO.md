@@ -2,6 +2,7 @@
 
 A list of things to be done in the future
 
+- update games list filter to include all statuses
 - replace cache.writeQuery with cache.updateQuery and use (previous) to avoid race conditions
 - switch sortObjectArray for GamePage verify hand to just be the DeckUnit array
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
