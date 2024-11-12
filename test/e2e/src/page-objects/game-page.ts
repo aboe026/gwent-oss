@@ -257,7 +257,7 @@ export default class GamePage {
                 MAX_REDRAWS - redraws.length === 1 ? '' : 's'
               } from your hand to redraw. When satisfied with deck:`
         )
-    } else if (turnOrder) {
+    } else if (turnOrder !== undefined) {
       await GamePage.verifyOrder({
         turnOrder,
       })
@@ -412,7 +412,7 @@ export default class GamePage {
     leader,
     name,
     stats,
-    verifyCloses = true,
+    verifyCloses = false,
     additionalExistingDecks = [],
   }: {
     created: Date | string
