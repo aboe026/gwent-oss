@@ -31,6 +31,8 @@ export enum FILTER_FIELD {
   ScoiaTael = FactionKey.ScoiaTael,
   Skellige = FactionKey.Skellige,
   Decking = GameStatus.Decking,
+  Ordering = GameStatus.Ordering,
+  Redrawing = GameStatus.Redrawing,
   Playing = GameStatus.Playing,
   Done = GameStatus.Done,
 }
@@ -67,6 +69,16 @@ export const FILTERS: {
     group: FILTER_GROUP.Status,
     label: 'Decking',
     value: FILTER_FIELD.Decking,
+  },
+  ORDERING: {
+    group: FILTER_GROUP.Status,
+    label: 'Ordering',
+    value: FILTER_FIELD.Ordering,
+  },
+  REDRAWING: {
+    group: FILTER_GROUP.Status,
+    label: 'Redrawing',
+    value: FILTER_FIELD.Redrawing,
   },
   PLAYING: {
     group: FILTER_GROUP.Status,

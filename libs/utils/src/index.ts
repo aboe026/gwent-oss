@@ -1,4 +1,5 @@
 import { formatDay, formatTime } from './format-date'
+import formatGameStatus from './format-game-status'
 import getCombatImage from './get-combat-image'
 import getRandomSubset from './get-random-subset'
 import getUniqueItems from './get-unique-items'
@@ -12,6 +13,7 @@ import toTitleCase from './to-title-case'
 export {
   formatDay,
   formatTime,
+  formatGameStatus,
   getCombatImage,
   getRandomSubset,
   getUniqueItems,

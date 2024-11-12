@@ -2,7 +2,7 @@ import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
 import { FILTER_FIELD, SORT_FIELD } from '@gwent/graphql-schema/games-filter'
-import { formatDay, formatTime } from '@gwent/utils'
+import { formatDay, formatGameStatus, formatTime } from '@gwent/utils'
 import { GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 
@@ -88,19 +88,7 @@ export default class GamesPage {
           }
         }
         await t.expect(actualFactions).eql(game.factions || [])
-        let expectedStatus = ''
-        if (game.status === GameStatus.Decking) {
-          expectedStatus = 'Choosing Decks'
-        } else if (game.status === GameStatus.Ordering) {
-          expectedStatus = 'Ordering'
-        } else if (game.status === GameStatus.Redrawing) {
-          expectedStatus = 'Redrawing'
-        } else if (game.status === GameStatus.Playing) {
-          expectedStatus = 'Playing'
-        } else {
-          expectedStatus = 'Finished'
-        }
-        await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowStatus}`).innerText).eql(expectedStatus)
+        await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowStatus}`).innerText).eql(formatGameStatus(game.status))
         const victorsCount = await gameRow.find(`.${HTML_CLASSES.GameRowVictor}`).count
         const actualVictors: string[] = []
         for (let j = 0; j < victorsCount; j++) {

@@ -802,14 +802,14 @@ export default class MutationResolver {
       MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
-      const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
-      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
     if (scoiaTaelPlayers.length === 1 && (!order || order.length === 0) && !allowImplicit) {
       const message = `Cannot set order randomly as player "${scoiaTaelPlayers[0].user}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
       MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
+      const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     // TODO: func test scenario where nobody has scoiatael so anyone can set order
