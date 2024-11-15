@@ -1,13 +1,12 @@
 import ApiClient from '../util/api-client'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
 import { FactionKey, Game, User } from '@gwent/graphql-schema/resolver-typings'
-import GamePage, { GamePlayerExpected } from '../page-objects/game-page'
+import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
-import { sortObjectArray } from '@gwent/utils'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
 
 interface GameOrderingTestCtx extends E2eCtx {
   scenario: string
@@ -146,32 +145,26 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  const selfPlayer: GamePlayerExpected = {
-    name: t.ctx.self.user.name,
-    discard: 0,
-    faction: deckSelf.faction,
-    leader: deckSelf.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckSelf.units.length - STARTING_HAND_SIZE,
-    from: gameDeckSelf.from,
-  }
-  const opponentPlayer: GamePlayerExpected = {
-    name: t.ctx.opponent.user.name,
-    discard: 0,
-    faction: deckOpponent.faction,
-    leader: deckOpponent.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckOpponent.units.length - STARTING_HAND_SIZE,
-    from: gameDeckOpponent.from,
-  }
-  const hand = sortObjectArray({
-    sortProperties: ['unit.strength', 'unit.id'],
-    array: gameDeckSelf.hand,
-  }).map((deckUnit) => deckUnit.unit.name)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+  })
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
-    hand,
+    hand: gameDeckSelf.hand,
     turnOrder: [t.ctx.self.user.name, t.ctx.opponent.user.name],
   })
   await GamePage.setOrder()
@@ -184,7 +177,7 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
       ...selfPlayer,
       turn: PlayerTurn.Future,
     },
-    hand,
+    hand: gameDeckSelf.hand,
     redraws: [],
   })
 })
@@ -213,39 +206,33 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  const selfPlayer: GamePlayerExpected = {
-    name: t.ctx.self.user.name,
-    discard: 0,
-    faction: deckSelf.faction,
-    leader: deckSelf.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckSelf.units.length - STARTING_HAND_SIZE,
-    from: gameDeckSelf.from,
-  }
-  const opponentPlayer: GamePlayerExpected = {
-    name: t.ctx.opponent.user.name,
-    discard: 0,
-    faction: deckOpponent.faction,
-    leader: deckOpponent.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckOpponent.units.length - STARTING_HAND_SIZE,
-    from: gameDeckOpponent.from,
-  }
-  const hand = sortObjectArray({
-    sortProperties: ['unit.strength', 'unit.id'],
-    array: gameDeckSelf.hand,
-  }).map((deckUnit) => deckUnit.unit.name)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+  })
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
-    hand,
+    hand: gameDeckSelf.hand,
     turnOrder: [t.ctx.self.user.name, t.ctx.opponent.user.name],
   })
   await GamePage.moveTurnOrderLater(t.ctx.self.user.name)
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
-    hand,
+    hand: gameDeckSelf.hand,
     turnOrder: [t.ctx.opponent.user.name, t.ctx.self.user.name],
   })
   await GamePage.setOrder()
@@ -258,7 +245,7 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
       turn: PlayerTurn.Future,
     },
     self: selfPlayer,
-    hand,
+    hand: gameDeckSelf.hand,
     redraws: [],
   })
 })
@@ -287,32 +274,26 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  const selfPlayer: GamePlayerExpected = {
-    name: t.ctx.self.user.name,
-    discard: 0,
-    faction: deckSelf.faction,
-    leader: deckSelf.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckSelf.units.length - STARTING_HAND_SIZE,
-    from: gameDeckSelf.from,
-  }
-  const opponentPlayer: GamePlayerExpected = {
-    name: t.ctx.opponent.user.name,
-    discard: 0,
-    faction: deckOpponent.faction,
-    leader: deckOpponent.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckOpponent.units.length - STARTING_HAND_SIZE,
-    from: gameDeckOpponent.from,
-  }
-  const hand = sortObjectArray({
-    sortProperties: ['unit.strength', 'unit.id'],
-    array: gameDeckSelf.hand,
-  }).map((deckUnit) => deckUnit.unit.name)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+  })
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
-    hand,
+    hand: gameDeckSelf.hand,
     turnOrder: [],
   })
   await t.ctx.opponent.client.setOrder({
@@ -328,7 +309,7 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
       turn: PlayerTurn.Future,
     },
     self: selfPlayer,
-    hand,
+    hand: gameDeckSelf.hand,
     redraws: [],
   })
 })
@@ -357,32 +338,26 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  const selfPlayer: GamePlayerExpected = {
-    name: t.ctx.self.user.name,
-    discard: 0,
-    faction: deckSelf.faction,
-    leader: deckSelf.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckSelf.units.length - STARTING_HAND_SIZE,
-    from: gameDeckSelf.from,
-  }
-  const opponentPlayer: GamePlayerExpected = {
-    name: t.ctx.opponent.user.name,
-    discard: 0,
-    faction: deckOpponent.faction,
-    leader: deckOpponent.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckOpponent.units.length - STARTING_HAND_SIZE,
-    from: gameDeckOpponent.from,
-  }
-  const hand = sortObjectArray({
-    sortProperties: ['unit.strength', 'unit.id'],
-    array: gameDeckSelf.hand,
-  }).map((deckUnit) => deckUnit.unit.name)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+  })
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
-    hand,
+    hand: gameDeckSelf.hand,
     turnOrder: [],
   })
   await t.ctx.opponent.client.setOrder({
@@ -400,7 +375,7 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
       ...selfPlayer,
       turn: PlayerTurn.Future,
     },
-    hand,
+    hand: gameDeckSelf.hand,
     redraws: [],
   })
 })
@@ -441,28 +416,22 @@ test('Order automatically set if both are ScoiaTael', async (t) => {
   })
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
-  const selfPlayer: GamePlayerExpected = {
-    name: t.ctx.self.user.name,
-    discard: 0,
-    faction: deckSelf.faction,
-    leader: deckSelf.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckSelf.units.length - STARTING_HAND_SIZE,
-    from: gameDeckSelf.from,
-  }
-  const opponentPlayer: GamePlayerExpected = {
-    name: t.ctx.opponent.user.name,
-    discard: 0,
-    faction: deckOpponent.faction,
-    leader: deckOpponent.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckOpponent.units.length - STARTING_HAND_SIZE,
-    from: gameDeckOpponent.from,
-  }
-  const hand = sortObjectArray({
-    sortProperties: ['unit.strength', 'unit.id'],
-    array: gameDeckSelf.hand,
-  }).map((deckUnit) => deckUnit.unit.name)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+  })
   const updatedGame = await t.ctx.self.client.getGame(t.ctx.game.id)
   await t.expect(updatedGame.turn).notEql(null)
   await t.expect(updatedGame.turn).notEql(undefined)
@@ -477,7 +446,7 @@ test('Order automatically set if both are ScoiaTael', async (t) => {
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
-    hand,
+    hand: gameDeckSelf.hand,
     redraws: [],
   })
 })
@@ -518,28 +487,22 @@ test('Order automatically set if none are ScoiaTael', async (t) => {
   })
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
-  const selfPlayer: GamePlayerExpected = {
-    name: t.ctx.self.user.name,
-    discard: 0,
-    faction: deckSelf.faction,
-    leader: deckSelf.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckSelf.units.length - STARTING_HAND_SIZE,
-    from: gameDeckSelf.from,
-  }
-  const opponentPlayer: GamePlayerExpected = {
-    name: t.ctx.opponent.user.name,
-    discard: 0,
-    faction: deckOpponent.faction,
-    leader: deckOpponent.leader,
-    hand: STARTING_HAND_SIZE,
-    undrawn: deckOpponent.units.length - STARTING_HAND_SIZE,
-    from: gameDeckOpponent.from,
-  }
-  const hand = sortObjectArray({
-    sortProperties: ['unit.strength', 'unit.id'],
-    array: gameDeckSelf.hand,
-  }).map((deckUnit) => deckUnit.unit.name)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+  })
   const updatedGame = await t.ctx.self.client.getGame(t.ctx.game.id)
   await t.expect(updatedGame.turn).notEql(null)
   await t.expect(updatedGame.turn).notEql(undefined)
@@ -554,7 +517,202 @@ test('Order automatically set if none are ScoiaTael', async (t) => {
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
-    hand,
+    hand: gameDeckSelf.hand,
     redraws: [],
+  })
+})
+
+test('Page automatically updates if user with ScoiaTael deck uses API to make self go first', async (t) => {
+  const deckSelf = await t.ctx.self.client.addDeck({
+    faction: t.ctx.scoiaTael.faction,
+    leaderName: t.ctx.scoiaTael.leader,
+    name: `${t.ctx.scenario}-deck-self-${t.ctx.start}`,
+    unitNames: t.ctx.scoiaTael.units,
+  })
+  const deckOpponent = await t.ctx.opponent.client.addDeck({
+    faction: t.ctx.nilfgaard.faction,
+    leaderName: t.ctx.nilfgaard.leader,
+    name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
+    unitNames: t.ctx.nilfgaard.units,
+  })
+  await t.ctx.self.client.setDeck({
+    deckId: deckSelf.id,
+    gameId: t.ctx.game.id,
+  })
+  await t.ctx.opponent.client.setDeck({
+    deckId: deckOpponent.id,
+    gameId: t.ctx.game.id,
+  })
+  const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    turnOrder: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+  })
+  await t.ctx.self.client.setOrder({
+    gameId: t.ctx.game.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
+  await GamePage.verifyCoinToss({
+    won: true,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: {
+      ...selfPlayer,
+      turn: PlayerTurn.Future,
+    },
+    hand: gameDeckSelf.hand,
+    redraws: [],
+  })
+})
+
+test('Page automatically updates if user with ScoiaTael deck uses API to make opponent go first', async (t) => {
+  const deckSelf = await t.ctx.self.client.addDeck({
+    faction: t.ctx.scoiaTael.faction,
+    leaderName: t.ctx.scoiaTael.leader,
+    name: `${t.ctx.scenario}-deck-self-${t.ctx.start}`,
+    unitNames: t.ctx.scoiaTael.units,
+  })
+  const deckOpponent = await t.ctx.opponent.client.addDeck({
+    faction: t.ctx.nilfgaard.faction,
+    leaderName: t.ctx.nilfgaard.leader,
+    name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
+    unitNames: t.ctx.nilfgaard.units,
+  })
+  await t.ctx.self.client.setDeck({
+    deckId: deckSelf.id,
+    gameId: t.ctx.game.id,
+  })
+  await t.ctx.opponent.client.setDeck({
+    deckId: deckOpponent.id,
+    gameId: t.ctx.game.id,
+  })
+  const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    turnOrder: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+  })
+  await t.ctx.self.client.setOrder({
+    gameId: t.ctx.game.id,
+    userIds: [t.ctx.opponent.user.id, t.ctx.self.user.id],
+  })
+  await GamePage.verifyCoinToss({
+    won: false,
+  })
+  await GamePage.verify({
+    opponent: {
+      ...opponentPlayer,
+      turn: PlayerTurn.Future,
+    },
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    redraws: [],
+  })
+})
+
+test('Page does not automatically update if user with ScoiaTael deck uses API to set order for another game', async (t) => {
+  const deckSelf = await t.ctx.self.client.addDeck({
+    faction: t.ctx.scoiaTael.faction,
+    leaderName: t.ctx.scoiaTael.leader,
+    name: `${t.ctx.scenario}-deck-self-${t.ctx.start}`,
+    unitNames: t.ctx.scoiaTael.units,
+  })
+  const deckOpponent = await t.ctx.opponent.client.addDeck({
+    faction: t.ctx.nilfgaard.faction,
+    leaderName: t.ctx.nilfgaard.leader,
+    name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
+    unitNames: t.ctx.nilfgaard.units,
+  })
+  await t.ctx.self.client.setDeck({
+    deckId: deckSelf.id,
+    gameId: t.ctx.game.id,
+  })
+  await t.ctx.opponent.client.setDeck({
+    deckId: deckOpponent.id,
+    gameId: t.ctx.game.id,
+  })
+  const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
+  const game2 = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
+  await t.ctx.self.client.setDeck({
+    deckId: deckSelf.id,
+    gameId: game2.id,
+  })
+  await t.ctx.opponent.client.setDeck({
+    deckId: deckOpponent.id,
+    gameId: game2.id,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    turnOrder: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+  })
+  await t.ctx.self.client.setOrder({
+    gameId: game2.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    turnOrder: [t.ctx.self.user.name, t.ctx.opponent.user.name],
   })
 })
