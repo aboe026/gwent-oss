@@ -25,7 +25,7 @@ interface SessionExpiryFixtureCtx extends E2eCtx {
 const fixture = getFixtureCtx<SessionExpiryFixtureCtx, E2eCtx>()
 const test = getTestCtx<SessionExpiryFixtureCtx, E2eCtx>()
 
-fixture('Session Expiry').only.before(async (ctx) => {
+fixture('Session Expiry').before(async (ctx) => {
   const username = `session-expiry-${ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
@@ -72,7 +72,7 @@ fixture('Session Expiry').only.before(async (ctx) => {
   ]
 })
 
-test('Viewing decks after session expires shows login dialog', async (t) => {
+test('View decks after session expires', async (t) => {
   const name = 'session-expiry-decks'
   const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -107,7 +107,7 @@ test('Viewing decks after session expires shows login dialog', async (t) => {
   })
 })
 
-test('Viewing new deck after session expires shows login dialog', async (t) => {
+test('View new deck after session expires', async (t) => {
   const name = 'session-expiry-deck-new'
   const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -143,7 +143,7 @@ test('Viewing new deck after session expires shows login dialog', async (t) => {
   })
 })
 
-test('Selecting faction for new deck after session expires shows login dialog', async (t) => {
+test('Select faction for new deck after session expires', async (t) => {
   const name = 'session-expiry-deck-set-faction'
   const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -205,7 +205,7 @@ test('Selecting faction for new deck after session expires shows login dialog', 
   })
 })
 
-test('Changing faction for new deck after session expires shows login dialog', async (t) => {
+test('Change faction for new deck after session expires', async (t) => {
   const name = 'session-expiry-deck-change-faction'
   const username = `${name}-${t.ctx.start}`
   await new ApiClient({}).addUser({
@@ -278,7 +278,7 @@ test('Changing faction for new deck after session expires shows login dialog', a
   })
 })
 
-test('Creating new deck after session expires shows login dialog', async (t) => {
+test('Create new deck after session expires', async (t) => {
   const scenario = 'session-expiry-deck-create'
   const username = `${scenario}-user-${t.ctx.start}`
   const deckName = `${scenario}-deck-${t.ctx.start}`
@@ -330,7 +330,7 @@ test('Creating new deck after session expires shows login dialog', async (t) => 
   })
 })
 
-test('Creating new game after session expires shows login dialog', async (t) => {
+test('Create new game after session expires', async (t) => {
   const scenario = 'session-expiry-game-create'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
@@ -362,7 +362,7 @@ test('Creating new game after session expires shows login dialog', async (t) => 
   })
 })
 
-test('Viewing games after session expires shows login dialog', async (t) => {
+test('View games after session expires', async (t) => {
   const scenario = 'session-expiry-games'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
@@ -395,7 +395,7 @@ test('Viewing games after session expires shows login dialog', async (t) => {
   })
 })
 
-test('Listing decks for game after session expires shows login dialog', async (t) => {
+test('List decks for game after session expires', async (t) => {
   const scenario = 'session-expiry-listing-decks-for-game'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
@@ -436,7 +436,7 @@ test('Listing decks for game after session expires shows login dialog', async (t
   })
 })
 
-test('Setting deck for game after session expires shows login dialog', async (t) => {
+test('Set deck for game after session expires', async (t) => {
   const scenario = 'session-expiry-games-choosing-deck-for-game'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
@@ -502,7 +502,7 @@ test('Setting deck for game after session expires shows login dialog', async (t)
   })
 })
 
-test('Creating deck for game after session expires shows login dialog', async (t) => {
+test('Create deck for game after session expires', async (t) => {
   const scenario = 'session-expiry-games-create-deck-for-game'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponent = `${scenario}-opponent-${t.ctx.start}`
@@ -573,7 +573,109 @@ test('Creating deck for game after session expires shows login dialog', async (t
   })
 })
 
-test('Redrawing unit for game after session expires shows login dialog', async (t) => {
+test('Set game order after session expires', async (t) => {
+  const scenario = 'session-expiry-game-ready'
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponentName = `${scenario}-opponent-${t.ctx.start}`
+  const self = await new ApiClient({}).addUser({
+    name: username,
+  })
+  const opponent = await new ApiClient({}).addUser({
+    name: opponentName,
+  })
+  const clientSelf = new ApiClient({ username })
+  const clientOpponent = new ApiClient({ username: opponentName })
+  const game = await clientSelf.addGame([opponentName])
+  const deckSelf = await clientSelf.addDeck({
+    faction: t.fixtureCtx.faction.key,
+    leaderName: t.fixtureCtx.leader.name,
+    name: `${scenario}-deck-self-${t.ctx.start}`,
+    unitNames: t.fixtureCtx.units,
+  })
+  const deckOpponent = await clientOpponent.addDeck({
+    faction: FactionKey.NorthernRealms,
+    leaderName: 'Foltest Son of Medell',
+    name: `${scenario}-deck-opponent-${t.ctx.start}`,
+    unitNames: [
+      'Ballista',
+      'Blue Stripes Commando',
+      'Blue Stripes Commando',
+      'Blue Stripes Commando',
+      'Catapult',
+      'Catapult',
+      'Cirilla Fiona Elen Riannon',
+      "Commander's Horn",
+      'Crinfrid Reavers Dragon Hunter',
+      'Crinfrid Reavers Dragon Hunter',
+      'Crinfrid Reavers Dragon Hunter',
+      'Esterad Thyssen',
+      'John Natalis',
+      'Poor Fucking Infantry',
+      'Poor Fucking Infantry',
+      'Poor Fucking Infantry',
+      'Prince Stennis',
+      'Redanian Foot Soldier',
+      'Redanian Foot Soldier',
+      'Siegfried of Denesle',
+      'Thaler',
+      'Yarpen Zigrin',
+    ],
+  })
+  const gameDeckSelf = await clientSelf.setDeck({
+    deckId: deckSelf.id,
+    gameId: game.id,
+  })
+  const gameDeckOpponent = await clientOpponent.setDeck({
+    deckId: deckOpponent.id,
+    gameId: game.id,
+  })
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientSelf,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: self,
+    },
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientOpponent,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: opponent,
+    },
+  })
+  await E2eUtil.goTo(LoginPage.getUrl())
+  await LoginPage.login({
+    username,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(game.id))
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    turnOrder: game.players.map((player) => player.user.name),
+  })
+  await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
+  await GamePage.setOrder()
+  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
+  await GamePage.verifyOrderError(`Error setting order: ${NOT_AUTHENTICATED_MESSAGE}`)
+  await reAuthenticate(username, t)
+  const updatedGame = await clientSelf.getGame(game.id)
+  selfPlayer.turn = updatedGame.turn?.user.id === self.id ? PlayerTurn.Future : undefined
+  opponentPlayer.turn = updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Future : undefined
+  await GamePage.verifyCoinToss({
+    won: updatedGame.turn?.user.id === self.id,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    redraws: [],
+  })
+})
+
+test('Redraw unit for game after session expires', async (t) => {
   const scenario = 'session-expiry-game-redraw'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponentName = `${scenario}-opponent-${t.ctx.start}`
@@ -659,7 +761,7 @@ test('Redrawing unit for game after session expires shows login dialog', async (
   })
 })
 
-test('Readying game after session expires shows login dialog', async (t) => {
+test('Ready game after session expires', async (t) => {
   const scenario = 'session-expiry-game-ready'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponentName = `${scenario}-opponent-${t.ctx.start}`

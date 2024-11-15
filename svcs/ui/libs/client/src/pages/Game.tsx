@@ -303,7 +303,7 @@ export default function GamePage() {
 }
 
 function renderNewGame({
-  addGame,
+  addGame: { addGame, error: addGameError, loading: addGameLoading },
   checkAuth,
   navigate,
   user,
@@ -342,14 +342,14 @@ function renderNewGame({
           }),
         ]}
         errorPrefix="Error adding game"
-        error={addGame.error}
+        error={addGameError}
         errorId={HTML_IDS.GameNewError}
-        loading={addGame.loading}
+        loading={addGameLoading}
         onSubmit={async ({ variables }) => {
           await retryCheckingAuth({
             checkAuth,
             method: async () => {
-              const game = await addGame.addGame({
+              const game = await addGame({
                 variables: {
                   opponentNames: [...Array(PLAYER_COUNTS.Max - 1)].map((_, index) => {
                     return variables[`player${index + 2}`]
@@ -1194,7 +1194,6 @@ function renderSetOrder({
               id={HTML_IDS.GameOrderSet}
               type="button"
               className="pointable"
-              autoFocus
               onClick={async () => {
                 await retryCheckingAuth({
                   checkAuth,

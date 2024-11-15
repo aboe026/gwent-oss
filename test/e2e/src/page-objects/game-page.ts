@@ -34,6 +34,7 @@ export default class GamePage {
     RedrawPair: existingGameContainer.find(`.${HTML_CLASSES.GameDeckRedrawPair}`),
     RedrawInstructions: existingGameContainer.find(`#${HTML_IDS.GameDeckRedrawInstructions}`),
     DeckError: existingGameContainer.find(`#${HTML_IDS.GameDeckError}`),
+    OrderError: existingGameContainer.find(`#${HTML_IDS.GameOrderError}`),
     RedrawError: existingGameContainer.find(`#${HTML_IDS.GameRedrawError}`),
     ReadyError: existingGameContainer.find(`#${HTML_IDS.GameReadyError}`),
     AuthErrorContainer: authErrorContainer,
@@ -470,6 +471,10 @@ export default class GamePage {
 
   static async verifyDeckError(error: string) {
     await t.expect(GamePage.elements.DeckError.innerText).eql(error)
+  }
+
+  static async verifyOrderError(error: string) {
+    await t.expect(GamePage.elements.OrderError.innerText).eql(error)
   }
 
   static async verifyRedrawError(error: string) {
