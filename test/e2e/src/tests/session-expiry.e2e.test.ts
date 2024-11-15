@@ -3,8 +3,9 @@ import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
-import E2eUtil from '../util/e2e-util'
+import { E2eHelper } from '../util/e2e-helper'
 import { E2eCtx, E2ETestController, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import E2eUtil from '../util/e2e-util'
 import { Faction, FactionKey, GameStatus, Leader, SettingKey } from '@gwent/graphql-schema/resolver-typings'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
@@ -12,7 +13,7 @@ import HomePage from '../page-objects/home-page'
 import LoginForm from '../components/login-form'
 import LoginPage from '../page-objects/login-page'
 import { NOT_AUTHENTICATED_MESSAGE, STARTING_HAND_SIZE } from '@gwent/constants'
-import { sortObjectArray } from '@gwent/utils'
+import { PlayerTurn } from '../components/game-player-info'
 
 interface SessionExpiryFixtureCtx extends E2eCtx {
   sessionTimeoutSeconds: number
@@ -24,7 +25,7 @@ interface SessionExpiryFixtureCtx extends E2eCtx {
 const fixture = getFixtureCtx<SessionExpiryFixtureCtx, E2eCtx>()
 const test = getTestCtx<SessionExpiryFixtureCtx, E2eCtx>()
 
-fixture('Session Expiry').before(async (ctx) => {
+fixture('Session Expiry').only.before(async (ctx) => {
   const username = `session-expiry-${ctx.start}`
   await new ApiClient({}).addUser({
     name: username,
@@ -497,10 +498,7 @@ test('Setting deck for game after session expires shows login dialog', async (t)
       undrawn: deck.units.length - STARTING_HAND_SIZE,
       from: gameDeck.from,
     },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: gameDeck.hand,
   })
 })
 
@@ -541,7 +539,7 @@ test('Creating deck for game after session expires shows login dialog', async (t
     name: deckName,
     units: t.fixtureCtx.units,
     save: false,
-    verify: false,
+    verifyRedirect: false,
   })
   await DeckEditor.verify({
     faction: t.fixtureCtx.faction,
@@ -571,94 +569,87 @@ test('Creating deck for game after session expires shows login dialog', async (t
       undrawn: gameDeck.from.units.length - STARTING_HAND_SIZE,
       from: gameDeck.from,
     },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    hand: gameDeck.hand,
   })
 })
 
 test('Redrawing unit for game after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-game-redraw'
   const username = `${scenario}-user-${t.ctx.start}`
-  const opponent = `${scenario}-opponent-${t.ctx.start}`
-  await new ApiClient({}).addUser({
+  const opponentName = `${scenario}-opponent-${t.ctx.start}`
+  const self = await new ApiClient({}).addUser({
     name: username,
   })
-  await new ApiClient({}).addUser({
-    name: opponent,
+  const opponent = await new ApiClient({}).addUser({
+    name: opponentName,
   })
-  const client = new ApiClient({ username })
-  const game = await client.addGame([opponent])
-  const deck = await client.addDeck({
+  const clientSelf = new ApiClient({ username })
+  const clientOpponent = new ApiClient({ username: opponentName })
+  const game = await clientSelf.addGame([opponentName])
+  const deckSelf = await clientSelf.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${t.ctx.start}`,
+    name: `${scenario}-deck-self-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
+  })
+  const deckOpponent = await clientOpponent.addDeck({
+    faction: t.fixtureCtx.faction.key,
+    leaderName: t.fixtureCtx.leader.name,
+    name: `${scenario}-deck-opponent-${t.ctx.start}`,
+    unitNames: t.fixtureCtx.units,
+  })
+  const gameDeckSelf = await clientSelf.setDeck({
+    deckId: deckSelf.id,
+    gameId: game.id,
+  })
+  const gameDeckOpponent = await clientOpponent.setDeck({
+    deckId: deckOpponent.id,
+    gameId: game.id,
+  })
+  const updatedGame = await clientSelf.getGame(game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientSelf,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: self,
+    },
+    turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientOpponent,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: opponent,
+    },
+    turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Future : undefined,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
   await LoginPage.login({
     username,
   })
   await E2eUtil.goTo(GamePage.getUrl(game.id))
-  await GamePage.verify({
-    opponent: {
-      name: opponent,
-    },
-    self: {
-      name: username,
-    },
+  await GamePage.verifyCoinToss({
+    won: updatedGame.turn?.user.id === self.id,
   })
-  await GamePage.setDeck({
-    created: deck.created,
-    faction: deck.faction,
-    leader: deck.leader,
-    name: deck.name,
-    stats: deck.stats,
-  })
-  const gameDeck = await client.getGameDeck(game.id)
   await GamePage.verify({
-    opponent: {
-      name: opponent,
-    },
-    self: {
-      name: username,
-      discard: 0,
-      faction: deck.faction,
-      hand: STARTING_HAND_SIZE,
-      leader: deck.leader,
-      undrawn: deck.units.length - STARTING_HAND_SIZE,
-      from: gameDeck.from,
-    },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    redraws: [],
   })
   await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
-  const unitToRedraw = gameDeck.hand[0].unit.name
+  const unitToRedraw = gameDeckSelf.hand[0].unit.name
   await GamePage.redraw(unitToRedraw)
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await GamePage.verifyRedrawError(`Error redrawing card: ${NOT_AUTHENTICATED_MESSAGE}`)
   await reAuthenticate(username, t)
-  const updatedGameDeck = await client.getGameDeck(game.id)
+  const updatedGameDeck = await clientSelf.getGameDeck(game.id)
   await GamePage.verify({
-    opponent: {
-      name: opponent,
-    },
-    self: {
-      name: username,
-      discard: 0,
-      faction: deck.faction,
-      hand: STARTING_HAND_SIZE,
-      leader: deck.leader,
-      undrawn: deck.units.length - STARTING_HAND_SIZE,
-      from: gameDeck.from,
-    },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: updatedGameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: updatedGameDeck.hand,
     redraws: [
       {
         from: unitToRedraw,
@@ -671,83 +662,79 @@ test('Redrawing unit for game after session expires shows login dialog', async (
 test('Readying game after session expires shows login dialog', async (t) => {
   const scenario = 'session-expiry-game-ready'
   const username = `${scenario}-user-${t.ctx.start}`
-  const opponent = `${scenario}-opponent-${t.ctx.start}`
-  await new ApiClient({}).addUser({
+  const opponentName = `${scenario}-opponent-${t.ctx.start}`
+  const self = await new ApiClient({}).addUser({
     name: username,
   })
-  await new ApiClient({}).addUser({
-    name: opponent,
+  const opponent = await new ApiClient({}).addUser({
+    name: opponentName,
   })
-  const client = new ApiClient({ username })
-  const game = await client.addGame([opponent])
-  const deck = await client.addDeck({
+  const clientSelf = new ApiClient({ username })
+  const clientOpponent = new ApiClient({ username: opponentName })
+  const game = await clientSelf.addGame([opponentName])
+  const deckSelf = await clientSelf.addDeck({
     faction: t.fixtureCtx.faction.key,
     leaderName: t.fixtureCtx.leader.name,
-    name: `${scenario}-deck-${t.ctx.start}`,
+    name: `${scenario}-deck-self-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
+  })
+  const deckOpponent = await clientOpponent.addDeck({
+    faction: t.fixtureCtx.faction.key,
+    leaderName: t.fixtureCtx.leader.name,
+    name: `${scenario}-deck-opponent-${t.ctx.start}`,
+    unitNames: t.fixtureCtx.units,
+  })
+  const gameDeckSelf = await clientSelf.setDeck({
+    deckId: deckSelf.id,
+    gameId: game.id,
+  })
+  const gameDeckOpponent = await clientOpponent.setDeck({
+    deckId: deckOpponent.id,
+    gameId: game.id,
+  })
+  const updatedGame = await clientSelf.getGame(game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientSelf,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: self,
+    },
+    turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Future : undefined,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientOpponent,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: opponent,
+    },
+    turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Future : undefined,
   })
   await E2eUtil.goTo(LoginPage.getUrl())
   await LoginPage.login({
     username,
   })
   await E2eUtil.goTo(GamePage.getUrl(game.id))
-  await GamePage.verify({
-    opponent: {
-      name: opponent,
-    },
-    self: {
-      name: username,
-    },
+  await GamePage.verifyCoinToss({
+    won: updatedGame.turn?.user.name === username,
   })
-  await GamePage.setDeck({
-    created: deck.created,
-    faction: deck.faction,
-    leader: deck.leader,
-    name: deck.name,
-    stats: deck.stats,
-  })
-  const gameDeck = await client.getGameDeck(game.id)
   await GamePage.verify({
-    opponent: {
-      name: opponent,
-    },
-    self: {
-      name: username,
-      discard: 0,
-      faction: deck.faction,
-      hand: STARTING_HAND_SIZE,
-      leader: deck.leader,
-      undrawn: deck.units.length - STARTING_HAND_SIZE,
-      from: gameDeck.from,
-    },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    redraws: [],
   })
   await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
   await GamePage.ready()
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await GamePage.verifyReadyError(`Error marking self as ready: ${NOT_AUTHENTICATED_MESSAGE}`)
   await reAuthenticate(username, t)
+  selfPlayer.ready = true
   await GamePage.verify({
-    opponent: {
-      name: opponent,
-    },
-    self: {
-      name: username,
-      discard: 0,
-      faction: deck.faction,
-      hand: STARTING_HAND_SIZE,
-      leader: deck.leader,
-      undrawn: deck.units.length - STARTING_HAND_SIZE,
-      ready: true,
-      from: gameDeck.from,
-    },
-    hand: sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    }).map((deckUnit) => deckUnit.unit.name),
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
   })
 })
 

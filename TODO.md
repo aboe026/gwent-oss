@@ -2,10 +2,10 @@
 
 A list of things to be done in the future
 
+- session expiry test for setOrder mutation (and any other times retryAuth is used)
 - replace cache.writeQuery with cache.updateQuery and use (previous) to avoid race conditions
 - switch sortObjectArray for GamePage verify hand to just be the DeckUnit array
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
-- test setting order for game user is not apart of, make sure it doesn't update their game in UI
 - test going to game in UI, going to games list, doing something to game that would trigger subscription (setOrder), go back to game. is it properly updated?
   - if not, should we always reload game whenever navigate to it?
 - change setOrder mutation input from order to users
