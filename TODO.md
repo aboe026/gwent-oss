@@ -2,9 +2,7 @@
 
 A list of things to be done in the future
 
-- session expiry test for setOrder mutation (and any other times retryAuth is used)
 - replace cache.writeQuery with cache.updateQuery and use (previous) to avoid race conditions
-- switch sortObjectArray for GamePage verify hand to just be the DeckUnit array
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - test going to game in UI, going to games list, doing something to game that would trigger subscription (setOrder), go back to game. is it properly updated?
   - if not, should we always reload game whenever navigate to it?
@@ -18,9 +16,8 @@ A list of things to be done in the future
   - subscriptions
 - implement history?
 - upgrade to Node.js 22 LTS
-- change error log to debug for when websocket rejected due to no session? (since happens when session expires, which can happen often)
 - enter key does not create game in UI?
-- How to handle GameCard with more than 2 icons (eg Olgierd)? The 3rd on gets rendered off the card underneath
+- How to handle GameCard with more than 2 icons (eg Olgierd)? The 3rd one gets rendered off the card underneath
 - do not store yarn binary in source
 - do not store yarn sdks in source?
 - allow introspection without authentication

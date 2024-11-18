@@ -327,7 +327,7 @@ test('List gets updated after deck created from game page', async (t) => {
       'Young Emissary',
       'Young Emissary',
     ],
-    verify: false,
+    verifyRedirect: false,
   })
   await Banner.goTo(Banner.elements.MenuDecks)
   const deck = await client.getDeck(name)
