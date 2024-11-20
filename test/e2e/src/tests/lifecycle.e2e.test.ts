@@ -256,7 +256,7 @@ test('Speed Run', async (t) => {
         owner: username2,
         players: [username2, username1],
         status: GameStatus.Redrawing,
-        factions: ['Skellige', 'Nilfgaardian Empire'],
+        factions: [FactionKey.Skellige, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
@@ -521,7 +521,7 @@ test('Scenic Route', async (t) => {
         owner: username2,
         players: [username2, username1],
         status: GameStatus.Ordering,
-        factions: ["Scoia'tael", 'Nilfgaardian Empire'],
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
@@ -622,7 +622,7 @@ test('Scenic Route', async (t) => {
         owner: username2,
         players: [username2, username1],
         status: GameStatus.Redrawing,
-        factions: ["Scoia'tael", 'Nilfgaardian Empire'],
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
       },
     ],
   })

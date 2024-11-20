@@ -248,28 +248,28 @@ fixture('Games Filter')
       owner: updatedGame2.creator.name,
       players: updatedGame2.players.map((player: GamePlayer) => player.user.name),
       status: updatedGame2.status,
-      factions: updatedGame2.players.map((player: GamePlayer) => player.faction?.name as string),
+      factions: updatedGame2.players.map((player: GamePlayer) => player.faction?.key as FactionKey),
     }
     t.ctx.gameInList3 = {
       created: updatedGame3.created,
       owner: updatedGame3.creator.name,
       players: updatedGame3.players.map((player: GamePlayer) => player.user.name),
       status: updatedGame3.status,
-      factions: updatedGame3.players.map((player: GamePlayer) => player.faction?.name as string),
+      factions: updatedGame3.players.map((player: GamePlayer) => player.faction?.key as FactionKey),
     }
     t.ctx.gameInList4 = {
       created: updatedGame4.created,
       owner: updatedGame4.creator.name,
       players: updatedGame4.players.map((player: GamePlayer) => player.user.name),
       status: updatedGame4.status,
-      factions: updatedGame4.players.map((player: GamePlayer) => player.faction?.name as string),
+      factions: updatedGame4.players.map((player: GamePlayer) => player.faction?.key as FactionKey),
     }
     t.ctx.gameInList5 = {
       created: updatedGame5.created,
       owner: updatedGame5.creator.name,
       players: updatedGame5.players.map((player: GamePlayer) => player.user.name),
       status: updatedGame5.status,
-      factions: updatedGame5.players.map((player: GamePlayer) => player.faction?.name as string),
+      factions: updatedGame5.players.map((player: GamePlayer) => player.faction?.key as FactionKey),
     }
 
     await verifyAllShown(t.ctx)

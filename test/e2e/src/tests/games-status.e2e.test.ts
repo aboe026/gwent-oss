@@ -155,7 +155,7 @@ test('Automatically updated with ordering status if decks set through API and se
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Ordering,
-        factions: ["Scoia'tael", 'Nilfgaardian Empire'],
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
@@ -202,7 +202,7 @@ test('Automatically updated with ordering status if decks set through API and op
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Ordering,
-        factions: ['Nilfgaardian Empire', "Scoia'tael"],
+        factions: [FactionKey.NilfgaardianEmpire, FactionKey.ScoiaTael],
       },
     ],
   })
@@ -239,7 +239,7 @@ test('Games page updated with redrawing status if order set by self through API'
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Ordering,
-        factions: ["Scoia'tael", 'Nilfgaardian Empire'],
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
@@ -254,7 +254,7 @@ test('Games page updated with redrawing status if order set by self through API'
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Redrawing,
-        factions: ["Scoia'tael", 'Nilfgaardian Empire'],
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
@@ -291,7 +291,7 @@ test('Games page updated with redrawing status if order set by opponent through 
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Ordering,
-        factions: ['Nilfgaardian Empire', "Scoia'tael"],
+        factions: [FactionKey.NilfgaardianEmpire, FactionKey.ScoiaTael],
       },
     ],
   })
@@ -306,7 +306,7 @@ test('Games page updated with redrawing status if order set by opponent through 
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Redrawing,
-        factions: ['Nilfgaardian Empire', "Scoia'tael"],
+        factions: [FactionKey.NilfgaardianEmpire, FactionKey.ScoiaTael],
       },
     ],
   })
@@ -353,7 +353,7 @@ test('Games page updated with redrawing status if decks set through API by self 
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Redrawing,
-        factions: ['Nilfgaardian Empire', 'Nilfgaardian Empire'],
+        factions: [FactionKey.NilfgaardianEmpire, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
@@ -400,7 +400,7 @@ test('Games page updated with redrawing status if decks set through API by oppon
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Redrawing,
-        factions: ['Nilfgaardian Empire', 'Nilfgaardian Empire'],
+        factions: [FactionKey.NilfgaardianEmpire, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
@@ -438,7 +438,7 @@ test('Games page updated with playing status if marked ready through API by self
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Redrawing,
-        factions: ['Nilfgaardian Empire', 'Nilfgaardian Empire'],
+        factions: [FactionKey.NilfgaardianEmpire, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
@@ -450,13 +450,13 @@ test('Games page updated with playing status if marked ready through API by self
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Playing,
-        factions: ['Nilfgaardian Empire', 'Nilfgaardian Empire'],
+        factions: [FactionKey.NilfgaardianEmpire, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
 })
 
-test.only('Games page updated with playing status if marked ready through API by opponent last', async (t) => {
+test('Games page updated with playing status if marked ready through API by opponent last', async (t) => {
   const selfDeck = await t.ctx.self.client.addDeck({
     faction: t.ctx.nilfgaard.faction,
     leaderName: t.ctx.nilfgaard.leader,
@@ -488,7 +488,7 @@ test.only('Games page updated with playing status if marked ready through API by
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Redrawing,
-        factions: ['Nilfgaardian Empire', 'Nilfgaardian Empire'],
+        factions: [FactionKey.NilfgaardianEmpire, FactionKey.NilfgaardianEmpire],
       },
     ],
   })
@@ -500,7 +500,7 @@ test.only('Games page updated with playing status if marked ready through API by
         owner: t.ctx.self.user.name,
         players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
         status: GameStatus.Playing,
-        factions: ['Nilfgaardian Empire', 'Nilfgaardian Empire'],
+        factions: [FactionKey.NilfgaardianEmpire, FactionKey.NilfgaardianEmpire],
       },
     ],
   })

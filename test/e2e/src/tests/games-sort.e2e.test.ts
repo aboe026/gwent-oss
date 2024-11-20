@@ -187,7 +187,7 @@ async function verifySortOrder({ ctx, first }: { first: boolean; ctx: GamesSortT
     owner: ctx.game2.creator.name,
     players: ctx.game2.players.map((player: GamePlayer) => player.user.name),
     status: ctx.game2.status,
-    factions: ctx.game2.players.map((player: GamePlayer) => player.faction?.name || ''),
+    factions: ctx.game2.players.map((player: GamePlayer) => player.faction?.key as FactionKey),
   }
   await GamesPage.verify({
     games: [first ? game1 : game2, first ? game2 : game1],

@@ -3,7 +3,7 @@ import { Selector, t } from 'testcafe'
 import E2eUtil from '../util/e2e-util'
 import { FILTER_FIELD, SORT_FIELD } from '@gwent/graphql-schema/games-filter'
 import { formatDay, formatGameStatus, formatTime } from '@gwent/utils'
-import { GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 
 const container = Selector(`#${HTML_IDS.GamesContainer}`)
@@ -87,7 +87,25 @@ export default class GamesPage {
             actualFactions.push(actualFaction)
           }
         }
-        await t.expect(actualFactions).eql(game.factions || [])
+        const expectedFactions: string[] = []
+        if (game.factions) {
+          for (const factionKey of game.factions) {
+            if (factionKey === FactionKey.Monsters) {
+              expectedFactions.push('Monsters')
+            } else if (factionKey === FactionKey.Neutral) {
+              expectedFactions.push('Neutral')
+            } else if (factionKey === FactionKey.NilfgaardianEmpire) {
+              expectedFactions.push('Nilfgaardian Empire')
+            } else if (factionKey === FactionKey.NorthernRealms) {
+              expectedFactions.push('Northern Realms')
+            } else if (factionKey === FactionKey.ScoiaTael) {
+              expectedFactions.push("Scoia'tael")
+            } else if (factionKey === FactionKey.Skellige) {
+              expectedFactions.push('Skellige')
+            }
+          }
+        }
+        await t.expect(actualFactions).eql(expectedFactions)
         await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowStatus}`).innerText).eql(formatGameStatus(game.status))
         const victorsCount = await gameRow.find(`.${HTML_CLASSES.GameRowVictor}`).count
         const actualVictors: string[] = []
@@ -149,7 +167,7 @@ export interface GameInList {
   created: string
   owner: string
   players: string[]
-  factions?: string[]
+  factions?: FactionKey[]
   status: GameStatus
   victors?: string[]
 }
