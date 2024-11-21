@@ -2,7 +2,6 @@
 
 A list of things to be done in the future
 
-- change games page verify to take faction keys (for type safety), do name conversion within method
 - replace cache.writeQuery with cache.updateQuery and use (previous) to avoid race conditions
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - test going to game in UI, going to games list, doing something to game that would trigger subscription (setOrder), go back to game. is it properly updated?

@@ -1147,6 +1147,69 @@ export default class ApiClient {
           id
           name
         }
+        fragment GamePlayerFragment on GamePlayer {
+          counts {
+            discard
+            hand
+            undrawn
+          }
+          faction {
+            ability
+            created
+            dlc {
+              id
+              image
+              key
+              name
+            }
+            id
+            image
+            key
+            name
+            stats(neutrals: true) {
+              agile
+              avenger
+              berserker
+              bond
+              close
+              decoy
+              heroes
+              horn
+              mardroeme
+              medic
+              morale
+              muster
+              ranged
+              scorch
+              siege
+              specials
+              spy
+              strengthAverage
+              strengths
+              strengthTotal
+              units
+              weather
+            }
+          }
+          leader {
+            ability
+            created
+            dlc {
+              id
+              image
+              key
+              name
+            }
+          }
+          ready
+          rounds {
+            score
+            won
+          }
+          user {
+            ...UserFragment
+          }
+        }
         mutation SetOrder($game: ID!, $order: [ID!]) {
           setOrder(game: $game, order: $order) {
             created
@@ -1155,73 +1218,16 @@ export default class ApiClient {
             }
             id
             players {
-              counts {
-                discard
-                hand
-                undrawn
-              }
-              faction {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-                id
-                image
-                key
-                name
-                stats(neutrals: true) {
-                  agile
-                  avenger
-                  berserker
-                  bond
-                  close
-                  decoy
-                  heroes
-                  horn
-                  mardroeme
-                  medic
-                  morale
-                  muster
-                  ranged
-                  scorch
-                  siege
-                  specials
-                  spy
-                  strengthAverage
-                  strengths
-                  strengthTotal
-                  units
-                  weather
-                }
-              }
-              leader {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-              }
-              ready
-              rounds {
-                score
-                won
-              }
-              user {
-                ...UserFragment
-              }
+              ...GamePlayerFragment
             }
             round {
               current
               maximum
             }
             status
+            turn {
+              ...GamePlayerFragment
+            }
             updated
             victors {
               ...UserFragment
