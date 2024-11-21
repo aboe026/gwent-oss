@@ -4,8 +4,6 @@ A list of things to be done in the future
 
 - replace cache.writeQuery with cache.updateQuery and use (previous) to avoid race conditions
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
-- test going to game in UI, going to games list, doing something to game that would trigger subscription (setOrder), go back to game. is it properly updated?
-  - if not, should we always reload game whenever navigate to it?
 - change setOrder mutation input from order to users
 - sub-directories for resolvers
   - types
@@ -17,6 +15,7 @@ A list of things to be done in the future
 - implement history?
 - upgrade to Node.js 22 LTS
 - enter key does not create game in UI?
+  - seems to be browser specific due to autocomplete list taking autofocus
 - How to handle GameCard with more than 2 icons (eg Olgierd)? The 3rd one gets rendered off the card underneath
 - do not store yarn binary in source
 - do not store yarn sdks in source?

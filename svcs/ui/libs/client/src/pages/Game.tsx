@@ -239,7 +239,8 @@ export default function GamePage() {
   const currentGame = gameData?.game as Game | undefined
   const previousGame = usePrevious(currentGame)
   useEffect(() => {
-    if (currentGame?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing) {
+    const self = currentGame?.players.find((player) => player.user.name === user?.name)
+    if (currentGame?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing && !self?.ready) {
       setCoinTossVisible(true)
       setTimeout(() => setCoinTossVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
     }
