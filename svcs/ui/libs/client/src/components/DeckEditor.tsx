@@ -75,20 +75,22 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
       onSave(result.addDeck as Deck)
     },
     update(cache, { data }) {
-      const previous = cache.readQuery<DecksQuery>({ query: DecksDocument })
+      const previousDecks = cache.readQuery<DecksQuery>({ query: DecksDocument })
       // only update cache if the query has already been run (there is something in the cache)
       // otherwise when navigating to decks, it will not fire the query, so would only show the
       // new created deck, and not all decks for the user
-      if (previous?.decks) {
-        cache.writeQuery({
-          query: DecksDocument,
-          data: {
+      if (previousDecks?.decks) {
+        cache.updateQuery<DecksQuery>(
+          {
+            query: DecksDocument,
+          },
+          (previous) => ({
             decks: addToCacheList({
               add: data?.addDeck,
-              previous: previous.decks,
+              previous: previous?.decks,
             }),
-          },
-        })
+          })
+        )
       }
     },
   })

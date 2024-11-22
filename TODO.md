@@ -2,7 +2,6 @@
 
 A list of things to be done in the future
 
-- replace cache.writeQuery with cache.updateQuery and use (previous) to avoid race conditions
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - sub-directories for resolvers
   - types

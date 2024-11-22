@@ -103,17 +103,19 @@ export default function GamePage() {
         // otherwise when navigating to games, it will not fire the query, so would only show the
         // new created game, and not all games for the user
         if (previousGames?.games) {
-          cache.writeQuery({
-            query: GamesDocument,
-            data: {
-              games: addToCacheList({
-                previous: previousGames.games,
-                add: data.addGame,
-              }),
+          cache.updateQuery<GamesQuery>(
+            {
+              query: GamesDocument,
             },
-          })
+            (previous) => ({
+              games: addToCacheList({
+                add: data.addGame,
+                previous: previous?.games,
+              }),
+            })
+          )
         }
-        cache.writeQuery({
+        cache.writeQuery<GameQuery>({
           query: GameDocument,
           data: {
             game: {
@@ -162,7 +164,7 @@ export default function GamePage() {
   const [setDeck, { loading: setDeckLoading, error: setDeckError }] = useSetDeckMutation({
     update(cache, { data }) {
       if (data?.setDeck && user) {
-        cache.writeQuery({
+        cache.writeQuery<GameDeckQuery>({
           query: GameDeckDocument,
           data: {
             gameDeck: {
@@ -177,7 +179,7 @@ export default function GamePage() {
   const [setOrder, { loading: setOrderLoading, error: setOrderError }] = useSetOrderMutation({
     update(cache, { data }) {
       if (data?.setOrder && user) {
-        cache.writeQuery({
+        cache.writeQuery<GameQuery>({
           query: GameDocument,
           data: {
             game: {
