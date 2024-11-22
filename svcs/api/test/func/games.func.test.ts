@@ -4,10 +4,10 @@ import { addDeck, addGame, addUser, ready, setDeck } from './util/graphql-util'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
-import { expectizeGame } from './util/expect-util'
+import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
-import { NOT_AUTHENTICATED_MESSAGE, STARTING_HAND_SIZE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('games', () => {
@@ -590,7 +590,7 @@ describe('games', () => {
         name: `games-1-${Date.now()}`,
         userId: user1.id,
       })
-      await setDeck({
+      const gameDeck1 = await setDeck({
         deckId: deck1.id,
         gameId: game.id,
         userId: user1.id,
@@ -600,7 +600,7 @@ describe('games', () => {
         name: `games-2-${Date.now()}`,
         userId: user2.id,
       })
-      await setDeck({
+      const gameDeck2 = await setDeck({
         deckId: deck2.id,
         gameId: game.id,
         userId: user2.id,
@@ -609,9 +609,21 @@ describe('games', () => {
         gameId: game.id,
         userId: user1.id,
       })
-      await ready({
+      const updatedGame = await ready({
         gameId: game.id,
         userId: user2.id,
+      })
+      const gamePlayer1 = expectizeGamePlayer({
+        gameDeck: gameDeck1,
+        user: user1,
+        order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+        ready: true,
+      })
+      const gamePlayer2 = expectizeGamePlayer({
+        gameDeck: gameDeck2,
+        user: user2,
+        order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+        ready: true,
       })
       await expect(
         graphql({
@@ -635,30 +647,8 @@ describe('games', () => {
             expectizeGame({
               creator: user1,
               status: GameStatus.Playing,
-              players: [
-                {
-                  faction: deck1.faction,
-                  leader: deck1.leader,
-                  user: user1,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck1.units.length - STARTING_HAND_SIZE,
-                  },
-                  ready: true,
-                },
-                {
-                  faction: deck1.faction,
-                  leader: deck1.leader,
-                  user: user2,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck2.units.length - STARTING_HAND_SIZE,
-                  },
-                  ready: true,
-                },
-              ],
+              players: [gamePlayer1, gamePlayer2],
+              turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
             }),
           ],
         },

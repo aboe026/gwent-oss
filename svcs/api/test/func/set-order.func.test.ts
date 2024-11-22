@@ -5,8 +5,8 @@ import { addDeck, addGame, addUser, setDeck, setOrder } from './util/graphql-uti
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
-import { expectizeGame } from './util/expect-util'
-import { FactionKey, Game, GamePlayer, GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
+import { FactionKey, Game, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
 import { NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
@@ -691,38 +691,22 @@ describe('setOrder', () => {
           },
         },
       })
-      const gamePlayer1: GamePlayer = {
-        ready: false,
-        rounds: [],
+      const gamePlayer1 = expectizeGamePlayer({
+        gameDeck: gameDeck1,
         user: user1,
-        counts: {
-          discard: gameDeck1.discard.length,
-          hand: gameDeck1.hand.length,
-          undrawn: gameDeck1.undrawn.length,
-        },
-        faction: deck1.faction,
-        leader: deck1.leader,
         order: 0,
-      }
+      })
       expect(response).toEqual({
         data: {
           setOrder: expectizeGame({
             creator: user1,
             players: [
               gamePlayer1,
-              {
-                ready: false,
-                rounds: [],
+              expectizeGamePlayer({
+                gameDeck: gameDeck2,
                 user: user2,
-                counts: {
-                  discard: gameDeck2.discard.length,
-                  hand: gameDeck2.hand.length,
-                  undrawn: gameDeck2.undrawn.length,
-                },
-                faction: deck2.faction,
-                leader: deck2.leader,
                 order: 1,
-              },
+              }),
             ],
             status: GameStatus.Redrawing,
             turn: gamePlayer1,
@@ -777,37 +761,21 @@ describe('setOrder', () => {
           },
         },
       })
-      const gamePlayer2: GamePlayer = {
-        ready: false,
-        rounds: [],
+      const gamePlayer2 = expectizeGamePlayer({
+        gameDeck: gameDeck2,
         user: user2,
-        counts: {
-          discard: gameDeck2.discard.length,
-          hand: gameDeck2.hand.length,
-          undrawn: gameDeck2.undrawn.length,
-        },
-        faction: deck2.faction,
-        leader: deck2.leader,
         order: 0,
-      }
+      })
       expect(response).toEqual({
         data: {
           setOrder: expectizeGame({
             creator: user1,
             players: [
-              {
-                ready: false,
-                rounds: [],
+              expectizeGamePlayer({
+                gameDeck: gameDeck1,
                 user: user1,
-                counts: {
-                  discard: gameDeck1.discard.length,
-                  hand: gameDeck1.hand.length,
-                  undrawn: gameDeck1.undrawn.length,
-                },
-                faction: deck1.faction,
-                leader: deck1.leader,
                 order: 1,
-              },
+              }),
               gamePlayer2,
             ],
             status: GameStatus.Redrawing,
@@ -863,32 +831,16 @@ describe('setOrder', () => {
         },
       })
       const selfFirst = (response.data?.setOrder as Game).turn?.user.id === user1.id
-      const gamePlayer1: GamePlayer = {
-        ready: false,
-        rounds: [],
+      const gamePlayer1 = expectizeGamePlayer({
+        gameDeck: gameDeck1,
         user: user1,
-        counts: {
-          discard: gameDeck1.discard.length,
-          hand: gameDeck1.hand.length,
-          undrawn: gameDeck1.undrawn.length,
-        },
-        faction: deck1.faction,
-        leader: deck1.leader,
         order: selfFirst ? 0 : 1,
-      }
-      const gamePlayer2: GamePlayer = {
-        ready: false,
-        rounds: [],
+      })
+      const gamePlayer2 = expectizeGamePlayer({
+        gameDeck: gameDeck2,
         user: user2,
-        counts: {
-          discard: gameDeck2.discard.length,
-          hand: gameDeck2.hand.length,
-          undrawn: gameDeck2.undrawn.length,
-        },
-        faction: deck2.faction,
-        leader: deck2.leader,
         order: selfFirst ? 1 : 0,
-      }
+      })
       expect(response).toEqual({
         data: {
           setOrder: expectizeGame({

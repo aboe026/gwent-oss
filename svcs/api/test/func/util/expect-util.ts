@@ -4,6 +4,7 @@ import {
   DeckUnit,
   Faction,
   FactionKey,
+  GameDeck,
   GamePlayer,
   GamePlayerUnitCounts,
   GameStatus,
@@ -451,6 +452,9 @@ export function expectizeGame({
       if (!player.ready) {
         player.ready = false
       }
+      if (player.order === undefined) {
+        player.order = null
+      }
       if (status === GameStatus.Playing && player.order === undefined) {
         player.order = expect.any(Number)
       }
@@ -502,6 +506,32 @@ export function expectizeGameDeck({
       maxArtStyle: deck.maxArtStyle,
       neutrals: deck.neutrals,
     }),
+  }
+}
+
+export function expectizeGamePlayer({
+  user,
+  gameDeck,
+  order = null,
+  ready = false,
+}: {
+  user: User
+  gameDeck: GameDeck
+  order?: number | null
+  ready?: boolean
+}): GamePlayer {
+  return {
+    ready,
+    rounds: [],
+    user,
+    counts: {
+      discard: gameDeck.discard.length,
+      hand: gameDeck.hand.length,
+      undrawn: gameDeck.undrawn.length,
+    },
+    faction: gameDeck.from?.faction,
+    leader: gameDeck.from?.leader,
+    order,
   }
 }
 
