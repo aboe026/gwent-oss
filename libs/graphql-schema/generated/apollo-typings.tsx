@@ -330,7 +330,7 @@ export type MutationSetDeckArgs = {
 
 export type MutationSetOrderArgs = {
   game: Scalars['ID']['input'];
-  order?: InputMaybe<Array<Scalars['ID']['input']>>;
+  users?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type PlayerRound = {
@@ -634,7 +634,7 @@ export type SetDeckMutation = { __typename?: 'Mutation', setDeck: { __typename?:
 
 export type SetOrderMutationVariables = Exact<{
   game: Scalars['ID']['input'];
-  order?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
+  users?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
 }>;
 
 
@@ -1633,8 +1633,8 @@ export type SetDeckMutationHookResult = ReturnType<typeof useSetDeckMutation>;
 export type SetDeckMutationResult = Apollo.MutationResult<SetDeckMutation>;
 export type SetDeckMutationOptions = Apollo.BaseMutationOptions<SetDeckMutation, SetDeckMutationVariables>;
 export const SetOrderDocument = gql`
-    mutation SetOrder($game: ID!, $order: [ID!]) {
-  setOrder(game: $game, order: $order) {
+    mutation SetOrder($game: ID!, $users: [ID!]) {
+  setOrder(game: $game, users: $users) {
     ...GameFragment
   }
 }
@@ -1655,7 +1655,7 @@ export type SetOrderMutationFn = Apollo.MutationFunction<SetOrderMutation, SetOr
  * const [setOrderMutation, { data, loading, error }] = useSetOrderMutation({
  *   variables: {
  *      game: // value for 'game'
- *      order: // value for 'order'
+ *      users: // value for 'users'
  *   },
  * });
  */

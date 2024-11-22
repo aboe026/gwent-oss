@@ -358,7 +358,7 @@ export default gql`
     setDeck(game: ID!, deck: ID!): GameDeck!
 
     "Set the order in which players will take turns during a game."
-    setOrder(game: ID!, order: [ID!]): Game!
+    setOrder(game: ID!, users: [ID!]): Game!
   }
 
   type Subscription {

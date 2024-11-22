@@ -1202,7 +1202,7 @@ function renderSetOrder({
                     await setOrder({
                       variables: {
                         game: game.id,
-                        order: canChooseOrder ? playerOrder.map((player) => player.user.id) : [],
+                        users: canChooseOrder ? playerOrder.map((player) => player.user.id) : [],
                       },
                     })
                   },
@@ -1534,7 +1534,7 @@ interface SetOrderProps {
           SetOrderMutation,
           Exact<{
             game: Scalars['ID']['input']
-            order?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>
+            users?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>
           }>,
           DefaultContext,
           ApolloCache<any> // eslint-disable-line @typescript-eslint/no-explicit-any

@@ -144,11 +144,11 @@ export default class GameStore extends Store {
     })
   }
 
-  static async setOrder({ gameId, order }: { gameId: string | ObjectId; order: (string | ObjectId)[] }) {
+  static async setOrder({ gameId, userIds }: { gameId: string | ObjectId; userIds: (string | ObjectId)[] }) {
     // TODO: make other method declarations debugs
     // TODO: add traces to other methods for filters/updates
     if (GameStore.logger.isDebugEnabled()) {
-      GameStore.logger.debug(`Setting order to "${JSON.stringify(order)}" on game "${gameId}"`)
+      GameStore.logger.debug(`Setting order to "${JSON.stringify(userIds)}" on game "${gameId}"`)
     }
     const filter: Filter<Document> = {
       _id: new ObjectId(gameId),
@@ -158,14 +158,14 @@ export default class GameStore extends Store {
     const update: UpdateFilter<Document> = {
       $set: {
         updated: new Date(),
-        turn: new ObjectId(order[0]),
+        turn: new ObjectId(userIds[0]),
       },
     }
     if (update.$set) {
-      for (let i = 0; i < order.length; i++) {
+      for (let i = 0; i < userIds.length; i++) {
         update.$set[`players.$[p${i}].order`] = i
         arrayFilters.push({
-          [`p${i}.user`]: new ObjectId(order[i]),
+          [`p${i}.user`]: new ObjectId(userIds[i]),
         })
       }
     }

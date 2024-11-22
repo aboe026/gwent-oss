@@ -720,13 +720,13 @@ export default class MutationResolver {
           )
         }
         const gameId = args.game
-        const order = args.order
+        const userIds = args.users
 
         return MutationResolver.setOrder({
           userId,
           gameId,
           logPrefix,
-          order,
+          userIds,
           allowImplicit: true,
         })
       },
@@ -735,13 +735,13 @@ export default class MutationResolver {
   private static async setOrder({
     userId,
     gameId,
-    order,
+    userIds,
     logPrefix,
     allowImplicit,
   }: {
     userId: string
     gameId: string
-    order?: string[] | null
+    userIds?: string[] | null
     logPrefix: string
     allowImplicit: boolean
   }): Promise<Game> {
@@ -792,17 +792,17 @@ export default class MutationResolver {
     // TODO: show player decks from resolver after all players have chosen decks
     const scoiaTaelId = factions[0]._id.toString()
     const scoiaTaelPlayers = game.players.filter((player) => player.deck.from?.faction.toString() === scoiaTaelId)
-    if (scoiaTaelPlayers.length > 1 && order && order.length > 0) {
+    if (scoiaTaelPlayers.length > 1 && userIds && userIds.length > 0) {
       const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${gameId}".`
       MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    if (scoiaTaelPlayers.length === 0 && order && order.length > 0) {
+    if (scoiaTaelPlayers.length === 0 && userIds && userIds.length > 0) {
       const message = `Cannot set explicit order as deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
       MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    if (scoiaTaelPlayers.length === 1 && (!order || order.length === 0) && !allowImplicit) {
+    if (scoiaTaelPlayers.length === 1 && (!userIds || userIds.length === 0) && !allowImplicit) {
       const message = `Cannot set order randomly as player "${scoiaTaelPlayers[0].user}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
       MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -826,13 +826,13 @@ export default class MutationResolver {
 
     const updatedGame = await GameStore.setOrder({
       gameId,
-      order: order && order.length > 0 ? order : randomizeOrder(game.players.map((player) => player.user)),
+      userIds: userIds && userIds.length > 0 ? userIds : randomizeOrder(game.players.map((player) => player.user)),
     })
     if (MutationResolver.logger.isTraceEnabled()) {
       MutationResolver.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
     }
     if (!updatedGame) {
-      const message = `Could set order on game "${gameId}" in probable race condition collision.`
+      const message = `Could not set order on game "${gameId}" in probable race condition collision.`
       MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }

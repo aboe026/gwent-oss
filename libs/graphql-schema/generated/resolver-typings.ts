@@ -329,7 +329,7 @@ export type MutationSetDeckArgs = {
 
 export type MutationSetOrderArgs = {
   game: Scalars['ID']['input'];
-  order?: InputMaybe<Array<Scalars['ID']['input']>>;
+  users?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type PlayerRound = {

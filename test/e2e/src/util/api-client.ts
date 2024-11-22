@@ -1210,8 +1210,8 @@ export default class ApiClient {
             ...UserFragment
           }
         }
-        mutation SetOrder($game: ID!, $order: [ID!]) {
-          setOrder(game: $game, order: $order) {
+        mutation SetOrder($game: ID!, $users: [ID!]) {
+          setOrder(game: $game, users: $users) {
             created
             creator {
               ...UserFragment
@@ -1237,7 +1237,7 @@ export default class ApiClient {
       `,
       {
         game: gameId.toString(),
-        order: userIds.map((userId) => userId.toString()),
+        users: userIds.map((userId) => userId.toString()),
       }
     )
     return response.setOrder
