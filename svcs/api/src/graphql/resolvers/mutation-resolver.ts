@@ -777,6 +777,12 @@ export default class MutationResolver {
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
+    if (game.turn) {
+      const message = `Game with ID "${gameId}" already has order set.`
+      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+
     const factions = await FactionStore.get({
       keys: [FactionKey.ScoiaTael],
     })
@@ -803,7 +809,7 @@ export default class MutationResolver {
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (scoiaTaelPlayers.length === 1 && (!userIds || userIds.length === 0) && !allowImplicit) {
-      const message = `Cannot set order randomly as player "${scoiaTaelPlayers[0].user}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const message = `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
       MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
@@ -812,17 +818,34 @@ export default class MutationResolver {
       MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    // TODO: func test scenario where nobody has scoiatael so anyone can set order
 
-    if (game.turn) {
-      const message = `Game with ID "${gameId}" already has order set.`
-      MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    if (userIds && userIds.length > 0) {
+      const playerIdsInGame = game.players.map((player) => player.user.toString())
+      const playersIdsNotInGame: string[] = []
+      for (const userId of userIds) {
+        if (!playerIdsInGame.includes(userId.toString())) {
+          playersIdsNotInGame.push(userId)
+        }
+      }
+      if (playersIdsNotInGame.length > 0) {
+        const message = `Cannot set order as users(s) ${JSON.stringify(
+          playersIdsNotInGame
+        )} are not players on game "${gameId}".`
+        MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      }
+      if (userIds.length !== game.players.length) {
+        const message = `Cannot set order as users count of "${userIds.length}" does not match player count of "${game.players.length}" for game "${gameId}".`
+        MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      }
+      const uniqueUserIds = getUniqueItems<string>(userIds)
+      if (uniqueUserIds.length !== userIds.length) {
+        const message = `Cannot set order for game "${gameId}" as duplicate user IDs specified.`
+        MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
+        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      }
     }
-
-    // TODO: make sure all IDs in order are players on game
-    // TODO: make sure if order set, it is the same length as game players
-    // TODO: make sure not duplicate ids
 
     const updatedGame = await GameStore.setOrder({
       gameId,

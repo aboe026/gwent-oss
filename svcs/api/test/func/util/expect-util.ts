@@ -4,6 +4,7 @@ import {
   DeckUnit,
   Faction,
   FactionKey,
+  GamePlayer,
   GamePlayerUnitCounts,
   GameStatus,
   Leader,
@@ -415,6 +416,7 @@ export function expectizeGame({
   creator,
   players,
   status = GameStatus.Decking,
+  turn = null,
 }: {
   creator: User
   players: {
@@ -424,9 +426,10 @@ export function expectizeGame({
     ready?: boolean
     rounds?: PlayerRound[]
     user: User
-    order?: number
+    order?: number | null
   }[]
   status?: GameStatus
+  turn?: GamePlayer | null
 }) {
   return {
     created: expect.any(Date),
@@ -457,8 +460,8 @@ export function expectizeGame({
       current: 0,
       maximum: 3,
     },
-    turn: status === GameStatus.Playing ? expect.any(Object) : null,
     status,
+    turn,
     updated: expect.any(Date),
     victors: [],
   }

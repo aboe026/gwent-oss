@@ -1271,8 +1271,8 @@ describe('game', () => {
       })
       it('throws error if player not part of game', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
-        const name3 = `redraw-2-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
+        const name3 = `redraw-3-${Date.now()}`
         const user1 = await addUser(name1)
         const user2 = await addUser(name2)
         await addUser(name3)
@@ -1306,7 +1306,7 @@ describe('game', () => {
       })
       it('throws error if deck not set', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
@@ -1339,7 +1339,7 @@ describe('game', () => {
       })
       it('throws error if ready', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
@@ -1386,7 +1386,7 @@ describe('game', () => {
       })
       it('throws error if maximum redraws exceeded', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
@@ -1439,7 +1439,7 @@ describe('game', () => {
       })
       it('throws error if unit does not exist in hand', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
@@ -1483,7 +1483,7 @@ describe('game', () => {
       })
       it('throws error if try to redraw same card twice', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
