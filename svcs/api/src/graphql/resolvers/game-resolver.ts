@@ -134,7 +134,7 @@ export default class GameResolver {
   }
 
   /**
-   * Whether or not every player in the game is marked as ready. Some information may provide a competetive advantage to players if revealed before all players ready.
+   * Whether or not every player in the game is marked as ready.
    *
    * @param game The Game database document to determine if all players are ready for.
    * @returns True if all players are marked as ready on the game, false otherwise.
@@ -143,6 +143,12 @@ export default class GameResolver {
     return game.players.length > 0 && game.players.filter((player) => player.ready).length === game.players.length
   }
 
+  /**
+   * Whether or not every player in the game has chosen a deck for the game. Some information may provide a competetive advantage to players if revealed before all players ready.
+   *
+   * @param game The game database document to determine if all players have chosen a deck for.
+   * @returns True if all players have chosen a deck for the game, false otherwise.
+   */
   static allDecksChosen(game: GameDbObject): boolean {
     return game.players.length > 0 && game.players.filter((player) => player.deck.from).length === game.players.length
   }

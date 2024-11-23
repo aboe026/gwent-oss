@@ -413,11 +413,15 @@ export default class TestUtil {
     created,
     creator,
     players,
+    turn,
+    victors = [],
   }: {
     id?: ObjectId | string
     created?: Date
     creator?: ObjectId | string
     players?: GamePlayerDbObject[]
+    turn?: ObjectId | string
+    victors?: (ObjectId | string)[]
   }): GameDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
@@ -451,8 +455,9 @@ export default class TestUtil {
         current: 0,
         maximum: MAX_ROUNDS,
       },
+      turn: turn ? new ObjectId(turn) : undefined,
       updated: new Date(),
-      victors: [],
+      victors: victors.map((victor) => new ObjectId(victor)),
     }
   }
 
@@ -555,17 +560,20 @@ export default class TestUtil {
     deck = TestUtil.getDbGameDeck({}),
     ready = false,
     rounds = [],
+    order,
     user,
   }: {
     deck?: GameDeckDbObject
     ready?: boolean
     rounds?: PlayerRound[]
+    order?: number
     user?: ObjectId | string
   }): GamePlayerDbObject {
     return {
-      deck: deck,
+      deck,
       ready,
       rounds,
+      order,
       user: user ? new ObjectId(user) : new ObjectId(),
     }
   }

@@ -10,11 +10,11 @@ import UserResolver from '../../src/graphql/resolvers/user-resolver'
 
 describe('game-player-resolver', () => {
   describe('fromObject', () => {
-    it('returns without faction, leader or counts if everybody not ready', async () => {
+    it('returns without faction, leader or counts if not all decks chosen', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
       await testResolveFromObject({
-        everyoneReady: false,
+        allDecksChosen: false,
         player: TestUtil.getDbGamePlayer({
           ready: true,
           user: user.id,
@@ -26,14 +26,15 @@ describe('game-player-resolver', () => {
         user,
       })
     })
-    it('returns faction, leader and counts if everybody ready', async () => {
+    it('returns faction, leader and counts if all decks chosen', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
       await testResolveFromObject({
-        everyoneReady: true,
+        allDecksChosen: true,
         player: TestUtil.getDbGamePlayer({
           ready: true,
           user: user.id,
+          order: 1,
         }),
         faction,
         leader: TestUtil.getLeader({
@@ -42,12 +43,12 @@ describe('game-player-resolver', () => {
         user,
       })
     })
-    it('reaches out to resolvers if everybody ready but nothing provided', async () => {
+    it('reaches out to resolvers if all decks chosen but nothing provided', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
       const leader = TestUtil.getLeader({})
       await testResolveFromObject({
-        everyoneReady: true,
+        allDecksChosen: true,
         player: TestUtil.getDbGamePlayer({
           ready: true,
           user: user.id,
@@ -99,7 +100,7 @@ describe('game-player-resolver', () => {
         user: user.id,
       })
       await testResolveFromArray({
-        everyoneReady: false,
+        allDecksChosen: false,
         players: [player],
         resolvedUsers: [user],
         resolvedFactions: [faction],
@@ -161,7 +162,7 @@ describe('game-player-resolver', () => {
         user: user.id,
       })
       await testResolveFromArray({
-        everyoneReady: false,
+        allDecksChosen: false,
         players: [player],
         users: [user],
         resolvedFactions: [faction],
@@ -215,7 +216,7 @@ async function testResolveFromObject({
   leader,
   neutralFactionStats,
   neutralLeaderStats,
-  everyoneReady,
+  allDecksChosen,
   resolvedFaction,
   resolvedLeader,
   resolvedUser,
@@ -230,7 +231,7 @@ async function testResolveFromObject({
   leader?: Leader | undefined
   neutralFactionStats?: boolean
   neutralLeaderStats?: boolean
-  everyoneReady: boolean
+  allDecksChosen: boolean
   resolvedFaction?: Faction
   resolvedLeader?: Leader
   resolvedUser?: User
@@ -253,7 +254,7 @@ async function testResolveFromObject({
   }
 
   const promise = GamePlayerResolver.fromObject({
-    allDecksChosen: everyoneReady,
+    allDecksChosen,
     player,
     faction,
     leader,
@@ -266,15 +267,16 @@ async function testResolveFromObject({
     await expect(promise).rejects.toThrow(Error(error))
   } else {
     await expect(promise).resolves.toEqual({
-      counts: everyoneReady
+      counts: allDecksChosen
         ? {
             discard: player.deck.discard.length,
             hand: player.deck.hand.length,
             undrawn: player.deck.undrawn.length,
           }
         : undefined,
-      faction: everyoneReady ? faction || resolvedFaction : undefined,
-      leader: everyoneReady ? leader || resolvedLeader : undefined,
+      faction: allDecksChosen ? faction || resolvedFaction : undefined,
+      leader: allDecksChosen ? leader || resolvedLeader : undefined,
+      order: player.order,
       ready: player.ready,
       rounds: player.rounds,
       user: user || resolvedUser,
@@ -289,7 +291,7 @@ async function testResolveFromObject({
 async function testResolveFromArray({
   players,
   users,
-  everyoneReady,
+  allDecksChosen,
   neutralFactionStats,
   neutralLeaderStats,
   resolvedUsers = [],
@@ -304,7 +306,7 @@ async function testResolveFromArray({
 }: {
   players: GamePlayerDbObject[]
   users?: User[]
-  everyoneReady: boolean
+  allDecksChosen: boolean
   neutralFactionStats?: boolean
   neutralLeaderStats?: boolean
   resolvedUsers?: User[]
@@ -347,7 +349,7 @@ async function testResolveFromArray({
   }
 
   const promise = GamePlayerResolver.fromArray({
-    allDecksChosen: everyoneReady,
+    allDecksChosen: allDecksChosen,
     players,
     neutralFactionStats,
     neutralLeaderStats,
