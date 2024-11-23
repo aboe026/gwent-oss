@@ -72,7 +72,7 @@ export default gql`
     DECKING
     "The order of player turns is being decided. Happens automatically unless there is a single player with a Scoia'tael faction deck who can then choose which player starts."
     ORDERING
-    "Players are potentially redrawing their hand cards."
+    "Players are potentially redrawing the cards in their hand."
     REDRAWING
     "Players are playing rounds of the game."
     PLAYING
