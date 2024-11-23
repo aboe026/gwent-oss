@@ -253,7 +253,7 @@ async function testResolveFromObject({
   }
 
   const promise = GamePlayerResolver.fromObject({
-    everyoneReady,
+    allDecksChosen: everyoneReady,
     player,
     faction,
     leader,
@@ -347,7 +347,7 @@ async function testResolveFromArray({
   }
 
   const promise = GamePlayerResolver.fromArray({
-    everyoneReady,
+    allDecksChosen: everyoneReady,
     players,
     neutralFactionStats,
     neutralLeaderStats,

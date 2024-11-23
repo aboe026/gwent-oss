@@ -2,6 +2,9 @@
 
 A list of things to be done in the future
 
+- remove everyoneReady from unit tests
+- add js docs
+- remove extra space between title and returns in js docs
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - sub-directories for resolvers
   - types
