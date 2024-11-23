@@ -4,6 +4,8 @@ A list of things to be done in the future
 
 - remove everyoneReady from unit tests
 - add js docs
+- make store method declarations debug-level instead of trace (like GameStore setOrder)
+- add traces to store methods for filters/updates (like GameStore setOrder)
 - remove extra space between title and returns in js docs
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - sub-directories for resolvers

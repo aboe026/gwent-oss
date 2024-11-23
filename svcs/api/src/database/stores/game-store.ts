@@ -144,11 +144,23 @@ export default class GameStore extends Store {
     })
   }
 
-  static async setOrder({ gameId, userIds }: { gameId: string | ObjectId; userIds: (string | ObjectId)[] }) {
-    // TODO: make other method declarations debugs
-    // TODO: add traces to other methods for filters/updates
+  /**
+   * Set the oder of player turns in a deck.
+   *
+   * @param config The configuration to use for setting the order.
+   * @param config.gameId The ID of the game to set the order for.
+   * @param config.userIds The IDs of the users to set the order for, in the order they are in the array.
+   * @returns The updated game with the turn orders set.
+   */
+  static async setOrder({
+    gameId,
+    userIds,
+  }: {
+    gameId: string | ObjectId
+    userIds: (string | ObjectId)[]
+  }): Promise<GameDbObject | undefined> {
     if (GameStore.logger.isDebugEnabled()) {
-      GameStore.logger.debug(`Setting order to "${JSON.stringify(userIds)}" on game "${gameId}"`)
+      GameStore.logger.debug(`Setting order on game "${gameId}" to "${JSON.stringify(userIds)}"`)
     }
     const filter: Filter<Document> = {
       _id: new ObjectId(gameId),
