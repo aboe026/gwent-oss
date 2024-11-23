@@ -7,7 +7,7 @@ import DbUtil from './util/db-util'
 import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('games', () => {
@@ -64,7 +64,70 @@ describe('games', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Not enough opponents for game at "0", minimum is "1".`)],
+          errors: [new GraphQLError(`Not enough opponents for game at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`)],
+        })
+      })
+      it('throws error if self included as opponent', async () => {
+        const name1 = `games-1-${Date.now()}`
+        const name2 = `games-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        await addUser(name2)
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              addGame(
+                opponentNames: [
+                  "${name1}",
+                  "${name2}"
+                ]
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user1.id,
+                  name: name1,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError('Invalid opponents: cannot include self.')],
+        })
+      })
+      it('throws error if duplicate opponents', async () => {
+        const name1 = `games-1-${Date.now()}`
+        const name2 = `games-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        await addUser(name2)
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              addGame(
+                opponentNames: [
+                  "${name2}",
+                  "${name2}"
+                ]
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user1.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError('Invalid opponents: no duplicates allowed.')],
         })
       })
       it('throws error if 2 opponents', async () => {
@@ -97,7 +160,7 @@ describe('games', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Excessive opponents for game at "2", maximum is "1".`)],
+          errors: [new GraphQLError(`Excessive opponents for game at "2", maximum is "${PLAYER_COUNTS.Max - 1}".`)],
         })
       })
       it('throws error if opponent does not exist', async () => {

@@ -206,8 +206,17 @@ export default class MutationResolver {
           )
           MutationResolver.logger.trace(`${logPrefix} creator: "${creatorName}"`)
         }
-        // TODO: throw error if duplicate opponentNames
-        const opponentNames = getUniqueItems<string>(args.opponentNames.filter((name) => name !== creatorName))
+        const opponentNames = getUniqueItems<string>(args.opponentNames)
+        if (opponentNames.length !== args.opponentNames.length) {
+          const message = 'Invalid opponents: no duplicates allowed.'
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+        if (opponentNames.includes(creatorName)) {
+          const message = 'Invalid opponents: cannot include self.'
+          MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} opponentNames: "${JSON.stringify(opponentNames)}"`)
         }
@@ -795,7 +804,6 @@ export default class MutationResolver {
       MutationResolver.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    // TODO: show player decks from resolver after all players have chosen decks
     const scoiaTaelId = factions[0]._id.toString()
     const scoiaTaelPlayers = game.players.filter((player) => player.deck.from?.faction.toString() === scoiaTaelId)
     if (scoiaTaelPlayers.length > 1 && userIds && userIds.length > 0) {
