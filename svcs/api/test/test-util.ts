@@ -392,7 +392,7 @@ export default class TestUtil {
     }
   }
 
-  static getDeck(): Deck {
+  static getDeck({ user }: { user?: User }): Deck {
     return {
       created: new Date(),
       faction: TestUtil.getFaction({}),
@@ -404,7 +404,7 @@ export default class TestUtil {
         artStyle: 1,
         unit: TestUtil.getUnit({}),
       }),
-      user: TestUtil.getUser({}),
+      user: user || TestUtil.getUser({}),
     }
   }
 
@@ -575,6 +575,26 @@ export default class TestUtil {
       rounds,
       order,
       user: user ? new ObjectId(user) : new ObjectId(),
+    }
+  }
+
+  static getGamePlayer({
+    ready = false,
+    user,
+    faction,
+    leader,
+  }: {
+    ready?: boolean
+    user?: User
+    faction?: Faction
+    leader?: Leader
+  }): GamePlayer {
+    return {
+      ready,
+      rounds: [],
+      user: user || TestUtil.getUser({}),
+      faction,
+      leader,
     }
   }
 

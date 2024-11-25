@@ -214,7 +214,7 @@ export default class SubscriptionResolver {
         )
       }
     } else {
-      SubscriptionResolver.logger.debug(`Not publishing gameReady for game "${gameId}": No user on context.`)
+      SubscriptionResolver.logger.debug(`Not publishing gameSet for game "${gameId}": No user on context.`)
     }
     return false
   }
