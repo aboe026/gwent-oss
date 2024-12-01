@@ -1,6 +1,7 @@
 import { formatDay, formatTime } from './format-date'
 import formatGameStatus from './format-game-status'
 import getCombatImage from './get-combat-image'
+import getDuplicateItems from './get-duplicate-items'
 import getRandomSubset from './get-random-subset'
 import getUniqueItems from './get-unique-items'
 import getUnitStats from './get-unit-stats'
@@ -15,6 +16,7 @@ export {
   formatTime,
   formatGameStatus,
   getCombatImage,
+  getDuplicateItems,
   getRandomSubset,
   getUniqueItems,
   getUnitStats as getDeckStats,

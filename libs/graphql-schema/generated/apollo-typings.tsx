@@ -240,7 +240,7 @@ export enum GameStatus {
   Ordering = 'ORDERING',
   /** Players are playing rounds of the game. */
   Playing = 'PLAYING',
-  /** Players are potentially redrawing their hand cards. */
+  /** Players are potentially redrawing the cards in their hand. */
   Redrawing = 'REDRAWING'
 }
 

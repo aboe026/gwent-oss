@@ -650,11 +650,11 @@ export default class TestUtil {
     }
   }
 
-  static getUser({ id }: { id?: ObjectId | string }): User {
+  static getUser({ id, name = 'user-name' }: { id?: ObjectId | string; name?: string }): User {
     return {
       created: new Date(),
       id: (id || new ObjectId()).toString(),
-      name: 'user-name',
+      name,
     }
   }
 }

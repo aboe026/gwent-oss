@@ -2,6 +2,10 @@
 
 A list of things to be done in the future
 
+- print off ids in errors (eg duplicates)
+- change logger from error to warn for dumb user behavior (eg duplicates, invalid ObjectId, etc)
+- validate ObjectID inputs
+- mock event publishing in mutation unit tests
 - remove everyoneReady from unit tests
 - add js docs
 - make store method declarations debug-level instead of trace (like GameStore setOrder)
