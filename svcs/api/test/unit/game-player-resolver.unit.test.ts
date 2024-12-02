@@ -139,7 +139,7 @@ describe('game-player-resolver', () => {
               leader,
               neutralFactionStats: undefined,
               neutralLeaderStats: undefined,
-              everyoneReady: false,
+              allDecksChosen: false,
             },
           ],
         ],
@@ -200,7 +200,7 @@ describe('game-player-resolver', () => {
               leader,
               neutralFactionStats: undefined,
               neutralLeaderStats: undefined,
-              everyoneReady: false,
+              allDecksChosen: false,
             },
           ],
         ],
@@ -349,7 +349,7 @@ async function testResolveFromArray({
   }
 
   const promise = GamePlayerResolver.fromArray({
-    allDecksChosen: allDecksChosen,
+    allDecksChosen,
     players,
     neutralFactionStats,
     neutralLeaderStats,

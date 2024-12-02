@@ -3159,7 +3159,7 @@ async function testSetDeck({
     resolveGameSpy.mockResolvedValue(resolveGameResponse)
   }
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const setOrderSpy = jest.spyOn(MutationResolver as any, 'setOrder').mockImplementation()
+  const setOrderSpy = jest.spyOn(MutationResolver as any, 'setGameTurnOrder').mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -3253,7 +3253,7 @@ async function testSetOrder({
   const resolvedGame = TestUtil.getGame({
     id: gameId,
   })
-  const setOrderSpy = jest.spyOn(MutationResolver as any, 'setOrder').mockResolvedValue(resolvedGame)
+  const setOrderSpy = jest.spyOn(MutationResolver as any, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
   const traceSpy = jest.fn().mockImplementation()
   MutationResolver['logger'] = {
     trace: traceSpy,
