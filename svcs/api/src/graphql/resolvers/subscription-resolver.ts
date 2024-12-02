@@ -226,7 +226,7 @@ export default class SubscriptionResolver {
     }
     const userId = ctx.user?._id.toString()
     const gameId = payload.orderSet.id
-    SubscriptionResolver.logger.debug(`orderSet userId: "${userId}", gameId: "${gameId}"`)
+    SubscriptionResolver.logger.debug(`orderSet with userId: "${userId}", gameId: "${gameId}"`)
     if (userId) {
       if (payload.orderSet.players.some((player) => player.user.id === userId)) {
         SubscriptionResolver.logger.debug(`Publishing orderSet for game "${gameId}" to user "${userId}".`)
@@ -253,7 +253,7 @@ export default class SubscriptionResolver {
     const toId = payload.unitRedrawn.to.unit.id
     const ownerId = payload.unitRedrawn.ownerId
     SubscriptionResolver.logger.debug(
-      `unitRedrawn userId: "${userId}", gameId: "${gameId}", fromId: "${fromId}", toId: "${toId}", ownerId: "${ownerId}"`
+      `unitRedrawn with userId: "${userId}", gameId: "${gameId}", fromId: "${fromId}", toId: "${toId}", ownerId: "${ownerId}"`
     )
     if (userId) {
       if (payload.unitRedrawn.game.players.some((player) => player.user.id === userId)) {
