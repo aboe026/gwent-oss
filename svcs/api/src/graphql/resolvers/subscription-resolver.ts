@@ -96,6 +96,13 @@ export default class SubscriptionResolver {
     return false
   }
 
+  /**
+   * Filter out set Decks that are not relevant for the user.
+   *
+   * @param payload The deck to potentially publish for the game.
+   * @param ctx The context of the connection contiaining user information.
+   * @returns True if the deck should be published for the user, false if not.
+   */
   private static filterDeckSet(payload: DeckSetPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`deckSet payload: "${JSON.stringify(payload)}"`)
@@ -188,6 +195,13 @@ export default class SubscriptionResolver {
     return false
   }
 
+  /**
+   * Filter out set Games that are not relevant for the user.
+   *
+   * @param payload The set game to potentially publish.
+   * @param ctx The context of the connection contiaining user information.
+   * @returns True if the set game should be published for the user, false if not.
+   */
   private static filterGameSet(payload: GameSetPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`gameSet payload: "${JSON.stringify(payload)}"`)
@@ -219,6 +233,13 @@ export default class SubscriptionResolver {
     return false
   }
 
+  /**
+   * Filter out ordered Games that are not relevant for the user.
+   *
+   * @param payload The ordered game to potentially publish.
+   * @param ctx The context of the connection contiaining user information.
+   * @returns True if the ordered game should be published for the user, false if not.
+   */
   private static filterOrderSet(payload: OrderSetPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`orderSet payload: "${JSON.stringify(payload)}"`)
@@ -242,6 +263,13 @@ export default class SubscriptionResolver {
     return false
   }
 
+  /**
+   * Filter out redrawn units that are not relevant for the user.
+   *
+   * @param payload The redrawn units to potentially publish.
+   * @param ctx The context of the connection contiaining user information.
+   * @returns True if the redrawn unit should be published for the user, false if not.
+   */
   private static filterUnitRedrawn(payload: UnitRedrawnPayload, ctx: SubscriptionContext): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`unitRedrawn payload: "${JSON.stringify(payload)}"`)

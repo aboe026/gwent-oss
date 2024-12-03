@@ -762,7 +762,7 @@ export default class MutationResolver {
     }
     if (!game) {
       const message = `Game with ID "${gameId}" does not exist.`
-      MutationResolver.logger.warn(`${logPrefix} failed: ${message}`) // TODO: change to warn? verify logged in unit test?
+      MutationResolver.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
