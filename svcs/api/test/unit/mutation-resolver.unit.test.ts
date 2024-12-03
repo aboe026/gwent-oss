@@ -632,13 +632,12 @@ describe('mutation-resolver', () => {
       const resolvedGame = TestUtil.getGame({
         id: game._id,
         players: [
-          {
+          TestUtil.getGamePlayer({
             ready: true,
-            rounds: [],
             user: TestUtil.getUser({
               id: userId,
             }),
-          },
+          }),
         ],
       })
       await testReady({
@@ -698,13 +697,12 @@ describe('mutation-resolver', () => {
       const resolvedGame = TestUtil.getGame({
         id: game._id,
         players: [
-          {
+          TestUtil.getGamePlayer({
             ready: true,
-            rounds: [],
             user: TestUtil.getUser({
               id: userId,
             }),
-          },
+          }),
         ],
       })
       await testReady({

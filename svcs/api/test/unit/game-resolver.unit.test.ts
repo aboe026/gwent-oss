@@ -41,11 +41,9 @@ describe('game-resolver', () => {
         resolvedUsers: [user, victor],
         resolvedVictors: [victor],
         resolvedGamePlayers: [
-          {
-            ready: false,
-            rounds: [],
+          TestUtil.getGamePlayer({
             user,
-          },
+          }),
         ],
         userResolverCalls: [[[user.id, victor.id]]],
         gamePlayerResolverCalls: [
@@ -90,11 +88,9 @@ describe('game-resolver', () => {
         creator: user,
         users: [victor],
         resolvedGamePlayers: [
-          {
-            ready: false,
-            rounds: [],
+          TestUtil.getGamePlayer({
             user,
-          },
+          }),
         ],
         gamePlayerResolverCalls: [
           [
@@ -140,16 +136,12 @@ describe('game-resolver', () => {
             creator: creator,
             id: game._id.toString(),
             players: [
-              {
-                ready: false,
-                rounds: [],
+              TestUtil.getGamePlayer({
                 user: creator,
-              },
-              {
-                ready: false,
-                rounds: [],
+              }),
+              TestUtil.getGamePlayer({
                 user: player,
-              },
+              }),
             ],
             round: game.round,
             status: GameStatus.Decking,

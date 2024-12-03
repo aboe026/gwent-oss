@@ -106,11 +106,9 @@ describe('game-player-resolver', () => {
         resolvedFactions: [faction],
         resolvedLeaders: [leader],
         resolvedGamePlayers: [
-          {
-            ready: false,
-            rounds: [],
+          TestUtil.getGamePlayer({
             user,
-          },
+          }),
         ],
         userResolverCalls: [[[new ObjectId(user.id)]]],
         factionResolverCalls: [
@@ -168,11 +166,9 @@ describe('game-player-resolver', () => {
         resolvedFactions: [faction],
         resolvedLeaders: [leader],
         resolvedGamePlayers: [
-          {
-            ready: false,
-            rounds: [],
+          TestUtil.getGamePlayer({
             user,
-          },
+          }),
         ],
         factionResolverCalls: [
           [

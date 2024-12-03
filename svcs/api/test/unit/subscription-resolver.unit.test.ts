@@ -493,7 +493,6 @@ describe('subscription-resolver', () => {
     it('returns false if user not a player on game', () => {
       const gameId = new ObjectId()
       const userId = new ObjectId()
-      // TODO: change instances of manually created mock game player to use TestUtil.getGamePlayer (in this file and potentially elsewhere)
       testFilterGameSet({
         gameId: gameId.toString(),
         players: [TestUtil.getGamePlayer({}), TestUtil.getGamePlayer({})],
