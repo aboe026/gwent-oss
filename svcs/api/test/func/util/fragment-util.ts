@@ -6,6 +6,15 @@ export function getUserFragment(): string {
   `
 }
 
+export function getSettingFragment(): string {
+  return `
+    key
+    label
+    type
+    value
+  `
+}
+
 export function getDlcFragment(): string {
   return `
     created

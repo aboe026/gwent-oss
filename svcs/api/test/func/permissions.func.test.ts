@@ -12,6 +12,7 @@ import {
   getGameDeckFragment,
   getGameFragment,
   getLeaderFragment,
+  getSettingFragment,
   getUnitFragment,
   getUserFragment,
 } from './util/fragment-util'
@@ -80,6 +81,139 @@ describe('permissions', () => {
         })
       })
     })
+    describe('game', () => {
+      it('returns error if not authenticated', async () => {
+        const user1 = await addUser(`user-1-${Date.now()}`)
+        const user2 = await addUser(`user-2-${Date.now()}`)
+        const game = await addGame({
+          opponentNames: [user2.name],
+          userId: user1.id,
+        })
+        await expect(
+          graphql({
+            schema,
+            source: `{
+              game(
+                id: "${game.id}"
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(NOT_AUTHENTICATED_MESSAGE)],
+        })
+      })
+      it('returns error if not a player', async () => {
+        const user1 = await addUser(`user-1-${Date.now()}`)
+        const user2 = await addUser(`user-2-${Date.now()}`)
+        const user3 = await addUser(`user-3-${Date.now()}`)
+        const game = await addGame({
+          opponentNames: [user2.name],
+          userId: user1.id,
+        })
+        await expect(
+          graphql({
+            schema,
+            source: `{
+              game(
+                id: "${game.id}"
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user3.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(NOT_AUTHORIZED_MESSAGE)],
+        })
+      })
+    })
+    describe('gameDeck', () => {
+      it('returns error if not authenticated', async () => {
+        const user1 = await addUser(`user-1-${Date.now()}`)
+        const user2 = await addUser(`user-2-${Date.now()}`)
+        const game = await addGame({
+          opponentNames: [user2.name],
+          userId: user1.id,
+        })
+        await expect(
+          graphql({
+            schema,
+            source: `{
+              gameDeck(
+                game: "${game.id}"
+              ) {
+                ${getGameDeckFragment({})}
+              }
+            }`,
+          })
+        ).resolves.toEqual({
+          data: {
+            gameDeck: null,
+          },
+          errors: [new GraphQLError(NOT_AUTHENTICATED_MESSAGE)],
+        })
+      })
+      it('returns error if not a player', async () => {
+        const user1 = await addUser(`user-1-${Date.now()}`)
+        const user2 = await addUser(`user-2-${Date.now()}`)
+        const user3 = await addUser(`user-3-${Date.now()}`)
+        const game = await addGame({
+          opponentNames: [user2.name],
+          userId: user1.id,
+        })
+        await expect(
+          graphql({
+            schema,
+            source: `{
+              gameDeck(
+                game: "${game.id}"
+              ) {
+                ${getGameDeckFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user3.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: {
+            gameDeck: null,
+          },
+          errors: [new GraphQLError(NOT_AUTHORIZED_MESSAGE)],
+        })
+      })
+    })
+    describe('games', () => {
+      it('returns error if not authenticated', async () => {
+        await expect(
+          graphql({
+            schema,
+            source: `{
+              games {
+                ${getGameFragment({})}
+              }
+            }`,
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(NOT_AUTHENTICATED_MESSAGE)],
+        })
+      })
+    })
     describe('leaders', () => {
       it('returns error if not authenticated', async () => {
         await expect(
@@ -104,7 +238,7 @@ describe('permissions', () => {
             schema,
             source: `{
               settings {
-                key
+                ${getSettingFragment()}
               }
             }`,
           })
