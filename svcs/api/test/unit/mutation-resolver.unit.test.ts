@@ -236,7 +236,7 @@ describe('mutation-resolver', () => {
     const userId = new ObjectId()
     const logPrefix = `addGame by "${userId}"`
     it('returns error if duplicate opponents', async () => {
-      const error = 'Invalid opponents: no duplicates allowed.'
+      const error = 'Invalid opponents: no duplicates allowed: "["test"]".'
       await testAddGame({
         creatorId: userId,
         opponentNames: ['test', 'test'],

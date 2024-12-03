@@ -206,9 +206,10 @@ export default class MutationResolver {
           )
           MutationResolver.logger.trace(`${logPrefix} creator: "${creatorName}"`)
         }
-        const opponentNames = getUniqueItems<string>(args.opponentNames)
-        if (opponentNames.length !== args.opponentNames.length) {
-          const message = 'Invalid opponents: no duplicates allowed.'
+        const opponentNames = args.opponentNames
+        const duplicateNames = getDuplicateItems(opponentNames)
+        if (duplicateNames.length > 0) {
+          const message = `Invalid opponents: no duplicates allowed: "${JSON.stringify(duplicateNames)}".`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -728,14 +729,12 @@ export default class MutationResolver {
             `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
           )
         }
-        const gameId = args.game
-        const userIds = args.users
 
         return MutationResolver.setGameTurnOrder({
           userId,
-          gameId,
+          gameId: args.game,
           logPrefix,
-          userIds,
+          userIds: args.users,
           allowImplicit: true,
         })
       },
