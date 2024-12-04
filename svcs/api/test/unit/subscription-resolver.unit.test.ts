@@ -2,6 +2,7 @@ import * as graphqlSubscriptions from 'graphql-subscriptions'
 import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
+import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../src/graphql/resolvers/event-manager'
 import { Game, GameDeck, GamePlayer } from '@gwent/graphql-schema/resolver-typings'
 import { PubSubEvents } from '@gwent/constants'
@@ -12,11 +13,9 @@ import SubscriptionResolver, {
   GameReadyPayload,
   GameSetPayload,
   OrderSetPayload,
-  SubscriptionContext,
   UnitRedrawnPayload,
 } from '../../src/graphql/resolvers/subscription-resolver'
 import TestUtil from '../test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 
 describe('subscription-resolver', () => {
   describe('getResolvers', () => {
@@ -127,8 +126,10 @@ describe('subscription-resolver', () => {
             to: TestUtil.getDeckUnit({}),
           },
         }
-        const context: SubscriptionContext = {
-          user: TestUtil.getDbUser({}),
+        const context: Context = {
+          session: {
+            user: TestUtil.getDbUser({}),
+          },
         }
         withFilterSpy.mock.calls[0][1](deckAddedPayload, undefined, context)
         withFilterSpy.mock.calls[1][1](deckSetPayload, undefined, context)
@@ -888,9 +889,11 @@ function testFilterDeckAdded({
       }),
     }),
   }
-  const ctx = {} as unknown as SubscriptionContext
-  if (userId) {
-    ctx.user = TestUtil.getDbUser({
+  const ctx: Context = {
+    session: {},
+  }
+  if (userId && ctx.session) {
+    ctx.session.user = TestUtil.getDbUser({
       id: userId,
     })
   }
@@ -927,9 +930,11 @@ function testFilterDeckSet({
   debugCalls?: string[][]
   traceEnabled?: boolean
 }) {
-  const ctx = {} as unknown as SubscriptionContext
-  if (userId) {
-    ctx.user = TestUtil.getDbUser({
+  const ctx: Context = {
+    session: {},
+  }
+  if (userId && ctx.session) {
+    ctx.session.user = TestUtil.getDbUser({
       id: userId,
     })
   }
@@ -982,11 +987,13 @@ function testFilterGameAdded({
       ),
     }),
   }
-  const ctx = {} as unknown as SubscriptionContext
-  if (userId) {
-    ctx.user = {
-      _id: userId,
-    } as UserDbObject
+  const ctx: Context = {
+    session: {},
+  }
+  if (userId && ctx.session) {
+    ctx.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -1027,9 +1034,11 @@ function testFilterGameReady({
       players,
     }),
   }
-  const ctx = {} as unknown as SubscriptionContext
-  if (userId) {
-    ctx.user = TestUtil.getDbUser({
+  const ctx: Context = {
+    session: {},
+  }
+  if (userId && ctx.session) {
+    ctx.session.user = TestUtil.getDbUser({
       id: userId,
     })
   }
@@ -1072,9 +1081,11 @@ function testFilterGameSet({
       players,
     }),
   }
-  const ctx = {} as unknown as SubscriptionContext
-  if (userId) {
-    ctx.user = TestUtil.getDbUser({
+  const ctx: Context = {
+    session: {},
+  }
+  if (userId && ctx.session) {
+    ctx.session.user = TestUtil.getDbUser({
       id: userId,
     })
   }
@@ -1121,9 +1132,11 @@ function testFilterOrderSet({
       ),
     }),
   }
-  const ctx = {} as unknown as SubscriptionContext
-  if (userId) {
-    ctx.user = TestUtil.getDbUser({
+  const ctx: Context = {
+    session: {},
+  }
+  if (userId && ctx.session) {
+    ctx.session.user = TestUtil.getDbUser({
       id: userId,
     })
   }
@@ -1185,9 +1198,11 @@ function testFilterUnitRedrawn({
       }),
     },
   }
-  const ctx = {} as unknown as SubscriptionContext
-  if (userId) {
-    ctx.user = TestUtil.getDbUser({
+  const ctx: Context = {
+    session: {},
+  }
+  if (userId && ctx.session) {
+    ctx.session.user = TestUtil.getDbUser({
       id: userId,
     })
   }

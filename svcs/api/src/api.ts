@@ -139,7 +139,9 @@ export default class Api {
           }
 
           return {
-            user,
+            session: {
+              user,
+            },
           }
         },
         onConnect: async (ctx) => {

@@ -2,10 +2,10 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 import { withFilter } from 'graphql-subscriptions'
 
+import { Context } from '@gwent/graphql-schema/context'
 import { Deck, DeckUnit, Game, GameDeck, SubscriptionResolvers } from '@gwent/graphql-schema/resolver-typings'
 import EventManager from './event-manager'
 import { PubSubEvents } from '@gwent/constants'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 
 /**
  * A class for publising the events of the GraphQL Subscriptions defined in the schema.
@@ -73,12 +73,12 @@ export default class SubscriptionResolver {
    * @param ctx The context of the connection contiaining user information.
    * @returns True if the deck should be published for the user, false if not.
    */
-  private static filterDeckAdded(payload: DeckAddedPayload, ctx: SubscriptionContext): boolean {
+  private static filterDeckAdded(payload: DeckAddedPayload, ctx: Context): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`deckAdded payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`deckAdded ctx: "${JSON.stringify(ctx)}"`)
     }
-    const userId = ctx.user?._id.toString()
+    const userId = ctx.session?.user?._id.toString()
     const deckId = payload.deckAdded.id
     const deckOwner = payload.deckAdded.user.id
     if (userId) {
@@ -103,12 +103,12 @@ export default class SubscriptionResolver {
    * @param ctx The context of the connection contiaining user information.
    * @returns True if the deck should be published for the user, false if not.
    */
-  private static filterDeckSet(payload: DeckSetPayload, ctx: SubscriptionContext): boolean {
+  private static filterDeckSet(payload: DeckSetPayload, ctx: Context): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`deckSet payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`deckSet ctx: "${JSON.stringify(ctx)}"`)
     }
-    const userId = ctx.user?._id.toString()
+    const userId = ctx.session?.user?._id.toString()
     const gameId = payload.deckSet.game.id
     const deckId = payload.deckSet.deck.from?.id
     const deckOwner = payload.deckSet.deck.from?.user.id
@@ -144,12 +144,12 @@ export default class SubscriptionResolver {
    * @param ctx The context of the connection contiaining user information.
    * @returns True if the game should be published for the user, false if not.
    */
-  private static filterGameAdded(payload: GameAddedPayload, ctx: SubscriptionContext): boolean {
+  private static filterGameAdded(payload: GameAddedPayload, ctx: Context): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`gameAdded payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`gameAdded ctx: "${JSON.stringify(ctx)}"`)
     }
-    const userId = ctx.user?._id.toString()
+    const userId = ctx.session?.user?._id.toString()
     const gameId = payload.gameAdded.id
     if (userId) {
       if (payload.gameAdded.players.some((player) => player.user.id === userId)) {
@@ -173,12 +173,12 @@ export default class SubscriptionResolver {
    * @param ctx The context of the connection contiaining user information.
    * @returns True if the ready game should be published for the user, false if not.
    */
-  private static filterGameReady(payload: GameReadyPayload, ctx: SubscriptionContext): boolean {
+  private static filterGameReady(payload: GameReadyPayload, ctx: Context): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`gameReady payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`gameReady ctx: "${JSON.stringify(ctx)}"`)
     }
-    const userId = ctx.user?._id.toString()
+    const userId = ctx.session?.user?._id.toString()
     const gameId = payload.gameReady.id
     if (userId) {
       if (payload.gameReady.players.some((player) => player.user.id === userId)) {
@@ -202,12 +202,12 @@ export default class SubscriptionResolver {
    * @param ctx The context of the connection contiaining user information.
    * @returns True if the set game should be published for the user, false if not.
    */
-  private static filterGameSet(payload: GameSetPayload, ctx: SubscriptionContext): boolean {
+  private static filterGameSet(payload: GameSetPayload, ctx: Context): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`gameSet payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`gameSet ctx: "${JSON.stringify(ctx)}"`)
     }
-    const userId = ctx.user?._id.toString()
+    const userId = ctx.session?.user?._id.toString()
     const gameId = payload.gameSet.id
     if (userId) {
       if (payload.gameSet.players.some((player) => player.user.id === userId)) {
@@ -240,12 +240,12 @@ export default class SubscriptionResolver {
    * @param ctx The context of the connection contiaining user information.
    * @returns True if the ordered game should be published for the user, false if not.
    */
-  private static filterOrderSet(payload: OrderSetPayload, ctx: SubscriptionContext): boolean {
+  private static filterOrderSet(payload: OrderSetPayload, ctx: Context): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`orderSet payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`orderSet ctx: "${JSON.stringify(ctx)}"`)
     }
-    const userId = ctx.user?._id.toString()
+    const userId = ctx.session?.user?._id.toString()
     const gameId = payload.orderSet.id
     SubscriptionResolver.logger.debug(`orderSet with userId: "${userId}", gameId: "${gameId}"`)
     if (userId) {
@@ -270,12 +270,12 @@ export default class SubscriptionResolver {
    * @param ctx The context of the connection contiaining user information.
    * @returns True if the redrawn unit should be published for the user, false if not.
    */
-  private static filterUnitRedrawn(payload: UnitRedrawnPayload, ctx: SubscriptionContext): boolean {
+  private static filterUnitRedrawn(payload: UnitRedrawnPayload, ctx: Context): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`unitRedrawn payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`unitRedrawn ctx: "${JSON.stringify(ctx)}"`)
     }
-    const userId = ctx.user?._id.toString()
+    const userId = ctx.session?.user?._id.toString()
     const gameId = payload.unitRedrawn.game.id
     const fromId = payload.unitRedrawn.from.unit.id
     const toId = payload.unitRedrawn.to.unit.id
@@ -307,10 +307,6 @@ export default class SubscriptionResolver {
     }
     return false
   }
-}
-
-export interface SubscriptionContext {
-  user?: UserDbObject
 }
 
 export interface DeckAddedPayload {

@@ -22,6 +22,7 @@ import {
   getUnitFragment,
 } from './fragment-util'
 import schema from '../../../src/graphql/executable-schema'
+import TestUtil from '../../test-util'
 
 export async function addUser(name: string, password = 'password'): Promise<User> {
   const response = await graphql({
@@ -223,9 +224,9 @@ export async function addDeck({
   return response.data?.addDeck as Deck
 }
 
-export async function addGame({ opponentNames, userId }: { opponentNames: string[]; userId?: string }): Promise<Game> {
-  if (!userId) {
-    userId = (await addUser(`addGame-${Date.now()}`)).id
+export async function addGame({ opponentNames, creator }: { opponentNames: string[]; creator?: User }): Promise<Game> {
+  if (!creator) {
+    creator = await addUser(`addGame-${Date.now()}`)
   }
   const response = await graphql({
     schema,
@@ -238,9 +239,7 @@ export async function addGame({ opponentNames, userId }: { opponentNames: string
     }`,
     contextValue: {
       session: {
-        user: {
-          _id: userId,
-        },
+        user: TestUtil.getDbUserFromUser(creator),
       },
     },
   })

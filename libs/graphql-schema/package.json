@@ -1,6 +1,6 @@
 {
   "name": "@gwent/graphql-schema",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "author": "Adam Boe",
   "description": "Schema definitions for GraphQL API",
   "main": "build/src/index.js",
@@ -23,7 +23,8 @@
     "./games-filter": "./build/src/games-filter.js",
     "./apollo-typings": "./build/generated/apollo-typings.js",
     "./database-typings": "./build/generated/database-typings.js",
-    "./resolver-typings": "./build/generated/resolver-typings.js"
+    "./resolver-typings": "./build/generated/resolver-typings.js",
+    "./context": "./build/src/context.js"
   },
   "scripts": {
     "build": "yarn g:npm-run-all --sequential build-codegen build-node",

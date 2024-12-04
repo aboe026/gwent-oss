@@ -650,6 +650,15 @@ export default class TestUtil {
     }
   }
 
+  static getDbUserFromUser(user: User): UserDbObject {
+    return {
+      _id: new ObjectId(user.id),
+      created: user.created,
+      name: user.name,
+      password: '',
+    }
+  }
+
   static getUser({ id, name = 'user-name' }: { id?: ObjectId | string; name?: string }): User {
     return {
       created: new Date(),

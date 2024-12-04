@@ -1,6 +1,6 @@
 {
   "name": "@gwent/core",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "author": "Adam Boe",
   "description": "A recreation of the card game Gwent from The Witcher 3: Wild Hunt",
   "scripts": {

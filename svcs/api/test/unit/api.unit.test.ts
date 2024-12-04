@@ -539,7 +539,9 @@ async function testConfigureWebsocketServer({
     },
   }
   expect(context(ctx, undefined, undefined)).toEqual({
-    user: authenticateResponse,
+    session: {
+      user: authenticateResponse,
+    },
   })
   traceCalls.push([`WebSocket context user: "${JSON.stringify(authenticateResponse)}"`])
 
