@@ -350,6 +350,7 @@ export default class DeckEditor {
     pickers = false,
     verify = true,
     save = true,
+    verifyRedirect = true,
   }: {
     name: string
     faction: Faction
@@ -358,6 +359,7 @@ export default class DeckEditor {
     pickers?: boolean
     verify?: boolean
     save?: boolean
+    verifyRedirect?: boolean
   }) {
     if (verify) {
       await DeckEditor.verify({})
@@ -392,7 +394,7 @@ export default class DeckEditor {
     if (save) {
       await DeckEditor.save()
     }
-    if (verify) {
+    if (verifyRedirect) {
       await E2eUtil.verifyCurrentUrl(ROUTES.Decks.path)
     }
   }

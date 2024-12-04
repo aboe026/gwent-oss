@@ -14,7 +14,7 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/games-filter'
-import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
+import { formatDay, formatGameStatus, formatTime, sortObjectArray } from '@gwent/utils'
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -111,14 +111,7 @@ export default function GamesPage() {
       ) : (
         <div id="gamesList">
           {filteredGames.map((game) => {
-            let status = ''
-            if (game.status === GameStatus.Decking) {
-              status = 'Choosing Decks'
-            } else if (game.status === GameStatus.Playing) {
-              status = 'Playing'
-            } else if (game.status === GameStatus.Done) {
-              status = 'Finished'
-            }
+            const status = formatGameStatus(game.status)
             const rowUrl = ROUTES.Game.path.replace(':gameId', game.id)
 
             return (
@@ -206,7 +199,10 @@ function renderHeader({
   sortOrder: SORT_ORDER
   userFilter: string
 }) {
-  const filters = [
+  const filters: {
+    label: string
+    value: string
+  }[] = [
     {
       label: 'Monsters',
       value: FILTER_FIELD.Monsters,
@@ -230,6 +226,14 @@ function renderHeader({
     {
       label: 'Decking',
       value: FILTER_FIELD.Decking,
+    },
+    {
+      label: 'Ordering',
+      value: FILTER_FIELD.Ordering,
+    },
+    {
+      label: 'Redrawing',
+      value: FILTER_FIELD.Redrawing,
     },
     {
       label: 'Playing',
@@ -337,8 +341,21 @@ function renderHeader({
 }
 
 function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Game; user: string }): boolean {
+  const filteringAnyFaction =
+    fields.includes(FILTER_FIELD.Monsters) ||
+    fields.includes(FILTER_FIELD.NilfgaardianEmpire) ||
+    fields.includes(FILTER_FIELD.NorthernRealms) ||
+    fields.includes(FILTER_FIELD.ScoiaTael) ||
+    fields.includes(FILTER_FIELD.Skellige)
+  const filteringAnyStatus =
+    fields.includes(FILTER_FIELD.Decking) ||
+    fields.includes(FILTER_FIELD.Ordering) ||
+    fields.includes(FILTER_FIELD.Redrawing) ||
+    fields.includes(FILTER_FIELD.Playing) ||
+    fields.includes(FILTER_FIELD.Done)
   const filteredByFaction =
     fields.length === 0 ||
+    !filteringAnyFaction ||
     (fields.includes(FILTER_FIELD.Monsters) &&
       game.players.find((player) => player.faction?.key === FactionKey.Monsters)) ||
     (fields.includes(FILTER_FIELD.NilfgaardianEmpire) &&
@@ -348,8 +365,13 @@ function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Ga
     (fields.includes(FILTER_FIELD.ScoiaTael) &&
       game.players.find((player) => player.faction?.key === FactionKey.ScoiaTael)) ||
     (fields.includes(FILTER_FIELD.Skellige) &&
-      game.players.find((player) => player.faction?.key === FactionKey.Skellige)) ||
+      game.players.find((player) => player.faction?.key === FactionKey.Skellige))
+  const filteredByStatus =
+    fields.length === 0 ||
+    !filteringAnyStatus ||
     (fields.includes(FILTER_FIELD.Decking) && game.status === GameStatus.Decking) ||
+    (fields.includes(FILTER_FIELD.Ordering) && game.status === GameStatus.Ordering) ||
+    (fields.includes(FILTER_FIELD.Redrawing) && game.status === GameStatus.Redrawing) ||
     (fields.includes(FILTER_FIELD.Playing) && game.status === GameStatus.Playing) ||
     (fields.includes(FILTER_FIELD.Done) && game.status === GameStatus.Done)
   const filteredByUser =
@@ -357,7 +379,7 @@ function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Ga
     game.creator.name.toLowerCase().includes(user.toLowerCase()) ||
     game.players.find((player) => player.user.name.toLowerCase().includes(user.toLowerCase())) ||
     game.victors.find((victor) => victor.name.toLowerCase().includes(user.toLowerCase()))
-  return !!filteredByFaction && !!filteredByUser
+  return !!filteredByFaction && !!filteredByStatus && !!filteredByUser
 }
 
 function renderCreateGameButton({ id, navigate }: { id: string; navigate: NavigateFunction }) {

@@ -5,25 +5,24 @@ import { formatDay, formatTime } from '@gwent/utils'
 import { HTML_CLASSES, MAX_ROUNDS } from '@gwent/constants'
 
 export default class GamePlayerInfo {
-  private container: Selector
   private elements
 
   constructor(container: Selector) {
-    this.container = container
     this.elements = {
-      Name: this.container.find(`.${HTML_CLASSES.GamePlayerName}`),
-      TokensWon: this.container.find(`.${HTML_CLASSES.GamePlayerRoundTokenWon}`),
-      Score: this.container.find(`.${HTML_CLASSES.GamePlayerScore}`),
-      DeckPlaceholder: this.container.find(`.${HTML_CLASSES.GameDeckIcon}`),
-      FactionImage: this.container.find(`.${HTML_CLASSES.GamePlayerFactionImage}`),
-      FactionAbility: this.container.find(`.${HTML_CLASSES.GamePlayerFactionAbility}`),
-      LeaderImage: this.container.find(`.${HTML_CLASSES.GamePlayerLeaderImage}`),
-      LeaderAbility: this.container.find(`.${HTML_CLASSES.GamePlayerLeaderAbility}`),
-      UndrawnCount: this.container.find(`.${HTML_CLASSES.GamePlayerUndrawnCount}`),
-      HandCount: this.container.find(`.${HTML_CLASSES.GamePlayerHandCount}`),
-      DiscardCount: this.container.find(`.${HTML_CLASSES.GamePlayerDiscardCount}`),
-      DeckName: this.container.find(`.${HTML_CLASSES.GamePlayerDeckName}`),
-      DeckDate: this.container.find(`.${HTML_CLASSES.GamePlayerDeckDate}`),
+      Container: container,
+      Name: container.find(`.${HTML_CLASSES.GamePlayerName}`),
+      TokensWon: container.find(`.${HTML_CLASSES.GamePlayerRoundTokenWon}`),
+      Score: container.find(`.${HTML_CLASSES.GamePlayerScore}`),
+      DeckPlaceholder: container.find(`.${HTML_CLASSES.GameDeckIcon}`),
+      FactionImage: container.find(`.${HTML_CLASSES.GamePlayerFactionImage}`),
+      FactionAbility: container.find(`.${HTML_CLASSES.GamePlayerFactionAbility}`),
+      LeaderImage: container.find(`.${HTML_CLASSES.GamePlayerLeaderImage}`),
+      LeaderAbility: container.find(`.${HTML_CLASSES.GamePlayerLeaderAbility}`),
+      UndrawnCount: container.find(`.${HTML_CLASSES.GamePlayerUndrawnCount}`),
+      HandCount: container.find(`.${HTML_CLASSES.GamePlayerHandCount}`),
+      DiscardCount: container.find(`.${HTML_CLASSES.GamePlayerDiscardCount}`),
+      DeckName: container.find(`.${HTML_CLASSES.GamePlayerDeckName}`),
+      DeckDate: container.find(`.${HTML_CLASSES.GamePlayerDeckDate}`),
     }
   }
 
@@ -37,6 +36,7 @@ export default class GamePlayerInfo {
     undrawn,
     losses = 0,
     from,
+    turn,
   }: {
     name: string
     losses?: number
@@ -47,6 +47,7 @@ export default class GamePlayerInfo {
     hand?: number
     discards?: number
     from?: Deck | null
+    turn?: PlayerTurn
   }) {
     await t.expect(this.elements.Name.innerText).eql(name)
     await t.expect(this.elements.TokensWon.count).eql(MAX_ROUNDS - 1 - losses)
@@ -88,6 +89,15 @@ export default class GamePlayerInfo {
         await t.expect(this.elements.DeckName.exists).notOk()
         await t.expect(this.elements.DeckDate.exists).notOk()
       }
+      await t.expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerTurn)).eql(turn !== undefined)
+      await t
+        .expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerFutureTurn))
+        .eql(turn === PlayerTurn.Future)
     }
   }
+}
+
+export enum PlayerTurn {
+  Future = 'future',
+  Current = 'current',
 }

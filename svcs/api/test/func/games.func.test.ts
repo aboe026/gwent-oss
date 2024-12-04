@@ -4,10 +4,10 @@ import { addDeck, addGame, addUser, ready, setDeck } from './util/graphql-util'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
-import { expectizeGame } from './util/expect-util'
+import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
-import { NOT_AUTHENTICATED_MESSAGE, STARTING_HAND_SIZE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('games', () => {
@@ -64,7 +64,70 @@ describe('games', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Not enough opponents for game at "0", minimum is "1".`)],
+          errors: [new GraphQLError(`Not enough opponents for game at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`)],
+        })
+      })
+      it('throws error if self included as opponent', async () => {
+        const name1 = `games-1-${Date.now()}`
+        const name2 = `games-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        await addUser(name2)
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              addGame(
+                opponentNames: [
+                  "${name1}",
+                  "${name2}"
+                ]
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user1.id,
+                  name: name1,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError('Invalid opponents: cannot include self.')],
+        })
+      })
+      it('throws error if duplicate opponents', async () => {
+        const name1 = `games-1-${Date.now()}`
+        const name2 = `games-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        await addUser(name2)
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              addGame(
+                opponentNames: [
+                  "${name2}",
+                  "${name2}"
+                ]
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user1.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(`Invalid opponents: names ["${name2}"] are duplicates.`)],
         })
       })
       it('throws error if 2 opponents', async () => {
@@ -97,7 +160,7 @@ describe('games', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Excessive opponents for game at "2", maximum is "1".`)],
+          errors: [new GraphQLError(`Excessive opponents for game at "2", maximum is "${PLAYER_COUNTS.Max - 1}".`)],
         })
       })
       it('throws error if opponent does not exist', async () => {
@@ -590,7 +653,7 @@ describe('games', () => {
         name: `games-1-${Date.now()}`,
         userId: user1.id,
       })
-      await setDeck({
+      const gameDeck1 = await setDeck({
         deckId: deck1.id,
         gameId: game.id,
         userId: user1.id,
@@ -600,7 +663,7 @@ describe('games', () => {
         name: `games-2-${Date.now()}`,
         userId: user2.id,
       })
-      await setDeck({
+      const gameDeck2 = await setDeck({
         deckId: deck2.id,
         gameId: game.id,
         userId: user2.id,
@@ -609,9 +672,21 @@ describe('games', () => {
         gameId: game.id,
         userId: user1.id,
       })
-      await ready({
+      const updatedGame = await ready({
         gameId: game.id,
         userId: user2.id,
+      })
+      const gamePlayer1 = expectizeGamePlayer({
+        gameDeck: gameDeck1,
+        user: user1,
+        order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+        ready: true,
+      })
+      const gamePlayer2 = expectizeGamePlayer({
+        gameDeck: gameDeck2,
+        user: user2,
+        order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+        ready: true,
       })
       await expect(
         graphql({
@@ -635,30 +710,8 @@ describe('games', () => {
             expectizeGame({
               creator: user1,
               status: GameStatus.Playing,
-              players: [
-                {
-                  faction: deck1.faction,
-                  leader: deck1.leader,
-                  user: user1,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck1.units.length - STARTING_HAND_SIZE,
-                  },
-                  ready: true,
-                },
-                {
-                  faction: deck1.faction,
-                  leader: deck1.leader,
-                  user: user2,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck2.units.length - STARTING_HAND_SIZE,
-                  },
-                  ready: true,
-                },
-              ],
+              players: [gamePlayer1, gamePlayer2],
+              turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
             }),
           ],
         },

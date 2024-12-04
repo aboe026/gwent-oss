@@ -6,7 +6,7 @@ import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
 import { Deck, DeckUnit, FactionKey, GameDeck, GameStatus } from '@gwent/graphql-schema/resolver-typings'
-import { expectizeGame, expectizeGameDeck } from './util/expect-util'
+import { expectizeGame, expectizeGameDeck, expectizeGamePlayer } from './util/expect-util'
 import { getDeckUnitFragment, getGameDeckFragment, getGameFragment } from './util/fragment-util'
 import { MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE, STARTING_HAND_SIZE } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
@@ -310,12 +310,12 @@ describe('game', () => {
           name: `game-2-deck-${Date.now()}`,
           userId: user2.id,
         })
-        await setDeck({
+        const gameDeck1 = await setDeck({
           deckId: deck1.id,
           gameId: game.id,
           userId: user1.id,
         })
-        await setDeck({
+        const gameDeck2 = await setDeck({
           deckId: deck2.id,
           gameId: game.id,
           userId: user2.id,
@@ -324,9 +324,21 @@ describe('game', () => {
           gameId: game.id,
           userId: user1.id,
         })
-        await ready({
+        const updatedGame = await ready({
           gameId: game.id,
           userId: user2.id,
+        })
+        const gamePlayer1 = expectizeGamePlayer({
+          gameDeck: gameDeck1,
+          user: user1,
+          order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+          ready: true,
+        })
+        const gamePlayer2 = expectizeGamePlayer({
+          gameDeck: gameDeck2,
+          user: user2,
+          order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+          ready: true,
         })
         await expect(
           graphql({
@@ -348,31 +360,9 @@ describe('game', () => {
           data: {
             game: expectizeGame({
               creator: user1,
-              players: [
-                {
-                  ready: true,
-                  user: user1,
-                  faction: deck1.faction,
-                  leader: deck1.leader,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck1.units.length - STARTING_HAND_SIZE,
-                  },
-                },
-                {
-                  ready: true,
-                  user: user2,
-                  faction: deck2.faction,
-                  leader: deck2.leader,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck2.units.length - STARTING_HAND_SIZE,
-                  },
-                },
-              ],
+              players: [gamePlayer1, gamePlayer2],
               status: GameStatus.Playing,
+              turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
             }),
           },
         })
@@ -885,6 +875,576 @@ describe('game', () => {
           },
         })
       })
+      it('does not set order if all decks set but only creator scoiatael', async () => {
+        const name1 = `setDeck-1-${Date.now()}`
+        const name2 = `setDeck-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        const user2 = await addUser(name2)
+        const deck1 = await addDeck({
+          faction: FactionKey.ScoiaTael,
+          name: `setDeck-1-${Date.now()}`,
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.NorthernRealms,
+          name: `setDeck-2-${Date.now()}`,
+          userId: user2.id,
+        })
+        const game = await addGame({
+          opponentNames: [name2],
+          userId: user1.id,
+        })
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user1.id,
+          })
+        ).resolves.toEqual(null)
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user2.id,
+          })
+        ).resolves.toEqual(null)
+        const response1 = await graphql({
+          schema,
+          source: `mutation {
+            setDeck(
+              deck: "${deck1.id}"
+              game: "${game.id}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user1.id,
+              },
+            },
+          },
+        })
+        expect(response1).toEqual({
+          data: {
+            setDeck: expectizeGameDeck({
+              deck: {
+                factionKey: deck1.faction.key,
+                leaderName: deck1.leader.name,
+                name: deck1.name,
+                unitNames: deck1.units.map((unit) => unit.unit.name),
+                user: user1,
+              },
+              discards: [],
+              redraws: [],
+            }),
+          },
+        })
+        verifyGameDeckSet((response1 as any).data.setDeck, deck1)
+
+        const updatedGame1 = await getGame({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        expect(updatedGame1).toEqual(
+          expectizeGame({
+            creator: user1,
+            players: [
+              {
+                user: user1,
+              },
+              {
+                user: user2,
+              },
+            ],
+          })
+        )
+        expect(updatedGame1.updated.getTime()).toBeGreaterThan(game.updated.getTime())
+
+        const response2 = await graphql({
+          schema,
+          source: `mutation {
+            setDeck(
+              deck: "${deck2.id}"
+              game: "${game.id}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user2.id,
+              },
+            },
+          },
+        })
+        expect(response2).toEqual({
+          data: {
+            setDeck: expectizeGameDeck({
+              deck: {
+                factionKey: deck2.faction.key,
+                leaderName: deck2.leader.name,
+                name: deck2.name,
+                unitNames: deck2.units.map((unit) => unit.unit.name),
+                user: user2,
+              },
+              discards: [],
+              redraws: [],
+            }),
+          },
+        })
+        verifyGameDeckSet((response2 as any).data.setDeck, deck2)
+
+        const updatedGame2 = await getGame({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        const gamePlayer1 = expectizeGamePlayer({
+          gameDeck: response1.data?.setDeck as GameDeck,
+          user: user1,
+        })
+        const gamePlayer2 = expectizeGamePlayer({
+          gameDeck: response2.data?.setDeck as GameDeck,
+          user: user2,
+        })
+        expect(updatedGame2).toEqual(
+          expectizeGame({
+            creator: user1,
+            players: [gamePlayer1, gamePlayer2],
+            status: GameStatus.Ordering,
+          })
+        )
+        expect(updatedGame2.updated.getTime()).toBeGreaterThan(updatedGame1.updated.getTime())
+      })
+      it('does not set order if all decks set but only opponent scoiatael', async () => {
+        const name1 = `setDeck-1-${Date.now()}`
+        const name2 = `setDeck-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        const user2 = await addUser(name2)
+        const deck1 = await addDeck({
+          faction: FactionKey.NorthernRealms,
+          name: `setDeck-1-${Date.now()}`,
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.ScoiaTael,
+          name: `setDeck-2-${Date.now()}`,
+          userId: user2.id,
+        })
+        const game = await addGame({
+          opponentNames: [name2],
+          userId: user1.id,
+        })
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user1.id,
+          })
+        ).resolves.toEqual(null)
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user2.id,
+          })
+        ).resolves.toEqual(null)
+        const response1 = await graphql({
+          schema,
+          source: `mutation {
+            setDeck(
+              deck: "${deck1.id}"
+              game: "${game.id}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user1.id,
+              },
+            },
+          },
+        })
+        expect(response1).toEqual({
+          data: {
+            setDeck: expectizeGameDeck({
+              deck: {
+                factionKey: deck1.faction.key,
+                leaderName: deck1.leader.name,
+                name: deck1.name,
+                unitNames: deck1.units.map((unit) => unit.unit.name),
+                user: user1,
+              },
+              discards: [],
+              redraws: [],
+            }),
+          },
+        })
+        verifyGameDeckSet((response1 as any).data.setDeck, deck1)
+
+        const updatedGame1 = await getGame({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        expect(updatedGame1).toEqual(
+          expectizeGame({
+            creator: user1,
+            players: [
+              {
+                user: user1,
+              },
+              {
+                user: user2,
+              },
+            ],
+          })
+        )
+        expect(updatedGame1.updated.getTime()).toBeGreaterThan(game.updated.getTime())
+
+        const response2 = await graphql({
+          schema,
+          source: `mutation {
+            setDeck(
+              deck: "${deck2.id}"
+              game: "${game.id}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user2.id,
+              },
+            },
+          },
+        })
+        expect(response2).toEqual({
+          data: {
+            setDeck: expectizeGameDeck({
+              deck: {
+                factionKey: deck2.faction.key,
+                leaderName: deck2.leader.name,
+                name: deck2.name,
+                unitNames: deck2.units.map((unit) => unit.unit.name),
+                user: user2,
+              },
+              discards: [],
+              redraws: [],
+            }),
+          },
+        })
+        verifyGameDeckSet((response2 as any).data.setDeck, deck2)
+
+        const updatedGame2 = await getGame({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        const gamePlayer1 = expectizeGamePlayer({
+          gameDeck: response1.data?.setDeck as GameDeck,
+          user: user1,
+        })
+        const gamePlayer2 = expectizeGamePlayer({
+          gameDeck: response2.data?.setDeck as GameDeck,
+          user: user2,
+        })
+        expect(updatedGame2).toEqual(
+          expectizeGame({
+            creator: user1,
+            players: [gamePlayer1, gamePlayer2],
+            status: GameStatus.Ordering,
+          })
+        )
+        expect(updatedGame2.updated.getTime()).toBeGreaterThan(updatedGame1.updated.getTime())
+      })
+      it('sets order if all players decks set and no scoiatael', async () => {
+        const name1 = `setDeck-1-${Date.now()}`
+        const name2 = `setDeck-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        const user2 = await addUser(name2)
+        const deck1 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `setDeck-1-${Date.now()}`,
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.NorthernRealms,
+          name: `setDeck-2-${Date.now()}`,
+          userId: user2.id,
+        })
+        const game = await addGame({
+          opponentNames: [name2],
+          userId: user1.id,
+        })
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user1.id,
+          })
+        ).resolves.toEqual(null)
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user2.id,
+          })
+        ).resolves.toEqual(null)
+        const response1 = await graphql({
+          schema,
+          source: `mutation {
+            setDeck(
+              deck: "${deck1.id}"
+              game: "${game.id}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user1.id,
+              },
+            },
+          },
+        })
+        expect(response1).toEqual({
+          data: {
+            setDeck: expectizeGameDeck({
+              deck: {
+                factionKey: deck1.faction.key,
+                leaderName: deck1.leader.name,
+                name: deck1.name,
+                unitNames: deck1.units.map((unit) => unit.unit.name),
+                user: user1,
+              },
+              discards: [],
+              redraws: [],
+            }),
+          },
+        })
+        verifyGameDeckSet((response1 as any).data.setDeck, deck1)
+
+        const updatedGame1 = await getGame({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        expect(updatedGame1).toEqual(
+          expectizeGame({
+            creator: user1,
+            players: [
+              {
+                user: user1,
+              },
+              {
+                user: user2,
+              },
+            ],
+          })
+        )
+        expect(updatedGame1.updated.getTime()).toBeGreaterThan(game.updated.getTime())
+
+        const response2 = await graphql({
+          schema,
+          source: `mutation {
+            setDeck(
+              deck: "${deck2.id}"
+              game: "${game.id}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user2.id,
+              },
+            },
+          },
+        })
+        expect(response2).toEqual({
+          data: {
+            setDeck: expectizeGameDeck({
+              deck: {
+                factionKey: deck2.faction.key,
+                leaderName: deck2.leader.name,
+                name: deck2.name,
+                unitNames: deck2.units.map((unit) => unit.unit.name),
+                user: user2,
+              },
+              discards: [],
+              redraws: [],
+            }),
+          },
+        })
+        verifyGameDeckSet((response2 as any).data.setDeck, deck2)
+
+        const updatedGame2 = await getGame({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        const gamePlayer1 = expectizeGamePlayer({
+          gameDeck: response1.data?.setDeck as GameDeck,
+          user: user1,
+          order: updatedGame2.turn?.user.id === user1.id ? 0 : 1,
+        })
+        const gamePlayer2 = expectizeGamePlayer({
+          gameDeck: response2.data?.setDeck as GameDeck,
+          user: user2,
+          order: updatedGame2.turn?.user.id === user2.id ? 0 : 1,
+        })
+        expect(updatedGame2).toEqual(
+          expectizeGame({
+            creator: user1,
+            players: [gamePlayer1, gamePlayer2],
+            status: GameStatus.Redrawing,
+            turn: updatedGame2.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+          })
+        )
+        expect(updatedGame2.updated.getTime()).toBeGreaterThan(updatedGame1.updated.getTime())
+      })
+      it('sets order if all players decks set and all scoiatael', async () => {
+        const name1 = `setDeck-1-${Date.now()}`
+        const name2 = `setDeck-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        const user2 = await addUser(name2)
+        const deck1 = await addDeck({
+          faction: FactionKey.ScoiaTael,
+          name: `setDeck-1-${Date.now()}`,
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.ScoiaTael,
+          name: `setDeck-2-${Date.now()}`,
+          userId: user2.id,
+        })
+        const game = await addGame({
+          opponentNames: [name2],
+          userId: user1.id,
+        })
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user1.id,
+          })
+        ).resolves.toEqual(null)
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user2.id,
+          })
+        ).resolves.toEqual(null)
+        const response1 = await graphql({
+          schema,
+          source: `mutation {
+            setDeck(
+              deck: "${deck1.id}"
+              game: "${game.id}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user1.id,
+              },
+            },
+          },
+        })
+        expect(response1).toEqual({
+          data: {
+            setDeck: expectizeGameDeck({
+              deck: {
+                factionKey: deck1.faction.key,
+                leaderName: deck1.leader.name,
+                name: deck1.name,
+                unitNames: deck1.units.map((unit) => unit.unit.name),
+                user: user1,
+              },
+              discards: [],
+              redraws: [],
+            }),
+          },
+        })
+        verifyGameDeckSet((response1 as any).data.setDeck, deck1)
+
+        const updatedGame1 = await getGame({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        expect(updatedGame1).toEqual(
+          expectizeGame({
+            creator: user1,
+            players: [
+              {
+                user: user1,
+              },
+              {
+                user: user2,
+              },
+            ],
+          })
+        )
+        expect(updatedGame1.updated.getTime()).toBeGreaterThan(game.updated.getTime())
+
+        const response2 = await graphql({
+          schema,
+          source: `mutation {
+            setDeck(
+              deck: "${deck2.id}"
+              game: "${game.id}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+          contextValue: {
+            session: {
+              user: {
+                _id: user2.id,
+              },
+            },
+          },
+        })
+        expect(response2).toEqual({
+          data: {
+            setDeck: expectizeGameDeck({
+              deck: {
+                factionKey: deck2.faction.key,
+                leaderName: deck2.leader.name,
+                name: deck2.name,
+                unitNames: deck2.units.map((unit) => unit.unit.name),
+                user: user2,
+              },
+              discards: [],
+              redraws: [],
+            }),
+          },
+        })
+        verifyGameDeckSet((response2 as any).data.setDeck, deck2)
+
+        const updatedGame2 = await getGame({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        const gamePlayer1 = expectizeGamePlayer({
+          gameDeck: response1.data?.setDeck as GameDeck,
+          user: user1,
+          order: updatedGame2.turn?.user.id === user1.id ? 0 : 1,
+        })
+        const gamePlayer2 = expectizeGamePlayer({
+          gameDeck: response2.data?.setDeck as GameDeck,
+          user: user2,
+          order: updatedGame2.turn?.user.id === user2.id ? 0 : 1,
+        })
+        expect(updatedGame2).toEqual(
+          expectizeGame({
+            creator: user1,
+            players: [gamePlayer1, gamePlayer2],
+            status: GameStatus.Redrawing,
+            turn: updatedGame2.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
+          })
+        )
+        expect(updatedGame2.updated.getTime()).toBeGreaterThan(updatedGame1.updated.getTime())
+      })
     })
   })
   describe('gameDeck', () => {
@@ -1271,8 +1831,8 @@ describe('game', () => {
       })
       it('throws error if player not part of game', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
-        const name3 = `redraw-2-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
+        const name3 = `redraw-3-${Date.now()}`
         const user1 = await addUser(name1)
         const user2 = await addUser(name2)
         await addUser(name3)
@@ -1306,7 +1866,7 @@ describe('game', () => {
       })
       it('throws error if deck not set', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
@@ -1339,7 +1899,7 @@ describe('game', () => {
       })
       it('throws error if ready', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
@@ -1386,7 +1946,7 @@ describe('game', () => {
       })
       it('throws error if maximum redraws exceeded', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
@@ -1439,7 +1999,7 @@ describe('game', () => {
       })
       it('throws error if unit does not exist in hand', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
@@ -1483,7 +2043,7 @@ describe('game', () => {
       })
       it('throws error if try to redraw same card twice', async () => {
         const name1 = `redraw-1-${Date.now()}`
-        const name2 = `redraw-3-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
         await addUser(name2)
         const game = await addGame({
@@ -1565,17 +2125,22 @@ describe('game', () => {
           gameId: game.id,
           userId: user1.id,
         })
+        const gamePlayer1 = expectizeGamePlayer({
+          gameDeck: gameDeck1,
+          user: user1,
+          order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+        })
+        const gamePlayer2 = expectizeGamePlayer({
+          gameDeck: gameDeck2,
+          user: user2,
+          order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+        })
         expect(updatedGame).toEqual(
           expectizeGame({
             creator: user1,
-            players: [
-              {
-                user: user1,
-              },
-              {
-                user: user2,
-              },
-            ],
+            players: [gamePlayer1, gamePlayer2],
+            status: GameStatus.Redrawing,
+            turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
           })
         )
         expect(updatedGame.updated.getTime()).toBeGreaterThan(game.updated.getTime())
@@ -1635,14 +2200,9 @@ describe('game', () => {
         expect(updatedGame2).toEqual(
           expectizeGame({
             creator: user1,
-            players: [
-              {
-                user: user1,
-              },
-              {
-                user: user2,
-              },
-            ],
+            players: [gamePlayer1, gamePlayer2],
+            status: GameStatus.Redrawing,
+            turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
           })
         )
         expect(updatedGame2.updated.getTime()).toBeGreaterThan(updatedGame.updated.getTime())
@@ -1706,14 +2266,9 @@ describe('game', () => {
         expect(updatedGame3).toEqual(
           expectizeGame({
             creator: user1,
-            players: [
-              {
-                user: user1,
-              },
-              {
-                user: user2,
-              },
-            ],
+            players: [gamePlayer1, gamePlayer2],
+            status: GameStatus.Redrawing,
+            turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
           })
         )
         expect(updatedGame3.updated.getTime()).toBeGreaterThan(updatedGame2.updated.getTime())
@@ -1773,14 +2328,9 @@ describe('game', () => {
         expect(updatedGame4).toEqual(
           expectizeGame({
             creator: user1,
-            players: [
-              {
-                user: user1,
-              },
-              {
-                user: user2,
-              },
-            ],
+            players: [gamePlayer1, gamePlayer2],
+            status: GameStatus.Redrawing,
+            turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
           })
         )
         expect(updatedGame4.updated.getTime()).toBeGreaterThan(updatedGame3.updated.getTime())
@@ -1844,15 +2394,9 @@ describe('game', () => {
         expect(updatedGame5).toEqual(
           expectizeGame({
             creator: user1,
-            players: [
-              {
-                user: user1,
-              },
-              {
-                user: user2,
-              },
-            ],
-            status: GameStatus.Decking,
+            players: [gamePlayer1, gamePlayer2],
+            status: GameStatus.Redrawing,
+            turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
           })
         )
         expect(updatedGame5.updated.getTime()).toBeGreaterThan(updatedGame4.updated.getTime())
@@ -2280,23 +2824,19 @@ describe('game', () => {
           name: `ready-2-${Date.now()}`,
           userId: user2.id,
         })
-        await setDeck({
+        const gameDeck1 = await setDeck({
           deckId: deck1.id,
           gameId: game.id,
           userId: user1.id,
         })
-        await setDeck({
+        const gameDeck2 = await setDeck({
           deckId: deck2.id,
           gameId: game.id,
           userId: user2.id,
         })
-        await ready({
+        const updatedGame = await ready({
           gameId: game.id,
           userId: user2.id,
-        })
-        const updatedGame = await getGame({
-          gameId: game.id,
-          userId: user1.id,
         })
         const response = await graphql({
           schema,
@@ -2315,35 +2855,25 @@ describe('game', () => {
             },
           },
         })
+        const gamePlayer1 = expectizeGamePlayer({
+          gameDeck: gameDeck1,
+          user: user1,
+          order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+          ready: true,
+        })
+        const gamePlayer2 = expectizeGamePlayer({
+          gameDeck: gameDeck2,
+          user: user2,
+          order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+          ready: true,
+        })
         expect(response).toEqual({
           data: {
             ready: expectizeGame({
               creator: user1,
               status: GameStatus.Playing,
-              players: [
-                {
-                  user: user1,
-                  ready: true,
-                  faction: deck1.faction,
-                  leader: deck1.leader,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck1.units.length - STARTING_HAND_SIZE,
-                  },
-                },
-                {
-                  user: user2,
-                  ready: true,
-                  faction: deck2.faction,
-                  leader: deck2.leader,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck2.units.length - STARTING_HAND_SIZE,
-                  },
-                },
-              ],
+              players: [gamePlayer1, gamePlayer2],
+              turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
             }),
           },
         })
@@ -2374,23 +2904,21 @@ describe('game', () => {
           userId: user2.id,
           statsModifier: '(neutrals: true)',
         })
-        await setDeck({
+        const gameDeck1 = await setDeck({
           deckId: deck1.id,
           gameId: game.id,
           userId: user1.id,
+          statsModifier: '(neutrals: true)',
         })
-        await setDeck({
+        const gameDeck2 = await setDeck({
           deckId: deck2.id,
           gameId: game.id,
           userId: user2.id,
+          statsModifier: '(neutrals: true)',
         })
-        await ready({
+        const updatedGame = await ready({
           gameId: game.id,
           userId: user2.id,
-        })
-        const updatedGame = await getGame({
-          gameId: game.id,
-          userId: user1.id,
         })
         const response = await graphql({
           schema,
@@ -2409,35 +2937,25 @@ describe('game', () => {
             },
           },
         })
+        const gamePlayer1 = expectizeGamePlayer({
+          gameDeck: gameDeck1,
+          user: user1,
+          order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+          ready: true,
+        })
+        const gamePlayer2 = expectizeGamePlayer({
+          gameDeck: gameDeck2,
+          user: user2,
+          order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+          ready: true,
+        })
         expect(response).toEqual({
           data: {
             ready: expectizeGame({
               creator: user1,
               status: GameStatus.Playing,
-              players: [
-                {
-                  user: user1,
-                  ready: true,
-                  faction: deck1.faction,
-                  leader: deck1.leader,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck1.units.length - STARTING_HAND_SIZE,
-                  },
-                },
-                {
-                  user: user2,
-                  ready: true,
-                  faction: deck2.faction,
-                  leader: deck2.leader,
-                  counts: {
-                    discard: 0,
-                    hand: STARTING_HAND_SIZE,
-                    undrawn: deck2.units.length - STARTING_HAND_SIZE,
-                  },
-                },
-              ],
+              players: [gamePlayer1, gamePlayer2],
+              turn: updatedGame.turn?.user.id === user1.id ? gamePlayer1 : gamePlayer2,
             }),
           },
         })

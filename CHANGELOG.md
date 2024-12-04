@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.0 - 2024-12-03
+
+### Added
+
+- Game turn order (#15) (Adam Boe)
+
 ## 0.7.1 - 2024-10-22
 
 ### Fixed

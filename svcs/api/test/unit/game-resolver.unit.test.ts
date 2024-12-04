@@ -41,11 +41,9 @@ describe('game-resolver', () => {
         resolvedUsers: [user, victor],
         resolvedVictors: [victor],
         resolvedGamePlayers: [
-          {
-            ready: false,
-            rounds: [],
+          TestUtil.getGamePlayer({
             user,
-          },
+          }),
         ],
         userResolverCalls: [[[user.id, victor.id]]],
         gamePlayerResolverCalls: [
@@ -53,7 +51,7 @@ describe('game-resolver', () => {
             {
               players,
               users: [user, victor],
-              everyoneReady: false,
+              allDecksChosen: false,
               neutralFactionStats: undefined,
               neutralLeaderStats: undefined,
             },
@@ -84,23 +82,22 @@ describe('game-resolver', () => {
             maximum: MAX_ROUNDS,
           },
           updated: new Date(),
+          turn: new ObjectId(user.id),
           victors: [new ObjectId(victor.id)],
         },
         creator: user,
         users: [victor],
         resolvedGamePlayers: [
-          {
-            ready: false,
-            rounds: [],
+          TestUtil.getGamePlayer({
             user,
-          },
+          }),
         ],
         gamePlayerResolverCalls: [
           [
             {
               players: players,
               users: [user, victor],
-              everyoneReady: false,
+              allDecksChosen: false,
               neutralFactionStats: undefined,
               neutralLeaderStats: undefined,
             },
@@ -139,16 +136,12 @@ describe('game-resolver', () => {
             creator: creator,
             id: game._id.toString(),
             players: [
-              {
-                ready: false,
-                rounds: [],
+              TestUtil.getGamePlayer({
                 user: creator,
-              },
-              {
-                ready: false,
-                rounds: [],
+              }),
+              TestUtil.getGamePlayer({
                 user: player,
-              },
+              }),
             ],
             round: game.round,
             status: GameStatus.Decking,
@@ -250,38 +243,146 @@ describe('game-resolver', () => {
       ).toEqual(true)
     })
   })
+  describe('allDecksChosen', () => {
+    it('returns false if no players on game', () => {
+      expect(GameResolver.allDecksChosen(TestUtil.getDbGame({}))).toEqual(false)
+    })
+    it('returns false if all players have not chosen decks', () => {
+      expect(
+        GameResolver.allDecksChosen(
+          TestUtil.getDbGame({
+            players: [TestUtil.getDbGamePlayer({}), TestUtil.getDbGamePlayer({})],
+          })
+        )
+      ).toEqual(false)
+    })
+    it('returns false if first player has not chosen deck', () => {
+      expect(
+        GameResolver.allDecksChosen(
+          TestUtil.getDbGame({
+            players: [
+              TestUtil.getDbGamePlayer({}),
+              TestUtil.getDbGamePlayer({
+                deck: TestUtil.getDbGameDeck({
+                  from: TestUtil.getDbDeck({}),
+                }),
+              }),
+            ],
+          })
+        )
+      ).toEqual(false)
+    })
+    it('returns false if last player has not chosen deck', () => {
+      expect(
+        GameResolver.allDecksChosen(
+          TestUtil.getDbGame({
+            players: [
+              TestUtil.getDbGamePlayer({
+                deck: TestUtil.getDbGameDeck({
+                  from: TestUtil.getDbDeck({}),
+                }),
+              }),
+              TestUtil.getDbGamePlayer({}),
+            ],
+          })
+        )
+      ).toEqual(false)
+    })
+    it('returns true if all players have chosen decks', () => {
+      expect(
+        GameResolver.allDecksChosen(
+          TestUtil.getDbGame({
+            players: [
+              TestUtil.getDbGamePlayer({
+                deck: TestUtil.getDbGameDeck({
+                  from: TestUtil.getDbDeck({}),
+                }),
+              }),
+              TestUtil.getDbGamePlayer({
+                deck: TestUtil.getDbGameDeck({
+                  from: TestUtil.getDbDeck({}),
+                }),
+              }),
+            ],
+          })
+        )
+      ).toEqual(true)
+    })
+  })
   describe('getStatus', () => {
-    const game = TestUtil.getDbGame({})
-    it('returns Done if there is a single victor', () => {
-      expect(
-        GameResolver.getStatus({
-          ...game,
-          victors: [new ObjectId()],
-        })
-      ).toEqual(GameStatus.Done)
-    })
-    it('returns Done if there are multiple victors', () => {
-      expect(
-        GameResolver.getStatus({
-          ...game,
-          victors: [new ObjectId(), new ObjectId()],
-        })
-      ).toEqual(GameStatus.Done)
-    })
-    it('returns Decking if no victors not everybody is ready', () => {
+    it('returns DECKING if not all players have chosen a deck', () => {
+      const game = TestUtil.getDbGame({})
+      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(false)
+
       expect(GameResolver.getStatus(game)).toEqual(GameStatus.Decking)
+
+      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
     })
-    it('returns Playing if no victors and everybody is ready', () => {
-      expect(
-        GameResolver.getStatus({
-          ...game,
-          players: [
-            TestUtil.getDbGamePlayer({
-              ready: true,
-            }),
-          ],
-        })
-      ).toEqual(GameStatus.Playing)
+    it('returns ORDERING if all decks chosen but no turn set', () => {
+      const game = TestUtil.getDbGame({})
+      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
+
+      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Ordering)
+
+      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
+    })
+    it('returns REDRAWING if all decks chosen and turn set but not everybody ready', () => {
+      const game = TestUtil.getDbGame({
+        turn: new ObjectId(),
+        players: [TestUtil.getDbGamePlayer({})],
+      })
+      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
+
+      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Redrawing)
+
+      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
+    })
+    it('returns PLAYING if all decks chosen and turn and everybody ready but no victors', () => {
+      const game = TestUtil.getDbGame({
+        turn: new ObjectId(),
+        players: [
+          TestUtil.getDbGamePlayer({
+            ready: true,
+          }),
+        ],
+      })
+      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
+
+      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Playing)
+
+      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
+    })
+    it('returns DONE if all decks chosen and turn and everybody ready and single victor', () => {
+      const game = TestUtil.getDbGame({
+        turn: new ObjectId(),
+        players: [
+          TestUtil.getDbGamePlayer({
+            ready: true,
+          }),
+        ],
+        victors: [new ObjectId()],
+      })
+      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
+
+      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Done)
+
+      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
+    })
+    it('returns DONE if all decks chosen and turn and everybody ready and multiple victors', () => {
+      const game = TestUtil.getDbGame({
+        turn: new ObjectId(),
+        players: [
+          TestUtil.getDbGamePlayer({
+            ready: true,
+          }),
+        ],
+        victors: [new ObjectId(), new ObjectId()],
+      })
+      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
+
+      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Done)
+
+      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
     })
   })
 })
@@ -336,6 +437,9 @@ async function testResolveFromObject({
     round: game.round,
     status: GameResolver.getStatus(game),
     updated: game.updated,
+    turn: game.turn
+      ? resolvedGamePlayers.find((player) => player.user.id.toString() === game.turn?.toString())
+      : undefined,
     victors,
   })
 

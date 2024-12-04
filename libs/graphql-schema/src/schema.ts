@@ -68,8 +68,12 @@ export default gql`
   }
 
   enum GameStatus {
-    "Players are choosing the decks and hand to use for the game."
+    "Players are choosing their decks to use for the game."
     DECKING
+    "The order of player turns is being decided. Happens automatically unless there is a single player with a Scoia'tael faction deck who can then choose which player starts."
+    ORDERING
+    "Players are potentially redrawing the cards in their hand."
+    REDRAWING
     "Players are playing rounds of the game."
     PLAYING
     "Play has ended."
@@ -151,6 +155,8 @@ export default gql`
     players: [GamePlayer!]! @column(overrideType: "Array<GamePlayerDbObject>")
     round: GameRound! @column
     status: GameStatus!
+    "Whose turn it currently is to make a move."
+    turn: GamePlayer @column(overrideType: "ObjectId")
     updated: DateTime! @column
     victors: [User!]! @column(overrideType: "Array<ObjectId>")
   }
@@ -185,6 +191,8 @@ export default gql`
     faction: Faction
     "The leader the player chose for the game. Only visible once all players are ready."
     leader: Leader
+    "The precedence of order the player takes their turn relative to other players. Zero based indexing."
+    order: Int @column
     "Whether or not a user has their game deck set to play the game."
     ready: Boolean! @column
     rounds: [PlayerRound!]! @column
@@ -270,6 +278,17 @@ export default gql`
     name: String! @column
   }
 
+  type GameDeckSet {
+    deck: GameDeck!
+    game: Game!
+  }
+
+  type GameUnitRedrawn {
+    from: DeckUnit!
+    game: Game!
+    to: DeckUnit!
+  }
+
   input DeckUnitInput {
     "For units with multiple art styles, the art style to use (1-based indexing)."
     artStyle: Int = 1
@@ -337,11 +356,25 @@ export default gql`
 
     "Choose which deck will be used for the game."
     setDeck(game: ID!, deck: ID!): GameDeck!
+
+    "Set the order in which players will take turns during a game."
+    setOrder(game: ID!, users: [ID!]): Game!
   }
 
   type Subscription {
+    "A deck has been added for a user."
     deckAdded: Deck!
+    "A deck has been set for a game the user is a player on."
+    deckSet: GameDeckSet!
+    "A game has been added that the user is player on."
     gameAdded: Game!
+    "A game the user is a player on has been marked as ready by a player."
     gameReady: Game!
+    "All decks have been set for a game the user is a player on."
+    gameSet: Game!
+    "The order has been set for a game the user is a player on."
+    orderSet: Game!
+    "A unit was redrawn for a game deck the user owns."
+    unitRedrawn: GameUnitRedrawn!
   }
 `

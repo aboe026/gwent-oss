@@ -6,7 +6,7 @@ import {
   FetchResult,
   MutationFunctionOptions,
 } from '@apollo/client'
-import { CgArrowLongRight, CgPlayButton, CgSync, CgTime } from 'react-icons/cg'
+import { CgArrowLongRight, CgChevronUp, CgChevronDown, CgPlayButton, CgSync, CgTime } from 'react-icons/cg'
 import { Link } from 'react-router-dom'
 import { NavigateFunction, useLocation, useNavigate } from 'react-router-dom'
 
@@ -31,7 +31,6 @@ import {
   Game,
   GameDeck,
   GameDeckQuery,
-  Redraw,
   GameStatus,
   useReadyMutation,
   ReadyMutation,
@@ -39,20 +38,34 @@ import {
   Leader,
   Scalars,
   GameQuery,
+  FactionKey,
+  useSetOrderMutation,
+  SetOrderMutation,
+  InputMaybe,
 } from '@gwent/graphql-schema/apollo-typings'
+import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
+import CoinToss from '../components/CoinToss'
 import DeckEditor from '../components/DeckEditor'
 import DeckList from '../components/DeckList'
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import Form from '../components/Form'
 import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
 import { getApolloError, retryCheckingAuth } from '../util/error-util'
-import { HTML_CLASSES, HTML_IDS, MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE, PLAYER_COUNTS, ROUTES } from '@gwent/constants'
+import {
+  GAME_ORDER_COIN_FLIP_DURATION_SECONDS,
+  HTML_CLASSES,
+  HTML_IDS,
+  MAX_REDRAWS,
+  NOT_AUTHORIZED_MESSAGE,
+  PLAYER_COUNTS,
+  ROUTES,
+} from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import UnitFullCard from '../components/UnitFullCard'
 import UnitGameCard from '../components/UnitGameCard'
-import addToCacheList from '../util/add-to-cache-list'
+import { usePrevious } from '../util/usePrevious'
 import { useTitle } from '../components/TabTitle'
 import { useUserContext } from '../App'
 import WholeScreenDialog from '../components/WholeScreenDialog'
@@ -69,6 +82,8 @@ export default function GamePage() {
   const [deckEditorOpen, setDeckEditorOpen] = useState(false)
   const [cardSelected, setCardSelected] = useState<DeckUnit | undefined>()
   const [fullUnit, setFullUnit] = useState<DeckUnit | undefined>()
+  const [playerOrder, setPlayerOrder] = useState<GamePlayer[]>([])
+  const [coinTossVisible, setCoinTossVisible] = useState(false)
   const { checkAuth, user } = useUserContext()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -88,17 +103,19 @@ export default function GamePage() {
         // otherwise when navigating to games, it will not fire the query, so would only show the
         // new created game, and not all games for the user
         if (previousGames?.games) {
-          cache.writeQuery({
-            query: GamesDocument,
-            data: {
-              games: addToCacheList({
-                previous: previousGames.games,
-                add: data.addGame,
-              }),
+          cache.updateQuery<GamesQuery>(
+            {
+              query: GamesDocument,
             },
-          })
+            (previous) => ({
+              games: addToCacheList({
+                add: data.addGame,
+                previous: previous?.games,
+              }),
+            })
+          )
         }
-        cache.writeQuery({
+        cache.writeQuery<GameQuery>({
           query: GameDocument,
           data: {
             game: {
@@ -118,6 +135,13 @@ export default function GamePage() {
   } = useGameQuery({
     onError: (error) => {
       checkAuth(error, gameRefetch)
+    },
+    onCompleted: (data) => {
+      if (data.game) {
+        if (data.game.players) {
+          setPlayerOrder(data.game.players as GamePlayer[])
+        }
+      }
     },
     variables: gameQueryVariables,
     skip: isNew,
@@ -140,7 +164,7 @@ export default function GamePage() {
   const [setDeck, { loading: setDeckLoading, error: setDeckError }] = useSetDeckMutation({
     update(cache, { data }) {
       if (data?.setDeck && user) {
-        cache.writeQuery({
+        cache.writeQuery<GameDeckQuery>({
           query: GameDeckDocument,
           data: {
             gameDeck: {
@@ -152,6 +176,21 @@ export default function GamePage() {
       }
     },
   })
+  const [setOrder, { loading: setOrderLoading, error: setOrderError }] = useSetOrderMutation({
+    update(cache, { data }) {
+      if (data?.setOrder && user) {
+        cache.writeQuery<GameQuery>({
+          query: GameDocument,
+          data: {
+            game: {
+              ...data.setOrder,
+            },
+          },
+          variables: gameQueryVariables,
+        })
+      }
+    },
+  })
   const [redraw, { loading: redrawLoading, error: redrawError }] = useRedrawMutation({
     update(cache, { data }) {
       if (data?.redraw && user) {
@@ -159,41 +198,55 @@ export default function GamePage() {
           query: GameDeckDocument,
           variables: gameDeckQueryVariables,
         })
-        if (previousGameDeck?.gameDeck) {
-          const newRedraws: Redraw[] = [
-            ...(previousGameDeck.gameDeck.redraws as Redraw[]),
+        if (previousGameDeck?.gameDeck && cardSelected) {
+          cache.updateQuery<GameDeckQuery>(
             {
-              from: cardSelected as DeckUnit,
-              to: data.redraw as DeckUnit,
+              query: GameDeckDocument,
+              variables: gameDeckQueryVariables,
             },
-          ]
-          cache.writeQuery({
-            query: GameDeckDocument,
-            variables: gameDeckQueryVariables,
-            data: {
+            (previous) => ({
               gameDeck: {
-                ...previousGameDeck.gameDeck,
+                ...previous?.gameDeck,
                 hand: [
-                  ...previousGameDeck.gameDeck?.hand.filter((deckUnit) => deckUnit.unit.id !== cardSelected?.unit.id),
+                  ...(previous?.gameDeck?.hand || []).filter(
+                    (deckUnit) => deckUnit.unit.id !== cardSelected.unit.id && deckUnit.unit.id !== data.redraw.unit.id
+                  ),
                   data.redraw,
                 ],
                 undrawn: [
-                  ...previousGameDeck.gameDeck.undrawn.filter((deckUnit) => deckUnit.unit.id !== data.redraw.unit.id),
+                  ...(previous?.gameDeck?.undrawn || []).filter(
+                    (deckUnit) => deckUnit.unit.id !== data.redraw.unit.id && deckUnit.unit.id !== cardSelected.unit.id
+                  ),
                   cardSelected,
                 ],
-                redraws: newRedraws,
-              },
-            },
-          })
+                redraws: [
+                  ...(previous?.gameDeck?.redraws || []).filter(
+                    (prevRedraw) =>
+                      prevRedraw.from.unit.id !== cardSelected.unit.id && prevRedraw.to.unit.id !== data.redraw.unit.id
+                  ),
+                  {
+                    from: cardSelected,
+                    to: data.redraw,
+                  },
+                ],
+              } as GameDeck,
+            })
+          )
           setCardSelected(undefined)
-          if (newRedraws.length >= MAX_REDRAWS) {
-            gameRefetch(gameQueryVariables)
-          }
         }
       }
     },
   })
   const [ready, { loading: readyLoading, error: readyError }] = useReadyMutation()
+  const currentGame = gameData?.game as Game | undefined
+  const previousGame = usePrevious(currentGame)
+  useEffect(() => {
+    const self = currentGame?.players.find((player) => player.user.name === user?.name)
+    if (currentGame?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing && !self?.ready) {
+      setCoinTossVisible(true)
+      setTimeout(() => setCoinTossVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+    }
+  }, [currentGame])
 
   return isNew
     ? renderNewGame({
@@ -213,7 +266,7 @@ export default function GamePage() {
         deckEditorOpen,
         setDeckEditorOpen,
         gameError,
-        game: gameData?.game as Game | undefined,
+        game: currentGame,
         gameLoading,
         setDeck: {
           setDeck,
@@ -223,6 +276,11 @@ export default function GamePage() {
         user,
         cardSelected,
         setCardSelected,
+        setOrder: {
+          setOrder,
+          loading: setOrderLoading,
+          error: setOrderError,
+        },
         redraw: {
           redraw,
           redrawError,
@@ -240,11 +298,15 @@ export default function GamePage() {
         setFullUnit,
         gameRefetch,
         gameDeckRefetch,
+        playerOrder,
+        setPlayerOrder,
+        coinTossVisible,
+        setCoinTossVisible,
       })
 }
 
 function renderNewGame({
-  addGame,
+  addGame: { addGame, error: addGameError, loading: addGameLoading },
   checkAuth,
   navigate,
   user,
@@ -283,14 +345,14 @@ function renderNewGame({
           }),
         ]}
         errorPrefix="Error adding game"
-        error={addGame.error}
+        error={addGameError}
         errorId={HTML_IDS.GameNewError}
-        loading={addGame.loading}
+        loading={addGameLoading}
         onSubmit={async ({ variables }) => {
           await retryCheckingAuth({
             checkAuth,
             method: async () => {
-              const game = await addGame.addGame({
+              const game = await addGame({
                 variables: {
                   opponentNames: [...Array(PLAYER_COUNTS.Max - 1)].map((_, index) => {
                     return variables[`player${index + 2}`]
@@ -325,6 +387,7 @@ function renderExistingGame({
   user,
   cardSelected,
   setCardSelected,
+  setOrder,
   redraw,
   gameDeck,
   gameDeckError,
@@ -334,6 +397,10 @@ function renderExistingGame({
   setFullUnit,
   gameRefetch,
   gameDeckRefetch,
+  playerOrder,
+  setPlayerOrder,
+  coinTossVisible,
+  setCoinTossVisible,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
@@ -348,6 +415,7 @@ function renderExistingGame({
   user: User | null | undefined
   cardSelected: DeckUnit | undefined
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setOrder: SetOrderProps
   redraw: RedrawProps
   gameDeck: GameDeck | undefined
   gameDeckError: ApolloError | undefined
@@ -373,6 +441,10 @@ function renderExistingGame({
         >
       | undefined
   ) => Promise<ApolloQueryResult<GameDeckQuery>>
+  playerOrder: GamePlayer[]
+  setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
+  coinTossVisible: boolean
+  setCoinTossVisible: Dispatch<SetStateAction<boolean>>
 }) {
   const resolvedGameError = getApolloError(gameError)
   const resolvedGameDeckError = getApolloError(gameDeckError)
@@ -454,6 +526,7 @@ function renderExistingGame({
           gameDeckLoading,
           gameRefetch,
           gameDeckRefetch,
+          coinTossVisible,
         })}
         {renderCenter({
           cardSelected,
@@ -471,6 +544,11 @@ function renderExistingGame({
           },
           setFullUnit,
           setCardSelected,
+          setOrder,
+          playerOrder,
+          setPlayerOrder,
+          coinTossVisible,
+          setCoinTossVisible,
         })}
         {renderHistory()}
       </div>
@@ -558,6 +636,7 @@ function renderGameInfo({
   gameDeckLoading,
   gameRefetch,
   gameDeckRefetch,
+  coinTossVisible,
 }: {
   self: GamePlayer
   opponent: GamePlayer
@@ -583,6 +662,7 @@ function renderGameInfo({
         >
       | undefined
   ) => Promise<ApolloQueryResult<GameDeckQuery>>
+  coinTossVisible: boolean
 }) {
   return (
     <div id="gameInfoContainer" className="game-edge-container">
@@ -590,12 +670,13 @@ function renderGameInfo({
         game,
         id: HTML_IDS.GameInfoOpponentContainer,
         player: opponent,
-        reverse: true,
+        isSelf: false,
         faction: opponent.faction,
         discard: opponent.counts?.discard,
         hand: opponent.counts?.hand,
         undrawn: opponent.counts?.undrawn,
         leader: opponent.leader,
+        coinTossVisible,
       })}
       {renderSharedInfo({
         game,
@@ -608,6 +689,7 @@ function renderGameInfo({
         game,
         id: HTML_IDS.GameInfoSelfContainer,
         player: self,
+        isSelf: true,
         faction: gameDeck?.from?.faction,
         leader: gameDeck?.from?.leader,
         discard: gameDeck?.discard.length,
@@ -615,6 +697,7 @@ function renderGameInfo({
         undrawn: gameDeck?.undrawn.length,
         deckName: gameDeck?.from?.name,
         deckUpdated: gameDeck?.from?.created,
+        coinTossVisible,
       })}
     </div>
   )
@@ -660,7 +743,7 @@ function renderSharedInfo({
         )}
         <div
           id={HTML_IDS.GameRefresh}
-          className={game.status === GameStatus.Decking ? 'decking' : 'playing'}
+          className={game.status === GameStatus.Playing ? 'playing' : 'decking'}
           style={{ cursor: gameLoading || gameDeckLoading ? 'not-allowed' : 'pointer' }}
           title="Refresh"
           onClick={async () =>
@@ -684,7 +767,6 @@ function renderPlayerInfo({
   id,
   player,
   game,
-  reverse,
   faction,
   undrawn,
   hand,
@@ -692,11 +774,12 @@ function renderPlayerInfo({
   leader,
   deckName,
   deckUpdated,
+  isSelf,
+  coinTossVisible,
 }: {
   id: string
   player: GamePlayer
   game: Game
-  reverse?: boolean
   faction?: Faction | null
   undrawn?: number
   hand?: number
@@ -704,12 +787,41 @@ function renderPlayerInfo({
   leader?: Leader | null
   deckName?: string
   deckUpdated?: Date
+  isSelf: boolean
+  coinTossVisible: boolean
 }) {
+  const isTurn = game.turn && game.turn.user.name === player.user.name
+  let title = ''
+  let borderClass = ''
+  if (!coinTossVisible) {
+    if (game.status === GameStatus.Playing) {
+      if (isTurn) {
+        title = isSelf ? 'It is your turn' : 'Your opponent is taking their turn'
+      } else {
+        title = isSelf ? 'It is your opponents turn' : 'Your opponent is waiting for you to take your turn'
+      }
+    } else {
+      if (isTurn) {
+        title = isSelf ? 'You will have the first turn' : 'Your opponent will go first this round'
+      } else {
+        title = isSelf ? 'Your opponent will have the first turn' : 'Your opponent will go after you this round'
+      }
+    }
+    if (isTurn) {
+      borderClass = HTML_CLASSES.GamePlayerTurn
+      if (game.status === GameStatus.Redrawing) {
+        borderClass += ` ${HTML_CLASSES.GamePlayerFutureTurn}`
+      }
+    }
+  }
   return (
     <div
       id={id}
-      className="game-section game-info-player-container"
-      style={{ flexDirection: reverse ? 'column-reverse' : 'column' }}
+      className={`game-section game-info-player-container ${isTurn ? borderClass : ''}`}
+      style={{
+        flexDirection: isSelf ? 'column' : 'column-reverse',
+      }}
+      title={title}
     >
       <div className="game-sub-section game-info-section game-player-section">
         {renderScore({
@@ -740,7 +852,7 @@ function renderPlayerInfo({
               leader,
             })}
           </div>
-          {deckName && deckUpdated && (
+          {isSelf && deckName && deckUpdated && (
             <div className="game-sub-section game-info-section">
               {renderDeckFrom({
                 name: deckName,
@@ -857,9 +969,14 @@ function renderCenter({
   ready,
   redraw,
   setDeckListOpen,
-  setDeck: { error: setDeckError, loading: setDeckLoading },
+  setDeck,
   setFullUnit,
   setCardSelected,
+  setOrder,
+  playerOrder,
+  setPlayerOrder,
+  coinTossVisible,
+  setCoinTossVisible,
 }: {
   game: Game
   gameDeck: GameDeck | undefined
@@ -873,13 +990,33 @@ function renderCenter({
   setDeck: SetDeckProps
   setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setOrder: SetOrderProps
+  playerOrder: GamePlayer[]
+  setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
+  coinTossVisible: boolean
+  setCoinTossVisible: Dispatch<SetStateAction<boolean>>
 }) {
-  const resolvedSetDeckError = getApolloError(setDeckError)
   return (
     <div id={HTML_IDS.GameCenterContainer}>
-      {game.status === GameStatus.Playing ? (
+      {game.status === GameStatus.Decking ? (
+        renderSetDeck({
+          alreadySet: !!gameDeck?.from,
+          game,
+          setDeck,
+          setDeckListOpen,
+        })
+      ) : game.status === GameStatus.Playing ? (
         renderUnits()
-      ) : gameDeck?.from && !self.ready ? (
+      ) : game.status === GameStatus.Ordering ? (
+        renderSetOrder({
+          checkAuth,
+          game,
+          self,
+          setOrder,
+          playerOrder,
+          setPlayerOrder,
+        })
+      ) : game.status === GameStatus.Redrawing ? (
         renderRedraw({
           cardSelected,
           checkAuth,
@@ -889,32 +1026,12 @@ function renderCenter({
           redraw,
           setFullUnit,
           setCardSelected,
+          self,
+          coinTossVisible,
+          setCoinTossVisible,
         })
       ) : (
-        <div className="game-section">
-          <Centered>
-            {self.ready ? (
-              <div>
-                <LoadingBar height="25px" />
-                <div>{`Waiting for opponent${game.players.length > 2 ? 's' : ''} to be ready...`}</div>
-              </div>
-            ) : setDeckLoading ? (
-              <LoadingSpinner size="100px" title="Choosing Deck..." />
-            ) : (
-              <div className="game-set-deck">
-                <button id={HTML_IDS.GameSetDeck} type="button" onClick={() => setDeckListOpen(true)}>
-                  Choose Deck
-                </button>
-                {resolvedSetDeckError && (
-                  <span
-                    id={HTML_IDS.GameDeckError}
-                    className={HTML_CLASSES.ErrorText}
-                  >{`Error choosing deck: ${resolvedSetDeckError}`}</span>
-                )}
-              </div>
-            )}
-          </Centered>
-        </div>
+        <div className="game-section"></div>
       )}
     </div>
   )
@@ -955,6 +1072,190 @@ function renderUnits() {
   )
 }
 
+function renderSetDeck({
+  alreadySet,
+  game,
+  setDeck: { error: setDeckError, loading: setDeckLoading },
+  setDeckListOpen,
+}: {
+  alreadySet: boolean
+  game: Game
+  setDeck: SetDeckProps
+  setDeckListOpen: Dispatch<SetStateAction<boolean>>
+}) {
+  const resolvedSetDeckError = getApolloError(setDeckError)
+  return (
+    <div className="game-section">
+      <Centered>
+        {alreadySet ? (
+          <div className="waiting-container">
+            <div>{`Waiting for opponent${game.players.length > 2 ? 's' : ''} to choose deck...`}</div>
+            <LoadingBar height="25px" />
+          </div>
+        ) : setDeckLoading ? (
+          <LoadingSpinner size="100px" title="Choosing Deck..." />
+        ) : (
+          <div className="game-set-deck">
+            <button id={HTML_IDS.GameSetDeck} type="button" onClick={() => setDeckListOpen(true)}>
+              Choose Deck
+            </button>
+            {resolvedSetDeckError && (
+              <span
+                id={HTML_IDS.GameDeckError}
+                className={HTML_CLASSES.ErrorText}
+              >{`Error choosing deck: ${resolvedSetDeckError}`}</span>
+            )}
+          </div>
+        )}
+      </Centered>
+    </div>
+  )
+}
+
+function renderSetOrder({
+  checkAuth,
+  game,
+  self,
+  setOrder: { setOrder, error: setOrderError, loading: setOrderLoading },
+  playerOrder,
+  setPlayerOrder,
+}: {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  game: Game
+  self: GamePlayer
+  setOrder: SetOrderProps
+  playerOrder: GamePlayer[]
+  setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
+}) {
+  const resolvedSetOrderError = getApolloError(setOrderError)
+  const scoiaTaelDecks = game.players.filter((player) => player.faction?.key === FactionKey.ScoiaTael).length
+  const canSetOrder = scoiaTaelDecks !== 1 || self.faction?.key === FactionKey.ScoiaTael
+  const canChooseOrder =
+    game.players.filter((player) => player.faction?.key === FactionKey.ScoiaTael).length === 1 &&
+    self.faction?.key === FactionKey.ScoiaTael
+
+  return (
+    <div id={HTML_IDS.GameOrderContainer} className="game-section">
+      <Centered>
+        {setOrderLoading ? (
+          <LoadingSpinner size="50px" />
+        ) : canSetOrder ? (
+          <div id="gameSetOrderContainer">
+            {canChooseOrder && (
+              <table id={HTML_IDS.GameOrderTable}>
+                <caption id="gameSetOrderTitle">Set player turn order:</caption>
+                <thead>
+                  <tr>
+                    <th>Order</th>
+                    <th>Username</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {playerOrder.map((player, index) => (
+                    <tr key={player.user.id}>
+                      <td className={HTML_CLASSES.GameOrderRowIndex}>
+                        <div className="game-set-order-ordering">
+                          {index > 0 && (
+                            <div
+                              className={`pointable ${HTML_CLASSES.GameOrderRowEarlier}`}
+                              title="Move Earlier"
+                              onClick={() => {
+                                const newOrder = [...playerOrder]
+                                newOrder[index] = playerOrder[index - 1]
+                                newOrder[index - 1] = playerOrder[index]
+                                setPlayerOrder(newOrder)
+                              }}
+                            >
+                              <CgChevronUp color="black" />
+                            </div>
+                          )}
+                          {index < playerOrder.length - 1 && (
+                            <div
+                              className={`pointable ${HTML_CLASSES.GameOrderRowLater}`}
+                              title="Move Later"
+                              onClick={() => {
+                                const newOrder = [...playerOrder]
+                                newOrder[index] = playerOrder[index + 1]
+                                newOrder[index + 1] = playerOrder[index]
+                                setPlayerOrder(newOrder)
+                              }}
+                            >
+                              <CgChevronDown color="black" />
+                            </div>
+                          )}
+                          {index + 1}
+                        </div>
+                      </td>
+                      <td className={HTML_CLASSES.GameOrderRowUsername}>{player.user.name}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <button
+              id={HTML_IDS.GameOrderSet}
+              type="button"
+              className="pointable"
+              onClick={async () => {
+                await retryCheckingAuth({
+                  checkAuth,
+                  method: async () => {
+                    await setOrder({
+                      variables: {
+                        game: game.id,
+                        users: canChooseOrder ? playerOrder.map((player) => player.user.id) : [],
+                      },
+                    })
+                  },
+                })
+              }}
+            >
+              Set Order
+            </button>
+            {resolvedSetOrderError && (
+              <span
+                id={HTML_IDS.GameOrderError}
+                className={HTML_CLASSES.ErrorText}
+              >{`Error setting order: ${resolvedSetOrderError}`}</span>
+            )}
+          </div>
+        ) : (
+          <div className="waiting-container">
+            <div id={HTML_IDS.GameOrderWaiting}>{`Waiting for opponent${
+              game.players.length > 2 ? 's' : ''
+            } to set turn order...`}</div>
+            <LoadingBar height="25px" />
+          </div>
+        )}
+      </Centered>
+    </div>
+  )
+}
+
+function renderCoinToss({
+  setCoinTossVisible,
+  winFlip,
+}: {
+  setCoinTossVisible: Dispatch<SetStateAction<boolean>>
+  winFlip: boolean
+}) {
+  const resultText = winFlip ? 'You will go first' : 'Your opponent will go first'
+  return (
+    <div id={HTML_IDS.GameOrderCoinToss} className="game-section pointable" onClick={() => setCoinTossVisible(false)}>
+      <Centered>
+        <CoinToss
+          duration={`${GAME_ORDER_COIN_FLIP_DURATION_SECONDS - 1}s`}
+          heads={winFlip}
+          size="100px"
+          bounce={true}
+          resultText={resultText}
+        />
+      </Centered>
+    </div>
+  )
+}
+
 function renderRedraw({
   cardSelected,
   checkAuth,
@@ -964,6 +1265,9 @@ function renderRedraw({
   ready: { ready, readyError, readyLoading },
   setFullUnit,
   setCardSelected,
+  self,
+  coinTossVisible,
+  setCoinTossVisible,
 }: {
   game: Game
   gameDeck: GameDeck | undefined
@@ -974,6 +1278,9 @@ function renderRedraw({
   ready: ReadyProps
   setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  self: GamePlayer
+  coinTossVisible: boolean
+  setCoinTossVisible: Dispatch<SetStateAction<boolean>>
 }) {
   const redrawsLeft = MAX_REDRAWS - (gameDeck?.redraws || []).length
   const instructions =
@@ -984,9 +1291,19 @@ function renderRedraw({
       : 'All allowed redraws made. To begin the game:'
   const resolvedRedrawError = getApolloError(redrawError)
   const resolvedReadyError = getApolloError(readyError)
-  return (
+  return coinTossVisible ? (
+    renderCoinToss({
+      setCoinTossVisible,
+      winFlip: game.turn?.user.name === self.user.name, // go off of name instead of id, because id gets set to AUTH_TIMEOUT_ID when auth times out
+    })
+  ) : (
     <div id={HTML_IDS.GameRedrawContainer} className="game-section">
-      {gameDeck ? (
+      {self.ready ? (
+        <div className="waiting-container">
+          <div>{`Waiting for opponent${game.players.length > 2 ? 's' : ''} to be ready...`}</div>
+          <LoadingBar height="25px" />
+        </div>
+      ) : gameDeck ? (
         <>
           <div className="game-deck-redraw-cards">
             {[...Array(MAX_REDRAWS)].map((_, index) => {
@@ -1208,6 +1525,24 @@ interface SetDeckProps {
         >
       | undefined
   ) => Promise<FetchResult<SetDeckMutation>>
+  loading: boolean
+  error: ApolloError | undefined
+}
+
+interface SetOrderProps {
+  setOrder: (
+    options?:
+      | MutationFunctionOptions<
+          SetOrderMutation,
+          Exact<{
+            game: Scalars['ID']['input']
+            users?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>
+          }>,
+          DefaultContext,
+          ApolloCache<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+        >
+      | undefined
+  ) => Promise<FetchResult<SetOrderMutation>>
   loading: boolean
   error: ApolloError | undefined
 }

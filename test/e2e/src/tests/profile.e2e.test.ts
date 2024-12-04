@@ -36,7 +36,7 @@ test('Page refresh stays on profile page', async (t) => {
   })
 })
 
-test('Logout button redirects to logout page', async (t) => {
+test('Logout button redirects to login page', async (t) => {
   const username = `profile-logout-${t.ctx.start}`
   await SignupPage.signUp({
     username,

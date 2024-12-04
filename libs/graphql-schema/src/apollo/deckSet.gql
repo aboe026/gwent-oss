@@ -1,0 +1,10 @@
+subscription DeckSet {
+  deckSet {
+    deck {
+      ...GameDeckFragment
+    }
+    game {
+      id
+    }
+  }
+}

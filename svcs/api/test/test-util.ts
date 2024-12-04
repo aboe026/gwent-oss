@@ -392,11 +392,11 @@ export default class TestUtil {
     }
   }
 
-  static getDeck(): Deck {
+  static getDeck({ id, user }: { id?: string | ObjectId; user?: User }): Deck {
     return {
       created: new Date(),
       faction: TestUtil.getFaction({}),
-      id: new ObjectId().toString(),
+      id: (id || new ObjectId()).toString(),
       leader: TestUtil.getLeader({}),
       name: 'deck-name',
       stats: TestUtil.getStats(),
@@ -404,7 +404,7 @@ export default class TestUtil {
         artStyle: 1,
         unit: TestUtil.getUnit({}),
       }),
-      user: TestUtil.getUser({}),
+      user: user || TestUtil.getUser({}),
     }
   }
 
@@ -413,11 +413,15 @@ export default class TestUtil {
     created,
     creator,
     players,
+    turn,
+    victors = [],
   }: {
     id?: ObjectId | string
     created?: Date
     creator?: ObjectId | string
     players?: GamePlayerDbObject[]
+    turn?: ObjectId | string
+    victors?: (ObjectId | string)[]
   }): GameDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
@@ -451,8 +455,9 @@ export default class TestUtil {
         current: 0,
         maximum: MAX_ROUNDS,
       },
+      turn: turn ? new ObjectId(turn) : undefined,
       updated: new Date(),
-      victors: [],
+      victors: victors.map((victor) => new ObjectId(victor)),
     }
   }
 
@@ -555,18 +560,41 @@ export default class TestUtil {
     deck = TestUtil.getDbGameDeck({}),
     ready = false,
     rounds = [],
+    order,
     user,
   }: {
     deck?: GameDeckDbObject
     ready?: boolean
     rounds?: PlayerRound[]
+    order?: number
     user?: ObjectId | string
   }): GamePlayerDbObject {
     return {
-      deck: deck,
+      deck,
       ready,
       rounds,
+      order,
       user: user ? new ObjectId(user) : new ObjectId(),
+    }
+  }
+
+  static getGamePlayer({
+    ready = false,
+    user,
+    faction,
+    leader,
+  }: {
+    ready?: boolean
+    user?: User
+    faction?: Faction
+    leader?: Leader
+  }): GamePlayer {
+    return {
+      ready,
+      rounds: [],
+      user: user || TestUtil.getUser({}),
+      faction,
+      leader,
     }
   }
 
@@ -622,11 +650,11 @@ export default class TestUtil {
     }
   }
 
-  static getUser({ id }: { id?: ObjectId | string }): User {
+  static getUser({ id, name = 'user-name' }: { id?: ObjectId | string; name?: string }): User {
     return {
       created: new Date(),
       id: (id || new ObjectId()).toString(),
-      name: 'user-name',
+      name,
     }
   }
 }

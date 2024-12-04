@@ -13,6 +13,12 @@ fragment GameFragment on Game {
     maximum
   }
   status
+  turn {
+    user {
+      id
+      name
+    }
+  }
   updated
   victors {
     id

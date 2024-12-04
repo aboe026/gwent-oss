@@ -159,6 +159,8 @@ export type Game = {
   players: Array<GamePlayer>;
   round: GameRound;
   status: GameStatus;
+  /** Whose turn it currently is to make a move. */
+  turn?: Maybe<GamePlayer>;
   updated: Scalars['DateTime']['output'];
   victors: Array<User>;
 };
@@ -175,6 +177,12 @@ export type GameDeck = {
   redraws: Array<Redraw>;
   /** The units which have not yet been drawn */
   undrawn: Array<DeckUnit>;
+};
+
+export type GameDeckSet = {
+  __typename?: 'GameDeckSet';
+  deck: GameDeck;
+  game: Game;
 };
 
 export enum GameDeckStatus {
@@ -194,6 +202,8 @@ export type GamePlayer = {
   faction?: Maybe<Faction>;
   /** The leader the player chose for the game. Only visible once all players are ready. */
   leader?: Maybe<Leader>;
+  /** The precedence of order the player takes their turn relative to other players. Zero based indexing. */
+  order?: Maybe<Scalars['Int']['output']>;
   /** Whether or not a user has their game deck set to play the game. */
   ready: Scalars['Boolean']['output'];
   rounds: Array<PlayerRound>;
@@ -219,13 +229,24 @@ export type GameRound = {
 };
 
 export enum GameStatus {
-  /** Players are choosing the decks and hand to use for the game. */
+  /** Players are choosing their decks to use for the game. */
   Decking = 'DECKING',
   /** Play has ended. */
   Done = 'DONE',
+  /** The order of player turns is being decided. Happens automatically unless there is a single player with a Scoia'tael faction deck who can then choose which player starts. */
+  Ordering = 'ORDERING',
   /** Players are playing rounds of the game. */
-  Playing = 'PLAYING'
+  Playing = 'PLAYING',
+  /** Players are potentially redrawing the cards in their hand. */
+  Redrawing = 'REDRAWING'
 }
+
+export type GameUnitRedrawn = {
+  __typename?: 'GameUnitRedrawn';
+  from: DeckUnit;
+  game: Game;
+  to: DeckUnit;
+};
 
 export type Leader = {
   __typename?: 'Leader';
@@ -257,6 +278,8 @@ export type Mutation = {
   redraw: DeckUnit;
   /** Choose which deck will be used for the game. */
   setDeck: GameDeck;
+  /** Set the order in which players will take turns during a game. */
+  setOrder: Game;
 };
 
 
@@ -299,6 +322,12 @@ export type MutationRedrawArgs = {
 export type MutationSetDeckArgs = {
   deck: Scalars['ID']['input'];
   game: Scalars['ID']['input'];
+};
+
+
+export type MutationSetOrderArgs = {
+  game: Scalars['ID']['input'];
+  users?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
 export type PlayerRound = {
@@ -376,9 +405,20 @@ export enum SettingType {
 
 export type Subscription = {
   __typename?: 'Subscription';
+  /** A deck has been added for a user. */
   deckAdded: Deck;
+  /** A deck has been set for a game the user is a player on. */
+  deckSet: GameDeckSet;
+  /** A game has been added that the user is player on. */
   gameAdded: Game;
+  /** A game the user is a player on has been marked as ready by a player. */
   gameReady: Game;
+  /** All decks have been set for a game the user is a player on. */
+  gameSet: Game;
+  /** The order has been set for a game the user is a player on. */
+  orderSet: Game;
+  /** A unit was redrawn for a game deck the user owns. */
+  unitRedrawn: GameUnitRedrawn;
 };
 
 export type Unit = {
@@ -490,6 +530,7 @@ export type GameDbObject = {
   _id: ObjectId,
   players: Array<GamePlayerDbObject>,
   round: GameRound,
+  turn?: ObjectId,
   updated: any,
   victors: Array<ObjectId>,
 };
@@ -503,6 +544,7 @@ export type GameDeckDbObject = {
 };
 
 export type GamePlayerDbObject = {
+  order?: Maybe<number>,
   ready: boolean,
   rounds: Array<PlayerRound>,
   user: ObjectId,

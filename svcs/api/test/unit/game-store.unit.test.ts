@@ -84,6 +84,34 @@ describe('game-store', () => {
       })
     })
   })
+  describe('setOrder', () => {
+    it('calls out to update method and returns result if ids strings', async () => {
+      await testSetOrder({
+        gameId: new ObjectId().toString(),
+        userIds: [new ObjectId().toString(), new ObjectId().toString()],
+      })
+    })
+    it('calls out to update method and returns result if ids ObjectIds', async () => {
+      await testSetOrder({
+        gameId: new ObjectId(),
+        userIds: [new ObjectId(), new ObjectId()],
+      })
+    })
+    it('logs out if debug enabled', async () => {
+      await testSetOrder({
+        gameId: new ObjectId(),
+        userIds: [new ObjectId(), new ObjectId()],
+        debugEnabled: true,
+      })
+    })
+    it('logs out if trace enabled', async () => {
+      await testSetOrder({
+        gameId: new ObjectId(),
+        userIds: [new ObjectId(), new ObjectId()],
+        traceEnabled: true,
+      })
+    })
+  })
   describe('redraw', () => {
     it('calls out to update method and returns result if ids strings', async () => {
       await testRedraw({
@@ -105,7 +133,6 @@ describe('game-store', () => {
       })
     })
   })
-
   describe('setReady', () => {
     it('calls out to update and returns result if id strings', async () => {
       await testReady({
@@ -310,6 +337,84 @@ async function testSetDeck({
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [[`Setting deck to "${deck._id}" on game "${gameId}" for user "${userId}" with hand "${JSON.stringify(hand)}"`]]
+      : []
+  )
+}
+
+async function testSetOrder({
+  gameId,
+  userIds,
+  debugEnabled,
+  traceEnabled,
+}: {
+  gameId: string | ObjectId
+  userIds: (string | ObjectId)[]
+  debugEnabled?: boolean
+  traceEnabled?: boolean
+}) {
+  const mockedResponse = undefined
+  const updated = new Date()
+  const filter = {
+    _id: new ObjectId(gameId),
+    turn: null,
+  }
+  const update = {
+    $set: {
+      updated,
+      turn: new ObjectId(userIds[0]),
+      'players.$[p0].order': 0,
+      'players.$[p1].order': 1,
+    },
+  }
+  const arrayFilters = [
+    {
+      'p0.user': new ObjectId(userIds[0]),
+    },
+    {
+      'p1.user': new ObjectId(userIds[1]),
+    },
+  ]
+  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => updated)
+  const updateSpy = jest.spyOn(GameStore as any, 'update').mockResolvedValue(mockedResponse)
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  GameStore['logger'] = {
+    isDebugEnabled: jest.fn().mockReturnValue(debugEnabled),
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+
+  await expect(
+    GameStore.setOrder({
+      gameId,
+      userIds,
+    })
+  ).resolves.toEqual(mockedResponse)
+
+  expect(dateSpy.mock.calls).toEqual([[]])
+  expect(updateSpy.mock.calls).toEqual([
+    [
+      {
+        filter,
+        update,
+        options: {
+          arrayFilters,
+        },
+        verifyExistence: false,
+      },
+    ],
+  ])
+  expect(debugSpy.mock.calls).toEqual(
+    debugEnabled ? [[`Setting order on game "${gameId}" to "${JSON.stringify(userIds)}"`]] : []
+  )
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [`setOrder filter: "${JSON.stringify(filter)}"`],
+          [`setOrder update: "${JSON.stringify(update)}"`],
+          [`setOrder arrayFilters: "${JSON.stringify(arrayFilters)}"`],
+        ]
       : []
   )
 }

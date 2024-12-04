@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 
 import Centered from '../components/Centered'
-import { CurrentUserDocument, CurrentUserQuery, useLogoutMutation } from '@gwent/graphql-schema/apollo-typings'
+import { CurrentUserDocument, CurrentUserQuery, useLogoutMutation, User } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -19,16 +19,18 @@ export default function LogoutPage() {
     update(cache, {}) {
       const existingUser = cache.readQuery<CurrentUserQuery>({ query: CurrentUserDocument })
       if (existingUser?.currentUser) {
-        cache.writeQuery<CurrentUserQuery>({
-          query: CurrentUserDocument,
-          data: {
+        cache.updateQuery<CurrentUserQuery>(
+          {
+            query: CurrentUserDocument,
+            broadcast: true,
+          },
+          (previous) => ({
             currentUser: {
-              ...existingUser.currentUser,
+              ...(previous?.currentUser as User),
               id: '',
             },
-          },
-          broadcast: true,
-        })
+          })
+        )
       }
     },
   })

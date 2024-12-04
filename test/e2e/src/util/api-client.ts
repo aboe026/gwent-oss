@@ -4,6 +4,7 @@ import urljoin from 'url-join'
 
 import {
   Deck,
+  DeckUnit,
   Faction,
   FactionKey,
   Game,
@@ -770,6 +771,12 @@ export default class ApiClient {
               maximum
             }
             status
+            turn {
+              user {
+                id
+                name
+              }
+            }
             updated
             victors {
               created
@@ -1130,6 +1137,171 @@ export default class ApiClient {
       }
     )
     return response.gameDeck
+  }
+
+  async setOrder({ gameId, userIds }: { gameId: string | ObjectId; userIds: (string | ObjectId)[] }): Promise<Game> {
+    const response: any = await this._client.request(
+      gql`
+        fragment UserFragment on User {
+          created
+          id
+          name
+        }
+        fragment GamePlayerFragment on GamePlayer {
+          counts {
+            discard
+            hand
+            undrawn
+          }
+          faction {
+            ability
+            created
+            dlc {
+              id
+              image
+              key
+              name
+            }
+            id
+            image
+            key
+            name
+            stats(neutrals: true) {
+              agile
+              avenger
+              berserker
+              bond
+              close
+              decoy
+              heroes
+              horn
+              mardroeme
+              medic
+              morale
+              muster
+              ranged
+              scorch
+              siege
+              specials
+              spy
+              strengthAverage
+              strengths
+              strengthTotal
+              units
+              weather
+            }
+          }
+          leader {
+            ability
+            created
+            dlc {
+              id
+              image
+              key
+              name
+            }
+          }
+          ready
+          rounds {
+            score
+            won
+          }
+          user {
+            ...UserFragment
+          }
+        }
+        mutation SetOrder($game: ID!, $users: [ID!]) {
+          setOrder(game: $game, users: $users) {
+            created
+            creator {
+              ...UserFragment
+            }
+            id
+            players {
+              ...GamePlayerFragment
+            }
+            round {
+              current
+              maximum
+            }
+            status
+            turn {
+              ...GamePlayerFragment
+            }
+            updated
+            victors {
+              ...UserFragment
+            }
+          }
+        }
+      `,
+      {
+        game: gameId.toString(),
+        users: userIds.map((userId) => userId.toString()),
+      }
+    )
+    return response.setOrder
+  }
+
+  async redraw({ gameId, unitId }: { gameId: string | ObjectId; unitId: string | ObjectId }): Promise<DeckUnit> {
+    const response: any = await this._client.request(
+      gql`
+        fragment DlcFragment on Dlc {
+          created
+          id
+          image
+          key
+          name
+        }
+        mutation Redraw($game: ID!, $unit: ID!) {
+          redraw(game: $game, unit: $unit) {
+            artStyle
+            unit {
+              combats
+              created
+              deckable
+              dlc {
+                ...DlcFragment
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  ...DlcFragment
+                }
+                id
+                image
+                key
+                name
+              }
+              hero
+              id
+              images
+              name
+              quote
+              scorchMin
+              scorchScope
+              special
+              strength
+            }
+          }
+        }
+      `,
+      {
+        game: gameId.toString(),
+        unit: unitId.toString(),
+      }
+    )
+    return response.redraw
   }
 
   async ready(gameId: string | ObjectId): Promise<Game> {

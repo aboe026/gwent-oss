@@ -1,10 +1,21 @@
 import { graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
-import { Deck, DeckUnit, FactionKey, Game, GameDeck, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import {
+  Deck,
+  DeckUnit,
+  Faction,
+  FactionKey,
+  Game,
+  GameDeck,
+  Leader,
+  Unit,
+  User,
+} from '@gwent/graphql-schema/resolver-typings'
 import {
   getDeckFragment,
   getDeckUnitFragment,
+  getFactionFragment,
   getGameDeckFragment,
   getGameFragment,
   getLeaderFragment,
@@ -43,6 +54,32 @@ export async function addUser(name: string, password = 'password'): Promise<User
     throw Error(`Could not add user "${name}"`)
   }
   return response.data.addUser as User
+}
+
+export async function getFactionId({ key }: { key: FactionKey }): Promise<string> {
+  const response = await graphql({
+    schema,
+    source: `{
+      factions {
+        ${getFactionFragment({})}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: new ObjectId(),
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  const faction = (response.data?.factions as Faction[]).find((faction: Faction) => faction.key === key)
+  if (!faction) {
+    throw Error(`Could not find faction with key "${key}" in response "${JSON.stringify(response)}"`)
+  }
+  return faction.id
 }
 
 export async function getLeaderId({ name, faction }: { name?: string; faction?: FactionKey }): Promise<string> {
@@ -311,6 +348,39 @@ export async function getGameDeck({
     throw Error(JSON.stringify(response.errors))
   }
   return response.data?.gameDeck as GameDeck
+}
+
+export async function setOrder({
+  gameId,
+  users,
+  userId,
+}: {
+  gameId: string | ObjectId
+  users: (string | ObjectId)[]
+  userId: string | ObjectId
+}): Promise<Game> {
+  const response = await graphql({
+    schema,
+    source: `mutation {
+      setOrder(
+        game: "${gameId}"
+        users: ${JSON.stringify(users.map((user) => user.toString()))}
+      ) {
+        ${getGameFragment({})}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.setOrder as Game
 }
 
 export async function redraw({

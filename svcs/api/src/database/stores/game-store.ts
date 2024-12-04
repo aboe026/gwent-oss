@@ -1,4 +1,4 @@
-import { Document, FindOptions, ObjectId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId, UpdateFilter } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
@@ -139,6 +139,58 @@ export default class GameStore extends Store {
           'players.$.deck.hand': hand,
           'players.$.deck.undrawn': undrawn,
         },
+      },
+      verifyExistence: false,
+    })
+  }
+
+  /**
+   * Set the oder of player turns in a deck.
+   *
+   * @param config The configuration to use for setting the order.
+   * @param config.gameId The ID of the game to set the order for.
+   * @param config.userIds The IDs of the users to set the order for, in the order they are in the array.
+   * @returns The updated game with the turn orders set.
+   */
+  static async setOrder({
+    gameId,
+    userIds,
+  }: {
+    gameId: string | ObjectId
+    userIds: (string | ObjectId)[]
+  }): Promise<GameDbObject | undefined> {
+    if (GameStore.logger.isDebugEnabled()) {
+      GameStore.logger.debug(`Setting order on game "${gameId}" to "${JSON.stringify(userIds)}"`)
+    }
+    const filter: Filter<Document> = {
+      _id: new ObjectId(gameId),
+      turn: null,
+    }
+    const arrayFilters: Document[] = []
+    const update: UpdateFilter<Document> = {
+      $set: {
+        updated: new Date(),
+        turn: new ObjectId(userIds[0]),
+      },
+    }
+    if (update.$set) {
+      for (let i = 0; i < userIds.length; i++) {
+        update.$set[`players.$[p${i}].order`] = i
+        arrayFilters.push({
+          [`p${i}.user`]: new ObjectId(userIds[i]),
+        })
+      }
+    }
+    if (GameStore.logger.isTraceEnabled()) {
+      GameStore.logger.trace(`setOrder filter: "${JSON.stringify(filter)}"`)
+      GameStore.logger.trace(`setOrder update: "${JSON.stringify(update)}"`)
+      GameStore.logger.trace(`setOrder arrayFilters: "${JSON.stringify(arrayFilters)}"`)
+    }
+    return GameStore.update<GameDbObject>({
+      filter,
+      update,
+      options: {
+        arrayFilters,
       },
       verifyExistence: false,
     })

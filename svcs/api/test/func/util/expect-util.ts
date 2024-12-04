@@ -4,6 +4,8 @@ import {
   DeckUnit,
   Faction,
   FactionKey,
+  GameDeck,
+  GamePlayer,
   GamePlayerUnitCounts,
   GameStatus,
   Leader,
@@ -415,6 +417,7 @@ export function expectizeGame({
   creator,
   players,
   status = GameStatus.Decking,
+  turn = null,
 }: {
   creator: User
   players: {
@@ -424,8 +427,10 @@ export function expectizeGame({
     ready?: boolean
     rounds?: PlayerRound[]
     user: User
+    order?: number | null
   }[]
   status?: GameStatus
+  turn?: GamePlayer | null
 }) {
   return {
     created: expect.any(Date),
@@ -447,6 +452,12 @@ export function expectizeGame({
       if (!player.ready) {
         player.ready = false
       }
+      if (player.order === undefined) {
+        player.order = null
+      }
+      if (status === GameStatus.Playing && player.order === undefined) {
+        player.order = expect.any(Number)
+      }
       return player
     }),
     round: {
@@ -454,6 +465,7 @@ export function expectizeGame({
       maximum: 3,
     },
     status,
+    turn,
     updated: expect.any(Date),
     victors: [],
   }
@@ -494,6 +506,32 @@ export function expectizeGameDeck({
       maxArtStyle: deck.maxArtStyle,
       neutrals: deck.neutrals,
     }),
+  }
+}
+
+export function expectizeGamePlayer({
+  user,
+  gameDeck,
+  order = null,
+  ready = false,
+}: {
+  user: User
+  gameDeck: GameDeck
+  order?: number | null
+  ready?: boolean
+}): GamePlayer {
+  return {
+    ready,
+    rounds: [],
+    user,
+    counts: {
+      discard: gameDeck.discard.length,
+      hand: gameDeck.hand.length,
+      undrawn: gameDeck.undrawn.length,
+    },
+    faction: gameDeck.from?.faction,
+    leader: gameDeck.from?.leader,
+    order,
   }
 }
 
