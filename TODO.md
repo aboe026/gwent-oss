@@ -18,7 +18,6 @@ A list of things to be done in the future
     - put each in its own file
   - subscriptions
 - implement history?
-- upgrade to Node.js 22 LTS
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
 - How to handle GameCard with more than 2 icons (eg Olgierd)? The 3rd one gets rendered off the card underneath

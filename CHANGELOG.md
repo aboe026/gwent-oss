@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.1 - 2024-12-04
+
+### Fixed
+
+- Increment to Node.js LTS 22 (#16) (Adam Boe)
+
 ## 0.8.0 - 2024-12-03
 
 ### Added
