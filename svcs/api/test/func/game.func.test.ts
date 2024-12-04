@@ -78,7 +78,7 @@ describe('game', () => {
         await addUser(name3)
         const game = await addGame({
           opponentNames: [name3],
-          user: user2,
+          creator: user2,
         })
         await expect(
           graphql({
@@ -110,7 +110,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           graphql({
@@ -152,7 +152,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name1],
-          user: user2,
+          creator: user2,
         })
         await expect(
           graphql({
@@ -194,7 +194,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -246,7 +246,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name1],
-          user: user2,
+          creator: user2,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -298,7 +298,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck1 = await addDeck({
           faction: FactionKey.NorthernRealms,
@@ -446,7 +446,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user3,
+          creator: user3,
         })
         await expect(
           graphql({
@@ -484,7 +484,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await setDeck({
           deckId: deck.id,
@@ -558,7 +558,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           graphql({
@@ -596,7 +596,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           graphql({
@@ -636,7 +636,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           getGameDeck({
@@ -710,7 +710,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name1],
-          user: user2,
+          creator: user2,
         })
         await expect(
           getGameDeck({
@@ -784,7 +784,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           graphql({
@@ -835,7 +835,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           graphql({
@@ -892,7 +892,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           getGameDeck({
@@ -1033,7 +1033,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           getGameDeck({
@@ -1174,7 +1174,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           getGameDeck({
@@ -1318,7 +1318,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           getGameDeck({
@@ -1485,7 +1485,7 @@ describe('game', () => {
         await addUser(name3)
         const game = await addGame({
           opponentNames: [name3],
-          user: user2,
+          creator: user2,
         })
         await expect(
           graphql({
@@ -1519,7 +1519,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           graphql({
@@ -1555,7 +1555,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await setDeck({
           deckId: deck.id,
@@ -1596,7 +1596,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await setDeck({
           deckId: deck.id,
@@ -1647,7 +1647,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name1],
-          user: user2,
+          creator: user2,
         })
         await setDeck({
           deckId: deck.id,
@@ -1700,7 +1700,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await setDeck({
           deckId: deck.id,
@@ -1755,7 +1755,7 @@ describe('game', () => {
         })
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await setDeck({
           deckId: deck.id,
@@ -1838,7 +1838,7 @@ describe('game', () => {
         await addUser(name3)
         const game = await addGame({
           opponentNames: [name3],
-          user: user2,
+          creator: user2,
         })
         await expect(
           graphql({
@@ -1871,7 +1871,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           graphql({
@@ -1904,7 +1904,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -1951,7 +1951,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -2004,7 +2004,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -2048,7 +2048,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -2099,7 +2099,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck1 = await addDeck({
           faction: FactionKey.Monsters,
@@ -2409,7 +2409,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -2483,7 +2483,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -2586,7 +2586,7 @@ describe('game', () => {
         await addUser(name3)
         const game = await addGame({
           opponentNames: [name3],
-          user: user2,
+          creator: user2,
         })
         await expect(
           graphql({
@@ -2616,7 +2616,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         await expect(
           graphql({
@@ -2646,7 +2646,7 @@ describe('game', () => {
         await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -2692,7 +2692,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -2752,7 +2752,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name1],
-          user: user2,
+          creator: user2,
         })
         const deck = await addDeck({
           faction: FactionKey.Monsters,
@@ -2812,7 +2812,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck1 = await addDeck({
           faction: FactionKey.Monsters,
@@ -2890,7 +2890,7 @@ describe('game', () => {
         const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
-          user: user1,
+          creator: user1,
         })
         const deck1 = await addDeck({
           faction: FactionKey.Monsters,

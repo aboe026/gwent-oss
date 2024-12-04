@@ -56,7 +56,7 @@ describe('setOrder', () => {
       await addUser(name3)
       const game = await addGame({
         opponentNames: [name3],
-        user: user2,
+        creator: user2,
       })
       await expect(
         graphql({
@@ -88,7 +88,7 @@ describe('setOrder', () => {
       await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       await expect(
         graphql({
@@ -120,7 +120,7 @@ describe('setOrder', () => {
       await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -162,7 +162,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -204,7 +204,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -261,7 +261,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.NorthernRealms,
@@ -318,7 +318,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.NorthernRealms,
@@ -374,7 +374,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -428,7 +428,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -482,7 +482,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -539,7 +539,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -596,7 +596,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -655,7 +655,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -725,7 +725,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.ScoiaTael,
@@ -795,7 +795,7 @@ describe('setOrder', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        user: user1,
+        creator: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.ScoiaTael,

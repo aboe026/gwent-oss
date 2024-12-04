@@ -22,7 +22,7 @@ import {
   getUnitFragment,
 } from './fragment-util'
 import schema from '../../../src/graphql/executable-schema'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import TestUtil from '../../test-util'
 
 export async function addUser(name: string, password = 'password'): Promise<User> {
   const response = await graphql({
@@ -224,15 +224,9 @@ export async function addDeck({
   return response.data?.addDeck as Deck
 }
 
-export async function addGame({ opponentNames, user }: { opponentNames: string[]; user?: User }): Promise<Game> {
-  if (!user) {
-    user = await addUser(`addGame-${Date.now()}`)
-  }
-  const dbUser: UserDbObject = {
-    _id: new ObjectId(user.id),
-    created: user.created,
-    name: user.name,
-    password: '',
+export async function addGame({ opponentNames, creator }: { opponentNames: string[]; creator?: User }): Promise<Game> {
+  if (!creator) {
+    creator = await addUser(`addGame-${Date.now()}`)
   }
   const response = await graphql({
     schema,
@@ -245,7 +239,7 @@ export async function addGame({ opponentNames, user }: { opponentNames: string[]
     }`,
     contextValue: {
       session: {
-        user: dbUser,
+        user: TestUtil.getDbUserFromUser(creator),
       },
     },
   })
