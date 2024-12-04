@@ -236,7 +236,7 @@ describe('mutation-resolver', () => {
     const userId = new ObjectId()
     const logPrefix = `addGame by "${userId}"`
     it('returns error if duplicate opponents', async () => {
-      const error = 'Invalid opponents: no duplicates allowed: "["test"]".'
+      const error = 'Invalid opponents: names ["test"] are duplicates.'
       await testAddGame({
         creatorId: userId,
         opponentNames: ['test', 'test'],
@@ -2088,7 +2088,7 @@ describe('mutation-resolver', () => {
       })
     })
     it('returns error if duplicate users', async () => {
-      const message = `Cannot set order for game "${gameId}" as duplicate user ID(s) "["${userId}"]" specified.`
+      const message = `Cannot set order for game "${gameId}" due to duplicate user ID(s) ["${userId}"] specified.`
       await testSetGameTurnOrder({
         gameId,
         userId,
@@ -2639,7 +2639,6 @@ async function testAddGame({
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} creator: "${user.name}"`],
-          [`${logPrefix} opponentNames: "${JSON.stringify(opponentNames)}"`],
           [`${logPrefix} opponents: "${JSON.stringify(getUserByNamesResponse)}"`],
           [
             `${logPrefix} resolvedOpponents: "${JSON.stringify(

@@ -127,7 +127,7 @@ describe('games', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Invalid opponents: no duplicates allowed.')],
+          errors: [new GraphQLError(`Invalid opponents: names ["${name2}"] are duplicates.`)],
         })
       })
       it('throws error if 2 opponents', async () => {

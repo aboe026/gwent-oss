@@ -209,7 +209,7 @@ export default class MutationResolver {
         const opponentNames = args.opponentNames
         const duplicateNames = getDuplicateItems(opponentNames)
         if (duplicateNames.length > 0) {
-          const message = `Invalid opponents: no duplicates allowed: "${JSON.stringify(duplicateNames)}".`
+          const message = `Invalid opponents: names ${JSON.stringify(duplicateNames)} are duplicates.`
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
         }
@@ -217,9 +217,6 @@ export default class MutationResolver {
           const message = 'Invalid opponents: cannot include self.'
           MutationResolver.logger.debug(`${logPrefix} failed: ${message}`)
           return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-        if (MutationResolver.logger.isTraceEnabled()) {
-          MutationResolver.logger.trace(`${logPrefix} opponentNames: "${JSON.stringify(opponentNames)}"`)
         }
         if (opponentNames.length < PLAYER_COUNTS.Min - 1) {
           const message = `Not enough opponents for game at "${opponentNames.length}", minimum is "${
@@ -853,9 +850,9 @@ export default class MutationResolver {
       }
       const duplicateUserIds = getDuplicateItems<string>(userIds)
       if (duplicateUserIds.length > 0) {
-        const message = `Cannot set order for game "${gameId}" as duplicate user ID(s) "${JSON.stringify(
+        const message = `Cannot set order for game "${gameId}" due to duplicate user ID(s) ${JSON.stringify(
           duplicateUserIds
-        )}" specified.`
+        )} specified.`
         MutationResolver.logger.warn(`${logPrefix} failed: ${message}`)
         return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
       }

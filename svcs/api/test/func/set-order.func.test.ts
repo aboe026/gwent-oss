@@ -639,7 +639,11 @@ describe('setOrder', () => {
         })
       ).resolves.toEqual({
         data: null,
-        errors: [new GraphQLError(`Cannot set order for game "${game.id}" as duplicate user IDs specified.`)],
+        errors: [
+          new GraphQLError(
+            `Cannot set order for game "${game.id}" due to duplicate user ID(s) ["${user1.id}"] specified.`
+          ),
+        ],
       })
     })
   })
