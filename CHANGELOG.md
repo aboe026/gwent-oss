@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Increment to latest Node.js LTS (#16) (Adam Boe)
+- Increment to Node.js LTS 22 (#16) (Adam Boe)
 
 ## 0.8.0 - 2024-12-03
 
