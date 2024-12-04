@@ -1,5 +1,4 @@
-import { isRouteErrorResponse, useRouteError } from 'react-router-dom'
-import { Link } from 'react-router-dom'
+import { isRouteErrorResponse, Link, useRouteError } from 'react-router'
 
 import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'

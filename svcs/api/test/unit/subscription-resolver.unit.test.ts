@@ -22,7 +22,7 @@ describe('subscription-resolver', () => {
   describe('getResolvers', () => {
     it('returns subscriptions with calls to withFilter', () => {
       const withFilterSpy = jest.spyOn(graphqlSubscriptions, 'withFilter').mockReturnValue((() => {}) as any)
-      const asyncIteratorSpy = jest.spyOn(EventManager.pubsub, 'asyncIterator').mockReturnValue('' as any)
+      const asyncIteratorSpy = jest.spyOn(EventManager.pubsub, 'asyncIterableIterator').mockReturnValue('' as any)
       const filterDeckAddedSpy = jest.spyOn(SubscriptionResolver as any, 'filterDeckAdded').mockResolvedValue('')
       const filterDeckSetSpy = jest.spyOn(SubscriptionResolver as any, 'filterDeckSet').mockResolvedValue('')
       const filterGameAddedSpy = jest.spyOn(SubscriptionResolver as any, 'filterGameAdded').mockResolvedValue('')

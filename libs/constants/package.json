@@ -1,6 +1,6 @@
 {
   "name": "@gwent/constants",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "author": "Adam Boe",
   "description": "Defined constants to share between microservices",
   "main": "build/src/constants.js",
@@ -15,7 +15,7 @@
     "watch": "yarn g:tsc --watch"
   },
   "devDependencies": {
-    "@types/jest": "29.5.13",
+    "@types/jest": "29.5.14",
     "jest-junit": "16.0.0",
     "ts-jest": "29.2.5"
   }

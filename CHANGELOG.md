@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.2 - 2024-12-04
+
+### Fixed
+
+- Update dependencies (#17) (Adam Boe)
+
 ## 0.8.1 - 2024-12-04
 
 ### Fixed

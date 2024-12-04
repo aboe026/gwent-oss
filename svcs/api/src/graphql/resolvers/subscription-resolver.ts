@@ -23,45 +23,45 @@ export default class SubscriptionResolver {
     return {
       deckAdded: {
         subscribe: withFilter(
-          () => EventManager.pubsub.asyncIterator([PubSubEvents.DeckAdded]),
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.DeckAdded]),
           async (payload, args, ctx) => SubscriptionResolver.filterDeckAdded(payload, ctx)
-        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        ),
       },
       deckSet: {
         subscribe: withFilter(
-          () => EventManager.pubsub.asyncIterator([PubSubEvents.DeckSet]),
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.DeckSet]),
           async (payload, args, ctx) => SubscriptionResolver.filterDeckSet(payload, ctx)
-        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        ),
       },
       gameAdded: {
         subscribe: withFilter(
-          () => EventManager.pubsub.asyncIterator([PubSubEvents.GameAdded]),
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.GameAdded]),
           async (payload, args, ctx) => SubscriptionResolver.filterGameAdded(payload, ctx)
-        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        ),
       },
       gameReady: {
         subscribe: withFilter(
-          () => EventManager.pubsub.asyncIterator([PubSubEvents.GameReady]),
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.GameReady]),
           async (payload, args, ctx) => SubscriptionResolver.filterGameReady(payload, ctx)
-        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        ),
       },
       gameSet: {
         subscribe: withFilter(
-          () => EventManager.pubsub.asyncIterator([PubSubEvents.GameSet]),
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.GameSet]),
           async (payload, args, ctx) => SubscriptionResolver.filterGameSet(payload, ctx)
-        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        ),
       },
       orderSet: {
         subscribe: withFilter(
-          () => EventManager.pubsub.asyncIterator([PubSubEvents.OrderSet]),
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.OrderSet]),
           async (payload, args, ctx) => SubscriptionResolver.filterOrderSet(payload, ctx)
-        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        ),
       },
       unitRedrawn: {
         subscribe: withFilter(
-          () => EventManager.pubsub.asyncIterator([PubSubEvents.UnitRedrawn]),
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.UnitRedrawn]),
           async (payload, args, ctx) => SubscriptionResolver.filterUnitRedrawn(payload, ctx)
-        ) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        ),
       },
     }
   }
