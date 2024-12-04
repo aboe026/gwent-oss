@@ -1,6 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
+import { Context } from '@gwent/graphql-schema/context'
 import {
   DeckDbObject,
   FactionDbObject,
@@ -22,7 +23,13 @@ import { getDeckStats, getDuplicateItems, randomizeOrder } from '@gwent/utils'
 import { getRandomSubset } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
 import LeaderStore from '../../database/stores/leader-store'
-import { MAX_REDRAWS, PLAYER_COUNTS, PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
+import {
+  MAX_REDRAWS,
+  NOT_AUTHENTICATED_MESSAGE,
+  PLAYER_COUNTS,
+  PubSubEvents,
+  STARTING_HAND_SIZE,
+} from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
 import UnitStore from '../../database/stores/unit-store'
 import UserResolver from './user-resolver'
@@ -44,8 +51,14 @@ export default class MutationResolver {
   static getResolvers(): MutationResolvers<any, any> {
     return {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      addDeck: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      addDeck: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        if (!userId) {
+          MutationResolver.logger.error(
+            `No user on context for addDeck mutation: "${JSON.stringify(context.session)}".`
+          )
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `addDeck by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -192,9 +205,15 @@ export default class MutationResolver {
         return resolvedDeck
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      addGame: async (parent, args, context, info) => {
-        const userId = context.session.user._id
-        const creatorName = context.session.user.name
+      addGame: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        const creatorName = context.session?.user?.name
+        if (!userId || !creatorName) {
+          MutationResolver.logger.error(
+            `No user on context for addGame mutation: "${JSON.stringify(context.session)}".`
+          )
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `addGame by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -277,7 +296,7 @@ export default class MutationResolver {
         return resolvedGame
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      addUser: async (parent, args, context, info) => {
+      addUser: async (parent, args, context: Context, info) => {
         const name = args.name
         const password = args.password
         const logPrefix = `addUser for user "${name}"`
@@ -307,7 +326,7 @@ export default class MutationResolver {
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      login: async (parent, args, context, info) => {
+      login: async (parent, args, context: Context, info) => {
         const name = args.name
         const password = args.password
         const logPrefix = `login for user "${name}"`
@@ -354,8 +373,8 @@ export default class MutationResolver {
         return UserResolver.fromObject(user)
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      logout: (parent, args, context, info) => {
-        const userId = context?.session?.user?._id
+      logout: (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
         const logPrefix = `logout for user "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(
@@ -367,14 +386,20 @@ export default class MutationResolver {
         }
         if (userId) {
           MutationResolver.logger.debug(`${logPrefix}: removing from session.`)
-          delete context.session.user
+          if (context.session?.user) {
+            delete context.session.user
+          }
           return true
         }
         return false
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      ready: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      ready: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        if (!userId) {
+          MutationResolver.logger.error(`No user on context for ready mutation: "${JSON.stringify(context.session)}".`)
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `ready by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -444,8 +469,12 @@ export default class MutationResolver {
         return resolvedGame
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      redraw: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      redraw: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        if (!userId) {
+          MutationResolver.logger.error(`No user on context for redraw mutation: "${JSON.stringify(context.session)}".`)
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `redraw by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -587,8 +616,14 @@ export default class MutationResolver {
         return resolvedTo
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      setDeck: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      setDeck: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        if (!userId) {
+          MutationResolver.logger.error(
+            `No user on context for setDeck mutation: "${JSON.stringify(context.session)}".`
+          )
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `setDeck by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -714,8 +749,14 @@ export default class MutationResolver {
 
         return resolvedDeck
       },
-      setOrder: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      setOrder: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        if (!userId) {
+          MutationResolver.logger.error(
+            `No user on context for setOrder mutation: "${JSON.stringify(context.session)}".`
+          )
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `setOrder by "${userId}"`
         if (MutationResolver.logger.isTraceEnabled()) {
           MutationResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -744,7 +785,7 @@ export default class MutationResolver {
     logPrefix,
     allowImplicit,
   }: {
-    userId: string
+    userId: string | ObjectId
     gameId: string
     userIds?: string[] | null
     logPrefix: string
@@ -831,9 +872,9 @@ export default class MutationResolver {
     if (userIds && userIds.length > 0) {
       const playerIdsInGame = game.players.map((player) => player.user.toString())
       const playersIdsNotInGame: string[] = []
-      for (const userId of userIds) {
-        if (!playerIdsInGame.includes(userId.toString())) {
-          playersIdsNotInGame.push(userId)
+      for (const playerId of userIds) {
+        if (!playerIdsInGame.includes(playerId.toString())) {
+          playersIdsNotInGame.push(playerId)
         }
       }
       if (playersIdsNotInGame.length > 0) {

@@ -9,6 +9,7 @@ import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
 import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
+import TestUtil from '../test-util'
 
 describe('games', () => {
   beforeAll(async () => {
@@ -56,9 +57,7 @@ describe('games', () => {
             }`,
             contextValue: {
               session: {
-                user: {
-                  _id: user.id,
-                },
+                user: TestUtil.getDbUserFromUser(user),
               },
             },
           })
@@ -87,10 +86,7 @@ describe('games', () => {
             }`,
             contextValue: {
               session: {
-                user: {
-                  _id: user1.id,
-                  name: name1,
-                },
+                user: TestUtil.getDbUserFromUser(user1),
               },
             },
           })
@@ -119,9 +115,7 @@ describe('games', () => {
             }`,
             contextValue: {
               session: {
-                user: {
-                  _id: user1.id,
-                },
+                user: TestUtil.getDbUserFromUser(user1),
               },
             },
           })
@@ -152,9 +146,7 @@ describe('games', () => {
             }`,
             contextValue: {
               session: {
-                user: {
-                  _id: user1.id,
-                },
+                user: TestUtil.getDbUserFromUser(user1),
               },
             },
           })
@@ -179,9 +171,7 @@ describe('games', () => {
             }`,
             contextValue: {
               session: {
-                user: {
-                  _id: user.id,
-                },
+                user: TestUtil.getDbUserFromUser(user),
               },
             },
           })
@@ -209,9 +199,7 @@ describe('games', () => {
             }`,
             contextValue: {
               session: {
-                user: {
-                  _id: user1.id,
-                },
+                user: TestUtil.getDbUserFromUser(user1),
               },
             },
           })
@@ -268,7 +256,7 @@ describe('games', () => {
       await addUser(name3)
       await addGame({
         opponentNames: [name3],
-        userId: user2.id,
+        user: user2,
       })
       await expect(
         graphql({
@@ -299,7 +287,7 @@ describe('games', () => {
       await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        userId: user1.id,
+        user: user1,
       })
       await expect(
         graphql({
@@ -330,7 +318,7 @@ describe('games', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name1],
-        userId: user2.id,
+        user: user2,
       })
       await expect(
         graphql({
@@ -361,11 +349,11 @@ describe('games', () => {
       await addUser(name2)
       const game1 = await addGame({
         opponentNames: [name2],
-        userId: user1.id,
+        user: user1,
       })
       const game2 = await addGame({
         opponentNames: [name2],
-        userId: user1.id,
+        user: user1,
       })
       await expect(
         graphql({
@@ -398,11 +386,11 @@ describe('games', () => {
       await addUser(name3)
       const game1 = await addGame({
         opponentNames: [name2],
-        userId: user1.id,
+        user: user1,
       })
       const game2 = await addGame({
         opponentNames: [name3],
-        userId: user1.id,
+        user: user1,
       })
       await expect(
         graphql({
@@ -433,11 +421,11 @@ describe('games', () => {
       const user2 = await addUser(name2)
       const game1 = await addGame({
         opponentNames: [name1],
-        userId: user2.id,
+        user: user2,
       })
       const game2 = await addGame({
         opponentNames: [name1],
-        userId: user2.id,
+        user: user2,
       })
       await expect(
         graphql({
@@ -470,11 +458,11 @@ describe('games', () => {
       const user3 = await addUser(name3)
       const game1 = await addGame({
         opponentNames: [name1],
-        userId: user2.id,
+        user: user2,
       })
       const game2 = await addGame({
         opponentNames: [name1],
-        userId: user3.id,
+        user: user3,
       })
       await expect(
         graphql({
@@ -505,11 +493,11 @@ describe('games', () => {
       const user2 = await addUser(name2)
       const game1 = await addGame({
         opponentNames: [name2],
-        userId: user1.id,
+        user: user1,
       })
       const game2 = await addGame({
         opponentNames: [name1],
-        userId: user2.id,
+        user: user2,
       })
       await expect(
         graphql({
@@ -540,7 +528,7 @@ describe('games', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        userId: user1.id,
+        user: user1,
       })
       const deck = await addDeck({
         faction: FactionKey.Monsters,
@@ -593,7 +581,7 @@ describe('games', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        userId: user1.id,
+        user: user1,
       })
       const deck = await addDeck({
         faction: FactionKey.Monsters,
@@ -646,7 +634,7 @@ describe('games', () => {
       const user2 = await addUser(name2)
       const game = await addGame({
         opponentNames: [name2],
-        userId: user1.id,
+        user: user1,
       })
       const deck1 = await addDeck({
         faction: FactionKey.Monsters,

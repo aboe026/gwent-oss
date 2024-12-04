@@ -1,6 +1,7 @@
 import { getLogger } from 'log4js'
 
 import AppInfo from '../../app-info'
+import { Context } from '@gwent/graphql-schema/context'
 import DeckResolver from './deck-resolver'
 import DeckStore from '../../database/stores/deck-store'
 import env from '../../env'
@@ -12,6 +13,7 @@ import GameResolver from './game-resolver'
 import GameStore from '../../database/stores/game-store'
 import LeaderStore from '../../database/stores/leader-store'
 import LeaderResolver from './leader-resolver'
+import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import { QueryResolvers, SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
 import { RequestedFields } from '@gwent/graphql-schema'
 import UnitResolver from './unit-resolver'
@@ -34,8 +36,8 @@ export default class QueryResolver {
   static getResolvers(): QueryResolvers<any, any> {
     return {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      application: async (parent, args, context, info) => {
-        const userId = context?.session?.user?._id
+      application: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
         const logPrefix = `application by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(
@@ -56,8 +58,8 @@ export default class QueryResolver {
         }
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      currentUser: (parent, args, context, info) => {
-        const user = context?.session?.user
+      currentUser: (parent, args, context: Context, info) => {
+        const user = context.session?.user
         const logPrefix = `currentUser by "${user?._id}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(
@@ -76,8 +78,12 @@ export default class QueryResolver {
         return UserResolver.fromObject(user)
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      decks: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      decks: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        if (!userId) {
+          QueryResolver.logger.error(`No user on context for decks query: "${JSON.stringify(context.session)}".`)
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `decks by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(
@@ -99,8 +105,8 @@ export default class QueryResolver {
         })
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      factions: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      factions: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
         const logPrefix = `factions by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(
@@ -121,8 +127,12 @@ export default class QueryResolver {
         })
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      game: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      game: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        if (!userId) {
+          QueryResolver.logger.error(`No user on context for game query: "${JSON.stringify(context.session)}".`)
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `game by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -137,8 +147,12 @@ export default class QueryResolver {
         return GameResolver.fromId(gameId)
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      gameDeck: async (parent, args, context, info) => {
-        const userId = context?.session?.user._id
+      gameDeck: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        if (!userId) {
+          QueryResolver.logger.error(`No user on context for gameDeck query: "${JSON.stringify(context.session)}".`)
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `gameDeck by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -182,8 +196,12 @@ export default class QueryResolver {
         return null
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      games: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      games: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
+        if (!userId) {
+          QueryResolver.logger.error(`No user on context for games query: "${JSON.stringify(context.session)}".`)
+          return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
         const logPrefix = `games by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(
@@ -200,8 +218,8 @@ export default class QueryResolver {
         return GameResolver.fromArray(games)
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      leaders: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      leaders: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
         const logPrefix = `leaders by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -240,8 +258,8 @@ export default class QueryResolver {
         })
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      settings: (parent, args, context, info) => {
-        const userId = context.session.user._id
+      settings: (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
         const logPrefix = `settings by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(
@@ -261,8 +279,8 @@ export default class QueryResolver {
         ]
       },
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      units: async (parent, args, context, info) => {
-        const userId = context.session.user._id
+      units: async (parent, args, context: Context, info) => {
+        const userId = context.session?.user?._id
         const logPrefix = `units by "${userId}"`
         if (QueryResolver.logger.isTraceEnabled()) {
           QueryResolver.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)

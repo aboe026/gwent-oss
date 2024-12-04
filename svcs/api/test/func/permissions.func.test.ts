@@ -87,7 +87,7 @@ describe('permissions', () => {
         const user2 = await addUser(`user-2-${Date.now()}`)
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await expect(
           graphql({
@@ -111,7 +111,7 @@ describe('permissions', () => {
         const user3 = await addUser(`user-3-${Date.now()}`)
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await expect(
           graphql({
@@ -143,7 +143,7 @@ describe('permissions', () => {
         const user2 = await addUser(`user-2-${Date.now()}`)
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await expect(
           graphql({
@@ -169,7 +169,7 @@ describe('permissions', () => {
         const user3 = await addUser(`user-3-${Date.now()}`)
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await expect(
           graphql({
@@ -325,7 +325,7 @@ describe('permissions', () => {
         })
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await setDeck({
           deckId: deck1.id,
@@ -369,7 +369,7 @@ describe('permissions', () => {
         })
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await setDeck({
           deckId: deck1.id,
@@ -421,7 +421,7 @@ describe('permissions', () => {
         })
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await setDeck({
           deckId: deck1.id,
@@ -466,7 +466,7 @@ describe('permissions', () => {
         })
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await setDeck({
           deckId: deck1.id,
@@ -514,7 +514,7 @@ describe('permissions', () => {
         })
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await expect(
           graphql({
@@ -544,7 +544,7 @@ describe('permissions', () => {
         })
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await expect(
           graphql({
@@ -580,7 +580,7 @@ describe('permissions', () => {
         })
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await expect(
           graphql({
@@ -623,7 +623,7 @@ describe('permissions', () => {
         })
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await setDeck({
           deckId: deck1.id,
@@ -668,7 +668,7 @@ describe('permissions', () => {
         })
         const game = await addGame({
           opponentNames: [user2.name],
-          userId: user1.id,
+          user: user1,
         })
         await setDeck({
           deckId: deck1.id,

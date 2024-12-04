@@ -1,4 +1,5 @@
 import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
+import { Context } from '../src/context';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -625,7 +626,7 @@ export type ResolversParentTypes = {
   User: User;
 };
 
-export type ApplicationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Application'] = ResolversParentTypes['Application']> = {
+export type ApplicationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Application'] = ResolversParentTypes['Application']> = {
   build?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   version?: Resolver<ResolversTypes['SemVer'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -635,7 +636,7 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'DateTime';
 }
 
-export type DeckResolvers<ContextType = any, ParentType extends ResolversParentTypes['Deck'] = ResolversParentTypes['Deck']> = {
+export type DeckResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Deck'] = ResolversParentTypes['Deck']> = {
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   faction?: Resolver<ResolversTypes['Faction'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -647,13 +648,13 @@ export type DeckResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type DeckUnitResolvers<ContextType = any, ParentType extends ResolversParentTypes['DeckUnit'] = ResolversParentTypes['DeckUnit']> = {
+export type DeckUnitResolvers<ContextType = Context, ParentType extends ResolversParentTypes['DeckUnit'] = ResolversParentTypes['DeckUnit']> = {
   artStyle?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   unit?: Resolver<ResolversTypes['Unit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type DlcResolvers<ContextType = any, ParentType extends ResolversParentTypes['Dlc'] = ResolversParentTypes['Dlc']> = {
+export type DlcResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Dlc'] = ResolversParentTypes['Dlc']> = {
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   image?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -662,7 +663,7 @@ export type DlcResolvers<ContextType = any, ParentType extends ResolversParentTy
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type EffectResolvers<ContextType = any, ParentType extends ResolversParentTypes['Effect'] = ResolversParentTypes['Effect']> = {
+export type EffectResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Effect'] = ResolversParentTypes['Effect']> = {
   ability?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -672,7 +673,7 @@ export type EffectResolvers<ContextType = any, ParentType extends ResolversParen
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type FactionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Faction'] = ResolversParentTypes['Faction']> = {
+export type FactionResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Faction'] = ResolversParentTypes['Faction']> = {
   ability?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dlc?: Resolver<Maybe<ResolversTypes['Dlc']>, ParentType, ContextType>;
@@ -684,7 +685,7 @@ export type FactionResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GameResolvers<ContextType = any, ParentType extends ResolversParentTypes['Game'] = ResolversParentTypes['Game']> = {
+export type GameResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Game'] = ResolversParentTypes['Game']> = {
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -697,7 +698,7 @@ export type GameResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GameDeckResolvers<ContextType = any, ParentType extends ResolversParentTypes['GameDeck'] = ResolversParentTypes['GameDeck']> = {
+export type GameDeckResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameDeck'] = ResolversParentTypes['GameDeck']> = {
   discard?: Resolver<Array<ResolversTypes['DeckUnit']>, ParentType, ContextType>;
   from?: Resolver<Maybe<ResolversTypes['Deck']>, ParentType, ContextType>;
   hand?: Resolver<Array<ResolversTypes['DeckUnit']>, ParentType, ContextType>;
@@ -706,13 +707,13 @@ export type GameDeckResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GameDeckSetResolvers<ContextType = any, ParentType extends ResolversParentTypes['GameDeckSet'] = ResolversParentTypes['GameDeckSet']> = {
+export type GameDeckSetResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameDeckSet'] = ResolversParentTypes['GameDeckSet']> = {
   deck?: Resolver<ResolversTypes['GameDeck'], ParentType, ContextType>;
   game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GamePlayerResolvers<ContextType = any, ParentType extends ResolversParentTypes['GamePlayer'] = ResolversParentTypes['GamePlayer']> = {
+export type GamePlayerResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GamePlayer'] = ResolversParentTypes['GamePlayer']> = {
   counts?: Resolver<Maybe<ResolversTypes['GamePlayerUnitCounts']>, ParentType, ContextType>;
   faction?: Resolver<Maybe<ResolversTypes['Faction']>, ParentType, ContextType>;
   leader?: Resolver<Maybe<ResolversTypes['Leader']>, ParentType, ContextType>;
@@ -723,27 +724,27 @@ export type GamePlayerResolvers<ContextType = any, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GamePlayerUnitCountsResolvers<ContextType = any, ParentType extends ResolversParentTypes['GamePlayerUnitCounts'] = ResolversParentTypes['GamePlayerUnitCounts']> = {
+export type GamePlayerUnitCountsResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GamePlayerUnitCounts'] = ResolversParentTypes['GamePlayerUnitCounts']> = {
   discard?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   hand?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   undrawn?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GameRoundResolvers<ContextType = any, ParentType extends ResolversParentTypes['GameRound'] = ResolversParentTypes['GameRound']> = {
+export type GameRoundResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameRound'] = ResolversParentTypes['GameRound']> = {
   current?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   maximum?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GameUnitRedrawnResolvers<ContextType = any, ParentType extends ResolversParentTypes['GameUnitRedrawn'] = ResolversParentTypes['GameUnitRedrawn']> = {
+export type GameUnitRedrawnResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameUnitRedrawn'] = ResolversParentTypes['GameUnitRedrawn']> = {
   from?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
   game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
   to?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type LeaderResolvers<ContextType = any, ParentType extends ResolversParentTypes['Leader'] = ResolversParentTypes['Leader']> = {
+export type LeaderResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Leader'] = ResolversParentTypes['Leader']> = {
   ability?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dlc?: Resolver<Maybe<ResolversTypes['Dlc']>, ParentType, ContextType>;
@@ -755,7 +756,7 @@ export type LeaderResolvers<ContextType = any, ParentType extends ResolversParen
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   addDeck?: Resolver<ResolversTypes['Deck'], ParentType, ContextType, RequireFields<MutationAddDeckArgs, 'faction' | 'leader' | 'name' | 'units'>>;
   addGame?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationAddGameArgs, 'opponentNames'>>;
   addUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserArgs, 'name' | 'password'>>;
@@ -767,13 +768,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   setOrder?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationSetOrderArgs, 'game'>>;
 };
 
-export type PlayerRoundResolvers<ContextType = any, ParentType extends ResolversParentTypes['PlayerRound'] = ResolversParentTypes['PlayerRound']> = {
+export type PlayerRoundResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PlayerRound'] = ResolversParentTypes['PlayerRound']> = {
   score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   won?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   application?: Resolver<ResolversTypes['Application'], ParentType, ContextType>;
   currentUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   decks?: Resolver<Array<ResolversTypes['Deck']>, ParentType, ContextType>;
@@ -786,7 +787,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   units?: Resolver<Array<ResolversTypes['Unit']>, ParentType, ContextType, Partial<QueryUnitsArgs>>;
 };
 
-export type RedrawResolvers<ContextType = any, ParentType extends ResolversParentTypes['Redraw'] = ResolversParentTypes['Redraw']> = {
+export type RedrawResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Redraw'] = ResolversParentTypes['Redraw']> = {
   from?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
   to?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -796,7 +797,7 @@ export interface SemVerScalarConfig extends GraphQLScalarTypeConfig<ResolversTyp
   name: 'SemVer';
 }
 
-export type SettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['Setting'] = ResolversParentTypes['Setting']> = {
+export type SettingResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Setting'] = ResolversParentTypes['Setting']> = {
   key?: Resolver<ResolversTypes['SettingKey'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   type?: Resolver<ResolversTypes['SettingType'], ParentType, ContextType>;
@@ -804,7 +805,7 @@ export type SettingResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type SubscriptionResolvers<ContextType = any, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
+export type SubscriptionResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Subscription'] = ResolversParentTypes['Subscription']> = {
   deckAdded?: SubscriptionResolver<ResolversTypes['Deck'], "deckAdded", ParentType, ContextType>;
   deckSet?: SubscriptionResolver<ResolversTypes['GameDeckSet'], "deckSet", ParentType, ContextType>;
   gameAdded?: SubscriptionResolver<ResolversTypes['Game'], "gameAdded", ParentType, ContextType>;
@@ -814,7 +815,7 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   unitRedrawn?: SubscriptionResolver<ResolversTypes['GameUnitRedrawn'], "unitRedrawn", ParentType, ContextType>;
 };
 
-export type UnitResolvers<ContextType = any, ParentType extends ResolversParentTypes['Unit'] = ResolversParentTypes['Unit']> = {
+export type UnitResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Unit'] = ResolversParentTypes['Unit']> = {
   combats?: Resolver<Maybe<Array<ResolversTypes['Combat']>>, ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   deckable?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -834,7 +835,7 @@ export type UnitResolvers<ContextType = any, ParentType extends ResolversParentT
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UnitStatsResolvers<ContextType = any, ParentType extends ResolversParentTypes['UnitStats'] = ResolversParentTypes['UnitStats']> = {
+export type UnitStatsResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UnitStats'] = ResolversParentTypes['UnitStats']> = {
   agile?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   avenger?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   berserker?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -860,14 +861,14 @@ export type UnitStatsResolvers<ContextType = any, ParentType extends ResolversPa
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type Resolvers<ContextType = any> = {
+export type Resolvers<ContextType = Context> = {
   Application?: ApplicationResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
   Deck?: DeckResolvers<ContextType>;

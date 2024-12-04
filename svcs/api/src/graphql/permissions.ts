@@ -3,6 +3,7 @@ import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
 import { ObjectId } from 'mongodb'
 
+import { Context } from '@gwent/graphql-schema/context'
 import DeckStore from '../database/stores/deck-store'
 import env from '../env'
 import GameStore from '../database/stores/game-store'
@@ -37,11 +38,11 @@ export class Permissions {
    * Check if a user is authenticated (has logged in).
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  static isAuthenticated(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
-    if (!context?.session?.user?._id) {
+  static isAuthenticated(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
+    if (!context.session?.user?._id) {
       Permissions.logger.debug(
         `isAuthenticated failed operation "${info.fieldName}": No user on session: "${JSON.stringify(
-          context?.session?.user
+          context.session?.user
         )}"`
       )
       return Error(NOT_AUTHENTICATED_MESSAGE)
@@ -53,13 +54,13 @@ export class Permissions {
    * Check if a user is apart of a Game.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  static async isPlayer(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
-    const userId = context?.session?.user?._id
+  static async isPlayer(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
+    const userId = context.session?.user?._id
     const gameId = args.game || args.id
     const logPrefix = `isPlayer check failed operation "${info.fieldName}":`
     if (!userId) {
       Permissions.logger.debug(
-        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context?.session?.user)}"`
+        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context.session?.user)}"`
       )
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
@@ -99,13 +100,13 @@ export class Permissions {
    * Check if a user is the creator of a Deck.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  static async ownsDeck(parent: any, args: any, context: any, info: GraphQLResolveInfo) {
-    const userId = context?.session?.user?._id
+  static async ownsDeck(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
+    const userId = context.session?.user?._id
     const deckId = args.deck || args.id
     const logPrefix = `ownsDeck check failed operation "${info.fieldName}":`
     if (!userId) {
       Permissions.logger.debug(
-        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context?.session?.user)}"`
+        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context.session?.user)}"`
       )
       return Error(NOT_AUTHORIZED_MESSAGE)
     }

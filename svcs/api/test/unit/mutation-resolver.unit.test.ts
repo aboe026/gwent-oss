@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 
+import { Context } from '@gwent/graphql-schema/context'
 import { Deck, DeckUnit, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import {
   DeckDbObject,
@@ -23,7 +24,13 @@ import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
 import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import LeaderStore from '../../src/database/stores/leader-store'
-import { MAX_REDRAWS, PLAYER_COUNTS, PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
+import {
+  MAX_REDRAWS,
+  NOT_AUTHENTICATED_MESSAGE,
+  PLAYER_COUNTS,
+  PubSubEvents,
+  STARTING_HAND_SIZE,
+} from '@gwent/constants'
 import MutationResolver from '../../src/graphql/resolvers/mutation-resolver'
 import TestUtil from '../test-util'
 import UnitStore from '../../src/database/stores/unit-store'
@@ -35,6 +42,21 @@ describe('mutation-resolver', () => {
   describe('addDeck', () => {
     const userId = new ObjectId()
     const logPrefix = `addDeck by "${userId}"`
+    it('returns error if no user on context', async () => {
+      await testAddDeck({
+        factionKey: FactionKey.Skellige,
+        errorReturned: NOT_AUTHENTICATED_MESSAGE,
+        factionGetCalls: [],
+        leaderGetCalls: [],
+        unitGetCalls: [],
+        deckUnitCalls: [],
+        validateDeckCalls: [],
+        deckAddCalls: [],
+        getDeckStatsCalls: [],
+        postResolversCalled: false,
+        errorCalls: [[`No user on context for addDeck mutation: "${JSON.stringify({})}".`]],
+      })
+    })
     it('returns error if faction is neutral', async () => {
       const error = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
       await testAddDeck({
@@ -202,24 +224,28 @@ describe('mutation-resolver', () => {
     })
     it('undefined artstyle converted to 1', async () => {
       await testAddDeck({
+        userId,
         inputArtStyle: undefined,
         expectedArtStyle: 1,
       })
     })
     it('null artstyle converted to 1', async () => {
       await testAddDeck({
+        userId,
         inputArtStyle: null,
         expectedArtStyle: 1,
       })
     })
     it('explicit artStyle of 1', async () => {
       await testAddDeck({
+        userId,
         inputArtStyle: 1,
         expectedArtStyle: 1,
       })
     })
     it('explicit artStyle of 2', async () => {
       await testAddDeck({
+        userId,
         inputArtStyle: 2,
         expectedArtStyle: 2,
       })
@@ -235,6 +261,13 @@ describe('mutation-resolver', () => {
   describe('addGame', () => {
     const userId = new ObjectId()
     const logPrefix = `addGame by "${userId}"`
+    it('returns error if no user on context', async () => {
+      await testAddGame({
+        opponentNames: ['test'],
+        expected: Error(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for addGame mutation: "${JSON.stringify({})}".`]],
+      })
+    })
     it('returns error if duplicate opponents', async () => {
       const error = 'Invalid opponents: names ["test"] are duplicates.'
       await testAddGame({
@@ -440,12 +473,6 @@ describe('mutation-resolver', () => {
   describe('logout', () => {
     const user = TestUtil.getDbUser({})
     const logPrefix = `logout for user "${user._id}"`
-    it('returns false if no context', () => {
-      testLogout({
-        context: undefined,
-        expected: false,
-      })
-    })
     it('returns false if no session on context', () => {
       testLogout({
         context: {},
@@ -489,6 +516,13 @@ describe('mutation-resolver', () => {
     const userId = new ObjectId()
     const gameId = new ObjectId().toString()
     const logPrefix = `ready by "${userId}"`
+    it('returns error if game does not exist', async () => {
+      await testReady({
+        gameId,
+        expected: Error(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for ready mutation: "${JSON.stringify({})}".`]],
+      })
+    })
     it('returns error if game does not exist', async () => {
       const error = `Game with ID "${gameId}" does not exist.`
       await testReady({
@@ -742,10 +776,18 @@ describe('mutation-resolver', () => {
     })
   })
   describe('redraw', () => {
-    const userId = new ObjectId().toString()
+    const userId = new ObjectId()
     const gameId = new ObjectId().toString()
     const unit = TestUtil.getDbUnit({})
     const logPrefix = `redraw by "${userId}"`
+    it('returns error if no user on context', async () => {
+      await testRedraw({
+        gameId,
+        unitId: unit._id.toString(),
+        expected: Error(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for redraw mutation: "${JSON.stringify({})}".`]],
+      })
+    })
     it('returns error if game does not exist', async () => {
       const error = `Game with ID "${gameId}" does not exist.`
       await testRedraw({
@@ -1300,6 +1342,14 @@ describe('mutation-resolver', () => {
       game: game,
     })
     const logPrefix = `setDeck by "${userId}"`
+    it('returns error if no user on context', async () => {
+      await testSetDeck({
+        gameId: game._id.toString(),
+        deckId: deck._id.toString(),
+        expected: Error(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for setDeck mutation: "${JSON.stringify({})}".`]],
+      })
+    })
     it('returns error if deck does not exist', async () => {
       const error = `Deck with ID "${deck._id}" does not exist.`
       await testSetDeck({
@@ -1745,8 +1795,16 @@ describe('mutation-resolver', () => {
     })
   })
   describe('setOrder', () => {
+    it('returns error if no user on context', async () => {
+      await testSetOrder({
+        error: Error(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for setOrder mutation: "${JSON.stringify({})}".`]],
+      })
+    })
     it('calls to private setOrder method when userIds not specified', async () => {
-      await testSetOrder({})
+      await testSetOrder({
+        userId: new ObjectId(),
+      })
     })
     it('calls to private setOrder method when userIds are specified', async () => {
       const userId = new ObjectId()
@@ -1757,6 +1815,7 @@ describe('mutation-resolver', () => {
     })
     it('logs to trace if enabled', async () => {
       await testSetOrder({
+        userId: new ObjectId(),
         traceEnabled: true,
       })
     })
@@ -2328,12 +2387,13 @@ async function testAddDeck({
     }),
     name,
   }
-  const context = {
-    session: {
-      user: {
-        _id: userId,
-      },
-    },
+  const context: Context = {
+    session: {},
+  }
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const resolvedUser = TestUtil.getUser({
     id: userId,
@@ -2550,7 +2610,7 @@ async function testAddDeck({
 }
 
 async function testAddGame({
-  creatorId = new ObjectId(),
+  creatorId,
   creatorName,
   opponentNames,
   getUserByNamesResponse = [],
@@ -2561,6 +2621,7 @@ async function testAddGame({
   logPrefix,
   traceEnabled,
   debugCalls = [],
+  errorCalls = [],
 }: {
   creatorId?: ObjectId
   creatorName?: string
@@ -2573,18 +2634,20 @@ async function testAddGame({
   logPrefix?: string
   traceEnabled?: boolean
   debugCalls?: any[][]
+  errorCalls?: any[][]
 }) {
   const user = TestUtil.getUser({
     id: creatorId,
     name: creatorName,
   })
-  const context = {
-    session: {
-      user: {
-        _id: creatorId,
-        name: user.name,
-      },
-    },
+  const context: Context = {
+    session: {},
+  }
+  if (creatorId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: creatorId,
+      name: creatorName,
+    })
   }
   const args = {
     opponentNames,
@@ -2599,9 +2662,11 @@ async function testAddGame({
   const getByNamesSpy = jest.spyOn(UserStore, 'getByNames').mockResolvedValue(getUserByNamesResponse)
   const addSpy = jest.spyOn(GameStore, 'add').mockResolvedValue(game)
   const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
+  const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   MutationResolver['logger'] = {
+    error: errorSpy,
     debug: debugSpy,
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
@@ -2628,6 +2693,7 @@ async function testAddGame({
       : []
   )
   expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
@@ -2822,7 +2888,7 @@ function testLogout({
 }
 
 async function testReady({
-  userId = new ObjectId(),
+  userId,
   gameId = new ObjectId().toString(),
   gameGetResponse,
   setReadyResponse,
@@ -2850,12 +2916,13 @@ async function testReady({
   debugCalls?: any[][]
   errorCalls?: any[][]
 }) {
-  const context = {
-    session: {
-      user: {
-        _id: userId,
-      },
-    },
+  const context: Context = {
+    session: {},
+  }
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const args = {
     game: gameId,
@@ -2896,7 +2963,7 @@ async function testReady({
           [`${logPrefix} game: "${JSON.stringify(gameGetResponse)}"`],
           [
             `${logPrefix} player: "${JSON.stringify(
-              gameGetResponse?.players.find((player) => player.user.toString() === userId.toString())
+              gameGetResponse?.players.find((player) => player.user.toString() === (userId || '').toString())
             )}"`,
           ],
           [`${logPrefix} updatedGame: "${JSON.stringify(setReadyResponse)}"`],
@@ -2922,7 +2989,7 @@ async function testRedraw({
   debugCalls = [],
   errorCalls = [],
 }: {
-  userId?: string
+  userId?: ObjectId
   gameId?: string
   unitId?: string
   gameGetResponse?: GameDbObject
@@ -2938,12 +3005,13 @@ async function testRedraw({
   debugCalls?: any[][]
   errorCalls?: any[][]
 }) {
-  const context = {
-    session: {
-      user: {
-        _id: userId,
-      },
-    },
+  const context: Context = {
+    session: {},
+  }
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const args = {
     game: gameId,
@@ -3125,12 +3193,13 @@ async function testSetDeck({
   debugCalls?: any[][]
   errorCalls?: any[][]
 }) {
-  const context = {
-    session: {
-      user: {
-        _id: userId,
-      },
-    },
+  const context: Context = {
+    session: {},
+  }
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const args = {
     game: gameId,
@@ -3226,21 +3295,26 @@ async function testSetDeck({
 }
 
 async function testSetOrder({
-  userId = new ObjectId(),
+  userId,
   userIds,
+  error,
+  errorCalls = [],
   traceEnabled,
 }: {
   userId?: string | ObjectId
   userIds?: string[]
+  error?: Error
+  errorCalls?: any[][]
   traceEnabled?: boolean
 }) {
   const gameId = new ObjectId().toString()
-  const context = {
-    session: {
-      user: {
-        _id: new ObjectId(userId),
-      },
-    },
+  const context: Context = {
+    session: {},
+  }
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const args = {
     game: gameId,
@@ -3251,27 +3325,34 @@ async function testSetOrder({
     id: gameId,
   })
   const setOrderSpy = jest.spyOn(MutationResolver as any, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
+  const errorSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   MutationResolver['logger'] = {
+    error: errorSpy,
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
   await expect((MutationResolver.getResolvers().setOrder as any)(null, args, context, null)).resolves.toEqual(
-    resolvedGame
+    error || resolvedGame
   )
 
-  expect(setOrderSpy.mock.calls).toEqual([
-    [
-      {
-        userId,
-        gameId,
-        logPrefix,
-        userIds,
-        allowImplicit: true,
-      },
-    ],
-  ])
+  expect(setOrderSpy.mock.calls).toEqual(
+    error
+      ? []
+      : [
+          [
+            {
+              userId,
+              gameId,
+              logPrefix,
+              userIds,
+              allowImplicit: true,
+            },
+          ],
+        ]
+  )
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

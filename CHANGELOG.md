@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.3 - 2024-12-04
+
+### Fixed
+
+- Typings for context (#18) (Adam Boe)
+
 ## 0.8.2 - 2024-12-04
 
 ### Fixed

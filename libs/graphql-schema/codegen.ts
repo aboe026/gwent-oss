@@ -8,6 +8,9 @@ const config: CodegenConfig = {
     },
     './generated/resolver-typings.ts': {
       plugins: ['typescript', 'typescript-resolvers'],
+      config: {
+        contextType: '../src/context#Context',
+      },
     },
     './generated/apollo-typings.tsx': {
       documents: ['./src/apollo/*.gql'],

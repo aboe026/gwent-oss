@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 
+import { Context } from '@gwent/graphql-schema/context'
 import { DeckDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckStore from '../../src/database/stores/deck-store'
 import GameStore from '../../src/database/stores/game-store'
@@ -52,14 +53,6 @@ describe('permissions', () => {
       fieldName: 'currentUser',
     } as any as GraphQLResolveInfo
     const logPrefix = `isAuthenticated failed operation "${info.fieldName}":`
-    it('returns error if context undefined', () => {
-      testIsAuthenticated({
-        context: undefined,
-        info,
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        debugCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
-      })
-    })
     it('returns error if session undefined', () => {
       testIsAuthenticated({
         context: {
@@ -119,13 +112,7 @@ describe('permissions', () => {
         userId: null,
         error: NOT_AUTHORIZED_MESSAGE,
         getByIdCalls: [],
-        debugCalls: [
-          [
-            `${logPrefix} Could not extract user ID from context: "${JSON.stringify({
-              _id: null,
-            })}"`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} Could not extract user ID from context: "${JSON.stringify(undefined)}"`]],
       })
     })
     it('returns error if game id is not valid ObjectId', async () => {
@@ -236,13 +223,7 @@ describe('permissions', () => {
         userId: null,
         error: NOT_AUTHORIZED_MESSAGE,
         getByIdsCalls: [],
-        debugCalls: [
-          [
-            `${logPrefix} Could not extract user ID from context: "${JSON.stringify({
-              _id: null,
-            })}"`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} Could not extract user ID from context: "${JSON.stringify(undefined)}"`]],
       })
     })
     it('returns error if deck ID is not valid ObjectId', async () => {
@@ -382,12 +363,13 @@ async function testIsPlayer({
   if (userId === undefined) {
     userId = new ObjectId()
   }
-  const context = {
-    session: {
-      user: {
-        _id: userId,
-      },
-    },
+  const context: Context = {
+    session: {},
+  }
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const args = {
     game: gameId,
@@ -455,12 +437,13 @@ async function testOwnsDeck({
   if (userId === undefined) {
     userId = new ObjectId()
   }
-  const context = {
-    session: {
-      user: {
-        _id: userId,
-      },
-    },
+  const context: Context = {
+    session: {},
+  }
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const args = {
     deck: deckId,

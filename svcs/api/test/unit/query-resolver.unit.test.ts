@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import AppInfo from '../../src/app-info'
+import { Context } from '@gwent/graphql-schema/context'
 import DeckResolver from '../../src/graphql/resolvers/deck-resolver'
 import DeckStore from '../../src/database/stores/deck-store'
 import * as env from '../../src/env'
@@ -13,6 +14,7 @@ import GameResolver from '../../src/graphql/resolvers/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
 import LeaderStore from '../../src/database/stores/leader-store'
+import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import QueryResolver from '../../src/graphql/resolvers/query-resolver'
 import TestUtil from '../test-util'
 import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
@@ -32,14 +34,6 @@ describe('query-resolver', () => {
     })
   })
   describe('currentUser', () => {
-    it('throws error if context undefined', () => {
-      const error = 'No user on session.'
-      testCurrentUser({
-        context: undefined,
-        error: Error(error),
-        debugCalls: [[`currentUser by "undefined" failed: "${error}"`]],
-      })
-    })
     it('throws error if session undefined', () => {
       const error = 'No user on session.'
       testCurrentUser({
@@ -121,11 +115,20 @@ describe('query-resolver', () => {
     })
   })
   describe('decks', () => {
+    it('throws error if no user on context', async () => {
+      await testDecks({
+        error: Error(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for decks query: "${JSON.stringify({})}".`]],
+      })
+    })
     it('reaches out to DeckStore with user on session', async () => {
-      await testDecks({})
+      await testDecks({
+        userId: new ObjectId(),
+      })
     })
     it('logs to trace if enabled', async () => {
       await testDecks({
+        userId: new ObjectId(),
         traceEnabled: true,
       })
     })
@@ -141,11 +144,20 @@ describe('query-resolver', () => {
     })
   })
   describe('game', () => {
+    it('returns error if no user on context', async () => {
+      await testGame({
+        error: Error(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for game query: "${JSON.stringify({})}".`]],
+      })
+    })
     it('returns resolved game if found', async () => {
-      await testGame({})
+      await testGame({
+        userId: new ObjectId(),
+      })
     })
     it('logs to trace if enabled', async () => {
       await testGame({
+        userId: new ObjectId(),
         traceEnabled: true,
       })
     })
@@ -154,7 +166,14 @@ describe('query-resolver', () => {
     const userId = new ObjectId()
     const gameId = new ObjectId().toString()
     const logPrefix = `gameDeck by "${userId}"`
-    it('throws error if game does not exist', async () => {
+    it('returns error if no user on context', async () => {
+      await testGameDeck({
+        gameId,
+        error: Error(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for gameDeck query: "${JSON.stringify({})}".`]],
+      })
+    })
+    it('returns error if game does not exist', async () => {
       const error = `Game with ID "${gameId}" does not exist.`
       await testGameDeck({
         userId,
@@ -164,13 +183,13 @@ describe('query-resolver', () => {
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('throws error if user is not a player', async () => {
+    it('returns error if user is not a player', async () => {
       const error = `Not a player on game "${gameId}".`
       const game = TestUtil.getDbGame({
         id: gameId,
       })
       await testGameDeck({
-        userId: userId,
+        userId,
         gameId: gameId.toString(),
         gameResponse: game,
         error: Error(error),
@@ -272,11 +291,20 @@ describe('query-resolver', () => {
     })
   })
   describe('games', () => {
+    it('returns error if no user on context', async () => {
+      await testGames({
+        error: Error(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for games query: "${JSON.stringify({})}".`]],
+      })
+    })
     it('calls out to GameResolver fromArray', async () => {
-      await testGames({})
+      await testGames({
+        userId: new ObjectId(),
+      })
     })
     it('logs to trace if enabled', async () => {
       await testGames({
+        userId: new ObjectId(),
         traceEnabled: true,
       })
     })
@@ -539,37 +567,55 @@ function testCurrentUser({
   )
 }
 
-async function testDecks({ traceEnabled }: { traceEnabled?: boolean }) {
-  const context = {
-    session: {
-      user: {
-        _id: new ObjectId(),
-      },
-    },
+async function testDecks({
+  userId,
+  error,
+  errorCalls = [],
+  traceEnabled,
+}: {
+  userId?: ObjectId
+  error?: Error
+  errorCalls?: any[][]
+  traceEnabled?: boolean
+}) {
+  const context: Context = {
+    session: {},
   }
-  const logPrefix = `decks by "${context.session.user._id}"`
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
+  }
+  const logPrefix = `decks by "${context.session?.user?._id}"`
   const deck = TestUtil.getDbDeck({})
   const getSpy = jest.spyOn(DeckStore, 'get').mockResolvedValue([deck])
   const deckResolverSpy = jest.spyOn(DeckResolver, 'fromArray').mockResolvedValue([])
+  const errorSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   QueryResolver['logger'] = {
+    error: errorSpy,
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
-  await expect((QueryResolver.getResolvers().decks as any)(null, null, context, null)).resolves.toEqual([])
+  await expect((QueryResolver.getResolvers().decks as any)(null, null, context, null)).resolves.toEqual(error || [])
 
-  expect(getSpy.mock.calls).toEqual([[context.session.user._id]])
-  expect(deckResolverSpy.mock.calls).toEqual([
-    [
-      {
-        decks: [deck],
-        neutralDeckStats: undefined,
-        neutralLeaderStats: undefined,
-        neutralUnitStats: undefined,
-      },
-    ],
-  ])
+  expect(getSpy.mock.calls).toEqual(error ? [] : [[context.session?.user?._id]])
+  expect(deckResolverSpy.mock.calls).toEqual(
+    error
+      ? []
+      : [
+          [
+            {
+              decks: [deck],
+              neutralDeckStats: undefined,
+              neutralLeaderStats: undefined,
+              neutralUnitStats: undefined,
+            },
+          ],
+        ]
+  )
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
@@ -624,22 +670,35 @@ async function testFactions({ traceEnabled }: { traceEnabled?: boolean }) {
   )
 }
 
-async function testGame({ traceEnabled }: { traceEnabled?: boolean }) {
-  const context = {
-    session: {
-      user: {
-        _id: new ObjectId(),
-      },
-    },
+async function testGame({
+  userId,
+  error,
+  errorCalls = [],
+  traceEnabled,
+}: {
+  userId?: ObjectId
+  error?: Error
+  errorCalls?: any[][]
+  traceEnabled?: boolean
+}) {
+  const context: Context = {
+    session: {},
   }
-  const logPrefix = `game by "${context.session.user._id}"`
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
+  }
+  const logPrefix = `game by "${context.session?.user?._id}"`
   const gameId = new ObjectId().toString()
   const game = TestUtil.getGame({
     id: gameId,
   })
   const fromIdSpy = jest.spyOn(GameResolver, 'fromId').mockResolvedValue(game)
+  const errorSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   QueryResolver['logger'] = {
+    error: errorSpy,
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
@@ -653,9 +712,10 @@ async function testGame({ traceEnabled }: { traceEnabled?: boolean }) {
       context,
       null
     )
-  ).resolves.toEqual(game)
+  ).resolves.toEqual(error || game)
 
-  expect(fromIdSpy.mock.calls).toEqual([[gameId]])
+  expect(fromIdSpy.mock.calls).toEqual(error ? [] : [[gameId]])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
@@ -690,12 +750,13 @@ async function testGameDeck({
   errorCalls?: any[][]
   debugCalls?: any[][]
 }) {
-  const context = {
-    session: {
-      user: {
-        _id: userId,
-      },
-    },
+  const context: Context = {
+    session: {},
+  }
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const args = {
     game: gameId,
@@ -716,13 +777,17 @@ async function testGameDeck({
     error || expected
   )
 
-  expect(getByIdSpy.mock.calls).toEqual([
-    [
-      {
-        id: gameId,
-      },
-    ],
-  ])
+  expect(getByIdSpy.mock.calls).toEqual(
+    userId
+      ? [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ]
+      : []
+  )
   expect(fromObjectSpy.mock.calls).toEqual(gameDeckResolverCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
@@ -743,14 +808,24 @@ async function testGameDeck({
   )
 }
 
-async function testGames({ traceEnabled }: { traceEnabled?: boolean }) {
-  const userId = new ObjectId()
-  const context = {
-    session: {
-      user: {
-        _id: userId,
-      },
-    },
+async function testGames({
+  userId,
+  error,
+  errorCalls = [],
+  traceEnabled,
+}: {
+  userId?: ObjectId
+  error?: Error
+  errorCalls?: any[][]
+  traceEnabled?: boolean
+}) {
+  const context: Context = {
+    session: {},
+  }
+  if (userId && context.session) {
+    context.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
   }
   const logPrefix = `games by "${userId}"`
   const game = TestUtil.getDbGame({
@@ -761,16 +836,21 @@ async function testGames({ traceEnabled }: { traceEnabled?: boolean }) {
   })
   const getByUserIdSpy = jest.spyOn(GameStore, 'getByUserId').mockResolvedValue([game])
   const fromArraySpy = jest.spyOn(GameResolver, 'fromArray').mockResolvedValue([resolvedGame])
+  const errorSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   QueryResolver['logger'] = {
+    error: errorSpy,
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
-  await expect((QueryResolver.getResolvers().games as any)(null, null, context, null)).resolves.toEqual([resolvedGame])
+  await expect((QueryResolver.getResolvers().games as any)(null, null, context, null)).resolves.toEqual(
+    error || [resolvedGame]
+  )
 
-  expect(getByUserIdSpy.mock.calls).toEqual([[userId]])
-  expect(fromArraySpy.mock.calls).toEqual([[[game]]])
+  expect(getByUserIdSpy.mock.calls).toEqual(error ? [] : [[userId]])
+  expect(fromArraySpy.mock.calls).toEqual(error ? [] : [[[game]]])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
