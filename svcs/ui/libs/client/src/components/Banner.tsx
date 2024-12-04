@@ -1,5 +1,5 @@
-import { useNavigate } from 'react-router-dom'
 import { useContext, useState } from 'react'
+import { useNavigate } from 'react-router'
 
 import { Button } from '../util/keyboard-listener'
 import { ConnectionStatusContext, CONNECTION_STATUS } from '../ConnectionStatus'

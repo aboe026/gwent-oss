@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import Centered from '../components/Centered'
 import { HTML_IDS, ROUTES } from '@gwent/constants'

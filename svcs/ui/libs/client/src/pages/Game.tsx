@@ -7,8 +7,7 @@ import {
   MutationFunctionOptions,
 } from '@apollo/client'
 import { CgArrowLongRight, CgChevronUp, CgChevronDown, CgPlayButton, CgSync, CgTime } from 'react-icons/cg'
-import { Link } from 'react-router-dom'
-import { NavigateFunction, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavigateFunction, useLocation, useNavigate } from 'react-router'
 
 import {
   AddGameMutation,

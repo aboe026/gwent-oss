@@ -1,6 +1,6 @@
 {
   "name": "@gwent/e2e-tests",
-  "version": "0.8.0",
+  "version": "0.8.2",
   "author": "Adam Boe",
   "description": "E2E browser testing for Gwent website",
   "scripts": {
@@ -27,20 +27,20 @@
     "@gwent/env": "workspace:*",
     "@gwent/graphql-schema": "workspace:*",
     "@gwent/utils": "workspace:*",
-    "cookie": "1.0.1",
+    "cookie": "1.0.2",
     "cross-env": "7.0.3",
     "graphql": "16.9.0",
     "graphql-request": "6.1.0",
     "graphql-ws": "5.16.0",
-    "mongodb": "6.10.0",
-    "testcafe": "3.6.2",
+    "mongodb": "6.11.0",
+    "testcafe": "3.7.0",
     "url-join": "4.0.1",
     "ws": "8.18.0"
   },
   "devDependencies": {
-    "@types/node": "22.7.8",
+    "@types/node": "22.10.1",
     "@types/url-join": "4.0.3",
-    "@types/ws": "8.5.12",
+    "@types/ws": "8.5.13",
     "replace-in-file": "7.2.0"
   }
 }

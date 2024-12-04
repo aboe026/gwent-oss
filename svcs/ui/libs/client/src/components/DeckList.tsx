@@ -1,7 +1,7 @@
 import { ApolloQueryResult } from '@apollo/client'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
-import { NavigateFunction, useNavigate } from 'react-router-dom'
+import { NavigateFunction, useNavigate } from 'react-router'
 
 import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'

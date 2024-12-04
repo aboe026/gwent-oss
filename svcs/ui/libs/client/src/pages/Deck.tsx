@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 import DeckEditor from '../components/DeckEditor'
 import { ROUTES } from '@gwent/constants'

@@ -1,7 +1,7 @@
 import { ApolloClient, ApolloConsumer, ApolloError } from '@apollo/client'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { IconContext } from 'react-icons'
-import { Outlet, useLocation, Navigate } from 'react-router-dom'
+import { Outlet, useLocation, Navigate } from 'react-router'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
