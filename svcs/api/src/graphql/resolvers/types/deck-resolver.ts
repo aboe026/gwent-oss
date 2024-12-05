@@ -4,7 +4,7 @@ import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-sche
 import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckUnitResolver from './deck-unit-resolver'
 import FactionResolver from './faction-resolver'
-import FactionStore from '../../database/stores/faction-store'
+import FactionStore from '../../../database/stores/faction-store'
 import { getUniqueItems } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
 import UnitResolver from './unit-resolver'

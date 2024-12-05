@@ -1,10 +1,10 @@
 import { ObjectId } from 'mongodb'
 
 import { Dlc, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
-import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
+import DlcResolver from '../../src/graphql/resolvers/types/dlc-resolver'
 import { FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
-import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
-import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
+import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
+import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import LeaderStore from '../../src/database/stores/leader-store'
 import TestUtil from '../test-util'
 import Verifier from '../../src/util/verifier'

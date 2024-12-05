@@ -3,8 +3,8 @@ import { ObjectId } from 'mongodb'
 
 import { User } from '@gwent/graphql-schema/resolver-typings'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
-import UserStore from '../../database/stores/user-store'
-import Verifier from '../../util/verifier'
+import UserStore from '../../../database/stores/user-store'
+import Verifier from '../../../util/verifier'
 
 /**
  * A class to convert User database objects to their GraphQL equivalent.

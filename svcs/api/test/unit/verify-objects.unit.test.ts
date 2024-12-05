@@ -1,4 +1,3 @@
-import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import Verifier from '../../src/util/verifier'
@@ -191,7 +190,7 @@ function testVerifiyObjects({
   const errorSpy = jest.fn().mockImplementation()
   const logger = {
     error: errorSpy,
-  } as any as Logger
+  } as any
 
   if (error) {
     expect(() =>

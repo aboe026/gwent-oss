@@ -4,10 +4,10 @@ import { ObjectId } from 'mongodb'
 import { Game, User } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from './game-player-resolver'
-import GameStore from '../../database/stores/game-store'
+import GameStore from '../../../database/stores/game-store'
 import { getUniqueItems } from '@gwent/utils'
 import UserResolver from './user-resolver'
-import Verifier from '../../util/verifier'
+import Verifier from '../../../util/verifier'
 
 /**
  * A class to convert Game database objects to their GraphQL equivalent.

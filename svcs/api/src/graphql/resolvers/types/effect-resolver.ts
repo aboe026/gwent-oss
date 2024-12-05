@@ -3,8 +3,8 @@ import { ObjectId } from 'mongodb'
 
 import { Effect, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 import { EffectDbObject } from '@gwent/graphql-schema/database-typings'
-import EffectStore from '../../database/stores/effect-store'
-import Verifier from '../../util/verifier'
+import EffectStore from '../../../database/stores/effect-store'
+import Verifier from '../../../util/verifier'
 
 /**
  * A class to convert Effect database objects to their GraphQL equivalent.

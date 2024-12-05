@@ -10,6 +10,7 @@ A list of things to be done in the future
 - add traces to store methods for filters/updates (like GameStore setOrder)
 - remove extra space between title and returns in js docs
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
+- change log4js "getLogger" calls from hyphen-case to ClassNames
 - sub-directories for resolvers
   - types
   - queries

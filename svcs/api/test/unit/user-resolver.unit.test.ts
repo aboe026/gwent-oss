@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import TestUtil from '../test-util'
-import UserResolver from '../../src/graphql/resolvers/user-resolver'
+import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 import UserStore from '../../src/database/stores/user-store'
 import Verifier from '../../src/util/verifier'
 

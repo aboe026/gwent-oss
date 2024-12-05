@@ -1,0 +1,187 @@
+import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
+
+import { Context } from '@gwent/graphql-schema/context'
+import { Deck, FactionKey, MutationAddDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import { DeckDbObject, FactionDbObject } from '@gwent/graphql-schema/database-typings'
+import DeckResolver from '../types/deck-resolver'
+import DeckStore from '../../../database/stores/deck-store'
+import DeckUnitResolver from '../types/deck-unit-resolver'
+import EventManager from '../../event-manager'
+import FactionResolver from '../types/faction-resolver'
+import FactionStore from '../../../database/stores/faction-store'
+import { getDeckStats } from '@gwent/utils'
+import { GraphQLResolveInfo } from 'graphql'
+import LeaderResolver from '../types/leader-resolver'
+import LeaderStore from '../../../database/stores/leader-store'
+import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
+import { RequestedFields } from '@gwent/graphql-schema'
+import UnitStore from '../../../database/stores/unit-store'
+import { validateDeck } from '@gwent/validators'
+
+/**
+ * A class for executing the addDeck GraphQL Mutation.
+ */
+export default class AddDeckMutation {
+  private static logger = getLogger('add-deck-mutation')
+
+  /**
+   * Add a Deck for a user.
+   *
+   * @param args The arguments for adding a deck.
+   * @param context The session containing the user adding the deck.
+   * @param info The information about the GraphQL request.
+   * @returns The Deck that was added.
+   */
+  static async addDeck(args: MutationAddDeckArgs, context: Context, info: GraphQLResolveInfo): Promise<Deck> {
+    const userId = context.session?.user?._id
+    if (!userId) {
+      AddDeckMutation.logger.error(`No user on context for addDeck mutation: "${JSON.stringify(context.session)}".`)
+      return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const logPrefix = `addDeck by "${userId}"`
+    if (AddDeckMutation.logger.isTraceEnabled()) {
+      AddDeckMutation.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
+      AddDeckMutation.logger.trace(
+        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
+      )
+      AddDeckMutation.logger.trace(
+        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
+      )
+    }
+    const name = args.name
+    const factionKey = args.faction
+    const leaderId = args.leader
+    const unitsInput = args.units
+    if (factionKey === FactionKey.Neutral) {
+      const message = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
+      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const factions = await FactionStore.get({})
+    if (AddDeckMutation.logger.isTraceEnabled()) {
+      AddDeckMutation.logger.trace(`${logPrefix} factions: "${JSON.stringify(factions)}"`)
+    }
+    const factionMap: {
+      [x: string]: FactionDbObject
+    } = {}
+    for (const faction of factions) {
+      factionMap[faction._id.toString()] = faction
+    }
+    const faction = factions.find((faction) => faction.key === factionKey)
+    if (!faction) {
+      const message = `Faction with key "${factionKey}" does not exist.`
+      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const leaders = await LeaderStore.get({
+      ids: [leaderId],
+    })
+    if (AddDeckMutation.logger.isTraceEnabled()) {
+      AddDeckMutation.logger.trace(`${logPrefix} leaders: "${JSON.stringify(leaders)}"`)
+    }
+    if (!leaders || leaders.length === 0) {
+      const message = `Leader with ID "${leaderId}" does not exist.`
+      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const leader = leaders[0]
+    const leaderFaction = factionMap[leader.faction.toString()]
+    if (leaderFaction.key !== factionKey) {
+      const message = `Faction key "${leaderFaction.key}" for leader "${leaderId}" does not match deck faction key "${factionKey}".`
+      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const units = await UnitStore.get({
+      ids: unitsInput.map((unit) => unit.id),
+    })
+    if (AddDeckMutation.logger.isTraceEnabled()) {
+      AddDeckMutation.logger.trace(`${logPrefix} units: "${JSON.stringify(units)}"`)
+    }
+    let errors: string[] = []
+    for (const unitInput of unitsInput) {
+      const dbUnit = units.find((dbUnit) => dbUnit._id.toString() === unitInput.id)
+      if (!dbUnit) {
+        errors.push(`Unit with ID "${unitInput.id}" does not exist.`)
+      }
+    }
+    if (errors.length > 0) {
+      const message = errors.join('\n')
+      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const deckUnits = await DeckUnitResolver.fromArray({
+      deckUnits: unitsInput.map((unit) => {
+        return {
+          artStyle: unit.artStyle === undefined || unit.artStyle === null ? 1 : unit.artStyle,
+          unit: new ObjectId(unit.id),
+        }
+      }),
+      neutralStats: RequestedFields.getArgument(info, 'addDeck.units.unit.faction.stats.neutrals'),
+    })
+    if (AddDeckMutation.logger.isTraceEnabled()) {
+      AddDeckMutation.logger.trace(`${logPrefix} deckUnits: "${JSON.stringify(deckUnits)}"`)
+    }
+    errors = validateDeck({
+      deckUnits: deckUnits,
+      faction: factionKey,
+    })
+    if (errors.length > 0) {
+      const message = errors.join('\n')
+      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    let deck: DeckDbObject
+    try {
+      deck = await DeckStore.add({
+        factionId: faction?._id,
+        leaderId: leaderId,
+        name: name,
+        stats: getDeckStats(deckUnits),
+        units: deckUnits.map((deckUnit) => {
+          return {
+            unit: deckUnit.unit.id,
+            artStyle: deckUnit.artStyle,
+          }
+        }),
+        userId,
+      })
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === `Deck with name "${name}" already exists for user "${userId}"`) {
+        const message = `Deck with name "${name}" already exists.` // exclude user ID for security
+        AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+        // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
+        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      }
+      AddDeckMutation.logger.error(Error(`${logPrefix} failed: ${err}`))
+      throw err
+    }
+    if (AddDeckMutation.logger.isTraceEnabled()) {
+      AddDeckMutation.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
+    }
+    const resolvedFaction = await FactionResolver.fromObject({
+      faction,
+      neutralStats: RequestedFields.getArgument(info, 'addDeck.faction.stats.neutrals'),
+    })
+    if (AddDeckMutation.logger.isTraceEnabled()) {
+      AddDeckMutation.logger.trace(`${logPrefix} resolvedFaction: "${JSON.stringify(resolvedFaction)}"`)
+    }
+    const resolvedDeck = await DeckResolver.fromObject({
+      deck,
+      faction: resolvedFaction,
+      leader: await LeaderResolver.fromObject({
+        leader,
+        faction: resolvedFaction,
+        neutralStats: RequestedFields.getArgument(info, 'addDeck.leader.faction.stats.neutrals'),
+      }),
+      units: deckUnits,
+      neutralDeckStats: RequestedFields.getArgument(info, 'addDeck.faction.stats.neutrals'),
+    })
+
+    EventManager.pubsub.publish(PubSubEvents.DeckAdded, {
+      deckAdded: resolvedDeck,
+    })
+
+    return resolvedDeck
+  }
+}
