@@ -1,6 +1,7 @@
 import { Db, ObjectId } from 'mongodb'
 
 import {
+  Deck,
   DeckUnit,
   Faction,
   FactionKey,
@@ -19,6 +20,7 @@ import effects from '../../../src/database/upgrades/resources/effects.json'
 import factions from '../../../src/database/upgrades/resources/factions.json'
 import { getDeckStats, sortObjectArray } from '@gwent/utils'
 import leaders from '../../../src/database/upgrades/resources/leaders.json'
+import { STARTING_HAND_SIZE } from '@gwent/constants'
 import UnitResolver from '../../../src/graphql/resolvers/types/unit-resolver'
 import units from '../../../src/database/upgrades/resources/units.json'
 import Upgrade2, { ImageType } from '../../../src/database/upgrades/upgrade-2'
@@ -65,6 +67,14 @@ export function verifyMongoIds(item: any, idKey = 'id') {
         }
       }
     }
+  }
+}
+
+export function verifyGameDeckSet(gameDeck: GameDeck, deck: Deck) {
+  expect(gameDeck.hand).toHaveLength(STARTING_HAND_SIZE)
+  expect(gameDeck.undrawn).toHaveLength(deck.units.length - STARTING_HAND_SIZE)
+  for (const handUnit of gameDeck.hand) {
+    expect(gameDeck.undrawn.find((deckUnit) => deckUnit.unit.id === handUnit.unit.id)).toEqual(undefined)
   }
 }
 
