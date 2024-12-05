@@ -19,7 +19,7 @@ import effects from '../../../src/database/upgrades/resources/effects.json'
 import factions from '../../../src/database/upgrades/resources/factions.json'
 import { getDeckStats, sortObjectArray } from '@gwent/utils'
 import leaders from '../../../src/database/upgrades/resources/leaders.json'
-import UnitResolver from '../../../src/graphql/resolvers/unit-resolver'
+import UnitResolver from '../../../src/graphql/resolvers/types/unit-resolver'
 import units from '../../../src/database/upgrades/resources/units.json'
 import Upgrade2, { ImageType } from '../../../src/database/upgrades/upgrade-2'
 
