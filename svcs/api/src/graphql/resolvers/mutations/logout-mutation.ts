@@ -5,11 +5,19 @@ import { GraphQLResolveInfo } from 'graphql'
 import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
- * A class executing the actions of the GraphQL Mutations defined in the schema.
+ * A class for executing the logout GraphQL Mutation.
  */
 export default class LogoutMutation {
   private static logger = getLogger('logout-mutation')
 
+  /**
+   * Remove a user's session.
+   *
+   * @param args The arguments for logging out a user.
+   * @param context The session to remove the user from valid.
+   * @param info The information about the GraphQL request.
+   * @returns True if the user was successfully removed from the session, false otherwise.
+   */
   static logout(context: Context, info: GraphQLResolveInfo): boolean {
     const userId = context.session?.user?._id
     const logPrefix = `logout for user "${userId}"`

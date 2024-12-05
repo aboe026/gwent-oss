@@ -7,11 +7,18 @@ import { RequestedFields } from '@gwent/graphql-schema'
 import { Setting, SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
 
 /**
- * A class for executing the searches of the GraphQL Queries defined in the schema.
+ * A class for executing the settings GraphQL Query.
  */
 export default class SettingsQuery {
   private static logger = getLogger('settings-query')
 
+  /**
+   * Gets the settings configured for the application.
+   *
+   * @param context The session containing the user getting the settings.
+   * @param info The information about the GraphQL request.
+   * @returns The settings configured for the application.
+   */
   static settings(context: Context, info: GraphQLResolveInfo): Setting[] {
     const userId = context.session?.user?._id
     const logPrefix = `settings by "${userId}"`

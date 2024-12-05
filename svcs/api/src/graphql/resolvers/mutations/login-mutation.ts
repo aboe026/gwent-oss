@@ -9,11 +9,19 @@ import UserResolver from '../types/user-resolver'
 import UserStore from '../../../database/stores/user-store'
 
 /**
- * A class executing the actions of the GraphQL Mutations defined in the schema.
+ * A class for executing the login GraphQL Mutation.
  */
 export default class LoginMutation {
   private static logger = getLogger('login-mutation')
 
+  /**
+   * Authenticate a user session.
+   *
+   * @param args The arguments for logging in a user.
+   * @param context The session to add the user to if valid.
+   * @param info The information about the GraphQL request.
+   * @returns The User that was successfully logged in.
+   */
   static async login(args: MutationLoginArgs, context: Context, info: GraphQLResolveInfo): Promise<User> {
     const name = args.name
     const password = args.password

@@ -10,11 +10,18 @@ import LeaderResolver from '../types/leader-resolver'
 import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
- * A class for executing the searches of the GraphQL Queries defined in the schema.
+ * A class for executing the leaders GraphQL Query.
  */
 export default class LeadersQuery {
   private static logger = getLogger('leaders-query')
 
+  /**
+   * Gets Leaders available to build Decks with.
+   *
+   * @param context The session containing the user getting the leaders.
+   * @param info The information about the GraphQL request.
+   * @returns The Leaders available to build Decks with.
+   */
   static async leaders(args: QueryLeadersArgs, context: Context, info: GraphQLResolveInfo): Promise<Leader[]> {
     const userId = context.session?.user?._id
     const logPrefix = `leaders by "${userId}"`

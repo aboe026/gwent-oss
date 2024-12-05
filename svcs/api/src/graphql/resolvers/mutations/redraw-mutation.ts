@@ -13,11 +13,19 @@ import { MAX_REDRAWS, NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/con
 import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
- * A class executing the actions of the GraphQL Mutations defined in the schema.
+ * A class for executing the redraw GraphQL Mutation.
  */
 export default class RedrawMutation {
   private static logger = getLogger('redraw-mutation')
 
+  /**
+   * Redraw a Unit for a Game for a random Unit from their undrawn Units.
+   *
+   * @param args The arguments for redrawing a unit.
+   * @param context The session containing the user redrawing the unit.
+   * @param info The information about the GraphQL request.
+   * @returns The random DeckUnit that replaces their redrawn Unit in their hand.
+   */
   static async redraw(args: MutationRedrawArgs, context: Context, info: GraphQLResolveInfo): Promise<DeckUnit> {
     const userId = context.session?.user?._id
     if (!userId) {

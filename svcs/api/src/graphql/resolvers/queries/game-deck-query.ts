@@ -9,11 +9,18 @@ import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
- * A class for executing the searches of the GraphQL Queries defined in the schema.
+ * A class for executing the gameDeck GraphQL Query.
  */
 export default class GameDeckQuery {
   private static logger = getLogger('game-deck-query')
 
+  /**
+   * Gets the GameDeck that has potentially been set for a Game.
+   *
+   * @param context The session containing the user getting the game deck.
+   * @param info The information about the GraphQL request.
+   * @returns The GameDeck that has potentially been set for a Game.
+   */
   static async gameDeck(args: QueryGameDeckArgs, context: Context, info: GraphQLResolveInfo): Promise<GameDeck | null> {
     const userId = context.session?.user?._id
     if (!userId) {

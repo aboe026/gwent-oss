@@ -7,11 +7,18 @@ import { User } from '@gwent/graphql-schema/resolver-typings'
 import UserResolver from '../types/user-resolver'
 
 /**
- * A class for executing the searches of the GraphQL Queries defined in the schema.
+ * A class for executing the currentUser GraphQL Query.
  */
 export default class CurrentUserQuery {
   private static logger = getLogger('current-user-query')
 
+  /**
+   * Gets the user on the session, if authenticated.
+   *
+   * @param context The session containing the user to retrieve.
+   * @param info The information about the GraphQL request.
+   * @returns The authenticated User.
+   */
   static currentUser(context: Context, info: GraphQLResolveInfo): User {
     const user = context.session?.user
     const logPrefix = `currentUser by "${user?._id}"`

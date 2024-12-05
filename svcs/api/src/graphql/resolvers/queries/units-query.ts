@@ -10,11 +10,18 @@ import UnitResolver from '../types/unit-resolver'
 import UnitStore from '../../../database/stores/unit-store'
 
 /**
- * A class for executing the searches of the GraphQL Queries defined in the schema.
+ * A class for executing the units GraphQL Query.
  */
 export default class UnitsQuery {
   private static logger = getLogger('units-query')
 
+  /**
+   * Gets all Units a user can build a Deck with.
+   *
+   * @param context The session containing the user getting the units.
+   * @param info The information about the GraphQL request.
+   * @returns The Units a user can build a Deck with.
+   */
   static async units(args: QueryUnitsArgs, context: Context, info: GraphQLResolveInfo): Promise<Unit[]> {
     const userId = context.session?.user?._id
     const logPrefix = `units by "${userId}"`

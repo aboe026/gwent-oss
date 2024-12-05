@@ -7,11 +7,18 @@ import UserResolver from '../types/user-resolver'
 import UserStore from '../../../database/stores/user-store'
 
 /**
- * A class executing the actions of the GraphQL Mutations defined in the schema.
+ * A class for executing the addUser GraphQL Mutation.
  */
 export default class AddUserMutation {
   private static logger = getLogger('add-user-mutation')
 
+  /**
+   * Add a User.
+   *
+   * @param args The arguments for adding a user.
+   * @param info The information about the GraphQL request.
+   * @returns The User that was added.
+   */
   static async addUser(args: MutationAddUserArgs, info: GraphQLResolveInfo): Promise<User> {
     const name = args.name
     const password = args.password

@@ -13,11 +13,19 @@ import UserResolver from '../types/user-resolver'
 import UserStore from '../../../database/stores/user-store'
 
 /**
- * A class executing the actions of the GraphQL Mutations defined in the schema.
+ * A class for executing the addGame GraphQL Mutation.
  */
 export default class AddGameMutation {
   private static logger = getLogger('add-game-mutation')
 
+  /**
+   * Add a Game for a user.
+   *
+   * @param args The arguments for adding a game.
+   * @param context The session containing the user adding the game.
+   * @param info The information about the GraphQL request.
+   * @returns The Game that was added.
+   */
   static async addGame(args: MutationAddGameArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const userId = context.session?.user?._id
     const creatorName = context.session?.user?.name

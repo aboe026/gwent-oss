@@ -8,11 +8,18 @@ import { GraphQLResolveInfo } from 'graphql'
 import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
- * A class for executing the searches of the GraphQL Queries defined in the schema.
+ * A class for executing the factions GraphQL Query.
  */
 export default class FactionsQuery {
   private static logger = getLogger('factions-query')
 
+  /**
+   * Gets all Factions available.
+   *
+   * @param context The session containing the user getting the factions.
+   * @param info The information about the GraphQL request.
+   * @returns The Factions available.
+   */
   static async factions(context: Context, info: GraphQLResolveInfo): Promise<Faction[]> {
     const userId = context.session?.user?._id
     const logPrefix = `factions by "${userId}"`

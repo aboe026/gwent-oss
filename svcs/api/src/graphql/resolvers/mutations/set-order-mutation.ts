@@ -8,11 +8,19 @@ import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
- * A class executing the actions of the GraphQL Mutations defined in the schema.
+ * A class for executing the setOrder GraphQL Mutation.
  */
 export default class SetOrderMutation {
   private static logger = getLogger('set-order-mutation')
 
+  /**
+   * Set the player turn order for a Game.
+   *
+   * @param args The arguments for setting the order of a game.
+   * @param context The session containing the user setting the order.
+   * @param info The information about the GraphQL request.
+   * @returns The Game with player turn orders set.
+   */
   static async setOrder(args: MutationSetOrderArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const userId = context.session?.user?._id
     if (!userId) {

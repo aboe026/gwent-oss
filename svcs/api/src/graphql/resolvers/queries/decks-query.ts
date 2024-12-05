@@ -9,11 +9,18 @@ import { RequestedFields } from '@gwent/graphql-schema'
 import { GraphQLResolveInfo } from 'graphql'
 
 /**
- * A class for executing the searches of the GraphQL Queries defined in the schema.
+ * A class for executing the decks GraphQL Query.
  */
 export default class DecksQuery {
   private static logger = getLogger('decks-query')
 
+  /**
+   * Gets the users Decks they have created.
+   *
+   * @param context The session containing the user getting their decks.
+   * @param info The information about the GraphQL request.
+   * @returns The Decks that a user has created.
+   */
   static async decks(context: Context, info: GraphQLResolveInfo): Promise<Deck[]> {
     const userId = context.session?.user?._id
     if (!userId) {

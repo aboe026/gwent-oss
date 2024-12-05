@@ -9,9 +9,23 @@ import GameStore from '../../../database/stores/game-store'
 import { getDuplicateItems, randomizeOrder } from '@gwent/utils'
 import { PubSubEvents } from '@gwent/constants'
 
+/**
+ * A class containing shared methods used by GraphQL mutations.
+ */
 export default class MutationUtil {
   private static logger = getLogger('mutation-util')
 
+  /**
+   * Sets the player turn order for a game.
+   *
+   * @param config The configuration for setting game turn order.
+   * @param config.userId The ObjectID of the User which is attempting to set the game turn order.
+   * @param config.gameId The ObjectID of the Game to set the turn order for.
+   * @param config.userIds The ObjectIDs of the users to set the turn order for in the game, in order.
+   * @param config.logPrefix The prefix to put before logging statements.
+   * @param config.allowImplicit Whether or not the User is allowed to implicitly set game turn order (without explicitly setting "userIds" input).
+   * @returns The updated Game if the user is allowed to set the game turn order.
+   */
   static async setGameTurnOrder({
     userId,
     gameId,

@@ -14,11 +14,19 @@ import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents, STARTING_HAND_SIZE } from '@gw
 import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
- * A class executing the actions of the GraphQL Mutations defined in the schema.
+ * A class for executing the setDeck GraphQL Mutation.
  */
 export default class SetDeckMutation {
   private static logger = getLogger('set-deck-mutation')
 
+  /**
+   * Sets a Deck for a Game. Deck cannot be changed after set.
+   *
+   * @param args The arguments for setting a deck.
+   * @param context The session containing the user setting the deck.
+   * @param info The information about the GraphQL request.
+   * @returns The GameDeck that was set for the game.
+   */
   static async setDeck(args: MutationSetDeckArgs, context: Context, info: GraphQLResolveInfo): Promise<GameDeck> {
     const userId = context.session?.user?._id
     if (!userId) {

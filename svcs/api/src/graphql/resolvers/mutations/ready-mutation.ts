@@ -11,11 +11,19 @@ import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
- * A class executing the actions of the GraphQL Mutations defined in the schema.
+ * A class for executing the ready GraphQL Mutation.
  */
 export default class ReadyMutation {
   private static logger = getLogger('ready-mutation')
 
+  /**
+   * Mark a Game as ready for a User. Prevents redrawing units after marked as ready.
+   *
+   * @param args The arguments for marking a game as ready.
+   * @param context The session containing the user readying the game.
+   * @param info The information about the GraphQL request.
+   * @returns The Game that is now ready for the user.
+   */
   static async ready(args: MutationReadyArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const userId = context.session?.user?._id
     if (!userId) {

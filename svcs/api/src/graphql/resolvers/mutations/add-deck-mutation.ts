@@ -25,6 +25,14 @@ import { validateDeck } from '@gwent/validators'
 export default class AddDeckMutation {
   private static logger = getLogger('add-deck-mutation')
 
+  /**
+   * Add a Deck for a user.
+   *
+   * @param args The arguments for adding a deck.
+   * @param context The session containing the user adding the deck.
+   * @param info The information about the GraphQL request.
+   * @returns The Deck that was added.
+   */
   static async addDeck(args: MutationAddDeckArgs, context: Context, info: GraphQLResolveInfo): Promise<Deck> {
     const userId = context.session?.user?._id
     if (!userId) {
