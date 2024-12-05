@@ -629,14 +629,16 @@ export default class TestUtil {
     id,
     name = 'user-name',
     password = 'user-password',
+    created = new Date(),
   }: {
     id?: ObjectId | string
     name?: string
     password?: string
+    created?: Date
   }): UserDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
-      created: new Date(),
+      created,
       name,
       password,
     }

@@ -12,7 +12,7 @@ import UserResolver from '../types/user-resolver'
 export default class CurrentUserQuery {
   private static logger = getLogger('current-user-query')
 
-  static async currentUser(context: Context, info: GraphQLResolveInfo): Promise<User> {
+  static currentUser(context: Context, info: GraphQLResolveInfo): User {
     const user = context.session?.user
     const logPrefix = `currentUser by "${user?._id}"`
     if (CurrentUserQuery.logger.isTraceEnabled()) {

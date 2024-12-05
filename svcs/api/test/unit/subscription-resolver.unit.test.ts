@@ -3,7 +3,7 @@ import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import EventManager from '../../src/graphql/resolvers/event-manager'
+import EventManager from '../../src/graphql/event-manager'
 import { Game, GameDeck, GamePlayer } from '@gwent/graphql-schema/resolver-typings'
 import { PubSubEvents } from '@gwent/constants'
 import SubscriptionResolver, {

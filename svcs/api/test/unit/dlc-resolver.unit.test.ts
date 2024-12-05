@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import { Dlc } from '@gwent/graphql-schema/resolver-typings'
 import { DlcDbObject } from '@gwent/graphql-schema/database-typings'
-import DlcResolver from '../../src/graphql/resolvers/dlc-resolver'
+import DlcResolver from '../../src/graphql/resolvers/types/dlc-resolver'
 import DlcStore from '../../src/database/stores/dlc-store'
 import TestUtil from '../test-util'
 import Verifier from '../../src/util/verifier'

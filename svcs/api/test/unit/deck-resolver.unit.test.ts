@@ -1,14 +1,14 @@
 import { Deck, DeckUnit, Faction, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { DeckDbObject, FactionDbObject } from '@gwent/graphql-schema/database-typings'
-import DeckResolver from '../../src/graphql/resolvers/deck-resolver'
-import DeckUnitResolver from '../../src/graphql/resolvers/deck-unit-resolver'
-import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
+import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
+import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
+import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import FactionStore from '../../src/database/stores/faction-store'
-import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
+import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import { getUniqueItems } from '@gwent/utils'
 import TestUtil from '../test-util'
-import UnitResolver from '../../src/graphql/resolvers/unit-resolver'
-import UserResolver from '../../src/graphql/resolvers/user-resolver'
+import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
+import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('deck-resolver', () => {
   describe('fromObject', () => {

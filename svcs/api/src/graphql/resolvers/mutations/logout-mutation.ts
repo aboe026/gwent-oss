@@ -10,7 +10,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
 export default class LogoutMutation {
   private static logger = getLogger('logout-mutation')
 
-  static async logout(context: Context, info: GraphQLResolveInfo): Promise<boolean> {
+  static logout(context: Context, info: GraphQLResolveInfo): boolean {
     const userId = context.session?.user?._id
     const logPrefix = `logout for user "${userId}"`
     if (LogoutMutation.logger.isTraceEnabled()) {

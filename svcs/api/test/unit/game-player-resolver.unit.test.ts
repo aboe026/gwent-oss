@@ -1,12 +1,12 @@
 import { ObjectId } from 'mongodb'
 
 import { Faction, GamePlayer, Leader, User } from '@gwent/graphql-schema/resolver-typings'
-import FactionResolver from '../../src/graphql/resolvers/faction-resolver'
+import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
-import GamePlayerResolver from '../../src/graphql/resolvers/game-player-resolver'
-import LeaderResolver from '../../src/graphql/resolvers/leader-resolver'
+import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
+import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import TestUtil from '../test-util'
-import UserResolver from '../../src/graphql/resolvers/user-resolver'
+import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('game-player-resolver', () => {
   describe('fromObject', () => {
