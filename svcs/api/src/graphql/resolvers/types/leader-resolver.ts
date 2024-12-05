@@ -6,8 +6,8 @@ import DlcResolver from './dlc-resolver'
 import { FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionResolver from './faction-resolver'
 import { getUniqueItems } from '@gwent/utils'
-import LeaderStore from '../../database/stores/leader-store'
-import Verifier from '../../util/verifier'
+import LeaderStore from '../../../database/stores/leader-store'
+import Verifier from '../../../util/verifier'
 
 /**
  * A class to convert Leader database objects to their GraphQL equivalent.

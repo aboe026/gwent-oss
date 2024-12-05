@@ -9,19 +9,19 @@ import {
   RedrawDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import DeckResolver from './deck-resolver'
+import DeckResolver from './types/deck-resolver'
 import DeckStore from '../../database/stores/deck-store'
-import DeckUnitResolver from './deck-unit-resolver'
+import DeckUnitResolver from './types/deck-unit-resolver'
 import EventManager from './event-manager'
 import { FactionKey, Game, MutationResolvers, User } from '@gwent/graphql-schema/resolver-typings'
-import FactionResolver from './faction-resolver'
+import FactionResolver from './types/faction-resolver'
 import FactionStore from '../../database/stores/faction-store'
-import GameDeckResolver from './game-deck-resolver'
-import GameResolver from './game-resolver'
+import GameDeckResolver from './types/game-deck-resolver'
+import GameResolver from './types/game-resolver'
 import GameStore from '../../database/stores/game-store'
 import { getDeckStats, getDuplicateItems, randomizeOrder } from '@gwent/utils'
 import { getRandomSubset } from '@gwent/utils'
-import LeaderResolver from './leader-resolver'
+import LeaderResolver from './types/leader-resolver'
 import LeaderStore from '../../database/stores/leader-store'
 import {
   MAX_REDRAWS,
@@ -32,7 +32,7 @@ import {
 } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
 import UnitStore from '../../database/stores/unit-store'
-import UserResolver from './user-resolver'
+import UserResolver from './types/user-resolver'
 import UserStore from '../../database/stores/user-store'
 import { validateDeck } from '@gwent/validators'
 

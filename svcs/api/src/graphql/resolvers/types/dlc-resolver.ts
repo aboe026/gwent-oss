@@ -3,8 +3,8 @@ import { ObjectId } from 'mongodb'
 
 import { Dlc, DlcKey } from '@gwent/graphql-schema/resolver-typings'
 import { DlcDbObject } from '@gwent/graphql-schema/database-typings'
-import DlcStore from '../../database/stores/dlc-store'
-import Verifier from '../../util/verifier'
+import DlcStore from '../../../database/stores/dlc-store'
+import Verifier from '../../../util/verifier'
 
 /**
  * A class to convert DLC database objects to their GraphQL equivalent.
