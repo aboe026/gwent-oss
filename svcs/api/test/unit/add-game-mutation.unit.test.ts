@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game-mutation'
 import { Context } from '@gwent/graphql-schema/context'
-import { Game } from '@gwent/graphql-schema/resolver-typings'
+import { Game, MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS } from '@gwent/constants'
@@ -158,7 +158,7 @@ async function testAddGame({
       name: creatorName,
     })
   }
-  const args = {
+  const args: MutationAddGameArgs = {
     opponentNames,
   }
   const game = TestUtil.getDbGame({

@@ -1,5 +1,5 @@
 import AddUserMutation from '../../src/graphql/resolvers/mutations/add-user-mutation'
-import { User } from '@gwent/graphql-schema/resolver-typings'
+import { MutationAddUserArgs, User } from '@gwent/graphql-schema/resolver-typings'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import TestUtil from '../test-util'
 import UserStore from '../../src/database/stores/user-store'
@@ -70,7 +70,7 @@ async function testAddUser({
   debugCalls?: any[][]
   errorCalls?: any[][]
 }) {
-  const args = {
+  const args: MutationAddUserArgs = {
     name,
     password: 'secret',
   }

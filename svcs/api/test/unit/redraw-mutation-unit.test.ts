@@ -585,8 +585,8 @@ async function testRedraw({
   errorCalls = [],
 }: {
   userId?: ObjectId
-  gameId?: string
-  unitId?: string
+  gameId: string
+  unitId: string
   gameGetResponse?: GameDbObject
   gameRedrawResponse?: GameDbObject
   resolveDeckUnitResponses?: DeckUnit[]
@@ -609,8 +609,8 @@ async function testRedraw({
     })
   }
   const args: MutationRedrawArgs = {
-    game: gameId || '',
-    unit: unitId || '',
+    game: gameId,
+    unit: unitId,
   }
   const player = gameGetResponse?.players.find(
     (player) => player.user.toString() === userId?.toString()

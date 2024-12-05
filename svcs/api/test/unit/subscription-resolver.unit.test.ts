@@ -1,5 +1,4 @@
 import * as graphqlSubscriptions from 'graphql-subscriptions'
-import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
@@ -903,7 +902,7 @@ function testFilterDeckAdded({
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
-  } as unknown as Logger
+  } as any
 
   expect(SubscriptionResolver['filterDeckAdded'](payload, ctx)).toEqual(expected)
 
@@ -950,7 +949,7 @@ function testFilterDeckSet({
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
-  } as unknown as Logger
+  } as any
 
   expect(SubscriptionResolver['filterDeckSet'](payload, ctx)).toEqual(expected)
 
@@ -1001,7 +1000,7 @@ function testFilterGameAdded({
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
-  } as unknown as Logger
+  } as any
 
   expect(SubscriptionResolver['filterGameAdded'](payload, ctx)).toEqual(expected)
 
@@ -1048,7 +1047,7 @@ function testFilterGameReady({
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
-  } as unknown as Logger
+  } as any
 
   expect(SubscriptionResolver['filterGameReady'](payload, ctx)).toEqual(expected)
 
@@ -1095,7 +1094,7 @@ function testFilterGameSet({
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
-  } as unknown as Logger
+  } as any
 
   expect(SubscriptionResolver['filterGameSet'](payload, ctx)).toEqual(expected)
 
@@ -1146,7 +1145,7 @@ function testFilterOrderSet({
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
-  } as unknown as Logger
+  } as any
 
   expect(SubscriptionResolver['filterOrderSet'](payload, ctx)).toEqual(expected)
 
@@ -1212,7 +1211,7 @@ function testFilterUnitRedrawn({
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
-  } as unknown as Logger
+  } as any
 
   expect(SubscriptionResolver['filterUnitRedrawn'](payload, ctx)).toEqual(expected)
 

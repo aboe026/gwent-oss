@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { Game } from '@gwent/graphql-schema/resolver-typings'
+import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
@@ -312,7 +312,7 @@ async function testReady({
       id: userId,
     })
   }
-  const args = {
+  const args: MutationReadyArgs = {
     game: gameId,
   }
   const gameGetSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(gameGetResponse)

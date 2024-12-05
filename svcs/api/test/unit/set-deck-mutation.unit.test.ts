@@ -517,8 +517,8 @@ async function testSetDeck({
   errorCalls = [],
 }: {
   userId?: ObjectId
-  gameId?: string
-  deckId?: string
+  gameId: string
+  deckId: string
   getDeckResponse?: DeckDbObject
   getGameResponse?: GameDbObject
   randomSubset?: DeckUnitDbObject[]
@@ -546,8 +546,8 @@ async function testSetDeck({
     })
   }
   const args: MutationSetDeckArgs = {
-    game: gameId || '',
-    deck: deckId || '',
+    game: gameId,
+    deck: deckId,
   }
   const player = getGameResponse?.players.find(
     (player) => player.user.toString() === userId?.toString()

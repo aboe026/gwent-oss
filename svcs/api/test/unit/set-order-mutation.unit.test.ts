@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
+import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
 import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order-mutation'
@@ -57,7 +58,7 @@ async function testSetOrder({
       id: userId,
     })
   }
-  const args = {
+  const args: MutationSetOrderArgs = {
     game: gameId,
     users: userIds,
   }

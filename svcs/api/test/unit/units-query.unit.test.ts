@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { FactionDbObject } from '@gwent/graphql-schema/database-typings'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, QueryUnitsArgs } from '@gwent/graphql-schema/resolver-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import TestUtil from '../test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
@@ -133,7 +133,7 @@ async function testUnits({
     },
   }
   const logPrefix = `units by "${context.session?.user?._id}"`
-  const args = {
+  const args: QueryUnitsArgs = {
     factions: factionKeys,
     deckable,
   }

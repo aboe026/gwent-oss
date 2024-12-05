@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { FactionDbObject } from '@gwent/graphql-schema/database-typings'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, QueryLeadersArgs } from '@gwent/graphql-schema/resolver-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import LeadersQuery from '../../src/graphql/resolvers/queries/leaders-query'
@@ -97,7 +97,7 @@ async function testLeaders({
     },
   }
   const logPrefix = `leaders by "${context.session?.user?._id}"`
-  const args = {
+  const args: QueryLeadersArgs = {
     factions: factionKeys,
   }
   const leader = TestUtil.getDbLeader({})

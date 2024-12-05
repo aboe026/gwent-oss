@@ -1,6 +1,6 @@
 import LoginMutation from '../../src/graphql/resolvers/mutations/login-mutation'
+import { MutationLoginArgs, User } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
-import { User } from '@gwent/graphql-schema/resolver-typings'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../src/database/stores/user-store'
 
@@ -93,7 +93,7 @@ async function testLogin({
   errorCalls?: any[][]
   additionalTraceCalls?: any[]
 }) {
-  const args = {
+  const args: MutationLoginArgs = {
     name,
     password: 'secret',
   }

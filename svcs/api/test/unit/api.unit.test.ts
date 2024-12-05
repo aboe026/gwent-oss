@@ -16,7 +16,6 @@ import BasicAuth from '../../src/auth/basic-auth'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import * as env from '../../src/env'
-import { Logger } from 'log4js'
 import { NODE_ENV } from '@gwent/env'
 import schema from '../../src/graphql/executable-schema'
 import TestUtil from '../test-util'
@@ -528,7 +527,7 @@ async function testConfigureWebsocketServer({
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
     debug: debugSpy,
-  } as unknown as Logger
+  } as any
   const debugCalls: string[][] = []
   const traceCalls: string[][] = []
 

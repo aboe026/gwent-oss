@@ -1,6 +1,5 @@
 import cookieParser from 'cookie-parser'
 import { IncomingMessage } from 'http'
-import { Logger } from 'log4js'
 import MongoStore from 'connect-mongo'
 
 import * as env from '../../src/env'
@@ -223,7 +222,7 @@ async function testAuthenticate({
     error: errorSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
-  } as unknown as Logger
+  } as any
 
   await expect(
     WebSocketAuth.authenticate({
