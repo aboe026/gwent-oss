@@ -4,7 +4,7 @@ import { withFilter } from 'graphql-subscriptions'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { Deck, DeckUnit, Game, GameDeck, SubscriptionResolvers } from '@gwent/graphql-schema/resolver-typings'
-import EventManager from './event-manager'
+import EventManager from '../event-manager'
 import { PubSubEvents } from '@gwent/constants'
 
 /**

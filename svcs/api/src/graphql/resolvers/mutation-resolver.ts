@@ -12,7 +12,7 @@ import {
 import DeckResolver from './types/deck-resolver'
 import DeckStore from '../../database/stores/deck-store'
 import DeckUnitResolver from './types/deck-unit-resolver'
-import EventManager from './event-manager'
+import EventManager from '../event-manager'
 import { FactionKey, Game, MutationResolvers, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './types/faction-resolver'
 import FactionStore from '../../database/stores/faction-store'
