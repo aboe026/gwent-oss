@@ -6,13 +6,14 @@ import { Deck, DeckUnit, FactionKey, MutationAddDeckArgs } from '@gwent/graphql-
 import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
 import DeckStore from '../../src/database/stores/deck-store'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
+import EventManager from '../../src/graphql/event-manager'
 import { FactionDbObject, LeaderDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import FactionStore from '../../src/database/stores/faction-store'
 import * as gwentUtils from '@gwent/utils'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import LeaderStore from '../../src/database/stores/leader-store'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import TestUtil from '../test-util'
 import UnitStore from '../../src/database/stores/unit-store'
 import * as validateDeck from '@gwent/validators'
@@ -464,6 +465,7 @@ async function testAddDeck({
   const factionResolverSpy = jest.spyOn(FactionResolver, 'fromObject').mockResolvedValue(resolvedFaction)
   const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromObject').mockResolvedValue(resolvedLeader)
   const deckResolverSpy = jest.spyOn(DeckResolver, 'fromObject').mockResolvedValue(resolvedDeck)
+  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
@@ -582,6 +584,18 @@ async function testAddDeck({
               leader: resolvedLeader,
               units: deckUnits,
               neutralDeckStats: undefined,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(publishSpy.mock.calls).toEqual(
+    postResolversCalled
+      ? [
+          [
+            PubSubEvents.DeckAdded,
+            {
+              deckAdded: resolvedDeck,
             },
           ],
         ]

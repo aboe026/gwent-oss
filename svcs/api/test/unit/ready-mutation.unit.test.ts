@@ -1,11 +1,12 @@
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
+import EventManager from '../../src/graphql/event-manager'
 import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
 import TestUtil from '../test-util'
 
@@ -331,6 +332,7 @@ async function testReady({
   if (resolvedGame) {
     gameResolveSpy.mockResolvedValue(resolvedGame)
   }
+  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -346,6 +348,18 @@ async function testReady({
   expect(gameGetSpy.mock.calls).toEqual(gameGetCalls)
   expect(setReadySpy.mock.calls).toEqual(setReadyCalls)
   expect(gameResolveSpy.mock.calls).toEqual(gameResolveCalls)
+  expect(publishSpy.mock.calls).toEqual(
+    expected instanceof Error
+      ? []
+      : [
+          [
+            PubSubEvents.GameReady,
+            {
+              gameReady: resolvedGame,
+            },
+          ],
+        ]
+  )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(

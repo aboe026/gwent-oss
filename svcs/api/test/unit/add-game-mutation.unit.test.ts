@@ -2,10 +2,11 @@ import { ObjectId } from 'mongodb'
 
 import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game-mutation'
 import { Context } from '@gwent/graphql-schema/context'
+import EventManager from '../../src/graphql/event-manager'
 import { Game, MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS, PubSubEvents } from '@gwent/constants'
 import TestUtil from '../test-util'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../src/database/stores/user-store'
@@ -171,6 +172,7 @@ async function testAddGame({
   const getByNamesSpy = jest.spyOn(UserStore, 'getByNames').mockResolvedValue(getUserByNamesResponse)
   const addSpy = jest.spyOn(GameStore, 'add').mockResolvedValue(game)
   const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
+  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -194,6 +196,18 @@ async function testAddGame({
               users: getUserByNamesResponse.map((dbUser) => TestUtil.getUserFromDbUser(dbUser)),
               neutralFactionStats: undefined,
               neutralLeaderStats: undefined,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(publishSpy.mock.calls).toEqual(
+    fromObjectCalled
+      ? [
+          [
+            PubSubEvents.GameAdded,
+            {
+              gameAdded: resolvedGame,
             },
           ],
         ]

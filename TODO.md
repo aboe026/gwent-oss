@@ -5,7 +5,6 @@ A list of things to be done in the future
 - add to changelog
 - increment patch version
 
-- mock event publishing in mutation unit tests
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - implement history?
 - enter key does not create game in UI?
