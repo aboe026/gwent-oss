@@ -85,9 +85,9 @@ export default class MutationUtil {
       MutationUtil.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     } else if (factions.length > 1) {
-      const message = `Found more than 1 faction with key "${FactionKey.ScoiaTael}".`
-      MutationUtil.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      const message = `Found more than 1 faction with key "${FactionKey.ScoiaTael}"`
+      MutationUtil.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(factions)}"`)
+      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     } else if (factions[0].key !== FactionKey.ScoiaTael) {
       const message = `Faction key of "${factions[0].key}" does not match "${FactionKey.ScoiaTael}".`
       MutationUtil.logger.error(`${logPrefix} failed: ${message}`)

@@ -78,6 +78,44 @@ describe('effect-store', () => {
         },
       })
     })
+    it('logs to debug if enabled', async () => {
+      const id = new ObjectId()
+      const key = EffectKey.Agile
+      await testGet({
+        input: {
+          ids: [id],
+          keys: [key],
+        },
+        expectedFilter: {
+          _id: {
+            $in: [id],
+          },
+          key: {
+            $in: [key],
+          },
+        },
+        debugEnabled: true,
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const id = new ObjectId()
+      const key = EffectKey.Agile
+      await testGet({
+        input: {
+          ids: [id],
+          keys: [key],
+        },
+        expectedFilter: {
+          _id: {
+            $in: [id],
+          },
+          key: {
+            $in: [key],
+          },
+        },
+        traceEnabled: true,
+      })
+    })
   })
 })
 
@@ -97,8 +135,10 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   }
   const createSpy = jest.spyOn(EffectStore as any, 'create').mockResolvedValue(expected)
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   EffectStore['logger'] = {
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
@@ -124,14 +164,32 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
+  expect(debugSpy.mock.calls).toEqual([[`Adding effect with name "${name}"`]])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled ? [[`Adding effect: "${JSON.stringify({ ability, created, image, key, name })}"`]] : []
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
-async function testGet({ expectedFilter, input }: { expectedFilter: Object; input: GetEffectsInput }) {
+async function testGet({
+  expectedFilter,
+  input,
+  debugEnabled,
+  traceEnabled,
+}: {
+  expectedFilter: any
+  input: GetEffectsInput
+  debugEnabled?: boolean
+  traceEnabled?: boolean
+}) {
   const readSpy = jest.spyOn(EffectStore as any, 'read').mockResolvedValue([])
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  EffectStore['logger'] = {
+    isDebugEnabled: jest.fn().mockReturnValue(debugEnabled),
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
 
   await expect(EffectStore.get(input)).resolves.toEqual([])
 
@@ -142,4 +200,10 @@ async function testGet({ expectedFilter, input }: { expectedFilter: Object; inpu
       },
     ],
   ])
+  expect(debugSpy.mock.calls).toEqual(
+    debugEnabled
+      ? [[`Getting effect with ids "${JSON.stringify(input.ids)}" and keys "${JSON.stringify(input.keys)}"`]]
+      : []
+  )
+  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`get filter: "${JSON.stringify(expectedFilter)}"`]] : [])
 }

@@ -78,6 +78,44 @@ describe('dlc-store', () => {
         },
       })
     })
+    it('logs to debug if enabled', async () => {
+      const id = new ObjectId()
+      const key = DlcKey.BloodAndWine
+      await testGet({
+        input: {
+          ids: [id],
+          keys: [key],
+        },
+        expectedFilter: {
+          _id: {
+            $in: [id],
+          },
+          key: {
+            $in: [key],
+          },
+        },
+        debugEnabled: true,
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const id = new ObjectId()
+      const key = DlcKey.BloodAndWine
+      await testGet({
+        input: {
+          ids: [id],
+          keys: [key],
+        },
+        expectedFilter: {
+          _id: {
+            $in: [id],
+          },
+          key: {
+            $in: [key],
+          },
+        },
+        traceEnabled: true,
+      })
+    })
   })
 })
 
@@ -95,8 +133,10 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   }
   const createSpy = jest.spyOn(DlcStore as any, 'create').mockResolvedValue(expected)
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   DlcStore['logger'] = {
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
@@ -120,14 +160,32 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
+  expect(debugSpy.mock.calls).toEqual([[`Adding DLC with name "${name}"`]])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled ? [[`Adding dlc: "${JSON.stringify({ created, image, key, name })}"`]] : []
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
-async function testGet({ expectedFilter, input }: { expectedFilter: Object; input: GetDlcsInput }) {
+async function testGet({
+  expectedFilter,
+  input,
+  debugEnabled,
+  traceEnabled,
+}: {
+  expectedFilter: any
+  input: GetDlcsInput
+  debugEnabled?: boolean
+  traceEnabled?: boolean
+}) {
   const readSpy = jest.spyOn(DlcStore as any, 'read').mockResolvedValue([])
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  DlcStore['logger'] = {
+    isDebugEnabled: jest.fn().mockReturnValue(debugEnabled),
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
 
   await expect(DlcStore.get(input)).resolves.toEqual([])
 
@@ -138,4 +196,8 @@ async function testGet({ expectedFilter, input }: { expectedFilter: Object; inpu
       },
     ],
   ])
+  expect(debugSpy.mock.calls).toEqual(
+    debugEnabled ? [[`Getting by ids "${JSON.stringify(input.ids)}" and keys "${JSON.stringify(input.keys)}"`]] : []
+  )
+  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`get filter: "${JSON.stringify(expectedFilter)}"`]] : [])
 }

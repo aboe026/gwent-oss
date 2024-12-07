@@ -46,7 +46,7 @@ export default class GameDeckQuery {
     }
     if (!game) {
       const message = `Game with ID "${gameId}" does not exist.`
-      GameDeckQuery.logger.error(`${logPrefix} failed: ${message}`)
+      GameDeckQuery.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -56,7 +56,7 @@ export default class GameDeckQuery {
     }
     if (!player) {
       const message = `Not a player on game "${gameId}".`
-      GameDeckQuery.logger.debug(`${logPrefix} failed: ${message}`)
+      GameDeckQuery.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (player.deck.from) {

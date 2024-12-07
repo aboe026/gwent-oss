@@ -34,7 +34,7 @@ describe('ready-mutation', () => {
             },
           ],
         ],
-        errorCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if not a player on the game', async () => {
@@ -53,7 +53,7 @@ describe('ready-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if deck not yet set', async () => {
@@ -73,7 +73,7 @@ describe('ready-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if already marked as ready', async () => {
@@ -101,7 +101,7 @@ describe('ready-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if setReady response is undefined', async () => {
@@ -287,7 +287,7 @@ async function testReady({
   setReadyCalls = [],
   logPrefix,
   traceEnabled,
-  debugCalls = [],
+  warnCalls = [],
   errorCalls = [],
 }: {
   userId?: ObjectId
@@ -301,7 +301,7 @@ async function testReady({
   gameResolveCalls?: any[][]
   logPrefix?: string
   traceEnabled?: boolean
-  debugCalls?: any[][]
+  warnCalls?: any[][]
   errorCalls?: any[][]
 }) {
   const context: Context = {
@@ -321,14 +321,14 @@ async function testReady({
   if (resolvedGame) {
     gameResolveSpy.mockResolvedValue(resolvedGame)
   }
-  const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   ReadyMutation['logger'] = {
-    debug: debugSpy,
     error: errorSpy,
-    trace: traceSpy,
+    warn: warnSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   await expect(ReadyMutation.ready(args, context, null as any)).resolves.toEqual(expected)
@@ -336,8 +336,8 @@ async function testReady({
   expect(gameGetSpy.mock.calls).toEqual(gameGetCalls)
   expect(setReadySpy.mock.calls).toEqual(setReadyCalls)
   expect(gameResolveSpy.mock.calls).toEqual(gameResolveCalls)
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

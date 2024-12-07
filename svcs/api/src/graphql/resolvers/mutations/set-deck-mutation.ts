@@ -54,7 +54,7 @@ export default class SetDeckMutation {
     }
     if (!deck) {
       const message = `Deck with ID "${deckId}" does not exist.`
-      SetDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
+      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
@@ -66,7 +66,7 @@ export default class SetDeckMutation {
     }
     if (!game) {
       const message = `Game with ID "${gameId}" does not exist.`
-      SetDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
+      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
@@ -76,12 +76,12 @@ export default class SetDeckMutation {
     }
     if (!player) {
       const message = `Not a player on game "${gameId}".`
-      SetDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (player.deck.from !== null && player.deck.from !== undefined) {
       const message = `Deck already set for game "${gameId}".`
-      SetDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 

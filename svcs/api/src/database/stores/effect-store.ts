@@ -22,6 +22,7 @@ export default class EffectStore extends Store {
    * @returns The Effect database document.
    */
   static async add({ ability, image, key, name }: AddEffectInput): Promise<EffectDbObject> {
+    EffectStore.logger.debug(`Adding effect with name "${name}"`)
     const effect: Document = {
       ability,
       created: new Date(),
@@ -44,6 +45,9 @@ export default class EffectStore extends Store {
    * @returns Effects for Units.
    */
   static async get({ ids, keys }: GetEffectsInput): Promise<EffectDbObject[]> {
+    if (EffectStore.logger.isDebugEnabled()) {
+      EffectStore.logger.debug(`Getting effect with ids "${JSON.stringify(ids)}" and keys "${JSON.stringify(keys)}"`)
+    }
     const filter: Filter<Document> = {}
     if (ids) {
       filter._id = {
@@ -54,6 +58,9 @@ export default class EffectStore extends Store {
       filter.key = {
         $in: keys,
       }
+    }
+    if (EffectStore.logger.isTraceEnabled()) {
+      EffectStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
     }
     return EffectStore.read<EffectDbObject[]>({ filter })
   }

@@ -33,7 +33,7 @@ export default class CurrentUserQuery {
     }
     if (!user) {
       const message = 'No user on session.'
-      CurrentUserQuery.logger.debug(`${logPrefix} failed: "${message}"`)
+      CurrentUserQuery.logger.warn(`${logPrefix} failed: "${message}"`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     return UserResolver.fromObject(user)

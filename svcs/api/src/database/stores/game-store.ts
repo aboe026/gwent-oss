@@ -10,7 +10,7 @@ import Store from './store'
  */
 export default class GameStore extends Store {
   static readonly COLLECTION_NAME = 'games'
-  private static logger = getLogger('game-store')
+  private static logger = getLogger('GameStore')
 
   /**
    * Adds a game for users to play in the database.
@@ -21,6 +21,7 @@ export default class GameStore extends Store {
    * @returns The game database document.
    */
   static async add({ creatorId, opponentIds }: AddGameInput): Promise<GameDbObject> {
+    GameStore.logger.debug(`Adding game by creator "${creatorId}"`)
     const created = new Date()
     const playerIds = [creatorId, ...opponentIds]
     const game: Document = {
@@ -69,16 +70,22 @@ export default class GameStore extends Store {
     id: string | ObjectId
     options?: FindOptions
   }): Promise<GameDbObject | undefined> {
+    GameStore.logger.debug(`Getting game by ID "${id}"`)
+    const filter: Filter<Document> = {
+      _id: new ObjectId(id),
+    }
+    if (GameStore.logger.isTraceEnabled()) {
+      GameStore.logger.trace(`getById filter for ID "${id}": "${JSON.stringify(filter)}"`)
+      GameStore.logger.trace(`getById options for ID "${id}": "${JSON.stringify(options)}"`)
+    }
     const result = await GameStore.read<GameDbObject[]>({
-      filter: {
-        _id: new ObjectId(id),
-      },
+      filter,
       options,
     })
     if (result && result.length > 1) {
-      const message = `Multiple games with ID "${id}" found.`
-      GameStore.logger.error(message)
-      throw Error(message)
+      const message = `Multiple games with ID "${id}" found`
+      GameStore.logger.error(`${message}: "${JSON.stringify(result)}"`)
+      throw Error(`${message}.`)
     }
     return result && result[0]
   }
@@ -90,10 +97,15 @@ export default class GameStore extends Store {
    * @returns All games a user is apart of.
    */
   static async getByUserId(userId: string | ObjectId): Promise<GameDbObject[]> {
+    GameStore.logger.debug(`Getting games for userId "${userId}"`)
+    const filter: Filter<Document> = {
+      'players.user': new ObjectId(userId),
+    }
+    if (GameStore.logger.isTraceEnabled()) {
+      GameStore.logger.trace(`getByUserId filter for userId "${userId}": "${JSON.stringify(filter)}"`)
+    }
     return GameStore.read<GameDbObject[]>({
-      filter: {
-        'players.user': new ObjectId(userId),
-      },
+      filter,
     })
   }
 
@@ -121,25 +133,33 @@ export default class GameStore extends Store {
     undrawn: DeckUnitDbObject[]
     userId: string | ObjectId
   }): Promise<GameDbObject | undefined> {
-    if (GameStore.logger.isTraceEnabled()) {
-      GameStore.logger.trace(
-        `Setting deck to "${deck._id}" on game "${gameId}" for user "${userId}" with hand "${JSON.stringify(hand)}"`
+    if (GameStore.logger.isDebugEnabled()) {
+      GameStore.logger.debug(
+        `Setting deck to "${deck._id}" on game "${gameId}" for user "${userId}" with hand "${JSON.stringify(
+          hand.map((deckUnit) => deckUnit.unit.id)
+        )}"`
       )
     }
+    const filter: Filter<Document> = {
+      _id: new ObjectId(gameId),
+      'players.user': new ObjectId(userId),
+      'players.deck.from': null,
+    }
+    const update: UpdateFilter<Document> = {
+      $set: {
+        updated: new Date(),
+        'players.$.deck.from': deck,
+        'players.$.deck.hand': hand,
+        'players.$.deck.undrawn': undrawn,
+      },
+    }
+    if (GameStore.logger.isTraceEnabled()) {
+      GameStore.logger.trace(`setDeck for game "${gameId}" and user "${userId}" filter: "${JSON.stringify(filter)}"`)
+      GameStore.logger.trace(`setDeck for game "${gameId}" and user "${userId}" update: "${JSON.stringify(update)}"`)
+    }
     return GameStore.update<GameDbObject>({
-      filter: {
-        _id: new ObjectId(gameId),
-        'players.user': new ObjectId(userId),
-        'players.deck.from': null,
-      },
-      update: {
-        $set: {
-          updated: new Date(),
-          'players.$.deck.from': deck,
-          'players.$.deck.hand': hand,
-          'players.$.deck.undrawn': undrawn,
-        },
-      },
+      filter,
+      update,
       verifyExistence: false,
     })
   }
@@ -182,9 +202,9 @@ export default class GameStore extends Store {
       }
     }
     if (GameStore.logger.isTraceEnabled()) {
-      GameStore.logger.trace(`setOrder filter: "${JSON.stringify(filter)}"`)
-      GameStore.logger.trace(`setOrder update: "${JSON.stringify(update)}"`)
-      GameStore.logger.trace(`setOrder arrayFilters: "${JSON.stringify(arrayFilters)}"`)
+      GameStore.logger.trace(`setOrder for game "${gameId}" filter: "${JSON.stringify(filter)}"`)
+      GameStore.logger.trace(`setOrder for game "${gameId}" update: "${JSON.stringify(update)}"`)
+      GameStore.logger.trace(`setOrder for game "${gameId}" arrayFilters: "${JSON.stringify(arrayFilters)}"`)
     }
     return GameStore.update<GameDbObject>({
       filter,
@@ -224,26 +244,30 @@ export default class GameStore extends Store {
     userId: string | ObjectId
   }): Promise<GameDbObject | undefined> {
     const { from, to } = newRedraws[newRedraws.length - 1]
+    GameStore.logger.debug(
+      `Redrawing unit from "${from.unit}" to "${to.unit}" on game "${gameId}" for user "${userId}"`
+    )
+    const filter: Filter<Document> = {
+      _id: new ObjectId(gameId),
+      'players.user': new ObjectId(userId),
+      'players.ready': false,
+      'players.deck.redraws': currentRedraws,
+    }
+    const update: UpdateFilter<Document> = {
+      $set: {
+        updated: new Date(),
+        'players.$.deck.hand': newHand,
+        'players.$.deck.undrawn': newUndrawn,
+        'players.$.deck.redraws': newRedraws,
+      },
+    }
     if (GameStore.logger.isTraceEnabled()) {
-      GameStore.logger.trace(
-        `Redrawing unit from "${from.unit}" to "${to.unit}" on game "${gameId}" for user "${userId}"`
-      )
+      GameStore.logger.trace(`redraw for game "${gameId}" by user "${userId}" filter: "${JSON.stringify(filter)}"`)
+      GameStore.logger.trace(`redraw for game "${gameId}" by user "${userId}" update: "${JSON.stringify(update)}"`)
     }
     return GameStore.update<GameDbObject>({
-      filter: {
-        _id: new ObjectId(gameId),
-        'players.user': new ObjectId(userId),
-        'players.ready': false,
-        'players.deck.redraws': currentRedraws,
-      },
-      update: {
-        $set: {
-          updated: new Date(),
-          'players.$.deck.hand': newHand,
-          'players.$.deck.undrawn': newUndrawn,
-          'players.$.deck.redraws': newRedraws,
-        },
-      },
+      filter,
+      update,
       verifyExistence: false,
     })
   }
@@ -263,21 +287,25 @@ export default class GameStore extends Store {
     gameId: ObjectId | string
     userId: ObjectId | string
   }): Promise<GameDbObject | undefined> {
+    GameStore.logger.debug(`Marking game "${gameId}" ready for user "${userId}"`)
+    const filter: Filter<Document> = {
+      _id: new ObjectId(gameId),
+      'players.user': new ObjectId(userId),
+      'players.ready': false,
+    }
+    const update: UpdateFilter<Document> = {
+      $set: {
+        updated: new Date(),
+        'players.$.ready': true,
+      },
+    }
     if (GameStore.logger.isTraceEnabled()) {
-      GameStore.logger.trace(`Marking game "${gameId}" ready for user "${userId}"`)
+      GameStore.logger.trace(`ready for game "${gameId}" by user "${userId}" filter: "${JSON.stringify(filter)}"`)
+      GameStore.logger.trace(`ready for game "${gameId}" by user "${userId}" update: "${JSON.stringify(update)}"`)
     }
     return GameStore.update<GameDbObject>({
-      filter: {
-        _id: new ObjectId(gameId),
-        'players.user': new ObjectId(userId),
-        'players.ready': false,
-      },
-      update: {
-        $set: {
-          updated: new Date(),
-          'players.$.ready': true,
-        },
-      },
+      filter,
+      update,
       verifyExistence: false,
     })
   }

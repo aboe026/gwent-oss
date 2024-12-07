@@ -28,7 +28,7 @@ describe('game-deck-query', () => {
         gameId,
         gameResponse: undefined,
         error: Error(error),
-        errorCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if user is not a player', async () => {
@@ -41,7 +41,7 @@ describe('game-deck-query', () => {
         gameId: gameId.toString(),
         gameResponse: game,
         error: Error(error),
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns undefined if player deck not set', async () => {
@@ -150,7 +150,7 @@ async function testGameDeck({
   logPrefix,
   traceEnabled,
   errorCalls = [],
-  debugCalls = [],
+  warnCalls = [],
 }: {
   userId?: ObjectId
   gameId: string
@@ -161,7 +161,7 @@ async function testGameDeck({
   logPrefix?: string
   traceEnabled?: boolean
   errorCalls?: any[][]
-  debugCalls?: any[][]
+  warnCalls?: any[][]
 }) {
   const context: Context = {
     session: {},
@@ -176,14 +176,14 @@ async function testGameDeck({
   }
   const getByIdSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(gameResponse)
   const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject').mockResolvedValue(expected as any as GameDeck)
-  const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   GameDeckQuery['logger'] = {
-    debug: debugSpy,
     error: errorSpy,
-    trace: traceSpy,
+    warn: warnSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   await expect(GameDeckQuery.gameDeck(args, context, null as any)).resolves.toEqual(error || expected)
@@ -200,8 +200,8 @@ async function testGameDeck({
       : []
   )
   expect(fromObjectSpy.mock.calls).toEqual(gameDeckResolverCalls)
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

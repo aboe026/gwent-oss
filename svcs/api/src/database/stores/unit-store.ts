@@ -1,4 +1,4 @@
-import { Document, Filter, ObjectId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { Combat, UnitDbObject } from '@gwent/graphql-schema/database-typings'
@@ -47,6 +47,7 @@ export default class UnitStore extends Store {
     special,
     strength,
   }: AddUnitInput): Promise<UnitDbObject> {
+    UnitStore.logger.debug(`Adding unit with name "${name}"`)
     const unit: Document = {
       combats,
       created: new Date(),
@@ -80,6 +81,11 @@ export default class UnitStore extends Store {
    * @returns Units matching criteria.
    */
   static async get({ deckable, factionIds, ids }: GetUnitsInput): Promise<UnitDbObject[]> {
+    if (UnitStore.logger.isDebugEnabled()) {
+      UnitStore.logger.debug(
+        `Getting units with factions "${JSON.stringify(factionIds)}" and ids "${JSON.stringify(ids)}"`
+      )
+    }
     const filter: Filter<Document> = {}
     if (factionIds) {
       filter.faction = {
@@ -94,17 +100,22 @@ export default class UnitStore extends Store {
         $in: ids.map((id) => new ObjectId(id)),
       }
     }
+    const options: FindOptions<Document> = {
+      collation: {
+        locale: 'en', // allows for case-insensitivity
+      },
+      sort: {
+        name: 1,
+        _id: 1,
+      },
+    }
+    if (UnitStore.logger.isTraceEnabled()) {
+      UnitStore.logger.trace(`get filter: "${JSON.stringify(filter)}`)
+      UnitStore.logger.trace(`get options: "${JSON.stringify(options)}`)
+    }
     return UnitStore.read<UnitDbObject[]>({
       filter,
-      options: {
-        collation: {
-          locale: 'en', // allows for case-insensitivity
-        },
-        sort: {
-          name: 1,
-          _id: 1,
-        },
-      },
+      options,
     })
   }
 }

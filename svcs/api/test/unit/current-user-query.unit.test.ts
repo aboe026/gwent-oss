@@ -13,7 +13,7 @@ describe('current-user-query', () => {
       testCurrentUser({
         context: {},
         error: Error(error),
-        debugCalls: [[`currentUser by "undefined" failed: "${error}"`]],
+        warnCalls: [[`currentUser by "undefined" failed: "${error}"`]],
       })
     })
     it('throws error if user undefined', () => {
@@ -23,7 +23,7 @@ describe('current-user-query', () => {
           session: {},
         },
         error: Error(error),
-        debugCalls: [[`currentUser by "undefined" failed: "${error}"`]],
+        warnCalls: [[`currentUser by "undefined" failed: "${error}"`]],
       })
     })
     it('returns user if defined on session', () => {
@@ -82,32 +82,32 @@ function testCurrentUser({
   userResolverResponse,
   userResolverCalls = [],
   traceEnabled,
-  debugCalls = [],
+  warnCalls = [],
 }: {
   context: Context
   error?: Error
   userResolverResponse?: User
   userResolverCalls?: any[][]
   traceEnabled?: boolean
-  debugCalls?: any[][]
+  warnCalls?: any[][]
 }) {
   const logPrefix = `currentUser by "${context?.session?.user?._id}"`
   const userResolverSpy = jest.spyOn(UserResolver, 'fromObject')
   if (userResolverResponse) {
     userResolverSpy.mockReturnValue(userResolverResponse)
   }
-  const debugSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   CurrentUserQuery['logger'] = {
-    debug: debugSpy,
-    trace: traceSpy,
+    warn: warnSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   expect(CurrentUserQuery.currentUser(context, null as any)).toEqual(error || userResolverResponse)
 
   expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

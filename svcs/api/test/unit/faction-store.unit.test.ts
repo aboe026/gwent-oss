@@ -1,7 +1,7 @@
-import { ObjectId } from 'mongodb'
+import { Document, Filter, ObjectId, UpdateFilter } from 'mongodb'
 
 import { FactionDbObject, FactionKey } from '@gwent/graphql-schema/database-typings'
-import FactionStore, { GetFactionsInput } from '../../src/database/stores/faction-store'
+import FactionStore, { EditFactionInput, GetFactionsInput } from '../../src/database/stores/faction-store'
 import TestUtil from '../test-util'
 
 describe('faction-store', () => {
@@ -16,32 +16,22 @@ describe('faction-store', () => {
     })
   })
   describe('edit', () => {
-    it('calls to update', async () => {
-      const id = new ObjectId()
-      const stats = TestUtil.getStats()
-      const updateSpy = jest.spyOn(FactionStore as any, 'update').mockResolvedValue({ _id: id })
-
-      await expect(
-        FactionStore.edit({
-          id,
-          stats,
-        })
-      ).resolves.toEqual({ _id: id })
-
-      expect(updateSpy.mock.calls).toEqual([
-        [
-          {
-            filter: {
-              _id: id,
-            },
-            update: {
-              $set: {
-                stats,
-              },
-            },
-          },
-        ],
-      ])
+    it('calls to update with correct filter and update', async () => {
+      await testEdit({
+        input: {
+          id: new ObjectId(),
+          stats: TestUtil.getStats(),
+        },
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      await testEdit({
+        input: {
+          id: new ObjectId(),
+          stats: TestUtil.getStats(),
+        },
+        traceEnabled: true,
+      })
     })
   })
   describe('get', () => {
@@ -108,6 +98,44 @@ describe('faction-store', () => {
         },
       })
     })
+    it('logs to debug if enabled', async () => {
+      const id = new ObjectId()
+      const key = FactionKey.NorthernRealms
+      await testGet({
+        input: {
+          ids: [id],
+          keys: [key],
+        },
+        expectedFilter: {
+          _id: {
+            $in: [id],
+          },
+          key: {
+            $in: [key],
+          },
+        },
+        debugEnabled: true,
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const id = new ObjectId()
+      const key = FactionKey.NorthernRealms
+      await testGet({
+        input: {
+          ids: [id],
+          keys: [key],
+        },
+        expectedFilter: {
+          _id: {
+            $in: [id],
+          },
+          key: {
+            $in: [key],
+          },
+        },
+        traceEnabled: true,
+      })
+    })
   })
 })
 
@@ -129,8 +157,10 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   } as any
   const createSpy = jest.spyOn(FactionStore as any, 'create').mockResolvedValue(expected)
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   FactionStore['logger'] = {
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
@@ -158,14 +188,71 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
+  expect(debugSpy.mock.calls).toEqual([[`Adding faction with name "${name}"`]])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled ? [[`Adding faction: "${JSON.stringify({ ability, created, dlc, image, key, name })}"`]] : []
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
-async function testGet({ expectedFilter, input }: { expectedFilter: Object; input: GetFactionsInput }) {
+async function testEdit({ input, traceEnabled }: { input: EditFactionInput; traceEnabled?: boolean }) {
+  const readSpy = jest.spyOn(FactionStore as any, 'update').mockResolvedValue({})
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  FactionStore['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+
+  await expect(FactionStore.edit(input)).resolves.toEqual({})
+  const filter: Filter<Document> = {
+    _id: new ObjectId(input.id),
+  }
+  const update: UpdateFilter<Document> = {
+    $set: {
+      stats: input.stats,
+    },
+  }
+
+  expect(readSpy.mock.calls).toEqual([
+    [
+      {
+        filter,
+        update,
+      },
+    ],
+  ])
+  expect(debugSpy.mock.calls).toEqual([[`Editing faction with id "${input.id}"`]])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [`edit filter for ID "${input.id}": "${JSON.stringify(filter)}"`],
+          [`edit update for ID "${input.id}": "${JSON.stringify(update)}"`],
+        ]
+      : []
+  )
+}
+
+async function testGet({
+  input,
+  expectedFilter,
+  debugEnabled,
+  traceEnabled,
+}: {
+  input: GetFactionsInput
+  expectedFilter?: any
+  debugEnabled?: boolean
+  traceEnabled?: boolean
+}) {
   const readSpy = jest.spyOn(FactionStore as any, 'read').mockResolvedValue([])
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  FactionStore['logger'] = {
+    isDebugEnabled: jest.fn().mockReturnValue(debugEnabled),
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
 
   await expect(FactionStore.get(input)).resolves.toEqual([])
 
@@ -176,4 +263,10 @@ async function testGet({ expectedFilter, input }: { expectedFilter: Object; inpu
       },
     ],
   ])
+  expect(debugSpy.mock.calls).toEqual(
+    debugEnabled
+      ? [[`Getting faction with ids "${JSON.stringify(input.ids)}" and keys "${JSON.stringify(input.keys)}"`]]
+      : []
+  )
+  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`get filter: "${JSON.stringify(expectedFilter)}"`]] : [])
 }

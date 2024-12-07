@@ -1,4 +1,4 @@
-import { Document, FindOptions, ObjectId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId } from 'mongodb'
 
 import { DeckDbObject, UnitStats } from '@gwent/graphql-schema/database-typings'
 import { getLogger } from 'log4js'
@@ -9,7 +9,7 @@ import Store from './store'
  */
 export default class DeckStore extends Store {
   static readonly COLLECTION_NAME = 'decks'
-  private static logger = getLogger('deck-store')
+  private static logger = getLogger('DeckStore')
 
   /**
    * Adds a deck for a user to the database.
@@ -24,6 +24,7 @@ export default class DeckStore extends Store {
    * @returns The deck databased document.
    */
   static async add({ factionId, leaderId, name, stats, units, userId }: AddDeckInput): Promise<DeckDbObject> {
+    DeckStore.logger.debug(`Adding deck named "${name}" for user "${userId}"`)
     const deck: Document = {
       created: new Date(),
       faction: new ObjectId(factionId),
@@ -51,7 +52,7 @@ export default class DeckStore extends Store {
         })
       ) {
         const message = `Deck with name "${name}" already exists for user "${userId}"`
-        DeckStore.logger.error(message)
+        DeckStore.logger.warn(message)
         throw Error(message)
       } else {
         DeckStore.logger.error(`Error adding deck for user "${userId}": ${err}`)
@@ -67,10 +68,15 @@ export default class DeckStore extends Store {
    * @returns All decks for a user.
    */
   static async get(userId: string | ObjectId): Promise<DeckDbObject[]> {
+    DeckStore.logger.debug(`Getting decks for user "${userId}"`)
+    const filter: Filter<Document> = {
+      user: new ObjectId(userId),
+    }
+    if (DeckStore.logger.isTraceEnabled()) {
+      DeckStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
+    }
     return DeckStore.read<DeckDbObject[]>({
-      filter: {
-        user: new ObjectId(userId),
-      },
+      filter,
     })
   }
 
@@ -88,16 +94,22 @@ export default class DeckStore extends Store {
     id: ObjectId | string
     options?: FindOptions
   }): Promise<DeckDbObject | undefined> {
+    DeckStore.logger.debug(`Getting deck with ID "${id}"`)
+    const filter: Filter<Document> = {
+      _id: new ObjectId(id),
+    }
+    if (DeckStore.logger.isTraceEnabled()) {
+      DeckStore.logger.trace(`getById filter for ID "${id}": "${JSON.stringify(filter)}"`)
+      DeckStore.logger.trace(`getById options for ID "${id}": "${JSON.stringify(options)}"`)
+    }
     const decks = await DeckStore.read<DeckDbObject[]>({
-      filter: {
-        _id: new ObjectId(id),
-      },
+      filter,
       options,
     })
     if (decks.length > 1) {
-      const message = `Multiple decks with ID "${id}" found.`
-      DeckStore.logger.error(message)
-      throw Error(message)
+      const message = `Multiple decks with ID "${id}" found`
+      DeckStore.logger.error(`${message}: "${JSON.stringify(decks)}"`)
+      throw Error(`${message}.`)
     }
     return decks && decks[0]
   }

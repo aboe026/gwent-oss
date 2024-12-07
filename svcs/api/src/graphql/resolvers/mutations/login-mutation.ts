@@ -43,7 +43,7 @@ export default class LoginMutation {
     } catch (err: unknown) {
       if (err instanceof Error && err.message === `Invalid credentials for user "${name}"`) {
         const message = `Invalid credentials for user "${name}".`
-        LoginMutation.logger.debug(`${logPrefix} failed: ${message}`)
+        LoginMutation.logger.warn(`${logPrefix} failed: ${message}`)
         // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
         return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
       }

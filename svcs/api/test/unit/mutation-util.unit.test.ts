@@ -102,15 +102,21 @@ describe('mutation-util', () => {
       })
     })
     it('returns error if more than 1 faction returned', async () => {
-      const message = `Found more than 1 faction with key "${FactionKey.ScoiaTael}".`
       await testSetGameTurnOrder({
         gameId,
         userId,
         logPrefix,
         getGameResponse: dbGame,
         factionsGetResponse: [dbFaction, dbFaction],
-        error: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
+        error: Error(`Found more than 1 faction with key "${FactionKey.ScoiaTael}".`),
+        errorCalls: [
+          [
+            `${logPrefix} failed: Found more than 1 faction with key "${FactionKey.ScoiaTael}": "${JSON.stringify([
+              dbFaction,
+              dbFaction,
+            ])}"`,
+          ],
+        ],
       })
     })
     it('returns error if faction with wrong key returned', async () => {
@@ -519,9 +525,9 @@ async function testSetGameTurnOrder({
   setOrderResponse,
   error,
   randomizeOrderCalls = [],
-  traceEnabled,
-  warnCalls = [],
   errorCalls = [],
+  warnCalls = [],
+  traceEnabled,
 }: {
   userId: string
   gameId: string
@@ -533,9 +539,9 @@ async function testSetGameTurnOrder({
   setOrderResponse?: GameDbObject | null
   error?: Error
   randomizeOrderCalls?: any[][]
-  traceEnabled?: boolean
-  warnCalls?: any[][]
   errorCalls?: any[][]
+  warnCalls?: any[][]
+  traceEnabled?: boolean
 }) {
   const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
   const getFactionsSpy = jest.spyOn(FactionStore, 'get')
@@ -563,14 +569,14 @@ async function testSetGameTurnOrder({
     resolveGameSpy.mockResolvedValue(resolvedGame)
   }
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   MutationUtil['logger'] = {
-    warn: warnSpy,
     error: errorSpy,
-    trace: traceSpy,
+    warn: warnSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   await expect(
@@ -626,8 +632,8 @@ async function testSetGameTurnOrder({
           ],
         ]
   )
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

@@ -52,7 +52,7 @@ export default class RedrawMutation {
     }
     if (!game) {
       const message = `Game with ID "${gameId}" does not exist.`
-      RedrawMutation.logger.error(`${logPrefix} failed: ${message}`)
+      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const player: GamePlayerDbObject | undefined = game.players.find(
@@ -63,22 +63,22 @@ export default class RedrawMutation {
     }
     if (!player) {
       const message = `Not a player on game "${gameId}".`
-      RedrawMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (player.ready) {
       const message = `Cannot redraw after game "${gameId}" is marked as ready.`
-      RedrawMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (!player.deck.from) {
       const message = `Cannot redraw before deck is set for game "${gameId}".`
-      RedrawMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (player.deck.redraws.length >= MAX_REDRAWS) {
       const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${gameId}".`
-      RedrawMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
@@ -88,7 +88,7 @@ export default class RedrawMutation {
     }
     if (!cardToRedraw) {
       const message = `Unit with ID "${unitId}" does not exist in hand for game "${gameId}".`
-      RedrawMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     // make sure we don't redraw card that was previously chosen for redraw

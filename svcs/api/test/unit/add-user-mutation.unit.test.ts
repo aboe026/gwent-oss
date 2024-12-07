@@ -4,7 +4,7 @@ import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import TestUtil from '../test-util'
 import UserStore from '../../src/database/stores/user-store'
 
-describe('add-use-mutation', () => {
+describe('add-user-mutation', () => {
   describe('addUser', () => {
     const name = 'james.bond@mi6.com'
     const logPrefix = `addUser for user "${name}"`
@@ -14,7 +14,7 @@ describe('add-use-mutation', () => {
         name,
         userAddResponse: Error(error),
         expected: Error(error),
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('throws error if not about user already existing', async () => {
@@ -58,7 +58,7 @@ async function testAddUser({
   expected,
   logPrefix,
   traceEnabled,
-  debugCalls = [],
+  warnCalls = [],
   errorCalls = [],
 }: {
   name?: string
@@ -67,7 +67,7 @@ async function testAddUser({
   expected?: User | Error
   logPrefix?: string
   traceEnabled?: boolean
-  debugCalls?: any[][]
+  warnCalls?: any[][]
   errorCalls?: any[][]
 }) {
   const args: MutationAddUserArgs = {
@@ -80,14 +80,14 @@ async function testAddUser({
   } else {
     addSpy.mockResolvedValue(userAddResponse)
   }
-  const traceSpy = jest.fn().mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
   AddUserMutation['logger'] = {
-    trace: traceSpy,
-    debug: debugSpy,
     error: errorSpy,
+    warn: warnSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   const promise = AddUserMutation.addUser(args, null as any)
@@ -98,8 +98,8 @@ async function testAddUser({
   }
 
   expect(addSpy.mock.calls).toEqual([[args.name, args.password]])
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

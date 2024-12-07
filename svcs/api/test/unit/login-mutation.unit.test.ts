@@ -14,7 +14,7 @@ describe('login-mutation', () => {
         name,
         userValidateResponse: Error(error),
         expected: Error(`${error}.`),
-        debugCalls: [[`${logPrefix} failed: ${error}.`]],
+        warnCalls: [[`${logPrefix} failed: ${error}.`]],
       })
     })
     it('throws error if not invalid credentials', async () => {
@@ -77,9 +77,9 @@ async function testLogin({
   error,
   expected,
   logPrefix,
-  traceEnabled,
-  debugCalls = [],
   errorCalls = [],
+  warnCalls = [],
+  traceEnabled,
   additionalTraceCalls = [],
 }: {
   name?: string
@@ -88,9 +88,9 @@ async function testLogin({
   error?: Error
   expected?: User | Error
   logPrefix?: string
-  traceEnabled?: boolean
-  debugCalls?: any[][]
   errorCalls?: any[][]
+  warnCalls?: any[][]
+  traceEnabled?: boolean
   additionalTraceCalls?: any[]
 }) {
   const args: MutationLoginArgs = {
@@ -107,11 +107,11 @@ async function testLogin({
     }
   }
   const traceSpy = jest.fn().mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   LoginMutation['logger'] = {
     trace: traceSpy,
-    debug: debugSpy,
+    warn: warnSpy,
     error: errorSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
@@ -133,8 +133,8 @@ async function testLogin({
           },
         }
   )
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   const traceCalls: string[][] = []
   if (traceEnabled) {
     traceCalls.push(

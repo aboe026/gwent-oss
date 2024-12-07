@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { Document, FindOptions, ObjectId } from 'mongodb'
 
 import { Combat, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import UnitStore, { GetUnitsInput } from '../../src/database/stores/unit-store'
@@ -101,14 +101,58 @@ describe('unit-store', () => {
           ids: [id],
         },
         expectedFilter: {
-          deckable,
           faction: {
             $in: [faction],
           },
+          deckable,
           _id: {
             $in: [id],
           },
         },
+      })
+    })
+    it('logs to debug if enabled', async () => {
+      const id = new ObjectId()
+      const faction = new ObjectId()
+      const deckable = true
+      await testGet({
+        input: {
+          deckable,
+          factionIds: [faction],
+          ids: [id],
+        },
+        expectedFilter: {
+          faction: {
+            $in: [faction],
+          },
+          deckable,
+          _id: {
+            $in: [id],
+          },
+        },
+        debugEnabled: true,
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const id = new ObjectId()
+      const faction = new ObjectId()
+      const deckable = true
+      await testGet({
+        input: {
+          deckable,
+          factionIds: [faction],
+          ids: [id],
+        },
+        expectedFilter: {
+          faction: {
+            $in: [faction],
+          },
+          deckable,
+          _id: {
+            $in: [id],
+          },
+        },
+        traceEnabled: true,
       })
     })
   })
@@ -150,8 +194,10 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   }
   const createSpy = jest.spyOn(UnitStore as any, 'create').mockResolvedValue(expected)
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   UnitStore['logger'] = {
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
@@ -197,6 +243,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
+  expect(debugSpy.mock.calls).toEqual([[`Adding unit with name "${name}"`]])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
@@ -224,9 +271,35 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
-async function testGet({ expectedFilter, input }: { expectedFilter: Object; input: GetUnitsInput }) {
+async function testGet({
+  expectedFilter,
+  input,
+  debugEnabled,
+  traceEnabled,
+}: {
+  expectedFilter: any
+  input: GetUnitsInput
+  debugEnabled?: boolean
+  traceEnabled?: boolean
+}) {
   const readSpy = jest.spyOn(UnitStore as any, 'read').mockResolvedValue([])
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  UnitStore['logger'] = {
+    isDebugEnabled: jest.fn().mockReturnValue(debugEnabled),
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+  const options: FindOptions<Document> = {
+    collation: {
+      locale: 'en',
+    },
+    sort: {
+      name: 1,
+      _id: 1,
+    },
+  }
 
   await expect(UnitStore.get(input)).resolves.toEqual([])
 
@@ -234,16 +307,18 @@ async function testGet({ expectedFilter, input }: { expectedFilter: Object; inpu
     [
       {
         filter: expectedFilter,
-        options: {
-          collation: {
-            locale: 'en', // allows for case-insensitivity
-          },
-          sort: {
-            name: 1,
-            _id: 1,
-          },
-        },
+        options,
       },
     ],
   ])
+  expect(debugSpy.mock.calls).toEqual(
+    debugEnabled
+      ? [[`Getting units with factions "${JSON.stringify(input.factionIds)}" and ids "${JSON.stringify(input.ids)}"`]]
+      : []
+  )
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [[`get filter: "${JSON.stringify(expectedFilter)}`], [`get options: "${JSON.stringify(options)}`]]
+      : []
+  )
 }

@@ -45,7 +45,7 @@ describe('redraw-mutation', () => {
             },
           ],
         ],
-        errorCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if not a player on game', async () => {
@@ -63,7 +63,7 @@ describe('redraw-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if game marked as ready', async () => {
@@ -88,7 +88,7 @@ describe('redraw-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if deck not set', async () => {
@@ -112,7 +112,7 @@ describe('redraw-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if max redraws already taken', async () => {
@@ -149,7 +149,7 @@ describe('redraw-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if unit not in hand', async () => {
@@ -176,7 +176,7 @@ describe('redraw-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if updated game undefined', async () => {
@@ -580,9 +580,9 @@ async function testRedraw({
   resolveDeckUnitCalls = [],
   getRandomSubsetCalled,
   logPrefix,
-  traceEnabled,
-  debugCalls = [],
   errorCalls = [],
+  warnCalls = [],
+  traceEnabled,
 }: {
   userId?: ObjectId
   gameId: string
@@ -596,9 +596,9 @@ async function testRedraw({
   resolveDeckUnitCalls?: any[][]
   getRandomSubsetCalled?: boolean
   logPrefix?: string
-  traceEnabled?: boolean
-  debugCalls?: any[][]
   errorCalls?: any[][]
+  warnCalls?: any[][]
+  traceEnabled?: boolean
 }) {
   const context: Context = {
     session: {},
@@ -643,14 +643,14 @@ async function testRedraw({
     resolveGameSpy.mockResolvedValue(resolvedGame)
   }
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   RedrawMutation['logger'] = {
-    debug: debugSpy,
     error: errorSpy,
-    trace: traceSpy,
+    warn: warnSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   await expect(RedrawMutation.redraw(args, context, null as any)).resolves.toEqual(expected)
@@ -687,8 +687,8 @@ async function testRedraw({
         ]
       : []
   )
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
