@@ -14,6 +14,7 @@ fixture('Game View').page(GamePage.getUrl())
 
 test('Show not authorized if invalid ID', async (t) => {
   const username = `game-view-invalid-${t.ctx.start}`
+  const gameId = 'invalid'
   await new ApiClient({}).addUser({
     name: username,
   })
@@ -21,13 +22,9 @@ test('Show not authorized if invalid ID', async (t) => {
     username,
   })
 
-  await E2eUtil.goTo(GamePage.getUrl('invalid'))
+  await E2eUtil.goTo(GamePage.getUrl(gameId))
 
-  await GamePage.verifyAuthError()
-  await GamePage.viewGames()
-  await GamesPage.verify({
-    games: [],
-  })
+  await GamePage.verifyError(`Error getting game: Game ID "${gameId}" not a valid MongoDB ObjectId.`)
 })
 
 test('Show not authorized if game does not exist', async (t) => {

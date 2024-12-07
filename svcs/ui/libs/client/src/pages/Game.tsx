@@ -487,13 +487,21 @@ function renderExistingGame({
       </div>
     </Centered>
   ) : resolvedGameError || !game ? (
-    <div className={HTML_CLASSES.ErrorText}>{`Error getting game: ${resolvedGameError}`}</div>
+    <Centered>
+      <div className={HTML_CLASSES.ErrorText}>{`Error getting game: ${resolvedGameError}`}</div>
+    </Centered>
   ) : !opponent ? (
-    <div className={HTML_CLASSES.ErrorText}>{`Error opponent from game: ${JSON.stringify(game)}`}</div>
+    <Centered>
+      <div className={HTML_CLASSES.ErrorText}>{`Error opponent from game: ${JSON.stringify(game)}`}</div>
+    </Centered>
   ) : !self ? (
-    <div className={HTML_CLASSES.ErrorText}>{`Error getting self from game: ${JSON.stringify(game)}`}</div>
+    <Centered>
+      <div className={HTML_CLASSES.ErrorText}>{`Error getting self from game: ${JSON.stringify(game)}`}</div>
+    </Centered>
   ) : resolvedGameDeckError ? (
-    <div className={HTML_CLASSES.ErrorText}>{`Error getting game deck: ${resolvedGameDeckError}`}</div>
+    <Centered>
+      <div className={HTML_CLASSES.ErrorText}>{`Error getting game deck: ${resolvedGameDeckError}`}</div>
+    </Centered>
   ) : (
     <div id={HTML_IDS.GameContainer}>
       <UnitFullCard

@@ -213,11 +213,6 @@ export type GamePlayer = {
   user: User;
 };
 
-export type GamePlayerInput = {
-  deck: Scalars['ID']['input'];
-  user: Scalars['ID']['input'];
-};
-
 export type GamePlayerUnitCounts = {
   __typename?: 'GamePlayerUnitCounts';
   discard: Scalars['Int']['output'];
@@ -567,7 +562,6 @@ export type ResolversTypes = {
   GameDeckSet: ResolverTypeWrapper<GameDeckSet>;
   GameDeckStatus: GameDeckStatus;
   GamePlayer: ResolverTypeWrapper<GamePlayer>;
-  GamePlayerInput: GamePlayerInput;
   GamePlayerUnitCounts: ResolverTypeWrapper<GamePlayerUnitCounts>;
   GameRound: ResolverTypeWrapper<GameRound>;
   GameStatus: GameStatus;
@@ -606,7 +600,6 @@ export type ResolversParentTypes = {
   GameDeck: GameDeck;
   GameDeckSet: GameDeckSet;
   GamePlayer: GamePlayer;
-  GamePlayerInput: GamePlayerInput;
   GamePlayerUnitCounts: GamePlayerUnitCounts;
   GameRound: GameRound;
   GameUnitRedrawn: GameUnitRedrawn;

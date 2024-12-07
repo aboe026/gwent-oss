@@ -213,11 +213,6 @@ export type GamePlayer = {
   user: User;
 };
 
-export type GamePlayerInput = {
-  deck: Scalars['ID']['input'];
-  user: Scalars['ID']['input'];
-};
-
 export type GamePlayerUnitCounts = {
   __typename?: 'GamePlayerUnitCounts';
   discard: Scalars['Int']['output'];
