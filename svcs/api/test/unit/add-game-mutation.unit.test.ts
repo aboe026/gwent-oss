@@ -27,7 +27,7 @@ describe('add-game-mutation', () => {
         creatorId: userId,
         opponentNames: ['test', 'test'],
         expected: Error(error),
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if creator listed with opponents', async () => {
@@ -38,7 +38,7 @@ describe('add-game-mutation', () => {
         creatorName,
         opponentNames: [creatorName, 'test'],
         expected: Error(error),
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if not enough opponents', async () => {
@@ -47,7 +47,7 @@ describe('add-game-mutation', () => {
         creatorId: userId,
         opponentNames: [],
         expected: Error(error),
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if too many opponents', async () => {
@@ -56,7 +56,7 @@ describe('add-game-mutation', () => {
         creatorId: userId,
         opponentNames: ['one', 'two'],
         expected: Error(error),
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if opponent does not exist', async () => {
@@ -67,7 +67,7 @@ describe('add-game-mutation', () => {
         opponentNames: [opponent],
         expected: Error(error),
         getByNamesCalls: [[[opponent]]],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns resolved game if opponent exists', async () => {
@@ -129,7 +129,7 @@ async function testAddGame({
   getByNamesCalls = [],
   logPrefix,
   traceEnabled,
-  debugCalls = [],
+  warnCalls = [],
   errorCalls = [],
 }: {
   creatorId?: ObjectId
@@ -142,7 +142,7 @@ async function testAddGame({
   getByNamesCalls?: any[][]
   logPrefix?: string
   traceEnabled?: boolean
-  debugCalls?: any[][]
+  warnCalls?: any[][]
   errorCalls?: any[][]
 }) {
   const user = TestUtil.getUser({
@@ -172,13 +172,13 @@ async function testAddGame({
   const addSpy = jest.spyOn(GameStore, 'add').mockResolvedValue(game)
   const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
   const errorSpy = jest.fn().mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   AddGameMutation['logger'] = {
     error: errorSpy,
-    debug: debugSpy,
-    trace: traceSpy,
+    warn: warnSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   await expect(AddGameMutation.addGame(args, context, null as any)).resolves.toEqual(expected || resolvedGame)
@@ -199,8 +199,8 @@ async function testAddGame({
         ]
       : []
   )
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

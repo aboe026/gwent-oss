@@ -14,7 +14,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the ready GraphQL Mutation.
  */
 export default class ReadyMutation {
-  private static logger = getLogger('ready-mutation')
+  private static logger = getLogger('ReadyMutation')
 
   /**
    * Mark a Game as ready for a User. Prevents redrawing units after marked as ready.
@@ -49,7 +49,7 @@ export default class ReadyMutation {
     }
     if (!game) {
       const message = `Game with ID "${gameId}" does not exist.`
-      ReadyMutation.logger.error(`${logPrefix} failed: ${message}`)
+      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const player: GamePlayerDbObject | undefined = game.players.find(
@@ -60,17 +60,17 @@ export default class ReadyMutation {
     }
     if (!player) {
       const message = `Not a player on game "${gameId}".`
-      ReadyMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (!player.deck.from) {
       const message = `Must set deck on game "${gameId}" first.`
-      ReadyMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (player.ready) {
       const message = `Game "${gameId}" already marked as ready.`
-      ReadyMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 

@@ -10,7 +10,7 @@ import UserStore from '../../../database/stores/user-store'
  * A class for executing the addUser GraphQL Mutation.
  */
 export default class AddUserMutation {
-  private static logger = getLogger('add-user-mutation')
+  private static logger = getLogger('AddUserMutation')
 
   /**
    * Add a User.
@@ -40,7 +40,7 @@ export default class AddUserMutation {
     } catch (err: unknown) {
       const alreadyExistsMessage = `User with name "${name}" already exists.`
       if (err instanceof Error && err.message === alreadyExistsMessage) {
-        AddUserMutation.logger.debug(`${logPrefix} failed: ${alreadyExistsMessage}`)
+        AddUserMutation.logger.warn(`${logPrefix} failed: ${alreadyExistsMessage}`)
         // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
         return Error(alreadyExistsMessage) as any // eslint-disable-line @typescript-eslint/no-explicit-any
       }

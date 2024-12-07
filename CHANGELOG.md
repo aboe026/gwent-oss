@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.5 - 2024-12-06
+
+### Fixed
+
+- Improve logging ([#20](https://github.com/aboe026/gwent/pull/20)) (Adam Boe)
+
 ## 0.8.4 - 2024-12-05
 
 ### Fixed

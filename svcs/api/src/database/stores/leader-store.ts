@@ -1,4 +1,4 @@
-import { Document, Filter, ObjectId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
@@ -9,7 +9,7 @@ import Store from './store'
  */
 export default class LeaderStore extends Store {
   static readonly COLLECTION_NAME = 'leaders'
-  private static logger = getLogger('leader-store')
+  private static logger = getLogger('LeaderStore')
 
   /**
    * Add a Leader to the database.
@@ -24,6 +24,7 @@ export default class LeaderStore extends Store {
    * @returns The Leader database document.
    */
   static async add({ ability, dlc, faction, image, name, quote }: AddLeaderInput): Promise<LeaderDbObject> {
+    LeaderStore.logger.debug(`Adding leader with name "${name}"`)
     const leader: Document = {
       ability,
       created: new Date(),
@@ -48,6 +49,11 @@ export default class LeaderStore extends Store {
    * @returns Leaders for Decks.
    */
   static async get({ factionIds, ids }: GetLeadersInput): Promise<LeaderDbObject[]> {
+    if (LeaderStore.logger.isDebugEnabled()) {
+      LeaderStore.logger.debug(
+        `Getting leaders by factions "${JSON.stringify(factionIds)}" and ids "${JSON.stringify(ids)}"`
+      )
+    }
     const filter: Filter<Document> = {}
     if (factionIds) {
       filter.faction = {
@@ -59,17 +65,22 @@ export default class LeaderStore extends Store {
         $in: ids.map((id) => new ObjectId(id)),
       }
     }
+    const options: FindOptions<Document> = {
+      collation: {
+        locale: 'en', // allows for case-insensitivity
+      },
+      sort: {
+        name: 1,
+        _id: 1,
+      },
+    }
+    if (LeaderStore.logger.isTraceEnabled()) {
+      LeaderStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
+      LeaderStore.logger.trace(`get options: "${JSON.stringify(options)}"`)
+    }
     return LeaderStore.read<LeaderDbObject[]>({
       filter,
-      options: {
-        collation: {
-          locale: 'en', // allows for case-insensitivity
-        },
-        sort: {
-          name: 1,
-          _id: 1,
-        },
-      },
+      options,
     })
   }
 }

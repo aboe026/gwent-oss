@@ -10,7 +10,7 @@ import env from '../env'
 export default class DbConnector {
   private static client: MongoClient
   private static connected = false
-  private static logger = getLogger('db-connector')
+  private static logger = getLogger('DbConnector')
 
   /**
    * Gets the MongoClient that has potentially been configured from initialization.

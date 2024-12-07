@@ -23,7 +23,7 @@ import { validateDeck } from '@gwent/validators'
  * A class for executing the addDeck GraphQL Mutation.
  */
 export default class AddDeckMutation {
-  private static logger = getLogger('add-deck-mutation')
+  private static logger = getLogger('AddDeckMutation')
 
   /**
    * Add a Deck for a user.
@@ -55,7 +55,7 @@ export default class AddDeckMutation {
     const unitsInput = args.units
     if (factionKey === FactionKey.Neutral) {
       const message = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
-      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const factions = await FactionStore.get({})
@@ -68,12 +68,18 @@ export default class AddDeckMutation {
     for (const faction of factions) {
       factionMap[faction._id.toString()] = faction
     }
-    const faction = factions.find((faction) => faction.key === factionKey)
-    if (!faction) {
+    const matchedFactions = factions.filter((faction) => faction.key === factionKey)
+    if (matchedFactions.length === 0) {
       const message = `Faction with key "${factionKey}" does not exist.`
-      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
+    if (matchedFactions.length > 1) {
+      const message = `Found more than 1 Faction with key "${factionKey}"`
+      AddDeckMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(matchedFactions)}"`)
+      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const faction = matchedFactions[0]
     const leaders = await LeaderStore.get({
       ids: [leaderId],
     })
@@ -82,14 +88,19 @@ export default class AddDeckMutation {
     }
     if (!leaders || leaders.length === 0) {
       const message = `Leader with ID "${leaderId}" does not exist.`
-      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (leaders.length > 1) {
+      const message = `Found more than 1 Leader with ID "${leaderId}"`
+      AddDeckMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(leaders)}"`)
+      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const leader = leaders[0]
     const leaderFaction = factionMap[leader.faction.toString()]
     if (leaderFaction.key !== factionKey) {
       const message = `Faction key "${leaderFaction.key}" for leader "${leaderId}" does not match deck faction key "${factionKey}".`
-      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const units = await UnitStore.get({
@@ -107,7 +118,7 @@ export default class AddDeckMutation {
     }
     if (errors.length > 0) {
       const message = errors.join('\n')
-      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const deckUnits = await DeckUnitResolver.fromArray({
@@ -128,13 +139,13 @@ export default class AddDeckMutation {
     })
     if (errors.length > 0) {
       const message = errors.join('\n')
-      AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     let deck: DeckDbObject
     try {
       deck = await DeckStore.add({
-        factionId: faction?._id,
+        factionId: faction._id,
         leaderId: leaderId,
         name: name,
         stats: getDeckStats(deckUnits),
@@ -149,7 +160,7 @@ export default class AddDeckMutation {
     } catch (err: unknown) {
       if (err instanceof Error && err.message === `Deck with name "${name}" already exists for user "${userId}"`) {
         const message = `Deck with name "${name}" already exists.` // exclude user ID for security
-        AddDeckMutation.logger.debug(`${logPrefix} failed: ${message}`)
+        AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
         // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
         return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
       }

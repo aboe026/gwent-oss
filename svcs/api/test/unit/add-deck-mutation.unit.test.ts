@@ -50,7 +50,7 @@ describe('add-deck-mutation', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if faction with key does not exist', async () => {
@@ -66,7 +66,33 @@ describe('add-deck-mutation', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        errorCalls: [[`${logPrefix} failed: ${error}`]],
+      })
+    })
+    it('returns error if more than 1 faction with key exists', async () => {
+      const factionKey = FactionKey.Monsters
+      const factions = [
+        TestUtil.getDbFaction({
+          key: factionKey,
+        }),
+        TestUtil.getDbFaction({
+          key: factionKey,
+        }),
+      ]
+      await testAddDeck({
+        userId,
+        factionGetResponse: factions,
+        errorReturned: `Found more than 1 Faction with key "${factionKey}".`,
+        leaderGetCalls: [],
+        unitGetCalls: [],
+        deckUnitCalls: [],
+        validateDeckCalls: [],
+        deckAddCalls: [],
+        getDeckStatsCalls: [],
+        postResolversCalled: false,
+        errorCalls: [
+          [`${logPrefix} failed: Found more than 1 Faction with key "${factionKey}": "${JSON.stringify(factions)}"`],
+        ],
       })
     })
     it('returns error if leader does not exist', async () => {
@@ -83,7 +109,26 @@ describe('add-deck-mutation', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
+      })
+    })
+    it('returns error if more than 1 leader exist', async () => {
+      const leaderId = new ObjectId()
+      const leaders = [TestUtil.getDbLeader({ id: leaderId }), TestUtil.getDbLeader({ id: leaderId })]
+      await testAddDeck({
+        userId,
+        leaderId,
+        leaderGetResponse: leaders,
+        errorReturned: `Found more than 1 Leader with ID "${leaderId}".`,
+        unitGetCalls: [],
+        deckUnitCalls: [],
+        validateDeckCalls: [],
+        deckAddCalls: [],
+        getDeckStatsCalls: [],
+        postResolversCalled: false,
+        errorCalls: [
+          [`${logPrefix} failed: Found more than 1 Leader with ID "${leaderId}": "${JSON.stringify(leaders)}"`],
+        ],
       })
     })
     it('returns error if leader is of wrong faction', async () => {
@@ -116,7 +161,7 @@ describe('add-deck-mutation', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if single unit does not exist', async () => {
@@ -132,7 +177,7 @@ describe('add-deck-mutation', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns errors if multiple units do not exist', async () => {
@@ -151,7 +196,7 @@ describe('add-deck-mutation', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if validateDeck returns single error', async () => {
@@ -163,7 +208,7 @@ describe('add-deck-mutation', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns errors if validateDeck returns multiple errors', async () => {
@@ -176,7 +221,7 @@ describe('add-deck-mutation', () => {
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: ${error1}\n${error2}`]],
+        warnCalls: [[`${logPrefix} failed: ${error1}\n${error2}`]],
       })
     })
     it('returns error if deck with name already exists', async () => {
@@ -188,7 +233,7 @@ describe('add-deck-mutation', () => {
         deckAddError: error,
         errorReturned: `Deck with name "${name}" already exists.`,
         postResolversCalled: false,
-        debugCalls: [[`${logPrefix} failed: Deck with name "${name}" already exists.`]],
+        warnCalls: [[`${logPrefix} failed: Deck with name "${name}" already exists.`]],
       })
     })
     it('throws error if addDeck throws error that is not duplicate name', async () => {
@@ -265,8 +310,8 @@ async function testAddDeck({
   getDeckStatsCalls,
   postResolversCalled = true,
   logPrefix,
-  debugCalls = [],
   errorCalls = [],
+  warnCalls = [],
 }: {
   inputArtStyle?: number | undefined | null
   expectedArtStyle?: number
@@ -293,8 +338,8 @@ async function testAddDeck({
   getDeckStatsCalls?: any[][]
   postResolversCalled?: boolean
   logPrefix?: string
-  debugCalls?: any[][]
   errorCalls?: any[][]
+  warnCalls?: any[][]
 }) {
   if (!unitIds) {
     unitIds = [new ObjectId()]
@@ -380,14 +425,16 @@ async function testAddDeck({
   const factionResolverSpy = jest.spyOn(FactionResolver, 'fromObject').mockResolvedValue(resolvedFaction)
   const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromObject').mockResolvedValue(resolvedLeader)
   const deckResolverSpy = jest.spyOn(DeckResolver, 'fromObject').mockResolvedValue(resolvedDeck)
-  const traceSpy = jest.fn().mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
   AddDeckMutation['logger'] = {
-    debug: debugSpy,
     error: errorSpy,
-    trace: traceSpy,
+    warn: warnSpy,
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   const promise = AddDeckMutation.addDeck(args, context, null as any)
@@ -501,6 +548,8 @@ async function testAddDeck({
         ]
       : []
   )
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
@@ -528,6 +577,4 @@ async function testAddDeck({
         ]
       : []
   )
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

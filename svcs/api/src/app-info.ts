@@ -5,7 +5,7 @@ import path from 'path'
 import env from './env'
 
 export default class AppInfo {
-  private static logger = getLogger('app-info')
+  private static logger = getLogger('AppInfo')
 
   /**
    * Gets the path of the file containing information about the application.

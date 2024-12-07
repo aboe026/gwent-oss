@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId, UpdateFilter } from 'mongodb'
 
 import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
@@ -42,12 +42,36 @@ describe('game-store', () => {
         expected: game,
       })
     })
+    it('calls out to read method with options', async () => {
+      const game = TestUtil.getDbGame({})
+      await testGetById({
+        id: game._id,
+        readResponse: [game],
+        expected: game,
+        options: {
+          sort: {
+            created: 1,
+            _id: 1,
+          },
+        },
+      })
+    })
     it('calls out to read method and throws error if more than 1 game exists', async () => {
       const game = TestUtil.getDbGame({})
       await testGetById({
         id: game._id,
         readResponse: [game, game],
         error: `Multiple games with ID "${game._id}" found.`,
+        errorCalls: [[`Multiple games with ID "${game._id}" found: "${JSON.stringify([game, game])}"`]],
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const game = TestUtil.getDbGame({})
+      await testGetById({
+        id: game._id,
+        readResponse: [game],
+        expected: game,
+        traceEnabled: true,
       })
     })
   })
@@ -60,6 +84,12 @@ describe('game-store', () => {
     it('calls out to read method and returns result if id ObjectId', async () => {
       await testGetByUserId({
         userId: new ObjectId(),
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      await testGetByUserId({
+        userId: new ObjectId(),
+        traceEnabled: true,
       })
     })
   })
@@ -76,7 +106,14 @@ describe('game-store', () => {
         userId: new ObjectId(),
       })
     })
-    it('logs out info if trace enabled', async () => {
+    it('logs to debug if enabled', async () => {
+      await testSetDeck({
+        gameId: new ObjectId(),
+        userId: new ObjectId(),
+        debugEnabled: true,
+      })
+    })
+    it('logs to trace if enabled', async () => {
       await testSetDeck({
         gameId: new ObjectId(),
         userId: new ObjectId(),
@@ -135,19 +172,19 @@ describe('game-store', () => {
   })
   describe('setReady', () => {
     it('calls out to update and returns result if id strings', async () => {
-      await testReady({
+      await testSetReady({
         gameId: new ObjectId().toString(),
         userId: new ObjectId().toString(),
       })
     })
     it('calls out to update and returns result if id strings', async () => {
-      await testReady({
+      await testSetReady({
         gameId: new ObjectId(),
         userId: new ObjectId(),
       })
     })
     it('logs out info if trace enabled', async () => {
-      await testReady({
+      await testSetReady({
         gameId: new ObjectId(),
         userId: new ObjectId(),
         traceEnabled: true,
@@ -185,8 +222,10 @@ async function testAddGame({
     updated: created,
     victors: [],
   }
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   GameStore['logger'] = {
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
@@ -206,75 +245,112 @@ async function testAddGame({
   } as any
   delete createExpected._id
   expect(createSpy.mock.calls).toEqual([[createExpected]])
+  expect(debugSpy.mock.calls).toEqual([[`Adding game by creator "${creatorId}"`]])
   expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`Adding game: "${JSON.stringify(createExpected)}"`]] : [])
 }
 
 async function testGetById({
   id,
+  options,
   readResponse,
   expected,
   error,
+  errorCalls = [],
+  traceEnabled,
 }: {
   id?: ObjectId
+  options?: FindOptions
   readResponse?: GameDbObject[]
   expected?: GameDbObject
   error?: string
+  errorCalls?: any[][]
+  traceEnabled?: boolean
 }) {
   if (!id) {
     id = new ObjectId()
   }
   const readSpy = jest.spyOn(GameStore as any, 'read').mockResolvedValue(readResponse)
   const errorSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
   GameStore['logger'] = {
     error: errorSpy,
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   const promise = GameStore.getById({
     id,
+    options,
   })
   if (error) {
     await expect(promise).rejects.toThrow(error)
   } else {
     await expect(promise).resolves.toEqual(expected)
   }
+  const filter: Filter<Document> = {
+    _id: id,
+  }
 
   expect(readSpy.mock.calls).toEqual([
     [
       {
-        filter: {
-          _id: id,
-        },
-        options: undefined,
+        filter,
+        options,
       },
     ],
   ])
-  expect(errorSpy.mock.calls).toEqual(error ? [[error]] : [])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(debugSpy.mock.calls).toEqual([[`Getting game by ID "${id}"`]])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [`getById filter for ID "${id}": "${JSON.stringify(filter)}"`],
+          [`getById options for ID "${id}": "${JSON.stringify(options)}"`],
+        ]
+      : []
+  )
 }
 
-async function testGetByUserId({ userId }: { userId: ObjectId | string }) {
+async function testGetByUserId({ userId, traceEnabled }: { userId: ObjectId | string; traceEnabled?: boolean }) {
   const game = TestUtil.getDbGame({})
   const readSpy = jest.spyOn(GameStore as any, 'read').mockResolvedValue([game])
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  GameStore['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+  const filter: Filter<Document> = {
+    'players.user': new ObjectId(userId),
+  }
 
   await expect(GameStore.getByUserId(userId)).resolves.toEqual([game])
 
   expect(readSpy.mock.calls).toEqual([
     [
       {
-        filter: {
-          'players.user': new ObjectId(userId),
-        },
+        filter,
       },
     ],
   ])
+  expect(debugSpy.mock.calls).toEqual([[`Getting games for userId "${userId}"`]])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled ? [[`getByUserId filter for userId "${userId}": "${JSON.stringify(filter)}"`]] : []
+  )
 }
 
 async function testSetDeck({
   gameId,
   userId,
+  debugEnabled,
   traceEnabled,
 }: {
   gameId: string | ObjectId
   userId: string | ObjectId
+  debugEnabled?: boolean
   traceEnabled?: boolean
 }) {
   const deck = TestUtil.getDbDeck({
@@ -295,13 +371,29 @@ async function testSetDeck({
     return player
   })
   const updated = new Date()
+  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => updated)
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   GameStore['logger'] = {
+    isDebugEnabled: jest.fn().mockReturnValue(debugEnabled),
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
-  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => updated)
   const updateSpy = jest.spyOn(GameStore as any, 'update').mockResolvedValue(updatedGame)
+  const filter: Filter<Document> = {
+    _id: new ObjectId(gameId),
+    'players.user': new ObjectId(userId),
+    'players.deck.from': null,
+  }
+  const update: UpdateFilter<Document> = {
+    $set: {
+      updated,
+      'players.$.deck.from': deck,
+      'players.$.deck.hand': hand,
+      'players.$.deck.undrawn': undrawn,
+    },
+  }
 
   await expect(
     GameStore.setDeck({
@@ -316,27 +408,30 @@ async function testSetDeck({
   expect(updateSpy.mock.calls).toEqual([
     [
       {
-        filter: {
-          _id: new ObjectId(gameId),
-          'players.user': new ObjectId(userId),
-          'players.deck.from': null,
-        },
-        update: {
-          $set: {
-            updated,
-            'players.$.deck.from': deck,
-            'players.$.deck.hand': hand,
-            'players.$.deck.undrawn': undrawn,
-          },
-        },
+        filter,
+        update,
         verifyExistence: false,
       },
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
+  expect(debugSpy.mock.calls).toEqual(
+    debugEnabled
+      ? [
+          [
+            `Setting deck to "${deck._id}" on game "${gameId}" for user "${userId}" with hand "${JSON.stringify(
+              hand.map((deckUnit) => deckUnit.unit.id)
+            )}"`,
+          ],
+        ]
+      : []
+  )
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
-      ? [[`Setting deck to "${deck._id}" on game "${gameId}" for user "${userId}" with hand "${JSON.stringify(hand)}"`]]
+      ? [
+          [`setDeck for game "${gameId}" and user "${userId}" filter: "${JSON.stringify(filter)}"`],
+          [`setDeck for game "${gameId}" and user "${userId}" update: "${JSON.stringify(update)}"`],
+        ]
       : []
   )
 }
@@ -411,9 +506,9 @@ async function testSetOrder({
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
-          [`setOrder filter: "${JSON.stringify(filter)}"`],
-          [`setOrder update: "${JSON.stringify(update)}"`],
-          [`setOrder arrayFilters: "${JSON.stringify(arrayFilters)}"`],
+          [`setOrder for game "${gameId}" filter: "${JSON.stringify(filter)}"`],
+          [`setOrder for game "${gameId}" update: "${JSON.stringify(update)}"`],
+          [`setOrder for game "${gameId}" arrayFilters: "${JSON.stringify(arrayFilters)}"`],
         ]
       : []
   )
@@ -476,13 +571,29 @@ async function testRedraw({
     return player
   })
   const updated = new Date()
+  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => updated)
+  const updateSpy = jest.spyOn(GameStore as any, 'update').mockResolvedValue(updatedGame)
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   GameStore['logger'] = {
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
-  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => updated)
-  const updateSpy = jest.spyOn(GameStore as any, 'update').mockResolvedValue(updatedGame)
+  const filter: Filter<Document> = {
+    _id: new ObjectId(gameId),
+    'players.user': new ObjectId(userId),
+    'players.ready': false,
+    'players.deck.redraws': currentRedraws,
+  }
+  const update: UpdateFilter<Document> = {
+    $set: {
+      updated,
+      'players.$.deck.hand': newHand,
+      'players.$.deck.undrawn': newUndrawn,
+      'players.$.deck.redraws': newRedraws,
+    },
+  }
 
   await expect(
     GameStore.redraw({
@@ -498,33 +609,27 @@ async function testRedraw({
   expect(updateSpy.mock.calls).toEqual([
     [
       {
-        filter: {
-          _id: new ObjectId(gameId),
-          'players.user': new ObjectId(userId),
-          'players.ready': false,
-          'players.deck.redraws': currentRedraws,
-        },
-        update: {
-          $set: {
-            updated,
-            'players.$.deck.hand': newHand,
-            'players.$.deck.undrawn': newUndrawn,
-            'players.$.deck.redraws': newRedraws,
-          },
-        },
+        filter,
+        update,
         verifyExistence: false,
       },
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
+  expect(debugSpy.mock.calls).toEqual([
+    [`Redrawing unit from "${from.unit}" to "${to.unit}" on game "${gameId}" for user "${userId}"`],
+  ])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
-      ? [[`Redrawing unit from "${from.unit}" to "${to.unit}" on game "${gameId}" for user "${userId}"`]]
+      ? [
+          [`redraw for game "${gameId}" by user "${userId}" filter: "${JSON.stringify(filter)}"`],
+          [`redraw for game "${gameId}" by user "${userId}" update: "${JSON.stringify(update)}"`],
+        ]
       : []
   )
 }
 
-async function testReady({
+async function testSetReady({
   gameId,
   userId,
   traceEnabled,
@@ -550,13 +655,26 @@ async function testReady({
     return player
   })
   const updated = new Date()
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   GameStore['logger'] = {
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => updated)
   const updateSpy = jest.spyOn(GameStore as any, 'update').mockResolvedValue(updatedGame)
+  const filter: Filter<Document> = {
+    _id: new ObjectId(gameId),
+    'players.user': new ObjectId(userId),
+    'players.ready': false,
+  }
+  const update: UpdateFilter<Document> = {
+    $set: {
+      updated,
+      'players.$.ready': true,
+    },
+  }
 
   await expect(
     GameStore.setReady({
@@ -568,21 +686,20 @@ async function testReady({
   expect(updateSpy.mock.calls).toEqual([
     [
       {
-        filter: {
-          _id: new ObjectId(gameId),
-          'players.user': new ObjectId(userId),
-          'players.ready': false,
-        },
-        update: {
-          $set: {
-            updated,
-            'players.$.ready': true,
-          },
-        },
+        filter,
+        update,
         verifyExistence: false,
       },
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
-  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`Marking game "${gameId}" ready for user "${userId}"`]] : [])
+  expect(debugSpy.mock.calls).toEqual([[`Marking game "${gameId}" ready for user "${userId}"`]])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [`ready for game "${gameId}" by user "${userId}" filter: "${JSON.stringify(filter)}"`],
+          [`ready for game "${gameId}" by user "${userId}" update: "${JSON.stringify(update)}"`],
+        ]
+      : []
+  )
 }

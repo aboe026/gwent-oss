@@ -12,7 +12,7 @@ export default class DbUpgrader {
   private static LOCK_TIMEOUT_SECONDS = 30
   private static LOCK_REFRESH_SECONDS = 1
   private static running = false
-  private static logger = getLogger('upgrader')
+  private static logger = getLogger('DbUpgrader')
 
   /**
    * Get all upgrade functions that have been defined for the application.

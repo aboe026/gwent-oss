@@ -16,7 +16,7 @@ describe('deck-store', () => {
         userId,
         error: Error(error),
         isMongoError: true,
-        errorCalls: [[error]],
+        warnCalls: [[error]],
       })
     })
     it('throws error if not duplicate', async () => {
@@ -63,21 +63,35 @@ describe('deck-store', () => {
         ],
       })
     })
+    it('logs to trace if enabled', async () => {
+      const userId = new ObjectId()
+      await testGet({
+        userId,
+        deckReadResponse: [
+          TestUtil.getDbDeck({
+            user: userId,
+          }),
+        ],
+        traceEnabled: true,
+      })
+    })
   })
   describe('getById', () => {
     it('throws error if multiple decks found', async () => {
       const deckId = new ObjectId()
+      const decks: DeckDbObject[] = [
+        TestUtil.getDbDeck({
+          id: deckId,
+        }),
+        TestUtil.getDbDeck({
+          id: deckId,
+        }),
+      ]
       await testGetById({
         id: deckId,
-        deckReadResponse: [
-          TestUtil.getDbDeck({
-            id: deckId,
-          }),
-          TestUtil.getDbDeck({
-            id: deckId,
-          }),
-        ],
+        deckReadResponse: decks,
         expected: Error(`Multiple decks with ID "${deckId}" found.`),
+        errorCalls: [[`Multiple decks with ID "${deckId}" found: "${JSON.stringify(decks)}"`]],
       })
     })
     it('returns undefined if deck not found', async () => {
@@ -102,6 +116,15 @@ describe('deck-store', () => {
         expected: deck,
       })
     })
+    it('logs to trace if enabled', async () => {
+      const deck = TestUtil.getDbDeck({})
+      await testGetById({
+        id: deck._id.toString(),
+        deckReadResponse: [deck],
+        expected: deck,
+        traceEnabled: true,
+      })
+    })
   })
 })
 
@@ -111,6 +134,7 @@ async function testAdd({
   error,
   traceEnabled,
   isMongoError = false,
+  warnCalls = [],
   errorCalls = [],
 }: {
   name?: string
@@ -118,6 +142,7 @@ async function testAdd({
   error?: Error
   traceEnabled?: boolean
   isMongoError?: boolean
+  warnCalls?: (string | Error)[][]
   errorCalls?: (string | Error)[][]
 }) {
   const deck = TestUtil.getDbDeck({
@@ -137,12 +162,16 @@ async function testAdd({
     createSpy.mockResolvedValue(deck)
   }
   const isMongoErrorSpy = jest.spyOn(DeckStore, 'isMongoError').mockReturnValue(isMongoError)
-  const traceSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
   DeckStore['logger'] = {
+    error: errorSpy,
+    warn: warnSpy,
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
-    error: errorSpy,
   } as any
 
   const promise = DeckStore.add({
@@ -190,6 +219,9 @@ async function testAdd({
         ]
       : []
   )
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
+  expect(debugSpy.mock.calls).toEqual([[`Adding deck named "${name}" for user "${userId}"`]])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
@@ -207,17 +239,25 @@ async function testAdd({
         ]
       : []
   )
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
 
 async function testGet({
   userId,
   deckReadResponse = [],
+  traceEnabled,
 }: {
   userId: string | ObjectId
   deckReadResponse?: DeckDbObject[]
+  traceEnabled?: boolean
 }) {
   const readSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue(deckReadResponse)
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  DeckStore['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
 
   await expect(DeckStore.get(userId)).resolves.toEqual(deckReadResponse)
 
@@ -230,6 +270,18 @@ async function testGet({
       },
     ],
   ])
+  expect(debugSpy.mock.calls).toEqual([[`Getting decks for user "${userId}"`]])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [
+            `get filter: "${JSON.stringify({
+              user: new ObjectId(userId),
+            })}"`,
+          ],
+        ]
+      : []
+  )
 }
 
 async function testGetById({
@@ -237,13 +289,26 @@ async function testGetById({
   options,
   deckReadResponse = [],
   expected,
+  errorCalls = [],
+  traceEnabled,
 }: {
   id?: ObjectId | string
   options?: FindOptions
   deckReadResponse?: DeckDbObject[]
   expected: Error | DeckDbObject | undefined
+  errorCalls?: any[][]
+  traceEnabled?: boolean
 }) {
   const deckReadSpy = jest.spyOn(DeckStore as any, 'read').mockResolvedValue(deckReadResponse)
+  const errorSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  DeckStore['logger'] = {
+    error: errorSpy,
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
 
   const promise = DeckStore.getById({
     id,
@@ -265,4 +330,18 @@ async function testGetById({
       },
     ],
   ])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(debugSpy.mock.calls).toEqual([[`Getting deck with ID "${id}"`]])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [
+            `getById filter for ID "${id}": "${JSON.stringify({
+              _id: new ObjectId(id),
+            })}"`,
+          ],
+          [`getById options for ID "${id}": "${JSON.stringify(undefined)}"`],
+        ]
+      : []
+  )
 }

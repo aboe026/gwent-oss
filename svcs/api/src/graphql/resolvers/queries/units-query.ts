@@ -13,7 +13,7 @@ import UnitStore from '../../../database/stores/unit-store'
  * A class for executing the units GraphQL Query.
  */
 export default class UnitsQuery {
-  private static logger = getLogger('units-query')
+  private static logger = getLogger('UnitsQuery')
 
   /**
    * Gets all Units a user can build a Deck with.

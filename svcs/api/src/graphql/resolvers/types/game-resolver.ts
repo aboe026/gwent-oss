@@ -13,7 +13,7 @@ import Verifier from '../../../util/verifier'
  * A class to convert Game database objects to their GraphQL equivalent.
  */
 export default class GameResolver {
-  private static logger = getLogger('game-resolver')
+  private static logger = getLogger('GameResolver')
 
   /**
    * Converts a single Game database object to a single Game GraphQL object.

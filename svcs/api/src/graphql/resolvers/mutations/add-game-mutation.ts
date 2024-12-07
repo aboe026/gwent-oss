@@ -16,7 +16,7 @@ import UserStore from '../../../database/stores/user-store'
  * A class for executing the addGame GraphQL Mutation.
  */
 export default class AddGameMutation {
-  private static logger = getLogger('add-game-mutation')
+  private static logger = getLogger('AddGameMutation')
 
   /**
    * Add a Game for a user.
@@ -48,26 +48,26 @@ export default class AddGameMutation {
     const duplicateNames = getDuplicateItems(opponentNames)
     if (duplicateNames.length > 0) {
       const message = `Invalid opponents: names ${JSON.stringify(duplicateNames)} are duplicates.`
-      AddGameMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (opponentNames.includes(creatorName)) {
       const message = 'Invalid opponents: cannot include self.'
-      AddGameMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (opponentNames.length < PLAYER_COUNTS.Min - 1) {
       const message = `Not enough opponents for game at "${opponentNames.length}", minimum is "${
         PLAYER_COUNTS.Min - 1
       }".`
-      AddGameMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (opponentNames.length > PLAYER_COUNTS.Max - 1) {
       const message = `Excessive opponents for game at "${opponentNames.length}", maximum is "${
         PLAYER_COUNTS.Max - 1
       }".`
-      AddGameMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const opponents = await UserStore.getByNames(opponentNames)
@@ -86,7 +86,7 @@ export default class AddGameMutation {
     }
     if (errors.length > 0) {
       const message = `${errors.join(',')}.`
-      AddGameMutation.logger.debug(`${logPrefix} failed: ${message}`)
+      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (AddGameMutation.logger.isTraceEnabled()) {

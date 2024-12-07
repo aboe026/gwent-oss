@@ -11,7 +11,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the game GraphQL Query.
  */
 export default class GameQuery {
-  private static logger = getLogger('game-query')
+  private static logger = getLogger('GameQuery')
 
   /**
    * Gets a specific Game by ID.

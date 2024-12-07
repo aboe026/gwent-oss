@@ -13,7 +13,7 @@ import Verifier from '../../../util/verifier'
  * A class to convert Leader database objects to their GraphQL equivalent.
  */
 export default class LeaderResolver {
-  private static logger = getLogger('leader-resolver')
+  private static logger = getLogger('LeaderResolver')
 
   /**
    * Converts a single Leader database object to a single Leader GraphQL object.

@@ -11,7 +11,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the factions GraphQL Query.
  */
 export default class FactionsQuery {
-  private static logger = getLogger('factions-query')
+  private static logger = getLogger('FactionsQuery')
 
   /**
    * Gets all Factions available.

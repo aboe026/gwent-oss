@@ -25,7 +25,7 @@ import Verifier from '../../../util/verifier'
  * A class to convert Unit database objects to their GraphQL equivalent.
  */
 export default class UnitResolver {
-  private static logger = getLogger('unit-resolver')
+  private static logger = getLogger('UnitResolver')
 
   /**
    * Converts a single Unit database object to a single Unit GraphQL object.

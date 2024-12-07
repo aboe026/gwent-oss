@@ -11,7 +11,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the setOrder GraphQL Mutation.
  */
 export default class SetOrderMutation {
-  private static logger = getLogger('set-order-mutation')
+  private static logger = getLogger('SetOrderMutation')
 
   /**
    * Set the player turn order for a Game.

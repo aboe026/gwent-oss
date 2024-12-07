@@ -1,4 +1,4 @@
-import { Document, Filter, ObjectId } from 'mongodb'
+import { Document, Filter, ObjectId, UpdateFilter } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { FactionDbObject, FactionKey, UnitStats } from '@gwent/graphql-schema/database-typings'
@@ -9,7 +9,7 @@ import Store from './store'
  */
 export default class FactionStore extends Store {
   static readonly COLLECTION_NAME = 'factions'
-  private static logger = getLogger('faction-store')
+  private static logger = getLogger('FactionStore')
 
   /**
    * Adds a Faction to the database.
@@ -23,6 +23,7 @@ export default class FactionStore extends Store {
    * @returns The Faction database document.
    */
   static async add({ ability, dlc, image, key, name }: AddFactionInput): Promise<FactionDbObject> {
+    FactionStore.logger.debug(`Adding faction with name "${name}"`)
     const faction: Document = {
       ability,
       created: new Date(),
@@ -45,16 +46,23 @@ export default class FactionStore extends Store {
    * @param options.stats The new stats to replace on the faction.
    * @returns The updated faction database document.
    */
-  static async edit({ id, stats }: { id: string | ObjectId; stats: UnitStats }): Promise<FactionDbObject> {
+  static async edit({ id, stats }: EditFactionInput): Promise<FactionDbObject> {
+    FactionStore.logger.debug(`Editing faction with id "${id}"`)
+    const filter: Filter<Document> = {
+      _id: new ObjectId(id),
+    }
+    const update: UpdateFilter<Document> = {
+      $set: {
+        stats,
+      },
+    }
+    if (FactionStore.logger.isTraceEnabled()) {
+      FactionStore.logger.trace(`edit filter for ID "${id}": "${JSON.stringify(filter)}"`)
+      FactionStore.logger.trace(`edit update for ID "${id}": "${JSON.stringify(update)}"`)
+    }
     return FactionStore.update({
-      filter: {
-        _id: new ObjectId(id),
-      },
-      update: {
-        $set: {
-          stats,
-        },
-      },
+      filter,
+      update,
     })
   }
 
@@ -67,6 +75,9 @@ export default class FactionStore extends Store {
    * @returns Factions for resources.
    */
   static async get({ ids, keys }: GetFactionsInput): Promise<FactionDbObject[]> {
+    if (FactionStore.logger.isDebugEnabled()) {
+      FactionStore.logger.debug(`Getting faction with ids "${JSON.stringify(ids)}" and keys "${JSON.stringify(keys)}"`)
+    }
     const filter: Filter<Document> = {}
     if (ids) {
       filter._id = {
@@ -78,6 +89,9 @@ export default class FactionStore extends Store {
         $in: keys,
       }
     }
+    if (FactionStore.logger.isTraceEnabled()) {
+      FactionStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
+    }
     return FactionStore.read<FactionDbObject[]>({ filter })
   }
 }
@@ -88,6 +102,11 @@ export interface AddFactionInput {
   image: string
   key: FactionKey
   name: string
+}
+
+export interface EditFactionInput {
+  id: string | ObjectId
+  stats: UnitStats
 }
 
 export interface GetFactionsInput {

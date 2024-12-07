@@ -62,7 +62,7 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        errorCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if game does not exist', async () => {
@@ -87,7 +87,7 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        errorCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if not a player on game', async () => {
@@ -116,7 +116,7 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if deck is already set', async () => {
@@ -152,7 +152,7 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} failed: ${error}`]],
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if updated game is undefined', async () => {
@@ -512,9 +512,9 @@ async function testSetDeck({
   publishCalls = [],
   setOrderCalls = [],
   logPrefix,
-  traceEnabled,
-  debugCalls = [],
   errorCalls = [],
+  warnCalls = [],
+  traceEnabled,
 }: {
   userId?: ObjectId
   gameId: string
@@ -533,9 +533,9 @@ async function testSetDeck({
   publishCalls?: any[][]
   setOrderCalls?: any[][]
   logPrefix?: string
-  traceEnabled?: boolean
-  debugCalls?: any[][]
   errorCalls?: any[][]
+  warnCalls?: any[][]
+  traceEnabled?: boolean
 }) {
   const context: Context = {
     session: {},
@@ -570,14 +570,14 @@ async function testSetDeck({
   }
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const setOrderSpy = jest.spyOn(MutationUtil, 'setGameTurnOrder').mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   SetDeckMutation['logger'] = {
-    debug: debugSpy,
     error: errorSpy,
-    trace: traceSpy,
+    warn: warnSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   await expect(SetDeckMutation.setDeck(args, context, null as any)).resolves.toEqual(expected)
@@ -600,8 +600,8 @@ async function testSetDeck({
   )
   expect(publishSpy.mock.calls).toEqual(publishCalls)
   expect(setOrderSpy.mock.calls).toEqual(setOrderCalls)
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

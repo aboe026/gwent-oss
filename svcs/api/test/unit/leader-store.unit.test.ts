@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { Document, FindOptions, ObjectId } from 'mongodb'
 
 import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
 import LeaderStore, { GetLeadersInput } from '../../src/database/stores/leader-store'
@@ -69,13 +69,51 @@ describe('leader-store', () => {
           factionIds: [faction],
         },
         expectedFilter: {
-          _id: {
-            $in: [id],
-          },
           faction: {
             $in: [faction],
           },
+          _id: {
+            $in: [id],
+          },
         },
+      })
+    })
+    it('logs to debug if enabled', async () => {
+      const id = new ObjectId()
+      const faction = new ObjectId()
+      await testGet({
+        input: {
+          ids: [id],
+          factionIds: [faction],
+        },
+        expectedFilter: {
+          faction: {
+            $in: [faction],
+          },
+          _id: {
+            $in: [id],
+          },
+        },
+        debugEnabled: true,
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const id = new ObjectId()
+      const faction = new ObjectId()
+      await testGet({
+        input: {
+          ids: [id],
+          factionIds: [faction],
+        },
+        expectedFilter: {
+          faction: {
+            $in: [faction],
+          },
+          _id: {
+            $in: [id],
+          },
+        },
+        traceEnabled: true,
       })
     })
   })
@@ -101,8 +139,10 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   }
   const createSpy = jest.spyOn(LeaderStore as any, 'create').mockResolvedValue(expected)
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   LeaderStore['logger'] = {
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
@@ -132,14 +172,41 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
     ],
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
+  expect(debugSpy.mock.calls).toEqual([[`Adding leader with name "${name}"`]])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled ? [[`Adding leader: "${JSON.stringify({ ability, created, dlc, faction, image, name, quote })}"`]] : []
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
-async function testGet({ expectedFilter, input }: { expectedFilter: Object; input: GetLeadersInput }) {
+async function testGet({
+  expectedFilter,
+  input,
+  debugEnabled,
+  traceEnabled,
+}: {
+  expectedFilter: any
+  input: GetLeadersInput
+  debugEnabled?: boolean
+  traceEnabled?: boolean
+}) {
   const readSpy = jest.spyOn(LeaderStore as any, 'read').mockResolvedValue([])
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  LeaderStore['logger'] = {
+    isDebugEnabled: jest.fn().mockReturnValue(debugEnabled),
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+  const options: FindOptions<Document> = {
+    collation: {
+      locale: 'en',
+    },
+    sort: {
+      name: 1,
+      _id: 1,
+    },
+  }
 
   await expect(LeaderStore.get(input)).resolves.toEqual([])
 
@@ -147,16 +214,18 @@ async function testGet({ expectedFilter, input }: { expectedFilter: Object; inpu
     [
       {
         filter: expectedFilter,
-        options: {
-          collation: {
-            locale: 'en',
-          },
-          sort: {
-            name: 1,
-            _id: 1,
-          },
-        },
+        options,
       },
     ],
   ])
+  expect(debugSpy.mock.calls).toEqual(
+    debugEnabled
+      ? [[`Getting leaders by factions "${JSON.stringify(input.factionIds)}" and ids "${JSON.stringify(input.ids)}"`]]
+      : []
+  )
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [[`get filter: "${JSON.stringify(expectedFilter)}"`], [`get options: "${JSON.stringify(options)}"`]]
+      : []
+  )
 }

@@ -9,7 +9,7 @@ import Store from './store'
  */
 export default class DlcStore extends Store {
   static readonly COLLECTION_NAME = 'dlcs'
-  private static logger = getLogger('dlc-store')
+  private static logger = getLogger('DlcStore')
 
   /**
    * Adds a DLC to the database.
@@ -21,6 +21,7 @@ export default class DlcStore extends Store {
    * @returns The DLC database document.
    */
   static async add({ image, key, name }: AddDlcInput): Promise<DlcDbObject> {
+    DlcStore.logger.debug(`Adding DLC with name "${name}"`)
     const dlc: Document = {
       created: new Date(),
       image,
@@ -42,6 +43,9 @@ export default class DlcStore extends Store {
    * @returns DCLs for resources.
    */
   static async get({ ids, keys }: GetDlcsInput): Promise<DlcDbObject[]> {
+    if (DlcStore.logger.isDebugEnabled()) {
+      DlcStore.logger.debug(`Getting by ids "${JSON.stringify(ids)}" and keys "${JSON.stringify(keys)}"`)
+    }
     const filter: Filter<Document> = {}
     if (ids) {
       filter._id = {
@@ -52,6 +56,9 @@ export default class DlcStore extends Store {
       filter.key = {
         $in: keys,
       }
+    }
+    if (DlcStore.logger.isTraceEnabled()) {
+      DlcStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
     }
     return DlcStore.read<DlcDbObject[]>({ filter })
   }

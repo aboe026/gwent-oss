@@ -13,7 +13,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the leaders GraphQL Query.
  */
 export default class LeadersQuery {
-  private static logger = getLogger('leaders-query')
+  private static logger = getLogger('LeadersQuery')
 
   /**
    * Gets Leaders available to build Decks with.

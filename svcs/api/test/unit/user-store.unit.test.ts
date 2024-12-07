@@ -1,4 +1,4 @@
-import { ObjectId } from 'mongodb'
+import { Document, Filter, FindOptions, ObjectId } from 'mongodb'
 
 import PasswordHasher from '../../src/util/password-hasher'
 import TestUtil from '../test-util'
@@ -18,7 +18,7 @@ describe('user-store', () => {
         createError: Error('Duplicate user'),
         isMongoError: true,
         error: error,
-        errorCalls: [[error]],
+        warnCalls: [[error]],
       })
     })
     it('logs and throws error not related to duplicate user', async () => {
@@ -34,17 +34,30 @@ describe('user-store', () => {
   describe('getById', () => {
     it('throws error if getByIds response multiple', async () => {
       const id = new ObjectId()
+      const users = [
+        TestUtil.getDbUser({
+          id,
+        }),
+        TestUtil.getDbUser({
+          id,
+        }),
+      ]
       await testGetById({
         id,
-        getByIdResponse: [
-          TestUtil.getDbUser({
-            id,
-          }),
-          TestUtil.getDbUser({
-            id,
-          }),
-        ],
+        getByIdResponse: users,
         error: `Multiple users with ID "${id}" found.`,
+        errorCalls: [
+          [
+            `Multiple users with ID "${id}" found: "${JSON.stringify(
+              users.map((user) => {
+                return {
+                  ...user,
+                  password: '',
+                }
+              })
+            )}"`,
+          ],
+        ],
       })
     })
     it('returns undefined if getByIds response empty', async () => {
@@ -93,6 +106,30 @@ describe('user-store', () => {
         ],
       })
     })
+    it('logs to debug if enabled', async () => {
+      const id = new ObjectId()
+      await testGetByIds({
+        ids: [id.toString()],
+        readResponse: [
+          TestUtil.getDbUser({
+            id,
+          }),
+        ],
+        debugEnabled: true,
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const id = new ObjectId()
+      await testGetByIds({
+        ids: [id.toString()],
+        readResponse: [
+          TestUtil.getDbUser({
+            id,
+          }),
+        ],
+        traceEnabled: true,
+      })
+    })
   })
   describe('getByNames', () => {
     it('returns empty array if user does not exist', async () => {
@@ -111,6 +148,47 @@ describe('user-store', () => {
         ],
       })
     })
+    it('returns using options if passed', async () => {
+      const name = 'user-name'
+      await testGetByNames({
+        name,
+        options: {
+          sort: {
+            name: 1,
+            _id: 1,
+          },
+        },
+        readResponse: [
+          TestUtil.getDbUser({
+            name,
+          }),
+        ],
+      })
+    })
+    it('logs to debug if enabled', async () => {
+      const name = 'user-name'
+      await testGetByNames({
+        name,
+        readResponse: [
+          TestUtil.getDbUser({
+            name,
+          }),
+        ],
+        debugEnabled: true,
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const name = 'user-name'
+      await testGetByNames({
+        name,
+        readResponse: [
+          TestUtil.getDbUser({
+            name,
+          }),
+        ],
+        traceEnabled: true,
+      })
+    })
   })
   describe('validate', () => {
     it('throws error if user does not exist', async () => {
@@ -119,7 +197,7 @@ describe('user-store', () => {
         username,
         users: [],
         error: `Invalid credentials for user "${username}"`,
-        debugCalls: [[`User with name "${username}" does not exist.`]],
+        warnCalls: [[`User with name "${username}" does not exist.`]],
       })
     })
     it('throws error if more than one user exists', async () => {
@@ -132,12 +210,11 @@ describe('user-store', () => {
           name: username,
         }),
       ]
-      const error = `More than 1 user exists with name "${username}": "${JSON.stringify(users)}".`
       await testValidate({
         username,
         users,
-        error: error,
-        errorCalls: [[error]],
+        error: `More than 1 user exists with name "${username}".`,
+        errorCalls: [[`More than 1 user exists with name "${username}": "${JSON.stringify(users)}"`]],
       })
     })
     it('throws error password does not match hash', async () => {
@@ -152,7 +229,7 @@ describe('user-store', () => {
         ],
         match: false,
         error: `Invalid credentials for user "${username}"`,
-        debugCalls: [[`User "${username}" entered incorrect password`]],
+        warnCalls: [[`User "${username}" entered incorrect password.`]],
       })
     })
     it('returns user if password matches hash', async () => {
@@ -178,6 +255,30 @@ describe('user-store', () => {
         },
       })
     })
+    it('logs to trace if enabled', async () => {
+      const username = 'username'
+      const _id = new ObjectId()
+      const created = new Date()
+      await testValidate({
+        username,
+        users: [
+          {
+            _id,
+            name: username,
+            password: 'hashedPassword',
+            created,
+          },
+        ],
+        match: true,
+        expected: {
+          _id,
+          name: username,
+          created,
+          password: '',
+        },
+        traceEnabled: true,
+      })
+    })
   })
 })
 
@@ -188,6 +289,7 @@ async function testAddUser({
   isMongoError,
   error,
   errorCalls = [],
+  warnCalls = [],
 }: {
   username?: string
   password?: string
@@ -195,6 +297,7 @@ async function testAddUser({
   isMongoError?: boolean
   error?: string
   errorCalls?: (string | Error)[][]
+  warnCalls?: (string | Error)[][]
 }) {
   const hashedPassword = 'hashedPassword'
   const _id = new ObjectId()
@@ -216,10 +319,12 @@ async function testAddUser({
       password: hashedPassword,
     })
   }
-  const traceSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
   UserStore['logger'] = {
-    trace: traceSpy,
+    debug: debugSpy,
+    warn: warnSpy,
     error: errorSpy,
   } as any
 
@@ -257,23 +362,28 @@ async function testAddUser({
         ]
       : []
   )
-  expect(traceSpy.mock.calls).toEqual([[`Adding user "${username}"`]])
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(dateSpy.mock.calls).toEqual([[]])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
+  expect(debugSpy.mock.calls).toEqual([[`Adding user with name "${username}"`]])
 }
 
 async function testGetById({
   id = new ObjectId(),
   error,
   getByIdResponse,
+  errorCalls = [],
 }: {
   id?: string | ObjectId
   getByIdResponse: UserDbObject[]
   error?: string
+  errorCalls?: any[][]
 }) {
   const errorSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
   UserStore['logger'] = {
     error: errorSpy,
+    debug: debugSpy,
   } as any
   const getByIdsSpy = jest.spyOn(UserStore, 'getByIds').mockResolvedValue(getByIdResponse)
 
@@ -285,15 +395,35 @@ async function testGetById({
   }
 
   expect(getByIdsSpy.mock.calls).toEqual([[[id]]])
-  expect(errorSpy.mock.calls).toEqual(error ? [[error]] : [])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(debugSpy.mock.calls).toEqual([[`Getting user by id "${id}"`]])
 }
 
-async function testGetByIds({ ids, readResponse }: { ids: (string | ObjectId)[]; readResponse: UserDbObject[] }) {
+async function testGetByIds({
+  ids,
+  readResponse,
+  debugEnabled,
+  traceEnabled,
+}: {
+  ids: (string | ObjectId)[]
+  readResponse: UserDbObject[]
+  debugEnabled?: boolean
+  traceEnabled?: boolean
+}) {
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   UserStore['logger'] = {
+    isDebugEnabled: jest.fn().mockReturnValue(debugEnabled),
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
   const getByIdsSpy = jest.spyOn(UserStore as any, 'read').mockResolvedValue(readResponse)
+  const filter: Filter<Document> = {
+    _id: {
+      $in: ids.map((id) => new ObjectId(id)),
+    },
+  }
 
   await expect(UserStore.getByIds(ids)).resolves.toEqual(
     readResponse.map((user) => {
@@ -307,26 +437,43 @@ async function testGetByIds({ ids, readResponse }: { ids: (string | ObjectId)[];
   expect(getByIdsSpy.mock.calls).toEqual([
     [
       {
-        filter: {
-          _id: {
-            $in: ids.map((id) => new ObjectId(id)),
-          },
-        },
+        filter,
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual([[`Getting users with IDs "${JSON.stringify(ids)}"`]])
+  expect(debugSpy.mock.calls).toEqual(debugEnabled ? [[`Getting users with IDs "${JSON.stringify(ids)}"`]] : [])
+  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`getByIds filter: "${JSON.stringify(filter)}`]] : [])
 }
 
-async function testGetByNames({ name = 'user-name', readResponse }: { name?: string; readResponse: UserDbObject[] }) {
+async function testGetByNames({
+  name = 'user-name',
+  options,
+  readResponse,
+  debugEnabled,
+  traceEnabled,
+}: {
+  name?: string
+  options?: FindOptions<Document>
+  readResponse: UserDbObject[]
+  debugEnabled?: boolean
+  traceEnabled?: boolean
+}) {
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   UserStore['logger'] = {
-    isTraceEnabled: jest.fn().mockReturnValue(true),
+    isDebugEnabled: jest.fn().mockReturnValue(debugEnabled),
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
   const readSpy = jest.spyOn(UserStore as any, 'read').mockResolvedValue(readResponse)
+  const filter: Filter<Document> = {
+    name: {
+      $in: [name],
+    },
+  }
 
-  await expect(UserStore.getByNames([name])).resolves.toEqual(
+  await expect(UserStore.getByNames([name], options)).resolves.toEqual(
     readResponse.length > 0
       ? [
           {
@@ -340,16 +487,17 @@ async function testGetByNames({ name = 'user-name', readResponse }: { name?: str
   expect(readSpy.mock.calls).toEqual([
     [
       {
-        filter: {
-          name: {
-            $in: [name],
-          },
-        },
-        options: undefined,
+        filter,
+        options,
       },
     ],
   ])
-  expect(traceSpy.mock.calls).toEqual([[`Getting users with names "["${name}"]"`]])
+  expect(debugSpy.mock.calls).toEqual(debugEnabled ? [[`Getting users with names "["${name}"]"`]] : [])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [[`getByNames filter: "${JSON.stringify(filter)}`], [`getByNames options: "${JSON.stringify(options)}`]]
+      : []
+  )
 }
 
 async function testValidate({
@@ -359,7 +507,8 @@ async function testValidate({
   expected,
   error,
   errorCalls = [],
-  debugCalls = [],
+  warnCalls = [],
+  traceEnabled,
 }: {
   username: string
   users: UserDbObject[]
@@ -367,7 +516,8 @@ async function testValidate({
   expected?: UserDbObject
   error?: string
   errorCalls?: string[][]
-  debugCalls?: string[][]
+  warnCalls?: string[][]
+  traceEnabled?: boolean
 }) {
   const password = 'password'
   const expectedPassword = match === undefined ? '' : users[0].password
@@ -376,12 +526,20 @@ async function testValidate({
   if (match !== undefined) {
     matchSpy.mockResolvedValue(match)
   }
-  const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
   UserStore['logger'] = {
-    debug: debugSpy,
     error: errorSpy,
+    warn: warnSpy,
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
+  const filter: Filter<Document> = {
+    name: username,
+  }
 
   const promise = UserStore.validate(username, password)
   if (error) {
@@ -393,13 +551,13 @@ async function testValidate({
   expect(readSpy.mock.calls).toEqual([
     [
       {
-        filter: {
-          name: username,
-        },
+        filter,
       },
     ],
   ])
   expect(matchSpy.mock.calls).toEqual(match === undefined ? [] : [[password, expectedPassword]])
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
+  expect(debugSpy.mock.calls).toEqual([[`Validating user with name "${username}"`]])
+  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`validate filter: "${JSON.stringify(filter)}`]] : [])
 }

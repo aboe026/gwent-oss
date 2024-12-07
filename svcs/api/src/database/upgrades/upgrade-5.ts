@@ -8,7 +8,7 @@ import Upgrade from './upgrade'
  * Creates collection and indexes for Games.
  */
 export default class Upgrade5 extends Upgrade {
-  static logger = getLogger('upgrade-5')
+  static logger = getLogger('Upgrade5')
 
   async run() {
     Upgrade5.logger.debug('Connecting to database')

@@ -10,7 +10,7 @@ import UserResolver from '../types/user-resolver'
  * A class for executing the currentUser GraphQL Query.
  */
 export default class CurrentUserQuery {
-  private static logger = getLogger('current-user-query')
+  private static logger = getLogger('CurrentUserQuery')
 
   /**
    * Gets the user on the session, if authenticated.
@@ -33,7 +33,7 @@ export default class CurrentUserQuery {
     }
     if (!user) {
       const message = 'No user on session.'
-      CurrentUserQuery.logger.debug(`${logPrefix} failed: "${message}"`)
+      CurrentUserQuery.logger.warn(`${logPrefix} failed: "${message}"`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     return UserResolver.fromObject(user)

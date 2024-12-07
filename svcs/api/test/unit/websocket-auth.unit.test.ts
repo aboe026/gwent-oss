@@ -154,7 +154,7 @@ describe('websocket-auth', () => {
         } as unknown as SessionDataWithUser,
       })
     })
-    it('calls to trace if enabled', async () => {
+    it('logs to trace if enabled', async () => {
       const corsOrigin = 'hostname'
       const sessionCookieName = 'gwent.sid'
       const encodedSessionId = '456'

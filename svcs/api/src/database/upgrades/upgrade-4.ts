@@ -8,7 +8,7 @@ import Upgrade from './upgrade'
  * Creates collection and indexes for Decks.
  */
 export default class Upgrade4 extends Upgrade {
-  static logger = getLogger('upgrade-4')
+  static logger = getLogger('Upgrade4')
 
   async run() {
     Upgrade4.logger.debug('Connecting to database')

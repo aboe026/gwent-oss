@@ -186,7 +186,7 @@ describe('subscription-resolver', () => {
         debugCalls: [[`Publishing deckAdded for deck "${deckId}" to user "${deckOwner}".`]],
       })
     })
-    it('calls to trace if enabled', () => {
+    it('logs to trace if enabled', () => {
       const deckId = new ObjectId()
       const deckOwner = new ObjectId()
       testFilterDeckAdded({
@@ -362,7 +362,7 @@ describe('subscription-resolver', () => {
         debugCalls: [[`Publishing gameAdded for game "${gameId}" to user "${userId}".`]],
       })
     })
-    it('calls to trace if enabled', () => {
+    it('logs to trace if enabled', () => {
       const gameId = new ObjectId()
       const userId = new ObjectId()
       testFilterGameAdded({
@@ -777,7 +777,7 @@ describe('subscription-resolver', () => {
         debugCalls: [[`Publishing orderSet for game "${gameId}" to user "${userId}".`]],
       })
     })
-    it('calls to trace if enabled', () => {
+    it('logs to trace if enabled', () => {
       testFilterOrderSet({
         gameId: gameId.toString(),
         playerIds: [userId.toString(), new ObjectId().toString()],
