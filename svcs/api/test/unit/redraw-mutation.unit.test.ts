@@ -31,6 +31,28 @@ describe('redraw-mutation', () => {
         errorCalls: [[`No user on context for redraw mutation: "${JSON.stringify({})}".`]],
       })
     })
+    it('returns error if invalid game ID', async () => {
+      const invalidId = 'invalid'
+      const error = `Game ID "${invalidId}" is not a valid MongoDB ObjectId.`
+      await testRedraw({
+        userId,
+        gameId: invalidId,
+        unitId: unit._id.toString(),
+        expected: Error(error),
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
+      })
+    })
+    it('returns error if invalid unit ID', async () => {
+      const invalidId = 'invalid'
+      const error = `Unit ID "${invalidId}" is not a valid MongoDB ObjectId.`
+      await testRedraw({
+        userId,
+        gameId,
+        unitId: invalidId,
+        expected: Error(error),
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
+      })
+    })
     it('returns error if game does not exist', async () => {
       const error = `Game with ID "${gameId}" does not exist.`
       await testRedraw({

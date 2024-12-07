@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { Game, MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -38,11 +39,28 @@ export default class SetOrderMutation {
       )
     }
 
+    const gameId = args.game
+    const userIds = args.users
+    if (!ObjectId.isValid(gameId)) {
+      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      SetOrderMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (userIds) {
+      for (const playerId of userIds) {
+        if (!ObjectId.isValid(playerId)) {
+          const message = `User ID "${playerId}" is not a valid MongoDB ObjectId.`
+          SetOrderMutation.logger.warn(`${logPrefix} failed: ${message}`)
+          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        }
+      }
+    }
+
     return MutationUtil.setGameTurnOrder({
       userId,
-      gameId: args.game,
+      gameId,
       logPrefix,
-      userIds: args.users,
+      userIds,
       allowImplicit: true,
     })
   }

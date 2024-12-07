@@ -9,19 +9,37 @@ import TestUtil from '../test-util'
 
 describe('set-order-mutation', () => {
   describe('setOrder', () => {
+    const userId = new ObjectId()
     it('returns error if no user on context', async () => {
       await testSetOrder({
         error: Error(NOT_AUTHENTICATED_MESSAGE),
         errorCalls: [[`No user on context for setOrder mutation: "${JSON.stringify({})}".`]],
       })
     })
+    it('returns error if invalid game ID', async () => {
+      const gameId = 'invalid'
+      await testSetOrder({
+        userId,
+        gameId,
+        error: Error(`Game ID "${gameId}" is not a valid MongoDB ObjectId.`),
+        warnCalls: [[`setOrder by "${userId}" failed: Game ID "${gameId}" is not a valid MongoDB ObjectId.`]],
+      })
+    })
+    it('returns error if invalid user ID', async () => {
+      const playerId = 'invalid'
+      await testSetOrder({
+        userId,
+        userIds: [playerId],
+        error: Error(`User ID "${playerId}" is not a valid MongoDB ObjectId.`),
+        warnCalls: [[`setOrder by "${userId}" failed: User ID "${playerId}" is not a valid MongoDB ObjectId.`]],
+      })
+    })
     it('calls to private setOrder method when userIds not specified', async () => {
       await testSetOrder({
-        userId: new ObjectId(),
+        userId,
       })
     })
     it('calls to private setOrder method when userIds are specified', async () => {
-      const userId = new ObjectId()
       await testSetOrder({
         userId,
         userIds: [userId.toString(), new ObjectId().toString()],
@@ -29,7 +47,7 @@ describe('set-order-mutation', () => {
     })
     it('logs to trace if enabled', async () => {
       await testSetOrder({
-        userId: new ObjectId(),
+        userId,
         traceEnabled: true,
       })
     })
@@ -38,18 +56,21 @@ describe('set-order-mutation', () => {
 
 async function testSetOrder({
   userId,
+  gameId = new ObjectId().toString(),
   userIds,
   error,
   errorCalls = [],
+  warnCalls = [],
   traceEnabled,
 }: {
   userId?: string | ObjectId
+  gameId?: string
   userIds?: string[]
   error?: Error
   errorCalls?: any[][]
+  warnCalls?: any[][]
   traceEnabled?: boolean
 }) {
-  const gameId = new ObjectId().toString()
   const context: Context = {
     session: {},
   }
@@ -68,11 +89,13 @@ async function testSetOrder({
   })
   const setOrderSpy = jest.spyOn(MutationUtil, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   SetOrderMutation['logger'] = {
     error: errorSpy,
-    trace: traceSpy,
+    warn: warnSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
   } as any
 
   await expect(SetOrderMutation.setOrder(args, context, null as any)).resolves.toEqual(error || resolvedGame)
@@ -93,6 +116,7 @@ async function testSetOrder({
         ]
   )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [

@@ -66,7 +66,7 @@ export default class FactionResolver {
   /**
    * Retrieves a Faction with the given ID and converts it to the GraphQL object equivalent.
    *
-   * @param id The ObjectID of the Faction to convert.
+   * @param id The ObjectId of the Faction to convert.
    * @returns The resolved Faction object with the given ID.
    * @throws Error if a Faction with the given ID does not exist.
    */
@@ -81,7 +81,7 @@ export default class FactionResolver {
   /**
    * Retrieves Factions with the given IDs and converts them to their GraphQL object equivalents.
    *
-   * @param ids The ObjectIDs of the Factions to convert.
+   * @param ids The ObjectIds of the Factions to convert.
    * @returns The resolved Factions array for the given IDs.
    * @throws Error if a Faction with the given IDs does not exist.
    */

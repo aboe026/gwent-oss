@@ -21,6 +21,17 @@ describe('game-deck-query', () => {
         errorCalls: [[`No user on context for gameDeck query: "${JSON.stringify({})}".`]],
       })
     })
+    it('returns error if invalid game ID', async () => {
+      const invalidId = 'invalid'
+      const error = `Game ID "${invalidId}" is not a valid MongoDB ObjectId.`
+      await testGameDeck({
+        userId,
+        gameId: invalidId,
+        gameResponse: undefined,
+        error: Error(error),
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
+      })
+    })
     it('returns error if game does not exist', async () => {
       const error = `Game with ID "${gameId}" does not exist.`
       await testGameDeck({
@@ -189,7 +200,7 @@ async function testGameDeck({
   await expect(GameDeckQuery.gameDeck(args, context, null as any)).resolves.toEqual(error || expected)
 
   expect(getByIdSpy.mock.calls).toEqual(
-    userId
+    userId && ObjectId.isValid(gameId)
       ? [
           [
             {

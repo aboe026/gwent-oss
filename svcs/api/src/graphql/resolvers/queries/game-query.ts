@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { Game, QueryGameArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -37,6 +38,11 @@ export default class GameQuery {
       )
     }
     const gameId = args.id
+    if (!ObjectId.isValid(gameId)) {
+      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      GameQuery.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
     return GameResolver.fromId(gameId)
   }
 }

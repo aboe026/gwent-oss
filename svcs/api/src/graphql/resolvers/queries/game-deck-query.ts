@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { GameDeck, QueryGameDeckArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -38,6 +39,11 @@ export default class GameDeckQuery {
       )
     }
     const gameId = args.game
+    if (!ObjectId.isValid(gameId)) {
+      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      GameDeckQuery.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
     const game = await GameStore.getById({
       id: gameId,
     })

@@ -111,7 +111,7 @@ export default class GameResolver {
   /**
    * Retrieves a Game with the given ID and converts it to the GraphQL object equivalent.
    *
-   * @param id The ObjectID of the Game to convert.
+   * @param id The ObjectId of the Game to convert.
    * @returns The resolved Game object with the given ID.
    * @throws Error if a Game with the given ID does not exist.
    */

@@ -58,7 +58,7 @@ export default class GameStore extends Store {
    * Get a game from the database if it exists.
    *
    * @param config The configuration of how to query for the game.
-   * @param config.id The ObjectID of the game to get.
+   * @param config.id The ObjectId of the game to get.
    * @param config.options Any options to add to the query for the game.
    * @returns The game database document if it exists, undefined otherwise.
    * @throws Error if more than 1 game found.
