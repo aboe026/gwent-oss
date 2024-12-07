@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.6 - 2024-12-06
+
+### Fixed
+
+- Validate ObjectId inputs ([#21](https://github.com/aboe026/gwent/pull/21)) (Adam Boe)
+
 ## 0.8.5 - 2024-12-06
 
 ### Fixed
