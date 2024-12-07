@@ -21,6 +21,96 @@ describe('set-deck-mutation', () => {
   })
   describe('setDeck', () => {
     describe('invalid', () => {
+      it('returns error if invalid game ID', async () => {
+        const name1 = `setDeck-1-${Date.now()}`
+        const name2 = `setDeck-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        await addUser(name2)
+        const deck = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `setDeck-${Date.now()}`,
+          userId: user1.id,
+        })
+        const game = await addGame({
+          opponentNames: [name2],
+          creator: user1,
+        })
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user1.id,
+          })
+        ).resolves.toEqual(null)
+        const gameId = 'invalid'
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+            setDeck(
+              deck: "${deck.id}"
+              game: "${gameId}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user1.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(`Game ID "${gameId}" not a valid MongoDB ObjectId.`)],
+        })
+      })
+      it('returns error if invalid deck ID', async () => {
+        const name1 = `setDeck-1-${Date.now()}`
+        const name2 = `setDeck-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        await addUser(name2)
+        await addDeck({
+          faction: FactionKey.Monsters,
+          name: `setDeck-${Date.now()}`,
+          userId: user1.id,
+        })
+        const game = await addGame({
+          opponentNames: [name2],
+          creator: user1,
+        })
+        await expect(
+          getGameDeck({
+            gameId: game.id,
+            userId: user1.id,
+          })
+        ).resolves.toEqual(null)
+        const deckId = 'invalid'
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+            setDeck(
+              deck: "${deckId}"
+              game: "${game.id}"
+            ) {
+              ${getGameDeckFragment({})}
+            }
+          }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user1.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(`Deck ID "${deckId}" not a valid MongoDB ObjectId.`)],
+        })
+      })
       it('throws error if deck does not exist', async () => {
         const name = `setDeck-${Date.now()}`
         const user = await addUser(name)
@@ -210,12 +300,13 @@ describe('set-deck-mutation', () => {
           opponentNames: [name2],
           creator: user1,
         })
+        const deckId = 'invalid'
         await expect(
           graphql({
             schema,
             source: `mutation {
               setDeck(
-                deck: "invalid"
+                deck: "${deckId}"
                 game: "${game.id}"
               ) {
                 ${getGameDeckFragment({})}
@@ -231,7 +322,7 @@ describe('set-deck-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(NOT_AUTHORIZED_MESSAGE)],
+          errors: [new GraphQLError(`Deck ID "${deckId}" not a valid MongoDB ObjectId.`)],
         })
       })
       it('throws error if user does not own deck', async () => {

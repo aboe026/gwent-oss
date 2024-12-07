@@ -24,11 +24,12 @@ describe('game-query', () => {
       it('throws error if invalid ObjectId', async () => {
         const name = `game-${Date.now()}`
         const user = await addUser(name)
+        const gameId = 'invalid'
         await expect(
           graphql({
             schema,
             source: `{
-              game(id: "invalid") {
+              game(id: "${gameId}") {
                 ${getGameFragment({})}
               }
             }`,
@@ -42,7 +43,7 @@ describe('game-query', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(NOT_AUTHORIZED_MESSAGE)],
+          errors: [new GraphQLError(`Game ID "${gameId}" not a valid MongoDB ObjectId.`)],
         })
       })
       it('throws error if game does not exist', async () => {

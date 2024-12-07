@@ -21,6 +21,117 @@ describe('redraw-mutation', () => {
   })
   describe('redraw', () => {
     describe('invalid', () => {
+      it('returns error if invalid game ID', async () => {
+        const name1 = `redraw-1-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        const user2 = await addUser(name2)
+        const game = await addGame({
+          opponentNames: [name2],
+          creator: user1,
+        })
+        const deck1 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `redraw-1-${Date.now()}`,
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `redraw-2-${Date.now()}`,
+          userId: user2.id,
+        })
+        const gameDeck1 = await setDeck({
+          deckId: deck1.id,
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await setDeck({
+          deckId: deck2.id,
+          gameId: game.id,
+          userId: user2.id,
+        })
+
+        const unitToRedraw1 = gameDeck1.hand[0]
+        const gameId = 'invalid'
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+            redraw(
+              game: "${gameId}"
+              unit: "${unitToRedraw1.unit.id}"
+            ) {
+              ${getDeckUnitFragment({})}
+            }
+          }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user1.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(`Game ID "${gameId}" not a valid MongoDB ObjectId.`)],
+        })
+      })
+      it('returns error if invalid unit ID', async () => {
+        const name1 = `redraw-1-${Date.now()}`
+        const name2 = `redraw-2-${Date.now()}`
+        const user1 = await addUser(name1)
+        const user2 = await addUser(name2)
+        const game = await addGame({
+          opponentNames: [name2],
+          creator: user1,
+        })
+        const deck1 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `redraw-1-${Date.now()}`,
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `redraw-2-${Date.now()}`,
+          userId: user2.id,
+        })
+        await setDeck({
+          deckId: deck1.id,
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await setDeck({
+          deckId: deck2.id,
+          gameId: game.id,
+          userId: user2.id,
+        })
+        const unitId = 'invalid'
+
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+            redraw(
+              game: "${game.id}"
+              unit: "${unitId}"
+            ) {
+              ${getDeckUnitFragment({})}
+            }
+          }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user1.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(`Unit ID "${unitId}" is not a valid MongoDB ObjectId.`)],
+        })
+      })
       it('throws error if game does not exist', async () => {
         const name = `redraw-${Date.now()}`
         const user = await addUser(name)

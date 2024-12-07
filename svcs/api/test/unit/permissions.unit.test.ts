@@ -60,7 +60,7 @@ describe('permissions', () => {
         },
         info,
         expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        debugCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
+        warnCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
       })
     })
     it('returns error if user undefined', () => {
@@ -72,7 +72,7 @@ describe('permissions', () => {
         },
         info,
         expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        debugCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
+        warnCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
       })
     })
     it('returns error if id undefined', () => {
@@ -86,7 +86,7 @@ describe('permissions', () => {
         },
         info,
         expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        debugCalls: [[`${logPrefix} No user on session: "${JSON.stringify({})}"`]],
+        warnCalls: [[`${logPrefix} No user on session: "${JSON.stringify({})}"`]],
       })
     })
     it('returns true if user defined on session', () => {
@@ -112,7 +112,7 @@ describe('permissions', () => {
         userId: null,
         error: NOT_AUTHORIZED_MESSAGE,
         getByIdCalls: [],
-        debugCalls: [[`${logPrefix} Could not extract user ID from context: "${JSON.stringify(undefined)}"`]],
+        warnCalls: [[`${logPrefix} Could not extract user ID from context: "${JSON.stringify(undefined)}"`]],
       })
     })
     it('returns error if game id is not valid ObjectId', async () => {
@@ -120,9 +120,9 @@ describe('permissions', () => {
       await testIsPlayer({
         fieldName,
         gameId,
-        error: NOT_AUTHORIZED_MESSAGE,
+        error: `Game ID "${gameId}" not a valid MongoDB ObjectId.`,
         getByIdCalls: [],
-        debugCalls: [[`${logPrefix} gameId "${gameId}" not a valid ObjectId.`]],
+        warnCalls: [[`${logPrefix} Game ID "${gameId}" not a valid MongoDB ObjectId.`]],
       })
     })
     it('returns error if error thrown getting game', async () => {
@@ -143,7 +143,7 @@ describe('permissions', () => {
         gameId,
         gameResponse: undefined,
         error: NOT_AUTHORIZED_MESSAGE,
-        debugCalls: [[`${logPrefix} Game with ID "${gameId}" does not exist.`]],
+        warnCalls: [[`${logPrefix} Game with ID "${gameId}" does not exist.`]],
       })
     })
     it('returns error if user is not a player on game', async () => {
@@ -169,7 +169,7 @@ describe('permissions', () => {
         gameId,
         gameResponse: game,
         error: NOT_AUTHORIZED_MESSAGE,
-        debugCalls: [
+        warnCalls: [
           [`${logPrefix} User "${userId}" not included in game "${gameId}" players: "["${player1}","${player2}"]".`],
         ],
       })
@@ -223,7 +223,7 @@ describe('permissions', () => {
         userId: null,
         error: NOT_AUTHORIZED_MESSAGE,
         getByIdsCalls: [],
-        debugCalls: [[`${logPrefix} Could not extract user ID from context: "${JSON.stringify(undefined)}"`]],
+        warnCalls: [[`${logPrefix} Could not extract user ID from context: "${JSON.stringify(undefined)}"`]],
       })
     })
     it('returns error if deck ID is not valid ObjectId', async () => {
@@ -231,9 +231,9 @@ describe('permissions', () => {
       await testOwnsDeck({
         fieldName,
         deckId,
-        error: NOT_AUTHORIZED_MESSAGE,
+        error: `Deck ID "${deckId}" not a valid MongoDB ObjectId.`,
         getByIdsCalls: [],
-        debugCalls: [[`${logPrefix} deckId "${deckId}" not a valid ObjectId.`]],
+        warnCalls: [[`${logPrefix} Deck ID "${deckId}" not a valid MongoDB ObjectId.`]],
       })
     })
     it('returns error if DeckStore getByIds throws error', async () => {
@@ -254,7 +254,7 @@ describe('permissions', () => {
         deckId,
         deckResponse: undefined,
         error: NOT_AUTHORIZED_MESSAGE,
-        debugCalls: [[`${logPrefix} Deck with ID "${deckId}" does not exist.`]],
+        warnCalls: [[`${logPrefix} Deck with ID "${deckId}" does not exist.`]],
       })
     })
     it('returns error if DeckStore getById returns undefined', async () => {
@@ -264,7 +264,7 @@ describe('permissions', () => {
         deckId,
         deckResponse: undefined,
         error: NOT_AUTHORIZED_MESSAGE,
-        debugCalls: [[`${logPrefix} Deck with ID "${deckId}" does not exist.`]],
+        warnCalls: [[`${logPrefix} Deck with ID "${deckId}" does not exist.`]],
       })
     })
     it('returns error if deck user does not match context user', async () => {
@@ -279,7 +279,7 @@ describe('permissions', () => {
         deckId,
         deckResponse: deck,
         error: NOT_AUTHORIZED_MESSAGE,
-        debugCalls: [[`${logPrefix} Deck with ID "${deckId}" not owned by user "${userId}".`]],
+        warnCalls: [[`${logPrefix} Deck with ID "${deckId}" not owned by user "${userId}".`]],
       })
     })
     it('returns true if deck user matches context user', async () => {
@@ -322,21 +322,21 @@ function testIsAuthenticated({
   context,
   info,
   expected,
-  debugCalls = [],
+  warnCalls = [],
 }: {
   context: any
   info: GraphQLResolveInfo
   expected: Error | boolean
-  debugCalls?: any[][]
+  warnCalls?: any[][]
 }) {
-  const debugSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   Permissions['logger'] = {
-    debug: debugSpy,
+    warn: warnSpy,
   } as any
 
   expect(Permissions.isAuthenticated(undefined, undefined, context, info)).toEqual(expected)
 
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
 }
 
 async function testIsPlayer({
@@ -347,7 +347,7 @@ async function testIsPlayer({
   gameResponse,
   error,
   getByIdCalls,
-  debugCalls = [],
+  warnCalls = [],
   errorCalls = [],
 }: {
   userId?: ObjectId | null
@@ -357,7 +357,7 @@ async function testIsPlayer({
   gameResponse?: GameDbObject
   error?: string
   getByIdCalls?: any[][]
-  debugCalls?: any[][]
+  warnCalls?: any[][]
   errorCalls?: any[][]
 }) {
   if (userId === undefined) {
@@ -383,11 +383,11 @@ async function testIsPlayer({
   } else {
     getByIdSpy.mockResolvedValue(gameResponse as any)
   }
-  const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   Permissions['logger'] = {
-    debug: debugSpy,
     error: errorSpy,
+    warn: warnSpy,
   } as any
 
   await expect(Permissions.isPlayer(undefined, args, context, info as any)).resolves.toEqual(
@@ -409,8 +409,8 @@ async function testIsPlayer({
       ],
     ]
   )
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
 }
 
 async function testOwnsDeck({
@@ -421,7 +421,7 @@ async function testOwnsDeck({
   deckResponse,
   error,
   getByIdsCalls,
-  debugCalls = [],
+  warnCalls = [],
   errorCalls = [],
 }: {
   userId?: ObjectId | null
@@ -431,7 +431,7 @@ async function testOwnsDeck({
   deckResponse?: DeckDbObject
   error?: string
   getByIdsCalls?: any[][]
-  debugCalls?: any[][]
+  warnCalls?: any[][]
   errorCalls?: any[][]
 }) {
   if (userId === undefined) {
@@ -457,11 +457,11 @@ async function testOwnsDeck({
   } else {
     getByIdSpy.mockResolvedValue(deckResponse as any)
   }
-  const debugSpy = jest.fn().mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
   Permissions['logger'] = {
-    debug: debugSpy,
     error: errorSpy,
+    warn: warnSpy,
   } as any
 
   await expect(Permissions.ownsDeck(undefined, args, context, info as any)).resolves.toEqual(
@@ -483,6 +483,6 @@ async function testOwnsDeck({
       ],
     ]
   )
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
 }

@@ -40,7 +40,7 @@ export class Permissions {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
   static isAuthenticated(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
     if (!context.session?.user?._id) {
-      Permissions.logger.debug(
+      Permissions.logger.warn(
         `isAuthenticated failed operation "${info.fieldName}": No user on session: "${JSON.stringify(
           context.session?.user
         )}"`
@@ -59,14 +59,15 @@ export class Permissions {
     const gameId = args.game || args.id
     const logPrefix = `isPlayer check failed operation "${info.fieldName}":`
     if (!userId) {
-      Permissions.logger.debug(
+      Permissions.logger.warn(
         `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context.session?.user)}"`
       )
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     if (!ObjectId.isValid(gameId)) {
-      Permissions.logger.debug(`${logPrefix} gameId "${gameId}" not a valid ObjectId.`)
-      return Error(NOT_AUTHORIZED_MESSAGE)
+      const message = `Game ID "${gameId}" not a valid MongoDB ObjectId.`
+      Permissions.logger.warn(`${logPrefix} ${message}`)
+      return Error(message)
     }
     try {
       const game = await GameStore.getById({
@@ -79,10 +80,10 @@ export class Permissions {
         },
       })
       if (!game) {
-        Permissions.logger.debug(`${logPrefix} Game with ID "${gameId}" does not exist.`)
+        Permissions.logger.warn(`${logPrefix} Game with ID "${gameId}" does not exist.`)
         return Error(NOT_AUTHORIZED_MESSAGE)
       } else if (!game.players.find((player) => player.user.toString() === userId.toString())) {
-        Permissions.logger.debug(
+        Permissions.logger.warn(
           `${logPrefix} User "${userId}" not included in game "${gameId}" players: "${JSON.stringify(
             game.players.map((player) => player.user.toString())
           )}".`
@@ -105,14 +106,15 @@ export class Permissions {
     const deckId = args.deck || args.id
     const logPrefix = `ownsDeck check failed operation "${info.fieldName}":`
     if (!userId) {
-      Permissions.logger.debug(
+      Permissions.logger.warn(
         `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context.session?.user)}"`
       )
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
     if (!ObjectId.isValid(deckId)) {
-      Permissions.logger.debug(`${logPrefix} deckId "${deckId}" not a valid ObjectId.`)
-      return Error(NOT_AUTHORIZED_MESSAGE)
+      const message = `Deck ID "${deckId}" not a valid MongoDB ObjectId.`
+      Permissions.logger.warn(`${logPrefix} ${message}`)
+      return Error(message)
     }
     try {
       const deck = await DeckStore.getById({
@@ -125,11 +127,11 @@ export class Permissions {
         },
       })
       if (!deck) {
-        Permissions.logger.debug(`${logPrefix} Deck with ID "${deckId}" does not exist.`)
+        Permissions.logger.warn(`${logPrefix} Deck with ID "${deckId}" does not exist.`)
         return Error(NOT_AUTHORIZED_MESSAGE)
       }
       if (deck.user.toString() !== userId.toString()) {
-        Permissions.logger.debug(`${logPrefix} Deck with ID "${deckId}" not owned by user "${userId}".`)
+        Permissions.logger.warn(`${logPrefix} Deck with ID "${deckId}" not owned by user "${userId}".`)
         return Error(NOT_AUTHORIZED_MESSAGE)
       }
     } catch (error: unknown) {
