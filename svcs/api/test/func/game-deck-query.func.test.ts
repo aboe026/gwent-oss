@@ -21,6 +21,33 @@ describe('game-deck-query', () => {
   })
   describe('gameDeck', () => {
     describe('invalid', () => {
+      it('throws error if invalid game ID', async () => {
+        const name = `gameDeck-${Date.now()}`
+        const user = await addUser(name)
+        const gameId = 'invalid'
+        await expect(
+          graphql({
+            schema,
+            source: `{
+              gameDeck(game: "${gameId}") {
+                ${getGameDeckFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: {
+            gameDeck: null,
+          },
+          errors: [new GraphQLError(`Game ID "${gameId}" not a valid MongoDB ObjectId.`)],
+        })
+      })
       it('throws error if game does not exist', async () => {
         const name = `gameDeck-${Date.now()}`
         const user = await addUser(name)

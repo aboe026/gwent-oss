@@ -29,7 +29,7 @@ export default class UserResolver {
   /**
    * Retrieves a User with the given ID and converts it to the GraphQL object equivalent.
    *
-   * @param id The ObjectID of the User to convert.
+   * @param id The ObjectId of the User to convert.
    * @returns The resolved User object with the given ID.
    * @throws Error if a User with the given ID does not exist.
    */
@@ -41,7 +41,7 @@ export default class UserResolver {
   /**
    * Retrieves Users with the given IDs and converts them to their GraphQL object equivalents.
    *
-   * @param ids The ObjectIDs of the Users to convert.
+   * @param ids The ObjectIds of the Users to convert.
    * @returns The resolved Users array for the given IDs.
    * @throws Error if a User with the given IDs does not exist.
    */

@@ -48,6 +48,28 @@ describe('set-deck-mutation', () => {
         errorCalls: [[`No user on context for setDeck mutation: "${JSON.stringify({})}".`]],
       })
     })
+    it('returns error if invalid game ID', async () => {
+      const gameId = 'invalid'
+      const error = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      await testSetDeck({
+        userId,
+        gameId,
+        deckId: deck._id.toString(),
+        expected: Error(error),
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
+      })
+    })
+    it('returns error if invalid deck ID', async () => {
+      const deckId = 'invalid'
+      const error = `Deck ID "${deckId}" is not a valid MongoDB ObjectId.`
+      await testSetDeck({
+        userId,
+        gameId: game._id.toString(),
+        deckId,
+        expected: Error(error),
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
+      })
+    })
     it('returns error if deck does not exist', async () => {
       const error = `Deck with ID "${deck._id}" does not exist.`
       await testSetDeck({

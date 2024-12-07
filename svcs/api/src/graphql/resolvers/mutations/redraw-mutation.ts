@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { DeckUnit, MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -44,6 +45,16 @@ export default class RedrawMutation {
     }
     const gameId = args.game
     const unitId = args.unit
+    if (!ObjectId.isValid(gameId)) {
+      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (!ObjectId.isValid(unitId)) {
+      const message = `Unit ID "${unitId}" is not a valid MongoDB ObjectId.`
+      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
     const game = await GameStore.getById({
       id: gameId,
     })

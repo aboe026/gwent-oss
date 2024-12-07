@@ -21,6 +21,69 @@ describe('add-deck-mutation', () => {
   })
   describe('addDeck', () => {
     describe('invalid', () => {
+      it('throws error if invalid leader ID', async () => {
+        const faction = FactionKey.Monsters
+        const name = `decks-${Date.now()}`
+        const user = await addUser(name)
+        const leaderId = 'invalid'
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              addDeck(
+                name: "${name}",
+                faction: ${faction},
+                leader: "${leaderId}",
+                units: [${await getUnitsInput(faction)}]
+              ) {
+                ${getDeckFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(`Leader ID "${leaderId}" is not a valid MongoDB ObjectId.`)],
+        })
+      })
+      it('throws error if invalid unit ID', async () => {
+        const faction = FactionKey.Monsters
+        const name = `decks-${Date.now()}`
+        const user = await addUser(name)
+        const leaderId = new ObjectId()
+        const unitId = 'invalid'
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              addDeck(
+                name: "${name}",
+                faction: ${faction},
+                leader: "${leaderId}",
+                units: [{id: "${unitId}"}]
+              ) {
+                ${getDeckFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(`Unit ID "${unitId}" is not a valid MongoDB ObjectId.`)],
+        })
+      })
       it('throws error if faction is neutral', async () => {
         const faction = FactionKey.Neutral
         const name = `decks-${Date.now()}`
@@ -32,7 +95,7 @@ describe('add-deck-mutation', () => {
               addDeck(
                 name: "${name}",
                 faction: ${faction},
-                leader: "",
+                leader: "${new ObjectId().toString()}",
                 units: [${await getUnitsInput(faction)}]
               ) {
                 ${getDeckFragment({})}

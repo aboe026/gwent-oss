@@ -45,6 +45,7 @@ export default class GamePage {
     OrderSet: existingGameContainer.find(`#${HTML_IDS.GameOrderSet}`),
     OrderWaiting: existingGameContainer.find(`#${HTML_IDS.GameOrderWaiting}`),
     CoinTossContainer: existingGameContainer.find(`#${HTML_IDS.GameOrderCoinToss}`),
+    Error: Selector(`.${HTML_CLASSES.ErrorText}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -467,6 +468,10 @@ export default class GamePage {
     const card = await GamePage.getCard(name)
     await t.hover(card.find(`.${HTML_CLASSES.UnitGameCardStrength}`))
     await t.click(card.find(`.${HTML_CLASSES.UnitGameCardFullScreen}`))
+  }
+
+  static async verifyError(error: string) {
+    await t.expect(GamePage.elements.Error.innerText).eql(error)
   }
 
   static async verifyDeckError(error: string) {

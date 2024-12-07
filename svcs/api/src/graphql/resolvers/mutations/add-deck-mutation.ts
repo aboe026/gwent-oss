@@ -53,6 +53,18 @@ export default class AddDeckMutation {
     const factionKey = args.faction
     const leaderId = args.leader
     const unitsInput = args.units
+    if (!ObjectId.isValid(leaderId)) {
+      const message = `Leader ID "${leaderId}" is not a valid MongoDB ObjectId.`
+      AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    for (const unitInput of unitsInput) {
+      if (!ObjectId.isValid(unitInput.id)) {
+        const message = `Unit ID "${unitInput.id}" is not a valid MongoDB ObjectId.`
+        AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
+        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      }
+    }
     if (factionKey === FactionKey.Neutral) {
       const message = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)

@@ -91,7 +91,7 @@ export default class UnitResolver {
   /**
    * Retrieves a Unit with the given ID and converts it to the GraphQL object equivalent.
    *
-   * @param id The ObjectID of the Unit to convert.
+   * @param id The ObjectId of the Unit to convert.
    * @returns The resolved Unit object with the given ID.
    * @throws Error if a Unit with the given ID does not exist.
    */
@@ -106,7 +106,7 @@ export default class UnitResolver {
   /**
    * Retrieves Units with the given IDs and converts them to their GraphQL object equivalents.
    *
-   * @param ids The ObjectIDs of the Units to convert.
+   * @param ids The ObjectIds of the Units to convert.
    * @returns The resolved Units array for the given IDs.
    * @throws Error if a Unit with the given IDs does not exist.
    */

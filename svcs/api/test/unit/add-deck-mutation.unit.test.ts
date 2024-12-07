@@ -6,13 +6,14 @@ import { Deck, DeckUnit, FactionKey, MutationAddDeckArgs } from '@gwent/graphql-
 import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
 import DeckStore from '../../src/database/stores/deck-store'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
+import EventManager from '../../src/graphql/event-manager'
 import { FactionDbObject, LeaderDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import FactionStore from '../../src/database/stores/faction-store'
 import * as gwentUtils from '@gwent/utils'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import LeaderStore from '../../src/database/stores/leader-store'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import TestUtil from '../test-util'
 import UnitStore from '../../src/database/stores/unit-store'
 import * as validateDeck from '@gwent/validators'
@@ -34,6 +35,45 @@ describe('add-deck-mutation', () => {
         getDeckStatsCalls: [],
         postResolversCalled: false,
         errorCalls: [[`No user on context for addDeck mutation: "${JSON.stringify({})}".`]],
+      })
+    })
+    it('returns error if invalid leader ID', async () => {
+      const leaderId = 'invalid'
+      const error = `Leader ID "${leaderId}" is not a valid MongoDB ObjectId.`
+      await testAddDeck({
+        userId,
+        factionKey: FactionKey.Monsters,
+        leaderId,
+        errorReturned: error,
+        factionGetCalls: [],
+        leaderGetCalls: [],
+        unitGetCalls: [],
+        deckUnitCalls: [],
+        validateDeckCalls: [],
+        deckAddCalls: [],
+        getDeckStatsCalls: [],
+        postResolversCalled: false,
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
+      })
+    })
+    it('returns error if invalid unit ID', async () => {
+      const unitId = 'invalid'
+      const error = `Unit ID "${unitId}" is not a valid MongoDB ObjectId.`
+      await testAddDeck({
+        userId,
+        factionKey: FactionKey.Monsters,
+        leaderId: new ObjectId(),
+        unitIds: [unitId],
+        errorReturned: error,
+        factionGetCalls: [],
+        leaderGetCalls: [],
+        unitGetCalls: [],
+        deckUnitCalls: [],
+        validateDeckCalls: [],
+        deckAddCalls: [],
+        getDeckStatsCalls: [],
+        postResolversCalled: false,
+        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if faction is neutral', async () => {
@@ -316,8 +356,8 @@ async function testAddDeck({
   inputArtStyle?: number | undefined | null
   expectedArtStyle?: number
   factionKey?: FactionKey
-  leaderId?: ObjectId
-  unitIds?: ObjectId[]
+  leaderId?: ObjectId | string
+  unitIds?: (ObjectId | string)[]
   name?: string
   userId?: ObjectId
   factionGetResponse?: FactionDbObject[]
@@ -372,11 +412,11 @@ async function testAddDeck({
   const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
   const leader = TestUtil.getDbLeader({
     faction: faction._id,
-    id: args.leader,
+    id: ObjectId.isValid(args.leader) ? args.leader : '',
   })
   const resolvedLeader = TestUtil.getLeaderFromDbLeader(leader)
   const unit = TestUtil.getDbUnit({
-    id: unitIds[0],
+    id: ObjectId.isValid(unitIds[0]) ? unitIds[0] : '',
     faction: faction._id,
   })
   const deckUnits: DeckUnit[] = [
@@ -396,12 +436,12 @@ async function testAddDeck({
   const deckStats = TestUtil.getStats()
   const deck = TestUtil.getDbDeck({
     faction: faction._id,
-    leader: args.leader,
+    leader: ObjectId.isValid(args.leader) ? args.leader : '',
     name: args.name,
     units: unitIds.map((unitId) =>
       TestUtil.getDbDeckUnit({
         artStyle: expectedArtStyle,
-        id: unitId,
+        id: ObjectId.isValid(unitId) ? unitId : '',
       })
     ),
     user: userId,
@@ -425,6 +465,7 @@ async function testAddDeck({
   const factionResolverSpy = jest.spyOn(FactionResolver, 'fromObject').mockResolvedValue(resolvedFaction)
   const leaderResolverSpy = jest.spyOn(LeaderResolver, 'fromObject').mockResolvedValue(resolvedLeader)
   const deckResolverSpy = jest.spyOn(DeckResolver, 'fromObject').mockResolvedValue(resolvedDeck)
+  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
@@ -543,6 +584,18 @@ async function testAddDeck({
               leader: resolvedLeader,
               units: deckUnits,
               neutralDeckStats: undefined,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(publishSpy.mock.calls).toEqual(
+    postResolversCalled
+      ? [
+          [
+            PubSubEvents.DeckAdded,
+            {
+              deckAdded: resolvedDeck,
             },
           ],
         ]

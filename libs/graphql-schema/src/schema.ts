@@ -295,11 +295,6 @@ export default gql`
     id: ID!
   }
 
-  input GamePlayerInput {
-    user: ID!
-    deck: ID!
-  }
-
   type Query {
     "Information about the application running."
     application: Application!

@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../event-manager'
@@ -41,6 +42,11 @@ export default class ReadyMutation {
       )
     }
     const gameId = args.game
+    if (!ObjectId.isValid(gameId)) {
+      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
     const game = await GameStore.getById({
       id: gameId,
     })

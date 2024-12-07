@@ -2,9 +2,6 @@
 
 A list of things to be done in the future
 
-- validate ObjectID inputs
-- mock event publishing in mutation unit tests
-- remove extra space between title and returns in js docs?
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - implement history?
 - enter key does not create game in UI?

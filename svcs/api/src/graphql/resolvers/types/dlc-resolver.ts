@@ -31,7 +31,7 @@ export default class DlcResolver {
   /**
    * Retrieves a DLC with the given ID and converts it to the GraphQL object equivalent.
    *
-   * @param id The ObjectID of the DLC to convert.
+   * @param id The ObjectId of the DLC to convert.
    * @returns The resolved DLC object with the given ID.
    * @throws Error if a DLC with the given ID does not exist.
    */
@@ -43,7 +43,7 @@ export default class DlcResolver {
   /**
    * Retrieves Dlcs with the given IDs and converts them to their GraphQL object equivalents.
    *
-   * @param ids The ObjectIDs of the Dlcs to convert.
+   * @param ids The ObjectIds of the Dlcs to convert.
    * @returns The resolved Dlcs array for the given IDs.
    * @throws Error if a Dlc with the given IDs does not exist.
    */

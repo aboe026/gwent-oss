@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import DeckStore from '../../../database/stores/deck-store'
@@ -45,6 +46,16 @@ export default class SetDeckMutation {
     }
     const gameId = args.game
     const deckId = args.deck
+    if (!ObjectId.isValid(gameId)) {
+      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (!ObjectId.isValid(deckId)) {
+      const message = `Deck ID "${deckId}" is not a valid MongoDB ObjectId.`
+      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
 
     const deck = await DeckStore.getById({
       id: deckId,

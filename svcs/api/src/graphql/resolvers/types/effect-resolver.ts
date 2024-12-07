@@ -32,7 +32,7 @@ export default class EffectResolver {
   /**
    * Retrieves Effects with the given IDs and converts them to their GraphQL object equivalents.
    *
-   * @param ids The ObjectIDs of the Effects to convert.
+   * @param ids The ObjectIds of the Effects to convert.
    * @returns The resolved Effects array for the given IDs.
    * @throws Error if a Effect with the given IDs does not exist.
    */
