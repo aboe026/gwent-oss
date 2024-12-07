@@ -9,7 +9,7 @@ import Store from './store'
  */
 export default class DlcStore extends Store {
   static readonly COLLECTION_NAME = 'dlcs'
-  private static logger = getLogger('dlc-store')
+  private static logger = getLogger('DlcStore')
 
   /**
    * Adds a DLC to the database.

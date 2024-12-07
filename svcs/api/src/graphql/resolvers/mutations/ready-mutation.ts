@@ -14,7 +14,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the ready GraphQL Mutation.
  */
 export default class ReadyMutation {
-  private static logger = getLogger('ready-mutation')
+  private static logger = getLogger('ReadyMutation')
 
   /**
    * Mark a Game as ready for a User. Prevents redrawing units after marked as ready.

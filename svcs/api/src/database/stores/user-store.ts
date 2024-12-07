@@ -10,7 +10,7 @@ import { UserDbObject } from '@gwent/graphql-schema/database-typings'
  */
 export default class UserStore extends Store {
   static readonly COLLECTION_NAME = 'users'
-  private static logger = getLogger('user-store')
+  private static logger = getLogger('UserStore')
 
   /**
    * Add a User to the database.

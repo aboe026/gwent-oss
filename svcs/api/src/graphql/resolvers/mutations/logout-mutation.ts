@@ -8,7 +8,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the logout GraphQL Mutation.
  */
 export default class LogoutMutation {
-  private static logger = getLogger('logout-mutation')
+  private static logger = getLogger('LogoutMutation')
 
   /**
    * Remove a user's session.

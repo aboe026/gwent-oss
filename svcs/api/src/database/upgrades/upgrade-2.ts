@@ -30,7 +30,7 @@ import { validatePositiveInteger } from '@gwent/validators'
  * Adds resources required to create decks.
  */
 export default class Upgrade2 extends Upgrade {
-  static logger = getLogger('upgrade-2')
+  static logger = getLogger('Upgrade2')
 
   async run() {
     const dlcMap = await this.createDlcs({

@@ -12,7 +12,7 @@ import UserStore from '../../../database/stores/user-store'
  * A class for executing the login GraphQL Mutation.
  */
 export default class LoginMutation {
-  private static logger = getLogger('login-mutation')
+  private static logger = getLogger('LoginMutation')
 
   /**
    * Authenticate a user session.

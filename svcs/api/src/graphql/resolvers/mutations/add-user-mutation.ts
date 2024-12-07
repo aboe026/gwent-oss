@@ -10,7 +10,7 @@ import UserStore from '../../../database/stores/user-store'
  * A class for executing the addUser GraphQL Mutation.
  */
 export default class AddUserMutation {
-  private static logger = getLogger('add-user-mutation')
+  private static logger = getLogger('AddUserMutation')
 
   /**
    * Add a User.

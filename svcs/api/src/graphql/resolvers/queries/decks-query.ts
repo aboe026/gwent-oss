@@ -12,7 +12,7 @@ import { GraphQLResolveInfo } from 'graphql'
  * A class for executing the decks GraphQL Query.
  */
 export default class DecksQuery {
-  private static logger = getLogger('decks-query')
+  private static logger = getLogger('DecksQuery')
 
   /**
    * Gets the users Decks they have created.

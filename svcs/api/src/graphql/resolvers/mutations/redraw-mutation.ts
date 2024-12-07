@@ -16,7 +16,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the redraw GraphQL Mutation.
  */
 export default class RedrawMutation {
-  private static logger = getLogger('redraw-mutation')
+  private static logger = getLogger('RedrawMutation')
 
   /**
    * Redraw a Unit for a Game for a random Unit from their undrawn Units.

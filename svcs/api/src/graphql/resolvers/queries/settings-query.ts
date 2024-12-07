@@ -10,7 +10,7 @@ import { Setting, SettingKey, SettingType } from '@gwent/graphql-schema/resolver
  * A class for executing the settings GraphQL Query.
  */
 export default class SettingsQuery {
-  private static logger = getLogger('settings-query')
+  private static logger = getLogger('SettingsQuery')
 
   /**
    * Gets the settings configured for the application.

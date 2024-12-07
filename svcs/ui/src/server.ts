@@ -10,7 +10,7 @@ import env from './env'
  * A class to handle startup and configuration of the UI server.
  */
 export default class Server {
-  private static logger = getLogger('server')
+  private static logger = getLogger('Server')
   private static clientDir: string
   private static app: Express
 

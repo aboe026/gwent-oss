@@ -9,7 +9,7 @@ import Store from './store'
  */
 export default class EffectStore extends Store {
   static readonly COLLECTION_NAME = 'effects'
-  private static logger = getLogger('effect-store')
+  private static logger = getLogger('EffectStore')
 
   /**
    * Adds an Effect to the database.

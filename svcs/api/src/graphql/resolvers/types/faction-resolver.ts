@@ -12,7 +12,7 @@ import Verifier from '../../../util/verifier'
  * A class to convert Faction database objects to their GraphQL equivalent.
  */
 export default class FactionResolver {
-  private static logger = getLogger('faction-resolver')
+  private static logger = getLogger('FactionResolver')
 
   /**
    * Converts a single Faction database object to a single Faction GraphQL object.

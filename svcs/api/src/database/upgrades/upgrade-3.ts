@@ -8,7 +8,7 @@ import Upgrade from './upgrade'
  * Creates collection and indexes for Users.
  */
 export default class Upgrade3 extends Upgrade {
-  static logger = getLogger('upgrade-3')
+  static logger = getLogger('Upgrade3')
 
   async run() {
     Upgrade3.logger.debug('Connecting to database')

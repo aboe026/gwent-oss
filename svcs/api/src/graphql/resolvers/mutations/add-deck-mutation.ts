@@ -23,7 +23,7 @@ import { validateDeck } from '@gwent/validators'
  * A class for executing the addDeck GraphQL Mutation.
  */
 export default class AddDeckMutation {
-  private static logger = getLogger('add-deck-mutation')
+  private static logger = getLogger('AddDeckMutation')
 
   /**
    * Add a Deck for a user.

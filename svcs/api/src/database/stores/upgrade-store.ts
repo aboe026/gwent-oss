@@ -9,7 +9,7 @@ import Store from './store'
 export default class UpgradeStore extends Store {
   static readonly COLLECTION_NAME = 'upgrades'
   private static readonly LOCK_ID = new ObjectId('000000000000000000000001')
-  private static logger = getLogger('upgrade-store')
+  private static logger = getLogger('UpgradeStore')
 
   /**
    * Attempts to create a lock on the database for upgrades. Throws an error if a lock already exists.

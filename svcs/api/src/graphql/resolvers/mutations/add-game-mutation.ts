@@ -16,7 +16,7 @@ import UserStore from '../../../database/stores/user-store'
  * A class for executing the addGame GraphQL Mutation.
  */
 export default class AddGameMutation {
-  private static logger = getLogger('add-game-mutation')
+  private static logger = getLogger('AddGameMutation')
 
   /**
    * Add a Game for a user.

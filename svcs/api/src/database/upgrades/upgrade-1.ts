@@ -12,7 +12,7 @@ import Upgrade from './upgrade'
  * Creates collection and indexes for resources.
  */
 export default class Upgrade1 extends Upgrade {
-  static logger = getLogger('upgrade-1')
+  static logger = getLogger('Upgrade1')
 
   async run() {
     Upgrade1.logger.debug('Connecting to database')

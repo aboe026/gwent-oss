@@ -9,7 +9,7 @@ import Store from './store'
  */
 export default class UnitStore extends Store {
   static readonly COLLECTION_NAME = 'units'
-  private static logger = getLogger('unit-store')
+  private static logger = getLogger('UnitStore')
 
   /**
    * Add a Unit to the database.

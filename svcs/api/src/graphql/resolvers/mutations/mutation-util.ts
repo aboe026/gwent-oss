@@ -13,7 +13,7 @@ import { PubSubEvents } from '@gwent/constants'
  * A class containing shared methods used by GraphQL mutations.
  */
 export default class MutationUtil {
-  private static logger = getLogger('mutation-util')
+  private static logger = getLogger('MutationUtil')
 
   /**
    * Sets the player turn order for a game.

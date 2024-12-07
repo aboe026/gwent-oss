@@ -10,7 +10,7 @@ import Verifier from '../../../util/verifier'
  * A class to convert User database objects to their GraphQL equivalent.
  */
 export default class UserResolver {
-  private static logger = getLogger('user-resolver')
+  private static logger = getLogger('UserResolver')
 
   /**
    * Converts a single User database object to a single User GraphQL object.

@@ -10,7 +10,7 @@ import Verifier from '../../../util/verifier'
  * A class to convert DLC database objects to their GraphQL equivalent.
  */
 export default class DlcResolver {
-  private static logger = getLogger('dlc-resolver')
+  private static logger = getLogger('DlcResolver')
 
   /**
    * Converts a single DLC database object to a single DLC GraphQL object.

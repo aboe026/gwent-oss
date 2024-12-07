@@ -9,7 +9,7 @@ import env from './env'
  * A class for interacting with the browser client bundle.
  */
 export default class ClientUtil {
-  private static logger = getLogger('client-util')
+  private static logger = getLogger('ClientUtil')
 
   /**
    * Gets the directory in which the browser client bundle resides. Throws an error if the directory does not exist on the filesystem.

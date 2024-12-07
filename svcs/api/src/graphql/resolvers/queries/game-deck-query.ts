@@ -12,7 +12,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the gameDeck GraphQL Query.
  */
 export default class GameDeckQuery {
-  private static logger = getLogger('game-deck-query')
+  private static logger = getLogger('GameDeckQuery')
 
   /**
    * Gets the GameDeck that has potentially been set for a Game.

@@ -9,7 +9,7 @@ import Store from './store'
  */
 export default class FactionStore extends Store {
   static readonly COLLECTION_NAME = 'factions'
-  private static logger = getLogger('faction-store')
+  private static logger = getLogger('FactionStore')
 
   /**
    * Adds a Faction to the database.

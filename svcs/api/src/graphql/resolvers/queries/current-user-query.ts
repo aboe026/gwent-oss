@@ -10,7 +10,7 @@ import UserResolver from '../types/user-resolver'
  * A class for executing the currentUser GraphQL Query.
  */
 export default class CurrentUserQuery {
-  private static logger = getLogger('current-user-query')
+  private static logger = getLogger('CurrentUserQuery')
 
   /**
    * Gets the user on the session, if authenticated.

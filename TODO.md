@@ -2,22 +2,13 @@
 
 A list of things to be done in the future
 
-- print off ids in errors (eg duplicates)
-- change logger from error to warn for dumb user behavior (eg duplicates, invalid ObjectId, etc)
+- add changelog
+- increment package versions
+
 - validate ObjectID inputs
 - mock event publishing in mutation unit tests
-- make store method declarations debug-level instead of trace (like GameStore setOrder)
-- add traces to store methods for filters/updates (like GameStore setOrder)
 - remove extra space between title and returns in js docs
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
-- change log4js "getLogger" calls from hyphen-case to ClassNames
-- sub-directories for resolvers
-  - types
-  - queries
-    - put each in its own file
-  - mutations
-    - put each in its own file
-  - subscriptions
 - implement history?
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus

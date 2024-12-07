@@ -10,7 +10,7 @@ import Verifier from '../../../util/verifier'
  * A class to convert Effect database objects to their GraphQL equivalent.
  */
 export default class EffectResolver {
-  private static logger = getLogger('effect-resolver')
+  private static logger = getLogger('EffectResolver')
 
   /**
    * Converts a single Effect database object to a single Effect GraphQL object.

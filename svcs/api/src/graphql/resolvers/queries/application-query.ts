@@ -11,7 +11,7 @@ import { version } from '../../../../package.json'
  * A class for executing the application GraphQL Query.
  */
 export default class ApplicationQuery {
-  private static logger = getLogger('application-query')
+  private static logger = getLogger('ApplicationQuery')
 
   /**
    * Gets information about the running Application.

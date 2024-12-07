@@ -9,7 +9,7 @@ import Store from './store'
  */
 export default class LeaderStore extends Store {
   static readonly COLLECTION_NAME = 'leaders'
-  private static logger = getLogger('leader-store')
+  private static logger = getLogger('LeaderStore')
 
   /**
    * Add a Leader to the database.

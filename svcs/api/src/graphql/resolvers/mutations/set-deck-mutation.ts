@@ -17,7 +17,7 @@ import { RequestedFields } from '@gwent/graphql-schema'
  * A class for executing the setDeck GraphQL Mutation.
  */
 export default class SetDeckMutation {
-  private static logger = getLogger('set-deck-mutation')
+  private static logger = getLogger('SetDeckMutation')
 
   /**
    * Sets a Deck for a Game. Deck cannot be changed after set.
