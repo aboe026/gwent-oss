@@ -1,6 +1,6 @@
 {
   "name": "@gwent/utils",
-  "version": "0.8.4",
+  "version": "0.8.5",
   "author": "Adam Boe",
   "description": "Utility functions",
   "main": "build/src/index.js",
