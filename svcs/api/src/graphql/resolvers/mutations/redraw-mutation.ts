@@ -151,7 +151,6 @@ export default class RedrawMutation {
     }
     const resolvedTo = await DeckUnitResolver.fromObject({
       deckUnit: newCard,
-      neutralStats: RequestedFields.getArgument(info, 'redraw.unit.faction.stats.neutrals'),
     })
     if (RedrawMutation.logger.isTraceEnabled()) {
       RedrawMutation.logger.trace(`${logPrefix} resolvedTo: "${JSON.stringify(resolvedTo)}"`)

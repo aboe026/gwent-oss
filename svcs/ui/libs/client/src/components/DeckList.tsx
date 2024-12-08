@@ -6,7 +6,16 @@ import { NavigateFunction, useNavigate } from 'react-router'
 import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
-import { Deck, DecksQuery, Exact, FactionKey, useDecksQuery } from '@gwent/graphql-schema/apollo-typings'
+import {
+  Deck,
+  DecksQuery,
+  Exact,
+  FactionKey,
+  FactionStatsQuery,
+  InputMaybe,
+  useDecksQuery,
+  useFactionStatsQuery,
+} from '@gwent/graphql-schema/apollo-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
@@ -16,6 +25,7 @@ import ProgressBar from '../components/ProgressBar'
 import { sortObjectArray } from '@gwent/utils'
 import { useUserContext } from '../App'
 import './DeckList.css'
+import { UnitStats } from '@gwent/graphql-schema/resolver-typings'
 
 /**
  * The a list of a users created decks
@@ -29,17 +39,38 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   const [filterFields, setFilterFields] = useState<FILTER_FIELD[]>([])
   const [filtersExpanded, setFiltersExpanded] = useState(false)
   const { checkAuth } = useUserContext()
-  const { loading, error, data, refetch } = useDecksQuery({
+  const {
+    loading: decksLoading,
+    error: decksError,
+    data: decksData,
+    refetch: decksRefetch,
+  } = useDecksQuery({
     onError: (error) => {
-      checkAuth(error, refetch)
+      checkAuth(error, decksRefetch)
     },
     notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
   })
+  const {
+    loading: neutralStatsLoading,
+    error: neutralStatsError,
+    data: neutralStatsData,
+    refetch: neutralStatsRefetch,
+  } = useFactionStatsQuery({
+    skip: !decksData?.decks || decksData.decks.length < 1,
+    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
+    variables: {
+      keys: [FactionKey.Neutral],
+    },
+    onError: (error) => {
+      checkAuth(error, neutralStatsRefetch)
+    },
+  })
   const navigate = useNavigate()
-  const resolvedError = getApolloError(error)
+  const resolvedDecksError = getApolloError(decksError)
+  const resolvedNeutralStatsError = getApolloError(neutralStatsError)
 
   const sortedDecks = sortObjectArray({
-    array: data?.decks,
+    array: decksData?.decks,
     sortProperties: [sortField, 'id'],
     reverse: sortOrder === SORT_ORDER.Asc ? false : true,
   })
@@ -50,18 +81,22 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
       name: nameFilter,
     })
   )
+  const neutralStats = neutralStatsData?.factions.find((faction) => faction.key === FactionKey.Neutral)?.stats as
+    | UnitStats
+    | undefined
 
   return (
     <div id={HTML_IDS.DeckListContainer}>
       {renderHeader({
         filterFields,
         filtersExpanded,
-        loading,
+        loading: decksLoading,
         nameFilter,
         navigate,
         onClose,
         onCreate,
-        refetch,
+        refetchDecks: decksRefetch,
+        refetchNeutralStats: neutralStatsRefetch,
         setFilterFields,
         setFiltersExpanded,
         setNameFilter,
@@ -70,16 +105,16 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
         sortField,
         sortOrder,
       })}
-      {loading ? (
+      {decksLoading ? (
         <Centered>
           <LoadingSpinner size="50px" />
         </Centered>
-      ) : resolvedError ? (
+      ) : resolvedDecksError ? (
         <div
           id={HTML_IDS.DeckListError}
           className={HTML_CLASSES.ErrorText}
-        >{`Error getting decks: ${resolvedError}`}</div>
-      ) : data?.decks?.length === 0 ? (
+        >{`Error getting decks: ${resolvedDecksError}`}</div>
+      ) : decksData?.decks?.length === 0 ? (
         <Centered>
           <div className="deck-list-message">
             <span id={HTML_IDS.DeckListNoneCreated}>No decks created yet</span>
@@ -149,56 +184,12 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
                     </div>
                   </div>
                 </div>
-                <div className="deck-list-deck-section deck-list-deck-stats">
-                  <div className="deck-list-deck-stats-group">
-                    {renderDeckStat({
-                      deck: deck as Deck,
-                      label: 'Units',
-                      stat: 'units',
-                    })}
-                    {renderDeckStat({
-                      deck: deck as Deck,
-                      label: 'Specials',
-                      stat: 'specials',
-                    })}
-                    {renderDeckStat({
-                      deck: deck as Deck,
-                      label: 'Heroes',
-                      stat: 'heroes',
-                    })}
-                    {renderDeckStat({
-                      deck: deck as Deck,
-                      label: 'Strength',
-                      stat: 'strengthTotal',
-                    })}
-                    <div>
-                      <span>Strength Average:</span>
-                      <span className="deck-stat-strengthAverage-value">{deck.stats.strengthAverage.toFixed(1)}</span>
-                    </div>
-                  </div>
-                  <div className="deck-list-deck-stats-group">
-                    {renderDeckStat({
-                      deck: deck as Deck,
-                      label: 'Close',
-                      stat: 'close',
-                    })}
-                    {renderDeckStat({
-                      deck: deck as Deck,
-                      label: 'Ranged',
-                      stat: 'ranged',
-                    })}
-                    {renderDeckStat({
-                      deck: deck as Deck,
-                      label: 'Siege',
-                      stat: 'siege',
-                    })}
-                    {renderDeckStat({
-                      deck: deck as Deck,
-                      label: 'Agile',
-                      stat: 'agile',
-                    })}
-                  </div>
-                </div>
+                {renderDeckStats({
+                  deck: deck as Deck,
+                  neutralStats,
+                  neutralLoading: neutralStatsLoading,
+                  neutralError: resolvedNeutralStatsError,
+                })}
                 {actions && actions.length > 0 && (
                   <div className="deck-list-deck-actions-container">
                     {actions.map((action, index) => (
@@ -230,7 +221,8 @@ function renderHeader({
   navigate,
   onClose,
   onCreate,
-  refetch,
+  refetchDecks,
+  refetchNeutralStats,
   setFilterFields,
   setFiltersExpanded,
   setNameFilter,
@@ -246,7 +238,7 @@ function renderHeader({
   navigate: NavigateFunction
   onClose?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
   onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  refetch: (
+  refetchDecks: (
     variables?:
       | Partial<
           Exact<{
@@ -255,6 +247,15 @@ function renderHeader({
         >
       | undefined
   ) => Promise<ApolloQueryResult<DecksQuery>>
+  refetchNeutralStats: (
+    variables?:
+      | Partial<
+          Exact<{
+            keys?: InputMaybe<Array<FactionKey> | FactionKey>
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<FactionStatsQuery>>
   setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setNameFilter: Dispatch<SetStateAction<string>>
@@ -359,7 +360,7 @@ function renderHeader({
             id={HTML_IDS.DeckListRefresh}
             style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
             title="Refresh"
-            onClick={() => !loading && refetch()}
+            onClick={async () => !loading && (await Promise.all([refetchDecks(), refetchNeutralStats()]))}
           >
             <CgSync color={loading ? 'gray' : 'black'} />
           </div>
@@ -466,23 +467,118 @@ function renderFilterCheckboxes({
   )
 }
 
-function renderDeckStat({ deck, label, stat }: { deck: Deck; label: string; stat: string }) {
-  const deckStat = (deck.stats as any)[stat] // eslint-disable-line @typescript-eslint/no-explicit-any
-  const factionStat = (deck.faction.stats as any)[stat] // eslint-disable-line @typescript-eslint/no-explicit-any
+function renderDeckStats({
+  deck,
+  neutralLoading,
+  neutralStats,
+  neutralError,
+}: {
+  deck: Deck
+  neutralStats: UnitStats | undefined
+  neutralLoading: boolean
+  neutralError: string
+}) {
+  return (
+    <div className="deck-list-deck-section deck-list-deck-stats">
+      {neutralLoading ? (
+        <Centered>
+          <LoadingSpinner size="100px" />
+        </Centered>
+      ) : neutralError || !neutralStats ? (
+        <Centered>
+          <div className="error-text">{`Error getting Neutral faction stats: ${neutralError}`}</div>
+        </Centered>
+      ) : (
+        <>
+          <div className="deck-list-deck-stats-group">
+            {renderDeckStat({
+              deck,
+              neutralStats,
+              label: 'Units',
+              stat: 'units',
+            })}
+            {renderDeckStat({
+              deck,
+              neutralStats,
+              label: 'Specials',
+              stat: 'specials',
+            })}
+            {renderDeckStat({
+              deck,
+              neutralStats,
+              label: 'Heroes',
+              stat: 'heroes',
+            })}
+            {renderDeckStat({
+              deck,
+              neutralStats,
+              label: 'Strength',
+              stat: 'strengthTotal',
+            })}
+            <div>
+              <span>Strength Average:</span>
+              <span className="deck-stat-strengthAverage-value">{deck.stats.strengthAverage.toFixed(1)}</span>
+            </div>
+          </div>
+          <div className="deck-list-deck-stats-group">
+            {renderDeckStat({
+              deck,
+              neutralStats,
+              label: 'Close',
+              stat: 'close',
+            })}
+            {renderDeckStat({
+              deck,
+              neutralStats,
+              label: 'Ranged',
+              stat: 'ranged',
+            })}
+            {renderDeckStat({
+              deck,
+              neutralStats,
+              label: 'Siege',
+              stat: 'siege',
+            })}
+            {renderDeckStat({
+              deck,
+              neutralStats,
+              label: 'Agile',
+              stat: 'agile',
+            })}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function renderDeckStat({
+  deck,
+  label,
+  stat,
+  neutralStats,
+}: {
+  deck: Deck
+  label: string
+  stat: keyof UnitStats
+  neutralStats: UnitStats
+}) {
+  const available = (deck.faction.stats[stat] as number) + (neutralStats[stat] as number)
+  const chosen = deck.stats[stat]
 
   return (
     <div>
       <div>
         <span>{`${label}:`}</span>
         <span className={`deck-stat-${stat}-value`}>
-          {deckStat}/{factionStat}
+          {chosen}/{available}
         </span>
       </div>
       <ProgressBar
         completeColor="gray"
         remainingColor="lightgray"
         height="10px"
-        percent={(deckStat / factionStat) * 100}
+        percent={((chosen as number) / (available as number)) * 100}
       />
     </div>
   )

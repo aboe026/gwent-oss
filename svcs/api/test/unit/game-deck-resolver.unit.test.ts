@@ -12,37 +12,13 @@ describe('game-deck-resolver', () => {
         from: false,
       })
     })
-    it('calls out to deck resolver if from with undefined neutral stats', async () => {
+    it('calls out to deck resolver if from', async () => {
       await testResolveFromObject({})
-    })
-    it('calls out to deck resolver if from with explicit false neutral stats', async () => {
-      await testResolveFromObject({
-        neutralDeckStats: false,
-        neutralLeaderStats: false,
-        neutralUnitStats: false,
-      })
-    })
-    it('calls out to deck resolver if from with explicit true neutral stats', async () => {
-      await testResolveFromObject({
-        neutralDeckStats: true,
-        neutralLeaderStats: true,
-        neutralUnitStats: true,
-      })
     })
   })
 })
 
-async function testResolveFromObject({
-  from = true,
-  neutralDeckStats,
-  neutralLeaderStats,
-  neutralUnitStats,
-}: {
-  from?: boolean
-  neutralDeckStats?: boolean
-  neutralLeaderStats?: boolean
-  neutralUnitStats?: boolean
-}) {
+async function testResolveFromObject({ from = true }: { from?: boolean }) {
   const discardId = new ObjectId()
   const handId = new ObjectId()
   const redrawFromId = new ObjectId()
@@ -108,9 +84,6 @@ async function testResolveFromObject({
   await expect(
     GameDeckResolver.fromObject({
       gameDeck,
-      neutralDeckStats,
-      neutralLeaderStats,
-      neutralUnitStats,
     })
   ).resolves.toEqual({
     discard: [discard],
@@ -131,9 +104,6 @@ async function testResolveFromObject({
           [
             {
               deck: gameDeck.from,
-              neutralDeckStats,
-              neutralLeaderStats,
-              neutralUnitStats,
             },
           ],
         ]
@@ -159,7 +129,6 @@ async function testResolveFromObject({
             id: undrawnId,
           }),
         ],
-        neutralStats: neutralUnitStats,
       },
     ],
   ])

@@ -116,9 +116,10 @@ test('Deck added through API appears for user on decks page without any decks', 
     decks: [],
   })
 
-  const deck = await new ApiClient({
+  const client = new ApiClient({
     username,
-  }).addDeck(deckInput1)
+  })
+  const deck = await client.addDeck(deckInput1)
 
   await DecksPage.verify({
     decks: [
@@ -128,6 +129,7 @@ test('Deck added through API appears for user on decks page without any decks', 
         leader: deck.leader,
         name: deck.name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -144,6 +146,7 @@ test('Deck added through API appears for user on decks page with existing deck',
   await LoginPage.login({
     username,
   })
+  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
 
   await DecksPage.verify({
     decks: [
@@ -153,6 +156,7 @@ test('Deck added through API appears for user on decks page with existing deck',
         leader: deck1.leader,
         name: deck1.name,
         stats: deck1.stats,
+        neutralFaction,
       },
     ],
   })
@@ -167,6 +171,7 @@ test('Deck added through API appears for user on decks page with existing deck',
         leader: deck1.leader,
         name: deck1.name,
         stats: deck1.stats,
+        neutralFaction,
       },
       {
         created: deck2.created,
@@ -174,6 +179,7 @@ test('Deck added through API appears for user on decks page with existing deck',
         leader: deck2.leader,
         name: deck2.name,
         stats: deck2.stats,
+        neutralFaction,
       },
     ],
   })
@@ -189,9 +195,10 @@ test('Deck added through API appears for user without decks navigating to decks 
     username,
   })
   await HomePage.verify(username)
-  const deck = await new ApiClient({
+  const client = new ApiClient({
     username,
-  }).addDeck(deckInput1)
+  })
+  const deck = await client.addDeck(deckInput1)
   await Banner.goTo(Banner.elements.MenuDecks)
 
   await DecksPage.verify({
@@ -202,6 +209,7 @@ test('Deck added through API appears for user without decks navigating to decks 
         leader: deck.leader,
         name: deck.name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -220,6 +228,7 @@ test('Deck added through API appears for user with existing deck navigating to d
   })
   await HomePage.verify(username)
   const deck2 = await client.addDeck(deckInput2)
+  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
 
   await Banner.goTo(Banner.elements.MenuDecks)
   await DecksPage.verify({
@@ -230,6 +239,7 @@ test('Deck added through API appears for user with existing deck navigating to d
         leader: deck1.leader,
         name: deck1.name,
         stats: deck1.stats,
+        neutralFaction,
       },
       {
         created: deck2.created,
@@ -237,6 +247,7 @@ test('Deck added through API appears for user with existing deck navigating to d
         leader: deck2.leader,
         name: deck2.name,
         stats: deck2.stats,
+        neutralFaction,
       },
     ],
   })
@@ -256,9 +267,10 @@ test('Deck added through API appears for user without decks navigating from deck
   })
   await Banner.goTo(Banner.elements.MenuHome)
   await HomePage.verify(username)
-  const deck = await new ApiClient({
+  const client = new ApiClient({
     username,
-  }).addDeck(deckInput1)
+  })
+  const deck = await client.addDeck(deckInput1)
   await Banner.goTo(Banner.elements.MenuDecks)
 
   await DecksPage.verify({
@@ -269,6 +281,7 @@ test('Deck added through API appears for user without decks navigating from deck
         leader: deck.leader,
         name: deck.name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -285,6 +298,7 @@ test('Deck added through API appears for user with existing deck navigating from
   await LoginPage.login({
     username,
   })
+  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
   await DecksPage.verify({
     decks: [
       {
@@ -293,6 +307,7 @@ test('Deck added through API appears for user with existing deck navigating from
         leader: deck1.leader,
         name: deck1.name,
         stats: deck1.stats,
+        neutralFaction,
       },
     ],
   })
@@ -309,6 +324,7 @@ test('Deck added through API appears for user with existing deck navigating from
         leader: deck1.leader,
         name: deck1.name,
         stats: deck1.stats,
+        neutralFaction,
       },
       {
         created: deck2.created,
@@ -316,6 +332,7 @@ test('Deck added through API appears for user with existing deck navigating from
         leader: deck2.leader,
         name: deck2.name,
         stats: deck2.stats,
+        neutralFaction,
       },
     ],
   })
@@ -350,6 +367,7 @@ test('Deck added through API appears for user without any decks after they creat
     units: deckInput2.unitNames,
   })
   const deck2 = await client.getDeck(deckInput2.name)
+  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
 
   await DecksPage.verify({
     decks: [
@@ -359,6 +377,7 @@ test('Deck added through API appears for user without any decks after they creat
         leader: deck1.leader,
         name: deck1.name,
         stats: deck1.stats,
+        neutralFaction,
       },
       {
         created: deck2.created,
@@ -366,6 +385,7 @@ test('Deck added through API appears for user without any decks after they creat
         leader: deck2.leader,
         name: deck2.name,
         stats: deck2.stats,
+        neutralFaction,
       },
     ],
   })
@@ -398,6 +418,7 @@ test('Deck added through API appears for user without any decks after they creat
     units: deckInput2.unitNames,
   })
   const deck2 = await client.getDeck(deckInput2.name)
+  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
 
   await DecksPage.verify({
     decks: [
@@ -407,6 +428,7 @@ test('Deck added through API appears for user without any decks after they creat
         leader: deck1.leader,
         name: deck1.name,
         stats: deck1.stats,
+        neutralFaction,
       },
       {
         created: deck2.created,
@@ -414,6 +436,7 @@ test('Deck added through API appears for user without any decks after they creat
         leader: deck2.leader,
         name: deck2.name,
         stats: deck2.stats,
+        neutralFaction,
       },
     ],
   })
@@ -440,6 +463,7 @@ test('Deck added through API appears for user with existing deck after they crea
         leader: deck1.leader,
         name: deck1.name,
         stats: deck1.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -457,6 +481,7 @@ test('Deck added through API appears for user with existing deck after they crea
     units: deckInput3.unitNames,
   })
   const deck3 = await client.getDeck(deckInput3.name)
+  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
 
   await DecksPage.verify({
     decks: [
@@ -466,6 +491,7 @@ test('Deck added through API appears for user with existing deck after they crea
         leader: deck1.leader,
         name: deck1.name,
         stats: deck1.stats,
+        neutralFaction,
       },
       {
         created: deck3.created,
@@ -473,6 +499,7 @@ test('Deck added through API appears for user with existing deck after they crea
         leader: deck3.leader,
         name: deck3.name,
         stats: deck3.stats,
+        neutralFaction,
       },
       {
         created: deck2.created,
@@ -480,6 +507,7 @@ test('Deck added through API appears for user with existing deck after they crea
         leader: deck2.leader,
         name: deck2.name,
         stats: deck2.stats,
+        neutralFaction,
       },
     ],
   })

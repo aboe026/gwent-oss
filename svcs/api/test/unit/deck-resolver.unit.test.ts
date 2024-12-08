@@ -40,25 +40,9 @@ describe('deck-resolver', () => {
         userResolverCalled: false,
       })
     })
-    it('calls to external resolvers without neutral stats if only deck provided', async () => {
+    it('calls to external resolvers if only deck provided', async () => {
       await testResolveFromObject({
         deck,
-      })
-    })
-    it('calls to external resolvers with neutral stats if explicit false provided', async () => {
-      await testResolveFromObject({
-        deck,
-        neutralDeckStats: false,
-        neutralLeaderStats: false,
-        neutralUnitStats: false,
-      })
-    })
-    it('calls to external resolvers with neutral stats if explicit true provided', async () => {
-      await testResolveFromObject({
-        deck,
-        neutralDeckStats: true,
-        neutralLeaderStats: true,
-        neutralUnitStats: true,
       })
     })
   })
@@ -86,75 +70,9 @@ describe('deck-resolver', () => {
         unit,
       }
     })
-    it('returns resolved deck if implicit neutral stats', async () => {
+    it('returns resolved deck', async () => {
       await testResolveFromArray({
         decks: [deck],
-        factionsGetResponse: [faction],
-        factionsResolveResponse: [resolvedFaction],
-        leadersResolveResponse: [leader],
-        unitsResolveResponse: units,
-        userResolveResponse: [user],
-        resolvedDecks: [
-          TestUtil.getDeckFromDbDeck({
-            deck,
-            faction: resolvedFaction,
-            leader,
-            units: deckUnits,
-            user,
-          }),
-        ],
-        deckResolveCalls: [
-          [
-            {
-              deck,
-              faction: resolvedFaction,
-              leader,
-              units: deckUnits,
-              user,
-            },
-          ],
-        ],
-      })
-    })
-    it('returns resolved deck if explicit false neutral stats', async () => {
-      await testResolveFromArray({
-        decks: [deck],
-        neutralDeckStats: false,
-        neutralLeaderStats: false,
-        neutralUnitStats: false,
-        factionsGetResponse: [faction],
-        factionsResolveResponse: [resolvedFaction],
-        leadersResolveResponse: [leader],
-        unitsResolveResponse: units,
-        userResolveResponse: [user],
-        resolvedDecks: [
-          TestUtil.getDeckFromDbDeck({
-            deck,
-            faction: resolvedFaction,
-            leader,
-            units: deckUnits,
-            user,
-          }),
-        ],
-        deckResolveCalls: [
-          [
-            {
-              deck,
-              faction: resolvedFaction,
-              leader,
-              units: deckUnits,
-              user,
-            },
-          ],
-        ],
-      })
-    })
-    it('returns resolved deck if explicit true neutral stats', async () => {
-      await testResolveFromArray({
-        decks: [deck],
-        neutralDeckStats: true,
-        neutralLeaderStats: true,
-        neutralUnitStats: true,
         factionsGetResponse: [faction],
         factionsResolveResponse: [resolvedFaction],
         leadersResolveResponse: [leader],
@@ -189,9 +107,6 @@ async function testResolveFromObject({
   deck,
   faction,
   leader,
-  neutralDeckStats,
-  neutralLeaderStats,
-  neutralUnitStats,
   units,
   user,
   factionResolverCalled = true,
@@ -203,9 +118,6 @@ async function testResolveFromObject({
   leader?: Leader
   units?: DeckUnit[]
   user?: User
-  neutralDeckStats?: boolean
-  neutralLeaderStats?: boolean
-  neutralUnitStats?: boolean
   factionResolverCalled?: boolean
   leaderResolverCalled?: boolean
   userResolverCalled?: boolean
@@ -239,9 +151,6 @@ async function testResolveFromObject({
       deck,
       faction,
       leader,
-      neutralDeckStats,
-      neutralLeaderStats,
-      neutralUnitStats,
       units,
       user,
     })
@@ -262,7 +171,6 @@ async function testResolveFromObject({
           [
             {
               id: deck.faction,
-              neutrals: neutralDeckStats,
             },
           ],
         ]
@@ -274,7 +182,6 @@ async function testResolveFromObject({
           [
             {
               id: deck.leader,
-              neutralStats: neutralLeaderStats,
             },
           ],
         ]
@@ -287,7 +194,6 @@ async function testResolveFromObject({
           [
             {
               deckUnits: deck.units,
-              neutralStats: neutralUnitStats,
             },
           ],
         ]
@@ -297,9 +203,6 @@ async function testResolveFromObject({
 
 async function testResolveFromArray({
   decks,
-  neutralDeckStats,
-  neutralLeaderStats,
-  neutralUnitStats,
   factionsGetResponse = [],
   factionsResolveResponse = [],
   leadersResolveResponse = [],
@@ -309,9 +212,6 @@ async function testResolveFromArray({
   deckResolveCalls = [],
 }: {
   decks: DeckDbObject[]
-  neutralDeckStats?: boolean
-  neutralLeaderStats?: boolean
-  neutralUnitStats?: boolean
   factionsGetResponse?: FactionDbObject[]
   factionsResolveResponse?: Faction[]
   leadersResolveResponse?: Leader[]
@@ -335,9 +235,6 @@ async function testResolveFromArray({
   await expect(
     DeckResolver.fromArray({
       decks,
-      neutralDeckStats,
-      neutralLeaderStats,
-      neutralUnitStats,
     })
   ).resolves.toEqual(resolvedDecks)
 
@@ -352,7 +249,6 @@ async function testResolveFromArray({
     [
       {
         factions: factionsGetResponse,
-        neutralStats: neutralDeckStats,
       },
     ],
   ])
@@ -361,7 +257,6 @@ async function testResolveFromArray({
       {
         ids: decks.map((deck) => deck.leader),
         factions: factionsGetResponse,
-        neutralStats: neutralLeaderStats,
       },
     ],
   ])
@@ -374,7 +269,6 @@ async function testResolveFromArray({
       {
         ids: getUniqueItems<string>(unitIds),
         factions: factionsGetResponse,
-        neutralStats: neutralUnitStats,
       },
     ],
   ])

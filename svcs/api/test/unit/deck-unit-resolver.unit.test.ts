@@ -18,39 +18,13 @@ describe('deck-unit-resolver', () => {
         unit,
       })
     })
-    it('calls to UnitResolver with undefined neutralStats', async () => {
+    it('calls to UnitResolver if unit not provided', async () => {
       const unitId = new ObjectId()
       await testResolveFromObject({
         deckUnit: {
           artStyle: 1,
           unit: unitId,
         },
-        unitResolverResponse: TestUtil.getUnit({
-          id: unitId,
-        }),
-      })
-    })
-    it('calls to UnitResolver with explicit false neutralStats', async () => {
-      const unitId = new ObjectId()
-      await testResolveFromObject({
-        deckUnit: {
-          artStyle: 1,
-          unit: unitId,
-        },
-        neutralStats: false,
-        unitResolverResponse: TestUtil.getUnit({
-          id: unitId,
-        }),
-      })
-    })
-    it('calls to UnitResolver with explicit true neutralStats', async () => {
-      const unitId = new ObjectId()
-      await testResolveFromObject({
-        deckUnit: {
-          artStyle: 1,
-          unit: unitId,
-        },
-        neutralStats: true,
         unitResolverResponse: TestUtil.getUnit({
           id: unitId,
         }),
@@ -63,7 +37,7 @@ describe('deck-unit-resolver', () => {
         deckUnits: [],
       })
     })
-    it('calls to resolvers with unique unit ids if undefined neutralStats', async () => {
+    it('calls to resolvers with unique unit ids if provided', async () => {
       const deckUnit = TestUtil.getDbDeckUnit({})
       await testResolveFromArray({
         deckUnits: [deckUnit],
@@ -76,47 +50,6 @@ describe('deck-unit-resolver', () => {
           [
             {
               ids: [deckUnit.unit],
-              neutralStats: undefined,
-            },
-          ],
-        ],
-      })
-    })
-    it('calls to resolvers with unique unit ids if explicit false neutralStats', async () => {
-      const deckUnit = TestUtil.getDbDeckUnit({})
-      await testResolveFromArray({
-        deckUnits: [deckUnit],
-        neutralStats: false,
-        resolvedUnits: [
-          TestUtil.getUnit({
-            id: deckUnit.unit,
-          }),
-        ],
-        unitResolverCalls: [
-          [
-            {
-              ids: [deckUnit.unit],
-              neutralStats: false,
-            },
-          ],
-        ],
-      })
-    })
-    it('calls to resolvers with unique unit ids if explicit true neutralStats', async () => {
-      const deckUnit = TestUtil.getDbDeckUnit({})
-      await testResolveFromArray({
-        deckUnits: [deckUnit],
-        neutralStats: true,
-        resolvedUnits: [
-          TestUtil.getUnit({
-            id: deckUnit.unit,
-          }),
-        ],
-        unitResolverCalls: [
-          [
-            {
-              ids: [deckUnit.unit],
-              neutralStats: true,
             },
           ],
         ],
@@ -127,12 +60,10 @@ describe('deck-unit-resolver', () => {
 
 async function testResolveFromObject({
   deckUnit,
-  neutralStats,
   unit,
   unitResolverResponse,
 }: {
   deckUnit: DeckUnitDbObject
-  neutralStats?: boolean
   unit?: Unit
   unitResolverResponse?: Unit
 }) {
@@ -144,7 +75,6 @@ async function testResolveFromObject({
   await expect(
     DeckUnitResolver.fromObject({
       deckUnit,
-      neutralStats,
       unit,
     })
   ).resolves.toEqual({
@@ -159,7 +89,6 @@ async function testResolveFromObject({
           [
             {
               id: deckUnit.unit,
-              neutralStats,
             },
           ],
         ]
@@ -168,12 +97,10 @@ async function testResolveFromObject({
 
 async function testResolveFromArray({
   deckUnits = [],
-  neutralStats,
   resolvedUnits = [],
   unitResolverCalls = [],
 }: {
   deckUnits?: DeckUnitDbObject[]
-  neutralStats?: boolean
   resolvedUnits?: Unit[]
   unitResolverCalls?: any[][]
 }) {
@@ -182,7 +109,6 @@ async function testResolveFromArray({
   await expect(
     DeckUnitResolver.fromArray({
       deckUnits,
-      neutralStats,
     })
   ).resolves.toEqual(
     deckUnits?.map((deckUnit) => {

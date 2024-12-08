@@ -45,11 +45,6 @@ export type Deck = {
   user: User;
 };
 
-
-export type DeckStatsArgs = {
-  neutrals?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
 export type DeckUnit = {
   __typename?: 'DeckUnit';
   artStyle: Scalars['Int']['output'];
@@ -129,11 +124,6 @@ export type Faction = {
   key: FactionKey;
   name: Scalars['String']['output'];
   stats: UnitStats;
-};
-
-
-export type FactionStatsArgs = {
-  neutrals?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export enum FactionKey {
@@ -353,6 +343,11 @@ export type Query = {
   settings: Array<Setting>;
   /** All units available to build decks with. */
   units: Array<Unit>;
+};
+
+
+export type QueryFactionsArgs = {
+  keys?: InputMaybe<Array<FactionKey>>;
 };
 
 

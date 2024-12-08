@@ -58,7 +58,6 @@ test('Speed Run', async (t) => {
   const client1 = new ApiClient({ username: username1 })
   const faction1 = await client1.getFaction({
     key: FactionKey.NilfgaardianEmpire,
-    neutrals: true,
   })
   const leader1 = await client1.getLeader({
     faction: faction1.key,
@@ -82,7 +81,6 @@ test('Speed Run', async (t) => {
   const client2 = new ApiClient({ username: username2 })
   const faction2 = await client2.getFaction({
     key: FactionKey.Skellige,
-    neutrals: true,
   })
   const leader2 = await client2.getLeader({
     faction: faction2.key,
@@ -301,7 +299,6 @@ test('Scenic Route', async (t) => {
   const factionKey1 = FactionKey.NilfgaardianEmpire
   const faction1 = await client1.getFaction({
     key: factionKey1,
-    neutrals: true,
   })
   const leader1 = await client1.getLeader({
     faction: factionKey1,
@@ -315,6 +312,7 @@ test('Scenic Route', async (t) => {
     pickers: true,
   })
   const deck1 = await client1.getDeck(deckName1)
+  const neutralFaction = await client1.getFaction({ key: FactionKey.Neutral })
   await DecksPage.verify({
     decks: [
       {
@@ -323,6 +321,7 @@ test('Scenic Route', async (t) => {
         leader: leader1,
         name: deckName1,
         stats: deck1.stats,
+        neutralFaction,
       },
     ],
   })
@@ -351,7 +350,6 @@ test('Scenic Route', async (t) => {
   const factionKey2 = FactionKey.ScoiaTael
   const faction2 = await client2.getFaction({
     key: factionKey2,
-    neutrals: true,
   })
   const leader2 = await client2.getLeader({
     faction: factionKey2,
@@ -396,6 +394,7 @@ test('Scenic Route', async (t) => {
         leader: leader2,
         name: deckName2,
         stats: deck2.stats,
+        neutralFaction,
       },
     ],
   })
@@ -423,6 +422,7 @@ test('Scenic Route', async (t) => {
     leader: leader2,
     name: deck2.name,
     stats: deck2.stats,
+    neutralFaction,
   })
   const gameId = await GamePage.getIdFromUrl()
   const gameDeck2 = await client2.getGameDeck(gameId)
@@ -483,6 +483,7 @@ test('Scenic Route', async (t) => {
     name: deck1.name,
     stats: deck1.stats,
     verifyCloses: false,
+    neutralFaction,
   })
   const gameDeck1 = await client1.getGameDeck(gameId)
   const updatedGame = await client1.getGame(gameId)

@@ -91,12 +91,33 @@ export default class DeckList {
     await t.expect(deck.find(`.${HTML_CLASSES.DeckListDeckLeaderAbility}`).innerText).eql(leader.ability)
   }
 
-  static async verifyStats({ deck, stats, faction }: { deck: Selector; stats: UnitStats; faction: Faction }) {
-    const deckListStats = ['units', 'specials', 'heroes', 'strengthTotal', 'close', 'ranged', 'siege', 'agile']
+  static async verifyStats({
+    deck,
+    stats,
+    deckFaction,
+    neutralFaction,
+  }: {
+    deck: Selector
+    stats: UnitStats
+    deckFaction: Faction
+    neutralFaction: Faction
+  }) {
+    const deckListStats: (keyof UnitStats)[] = [
+      'units',
+      'specials',
+      'heroes',
+      'strengthTotal',
+      'close',
+      'ranged',
+      'siege',
+      'agile',
+    ]
     for (const stat of deckListStats) {
-      const selected = (stats as any)[stat].toString()
-      const total = (faction.stats as any)[stat].toString()
-      await t.expect(deck.find(`.deck-stat-${stat}-value`).innerText).eql(`${selected}/${total}`)
+      const possible = (deckFaction.stats[stat] as number) + (neutralFaction.stats[stat] as number)
+      const chosen = stats[stat]
+      await t.expect(deck.find(`.deck-stat-${stat}-value`).innerText).eql(`${chosen}/${possible}`)
+      if (stat !== undefined) {
+      }
     }
     const avgStr = stats.strengthAverage.toFixed(1).toString()
     await t.expect(deck.find('.deck-stat-strengthAverage-value').innerText).eql(avgStr)
@@ -125,7 +146,8 @@ export default class DeckList {
     await DeckList.verifyStats({
       deck,
       stats: info.stats,
-      faction: info.faction,
+      deckFaction: info.faction,
+      neutralFaction: info.neutralFaction,
     })
   }
 
@@ -196,4 +218,5 @@ export interface DeckInfo {
   faction: Faction
   leader: Leader
   stats: UnitStats
+  neutralFaction: Faction
 }

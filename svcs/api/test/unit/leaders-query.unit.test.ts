@@ -120,7 +120,6 @@ async function testLeaders({
       {
         factions: factionGetResponse,
         leaders: [leader],
-        neutralStats: undefined,
       },
     ],
   ])

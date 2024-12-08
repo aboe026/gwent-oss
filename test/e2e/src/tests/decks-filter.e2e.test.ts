@@ -16,6 +16,7 @@ interface DeckFilterTestCtx extends E2eCtx {
   leader2: Leader
   deck1: Deck
   deck2: Deck
+  neutralFaction: Faction
 }
 const fixture = getFixtureCtx<E2eCtx, DeckFilterTestCtx>()
 const test = getTestCtx<E2eCtx, DeckFilterTestCtx>()
@@ -88,11 +89,9 @@ fixture('Decks Filter')
     })
     t.ctx.faction1 = await client.getFaction({
       key: faction1,
-      neutrals: true,
     })
     t.ctx.faction2 = await client.getFaction({
       key: faction2,
-      neutrals: true,
     })
     t.ctx.leader1 = await client.getLeader({
       faction: faction1,
@@ -114,6 +113,7 @@ fixture('Decks Filter')
       name: t.ctx.name2,
       unitNames: units2,
     })
+    t.ctx.neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
     await LoginPage.login({
       username: t.ctx.username,
     })
@@ -129,6 +129,7 @@ test('Filters by name', async (t) => {
         leader: t.ctx.leader1,
         name: t.ctx.name1,
         stats: t.ctx.deck1.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -141,6 +142,7 @@ test('Filters by name', async (t) => {
         leader: t.ctx.leader2,
         name: t.ctx.name2,
         stats: t.ctx.deck2.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -155,6 +157,7 @@ test('Filters by name', async (t) => {
         leader: t.ctx.leader1,
         name: t.ctx.name1,
         stats: t.ctx.deck1.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
       {
         created: new Date(t.ctx.deck2.created),
@@ -162,6 +165,7 @@ test('Filters by name', async (t) => {
         leader: t.ctx.leader2,
         name: t.ctx.name2,
         stats: t.ctx.deck2.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -178,6 +182,7 @@ test('Filters by faction', async (t) => {
         leader: t.ctx.leader2,
         name: t.ctx.name2,
         stats: t.ctx.deck2.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -190,6 +195,7 @@ test('Filters by faction', async (t) => {
         leader: t.ctx.leader1,
         name: t.ctx.name1,
         stats: t.ctx.deck1.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
       {
         created: new Date(t.ctx.deck2.created),
@@ -197,6 +203,7 @@ test('Filters by faction', async (t) => {
         leader: t.ctx.leader2,
         name: t.ctx.name2,
         stats: t.ctx.deck2.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -210,6 +217,7 @@ test('Filters by faction', async (t) => {
         leader: t.ctx.leader1,
         name: t.ctx.name1,
         stats: t.ctx.deck1.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
       {
         created: new Date(t.ctx.deck2.created),
@@ -217,6 +225,7 @@ test('Filters by faction', async (t) => {
         leader: t.ctx.leader2,
         name: t.ctx.name2,
         stats: t.ctx.deck2.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -231,6 +240,7 @@ test('Filters by faction', async (t) => {
         leader: t.ctx.leader1,
         name: t.ctx.name1,
         stats: t.ctx.deck1.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
       {
         created: new Date(t.ctx.deck2.created),
@@ -238,6 +248,7 @@ test('Filters by faction', async (t) => {
         leader: t.ctx.leader2,
         name: t.ctx.name2,
         stats: t.ctx.deck2.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -256,6 +267,7 @@ test('Filters by name and faction', async (t) => {
         leader: t.ctx.leader2,
         name: t.ctx.name2,
         stats: t.ctx.deck2.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -270,6 +282,7 @@ test('Filters by name and faction', async (t) => {
         leader: t.ctx.leader1,
         name: t.ctx.name1,
         stats: t.ctx.deck1.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
       {
         created: new Date(t.ctx.deck2.created),
@@ -277,6 +290,7 @@ test('Filters by name and faction', async (t) => {
         leader: t.ctx.leader2,
         name: t.ctx.name2,
         stats: t.ctx.deck2.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -289,6 +303,7 @@ test('Filters by name and faction', async (t) => {
         leader: t.ctx.leader1,
         name: t.ctx.name1,
         stats: t.ctx.deck1.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
       {
         created: new Date(t.ctx.deck2.created),
@@ -296,6 +311,7 @@ test('Filters by name and faction', async (t) => {
         leader: t.ctx.leader2,
         name: t.ctx.name2,
         stats: t.ctx.deck2.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })
@@ -308,6 +324,7 @@ test('Filters by name and faction', async (t) => {
         leader: t.ctx.leader1,
         name: t.ctx.name1,
         stats: t.ctx.deck1.stats,
+        neutralFaction: t.ctx.neutralFaction,
       },
     ],
   })

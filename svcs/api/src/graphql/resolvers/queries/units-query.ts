@@ -60,7 +60,6 @@ export default class UnitsQuery {
     return UnitResolver.fromArray({
       factions,
       units,
-      neutralStats: RequestedFields.getArgument<boolean>(info, 'units.faction.stats.neutrals'),
     })
   }
 }

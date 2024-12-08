@@ -1,0 +1,15 @@
+query FactionStats($keys: [FactionKey!]) {
+  factions(keys: $keys) {
+    key
+    stats {
+      units
+      specials
+      heroes
+      close
+      ranged
+      siege
+      agile
+      strengthTotal
+    }
+  }
+}

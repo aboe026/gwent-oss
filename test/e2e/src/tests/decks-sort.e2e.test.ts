@@ -1,5 +1,5 @@
 import ApiClient from '../util/api-client'
-import DeckList from '../components/deck-list'
+import DeckList, { DeckInfo } from '../components/deck-list'
 import DecksPage from '../page-objects/decks-page'
 import { Deck, Faction, FactionKey, Leader } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
@@ -16,6 +16,7 @@ interface DecksSortTestCtx extends E2eCtx {
   leader2: Leader
   deck1: Deck
   deck2: Deck
+  neutralFaction: Faction
 }
 const fixture = getFixtureCtx<E2eCtx, DecksSortTestCtx>()
 const test = getTestCtx<E2eCtx, DecksSortTestCtx>()
@@ -88,11 +89,9 @@ fixture('Decks Sort')
     })
     t.ctx.faction1 = await client.getFaction({
       key: faction1,
-      neutrals: true,
     })
     t.ctx.faction2 = await client.getFaction({
       key: faction2,
-      neutrals: true,
     })
     t.ctx.leader1 = await client.getLeader({
       faction: faction1,
@@ -114,6 +113,7 @@ fixture('Decks Sort')
       name: t.ctx.name2,
       unitNames: units2,
     })
+    t.ctx.neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
     await LoginPage.login({
       username: t.ctx.username,
     })
@@ -289,19 +289,21 @@ test('Sorts by units ascending', async (t) => {
 
 async function verifySortOrder({ ctx, first }: { first: boolean; ctx: DecksSortTestCtx }) {
   const decks = []
-  const deck1 = {
+  const deck1: DeckInfo = {
     created: new Date(ctx.deck1.created),
     faction: ctx.faction1,
     leader: ctx.leader1,
     name: ctx.name1,
     stats: ctx.deck1.stats,
+    neutralFaction: ctx.neutralFaction,
   }
-  const deck2 = {
+  const deck2: DeckInfo = {
     created: new Date(ctx.deck2.created),
     faction: ctx.faction2,
     leader: ctx.leader2,
     name: ctx.name2,
     stats: ctx.deck2.stats,
+    neutralFaction: ctx.neutralFaction,
   }
   decks.push(first ? deck1 : deck2)
   decks.push(first ? deck2 : deck1)

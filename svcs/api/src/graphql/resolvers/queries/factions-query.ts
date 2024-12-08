@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { Faction } from '@gwent/graphql-schema/resolver-typings'
+import { Faction, QueryFactionsArgs } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from '../types/faction-resolver'
 import FactionStore from '../../../database/stores/faction-store'
 import { GraphQLResolveInfo } from 'graphql'
@@ -20,7 +20,7 @@ export default class FactionsQuery {
    * @param info The information about the GraphQL request.
    * @returns The Factions available.
    */
-  static async factions(context: Context, info: GraphQLResolveInfo): Promise<Faction[]> {
+  static async factions(args: QueryFactionsArgs, context: Context, info: GraphQLResolveInfo): Promise<Faction[]> {
     const userId = context.session?.user?._id
     const logPrefix = `factions by "${userId}"`
     if (FactionsQuery.logger.isTraceEnabled()) {
@@ -31,14 +31,16 @@ export default class FactionsQuery {
         `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
       )
     }
-    const factions = await FactionStore.get({})
+    const keys = args.keys
+
+    const factions = await FactionStore.get({
+      keys: keys || undefined,
+    })
     if (FactionsQuery.logger.isTraceEnabled()) {
       FactionsQuery.logger.trace(`${logPrefix} factions: "${JSON.stringify(factions)}"`)
     }
-    const neutrals = RequestedFields.getArgument<boolean>(info, 'factions.stats.neutrals')
     return FactionResolver.fromArray({
       factions,
-      neutralStats: neutrals,
     })
   }
 }

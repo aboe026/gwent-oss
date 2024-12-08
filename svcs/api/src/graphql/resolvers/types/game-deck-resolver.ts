@@ -36,7 +36,6 @@ export default class GameDeckResolver {
         ...gameDeck.redraws.map((redraw) => redraw.to),
         ...gameDeck.undrawn,
       ],
-      neutralStats: neutralUnitStats,
     })
 
     return {
@@ -48,9 +47,6 @@ export default class GameDeckResolver {
         gameDeck.from &&
         (await DeckResolver.fromObject({
           deck: gameDeck.from,
-          neutralDeckStats,
-          neutralLeaderStats,
-          neutralUnitStats,
         })),
       hand: gameDeck.hand.map(
         (deckUnit) =>

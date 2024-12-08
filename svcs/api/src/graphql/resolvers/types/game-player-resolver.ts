@@ -46,13 +46,11 @@ export default class GamePlayerResolver {
       if (!faction && player.deck.from?.faction) {
         faction = await FactionResolver.fromId({
           id: player.deck.from.faction,
-          neutrals: neutralFactionStats,
         })
       }
       if (!leader && player.deck.from?.leader) {
         leader = await LeaderResolver.fromId({
           id: player.deck.from.leader,
-          neutralStats: neutralLeaderStats,
         })
       }
       counts = {
@@ -111,14 +109,12 @@ export default class GamePlayerResolver {
     const factionIds = getUniqueItems<ObjectId>(players.map((player) => player.deck.from && player.deck.from.faction))
     const factions = await FactionResolver.fromIds({
       ids: factionIds,
-      neutralStats: neutralFactionStats,
     })
 
     const leaderIds = getUniqueItems<ObjectId>(players.map((player) => player.deck.from && player.deck.from.leader))
     const leaders = await LeaderResolver.fromIds({
       ids: leaderIds,
       resolvedFactions: factions,
-      neutralStats: neutralLeaderStats,
     })
 
     const resolvedPlayers: GamePlayer[] = []

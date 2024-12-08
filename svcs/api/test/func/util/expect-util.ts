@@ -90,7 +90,7 @@ export function expectizeDlcs() {
   })
 }
 
-export function expectizeFactions({ neutrals = false }: { neutrals?: boolean }) {
+export function expectizeFactions() {
   return factions.map((faction) => {
     const key = new Upgrade2().normalizeFactionKey(faction)
     return {
@@ -101,7 +101,7 @@ export function expectizeFactions({ neutrals = false }: { neutrals?: boolean }) 
       image: new Upgrade2().normalizeImage(faction, ImageType.Faction),
       key,
       name: faction.Name,
-      stats: getFactionUnitStats(key, neutrals),
+      stats: getFactionUnitStats(key),
     }
   })
 }
@@ -119,8 +119,8 @@ export function expectizeEffects() {
   })
 }
 
-export function expectizeLeaders({ neutrals = false }: { neutrals?: boolean }) {
-  const expectedFactions = expectizeFactions({ neutrals })
+export function expectizeLeaders() {
+  const expectedFactions = expectizeFactions()
   return sortObjectArray({
     sortProperties: ['name'],
     array: leaders.map((leader) => {
@@ -138,8 +138,8 @@ export function expectizeLeaders({ neutrals = false }: { neutrals?: boolean }) {
   })
 }
 
-export function expectizeUnits({ neutrals = false }: { neutrals?: boolean }): Unit[] {
-  const expectedFactions = expectizeFactions({ neutrals })
+export function expectizeUnits(): Unit[] {
+  const expectedFactions = expectizeFactions()
   const expectedUnits: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
   for (const unit of units) {
     for (let i = 0; i < unit.Occurrences; i++) {
@@ -183,16 +183,8 @@ export function expectizeUnits({ neutrals = false }: { neutrals?: boolean }): Un
   })
 }
 
-export function expectizeDeck({
-  factionKey,
-  leaderName,
-  name,
-  neutrals = false,
-  unitNames,
-  user,
-  maxArtStyle,
-}: ExpectizeDeckInput) {
-  const allUnits = expectizeUnits({ neutrals })
+export function expectizeDeck({ factionKey, leaderName, name, unitNames, user, maxArtStyle }: ExpectizeDeckInput) {
+  const allUnits = expectizeUnits()
   const expectedUnits: DeckUnit[] = []
   for (const unitName of unitNames) {
     const unit = allUnits.find((expectedUnit) => expectedUnit.name === unitName)
@@ -206,15 +198,14 @@ export function expectizeDeck({
   }
   return {
     created: expect.any(Date),
-    faction: expectizeFactions({ neutrals }).find((faction) => faction.key === factionKey),
+    faction: expectizeFactions().find((faction) => faction.key === factionKey),
     id: expect.any(String),
-    leader: expectizeLeaders({ neutrals }).find((leader) => leader.name === leaderName),
+    leader: expectizeLeaders().find((leader) => leader.name === leaderName),
     name,
     stats: getDeckStats(expectedUnits),
     units: expectizeDeckUnits({
       unitNames,
       maxArtStyle,
-      neutrals,
     }),
     user,
   }
@@ -230,196 +221,157 @@ function getDlc(item: any) {
   return dlc
 }
 
-export function getFactionUnitStats(factionKey: FactionKey, neutrals = false): UnitStats {
-  const montsers: UnitStats = {
-    agile: 3,
-    avenger: 0,
-    berserker: 0,
-    bond: 0,
-    close: 30,
-    decoy: 0,
-    heroes: 4,
-    horn: 0,
-    mardroeme: 0,
-    medic: 0,
-    morale: 1,
-    muster: 18,
-    ranged: 10,
-    scorch: 1,
-    siege: 4,
-    specials: 0,
-    spy: 0,
-    strengthAverage: 182 / 41,
-    strengths: 41,
-    strengthTotal: 182,
-    units: 41,
-    weather: 0,
-  }
-  const neutral: UnitStats = {
-    agile: 1,
-    avenger: 1,
-    berserker: 0,
-    bond: 0,
-    close: 11,
-    decoy: 3,
-    heroes: 5,
-    horn: 4,
-    mardroeme: 0,
-    medic: 1,
-    morale: 1,
-    muster: 6,
-    ranged: 6,
-    scorch: 4,
-    siege: 1,
-    specials: 22,
-    spy: 1,
-    strengthAverage: 92 / 39,
-    strengths: 17,
-    strengthTotal: 92,
-    units: 39,
-    weather: 13,
-  }
-  const nilfgaard: UnitStats = {
-    agile: 0,
-    avenger: 0,
-    berserker: 0,
-    bond: 9,
-    close: 18,
-    decoy: 0,
-    heroes: 4,
-    horn: 0,
-    mardroeme: 0,
-    medic: 4,
-    morale: 0,
-    muster: 0,
-    ranged: 13,
-    scorch: 0,
-    siege: 6,
-    specials: 0,
-    spy: 3,
-    strengthAverage: 181 / 37,
-    strengths: 37,
-    strengthTotal: 181,
-    units: 37,
-    weather: 0,
-  }
-  const northern: UnitStats = {
-    agile: 0,
-    avenger: 0,
-    berserker: 0,
-    bond: 11,
-    close: 17,
-    decoy: 0,
-    heroes: 4,
-    horn: 0,
-    mardroeme: 0,
-    medic: 1,
-    morale: 1,
-    muster: 0,
-    ranged: 8,
-    scorch: 0,
-    siege: 9,
-    specials: 0,
-    spy: 3,
-    strengthAverage: 163 / 34,
-    strengths: 34,
-    strengthTotal: 163,
-    units: 34,
-    weather: 0,
-  }
-  const scoiatael: UnitStats = {
-    agile: 9,
-    avenger: 0,
-    berserker: 0,
-    bond: 0,
-    close: 22,
-    decoy: 0,
-    heroes: 4,
-    horn: 0,
-    mardroeme: 0,
-    medic: 3,
-    morale: 2,
-    muster: 9,
-    ranged: 24,
-    scorch: 1,
-    siege: 1,
-    specials: 0,
-    spy: 0,
-    strengthAverage: 185 / 38,
-    strengths: 38,
-    strengthTotal: 185,
-    units: 38,
-    weather: 0,
-  }
-  const skellige: UnitStats = {
-    agile: 1,
-    avenger: 1,
-    berserker: 4,
-    bond: 9,
-    close: 18,
-    decoy: 0,
-    heroes: 4,
-    horn: 1,
-    mardroeme: 4,
-    medic: 1,
-    morale: 1,
-    muster: 4,
-    ranged: 13,
-    scorch: 1,
-    siege: 5,
-    specials: 3,
-    spy: 0,
-    strengthAverage: 174 / 38,
-    strengths: 35,
-    strengthTotal: 174,
-    units: 38,
-    weather: 0,
-  }
-  let factionStats: UnitStats | undefined = undefined
+export function getFactionUnitStats(factionKey: FactionKey): UnitStats {
   if (factionKey === FactionKey.Monsters) {
-    factionStats = montsers
+    return {
+      agile: 3,
+      avenger: 0,
+      berserker: 0,
+      bond: 0,
+      close: 30,
+      decoy: 0,
+      heroes: 4,
+      horn: 0,
+      mardroeme: 0,
+      medic: 0,
+      morale: 1,
+      muster: 18,
+      ranged: 10,
+      scorch: 1,
+      siege: 4,
+      specials: 0,
+      spy: 0,
+      strengthAverage: 182 / 41,
+      strengths: 41,
+      strengthTotal: 182,
+      units: 41,
+      weather: 0,
+    }
   } else if (factionKey === FactionKey.Neutral) {
-    factionStats = neutral
+    return {
+      agile: 1,
+      avenger: 1,
+      berserker: 0,
+      bond: 0,
+      close: 11,
+      decoy: 3,
+      heroes: 5,
+      horn: 4,
+      mardroeme: 0,
+      medic: 1,
+      morale: 1,
+      muster: 6,
+      ranged: 6,
+      scorch: 4,
+      siege: 1,
+      specials: 22,
+      spy: 1,
+      strengthAverage: 92 / 39,
+      strengths: 17,
+      strengthTotal: 92,
+      units: 39,
+      weather: 13,
+    }
   } else if (factionKey === FactionKey.NilfgaardianEmpire) {
-    factionStats = nilfgaard
+    return {
+      agile: 0,
+      avenger: 0,
+      berserker: 0,
+      bond: 9,
+      close: 18,
+      decoy: 0,
+      heroes: 4,
+      horn: 0,
+      mardroeme: 0,
+      medic: 4,
+      morale: 0,
+      muster: 0,
+      ranged: 13,
+      scorch: 0,
+      siege: 6,
+      specials: 0,
+      spy: 3,
+      strengthAverage: 181 / 37,
+      strengths: 37,
+      strengthTotal: 181,
+      units: 37,
+      weather: 0,
+    }
   } else if (factionKey === FactionKey.NorthernRealms) {
-    factionStats = northern
+    return {
+      agile: 0,
+      avenger: 0,
+      berserker: 0,
+      bond: 11,
+      close: 17,
+      decoy: 0,
+      heroes: 4,
+      horn: 0,
+      mardroeme: 0,
+      medic: 1,
+      morale: 1,
+      muster: 0,
+      ranged: 8,
+      scorch: 0,
+      siege: 9,
+      specials: 0,
+      spy: 3,
+      strengthAverage: 163 / 34,
+      strengths: 34,
+      strengthTotal: 163,
+      units: 34,
+      weather: 0,
+    }
   } else if (factionKey === FactionKey.ScoiaTael) {
-    factionStats = scoiatael
-  } else if (factionKey === FactionKey.Skellige) {
-    factionStats = skellige
-  }
-  if (!factionStats) {
-    throw Error(`Invalid faction "${factionKey}"`)
-  }
-  const addNeutrals = neutrals && factionKey !== FactionKey.Neutral
-  let strengthAverage = factionStats.strengthAverage
-  if (addNeutrals) {
-    strengthAverage = (factionStats.strengthTotal + neutral.strengthTotal) / (factionStats.units + neutral.units)
-  }
-  return {
-    agile: factionStats.agile + (addNeutrals ? neutral.agile : 0),
-    avenger: factionStats.avenger + (addNeutrals ? neutral.avenger : 0),
-    berserker: factionStats.berserker + (addNeutrals ? neutral.berserker : 0),
-    bond: factionStats.bond + (addNeutrals ? neutral.bond : 0),
-    close: factionStats.close + (addNeutrals ? neutral.close : 0),
-    decoy: factionStats.decoy + (addNeutrals ? neutral.decoy : 0),
-    heroes: factionStats.heroes + (addNeutrals ? neutral.heroes : 0),
-    horn: factionStats.horn + (addNeutrals ? neutral.horn : 0),
-    mardroeme: factionStats.mardroeme + (addNeutrals ? neutral.mardroeme : 0),
-    medic: factionStats.medic + (addNeutrals ? neutral.medic : 0),
-    morale: factionStats.morale + (addNeutrals ? neutral.morale : 0),
-    muster: factionStats.muster + (addNeutrals ? neutral.muster : 0),
-    ranged: factionStats.ranged + (addNeutrals ? neutral.ranged : 0),
-    scorch: factionStats.scorch + (addNeutrals ? neutral.scorch : 0),
-    siege: factionStats.siege + (addNeutrals ? neutral.siege : 0),
-    specials: factionStats.specials + (addNeutrals ? neutral.specials : 0),
-    spy: factionStats.spy + (addNeutrals ? neutral.spy : 0),
-    strengthAverage,
-    strengths: factionStats.strengths + (addNeutrals ? neutral.strengths : 0),
-    strengthTotal: factionStats.strengthTotal + (addNeutrals ? neutral.strengthTotal : 0),
-    units: factionStats.units + (addNeutrals ? neutral.units : 0),
-    weather: factionStats.weather + (addNeutrals ? neutral.weather : 0),
+    return {
+      agile: 9,
+      avenger: 0,
+      berserker: 0,
+      bond: 0,
+      close: 22,
+      decoy: 0,
+      heroes: 4,
+      horn: 0,
+      mardroeme: 0,
+      medic: 3,
+      morale: 2,
+      muster: 9,
+      ranged: 24,
+      scorch: 1,
+      siege: 1,
+      specials: 0,
+      spy: 0,
+      strengthAverage: 185 / 38,
+      strengths: 38,
+      strengthTotal: 185,
+      units: 38,
+      weather: 0,
+    }
+  } else {
+    return {
+      agile: 1,
+      avenger: 1,
+      berserker: 4,
+      bond: 9,
+      close: 18,
+      decoy: 0,
+      heroes: 4,
+      horn: 1,
+      mardroeme: 4,
+      medic: 1,
+      morale: 1,
+      muster: 4,
+      ranged: 13,
+      scorch: 1,
+      siege: 5,
+      specials: 3,
+      spy: 0,
+      strengthAverage: 174 / 38,
+      strengths: 35,
+      strengthTotal: 174,
+      units: 38,
+      weather: 0,
+    }
   }
 }
 
@@ -498,23 +450,19 @@ export function expectizeGameDeck({
     discard: expectizeDeckUnits({
       unitNames: discards,
       maxArtStyle: deck.maxArtStyle,
-      neutrals: deck.neutrals,
     }),
     from: expectizeDeck(deck),
     hand: expectizeDeckUnits({
       unitNames: hand,
       maxArtStyle: deck.maxArtStyle,
-      neutrals: deck.neutrals,
     }),
     redraws: expectizeDeckUnits({
       unitNames: redraws,
       maxArtStyle: deck.maxArtStyle,
-      neutrals: deck.neutrals,
     }),
     undrawn: expectizeDeckUnits({
       unitNames: undrawn,
       maxArtStyle: deck.maxArtStyle,
-      neutrals: deck.neutrals,
     }),
   }
 }
@@ -545,17 +493,9 @@ export function expectizeGamePlayer({
   }
 }
 
-export function expectizeDeckUnits({
-  unitNames,
-  maxArtStyle,
-  neutrals = false,
-}: {
-  unitNames?: string[]
-  maxArtStyle?: boolean
-  neutrals?: boolean
-}) {
+export function expectizeDeckUnits({ unitNames, maxArtStyle }: { unitNames?: string[]; maxArtStyle?: boolean }) {
   if (unitNames) {
-    const allUnits = expectizeUnits({ neutrals })
+    const allUnits = expectizeUnits()
     const expectedUnits: DeckUnit[] = []
     for (const unitName of unitNames) {
       const unit = allUnits.find((expectedUnit) => expectedUnit.name === unitName)
@@ -582,7 +522,6 @@ interface ExpectizeDeckInput {
   factionKey: FactionKey
   leaderName: string
   name: string
-  neutrals?: boolean
   unitNames: string[]
   user: User
   maxArtStyle?: boolean

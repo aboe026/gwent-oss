@@ -68,9 +68,6 @@ export default class GameDeckQuery {
     if (player.deck.from) {
       return GameDeckResolver.fromObject({
         gameDeck: player.deck,
-        neutralDeckStats: RequestedFields.getArgument(info, 'gameDeck.from.faction.stats.neutrals'),
-        neutralLeaderStats: RequestedFields.getArgument(info, 'gameDeck.from.leader.faction.stats.neutrals'),
-        neutralUnitStats: RequestedFields.getArgument(info, 'gameDeck.from.units.unit.faction.stats.neutrals'),
       })
     }
     return null

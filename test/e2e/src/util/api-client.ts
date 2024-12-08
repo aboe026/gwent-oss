@@ -50,10 +50,10 @@ export default class ApiClient {
     return response.addUser
   }
 
-  async getFactions({ neutrals = true }: { neutrals?: boolean }): Promise<Faction[]> {
+  async getFactions(): Promise<Faction[]> {
     const response: any = await this._client.request(
       gql`
-        query Factions($neutrals: Boolean) {
+        query Factions {
           factions {
             id
             created
@@ -67,7 +67,7 @@ export default class ApiClient {
               image
             }
             ability
-            stats(neutrals: $neutrals) {
+            stats {
               units
               strengths
               specials
@@ -81,18 +81,13 @@ export default class ApiClient {
             }
           }
         }
-      `,
-      {
-        neutrals,
-      }
+      `
     )
     return response.factions
   }
 
-  async getFaction({ key, neutrals = false }: { key: FactionKey; neutrals?: boolean }): Promise<Faction> {
-    const factions = await this.getFactions({
-      neutrals,
-    })
+  async getFaction({ key }: { key: FactionKey }): Promise<Faction> {
+    const factions = await this.getFactions()
     const faction = factions.find((faction) => faction.key === key)
     if (!faction) {
       throw Error(`No faction found with key "${key}"`)
@@ -121,7 +116,7 @@ export default class ApiClient {
                 image
               }
               ability
-              stats(neutrals: false) {
+              stats {
                 units
                 strengths
                 specials
@@ -197,7 +192,7 @@ export default class ApiClient {
               image
               key
               name
-              stats(neutrals: true) {
+              stats {
                 agile
                 avenger
                 berserker
@@ -295,7 +290,7 @@ export default class ApiClient {
           image
           key
           name
-          stats(neutrals: true) {
+          stats {
             agile
             avenger
             berserker
@@ -430,6 +425,30 @@ export default class ApiClient {
   async getDeck(name: string): Promise<Deck> {
     const response: any = await this._client.request(
       gql`
+        fragment UnitStatsFragment on UnitStats {
+          agile
+          avenger
+          berserker
+          bond
+          close
+          decoy
+          heroes
+          horn
+          mardroeme
+          medic
+          morale
+          muster
+          ranged
+          scorch
+          siege
+          specials
+          spy
+          strengthAverage
+          strengths
+          strengthTotal
+          units
+          weather
+        }
         query Decks {
           decks {
             created
@@ -446,29 +465,8 @@ export default class ApiClient {
               image
               key
               name
-              stats(neutrals: true) {
-                agile
-                avenger
-                berserker
-                bond
-                close
-                decoy
-                heroes
-                horn
-                mardroeme
-                medic
-                morale
-                muster
-                ranged
-                scorch
-                siege
-                specials
-                spy
-                strengthAverage
-                strengths
-                strengthTotal
-                units
-                weather
+              stats {
+                ...UnitStatsFragment
               }
             }
             id
@@ -488,28 +486,7 @@ export default class ApiClient {
             }
             name
             stats {
-              agile
-              avenger
-              berserker
-              bond
-              close
-              decoy
-              heroes
-              horn
-              mardroeme
-              medic
-              morale
-              muster
-              ranged
-              scorch
-              siege
-              specials
-              spy
-              strengthAverage
-              strengths
-              strengthTotal
-              units
-              weather
+              ...UnitStatsFragment
             }
             units {
               artStyle
@@ -545,29 +522,8 @@ export default class ApiClient {
                   image
                   key
                   name
-                  stats(neutrals: true) {
-                    agile
-                    avenger
-                    berserker
-                    bond
-                    close
-                    decoy
-                    heroes
-                    horn
-                    mardroeme
-                    medic
-                    morale
-                    muster
-                    ranged
-                    scorch
-                    siege
-                    specials
-                    spy
-                    strengthAverage
-                    strengths
-                    strengthTotal
-                    units
-                    weather
+                  stats {
+                    ...UnitStatsFragment
                   }
                 }
                 hero
@@ -626,7 +582,7 @@ export default class ApiClient {
                 image
                 key
                 name
-                stats(neutrals: true) {
+                stats {
                   agile
                   avenger
                   berserker
@@ -720,7 +676,7 @@ export default class ApiClient {
                 image
                 key
                 name
-                stats(neutrals: true) {
+                stats {
                   agile
                   avenger
                   berserker
@@ -836,7 +792,7 @@ export default class ApiClient {
               image
               key
               name
-              stats(neutrals: true) {
+              stats {
                 agile
                 avenger
                 berserker
@@ -892,7 +848,7 @@ export default class ApiClient {
                 image
                 key
                 name
-                stats(neutrals: true) {
+                stats {
                   agile
                   avenger
                   berserker
@@ -998,7 +954,7 @@ export default class ApiClient {
           image
           key
           name
-          stats(neutrals: true) {
+          stats {
             agile
             avenger
             berserker
@@ -1166,7 +1122,7 @@ export default class ApiClient {
             image
             key
             name
-            stats(neutrals: true) {
+            stats {
               agile
               avenger
               berserker
@@ -1338,7 +1294,7 @@ export default class ApiClient {
                 image
                 key
                 name
-                stats(neutrals: true) {
+                stats {
                   agile
                   avenger
                   berserker

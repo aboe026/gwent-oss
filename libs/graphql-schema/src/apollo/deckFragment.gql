@@ -10,7 +10,7 @@ fragment DeckFragment on Deck {
     ability
     image
   }
-  stats(neutrals: true) {
+  stats {
     units
     specials
     heroes

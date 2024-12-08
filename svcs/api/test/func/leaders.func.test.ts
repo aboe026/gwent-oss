@@ -59,7 +59,7 @@ describe('leaders', () => {
       })
       expect(response).toEqual({
         data: {
-          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+          leaders: expectizeLeaders().filter((leader) => leader.faction?.key === faction),
         },
       })
       verifyMongoIds(response?.data?.leaders)
@@ -105,7 +105,7 @@ describe('leaders', () => {
       })
       expect(response).toEqual({
         data: {
-          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+          leaders: expectizeLeaders().filter((leader) => leader.faction?.key === faction),
         },
       })
       verifyMongoIds(response?.data?.leaders)
@@ -129,7 +129,7 @@ describe('leaders', () => {
       })
       expect(response).toEqual({
         data: {
-          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+          leaders: expectizeLeaders().filter((leader) => leader.faction?.key === faction),
         },
       })
       verifyMongoIds(response?.data?.leaders)
@@ -153,7 +153,7 @@ describe('leaders', () => {
       })
       expect(response).toEqual({
         data: {
-          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+          leaders: expectizeLeaders().filter((leader) => leader.faction?.key === faction),
         },
       })
       verifyMongoIds(response?.data?.leaders)
@@ -177,7 +177,7 @@ describe('leaders', () => {
       })
       expect(response).toEqual({
         data: {
-          leaders: expectizeLeaders({}).filter((leader) => leader.faction?.key === faction),
+          leaders: expectizeLeaders().filter((leader) => leader.faction?.key === faction),
         },
       })
       verifyMongoIds(response?.data?.leaders)
@@ -201,7 +201,7 @@ describe('leaders', () => {
       })
       expect(response).toEqual({
         data: {
-          leaders: expectizeLeaders({}).filter(
+          leaders: expectizeLeaders().filter(
             (leader) => leader.faction?.key === FactionKey.Monsters || leader.faction?.key === FactionKey.Skellige
           ),
         },
@@ -227,7 +227,7 @@ describe('leaders', () => {
       })
       expect(response).toEqual({
         data: {
-          leaders: expectizeLeaders({}),
+          leaders: expectizeLeaders(),
         },
       })
       verifyMongoIds(response?.data?.leaders)
@@ -252,63 +252,7 @@ describe('leaders', () => {
       })
       expect(response).toEqual({
         data: {
-          leaders: expectizeLeaders({
-            neutrals: false,
-          }),
-        },
-      })
-      verifyMongoIds(response?.data?.leaders)
-    })
-    it('returns all leaders without neutral stats if explicit neutrals false provided', async () => {
-      const response = await graphql({
-        schema,
-        source: `{
-          leaders {
-            ${getLeaderFragment({
-              statsModifier: '(neutrals: false)',
-            })}
-          }
-        }`,
-        contextValue: {
-          session: {
-            user: {
-              _id: new ObjectId(),
-            },
-          },
-        },
-      })
-      expect(response).toEqual({
-        data: {
-          leaders: expectizeLeaders({
-            neutrals: false,
-          }),
-        },
-      })
-      verifyMongoIds(response?.data?.leaders)
-    })
-    it('returns all leaders with neutral stats if explicit neutrals true provided', async () => {
-      const response = await graphql({
-        schema,
-        source: `{
-          leaders {
-            ${getLeaderFragment({
-              statsModifier: '(neutrals: true)',
-            })}
-          }
-        }`,
-        contextValue: {
-          session: {
-            user: {
-              _id: new ObjectId(),
-            },
-          },
-        },
-      })
-      expect(response).toEqual({
-        data: {
-          leaders: expectizeLeaders({
-            neutrals: true,
-          }),
+          leaders: expectizeLeaders(),
         },
       })
       verifyMongoIds(response?.data?.leaders)

@@ -34,18 +34,12 @@ export default class DeckResolver {
     leader,
     units,
     user,
-    neutralDeckStats,
-    neutralLeaderStats,
-    neutralUnitStats,
   }: {
     deck: DeckDbObject
     faction?: Faction
     leader?: Leader
     units?: DeckUnit[]
     user?: User
-    neutralDeckStats?: boolean
-    neutralLeaderStats?: boolean
-    neutralUnitStats?: boolean
   }): Promise<Deck> {
     return {
       created: deck.created,
@@ -53,14 +47,12 @@ export default class DeckResolver {
         faction ||
         (await FactionResolver.fromId({
           id: deck.faction,
-          neutrals: neutralDeckStats,
         })),
       id: deck._id.toString(),
       leader:
         leader ||
         (await LeaderResolver.fromId({
           id: deck.leader,
-          neutralStats: neutralLeaderStats,
         })),
       name: deck.name,
       stats: deck.stats,
@@ -68,7 +60,6 @@ export default class DeckResolver {
         units ||
         (await DeckUnitResolver.fromArray({
           deckUnits: deck.units,
-          neutralStats: neutralUnitStats,
         })),
       user: user || (await UserResolver.fromId(deck.user)),
     }
@@ -84,17 +75,7 @@ export default class DeckResolver {
    * @param config.neutralUnitStats Whether or not to account for the Neutral faction when calculating the stats of the Units of the Decks.
    * @returns The resolved Deck array matching the GraphQL schema definition.
    */
-  static async fromArray({
-    decks,
-    neutralDeckStats,
-    neutralLeaderStats,
-    neutralUnitStats,
-  }: {
-    decks: DeckDbObject[]
-    neutralDeckStats?: boolean
-    neutralLeaderStats?: boolean
-    neutralUnitStats?: boolean
-  }): Promise<Deck[]> {
+  static async fromArray({ decks }: { decks: DeckDbObject[] }): Promise<Deck[]> {
     const factionIds = getUniqueItems<ObjectId>(decks.map((deck) => deck.faction))
     const leaderIds = getUniqueItems<ObjectId>(decks.map((deck) => deck.leader))
     const unitIds: string[] = []
@@ -112,17 +93,14 @@ export default class DeckResolver {
     })
     const resolvedFactions = await FactionResolver.fromArray({
       factions,
-      neutralStats: neutralDeckStats,
     })
     const leaders = await LeaderResolver.fromIds({
       ids: leaderIds,
       factions,
-      neutralStats: neutralLeaderStats,
     })
     const units = await UnitResolver.fromIds({
       ids: unitIds,
       factions,
-      neutralStats: neutralUnitStats,
     })
     const users = await UserResolver.fromIds(userIds)
 

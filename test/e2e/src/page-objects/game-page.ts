@@ -414,6 +414,7 @@ export default class GamePage {
     leader,
     name,
     stats,
+    neutralFaction,
     verifyCloses = false,
     additionalExistingDecks = [],
   }: {
@@ -422,6 +423,7 @@ export default class GamePage {
     faction: Faction
     leader: Leader
     stats: UnitStats
+    neutralFaction: Faction
     verifyCloses?: boolean
     additionalExistingDecks?: DeckInfo[]
   }) {
@@ -434,6 +436,7 @@ export default class GamePage {
           leader,
           name,
           stats,
+          neutralFaction,
         },
         ...additionalExistingDecks,
       ],

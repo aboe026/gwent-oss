@@ -35,63 +35,7 @@ describe('factions', () => {
       })
       expect(response).toEqual({
         data: {
-          factions: expectizeFactions({
-            neutrals: false,
-          }),
-        },
-      })
-      verifyMongoIds(response.data?.factions)
-    })
-    it('returns all factions without neutral stats if explicit neutrals false provided', async () => {
-      const response = await graphql({
-        schema,
-        source: `{
-          factions {
-            ${getFactionFragment({
-              statsModifier: '(neutrals: false)',
-            })}
-          }
-        }`,
-        contextValue: {
-          session: {
-            user: {
-              _id: new ObjectId(),
-            },
-          },
-        },
-      })
-      expect(response).toEqual({
-        data: {
-          factions: expectizeFactions({
-            neutrals: false,
-          }),
-        },
-      })
-      verifyMongoIds(response.data?.factions)
-    })
-    it('returns all factions with neutral stats if explicit neutrals true provided', async () => {
-      const response = await graphql({
-        schema,
-        source: `{
-          factions {
-            ${getFactionFragment({
-              statsModifier: '(neutrals: true)',
-            })}
-          }
-        }`,
-        contextValue: {
-          session: {
-            user: {
-              _id: new ObjectId(),
-            },
-          },
-        },
-      })
-      expect(response).toEqual({
-        data: {
-          factions: expectizeFactions({
-            neutrals: true,
-          }),
+          factions: expectizeFactions(),
         },
       })
       verifyMongoIds(response.data?.factions)

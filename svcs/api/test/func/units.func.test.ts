@@ -36,7 +36,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}),
+          units: expectizeUnits(),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -59,7 +59,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}).filter((unit) => unit.deckable === true),
+          units: expectizeUnits().filter((unit) => unit.deckable === true),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -82,7 +82,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}).filter((unit) => unit.deckable === false),
+          units: expectizeUnits().filter((unit) => unit.deckable === false),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -130,7 +130,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}).filter((unit) => unit.faction.key === faction),
+          units: expectizeUnits().filter((unit) => unit.faction.key === faction),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -154,7 +154,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}).filter((unit) => unit.faction.key === faction),
+          units: expectizeUnits().filter((unit) => unit.faction.key === faction),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -178,7 +178,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}).filter((unit) => unit.faction.key === faction),
+          units: expectizeUnits().filter((unit) => unit.faction.key === faction),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -202,7 +202,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}).filter((unit) => unit.faction.key === faction),
+          units: expectizeUnits().filter((unit) => unit.faction.key === faction),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -226,7 +226,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}).filter((unit) => unit.faction.key === faction),
+          units: expectizeUnits().filter((unit) => unit.faction.key === faction),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -250,7 +250,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}).filter((unit) => unit.faction.key === faction),
+          units: expectizeUnits().filter((unit) => unit.faction.key === faction),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -274,7 +274,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}).filter(
+          units: expectizeUnits().filter(
             (unit) => unit.faction.key === FactionKey.Monsters || unit.faction.key === FactionKey.Neutral
           ),
         },
@@ -300,7 +300,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({}),
+          units: expectizeUnits(),
         },
       })
       verifyMongoIds(response?.data?.units)
@@ -325,63 +325,7 @@ describe('units', () => {
       })
       expect(response).toEqual({
         data: {
-          units: expectizeUnits({
-            neutrals: false,
-          }),
-        },
-      })
-      verifyMongoIds(response?.data?.units)
-    })
-    it('returns all units with neutral stats if explicit neutrals true provided', async () => {
-      const response = await graphql({
-        schema,
-        source: `{
-          units {
-            ${getUnitFragment({
-              statsModifier: '(neutrals: true)',
-            })}
-          }
-        }`,
-        contextValue: {
-          session: {
-            user: {
-              _id: new ObjectId(),
-            },
-          },
-        },
-      })
-      expect(response).toEqual({
-        data: {
-          units: expectizeUnits({
-            neutrals: true,
-          }),
-        },
-      })
-      verifyMongoIds(response?.data?.units)
-    })
-    it('returns all units without neutral stats if explicit neutrals false provided', async () => {
-      const response = await graphql({
-        schema,
-        source: `{
-          units {
-            ${getUnitFragment({
-              statsModifier: '(neutrals: false)',
-            })}
-          }
-        }`,
-        contextValue: {
-          session: {
-            user: {
-              _id: new ObjectId(),
-            },
-          },
-        },
-      })
-      expect(response).toEqual({
-        data: {
-          units: expectizeUnits({
-            neutrals: false,
-          }),
+          units: expectizeUnits(),
         },
       })
       verifyMongoIds(response?.data?.units)

@@ -110,7 +110,7 @@ export default gql`
     id: ID! @id @map(path: "_id")
     leader: Leader! @column(overrideType: "ObjectId")
     name: String! @column
-    stats(neutrals: Boolean = false): UnitStats! @column
+    stats: UnitStats! @column
     units: [DeckUnit!]! @column(overrideType: "Array<DeckUnitDbObject>")
     user: User! @column(overrideType: "ObjectId")
   }
@@ -145,7 +145,7 @@ export default gql`
     image: String! @column
     key: FactionKey! @column
     name: String! @column
-    stats(neutrals: Boolean = false): UnitStats! @column
+    stats: UnitStats! @column
   }
 
   type Game @entity {
@@ -306,7 +306,7 @@ export default gql`
     currentUser: User
 
     "All factions which a leader, unit or deck can belong to."
-    factions: [Faction!]!
+    factions(keys: [FactionKey!]): [Faction!]!
 
     "A game by its ID."
     game(id: ID!): Game!

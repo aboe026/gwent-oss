@@ -40,7 +40,6 @@ fixture('Session Expiry').before(async (ctx) => {
   const client = new ApiClient({ username })
   ctx.faction = await client.getFaction({
     key: FactionKey.ScoiaTael,
-    neutrals: true,
   })
   ctx.leader = await client.getLeader({
     faction: ctx.faction.key,
@@ -102,6 +101,7 @@ test('View decks after session expires', async (t) => {
         leader: t.fixtureCtx.leader,
         name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -129,7 +129,8 @@ test('View new deck after session expires', async (t) => {
     name,
     units: t.fixtureCtx.units,
   })
-  const deck = await new ApiClient({ username }).getDeck(name)
+  const client = new ApiClient({ username })
+  const deck = await client.getDeck(name)
   await DecksPage.verify({
     decks: [
       {
@@ -138,6 +139,7 @@ test('View new deck after session expires', async (t) => {
         leader: t.fixtureCtx.leader,
         name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -191,7 +193,8 @@ test('Select faction for new deck after session expires', async (t) => {
   await DeckEditor.verifyValid(true)
   await DeckEditor.save()
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
-  const deck = await new ApiClient({ username }).getDeck(name)
+  const client = new ApiClient({ username })
+  const deck = await client.getDeck(name)
   await DecksPage.verify({
     decks: [
       {
@@ -200,6 +203,7 @@ test('Select faction for new deck after session expires', async (t) => {
         leader: t.fixtureCtx.leader,
         name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -264,7 +268,8 @@ test('Change faction for new deck after session expires', async (t) => {
   await DeckEditor.verifyValid(true)
   await DeckEditor.save()
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
-  const deck = await new ApiClient({ username }).getDeck(name)
+  const client = new ApiClient({ username })
+  const deck = await client.getDeck(name)
   await DecksPage.verify({
     decks: [
       {
@@ -273,6 +278,7 @@ test('Change faction for new deck after session expires', async (t) => {
         leader: t.fixtureCtx.leader,
         name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -316,7 +322,8 @@ test('Create new deck after session expires', async (t) => {
   await DeckEditor.verifyCreateError(`Error creating deck: ${NOT_AUTHENTICATED_MESSAGE}`)
   await reAuthenticate(username, t)
   await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
-  const deck = await new ApiClient({ username }).getDeck(deckName)
+  const client = new ApiClient({ username })
+  const deck = await client.getDeck(deckName)
   await DecksPage.verify({
     decks: [
       {
@@ -325,6 +332,7 @@ test('Create new deck after session expires', async (t) => {
         leader: t.fixtureCtx.leader,
         name: deckName,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -431,6 +439,7 @@ test('List decks for game after session expires', async (t) => {
         leader: deck.leader,
         name: deck.name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -476,6 +485,7 @@ test('Set deck for game after session expires', async (t) => {
         leader: deck.leader,
         name: deck.name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })

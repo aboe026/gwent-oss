@@ -66,7 +66,6 @@ describe('game-player-resolver', () => {
           [
             {
               id: new ObjectId(faction.id),
-              neutrals: undefined,
             },
           ],
         ],
@@ -74,7 +73,6 @@ describe('game-player-resolver', () => {
           [
             {
               id: new ObjectId(leader.id),
-              neutralStats: undefined,
             },
           ],
         ],
@@ -115,7 +113,6 @@ describe('game-player-resolver', () => {
           [
             {
               ids: [new ObjectId(faction.id)],
-              neutralStats: undefined,
             },
           ],
         ],
@@ -124,7 +121,6 @@ describe('game-player-resolver', () => {
             {
               ids: [new ObjectId(leader.id)],
               resolvedFactions: [faction],
-              neutralStats: undefined,
             },
           ],
         ],
@@ -174,7 +170,6 @@ describe('game-player-resolver', () => {
           [
             {
               ids: [new ObjectId(faction.id)],
-              neutralStats: undefined,
             },
           ],
         ],
@@ -183,7 +178,6 @@ describe('game-player-resolver', () => {
             {
               ids: [new ObjectId(leader.id)],
               resolvedFactions: [faction],
-              neutralStats: undefined,
             },
           ],
         ],
@@ -320,7 +314,6 @@ async function testResolveFromArray({
       [
         {
           ids: [],
-          neutralStats: neutralFactionStats,
         },
       ],
     ]
@@ -331,7 +324,6 @@ async function testResolveFromArray({
         {
           ids: [],
           resolvedFactions,
-          neutralStats: neutralLeaderStats,
         },
       ],
     ]

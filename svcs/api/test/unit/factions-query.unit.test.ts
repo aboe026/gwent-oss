@@ -2,6 +2,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import FactionsQuery from '../../src/graphql/resolvers/queries/factions-query'
 import FactionStore from '../../src/database/stores/faction-store'
+import { QueryFactionsArgs } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
 
 describe('factions-query', () => {
@@ -23,6 +24,8 @@ async function testFactions({ traceEnabled }: { traceEnabled?: boolean }) {
       user: TestUtil.getDbUser({}),
     },
   }
+  // TODO: test with keys
+  const args: QueryFactionsArgs = {}
   const logPrefix = `factions by "${context.session?.user?._id}"`
   const faction = TestUtil.getDbFaction({})
   const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
@@ -34,14 +37,13 @@ async function testFactions({ traceEnabled }: { traceEnabled?: boolean }) {
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
-  await expect(FactionsQuery.factions(context, null as any)).resolves.toEqual([resolvedFaction])
+  await expect(FactionsQuery.factions(args, context, null as any)).resolves.toEqual([resolvedFaction])
 
   expect(getSpy.mock.calls).toEqual([[{}]])
   expect(factionResolverSpy.mock.calls).toEqual([
     [
       {
         factions: [faction],
-        neutrals: undefined,
       },
     ],
   ])

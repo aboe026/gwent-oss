@@ -49,13 +49,11 @@ describe('leader-resolver', () => {
     it('calls to external resolvers with neutral stats if explicit false provided', async () => {
       await testResolveFromObject({
         leader,
-        neutralStats: false,
       })
     })
     it('calls to external resolvers with neutral stats if explicit true provided', async () => {
       await testResolveFromObject({
         leader,
-        neutralStats: true,
       })
     })
   })
@@ -74,7 +72,6 @@ describe('leader-resolver', () => {
         [
           {
             ids: [leader.id],
-            neutralStats: undefined,
           },
         ],
       ])
@@ -147,7 +144,6 @@ describe('leader-resolver', () => {
           [
             {
               ids: [leader.faction],
-              neutralStats: undefined,
             },
           ],
         ],
@@ -178,7 +174,6 @@ describe('leader-resolver', () => {
           [
             {
               factions: [faction],
-              neutralStats: undefined,
             },
           ],
         ],
@@ -230,12 +225,10 @@ async function testResolveFromObject({
   leader,
   faction,
   dlc,
-  neutralStats,
 }: {
   leader: LeaderDbObject
   faction?: Faction
   dlc?: Dlc
-  neutralStats?: boolean
 }) {
   const resolvedDlc: Dlc =
     dlc ||
@@ -259,7 +252,6 @@ async function testResolveFromObject({
       leader,
       dlc,
       faction,
-      neutralStats,
     })
   ).resolves.toEqual(resolvedLeader)
 
@@ -271,7 +263,6 @@ async function testResolveFromObject({
           [
             {
               id: leader.faction,
-              neutrals: neutralStats,
             },
           ],
         ]
@@ -342,7 +333,6 @@ async function testResolveFromIds({
               leaders: leaders,
               factions: undefined,
               resolvedFactions: undefined,
-              neutralStats: undefined,
             },
           ],
         ]
