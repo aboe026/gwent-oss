@@ -23,9 +23,6 @@ export default class DeckResolver {
    * @param config.leader The resolved Leader for the Deck.  If not provided, will be retrieved.
    * @param config.units The resolved DeckUnits for the Deck. If not provided, will be retrieved.
    * @param config.user The resolved User for the deck. If not provided, will be retrieved.
-   * @param config.neutralDeckStats Whether or not to account for the Neutral faction when calculating the stats of the Faction of the Deck.
-   * @param config.neutralLeaderStats Whether or not to account for the Neutral faction when calculating the stats of the Leader of the Deck.
-   * @param config.neutralUnitStats Whether or not to account for the Neutral faction when calculating the stats of the Units of the Deck.
    * @returns The resolved Deck object matching its GraphQL schema definition.
    */
   static async fromObject({
@@ -70,9 +67,6 @@ export default class DeckResolver {
    *
    * @param config The configuration used to convert the array.
    * @param config.decks The array of Deck database objects to convert.
-   * @param config.neutralDeckStats Whether or not to account for the Neutral faction when calculating the stats of the Factions of the Decks.
-   * @param config.neutralLeaderStats Whether or not to account for the Neutral faction when calculating the stats of the Leaders of the Decks.
-   * @param config.neutralUnitStats Whether or not to account for the Neutral faction when calculating the stats of the Units of the Decks.
    * @returns The resolved Deck array matching the GraphQL schema definition.
    */
   static async fromArray({ decks }: { decks: DeckDbObject[] }): Promise<Deck[]> {

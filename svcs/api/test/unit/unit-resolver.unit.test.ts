@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, Dlc, Effect, Faction, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Dlc, Effect, Faction, Unit } from '@gwent/graphql-schema/resolver-typings'
 import {
   DlcDbObject,
   EffectDbObject,

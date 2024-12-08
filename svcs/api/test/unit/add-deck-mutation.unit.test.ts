@@ -590,7 +590,6 @@ async function testAddDeck({
               faction: resolvedFaction,
               leader: resolvedLeader,
               units: deckUnits,
-              neutralDeckStats: undefined,
             },
           ],
         ]

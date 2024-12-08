@@ -145,48 +145,5 @@ describe('decks-query', () => {
       })
       verifyMongoIds(response?.data?.decks)
     })
-    describe('stats', () => {
-      it('returns decks without neutral stats if no inputs provided', async () => {
-        const faction = FactionKey.NorthernRealms
-        const leader = 'Foltest the Siegemaster'
-        const name = 'single-deck'
-        const user = await addUser(`decks-${Date.now()}`)
-        await addDeck({
-          faction,
-          name,
-          leader,
-          userId: user.id,
-        })
-        const response = await graphql({
-          schema,
-          source: `{
-          decks {
-            ${getDeckFragment({})}
-          }
-        }`,
-          contextValue: {
-            session: {
-              user: {
-                _id: user.id,
-              },
-            },
-          },
-        })
-        expect(response).toEqual({
-          data: {
-            decks: [
-              expectizeDeck({
-                factionKey: faction,
-                leaderName: leader,
-                name,
-                unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
-                user,
-              }),
-            ],
-          },
-        })
-        verifyMongoIds(response?.data?.decks)
-      })
-    })
   })
 })

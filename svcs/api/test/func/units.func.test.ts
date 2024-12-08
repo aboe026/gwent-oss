@@ -306,29 +306,4 @@ describe('units', () => {
       verifyMongoIds(response?.data?.units)
     })
   })
-  describe('stats', () => {
-    it('returns all units without neutral stats if no inputs provided', async () => {
-      const response = await graphql({
-        schema,
-        source: `{
-          units {
-            ${getUnitFragment({})}
-          }
-        }`,
-        contextValue: {
-          session: {
-            user: {
-              _id: new ObjectId(),
-            },
-          },
-        },
-      })
-      expect(response).toEqual({
-        data: {
-          units: expectizeUnits(),
-        },
-      })
-      verifyMongoIds(response?.data?.units)
-    })
-  })
 })

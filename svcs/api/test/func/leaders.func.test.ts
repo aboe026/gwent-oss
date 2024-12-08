@@ -233,29 +233,4 @@ describe('leaders', () => {
       verifyMongoIds(response?.data?.leaders)
     })
   })
-  describe('stats', () => {
-    it('returns all leaders without neutral stats if no inputs provided', async () => {
-      const response = await graphql({
-        schema,
-        source: `{
-          leaders {
-            ${getLeaderFragment({})}
-          }
-        }`,
-        contextValue: {
-          session: {
-            user: {
-              _id: new ObjectId(),
-            },
-          },
-        },
-      })
-      expect(response).toEqual({
-        data: {
-          leaders: expectizeLeaders(),
-        },
-      })
-      verifyMongoIds(response?.data?.leaders)
-    })
-  })
 })

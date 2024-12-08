@@ -100,9 +100,6 @@ describe('game-deck-query', () => {
           [
             {
               gameDeck: playerDeck,
-              neutralDeckStats: undefined,
-              neutralLeaderStats: undefined,
-              neutralUnitStats: undefined,
             },
           ],
         ],
@@ -138,9 +135,6 @@ describe('game-deck-query', () => {
           [
             {
               gameDeck: playerDeck,
-              neutralDeckStats: undefined,
-              neutralLeaderStats: undefined,
-              neutralUnitStats: undefined,
             },
           ],
         ],

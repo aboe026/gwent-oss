@@ -41,17 +41,7 @@ describe('leader-resolver', () => {
         },
       })
     })
-    it('calls to external resolvers without neutral stats if only leader provided', async () => {
-      await testResolveFromObject({
-        leader,
-      })
-    })
-    it('calls to external resolvers with neutral stats if explicit false provided', async () => {
-      await testResolveFromObject({
-        leader,
-      })
-    })
-    it('calls to external resolvers with neutral stats if explicit true provided', async () => {
+    it('calls to external resolvers if only leader provided', async () => {
       await testResolveFromObject({
         leader,
       })

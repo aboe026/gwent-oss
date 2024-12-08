@@ -131,8 +131,6 @@ describe('game-player-resolver', () => {
               user,
               faction,
               leader,
-              neutralFactionStats: undefined,
-              neutralLeaderStats: undefined,
               allDecksChosen: false,
             },
           ],
@@ -188,8 +186,6 @@ describe('game-player-resolver', () => {
               user,
               faction,
               leader,
-              neutralFactionStats: undefined,
-              neutralLeaderStats: undefined,
               allDecksChosen: false,
             },
           ],
@@ -204,8 +200,6 @@ async function testResolveFromObject({
   user,
   faction,
   leader,
-  neutralFactionStats,
-  neutralLeaderStats,
   allDecksChosen,
   resolvedFaction,
   resolvedLeader,
@@ -219,8 +213,6 @@ async function testResolveFromObject({
   user?: User
   faction?: Faction | undefined
   leader?: Leader | undefined
-  neutralFactionStats?: boolean
-  neutralLeaderStats?: boolean
   allDecksChosen: boolean
   resolvedFaction?: Faction
   resolvedLeader?: Leader
@@ -248,8 +240,6 @@ async function testResolveFromObject({
     player,
     faction,
     leader,
-    neutralFactionStats,
-    neutralLeaderStats,
     user,
   })
 
@@ -282,8 +272,6 @@ async function testResolveFromArray({
   players,
   users,
   allDecksChosen,
-  neutralFactionStats,
-  neutralLeaderStats,
   resolvedUsers = [],
   resolvedFactions = [],
   resolvedLeaders = [],
@@ -297,8 +285,6 @@ async function testResolveFromArray({
   players: GamePlayerDbObject[]
   users?: User[]
   allDecksChosen: boolean
-  neutralFactionStats?: boolean
-  neutralLeaderStats?: boolean
   resolvedUsers?: User[]
   resolvedFactions?: Faction[]
   resolvedLeaders?: Leader[]
@@ -339,8 +325,6 @@ async function testResolveFromArray({
   const promise = GamePlayerResolver.fromArray({
     allDecksChosen,
     players,
-    neutralFactionStats,
-    neutralLeaderStats,
     users,
   })
 

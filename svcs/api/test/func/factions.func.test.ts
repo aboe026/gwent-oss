@@ -17,7 +17,7 @@ describe('factions', () => {
     await DbConnector.disconnect()
   })
   describe('stats', () => {
-    it('returns all factions without neutral stats if no inputs provided', async () => {
+    it('returns all factions if no inputs provided', async () => {
       const response = await graphql({
         schema,
         source: `{
