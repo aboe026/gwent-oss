@@ -15,6 +15,10 @@
   top: 0;
 }
 
+.unit-game-card-container .unit-game-card-fullscreen {
+  padding: 0;
+}
+
 .unit-game-card-fullscreen {
   position: absolute;
   top: 0;
@@ -31,6 +35,10 @@
 .unit-game-card-bottom {
   position: absolute;
   bottom: 0;
+  display: flex;
+  width: 100%;
+  height: auto;
+  flex-wrap: wrap-reverse;
 }
 
 .unit-game-card-selected {

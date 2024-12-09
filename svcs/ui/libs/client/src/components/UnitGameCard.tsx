@@ -13,7 +13,7 @@ import './UnitGameCard.css'
  */
 export default function UnitGameCard({
   deckUnit,
-  iconSize = '34px',
+  iconSize = '28px',
   selected,
   cursor = 'pointer',
   setFullUnit,
@@ -43,7 +43,7 @@ export default function UnitGameCard({
       >
         <CgMaximizeAlt className="unit-game-card-fullscreen-icon" />
       </div>
-      <div className="unit-game-card-bottom" style={{ height: iconSize }}>
+      <div className="unit-game-card-bottom">
         {combatSymbol && <img src={combatSymbol} style={{ height: iconSize, width: iconSize }} title={combatTitle} />}
         {deckUnit.unit.effects &&
           deckUnit.unit.effects
