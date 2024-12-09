@@ -1,11 +1,6 @@
 # ToDo
 
-A list of things to be done in the future
-
-- write unit tests for uncovered code (esp new code)
-- write func tests for new factions query args
-- add to changelog
-- increment minor version
+A list of things to be done in the future.
 
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - implement history?
