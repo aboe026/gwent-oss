@@ -611,7 +611,7 @@ export type ReadyMutationVariables = Exact<{
 }>;
 
 
-export type ReadyMutation = { __typename?: 'Mutation', ready: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type ReadyMutation = { __typename?: 'Mutation', ready: { __typename?: 'Game', id: string, status: GameStatus, players: Array<{ __typename?: 'GamePlayer', ready: boolean, user: { __typename?: 'User', name: string } }> } };
 
 export type RedrawMutationVariables = Exact<{
   game: Scalars['ID']['input'];
@@ -1581,10 +1581,17 @@ export type OrderSetSubscriptionResult = Apollo.SubscriptionResult<OrderSetSubsc
 export const ReadyDocument = gql`
     mutation Ready($game: ID!) {
   ready(game: $game) {
-    ...GameFragment
+    id
+    players {
+      ready
+      user {
+        name
+      }
+    }
+    status
   }
 }
-    ${GameFragmentFragmentDoc}`;
+    `;
 export type ReadyMutationFn = Apollo.MutationFunction<ReadyMutation, ReadyMutationVariables>;
 
 /**

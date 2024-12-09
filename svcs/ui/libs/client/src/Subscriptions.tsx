@@ -10,6 +10,7 @@ import {
   GameDeckDocument,
   GameDeckQuery,
   GameDocument,
+  GamePlayer,
   GameQuery,
   GamesDocument,
   GamesQuery,
@@ -110,27 +111,44 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useGameReadySubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const updatedGame = data.data?.gameReady
-      if (updatedGame) {
-        const variables = {
-          id: updatedGame.id,
-        }
-        const previousGame = client.cache.readQuery<GameQuery>({
-          query: GameDocument,
-          variables,
-        })
-        if (previousGame) {
-          client.cache.updateQuery<GameQuery>(
-            {
-              query: GameDocument,
-              variables,
-            },
-            () => ({
-              game: updatedGame as Game,
-            })
-          )
-        }
-      }
+      // const updatedGame = data.data?.gameReady
+      // if (updatedGame) {
+      //   const variables = {
+      //     id: updatedGame.id,
+      //   }
+      //   const previousGame = client.cache.readQuery<GameQuery>({
+      //     query: GameDocument,
+      //     variables,
+      //   })
+      //   if (previousGame) {
+      //     client.cache.updateQuery<GameQuery>(
+      //       {
+      //         query: GameDocument,
+      //         variables,
+      //       },
+      //       (previous) => {
+      //         const prevGame = previous?.game
+      //         if (prevGame) {
+      //           return {
+      //             game: {
+      //               ...prevGame,
+      //               status: updatedGame.status,
+      //               players: prevGame.players.map((player) => {
+      //                 const updatedPlayer = updatedGame.players.find(
+      //                   (updatedPlayer) => updatedPlayer.user.name === player.user.name
+      //                 ) as GamePlayer
+      //                 return {
+      //                   ...player,
+      //                   ready: updatedPlayer.ready,
+      //                 }
+      //               }),
+      //             },
+      //           }
+      //         }
+      //       }
+      //     )
+      //   }
+      // }
     },
   })
   useGameSetSubscription({

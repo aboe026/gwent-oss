@@ -1,5 +1,12 @@
 mutation Ready($game: ID!) {
   ready(game: $game) {
-    ...GameFragment
+    id
+    players {
+      ready
+      user {
+        name
+      }
+    }
+    status
   }
 }
