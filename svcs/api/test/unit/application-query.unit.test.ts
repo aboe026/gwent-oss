@@ -6,7 +6,6 @@ import { version } from '../../package.json'
 
 describe('application-query', () => {
   describe('application', () => {
-    // TODO: test without user
     it('calls out to AppInfo to get build number', async () => {
       await testApplication({})
     })

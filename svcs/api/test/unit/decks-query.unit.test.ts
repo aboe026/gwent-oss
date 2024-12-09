@@ -70,9 +70,6 @@ async function testDecks({
           [
             {
               decks: [deck],
-              neutralDeckStats: undefined,
-              neutralLeaderStats: undefined,
-              neutralUnitStats: undefined,
             },
           ],
         ]

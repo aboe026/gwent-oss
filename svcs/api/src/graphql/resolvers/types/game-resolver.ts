@@ -21,22 +21,16 @@ export default class GameResolver {
    * @param config The configuration used to convert the Game.
    * @param config.creator The resolved User who created the Game. If not provided, will be retrieved.
    * @param config.game The Game to convert.
-   * @param config.neutralFactionStats Whether or not to account for the Neutral faction when calculating the stats of the Faction of the Game.
-   * @param config.neutralLeaderStats Whether or not to account for the Neutral faction when calculating the stats of the Leader of the Game.
    * @param config.user The resolved Users for the players on the Game. If not provided, will be retrieved.
    * @returns The resolved Game object matching its GraphQL schema definition.
    */
   static async fromObject({
     creator,
     game,
-    neutralFactionStats,
-    neutralLeaderStats,
     users,
   }: {
     game: GameDbObject
     creator?: User
-    neutralFactionStats?: boolean
-    neutralLeaderStats?: boolean
     users?: User[]
   }): Promise<Game> {
     const resolvedUsers: User[] = []
@@ -58,8 +52,6 @@ export default class GameResolver {
       players: game.players,
       users: resolvedUsers,
       allDecksChosen: GameResolver.allDecksChosen(game),
-      neutralFactionStats,
-      neutralLeaderStats,
     })
 
     return {

@@ -136,9 +136,6 @@ export default class SetDeckMutation {
     }
     const resolvedDeck = await GameDeckResolver.fromObject({
       gameDeck: updatedPlayer.deck,
-      neutralDeckStats: RequestedFields.getArgument(info, 'setDeck.from.faction.stats.neutrals'),
-      neutralLeaderStats: RequestedFields.getArgument(info, 'setDeck.from.leader.faction.stats.neutrals'),
-      neutralUnitStats: RequestedFields.getArgument(info, 'setDeck.from.units.unit.faction.stats.neutrals'),
     })
     const resolvedGame = await GameResolver.fromObject({
       game: updatedGame,

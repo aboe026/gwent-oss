@@ -32,7 +32,7 @@ import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ProgressBar from '../components/ProgressBar'
-import { sortObjectArray } from '@gwent/utils'
+import { combineUnitStats, sortObjectArray } from '@gwent/utils'
 import UnitDeckCard from './UnitDeckCard'
 import UnitFullCard from './UnitFullCard'
 import UnitsHeader from '../components/UnitsHeader'
@@ -224,12 +224,13 @@ function renderNameAndFaction({
   }
 
   const selectedFaction = factionsData?.factions.find((availableFaction) => availableFaction.key === faction?.key)
+  const neutralFaction = factionsData?.factions.find((availableFaction) => availableFaction.key === FactionKey.Neutral)
 
-  if (
-    selectedFaction?.stats &&
-    (!factionStats || selectedFaction?.stats.strengthAverage !== factionStats.strengthAverage)
-  ) {
-    setFactionStats(selectedFaction.stats)
+  if (selectedFaction?.stats && neutralFaction?.stats) {
+    const combinedStats = combineUnitStats(selectedFaction.stats, neutralFaction.stats)
+    if (!factionStats || combinedStats.strengthAverage !== factionStats.strengthAverage) {
+      setFactionStats(combinedStats)
+    }
   }
 
   return (

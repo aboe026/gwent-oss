@@ -209,8 +209,6 @@ describe('ready-mutation', () => {
           [
             {
               game: updatedGame,
-              neutralFactionStats: undefined,
-              neutralLeaderStats: undefined,
             },
           ],
         ],
@@ -274,8 +272,6 @@ describe('ready-mutation', () => {
           [
             {
               game: updatedGame,
-              neutralFactionStats: undefined,
-              neutralLeaderStats: undefined,
             },
           ],
         ],

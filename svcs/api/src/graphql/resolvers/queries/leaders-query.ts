@@ -58,7 +58,6 @@ export default class LeadersQuery {
     return LeaderResolver.fromArray({
       leaders,
       factions,
-      neutralStats: RequestedFields.getArgument<boolean>(info, 'leaders.faction.stats.neutrals'),
     })
   }
 }

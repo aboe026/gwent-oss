@@ -413,6 +413,7 @@ test('Order automatically set if both are ScoiaTael', async (t) => {
     name: deckSelf.name,
     stats: deckSelf.stats,
     verifyCloses: false,
+    neutralFaction: await t.ctx.self.client.getFaction({ key: FactionKey.Neutral }),
   })
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
@@ -484,6 +485,7 @@ test('Order automatically set if none are ScoiaTael', async (t) => {
     name: deckSelf.name,
     stats: deckSelf.stats,
     verifyCloses: false,
+    neutralFaction: await t.ctx.self.client.getFaction({ key: FactionKey.Neutral }),
   })
   const gameDeckSelf = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   const gameDeckOpponent = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)

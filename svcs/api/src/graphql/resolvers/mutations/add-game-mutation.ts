@@ -99,13 +99,10 @@ export default class AddGameMutation {
     if (AddGameMutation.logger.isTraceEnabled()) {
       AddGameMutation.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
     }
-    // neutral stats resolving not really needed here (since no decks are set when game initially created)
-    // but left in for good measure
+
     const resolvedGame = await GameResolver.fromObject({
       game,
       users: resolvedOpponents,
-      neutralFactionStats: RequestedFields.getArgument(info, 'addGame.players.faction.stats.neutrals'),
-      neutralLeaderStats: RequestedFields.getArgument(info, 'addGame.players.leader.faction.stats.neutrals'),
     })
 
     EventManager.pubsub.publish(PubSubEvents.GameAdded, {

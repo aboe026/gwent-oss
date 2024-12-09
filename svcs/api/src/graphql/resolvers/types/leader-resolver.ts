@@ -22,19 +22,16 @@ export default class LeaderResolver {
    * @param config.unit The resolved DLC for the Leader. If not provided, will be retrieved.
    * @param config.faction The resolved Faction for the Leader. If not provided, will be retrieved.
    * @param config.leader The Leader to convert.
-   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Leader.
    * @returns The resolved Leader object matching its GraphQL schema definition.
    */
   static async fromObject({
     dlc,
     faction,
     leader,
-    neutralStats,
   }: {
     dlc?: Dlc
     faction?: Faction
     leader: LeaderDbObject
-    neutralStats?: boolean
   }): Promise<Leader> {
     return {
       ability: leader.ability,
@@ -44,7 +41,6 @@ export default class LeaderResolver {
         faction ||
         (await FactionResolver.fromId({
           id: leader.faction,
-          neutrals: neutralStats,
         })),
       id: leader._id.toString(),
       image: leader.image,
@@ -60,10 +56,9 @@ export default class LeaderResolver {
    * @returns The resolved Leader object with the given ID.
    * @throws Error if a Leader with the given ID does not exist.
    */
-  static async fromId({ id, neutralStats }: { id: string | ObjectId; neutralStats?: boolean }): Promise<Leader> {
+  static async fromId({ id }: { id: string | ObjectId }): Promise<Leader> {
     const leaders = await LeaderResolver.fromIds({
       ids: [id],
-      neutralStats,
     })
     return leaders[0]
   }
@@ -79,12 +74,10 @@ export default class LeaderResolver {
     ids,
     factions,
     resolvedFactions,
-    neutralStats,
   }: {
     ids: (ObjectId | string)[]
     factions?: FactionDbObject[]
     resolvedFactions?: Faction[]
-    neutralStats?: boolean
   }): Promise<Leader[]> {
     if (ids.length === 0) {
       return []
@@ -106,7 +99,6 @@ export default class LeaderResolver {
       leaders,
       factions,
       resolvedFactions,
-      neutralStats,
     })
   }
 
@@ -117,18 +109,15 @@ export default class LeaderResolver {
    * @param config.factions The resolved Factions for the Leaders. If not provided, will be retrieved.
    * @param config.leaders The array of Leader database objects to convert.
    * @param config.resolvedFactions The resolved Factions for the Leaders. If not provided, will be retrieved.
-   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Factions of the Leaders.
    * @returns The resolved Leader array matching the GraphQL schema definition.
    */
   static async fromArray({
     factions,
     leaders,
-    neutralStats,
     resolvedFactions,
   }: {
     factions?: FactionDbObject[]
     leaders: LeaderDbObject[]
-    neutralStats?: boolean
     resolvedFactions?: Faction[]
   }): Promise<Leader[]> {
     const dlcIds = getUniqueItems<ObjectId>(leaders.map((leader) => leader.dlc))
@@ -138,13 +127,11 @@ export default class LeaderResolver {
       if (factions) {
         resolvedFactions = await FactionResolver.fromArray({
           factions,
-          neutralStats,
         })
       } else {
         const factionIds = getUniqueItems<ObjectId>(leaders.map((leader) => leader.faction))
         resolvedFactions = await FactionResolver.fromIds({
           ids: factionIds,
-          neutralStats,
         })
       }
     }
@@ -156,7 +143,6 @@ export default class LeaderResolver {
           leader,
           dlc: leader.dlc && dlcs.find((dlc) => dlc.id.toString() === leader.dlc?.toString()),
           faction: resolvedFactions.find((faction) => faction.id.toString() === leader.faction.toString()),
-          neutralStats,
         })
       )
     }

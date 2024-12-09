@@ -12,22 +12,9 @@ export default class GameDeckResolver {
    *
    * @param config The configuration used to convert the GameDeck.
    * @param config.gameDeck The GameDeck to convert.
-   * @param config.neutralDeckStats Whether or not to account for the Neutral faction when calculating the stats of the Faction of the GameDeck.
-   * @param config.neutralLeaderStats Whether or not to account for the Neutral faction when calculating the stats of the Leader of the GameDeck.
-   * @param config.neutralUnitStats Whether or not to account for the Neutral faction when calculating the stats of the Units of the GameDeck.
    * @returns The resolved GameDeck object matching its GraphQL schema definition.
    */
-  static async fromObject({
-    gameDeck,
-    neutralDeckStats,
-    neutralLeaderStats,
-    neutralUnitStats,
-  }: {
-    gameDeck: GameDeckDbObject
-    neutralDeckStats?: boolean
-    neutralLeaderStats?: boolean
-    neutralUnitStats?: boolean
-  }): Promise<GameDeck> {
+  static async fromObject({ gameDeck }: { gameDeck: GameDeckDbObject }): Promise<GameDeck> {
     const deckUnits = await DeckUnitResolver.fromArray({
       deckUnits: [
         ...gameDeck.discard,
@@ -36,7 +23,6 @@ export default class GameDeckResolver {
         ...gameDeck.redraws.map((redraw) => redraw.to),
         ...gameDeck.undrawn,
       ],
-      neutralStats: neutralUnitStats,
     })
 
     return {
@@ -48,9 +34,6 @@ export default class GameDeckResolver {
         gameDeck.from &&
         (await DeckResolver.fromObject({
           deck: gameDeck.from,
-          neutralDeckStats,
-          neutralLeaderStats,
-          neutralUnitStats,
         })),
       hand: gameDeck.hand.map(
         (deckUnit) =>

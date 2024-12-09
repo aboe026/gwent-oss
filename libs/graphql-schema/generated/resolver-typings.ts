@@ -48,11 +48,6 @@ export type Deck = {
   user: User;
 };
 
-
-export type DeckStatsArgs = {
-  neutrals?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
 export type DeckUnit = {
   __typename?: 'DeckUnit';
   artStyle: Scalars['Int']['output'];
@@ -132,11 +127,6 @@ export type Faction = {
   key: FactionKey;
   name: Scalars['String']['output'];
   stats: UnitStats;
-};
-
-
-export type FactionStatsArgs = {
-  neutrals?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export enum FactionKey {
@@ -356,6 +346,11 @@ export type Query = {
   settings: Array<Setting>;
   /** All units available to build decks with. */
   units: Array<Unit>;
+};
+
+
+export type QueryFactionsArgs = {
+  keys?: InputMaybe<Array<FactionKey>>;
 };
 
 
@@ -635,7 +630,7 @@ export type DeckResolvers<ContextType = Context, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   leader?: Resolver<ResolversTypes['Leader'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  stats?: Resolver<ResolversTypes['UnitStats'], ParentType, ContextType, RequireFields<DeckStatsArgs, 'neutrals'>>;
+  stats?: Resolver<ResolversTypes['UnitStats'], ParentType, ContextType>;
   units?: Resolver<Array<ResolversTypes['DeckUnit']>, ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -674,7 +669,7 @@ export type FactionResolvers<ContextType = Context, ParentType extends Resolvers
   image?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   key?: Resolver<ResolversTypes['FactionKey'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  stats?: Resolver<ResolversTypes['UnitStats'], ParentType, ContextType, RequireFields<FactionStatsArgs, 'neutrals'>>;
+  stats?: Resolver<ResolversTypes['UnitStats'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -771,7 +766,7 @@ export type QueryResolvers<ContextType = Context, ParentType extends ResolversPa
   application?: Resolver<ResolversTypes['Application'], ParentType, ContextType>;
   currentUser?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   decks?: Resolver<Array<ResolversTypes['Deck']>, ParentType, ContextType>;
-  factions?: Resolver<Array<ResolversTypes['Faction']>, ParentType, ContextType>;
+  factions?: Resolver<Array<ResolversTypes['Faction']>, ParentType, ContextType, Partial<QueryFactionsArgs>>;
   game?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<QueryGameArgs, 'id'>>;
   gameDeck?: Resolver<Maybe<ResolversTypes['GameDeck']>, ParentType, ContextType, RequireFields<QueryGameDeckArgs, 'game'>>;
   games?: Resolver<Array<ResolversTypes['Game']>, ParentType, ContextType>;

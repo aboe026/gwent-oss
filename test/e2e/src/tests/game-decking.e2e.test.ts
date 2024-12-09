@@ -193,6 +193,7 @@ test('Set deck from new one with single existing', async (t) => {
         leader: existingDeck.leader,
         name: existingDeck.name,
         stats: existingDeck.stats,
+        neutralFaction: await t.ctx.self.client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -236,6 +237,7 @@ test('Set deck from existing one with single existing', async (t) => {
     leader: deck.leader,
     name: deck.name,
     stats: deck.stats,
+    neutralFaction: await t.ctx.self.client.getFaction({ key: FactionKey.Neutral }),
   })
   const gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
@@ -277,6 +279,7 @@ test('Set deck from existing one with multiple existing', async (t) => {
     name: `${t.ctx.scenario}-deck-${Date.now()}`,
     unitNames: t.ctx.nilfgaard.units,
   })
+  const neutralFaction = await t.ctx.self.client.getFaction({ key: FactionKey.Neutral })
   await GamePage.setDeck({
     created: deck.created,
     faction: deck.faction,
@@ -290,8 +293,10 @@ test('Set deck from existing one with multiple existing', async (t) => {
         leader: existingDeck.leader,
         name: existingDeck.name,
         stats: existingDeck.stats,
+        neutralFaction,
       },
     ],
+    neutralFaction,
   })
   const gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({

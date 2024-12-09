@@ -415,7 +415,6 @@ describe('redraw-mutation', () => {
                 artStyle: 1,
                 unit: unit2._id,
               },
-              neutralStats: undefined,
             },
           ],
           [
@@ -424,7 +423,6 @@ describe('redraw-mutation', () => {
                 artStyle: 1,
                 unit: unit._id,
               },
-              neutralStats: undefined,
             },
           ],
         ],
@@ -569,7 +567,6 @@ describe('redraw-mutation', () => {
                 artStyle: 1,
                 unit: unit2._id,
               },
-              neutralStats: undefined,
             },
           ],
           [
@@ -578,7 +575,6 @@ describe('redraw-mutation', () => {
                 artStyle: 1,
                 unit: unit._id,
               },
-              neutralStats: undefined,
             },
           ],
         ],

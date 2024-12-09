@@ -77,7 +77,6 @@ test('Displays single deck', async (t) => {
         created: deck.created,
         faction: await client.getFaction({
           key: faction,
-          neutrals: true,
         }),
         leader: await client.getLeader({
           faction,
@@ -85,6 +84,7 @@ test('Displays single deck', async (t) => {
         }),
         name,
         stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -165,6 +165,7 @@ test('Displays two decks', async (t) => {
   await LoginPage.login({
     username,
   })
+  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
 
   await DecksPage.verify({
     decks: [
@@ -172,7 +173,6 @@ test('Displays two decks', async (t) => {
         created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
-          neutrals: true,
         }),
         leader: await client.getLeader({
           faction: faction1,
@@ -180,12 +180,12 @@ test('Displays two decks', async (t) => {
         }),
         name: name1,
         stats: deck1.stats,
+        neutralFaction,
       },
       {
         created: deck2.created,
         faction: await client.getFaction({
           key: faction2,
-          neutrals: true,
         }),
         leader: await client.getLeader({
           faction: faction2,
@@ -193,6 +193,7 @@ test('Displays two decks', async (t) => {
         }),
         name: name2,
         stats: deck2.stats,
+        neutralFaction,
       },
     ],
   })
@@ -215,7 +216,6 @@ test('List gets updated after deck created from deck page', async (t) => {
   const factionKey = FactionKey.NilfgaardianEmpire
   const faction = await client.getFaction({
     key: factionKey,
-    neutrals: true,
   })
   const leader = await client.getLeader({
     faction: factionKey,
@@ -259,6 +259,7 @@ test('List gets updated after deck created from deck page', async (t) => {
         leader,
         name,
         stats: (await client.getDeck(name)).stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -293,7 +294,6 @@ test('List gets updated after deck created from game page', async (t) => {
   const factionKey = FactionKey.NilfgaardianEmpire
   const faction = await client.getFaction({
     key: factionKey,
-    neutrals: true,
   })
   const leader = await client.getLeader({
     faction: factionKey,
@@ -339,6 +339,7 @@ test('List gets updated after deck created from game page', async (t) => {
         leader,
         name,
         stats: (await client.getDeck(name)).stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
@@ -410,6 +411,7 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
     name: name1,
     unitNames: units1,
   })
+  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
 
   await LoginPage.login({
     username,
@@ -420,7 +422,6 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
         created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
-          neutrals: true,
         }),
         leader: await client.getLeader({
           faction: faction1,
@@ -428,6 +429,7 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
         }),
         name: name1,
         stats: deck1.stats,
+        neutralFaction,
       },
     ],
   })
@@ -445,7 +447,6 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
         created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
-          neutrals: true,
         }),
         leader: await client.getLeader({
           faction: faction1,
@@ -453,6 +454,7 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
         }),
         name: name1,
         stats: deck1.stats,
+        neutralFaction,
       },
     ],
   })
@@ -465,7 +467,6 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
         created: deck1.created,
         faction: await client.getFaction({
           key: faction1,
-          neutrals: true,
         }),
         leader: await client.getLeader({
           faction: faction1,
@@ -473,12 +474,12 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
         }),
         name: name1,
         stats: deck1.stats,
+        neutralFaction,
       },
       {
         created: deck2.created,
         faction: await client.getFaction({
           key: faction2,
-          neutrals: true,
         }),
         leader: await client.getLeader({
           faction: faction2,
@@ -486,6 +487,7 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
         }),
         name: name2,
         stats: deck2.stats,
+        neutralFaction,
       },
     ],
   })

@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { Deck, FactionKey, MutationAddDeckArgs } from '@gwent/graphql-schema/resolver-typings'
-import { DeckDbObject, FactionDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckResolver from '../types/deck-resolver'
 import DeckStore from '../../../database/stores/deck-store'
 import DeckUnitResolver from '../types/deck-unit-resolver'
@@ -39,6 +39,7 @@ export default class AddDeckMutation {
       AddDeckMutation.logger.error(`No user on context for addDeck mutation: "${JSON.stringify(context.session)}".`)
       return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
+
     const logPrefix = `addDeck by "${userId}"`
     if (AddDeckMutation.logger.isTraceEnabled()) {
       AddDeckMutation.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
@@ -49,10 +50,12 @@ export default class AddDeckMutation {
         `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
       )
     }
+
     const name = args.name
     const factionKey = args.faction
     const leaderId = args.leader
     const unitsInput = args.units
+
     if (!ObjectId.isValid(leaderId)) {
       const message = `Leader ID "${leaderId}" is not a valid MongoDB ObjectId.`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
@@ -65,20 +68,17 @@ export default class AddDeckMutation {
         return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
       }
     }
+
     if (factionKey === FactionKey.Neutral) {
       const message = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    const factions = await FactionStore.get({})
+    const factions = await FactionStore.get({
+      keys: [args.faction],
+    })
     if (AddDeckMutation.logger.isTraceEnabled()) {
       AddDeckMutation.logger.trace(`${logPrefix} factions: "${JSON.stringify(factions)}"`)
-    }
-    const factionMap: {
-      [x: string]: FactionDbObject
-    } = {}
-    for (const faction of factions) {
-      factionMap[faction._id.toString()] = faction
     }
     const matchedFactions = factions.filter((faction) => faction.key === factionKey)
     if (matchedFactions.length === 0) {
@@ -91,7 +91,8 @@ export default class AddDeckMutation {
       AddDeckMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(matchedFactions)}"`)
       return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    const faction = matchedFactions[0]
+    const deckFaction = matchedFactions[0]
+
     const leaders = await LeaderStore.get({
       ids: [leaderId],
     })
@@ -109,12 +110,12 @@ export default class AddDeckMutation {
       return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const leader = leaders[0]
-    const leaderFaction = factionMap[leader.faction.toString()]
-    if (leaderFaction.key !== factionKey) {
-      const message = `Faction key "${leaderFaction.key}" for leader "${leaderId}" does not match deck faction key "${factionKey}".`
+    if (leader.faction.toString() !== deckFaction._id.toString()) {
+      const message = `Faction ID "${leader.faction}" for leader "${leaderId}" does not match deck faction ID "${deckFaction._id}".`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
+
     const units = await UnitStore.get({
       ids: unitsInput.map((unit) => unit.id),
     })
@@ -140,7 +141,6 @@ export default class AddDeckMutation {
           unit: new ObjectId(unit.id),
         }
       }),
-      neutralStats: RequestedFields.getArgument(info, 'addDeck.units.unit.faction.stats.neutrals'),
     })
     if (AddDeckMutation.logger.isTraceEnabled()) {
       AddDeckMutation.logger.trace(`${logPrefix} deckUnits: "${JSON.stringify(deckUnits)}"`)
@@ -154,10 +154,11 @@ export default class AddDeckMutation {
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
+
     let deck: DeckDbObject
     try {
       deck = await DeckStore.add({
-        factionId: faction._id,
+        factionId: deckFaction._id,
         leaderId: leaderId,
         name: name,
         stats: getDeckStats(deckUnits),
@@ -183,8 +184,7 @@ export default class AddDeckMutation {
       AddDeckMutation.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
     }
     const resolvedFaction = await FactionResolver.fromObject({
-      faction,
-      neutralStats: RequestedFields.getArgument(info, 'addDeck.faction.stats.neutrals'),
+      faction: deckFaction,
     })
     if (AddDeckMutation.logger.isTraceEnabled()) {
       AddDeckMutation.logger.trace(`${logPrefix} resolvedFaction: "${JSON.stringify(resolvedFaction)}"`)
@@ -195,10 +195,8 @@ export default class AddDeckMutation {
       leader: await LeaderResolver.fromObject({
         leader,
         faction: resolvedFaction,
-        neutralStats: RequestedFields.getArgument(info, 'addDeck.leader.faction.stats.neutrals'),
       }),
       units: deckUnits,
-      neutralDeckStats: RequestedFields.getArgument(info, 'addDeck.faction.stats.neutrals'),
     })
 
     EventManager.pubsub.publish(PubSubEvents.DeckAdded, {

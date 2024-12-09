@@ -94,8 +94,6 @@ export default class ReadyMutation {
     }
     const resolvedGame = await GameResolver.fromObject({
       game: updatedGame,
-      neutralFactionStats: RequestedFields.getArgument(info, 'ready.players.faction.stats.neutrals'),
-      neutralLeaderStats: RequestedFields.getArgument(info, 'ready.players.leader.faction.stats.neutrals'),
     })
 
     EventManager.pubsub.publish(PubSubEvents.GameReady, {

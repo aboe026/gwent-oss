@@ -321,9 +321,6 @@ describe('set-deck-mutation', () => {
               gameDeck: (
                 game.players.find((player) => player.user.toString() === userId?.toString()) as GamePlayerDbObject
               ).deck,
-              neutralDeckStats: undefined,
-              neutralLeaderStats: undefined,
-              neutralUnitStats: undefined,
             },
           ],
         ],
@@ -407,9 +404,6 @@ describe('set-deck-mutation', () => {
                   (player) => player.user.toString() === userId?.toString()
                 ) as GamePlayerDbObject
               ).deck,
-              neutralDeckStats: undefined,
-              neutralLeaderStats: undefined,
-              neutralUnitStats: undefined,
             },
           ],
         ],
@@ -492,9 +486,6 @@ describe('set-deck-mutation', () => {
               gameDeck: (
                 game.players.find((player) => player.user.toString() === userId?.toString()) as GamePlayerDbObject
               ).deck,
-              neutralDeckStats: undefined,
-              neutralLeaderStats: undefined,
-              neutralUnitStats: undefined,
             },
           ],
         ],

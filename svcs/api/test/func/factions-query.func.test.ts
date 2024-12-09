@@ -7,8 +7,9 @@ import DbUtil from './util/db-util'
 import { expectizeFactions, verifyMongoIds } from './util/expect-util'
 import { getFactionFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
+import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 
-describe('factions', () => {
+describe('factions-query', () => {
   beforeEach(async () => {
     await DbUtil.deleteDatabase()
     await DbUpgrader.run()
@@ -16,8 +17,8 @@ describe('factions', () => {
   afterAll(async () => {
     await DbConnector.disconnect()
   })
-  describe('stats', () => {
-    it('returns all factions without neutral stats if no inputs provided', async () => {
+  describe('factions', () => {
+    it('returns all factions if no inputs provided', async () => {
       const response = await graphql({
         schema,
         source: `{
@@ -35,21 +36,19 @@ describe('factions', () => {
       })
       expect(response).toEqual({
         data: {
-          factions: expectizeFactions({
-            neutrals: false,
-          }),
+          factions: expectizeFactions(),
         },
       })
       verifyMongoIds(response.data?.factions)
     })
-    it('returns all factions without neutral stats if explicit neutrals false provided', async () => {
+    it('returns single faction if single key provided', async () => {
       const response = await graphql({
         schema,
         source: `{
-          factions {
-            ${getFactionFragment({
-              statsModifier: '(neutrals: false)',
-            })}
+          factions(
+            keys: [${FactionKey.Neutral}]
+          ) {
+            ${getFactionFragment({})}
           }
         }`,
         contextValue: {
@@ -62,21 +61,19 @@ describe('factions', () => {
       })
       expect(response).toEqual({
         data: {
-          factions: expectizeFactions({
-            neutrals: false,
-          }),
+          factions: expectizeFactions().filter((faction) => faction.key === FactionKey.Neutral),
         },
       })
       verifyMongoIds(response.data?.factions)
     })
-    it('returns all factions with neutral stats if explicit neutrals true provided', async () => {
+    it('returns two factions if two keys provided', async () => {
       const response = await graphql({
         schema,
         source: `{
-          factions {
-            ${getFactionFragment({
-              statsModifier: '(neutrals: true)',
-            })}
+          factions(
+            keys: [${FactionKey.NorthernRealms}, ${FactionKey.Neutral}]
+          ) {
+            ${getFactionFragment({})}
           }
         }`,
         contextValue: {
@@ -89,9 +86,36 @@ describe('factions', () => {
       })
       expect(response).toEqual({
         data: {
-          factions: expectizeFactions({
-            neutrals: true,
-          }),
+          factions: expectizeFactions().filter(
+            (faction) => faction.key === FactionKey.NorthernRealms || faction.key === FactionKey.Neutral
+          ),
+        },
+      })
+      verifyMongoIds(response.data?.factions)
+    })
+    it('returns all factions if all keys provided', async () => {
+      const response = await graphql({
+        schema,
+        source: `{
+          factions(
+            keys: [${FactionKey.Monsters}, ${FactionKey.Neutral}, ${FactionKey.NilfgaardianEmpire}, ${
+          FactionKey.NorthernRealms
+        }, ${FactionKey.ScoiaTael}, ${FactionKey.Skellige}]
+          ) {
+            ${getFactionFragment({})}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: {
+              _id: new ObjectId(),
+            },
+          },
+        },
+      })
+      expect(response).toEqual({
+        data: {
+          factions: expectizeFactions(),
         },
       })
       verifyMongoIds(response.data?.factions)

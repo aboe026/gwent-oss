@@ -7,7 +7,6 @@ import {
   EffectDbObject,
   EffectKey,
   FactionDbObject,
-  FactionKey,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import DlcResolver from './dlc-resolver'
@@ -35,8 +34,6 @@ export default class UnitResolver {
    * @param config.effects The resolved Effects for the Unit.  If not provided, will be retrieved.
    * @param config.faction The resolved Faction for the Unit. If not provided, will be retrieved.
    * @param config.unit The Unit database document to convert.
-   * @param config.neutral The Neutral Faction database document to use for calculating stats if neutralStats is true. If not provided, will be retrieved.
-   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Unit.
    * @returns The resolved Unit object matching its GraphQL schema definition.
    */
   static async fromObject({
@@ -44,15 +41,11 @@ export default class UnitResolver {
     effects,
     faction,
     unit,
-    neutral,
-    neutralStats,
   }: {
     unit: UnitDbObject
     dlc?: DlcDbObject
     effects?: EffectDbObject[]
     faction?: FactionDbObject
-    neutral?: FactionDbObject
-    neutralStats?: boolean
   }): Promise<Unit> {
     const resolvedEffects = unit.effects
       ? effects
@@ -69,12 +62,9 @@ export default class UnitResolver {
       faction: faction
         ? await FactionResolver.fromObject({
             faction,
-            neutral,
-            neutralStats,
           })
         : await FactionResolver.fromId({
             id: unit.faction,
-            neutrals: neutralStats,
           }),
       hero: unit.hero,
       id: unit._id.toString(),
@@ -95,10 +85,9 @@ export default class UnitResolver {
    * @returns The resolved Unit object with the given ID.
    * @throws Error if a Unit with the given ID does not exist.
    */
-  static async fromId({ id, neutralStats }: { id: ObjectId | string; neutralStats?: boolean }): Promise<Unit> {
+  static async fromId({ id }: { id: ObjectId | string }): Promise<Unit> {
     const units = await UnitResolver.fromIds({
       ids: [id],
-      neutralStats,
     })
     return units[0]
   }
@@ -113,11 +102,9 @@ export default class UnitResolver {
   static async fromIds({
     ids,
     factions,
-    neutralStats,
   }: {
     ids: (ObjectId | string)[]
     factions?: FactionDbObject[]
-    neutralStats?: boolean
   }): Promise<Unit[]> {
     if (ids.length === 0) {
       return []
@@ -138,7 +125,6 @@ export default class UnitResolver {
     return UnitResolver.fromArray({
       units,
       factions,
-      neutralStats,
     })
   }
 
@@ -148,17 +134,14 @@ export default class UnitResolver {
    * @param config The configuration used to convert the array.
    * @param config.factions The resolved Factions for the Units. If not provided, will be retrieved.
    * @param config.units The array of Unit database objects to convert.
-   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the Factions of the Units.
    * @returns The resolved Unit array matching the GraphQL schema definition.
    */
   static async fromArray({
     factions,
     units,
-    neutralStats,
   }: {
     factions?: FactionDbObject[]
     units: UnitDbObject[]
-    neutralStats?: boolean
   }): Promise<Unit[]> {
     const factionIds = getUniqueItems<ObjectId>(units.map((unit) => unit.faction))
     let resolvedFactionIds: string[] = []
@@ -202,24 +185,6 @@ export default class UnitResolver {
     }
 
     const resolvedUnits: Unit[] = []
-    let neutralFaction: FactionDbObject | undefined = undefined
-    if (neutralStats) {
-      neutralFaction = dbFactions.find((faction) => faction.key === FactionKey.Neutral)
-      if (!neutralFaction) {
-        const neutralFactions = await FactionStore.get({
-          keys: [FactionKey.Neutral],
-        })
-        Verifier.checkObjects({
-          expectedKeys: [FactionKey.Neutral],
-          objects: neutralFactions,
-          field: 'key',
-          logger: UnitResolver.logger,
-          label: 'factions',
-        })
-        neutralFaction = neutralFactions[0]
-      }
-    }
-
     for (const unit of units) {
       resolvedUnits.push(
         await UnitResolver.fromObject({
@@ -232,8 +197,6 @@ export default class UnitResolver {
                 effects.find((effect) => effect._id.toString() === unitEffect.toString()) as EffectDbObject
             ),
           faction: dbFactions.find((faction) => faction._id.toString() === unit.faction.toString()),
-          neutral: neutralFaction,
-          neutralStats,
         })
       )
     }

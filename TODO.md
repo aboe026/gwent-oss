@@ -1,6 +1,6 @@
 # ToDo
 
-A list of things to be done in the future
+A list of things to be done in the future.
 
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - implement history?
@@ -9,14 +9,7 @@ A list of things to be done in the future
 - How to handle GameCard with more than 2 icons (eg Olgierd)? The 3rd one gets rendered off the card underneath
 - do not store yarn binary in source
 - do not store yarn sdks in source?
-- allow introspection without authentication
-- fix stat bars overextending when new subscription deck comes in (most likely due to neutralStats not accurate?)
-  - happens when adding deck through API and not requesting neutral stats?
-  - fix by not allowing neutral stats on factions
-- Do not have "neutralStats" as a field (or if so, only allow it for Factions, not Decks)
-  - just do that math on the front end, already have neutral faction guaranteed queried
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
-- add ability to target resolution of neutrals on each type of DeckUnit gameDeck (undrawn, hand, discard, redraws (from/to))
 - Change "ready" mutation to "readyGame"?
 - Remove @map directive for ID types?
 - Figure out why mutation resolvers don't show typescript error when returning Db object instead of resolved object

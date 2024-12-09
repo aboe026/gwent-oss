@@ -48,11 +48,6 @@ export type Deck = {
   user: User;
 };
 
-
-export type DeckStatsArgs = {
-  neutrals?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
 export type DeckUnit = {
   __typename?: 'DeckUnit';
   artStyle: Scalars['Int']['output'];
@@ -132,11 +127,6 @@ export type Faction = {
   key: FactionKey;
   name: Scalars['String']['output'];
   stats: UnitStats;
-};
-
-
-export type FactionStatsArgs = {
-  neutrals?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export enum FactionKey {
@@ -359,6 +349,11 @@ export type Query = {
 };
 
 
+export type QueryFactionsArgs = {
+  keys?: InputMaybe<Array<FactionKey>>;
+};
+
+
 export type QueryGameArgs = {
   id: Scalars['ID']['input'];
 };
@@ -530,6 +525,13 @@ export type DecksQuery = { __typename?: 'Query', decks: Array<{ __typename?: 'De
 
 export type FactionFragmentFragment = { __typename?: 'Faction', key: FactionKey, id: string, name: string, image: string, ability?: string | null, dlc?: { __typename?: 'Dlc', name: string, image: string } | null, stats: { __typename?: 'UnitStats', agile: number, avenger: number, berserker: number, bond: number, decoy: number, horn: number, mardroeme: number, medic: number, morale: number, muster: number, scorch: number, spy: number, weather: number, close: number, ranged: number, siege: number, units: number, specials: number, heroes: number, strengthAverage: number, strengthTotal: number, strengths: number } };
 
+export type FactionStatsQueryVariables = Exact<{
+  keys?: InputMaybe<Array<FactionKey> | FactionKey>;
+}>;
+
+
+export type FactionStatsQuery = { __typename?: 'Query', factions: Array<{ __typename?: 'Faction', key: FactionKey, stats: { __typename?: 'UnitStats', units: number, specials: number, heroes: number, close: number, ranged: number, siege: number, agile: number, strengthTotal: number } }> };
+
 export type FactionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -659,7 +661,7 @@ export const FactionFragmentFragmentDoc = gql`
     name
     image
   }
-  stats(neutrals: true) {
+  stats {
     agile
     avenger
     berserker
@@ -698,7 +700,7 @@ export const DeckFragmentFragmentDoc = gql`
     ability
     image
   }
-  stats(neutrals: true) {
+  stats {
     units
     specials
     heroes
@@ -1138,6 +1140,56 @@ export type DecksQueryHookResult = ReturnType<typeof useDecksQuery>;
 export type DecksLazyQueryHookResult = ReturnType<typeof useDecksLazyQuery>;
 export type DecksSuspenseQueryHookResult = ReturnType<typeof useDecksSuspenseQuery>;
 export type DecksQueryResult = Apollo.QueryResult<DecksQuery, DecksQueryVariables>;
+export const FactionStatsDocument = gql`
+    query FactionStats($keys: [FactionKey!]) {
+  factions(keys: $keys) {
+    key
+    stats {
+      units
+      specials
+      heroes
+      close
+      ranged
+      siege
+      agile
+      strengthTotal
+    }
+  }
+}
+    `;
+
+/**
+ * __useFactionStatsQuery__
+ *
+ * To run a query within a React component, call `useFactionStatsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useFactionStatsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useFactionStatsQuery({
+ *   variables: {
+ *      keys: // value for 'keys'
+ *   },
+ * });
+ */
+export function useFactionStatsQuery(baseOptions?: Apollo.QueryHookOptions<FactionStatsQuery, FactionStatsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<FactionStatsQuery, FactionStatsQueryVariables>(FactionStatsDocument, options);
+      }
+export function useFactionStatsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<FactionStatsQuery, FactionStatsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<FactionStatsQuery, FactionStatsQueryVariables>(FactionStatsDocument, options);
+        }
+export function useFactionStatsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<FactionStatsQuery, FactionStatsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<FactionStatsQuery, FactionStatsQueryVariables>(FactionStatsDocument, options);
+        }
+export type FactionStatsQueryHookResult = ReturnType<typeof useFactionStatsQuery>;
+export type FactionStatsLazyQueryHookResult = ReturnType<typeof useFactionStatsLazyQuery>;
+export type FactionStatsSuspenseQueryHookResult = ReturnType<typeof useFactionStatsSuspenseQuery>;
+export type FactionStatsQueryResult = Apollo.QueryResult<FactionStatsQuery, FactionStatsQueryVariables>;
 export const FactionsDocument = gql`
     query Factions {
   factions {

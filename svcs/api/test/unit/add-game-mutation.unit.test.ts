@@ -194,8 +194,6 @@ async function testAddGame({
             {
               game: game,
               users: getUserByNamesResponse.map((dbUser) => TestUtil.getUserFromDbUser(dbUser)),
-              neutralFactionStats: undefined,
-              neutralLeaderStats: undefined,
             },
           ],
         ]

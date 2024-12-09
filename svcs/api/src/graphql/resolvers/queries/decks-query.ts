@@ -42,9 +42,6 @@ export default class DecksQuery {
     }
     return DeckResolver.fromArray({
       decks,
-      neutralDeckStats: RequestedFields.getArgument<boolean>(info, 'decks.faction.stats.neutrals'),
-      neutralLeaderStats: RequestedFields.getArgument<boolean>(info, 'decks.leader.faction.stats.neutrals'),
-      neutralUnitStats: RequestedFields.getArgument<boolean>(info, 'decks.units.unit.faction.stats.neutrals'),
     })
   }
 }

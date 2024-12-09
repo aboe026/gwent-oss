@@ -8,7 +8,7 @@ fragment FactionFragment on Faction {
     name
     image
   }
-  stats(neutrals: true) {
+  stats {
     agile
     avenger
     berserker

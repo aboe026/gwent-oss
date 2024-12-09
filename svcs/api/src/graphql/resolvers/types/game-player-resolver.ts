@@ -19,8 +19,6 @@ export default class GamePlayerResolver {
    * @param config.faction The resolved Faction for the GamePlayer. If not provided, will be retrieved.
    * @param config.leader The resolved Leader for the GamePlayer. If not provided, will be retrieved.
    * @param config.player The GamePlayer to convert.
-   * @param config.neutralFactionStats Whether or not to account for the Neutral faction when calculating the stats of the Faction of the GamePlayer.
-   * @param config.neutralLeaderStats Whether or not to account for the Neutral faction when calculating the stats of the Leader of the GamePlayer.
    * @param config.user The resolved User for the GamePlayer. If not provided, will be retrieved.
    * @returns The resolved GamePlayer object matching its GraphQL schema definition.
    */
@@ -29,16 +27,12 @@ export default class GamePlayerResolver {
     faction,
     leader,
     player,
-    neutralFactionStats,
-    neutralLeaderStats,
     user,
   }: {
     allDecksChosen: boolean
     faction?: Faction | undefined
     leader?: Leader | undefined
     player: GamePlayerDbObject
-    neutralFactionStats?: boolean
-    neutralLeaderStats?: boolean
     user?: User
   }): Promise<GamePlayer> {
     let counts: GamePlayerUnitCounts | undefined = undefined
@@ -46,13 +40,11 @@ export default class GamePlayerResolver {
       if (!faction && player.deck.from?.faction) {
         faction = await FactionResolver.fromId({
           id: player.deck.from.faction,
-          neutrals: neutralFactionStats,
         })
       }
       if (!leader && player.deck.from?.leader) {
         leader = await LeaderResolver.fromId({
           id: player.deck.from.leader,
-          neutralStats: neutralLeaderStats,
         })
       }
       counts = {
@@ -78,22 +70,16 @@ export default class GamePlayerResolver {
    * @param config The configuration used to convert the array.
    * @param config.everyoneReady Whether or not every player on the game is marked as Ready. If not, do not return details about the GamePlayers that would provide competetive advantage to other players.
    * @param config.players The array of GamePlayer database objects to convert.
-   * @param config.neutralFactionStats Whether or not to account for the Neutral faction when calculating the stats of the Factions of the GamePlayers.
-   * @param config.neutralLeaderStats Whether or not to account for the Neutral faction when calculating the stats of the Leaders of the GamePlayer.
    * @param config.user The resolved Users for the GamePlayers. If not provided, will be retrieved.
    * @returns The resolved Deck array matching the GraphQL schema definition.
    */
   static async fromArray({
     allDecksChosen,
     players,
-    neutralFactionStats,
-    neutralLeaderStats,
     users,
   }: {
     allDecksChosen: boolean
     players: GamePlayerDbObject[]
-    neutralFactionStats?: boolean
-    neutralLeaderStats?: boolean
     users?: User[]
   }): Promise<GamePlayer[]> {
     let preResolvedUserIds: string[] = []
@@ -111,14 +97,12 @@ export default class GamePlayerResolver {
     const factionIds = getUniqueItems<ObjectId>(players.map((player) => player.deck.from && player.deck.from.faction))
     const factions = await FactionResolver.fromIds({
       ids: factionIds,
-      neutralStats: neutralFactionStats,
     })
 
     const leaderIds = getUniqueItems<ObjectId>(players.map((player) => player.deck.from && player.deck.from.leader))
     const leaders = await LeaderResolver.fromIds({
       ids: leaderIds,
       resolvedFactions: factions,
-      neutralStats: neutralLeaderStats,
     })
 
     const resolvedPlayers: GamePlayer[] = []
@@ -136,8 +120,6 @@ export default class GamePlayerResolver {
           user: resolvedUsers.find((user) => user.id.toString() === player.user.toString()),
           faction,
           leader,
-          neutralFactionStats,
-          neutralLeaderStats,
           allDecksChosen,
         })
       )

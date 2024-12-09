@@ -1,7 +1,7 @@
 import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
-import { addUser, addDeck, getUnits } from './util/graphql-util'
+import { addUser, addDeck, getUnits, getFactionId } from './util/graphql-util'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
@@ -146,19 +146,25 @@ describe('add-deck-mutation', () => {
         })
       })
       it('throws error if leader is of wrong faction', async () => {
-        const faction = FactionKey.Monsters
+        const factionKey = FactionKey.Monsters
         const leaderId = await getLeaderId({ name: 'Crach an Craite' })
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
+        const factionId = await getFactionId({
+          key: factionKey,
+        })
+        const leaderFactionId = await getFactionId({
+          key: FactionKey.Skellige,
+        })
         await expect(
           graphql({
             schema,
             source: `mutation {
               addDeck(
                 name: "${name}",
-                faction: ${faction},
+                faction: ${factionKey},
                 leader: "${leaderId}",
-                units: [${await getUnitsInput(faction)}]
+                units: [${await getUnitsInput(factionKey)}]
               ) {
                 ${getDeckFragment({})}
               }
@@ -175,7 +181,7 @@ describe('add-deck-mutation', () => {
           data: null,
           errors: [
             new GraphQLError(
-              `Faction key "${FactionKey.Skellige}" for leader "${leaderId}" does not match deck faction key "${faction}".`
+              `Faction ID "${leaderFactionId}" for leader "${leaderId}" does not match deck faction ID "${factionId}".`
             ),
           ],
         })
@@ -855,87 +861,6 @@ describe('add-deck-mutation', () => {
               name,
               unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
               user,
-            }),
-          },
-        })
-        verifyMongoIds(response.data?.addDeck)
-      })
-      it('adding deck with neutral argument false does not add neutral stats', async () => {
-        const faction = FactionKey.Monsters
-        const leader = 'Eredin Bringer of Death'
-        const name = `decks-${Date.now()}`
-        const user = await addUser(name)
-        const response = await graphql({
-          schema,
-          source: `mutation {
-            addDeck(
-              name: "${name}",
-              faction: ${faction},
-              leader: "${await getLeaderId({ name: leader })}",
-              units: [${await getUnitsInput(faction)}]
-            ) {
-              ${getDeckFragment({
-                statsModifier: '(neutrals: false)',
-              })}
-            }
-          }`,
-          contextValue: {
-            session: {
-              user: {
-                _id: user.id,
-              },
-            },
-          },
-        })
-        expect(response).toEqual({
-          data: {
-            addDeck: expectizeDeck({
-              factionKey: faction,
-              leaderName: leader,
-              name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
-              user,
-            }),
-          },
-        })
-        verifyMongoIds(response.data?.addDeck)
-      })
-      it('adding deck with neutral argument true adds neutral stats', async () => {
-        const faction = FactionKey.Monsters
-        const leader = 'Eredin Bringer of Death'
-        const name = `decks-${Date.now()}`
-        const user = await addUser(name)
-        const response = await graphql({
-          schema,
-          source: `mutation {
-            addDeck(
-              name: "${name}",
-              faction: ${faction},
-              leader: "${await getLeaderId({ name: leader })}",
-              units: [${await getUnitsInput(faction)}]
-            ) {
-              ${getDeckFragment({
-                statsModifier: '(neutrals: true)',
-              })}
-            }
-          }`,
-          contextValue: {
-            session: {
-              user: {
-                _id: user.id,
-              },
-            },
-          },
-        })
-        expect(response).toEqual({
-          data: {
-            addDeck: expectizeDeck({
-              factionKey: faction,
-              leaderName: leader,
-              name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
-              user,
-              neutrals: true,
             }),
           },
         })

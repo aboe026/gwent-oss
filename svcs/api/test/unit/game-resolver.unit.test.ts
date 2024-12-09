@@ -52,8 +52,6 @@ describe('game-resolver', () => {
               players,
               users: [user, victor],
               allDecksChosen: false,
-              neutralFactionStats: undefined,
-              neutralLeaderStats: undefined,
             },
           ],
         ],
@@ -98,8 +96,6 @@ describe('game-resolver', () => {
               players: players,
               users: [user, victor],
               allDecksChosen: false,
-              neutralFactionStats: undefined,
-              neutralLeaderStats: undefined,
             },
           ],
         ],
@@ -391,8 +387,6 @@ async function testResolveFromObject({
   creator,
   game,
   users,
-  neutralFactionStats,
-  neutralLeaderStats,
   resolvedUsers = [],
   resolvedGamePlayers = [],
   resolvedVictors,
@@ -402,8 +396,6 @@ async function testResolveFromObject({
   game: GameDbObject
   creator?: User
   users?: User[]
-  neutralFactionStats?: boolean
-  neutralLeaderStats?: boolean
   resolvedUsers?: User[]
   resolvedGamePlayers?: GamePlayer[]
   resolvedVictors?: User[]
@@ -425,8 +417,6 @@ async function testResolveFromObject({
     GameResolver.fromObject({
       game,
       creator,
-      neutralFactionStats,
-      neutralLeaderStats,
       users,
     })
   ).resolves.toEqual({

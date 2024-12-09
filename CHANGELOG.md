@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.0 - 2024-12-08
+
+### Removed
+
+- Removed `neutrals` nested query for `UnitStats` ([#22](https://github.com/aboe026/gwent/pull/22)) (Adam Boe)
+
 ## 0.8.6 - 2024-12-06
 
 ### Fixed

@@ -11,26 +11,16 @@ export default class DeckUnitResolver {
    *
    * @param config The configuration used to convert the DeckUnit.
    * @param config.deckUnit The DeckUnit to convert.
-   * @param config.neutralStats Whether or not to account for the Neutral faction when calculating the stats of the DeckUnit.
    * @param config.unit The resolved Unit for the DeckUnit. If not provided, will be retrieved.
    * @returns The resolved DeckUnit object matching its GraphQL schema definition.
    */
-  static async fromObject({
-    deckUnit,
-    neutralStats,
-    unit,
-  }: {
-    deckUnit: DeckUnitDbObject
-    neutralStats?: boolean
-    unit?: Unit
-  }): Promise<DeckUnit> {
+  static async fromObject({ deckUnit, unit }: { deckUnit: DeckUnitDbObject; unit?: Unit }): Promise<DeckUnit> {
     return {
       artStyle: deckUnit.artStyle,
       unit:
         unit ||
         (await UnitResolver.fromId({
           id: deckUnit.unit,
-          neutralStats,
         })),
     }
   }
@@ -40,23 +30,15 @@ export default class DeckUnitResolver {
    *
    * @param config The configuration used to convert the array.
    * @param config.decks The array of DeckUnit database objects to convert.
-   * @param config.neutralDeckStats Whether or not to account for the Neutral faction when calculating the stats of the DeckUnits.
    * @returns The resolved DeckUnit array matching the GraphQL schema definition.
    */
-  static async fromArray({
-    deckUnits,
-    neutralStats,
-  }: {
-    deckUnits: DeckUnitDbObject[]
-    neutralStats?: boolean
-  }): Promise<DeckUnit[]> {
+  static async fromArray({ deckUnits }: { deckUnits: DeckUnitDbObject[] }): Promise<DeckUnit[]> {
     if (deckUnits.length === 0) {
       return []
     }
 
     const units = await UnitResolver.fromIds({
       ids: deckUnits.map((deckUnit) => deckUnit.unit),
-      neutralStats,
     })
 
     const resolvedDeckUnits: DeckUnit[] = []
@@ -64,7 +46,6 @@ export default class DeckUnitResolver {
       resolvedDeckUnits.push(
         await DeckUnitResolver.fromObject({
           deckUnit,
-          neutralStats,
           unit: units.find((unit) => unit.id.toString() === deckUnit.unit.toString()),
         })
       )

@@ -174,16 +174,18 @@ describe('add-deck-mutation', () => {
     it('returns error if leader is of wrong faction', async () => {
       const factionId = new ObjectId()
       const leaderId = new ObjectId()
-      const error = `Faction key "${FactionKey.NorthernRealms}" for leader "${leaderId}" does not match deck faction key "${FactionKey.Monsters}".`
+      const leaderFactionId = new ObjectId()
+      const error = `Faction ID "${leaderFactionId}" for leader "${leaderId}" does not match deck faction ID "${factionId}".`
       await testAddDeck({
         userId,
         factionKey: FactionKey.Monsters,
         factionGetResponse: [
           TestUtil.getDbFaction({
+            id: factionId,
             key: FactionKey.Monsters,
           }),
           TestUtil.getDbFaction({
-            id: factionId,
+            id: leaderFactionId,
             key: FactionKey.NorthernRealms,
           }),
         ],
@@ -191,7 +193,7 @@ describe('add-deck-mutation', () => {
         leaderGetResponse: [
           TestUtil.getDbLeader({
             id: leaderId,
-            faction: factionId,
+            faction: leaderFactionId,
           }),
         ],
         errorReturned: error,
@@ -485,7 +487,15 @@ async function testAddDeck({
     await expect(promise).resolves.toEqual(errorReturned ? Error(errorReturned) : resolvedDeck)
   }
 
-  expect(factionGetSpy.mock.calls).toEqual(factionGetCalls || [[{}]])
+  expect(factionGetSpy.mock.calls).toEqual(
+    factionGetCalls || [
+      [
+        {
+          keys: [factionKey],
+        },
+      ],
+    ]
+  )
   expect(leaderGetSpy.mock.calls).toEqual(
     leaderGetCalls || [
       [
@@ -514,7 +524,6 @@ async function testAddDeck({
               unit: unit._id,
             },
           ],
-          neutralStats: undefined,
         },
       ],
     ]
@@ -555,7 +564,6 @@ async function testAddDeck({
           [
             {
               faction,
-              neutralStats: undefined,
             },
           ],
         ]
@@ -568,7 +576,6 @@ async function testAddDeck({
             {
               leader,
               faction: resolvedFaction,
-              neutralStats: undefined,
             },
           ],
         ]
@@ -583,7 +590,6 @@ async function testAddDeck({
               faction: resolvedFaction,
               leader: resolvedLeader,
               units: deckUnits,
-              neutralDeckStats: undefined,
             },
           ],
         ]

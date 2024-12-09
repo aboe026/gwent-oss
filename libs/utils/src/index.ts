@@ -1,3 +1,4 @@
+import combineUnitStats from './combine-unit-stats'
 import { formatDay, formatTime } from './format-date'
 import formatGameStatus from './format-game-status'
 import getCombatImage from './get-combat-image'
@@ -12,6 +13,7 @@ import sortObjectArray from './sort'
 import toTitleCase from './to-title-case'
 
 export {
+  combineUnitStats,
   formatDay,
   formatTime,
   formatGameStatus,

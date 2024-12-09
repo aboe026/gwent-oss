@@ -161,7 +161,6 @@ async function testUnits({
       {
         factions: factionGetResponse,
         units: [unit],
-        neutralStats: undefined,
       },
     ],
   ])

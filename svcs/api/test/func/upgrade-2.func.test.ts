@@ -61,7 +61,7 @@ describe('upgrade-2', () => {
 
     const factions = await FactionStore.get({})
     expect(factions).toEqual(
-      expectizeFactions({}).map((faction: any) => {
+      expectizeFactions().map((faction: any) => {
         faction._id = expect.any(ObjectId)
         delete faction.id
         faction.dlc = faction.dlc ? expect.any(ObjectId) : null
@@ -72,7 +72,7 @@ describe('upgrade-2', () => {
 
     const leaders = await LeaderStore.get({})
     expect(leaders).toEqual(
-      expectizeLeaders({}).map((leader: any) => {
+      expectizeLeaders().map((leader: any) => {
         leader._id = expect.any(ObjectId)
         delete leader.id
         leader.dlc = leader.dlc ? expect.any(ObjectId) : null
@@ -84,7 +84,7 @@ describe('upgrade-2', () => {
 
     const units = await UnitStore.get({})
     expect(units).toEqual(
-      expectizeUnits({}).map((unit: any) => {
+      expectizeUnits().map((unit: any) => {
         unit._id = expect.any(ObjectId)
         delete unit.id
         unit.dlc = unit.dlc ? expect.any(ObjectId) : null
