@@ -5,6 +5,8 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { split, HttpLink, ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client'
 import urlJoin from 'url-join'
 
+import { mergeCachedGamePlayers } from './util/merge-cached-game-players'
+
 /**
  * Need to pass management of WebSocket status to a lower-order component
  * otherwise the state changes of the WebSocket status causes this component to re-render
@@ -49,7 +51,24 @@ export default function Apollo({ children }: PropsWithChildren) {
       wsLink,
       httpLink
     ),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      typePolicies: {
+        GamePlayer: {
+          fields: {
+            user: {
+              merge: true,
+            },
+          },
+        },
+        Game: {
+          fields: {
+            players: {
+              merge: mergeCachedGamePlayers,
+            },
+          },
+        },
+      },
+    }),
     credentials: process.env.NODE_ENV === 'development' ? 'include' : 'same-origin', // process.env.NODE_ENV overwritten/hard-coded at build time,
     connectToDevTools: process.env.NODE_ENV === 'development' ? true : false, // process.env.NODE_ENV overwritten/hard-coded at build time
   })

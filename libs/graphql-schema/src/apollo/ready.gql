@@ -1,6 +1,5 @@
 mutation Ready($game: ID!) {
   ready(game: $game) {
-    id
     players {
       ready
       user {

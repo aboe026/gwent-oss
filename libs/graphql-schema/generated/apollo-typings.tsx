@@ -611,7 +611,7 @@ export type ReadyMutationVariables = Exact<{
 }>;
 
 
-export type ReadyMutation = { __typename?: 'Mutation', ready: { __typename?: 'Game', id: string, status: GameStatus, players: Array<{ __typename?: 'GamePlayer', ready: boolean, user: { __typename?: 'User', name: string } }> } };
+export type ReadyMutation = { __typename?: 'Mutation', ready: { __typename?: 'Game', status: GameStatus, players: Array<{ __typename?: 'GamePlayer', ready: boolean, user: { __typename?: 'User', name: string } }> } };
 
 export type RedrawMutationVariables = Exact<{
   game: Scalars['ID']['input'];
@@ -1588,7 +1588,6 @@ export type OrderSetSubscriptionResult = Apollo.SubscriptionResult<OrderSetSubsc
 export const ReadyDocument = gql`
     mutation Ready($game: ID!) {
   ready(game: $game) {
-    id
     players {
       ready
       user {

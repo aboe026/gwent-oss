@@ -144,6 +144,8 @@ export default function GamePage() {
     },
     variables: gameQueryVariables,
     skip: isNew,
+    fetchPolicy: 'cache-and-network',
+    nextFetchPolicy: 'cache-only', // prevents Subscription updates from triggering a refetch (since subscription return fragment is only a subset of fields that the query has)
     notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
   })
   const {
@@ -238,42 +240,38 @@ export default function GamePage() {
   })
   const [ready, { loading: readyLoading, error: readyError }] = useReadyMutation({
     update(cache, { data }) {
-      // TODO: why does ready getting called cause game query to re-trigger?
-      // TODO: consolidate this cache update and the subscription cache updates to avoid duplicate code?
       const updatedGame = data?.ready
       if (updatedGame && user) {
-        const previousGame = cache.readQuery<GameQuery>({
-          query: GameDocument,
-          variables: gameQueryVariables,
-        })
-        if (previousGame?.game) {
-          cache.updateQuery<GameQuery>(
-            {
-              query: GameDocument,
-              variables: gameQueryVariables,
-            },
-            (previous) => {
-              const prevGame = previous?.game
-              if (prevGame) {
-                return {
-                  game: {
-                    ...prevGame,
-                    status: updatedGame.status,
-                    players: prevGame.players.map((player) => {
-                      const updatedPlayer = updatedGame.players.find(
-                        (updatedPlayer) => updatedPlayer.user.name === player.user.name
-                      ) as GamePlayer
-                      return {
-                        ...player,
-                        ready: updatedPlayer.ready,
-                      }
-                    }),
-                  },
-                }
+        cache.updateQuery<GameQuery>(
+          {
+            query: GameDocument,
+            variables: gameQueryVariables,
+          },
+          (previous) => {
+            const prevGame = previous?.game
+            if (prevGame) {
+              return {
+                game: {
+                  ...prevGame,
+                  status: updatedGame.status,
+                  players: prevGame.players.map((player) => {
+                    let updatedReady = player.ready
+                    const updatedPlayer = updatedGame.players.find(
+                      (updatedGamePlayer) => updatedGamePlayer.user.name === player.user.name
+                    )
+                    if (updatedPlayer) {
+                      updatedReady = updatedPlayer.ready
+                    }
+                    return {
+                      ...player,
+                      ready: updatedReady,
+                    }
+                  }),
+                },
               }
             }
-          )
-        }
+          }
+        )
       }
     },
   })
