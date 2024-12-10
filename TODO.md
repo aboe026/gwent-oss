@@ -6,13 +6,13 @@ A list of things to be done in the future.
 - implement history?
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
-- How to handle GameCard with more than 2 icons (eg Olgierd)? The 3rd one gets rendered off the card underneath
 - do not store yarn binary in source
 - do not store yarn sdks in source?
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
+- stop subscription reconnect attempts if auth times out
+  - show login dialog?
 - Change "ready" mutation to "readyGame"?
 - Remove @map directive for ID types?
-- Figure out why mutation resolvers don't show typescript error when returning Db object instead of resolved object
 - Switch DeckUnit to be same as Unit but single image instead of array
   - Have Unit interface with AvailableUnit and DeckUnit implementations
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver

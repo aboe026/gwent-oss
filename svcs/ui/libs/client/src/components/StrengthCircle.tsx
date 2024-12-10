@@ -22,7 +22,7 @@ export default function StrengthCircle({ size, unit, style, ignoreHero }: Streng
                 src="/images/card/hero.png"
                 className="strength-circle-hero"
                 title="Hero"
-                style={{ height: `calc(${size} + 84%)` }}
+                style={{ height: `calc(${size} + 70%)` }}
               />
             )}
             <img src="images/card/strength.png" style={{ height: size, width: size }} />

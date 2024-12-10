@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.9.1 - 2024-12-06
+
+### Fixed
+
+- Fix game card icons ([#23](https://github.com/aboe026/gwent/pull/23)) (Adam Boe)
+
 ## 0.9.0 - 2024-12-08
 
 ### Removed
