@@ -4,6 +4,7 @@ import addToCacheList from './util/add-to-cache-list'
 import {
   DecksDocument,
   DecksQuery,
+  DeckUnit,
   GameDeckDocument,
   GameDeckQuery,
   GameDocument,
@@ -18,6 +19,7 @@ import {
   useOrderSetSubscription,
   useUnitRedrawnSubscription,
 } from '@gwent/graphql-schema/apollo-typings'
+import updateGameDeckCacheOnRedraw from './util/update-game-deck-cache-on-redraw'
 import { useUserContext } from './App'
 
 /**
@@ -180,36 +182,12 @@ export default function Subscriptions({ children }: PropsWithChildren) {
               game: game.id,
             },
           },
-          (previous) => {
-            if (previous?.gameDeck) {
-              return {
-                gameDeck: {
-                  ...previous.gameDeck,
-                  hand: [
-                    ...(previous.gameDeck?.hand || []).filter(
-                      (deckUnit) => deckUnit.unit.id !== from?.unit.id && deckUnit.unit.id !== to.unit.id
-                    ),
-                    to,
-                  ],
-                  undrawn: [
-                    ...(previous.gameDeck?.undrawn || []).filter(
-                      (deckUnit) => deckUnit.unit.id !== to?.unit.id && deckUnit.unit.id !== from.unit.id
-                    ),
-                    from,
-                  ],
-                  redraws: [
-                    ...(previous.gameDeck?.redraws || []).filter(
-                      (deckUnit) => deckUnit.from.unit.id !== from.unit.id && deckUnit.to.unit.id !== to.unit.id
-                    ),
-                    {
-                      from,
-                      to,
-                    },
-                  ],
-                },
-              }
-            }
-          }
+          (previous) =>
+            updateGameDeckCacheOnRedraw({
+              from: from as DeckUnit,
+              previous,
+              to: to as DeckUnit,
+            })
         )
       }
     },

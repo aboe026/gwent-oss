@@ -69,6 +69,7 @@ import { useTitle } from '../components/TabTitle'
 import { useUserContext } from '../App'
 import WholeScreenDialog from '../components/WholeScreenDialog'
 import './Game.css'
+import updateGameDeckCacheOnRedraw from '../util/update-game-deck-cache-on-redraw'
 
 /**
  * A user created Game.
@@ -192,40 +193,12 @@ export default function GamePage() {
             query: GameDeckDocument,
             variables: gameDeckQueryVariables,
           },
-          (previous) => {
-            if (previous?.gameDeck) {
-              return {
-                gameDeck: {
-                  ...previous.gameDeck,
-                  hand: [
-                    ...(previous.gameDeck?.hand || []).filter(
-                      (deckUnit) =>
-                        deckUnit.unit.id !== cardSelected.unit.id && deckUnit.unit.id !== data.redraw.unit.id
-                    ),
-                    data.redraw,
-                  ],
-                  undrawn: [
-                    ...(previous.gameDeck?.undrawn || []).filter(
-                      (deckUnit) =>
-                        deckUnit.unit.id !== data.redraw.unit.id && deckUnit.unit.id !== cardSelected.unit.id
-                    ),
-                    cardSelected,
-                  ],
-                  redraws: [
-                    ...(previous.gameDeck?.redraws || []).filter(
-                      (prevRedraw) =>
-                        prevRedraw.from.unit.id !== cardSelected.unit.id &&
-                        prevRedraw.to.unit.id !== data.redraw.unit.id
-                    ),
-                    {
-                      from: cardSelected,
-                      to: data.redraw,
-                    },
-                  ],
-                },
-              }
-            }
-          }
+          (previous) =>
+            updateGameDeckCacheOnRedraw({
+              from: cardSelected,
+              previous,
+              to: data.redraw as DeckUnit,
+            })
         )
       }
     },
