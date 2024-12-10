@@ -120,6 +120,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             },
           },
           (previous) => {
+            // TODO: extract to shared method that Game.tsx can use to reduce code duplication
             const prevGame = previous?.game
             if (prevGame) {
               return {
