@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.9.1 - 2024-12-06
+## 0.9.2 - 2024-12-10
+
+### Fixed
+
+- Refactor client cache methods ([#24](https://github.com/aboe026/gwent/pull/24)) (Adam Boe)
+
+## 0.9.1 - 2024-12-10
 
 ### Fixed
 
