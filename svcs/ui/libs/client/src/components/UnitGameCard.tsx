@@ -33,8 +33,8 @@ export default function UnitGameCard({
         title={deckUnit.unit.name}
         src={deckUnit.unit.images[deckUnit.artStyle - 1]}
       />
-      <div className={HTML_CLASSES.UnitGameCardStrength} style={{ height: iconSize, width: iconSize }}>
-        <StrengthCircle size={iconSize} unit={deckUnit.unit} />
+      <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>
+        <StrengthCircle size={'100%'} unit={deckUnit.unit} />
       </div>
       <div
         className={`${HTML_CLASSES.UnitGameCardFullScreen} icon-container pointable`}
@@ -43,13 +43,26 @@ export default function UnitGameCard({
       >
         <CgMaximizeAlt className="unit-game-card-fullscreen-icon" />
       </div>
-      <div className="unit-game-card-bottom" style={{ height: iconSize }}>
-        {combatSymbol && <img src={combatSymbol} style={{ height: iconSize, width: iconSize }} title={combatTitle} />}
+      <div className="unit-game-card-bottom">
+        {combatSymbol && (
+          <img
+            src={combatSymbol}
+            className="unit-game-card-bottom-icon"
+            style={{ maxWidth: iconSize }}
+            title={combatTitle}
+          />
+        )}
         {deckUnit.unit.effects &&
           deckUnit.unit.effects
             .filter((effect) => effect.key !== EffectKey.Weather)
             .map((effect, index) => (
-              <img src={effect.image} title={effect.name} key={index} style={{ height: iconSize, width: iconSize }} />
+              <img
+                src={effect.image}
+                className="unit-game-card-bottom-icon"
+                title={effect.name}
+                key={index}
+                style={{ maxWidth: iconSize }}
+              />
             ))}
       </div>
     </div>

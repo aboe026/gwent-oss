@@ -17,6 +17,7 @@ import {
   DlcKey,
   Faction,
   Deck,
+  FactionsQuery,
 } from '@gwent/graphql-schema/apollo-typings'
 import DlcTag from '../components/DlcTag'
 import {
@@ -270,19 +271,17 @@ function renderNameAndFaction({
                 required
                 disabled={factionsLoading || disabledOverride}
                 value={faction === undefined ? '' : faction.key}
-                onChange={(event) => {
-                  const newFactionKey = event.target.value as FactionKey
-                  setDeckUnits((previous: DeckUnit[]) =>
-                    previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
-                  )
-                  setSelectedUnits((previous: DeckUnit[]) =>
-                    previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
-                  )
-                  setFaction(
-                    factionsData?.factions.find((availableFaction) => availableFaction.key === newFactionKey) as Faction
-                  )
-                  setLeaderId(undefined)
-                }}
+                onChange={(event) =>
+                  changeFaction({
+                    factionsData,
+                    newFactionKey: event.target.value as FactionKey,
+                    setDeckUnits,
+                    setFaction,
+                    setLeaderId,
+                    setSelectedUnits,
+                    setFactionPickerOpen,
+                  })
+                }
               >
                 <option disabled value="">
                   -- select a faction --
@@ -320,10 +319,17 @@ function renderNameAndFaction({
                             <div
                               key={faction.id}
                               className="deck-editor-faction-picker-faction pointable"
-                              onClick={() => {
-                                setFaction(faction as Faction)
-                                setFactionPickerOpen(false)
-                              }}
+                              onClick={() =>
+                                changeFaction({
+                                  factionsData,
+                                  newFactionKey: faction.key,
+                                  setDeckUnits,
+                                  setFaction,
+                                  setLeaderId,
+                                  setSelectedUnits,
+                                  setFactionPickerOpen,
+                                })
+                              }
                             >
                               <img src={faction.image} className="deck-editor-faction-picker-image" />
                               <div className="deck-editor-faction-picker-name-ability">
@@ -363,6 +369,34 @@ function renderNameAndFaction({
       )}
     </>
   )
+}
+
+function changeFaction({
+  newFactionKey,
+  factionsData,
+  setDeckUnits,
+  setFaction,
+  setLeaderId,
+  setSelectedUnits,
+  setFactionPickerOpen,
+}: {
+  newFactionKey: FactionKey
+  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setFaction: Dispatch<SetStateAction<Faction | undefined>>
+  setLeaderId: Dispatch<SetStateAction<string | undefined>>
+  factionsData: FactionsQuery | undefined
+  setFactionPickerOpen: Dispatch<SetStateAction<boolean>>
+}) {
+  setDeckUnits((previous: DeckUnit[]) =>
+    previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
+  )
+  setSelectedUnits((previous: DeckUnit[]) =>
+    previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
+  )
+  setFaction(factionsData?.factions.find((availableFaction) => availableFaction.key === newFactionKey) as Faction)
+  setLeaderId(undefined)
+  setFactionPickerOpen(false)
 }
 
 function renderLeader({

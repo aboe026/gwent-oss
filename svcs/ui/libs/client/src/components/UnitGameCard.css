@@ -13,24 +13,36 @@
 .unit-game-card-strength {
   position: absolute;
   top: 0;
+  width: 50%;
+}
+
+.unit-game-card-container .unit-game-card-fullscreen {
+  padding: 0;
 }
 
 .unit-game-card-fullscreen {
   position: absolute;
   top: 0;
   right: 0;
-  height: 30px;
-  width: 30px;
-}
-
-.unit-game-card-fullscreen-icon {
-  margin-left: 7px;
-  margin-top: 6px;
+  width: 50%;
+  max-width: 30px;
+  aspect-ratio: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .unit-game-card-bottom {
   position: absolute;
   bottom: 0;
+  display: flex;
+  width: 100%;
+  height: auto;
+  flex-wrap: wrap-reverse;
+}
+
+.unit-game-card-bottom-icon {
+  width: 33%;
 }
 
 .unit-game-card-selected {
