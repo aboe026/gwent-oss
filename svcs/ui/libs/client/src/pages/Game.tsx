@@ -97,32 +97,36 @@ export default function GamePage() {
   const [addGame, { loading: addGameLoading, error: addGameError }] = useAddGameMutation({
     update(cache, { data }) {
       if (data?.addGame) {
-        const previousGames = cache.readQuery<GamesQuery>({ query: GamesDocument })
-        // only update cache if the query has already been run (there is something in the cache)
-        // otherwise when navigating to games, it will not fire the query, so would only show the
-        // new created game, and not all games for the user
-        if (previousGames?.games) {
-          cache.updateQuery<GamesQuery>(
-            {
-              query: GamesDocument,
-            },
-            (previous) => ({
-              games: addToCacheList({
-                add: data.addGame,
-                previous: previous?.games,
-              }),
-            })
-          )
-        }
-        cache.writeQuery<GameQuery>({
-          query: GameDocument,
-          data: {
-            game: {
-              ...data.addGame,
+        cache.updateQuery<GamesQuery>(
+          {
+            query: GamesDocument,
+          },
+          (previous) => {
+            if (previous?.games) {
+              return {
+                games: addToCacheList({
+                  add: data.addGame,
+                  previous: previous?.games,
+                }),
+              }
+            }
+          }
+        )
+        cache.updateQuery<GameQuery>(
+          {
+            query: GameDocument,
+            variables: {
+              id: data.addGame.id,
             },
           },
-          variables: gameQueryVariables,
-        })
+          (previous) => {
+            if (!previous?.game) {
+              return {
+                game: data.addGame,
+              }
+            }
+          }
+        )
       }
     },
   })
@@ -163,76 +167,66 @@ export default function GamePage() {
   const [setDeck, { loading: setDeckLoading, error: setDeckError }] = useSetDeckMutation({
     update(cache, { data }) {
       if (data?.setDeck && user) {
-        cache.writeQuery<GameDeckQuery>({
-          query: GameDeckDocument,
-          data: {
-            gameDeck: {
-              ...data.setDeck,
-            },
+        cache.updateQuery<GameDeckQuery>(
+          {
+            query: GameDeckDocument,
+            variables: gameDeckQueryVariables,
           },
-          variables: gameDeckQueryVariables,
-        })
+          (previous) => {
+            if (!previous) {
+              return {
+                gameDeck: data.setDeck,
+              }
+            }
+          }
+        )
       }
     },
   })
-  const [setOrder, { loading: setOrderLoading, error: setOrderError }] = useSetOrderMutation({
-    update(cache, { data }) {
-      if (data?.setOrder && user) {
-        cache.writeQuery<GameQuery>({
-          query: GameDocument,
-          data: {
-            game: {
-              ...data.setOrder,
-            },
-          },
-          variables: gameQueryVariables,
-        })
-      }
-    },
-  })
+  const [setOrder, { loading: setOrderLoading, error: setOrderError }] = useSetOrderMutation()
   const [redraw, { loading: redrawLoading, error: redrawError }] = useRedrawMutation({
     update(cache, { data }) {
-      if (data?.redraw && user) {
-        const previousGameDeck = cache.readQuery<GameDeckQuery>({
-          query: GameDeckDocument,
-          variables: gameDeckQueryVariables,
-        })
-        if (previousGameDeck?.gameDeck && cardSelected) {
-          cache.updateQuery<GameDeckQuery>(
-            {
-              query: GameDeckDocument,
-              variables: gameDeckQueryVariables,
-            },
-            (previous) => ({
-              gameDeck: {
-                ...previous?.gameDeck,
-                hand: [
-                  ...(previous?.gameDeck?.hand || []).filter(
-                    (deckUnit) => deckUnit.unit.id !== cardSelected.unit.id && deckUnit.unit.id !== data.redraw.unit.id
-                  ),
-                  data.redraw,
-                ],
-                undrawn: [
-                  ...(previous?.gameDeck?.undrawn || []).filter(
-                    (deckUnit) => deckUnit.unit.id !== data.redraw.unit.id && deckUnit.unit.id !== cardSelected.unit.id
-                  ),
-                  cardSelected,
-                ],
-                redraws: [
-                  ...(previous?.gameDeck?.redraws || []).filter(
-                    (prevRedraw) =>
-                      prevRedraw.from.unit.id !== cardSelected.unit.id && prevRedraw.to.unit.id !== data.redraw.unit.id
-                  ),
-                  {
-                    from: cardSelected,
-                    to: data.redraw,
-                  },
-                ],
-              } as GameDeck,
-            })
-          )
-          setCardSelected(undefined)
-        }
+      if (data?.redraw && user && cardSelected) {
+        cache.updateQuery<GameDeckQuery>(
+          {
+            query: GameDeckDocument,
+            variables: gameDeckQueryVariables,
+          },
+          (previous) => {
+            if (previous?.gameDeck) {
+              return {
+                gameDeck: {
+                  ...previous.gameDeck,
+                  hand: [
+                    ...(previous.gameDeck?.hand || []).filter(
+                      (deckUnit) =>
+                        deckUnit.unit.id !== cardSelected.unit.id && deckUnit.unit.id !== data.redraw.unit.id
+                    ),
+                    data.redraw,
+                  ],
+                  undrawn: [
+                    ...(previous.gameDeck?.undrawn || []).filter(
+                      (deckUnit) =>
+                        deckUnit.unit.id !== data.redraw.unit.id && deckUnit.unit.id !== cardSelected.unit.id
+                    ),
+                    cardSelected,
+                  ],
+                  redraws: [
+                    ...(previous.gameDeck?.redraws || []).filter(
+                      (prevRedraw) =>
+                        prevRedraw.from.unit.id !== cardSelected.unit.id &&
+                        prevRedraw.to.unit.id !== data.redraw.unit.id
+                    ),
+                    {
+                      from: cardSelected,
+                      to: data.redraw,
+                    },
+                  ],
+                },
+              }
+            }
+          }
+        )
       }
     },
   })
@@ -1380,6 +1374,7 @@ function renderRedraw({
                                   game: game.id,
                                 },
                               })
+                              setCardSelected(undefined)
                             },
                           })
                         }

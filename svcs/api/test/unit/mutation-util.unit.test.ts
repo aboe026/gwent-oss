@@ -218,7 +218,7 @@ describe('mutation-util', () => {
         },
         factionsGetResponse: [dbFaction],
         error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+        debugCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('returns error setting implicit order when empty userIds and opponent has scoiatael deck', async () => {
@@ -248,7 +248,7 @@ describe('mutation-util', () => {
         },
         factionsGetResponse: [dbFaction],
         error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+        debugCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('returns error setting explicit order when opponent has scoiatael deck', async () => {
@@ -527,6 +527,7 @@ async function testSetGameTurnOrder({
   randomizeOrderCalls = [],
   errorCalls = [],
   warnCalls = [],
+  debugCalls = [],
   traceEnabled,
 }: {
   userId: string
@@ -541,6 +542,7 @@ async function testSetGameTurnOrder({
   randomizeOrderCalls?: any[][]
   errorCalls?: any[][]
   warnCalls?: any[][]
+  debugCalls?: any[][]
   traceEnabled?: boolean
 }) {
   const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
@@ -571,10 +573,12 @@ async function testSetGameTurnOrder({
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   MutationUtil['logger'] = {
     error: errorSpy,
     warn: warnSpy,
+    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
@@ -634,6 +638,7 @@ async function testSetGameTurnOrder({
   )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
