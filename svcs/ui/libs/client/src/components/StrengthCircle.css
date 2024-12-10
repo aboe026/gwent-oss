@@ -2,6 +2,7 @@
   position: relative;
   background-color: #e6e6e6;
   border-radius: 50%;
+  aspect-ratio: 1;
 }
 
 .strength-circle-outer {
