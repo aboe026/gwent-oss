@@ -159,6 +159,7 @@ export default gql`
     turn: GamePlayer @column(overrideType: "ObjectId")
     updated: DateTime! @column
     victors: [User!]! @column(overrideType: "Array<ObjectId>")
+    weather: [Combat!]! @column
   }
 
   type GameDeck @entity {
@@ -174,16 +175,6 @@ export default gql`
     undrawn: [DeckUnit!]! @column(overrideType: "Array<DeckUnitDbObject>")
   }
 
-  type GameRound {
-    current: Int! @column
-    maximum: Int! @column
-  }
-
-  type Redraw @entity {
-    from: DeckUnit! @column(overrideType: "DeckUnitDbObject")
-    to: DeckUnit! @column(overrideType: "DeckUnitDbObject")
-  }
-
   type GamePlayer @entity(additionalFields: [{ path: "deck", type: "GameDeckDbObject" }]) {
     "The number of cards in the game deck of the player. Only visible once all players are ready."
     counts: GamePlayerUnitCounts
@@ -195,8 +186,15 @@ export default gql`
     order: Int @column
     "Whether or not a user has their game deck set to play the game."
     ready: Boolean! @column
-    rounds: [PlayerRound!]! @column
+    rounds: [PlayerRound!]! @column(overrideType: "Array<PlayerRoundDbObject>")
     user: User! @column(overrideType: "ObjectId")
+  }
+
+  type GameRound {
+    "The current round the game is in. Zero based indexing."
+    current: Int! @column
+    "The maximum number of rounds the game can have. If no user has won a majority of games after that many rounds, the game ends in a tie between the users who have won the most rounds."
+    maximum: Int! @column
   }
 
   type GamePlayerUnitCounts {
@@ -205,9 +203,10 @@ export default gql`
     undrawn: Int!
   }
 
-  type PlayerRound {
-    score: Int!
-    won: Boolean!
+  type GameUnit @entity {
+    artStyle: Int! @column
+    effectiveStrength: Int @column
+    unit: Unit! @column(overrideType: "ObjectId")
   }
 
   type Leader @entity {
@@ -219,6 +218,41 @@ export default gql`
     image: String! @column
     name: String! @column
     quote: String! @column
+  }
+
+  type MoveLeader @entity {
+    created: DateTime! @column
+    leader: Leader! @column(overrideType: "ObjectId")
+  }
+
+  type MovePass @entity {
+    created: DateTime! @column
+  }
+
+  type MoveUnit @entity {
+    created: DateTime! @column
+    unit: DeckUnit! @column(overrideType: "ObjectId")
+  }
+
+  union Move @union(discriminatorField: "type") = MoveLeader | MovePass | MoveUnit
+
+  type PlayerRound @entity {
+    close: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
+    ranged: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
+    siege: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
+    moves: [Move!]! @column(overrideType: "Array<MoveDbObject>")
+    score: Int! @column
+    won: Boolean! @column
+  }
+
+  type PlayerCombatRow @entity {
+    score: Int! @column
+    units: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
+  }
+
+  type Redraw @entity {
+    from: DeckUnit! @column(overrideType: "DeckUnitDbObject")
+    to: DeckUnit! @column(overrideType: "DeckUnitDbObject")
   }
 
   type Setting {
@@ -342,6 +376,9 @@ export default gql`
 
     "De-authenticate a user."
     logout: Boolean!
+
+    "Play a Unit card in a game."
+    playUnit(game: ID!, unit: ID!, combat: Combat!): Game!
 
     "Mark player as ready to play the game, no more deck modifications allowed."
     ready(game: ID!): Game!

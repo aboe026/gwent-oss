@@ -1,0 +1,5 @@
+mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat!) {
+  playUnit(game: $game, unit: $unit, combat: $combat) {
+    ...GameFragment
+  }
+}

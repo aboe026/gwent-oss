@@ -17,6 +17,7 @@ export default function UnitGameCard({
   selected,
   cursor = 'pointer',
   setFullUnit,
+  dotted,
 }: UnitGameCardProps) {
   const combatSymbol = getCombatImage(deckUnit)
   const combatTitle = deckUnit.unit.combats
@@ -24,9 +25,9 @@ export default function UnitGameCard({
     : ''
   return (
     <div
-      className={`${HTML_CLASSES.UnitGameCardContainer} ${selected ? HTML_CLASSES.UnitGameCardSelected : ''}`}
+      className={`${HTML_CLASSES.UnitGameCardContainer} ${selected ? HTML_CLASSES.ItemHighlighted : ''}`}
       title={deckUnit.unit.name}
-      style={{ cursor }}
+      style={{ cursor, borderStyle: selected ? (dotted ? 'dotted' : 'solid') : 'none' }}
     >
       <img
         className="unit-game-card-image"
@@ -73,6 +74,7 @@ interface UnitGameCardProps {
   deckUnit: DeckUnit
   iconSize?: string
   selected?: boolean
+  dotted?: boolean
   cursor?: string
   setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
 }

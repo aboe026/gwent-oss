@@ -32,7 +32,6 @@ export const HTML_CLASSES = {
   GamePlayerTurn: 'game-info-player-turn',
   GamePlayerFutureTurn: 'game-info-player-future-turn',
   GameDeckRedrawCard: 'game-deck-redraw-card',
-  GameDeckRedrawAvailable: 'game-deck-redraw-available',
   GameDeckRedrawPair: 'game-deck-redraw-pair',
   GameUnitBoardSide: 'game-unit-board-side',
   GameRowCreatedDay: 'game-row-created-day',
@@ -56,7 +55,7 @@ export const HTML_CLASSES = {
   UnitFullCardInfoRow: 'unit-full-card-info-row',
   UnitFullCardEffectAbility: 'unit-full-card-effect-ability',
   UnitGameCardContainer: 'unit-game-card-container',
-  UnitGameCardSelected: 'unit-game-card-selected',
+  ItemHighlighted: 'item-highlighted',
   UnitGameCardFullScreen: 'unit-game-card-fullscreen',
   UnitGameCardStrength: 'unit-game-card-strength',
 }

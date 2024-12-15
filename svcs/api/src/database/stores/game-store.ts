@@ -1,7 +1,14 @@
 import { Document, Filter, FindOptions, ObjectId, UpdateFilter } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  DeckDbObject,
+  DeckUnitDbObject,
+  GameDbObject,
+  PlayerCombatRow,
+  PlayerRound,
+  RedrawDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import { MAX_ROUNDS } from '@gwent/constants'
 import Store from './store'
 
@@ -24,6 +31,21 @@ export default class GameStore extends Store {
     GameStore.logger.debug(`Adding game by creator "${creatorId}"`)
     const created = new Date()
     const playerIds = [creatorId, ...opponentIds]
+    const rounds: PlayerRound[] = []
+    const row: PlayerCombatRow = {
+      score: 0,
+      units: [],
+    }
+    for (let i = 0; i < MAX_ROUNDS; i++) {
+      rounds.push({
+        moves: [],
+        score: 0,
+        close: row,
+        ranged: row,
+        siege: row,
+        won: false,
+      })
+    }
     const game: Document = {
       created,
       creator: new ObjectId(creatorId),
@@ -37,7 +59,7 @@ export default class GameStore extends Store {
             undrawn: [],
           },
           ready: false,
-          rounds: [],
+          rounds,
           user: new ObjectId(playerId),
         }
       }),
@@ -46,6 +68,7 @@ export default class GameStore extends Store {
         maximum: MAX_ROUNDS,
       },
       updated: created,
+      weather: [],
       victors: [],
     }
     if (GameStore.logger.isTraceEnabled()) {
@@ -302,6 +325,45 @@ export default class GameStore extends Store {
     if (GameStore.logger.isTraceEnabled()) {
       GameStore.logger.trace(`ready for game "${gameId}" by user "${userId}" filter: "${JSON.stringify(filter)}"`)
       GameStore.logger.trace(`ready for game "${gameId}" by user "${userId}" update: "${JSON.stringify(update)}"`)
+    }
+    return GameStore.update<GameDbObject>({
+      filter,
+      update,
+      verifyExistence: false,
+    })
+  }
+
+  static async makeMove({
+    updatedGame,
+    userId,
+    nextTurn,
+  }: {
+    updatedGame: GameDbObject
+    userId: ObjectId | string
+    nextTurn?: ObjectId | string
+  }): Promise<GameDbObject> {
+    GameStore.logger.debug(
+      `Move made on game "${updatedGame._id}" by user "${userId}", setting next move to "${nextTurn}"`
+    )
+    const filter: Filter<Document> = {
+      _id: updatedGame._id,
+      turn: new ObjectId(userId),
+      updated: updatedGame.updated,
+    }
+    const update: UpdateFilter<Document> = {
+      $set: {
+        ...updatedGame,
+        updated: new Date(),
+        turn: new ObjectId(nextTurn),
+      },
+    }
+    if (GameStore.logger.isTraceEnabled()) {
+      GameStore.logger.trace(
+        `move on game "${updatedGame._id}" by user "${userId}" filter: "${JSON.stringify(filter)}"`
+      )
+      GameStore.logger.trace(
+        `move on game "${updatedGame._id}" by user "${userId}" update: "${JSON.stringify(update)}"`
+      )
     }
     return GameStore.update<GameDbObject>({
       filter,

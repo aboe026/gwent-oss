@@ -156,6 +156,7 @@ export type Game = {
   turn?: Maybe<GamePlayer>;
   updated: Scalars['DateTime']['output'];
   victors: Array<User>;
+  weather: Array<Combat>;
 };
 
 export type GameDeck = {
@@ -212,7 +213,9 @@ export type GamePlayerUnitCounts = {
 
 export type GameRound = {
   __typename?: 'GameRound';
+  /** The current round the game is in. Zero based indexing. */
   current: Scalars['Int']['output'];
+  /** The maximum number of rounds the game can have. If no user has won a majority of games after that many rounds, the game ends in a tie between the users who have won the most rounds. */
   maximum: Scalars['Int']['output'];
 };
 
@@ -228,6 +231,13 @@ export enum GameStatus {
   /** Players are potentially redrawing the cards in their hand. */
   Redrawing = 'REDRAWING'
 }
+
+export type GameUnit = {
+  __typename?: 'GameUnit';
+  artStyle: Scalars['Int']['output'];
+  effectiveStrength?: Maybe<Scalars['Int']['output']>;
+  unit: Unit;
+};
 
 export type GameUnitRedrawn = {
   __typename?: 'GameUnitRedrawn';
@@ -248,6 +258,25 @@ export type Leader = {
   quote: Scalars['String']['output'];
 };
 
+export type Move = MoveLeader | MovePass | MoveUnit;
+
+export type MoveLeader = {
+  __typename?: 'MoveLeader';
+  created: Scalars['DateTime']['output'];
+  leader: Leader;
+};
+
+export type MovePass = {
+  __typename?: 'MovePass';
+  created: Scalars['DateTime']['output'];
+};
+
+export type MoveUnit = {
+  __typename?: 'MoveUnit';
+  created: Scalars['DateTime']['output'];
+  unit: DeckUnit;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   /** Create a user-defined deck. */
@@ -260,6 +289,8 @@ export type Mutation = {
   login: User;
   /** De-authenticate a user. */
   logout: Scalars['Boolean']['output'];
+  /** Play a Unit card in a game. */
+  playUnit: Game;
   /** Mark player as ready to play the game, no more deck modifications allowed. */
   ready: Game;
   /** Replace a card in hand with a random one from the deck, before a game starts. */
@@ -296,6 +327,13 @@ export type MutationLoginArgs = {
 };
 
 
+export type MutationPlayUnitArgs = {
+  combat: Combat;
+  game: Scalars['ID']['input'];
+  unit: Scalars['ID']['input'];
+};
+
+
 export type MutationReadyArgs = {
   game: Scalars['ID']['input'];
 };
@@ -318,9 +356,19 @@ export type MutationSetOrderArgs = {
   users?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+export type PlayerCombatRow = {
+  __typename?: 'PlayerCombatRow';
+  score: Scalars['Int']['output'];
+  units: Array<GameUnit>;
+};
+
 export type PlayerRound = {
   __typename?: 'PlayerRound';
+  close: PlayerCombatRow;
+  moves: Array<Move>;
+  ranged: PlayerCombatRow;
   score: Scalars['Int']['output'];
+  siege: PlayerCombatRow;
   won: Scalars['Boolean']['output'];
 };
 
@@ -482,7 +530,7 @@ export type AddGameMutationVariables = Exact<{
 }>;
 
 
-export type AddGameMutation = { __typename?: 'Mutation', addGame: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type AddGameMutation = { __typename?: 'Mutation', addGame: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type AddUserMutationVariables = Exact<{
   name: Scalars['String']['input'];
@@ -542,12 +590,12 @@ export type GameQueryVariables = Exact<{
 }>;
 
 
-export type GameQuery = { __typename?: 'Query', game: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type GameQuery = { __typename?: 'Query', game: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type GameAddedSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GameAddedSubscription = { __typename?: 'Subscription', gameAdded: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type GameAddedSubscription = { __typename?: 'Subscription', gameAdded: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type GameDeckQueryVariables = Exact<{
   game: Scalars['ID']['input'];
@@ -560,26 +608,28 @@ export type GameDeckFragmentFragment = { __typename?: 'GameDeck', discard: Array
 
 export type GameFactionFragmentFragment = { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string };
 
-export type GameFragmentFragment = { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> };
+export type GameFragmentFragment = { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> };
 
 export type GameLeaderFragmentFragment = { __typename?: 'Leader', ability: string, image: string, name: string };
 
-export type GamePlayerFragmentFragment = { __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } };
+export type GamePlayerFragmentFragment = { __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } };
 
 export type GameReadySubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GameReadySubscription = { __typename?: 'Subscription', gameReady: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type GameReadySubscription = { __typename?: 'Subscription', gameReady: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type GameSetSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GameSetSubscription = { __typename?: 'Subscription', gameSet: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type GameSetSubscription = { __typename?: 'Subscription', gameSet: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type GameUnitFragmentFragment = { __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } };
 
 export type GamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> }> };
+export type GamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> }> };
 
 export type LeadersQueryVariables = Exact<{
   factions?: InputMaybe<Array<FactionKey> | FactionKey>;
@@ -604,14 +654,25 @@ export type LogoutMutation = { __typename?: 'Mutation', logout: boolean };
 export type OrderSetSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
-export type OrderSetSubscription = { __typename?: 'Subscription', orderSet: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type OrderSetSubscription = { __typename?: 'Subscription', orderSet: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type PlayUnitMutationVariables = Exact<{
+  game: Scalars['ID']['input'];
+  unit: Scalars['ID']['input'];
+  combat: Combat;
+}>;
+
+
+export type PlayUnitMutation = { __typename?: 'Mutation', playUnit: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type PlayerCombatRowFragmentFragment = { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> };
 
 export type ReadyMutationVariables = Exact<{
   game: Scalars['ID']['input'];
 }>;
 
 
-export type ReadyMutation = { __typename?: 'Mutation', ready: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type ReadyMutation = { __typename?: 'Mutation', ready: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type RedrawMutationVariables = Exact<{
   game: Scalars['ID']['input'];
@@ -635,7 +696,7 @@ export type SetOrderMutationVariables = Exact<{
 }>;
 
 
-export type SetOrderMutation = { __typename?: 'Mutation', setOrder: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+export type SetOrderMutation = { __typename?: 'Mutation', setOrder: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type UnitRedrawnSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
@@ -800,6 +861,23 @@ export const GameDeckFragmentFragmentDoc = gql`
     ${DeckUnitFragmentFragmentDoc}
 ${GameFactionFragmentFragmentDoc}
 ${GameLeaderFragmentFragmentDoc}`;
+export const GameUnitFragmentFragmentDoc = gql`
+    fragment GameUnitFragment on GameUnit {
+  artStyle
+  effectiveStrength
+  unit {
+    ...CardUnitFragment
+  }
+}
+    ${CardUnitFragmentFragmentDoc}`;
+export const PlayerCombatRowFragmentFragmentDoc = gql`
+    fragment PlayerCombatRowFragment on PlayerCombatRow {
+  score
+  units {
+    ...GameUnitFragment
+  }
+}
+    ${GameUnitFragmentFragmentDoc}`;
 export const GamePlayerFragmentFragmentDoc = gql`
     fragment GamePlayerFragment on GamePlayer {
   counts {
@@ -816,6 +894,15 @@ export const GamePlayerFragmentFragmentDoc = gql`
   ready
   rounds {
     score
+    close {
+      ...PlayerCombatRowFragment
+    }
+    ranged {
+      ...PlayerCombatRowFragment
+    }
+    siege {
+      ...PlayerCombatRowFragment
+    }
   }
   user {
     id
@@ -823,7 +910,8 @@ export const GamePlayerFragmentFragmentDoc = gql`
   }
 }
     ${GameFactionFragmentFragmentDoc}
-${GameLeaderFragmentFragmentDoc}`;
+${GameLeaderFragmentFragmentDoc}
+${PlayerCombatRowFragmentFragmentDoc}`;
 export const GameFragmentFragmentDoc = gql`
     fragment GameFragment on Game {
   created
@@ -1578,6 +1666,41 @@ export function useOrderSetSubscription(baseOptions?: Apollo.SubscriptionHookOpt
       }
 export type OrderSetSubscriptionHookResult = ReturnType<typeof useOrderSetSubscription>;
 export type OrderSetSubscriptionResult = Apollo.SubscriptionResult<OrderSetSubscription>;
+export const PlayUnitDocument = gql`
+    mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat!) {
+  playUnit(game: $game, unit: $unit, combat: $combat) {
+    ...GameFragment
+  }
+}
+    ${GameFragmentFragmentDoc}`;
+export type PlayUnitMutationFn = Apollo.MutationFunction<PlayUnitMutation, PlayUnitMutationVariables>;
+
+/**
+ * __usePlayUnitMutation__
+ *
+ * To run a mutation, you first call `usePlayUnitMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `usePlayUnitMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [playUnitMutation, { data, loading, error }] = usePlayUnitMutation({
+ *   variables: {
+ *      game: // value for 'game'
+ *      unit: // value for 'unit'
+ *      combat: // value for 'combat'
+ *   },
+ * });
+ */
+export function usePlayUnitMutation(baseOptions?: Apollo.MutationHookOptions<PlayUnitMutation, PlayUnitMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<PlayUnitMutation, PlayUnitMutationVariables>(PlayUnitDocument, options);
+      }
+export type PlayUnitMutationHookResult = ReturnType<typeof usePlayUnitMutation>;
+export type PlayUnitMutationResult = Apollo.MutationResult<PlayUnitMutation>;
+export type PlayUnitMutationOptions = Apollo.BaseMutationOptions<PlayUnitMutation, PlayUnitMutationVariables>;
 export const ReadyDocument = gql`
     mutation Ready($game: ID!) {
   ready(game: $game) {

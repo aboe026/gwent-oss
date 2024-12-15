@@ -132,3 +132,12 @@ button {
 .skellige-color {
   background-color: #5e027a;
 }
+
+.item-highlighted {
+  border-style: solid;
+  border-width: 4px;
+  border-radius: 10px;
+  border-color: #e9a018;
+  margin-top: -4px;
+  margin-right: -8px;
+}

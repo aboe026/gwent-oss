@@ -153,6 +153,7 @@ export type Game = {
   turn?: Maybe<GamePlayer>;
   updated: Scalars['DateTime']['output'];
   victors: Array<User>;
+  weather: Array<Combat>;
 };
 
 export type GameDeck = {
@@ -209,7 +210,9 @@ export type GamePlayerUnitCounts = {
 
 export type GameRound = {
   __typename?: 'GameRound';
+  /** The current round the game is in. Zero based indexing. */
   current: Scalars['Int']['output'];
+  /** The maximum number of rounds the game can have. If no user has won a majority of games after that many rounds, the game ends in a tie between the users who have won the most rounds. */
   maximum: Scalars['Int']['output'];
 };
 
@@ -225,6 +228,13 @@ export enum GameStatus {
   /** Players are potentially redrawing the cards in their hand. */
   Redrawing = 'REDRAWING'
 }
+
+export type GameUnit = {
+  __typename?: 'GameUnit';
+  artStyle: Scalars['Int']['output'];
+  effectiveStrength?: Maybe<Scalars['Int']['output']>;
+  unit: Unit;
+};
 
 export type GameUnitRedrawn = {
   __typename?: 'GameUnitRedrawn';
@@ -245,6 +255,25 @@ export type Leader = {
   quote: Scalars['String']['output'];
 };
 
+export type Move = MoveLeader | MovePass | MoveUnit;
+
+export type MoveLeader = {
+  __typename?: 'MoveLeader';
+  created: Scalars['DateTime']['output'];
+  leader: Leader;
+};
+
+export type MovePass = {
+  __typename?: 'MovePass';
+  created: Scalars['DateTime']['output'];
+};
+
+export type MoveUnit = {
+  __typename?: 'MoveUnit';
+  created: Scalars['DateTime']['output'];
+  unit: DeckUnit;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   /** Create a user-defined deck. */
@@ -257,6 +286,8 @@ export type Mutation = {
   login: User;
   /** De-authenticate a user. */
   logout: Scalars['Boolean']['output'];
+  /** Play a Unit card in a game. */
+  playUnit: Game;
   /** Mark player as ready to play the game, no more deck modifications allowed. */
   ready: Game;
   /** Replace a card in hand with a random one from the deck, before a game starts. */
@@ -293,6 +324,13 @@ export type MutationLoginArgs = {
 };
 
 
+export type MutationPlayUnitArgs = {
+  combat: Combat;
+  game: Scalars['ID']['input'];
+  unit: Scalars['ID']['input'];
+};
+
+
 export type MutationReadyArgs = {
   game: Scalars['ID']['input'];
 };
@@ -315,9 +353,19 @@ export type MutationSetOrderArgs = {
   users?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+export type PlayerCombatRow = {
+  __typename?: 'PlayerCombatRow';
+  score: Scalars['Int']['output'];
+  units: Array<GameUnit>;
+};
+
 export type PlayerRound = {
   __typename?: 'PlayerRound';
+  close: PlayerCombatRow;
+  moves: Array<Move>;
+  ranged: PlayerCombatRow;
   score: Scalars['Int']['output'];
+  siege: PlayerCombatRow;
   won: Scalars['Boolean']['output'];
 };
 
@@ -523,6 +571,7 @@ export type GameDbObject = {
   turn?: ObjectId,
   updated: any,
   victors: Array<ObjectId>,
+  weather: Array<string>,
 };
 
 export type GameDeckDbObject = {
@@ -536,9 +585,15 @@ export type GameDeckDbObject = {
 export type GamePlayerDbObject = {
   order?: Maybe<number>,
   ready: boolean,
-  rounds: Array<PlayerRound>,
+  rounds: Array<PlayerRoundDbObject>,
   user: ObjectId,
   deck: GameDeckDbObject,
+};
+
+export type GameUnitDbObject = {
+  artStyle: number,
+  effectiveStrength?: Maybe<number>,
+  unit: ObjectId,
 };
 
 export type LeaderDbObject = {
@@ -550,6 +605,38 @@ export type LeaderDbObject = {
   image: string,
   name: string,
   quote: string,
+};
+
+export type MoveDbObject = (MoveLeaderDbObject | MovePassDbObject | MoveUnitDbObject) & {
+  type: string,
+};
+
+export type MoveLeaderDbObject = {
+  created: any,
+  leader: ObjectId,
+};
+
+export type MovePassDbObject = {
+  created: any,
+};
+
+export type MoveUnitDbObject = {
+  created: any,
+  unit: ObjectId,
+};
+
+export type PlayerCombatRowDbObject = {
+  score: number,
+  units: Array<GameUnitDbObject>,
+};
+
+export type PlayerRoundDbObject = {
+  close: PlayerCombatRowDbObject,
+  moves: Array<MoveDbObject>,
+  ranged: PlayerCombatRowDbObject,
+  score: number,
+  siege: PlayerCombatRowDbObject,
+  won: boolean,
 };
 
 export type RedrawDbObject = {

@@ -1,4 +1,4 @@
-import { getLogger } from 'log4js'
+import { getLogger, Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import EventManager from '../../event-manager'
@@ -8,12 +8,64 @@ import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getDuplicateItems, randomizeOrder } from '@gwent/utils'
 import { PubSubEvents } from '@gwent/constants'
+import { GameDbObject, GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
 
 /**
  * A class containing shared methods used by GraphQL mutations.
  */
 export default class MutationUtil {
   private static logger = getLogger('MutationUtil')
+
+  static async getGamePlayer({
+    gameId,
+    logger,
+    logPrefix,
+    userId,
+  }: {
+    gameId: string
+    logger: Logger
+    logPrefix: string
+    userId: ObjectId
+  }): Promise<
+    | Error
+    | {
+        game: GameDbObject
+        player: GamePlayerDbObject
+      }
+  > {
+    if (!ObjectId.isValid(gameId)) {
+      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const game = await GameStore.getById({
+      id: gameId,
+    })
+    if (logger.isTraceEnabled()) {
+      logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+    }
+    if (!game) {
+      const message = `Game with ID "${gameId}" does not exist.`
+      logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const player: GamePlayerDbObject | undefined = game.players.find(
+      (player) => player.user.toString() === userId.toString()
+    )
+    if (logger.isTraceEnabled()) {
+      logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
+    }
+    if (!player) {
+      const message = `Not a player on game "${gameId}".`
+      logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+
+    return {
+      game,
+      player,
+    }
+  }
 
   /**
    * Sets the player turn order for a game.

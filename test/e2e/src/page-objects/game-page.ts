@@ -30,7 +30,7 @@ export default class GamePage {
     Ready: existingGameContainer.find(`#${HTML_IDS.GameReady}`),
     UnitBoard: existingGameContainer.find(`.${HTML_CLASSES.GameUnitBoardSide}`),
     RedrawCard: existingGameContainer.find(`.${HTML_CLASSES.GameDeckRedrawCard}`),
-    RedrawAvailable: existingGameContainer.find(`.${HTML_CLASSES.GameDeckRedrawAvailable}`),
+    RedrawAvailable: existingGameContainer.find(`.${HTML_CLASSES.ItemHighlighted}`),
     RedrawPair: existingGameContainer.find(`.${HTML_CLASSES.GameDeckRedrawPair}`),
     RedrawInstructions: existingGameContainer.find(`#${HTML_IDS.GameDeckRedrawInstructions}`),
     DeckError: existingGameContainer.find(`#${HTML_IDS.GameDeckError}`),
@@ -458,12 +458,12 @@ export default class GamePage {
     )
     await t.expect(card.exists).ok()
     await t.expect(card.visible).ok()
-    await t.expect(card.hasClass(HTML_CLASSES.UnitGameCardSelected)).notOk()
+    await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
     await t.click(card)
-    await t.expect(card.hasClass(HTML_CLASSES.UnitGameCardSelected)).ok()
+    await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
     await t.expect(GamePage.elements.RedrawCard.exists).ok()
     await t.expect(GamePage.elements.RedrawCard.visible).ok()
-    await t.expect(GamePage.elements.RedrawCard.hasClass(HTML_CLASSES.GameDeckRedrawAvailable)).ok()
+    await t.expect(GamePage.elements.RedrawCard.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
     await t.click(GamePage.elements.RedrawCard)
   }
 

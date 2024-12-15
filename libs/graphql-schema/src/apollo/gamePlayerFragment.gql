@@ -13,6 +13,15 @@ fragment GamePlayerFragment on GamePlayer {
   ready
   rounds {
     score
+    close {
+      ...PlayerCombatRowFragment
+    }
+    ranged {
+      ...PlayerCombatRowFragment
+    }
+    siege {
+      ...PlayerCombatRowFragment
+    }
   }
   user {
     id

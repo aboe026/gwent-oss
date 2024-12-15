@@ -28,10 +28,6 @@
   gap: 10px;
 }
 
-#gameCenterContainer > .game-section {
-  height: 100%;
-}
-
 #gameInfoSharedContainer {
   display: flex;
   height: 10%;
@@ -76,6 +72,14 @@
 
 #gameInfoOpponentContainer {
   flex-direction: column-reverse;
+}
+
+#gameSetDeckContainer {
+  height: 100%;
+}
+
+#gameOrderCoinToss {
+  height: 100%;
 }
 
 #gameUnitsBoardContainer {
@@ -188,14 +192,11 @@ th {
   flex-grow: 0;
 }
 
-.game-player-sub-section {
-  flex-grow: 1;
-}
-
 .game-player-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-left: 3px;
 }
 
 .game-player-rounds-score {
@@ -205,12 +206,10 @@ th {
 .game-player-rounds {
   display: flex;
   gap: 5px;
-  margin-right: 10px;
-  margin-left: 10px;
 }
 
 .game-player-score {
-  font-size: xx-large;
+  font-size: x-large;
   line-height: 24px;
 }
 
@@ -232,7 +231,7 @@ th {
 .game-info-player-turn {
   flex-direction: column;
   border-width: 5px;
-  border-color: #e9a018;
+  border-color: #0152cc;
   border-style: solid;
   border-radius: 5px;
 }
@@ -241,8 +240,12 @@ th {
   border-style: dotted;
 }
 
-.game-player-round-score {
-  display: flex;
+.game-score-container {
+  padding: 10px;
+  border-radius: 10px;
+  border-width: 5px;
+  border-style: solid;
+  border-radius: 5px;
 }
 
 .game-section {
@@ -276,16 +279,29 @@ th {
 
 .game-unit-board-side {
   display: flex;
-  height: 50%;
+  height: calc(50% - 25px);
   flex-direction: column;
   gap: 10px;
   padding: 10px;
 }
 
+.game-unit-combat-row-cards {
+  display: flex;
+  justify-content: center;
+}
+
 .game-unit-board-combat-row {
   display: flex;
-  flex-grow: 1;
+  height: calc((100% - 20px) / 3);
   gap: 10px;
+}
+
+.game-unit-combat-row-valid {
+  cursor: pointer;
+}
+
+.game-unit-combat-row-invalid {
+  cursor: not-allowed;
 }
 
 .game-unit-combat-row-icon {
@@ -354,11 +370,6 @@ th {
 }
 
 .game-deck-redraw-available {
-  border-style: solid;
-  border-width: 4px;
-  border-color: #e9a018;
-  margin-top: -4px;
-  margin-right: -8px;
   cursor: pointer;
 }
 
@@ -372,6 +383,13 @@ th {
   min-width: 50%;
   gap: 10px;
   align-items: center;
+}
+
+.game-player-name-lives {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .game-player-faction {

@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Game, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Game, User } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../../database/stores/game-store'
@@ -64,6 +64,7 @@ export default class GameResolver {
       turn: game.turn && resolvedPlayers.find((player) => player.user.id.toString() === game.turn?.toString()),
       updated: game.updated,
       victors: game.victors.map((victor) => resolvedUsers.find((user) => user.id === victor.toString()) as User),
+      weather: game.weather.map((weather) => weather as Combat),
     }
   }
 

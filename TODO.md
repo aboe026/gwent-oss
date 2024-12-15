@@ -2,6 +2,8 @@
 
 A list of things to be done in the future.
 
+## Fixes
+
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - implement history?
 - enter key does not create game in UI?
@@ -14,9 +16,14 @@ A list of things to be done in the future.
 - Change "ready" mutation to "readyGame"?
 - Remove @map directive for ID types?
 - Switch DeckUnit to be same as Unit but single image instead of array
-  - Have Unit interface with AvailableUnit and DeckUnit implementations
+  - Have Unit interface with following implementations:
+    - AvailableUnit (same as Unit)
+    - DeckUnit
+      - image for chosen art style
+    - GameUnit
+      - image (for chosen art style)
+      - effectiveStrength (for strength after all active effects applied)
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
-  - change schema input to be just an optional image instead of artStyle
 - carry over username (and password?) when switching between log-in and sign-up
 - more accurately type front-end results based on their return fragments
   - type Game = GameQuery['game']
@@ -35,13 +42,47 @@ A list of things to be done in the future.
 - Change schema.ts to schema.gql
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
-- ensure client and server are on same version
-- have game creation in UI have searcheable field for opponent
-  - need query to get users
-    - restrict to users "friends"?
-  - change addGame mutation to accept ids instead of usernames
 - Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 - Fix root "yarn build"
   - right now it runs "yarn build" in all workspaces simultaneously.
   - This is a problem because there are explicit dependencies on libraries being built first
   - Need to have a script generate dependency tree, then perform builds in reverse order
+
+## Features
+
+- playUnit loading icon
+- playUnit error
+- have "updated" be field in game update filter
+- full screen card cycle left/right through other cards in row?
+- unitPlayed subscription
+- history (merged GamePlayers moves?)
+- display strength per combat row
+- option to pass
+- loading icon when opponents turn
+- auto-pass if out of cards
+- determine win conditions
+- if effective strength greater than normal strength, green. If less, red.
+
+- games list improvements
+  - progress bar for game status
+  - highlight games waiting on you?
+- implement audit actions
+  - status of attempt, success, failure
+  - all actions so can know who does what in which order
+- implement user registration
+  - register with email
+  - need to verify in email to get account created
+- email notifications?
+- edit deck
+- delete deck
+- pagination
+  - decks
+  - games
+- help text on deck builder for effects
+  - question mark next to effects on bottom
+  - pops up full screen dialog with each effect icon, name and description
+- ensure client and server are on same version
+- have game creation in UI have searcheable field for opponent
+  - need query to get users
+    - restrict to users "friends"?
+  - change addGame mutation to accept ids instead of usernames

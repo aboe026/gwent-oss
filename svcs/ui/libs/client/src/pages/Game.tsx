@@ -41,6 +41,9 @@ import {
   useSetOrderMutation,
   SetOrderMutation,
   InputMaybe,
+  Combat,
+  usePlayUnitMutation,
+  PlayUnitMutation,
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
@@ -49,7 +52,7 @@ import DeckEditor from '../components/DeckEditor'
 import DeckList from '../components/DeckList'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import Form from '../components/Form'
-import { formatDay, formatTime, sortObjectArray } from '@gwent/utils'
+import { formatDay, formatTime, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { getApolloError, retryCheckingAuth } from '../util/error-util'
 import {
   GAME_ORDER_COIN_FLIP_DURATION_SECONDS,
@@ -207,6 +210,28 @@ export default function GamePage() {
     },
   })
   const [ready, { loading: readyLoading, error: readyError }] = useReadyMutation() // Apollo automatically handles cache changes on update
+  const [playUnit, { loading: playUnitLoading, error: playUnitError }] = usePlayUnitMutation({
+    update(cache, { data }) {
+      if (data?.playUnit && user && cardSelected) {
+        cache.updateQuery<GameDeckQuery>(
+          {
+            query: GameDeckDocument,
+            variables: gameDeckQueryVariables,
+          },
+          (previous) => {
+            if (previous?.gameDeck) {
+              return {
+                gameDeck: {
+                  ...previous.gameDeck,
+                  hand: previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== cardSelected.unit.id),
+                },
+              }
+            }
+          }
+        )
+      }
+    },
+  })
   const currentGame = gameData?.game as Game | undefined
   const previousGame = usePrevious(currentGame)
   useEffect(() => {
@@ -271,6 +296,11 @@ export default function GamePage() {
         setPlayerOrder,
         coinTossVisible,
         setCoinTossVisible,
+        playUnit: {
+          playUnit,
+          playUnitError,
+          playUnitLoading,
+        },
       })
 }
 
@@ -370,6 +400,7 @@ function renderExistingGame({
   setPlayerOrder,
   coinTossVisible,
   setCoinTossVisible,
+  playUnit,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
@@ -414,6 +445,7 @@ function renderExistingGame({
   setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
   coinTossVisible: boolean
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
+  playUnit: PlayUnitProps
 }) {
   const resolvedGameError = getApolloError(gameError)
   const resolvedGameDeckError = getApolloError(gameDeckError)
@@ -491,7 +523,10 @@ function renderExistingGame({
             setCardSelected(nextUnit)
           }
         }}
-        onClose={() => setFullUnit(undefined)}
+        onClose={() => {
+          setFullUnit(undefined)
+          setCardSelected(undefined)
+        }}
       />
       <div id="gameContainerUpper">
         {renderGameInfo({
@@ -511,6 +546,7 @@ function renderExistingGame({
           game,
           gameDeck,
           self,
+          opponent,
           ready,
           redraw,
           setDeckListOpen,
@@ -526,6 +562,7 @@ function renderExistingGame({
           setPlayerOrder,
           coinTossVisible,
           setCoinTossVisible,
+          playUnit,
         })}
         {renderHistory()}
       </div>
@@ -535,6 +572,7 @@ function renderExistingGame({
           cardSelected,
           setCardSelected,
           setFullUnit,
+          isTurn: game.turn?.user.name === self.user.name,
         })}
       </div>
       {(deckListOpen || deckEditorOpen) && (
@@ -804,6 +842,7 @@ function renderPlayerInfo({
         {renderScore({
           game,
           player,
+          isSelf,
         })}
       </div>
       {!faction ? (
@@ -843,29 +882,46 @@ function renderPlayerInfo({
   )
 }
 
-function renderScore({ player, game }: { player: GamePlayer; game: Game }) {
+function renderScore({ player, game, isSelf }: { player: GamePlayer; game: Game; isSelf: boolean }) {
   const playerRound = player.rounds[game.round.current]
   const roundsCanLose = Math.ceil(game.round.maximum / 2)
+  const playerScore = game.players.find((gamePlayer) => gamePlayer.user.name === player.user.name)?.rounds[
+    game.round.current
+  ].score as number
+  const opponentScore = game.players.find((gamePlayer) => gamePlayer.user.name !== player.user.name)?.rounds[
+    game.round.current
+  ].score as number
+  const winning = playerScore > opponentScore
+
   return (
     <div className="game-player-container">
-      <div className={`game-player-sub-section ${HTML_CLASSES.GamePlayerName}`} title={player.user.name}>
-        {player.user.name}
-      </div>
-      <div className="game-player-rounds-score">
-        <div className="game-player-rounds">
-          {Array.from(Array(roundsCanLose), (_, i) => i + 1).map((index) => {
-            const roundLost = index > roundsCanLose
-            return (
-              <div
-                key={index}
-                className={`game-round-token ${
-                  roundLost ? 'game-round-token-lost' : HTML_CLASSES.GamePlayerRoundTokenWon
-                }`}
-                title={roundLost ? 'Round Lost' : 'Round Left'}
-              ></div>
-            )
-          })}
+      <div
+        className="game-player-name-lives"
+        style={{
+          flexDirection: isSelf ? 'column' : 'column-reverse',
+        }}
+      >
+        <div className={`game-player-sub-section ${HTML_CLASSES.GamePlayerName}`} title={player.user.name}>
+          {player.user.name}
         </div>
+        <div className="game-player-rounds-score">
+          <div className="game-player-rounds">
+            {Array.from(Array(roundsCanLose), (_, i) => i + 1).map((index) => {
+              const roundLost = index > roundsCanLose
+              return (
+                <div
+                  key={index}
+                  className={`game-round-token ${
+                    roundLost ? 'game-round-token-lost' : HTML_CLASSES.GamePlayerRoundTokenWon
+                  }`}
+                  title={roundLost ? 'Round Lost' : 'Round Left'}
+                ></div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+      <div className="game-score-container" style={{ borderColor: winning ? '#267402' : 'darkgray' }}>
         <span className={HTML_CLASSES.GamePlayerScore} title="Score">
           {playerRound?.score || 0}
         </span>
@@ -943,6 +999,7 @@ function renderCenter({
   game,
   gameDeck,
   self,
+  opponent,
   ready,
   redraw,
   setDeckListOpen,
@@ -954,10 +1011,12 @@ function renderCenter({
   setPlayerOrder,
   coinTossVisible,
   setCoinTossVisible,
+  playUnit,
 }: {
   game: Game
   gameDeck: GameDeck | undefined
   self: GamePlayer
+  opponent: GamePlayer
   cardSelected: DeckUnit | undefined
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
@@ -972,6 +1031,7 @@ function renderCenter({
   setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
   coinTossVisible: boolean
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
+  playUnit: PlayUnitProps
 }) {
   return (
     <div id={HTML_IDS.GameCenterContainer}>
@@ -983,7 +1043,16 @@ function renderCenter({
           setDeckListOpen,
         })
       ) : game.status === GameStatus.Playing ? (
-        renderUnits()
+        renderBattlefield({
+          cardSelected,
+          playUnit,
+          checkAuth,
+          game,
+          self,
+          opponent,
+          setFullUnit,
+          setCardSelected,
+        })
       ) : game.status === GameStatus.Ordering ? (
         renderSetOrder({
           checkAuth,
@@ -1014,38 +1083,190 @@ function renderCenter({
   )
 }
 
-function renderUnits() {
+function renderBattlefield({
+  cardSelected,
+  playUnit,
+  checkAuth,
+  game,
+  self,
+  setFullUnit,
+  opponent,
+  setCardSelected,
+}: {
+  game: Game
+  cardSelected: DeckUnit | undefined
+  playUnit: PlayUnitProps
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  self: GamePlayer
+  opponent: GamePlayer
+  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+}) {
+  const rowsToHighlight = (cardSelected && cardSelected.unit.combats) || []
+  const rowsToBlock = []
+  if (rowsToHighlight.length > 0) {
+    if (!rowsToHighlight.includes(Combat.Close)) {
+      rowsToBlock.push(Combat.Close)
+    }
+    if (!rowsToHighlight.includes(Combat.Ranged)) {
+      rowsToBlock.push(Combat.Ranged)
+    }
+    if (!rowsToHighlight.includes(Combat.Siege)) {
+      rowsToBlock.push(Combat.Siege)
+    }
+  }
+  const isTurn = game.turn?.user.name === self.user.name
+  const props = {
+    cardSelected,
+    playUnit,
+    checkAuth,
+    game,
+    isTurn,
+    setFullUnit,
+    setCardSelected,
+  }
   return (
     <>
       <div className={`${HTML_CLASSES.GameUnitBoardSide} game-section`}>
-        <div className="game-unit-board-combat-row">
-          <img className="game-unit-combat-row-icon" src="images/combats/siege.png" title="Siege" />
-          <div className="game-sub-section game-unit-combat-row-cards"></div>
-        </div>
-        <div className="game-unit-board-combat-row">
-          <img className="game-unit-combat-row-icon" src="images/combats/ranged.png" title="Ranged" />
-          <div className="game-sub-section game-unit-combat-row-cards"></div>
-        </div>
-        <div className="game-unit-board-combat-row">
-          <img className="game-unit-combat-row-icon" src="images/combats/close.png" title="Close" />
-          <div className="game-sub-section game-unit-combat-row-cards"></div>
-        </div>
+        {renderCombatRow({
+          ...props,
+          player: opponent,
+          combat: Combat.Siege,
+        })}
+        {renderCombatRow({
+          ...props,
+          player: opponent,
+          combat: Combat.Ranged,
+        })}
+        {renderCombatRow({
+          ...props,
+          player: opponent,
+          combat: Combat.Close,
+        })}
       </div>
       <div className={`${HTML_CLASSES.GameUnitBoardSide} game-section`}>
-        <div className="game-unit-board-combat-row">
-          <img className="game-unit-combat-row-icon" src="images/combats/close.png" title="Close" />
-          <div className="game-sub-section game-unit-combat-row-cards"></div>
-        </div>
-        <div className="game-unit-board-combat-row">
-          <img className="game-unit-combat-row-icon" src="images/combats/ranged.png" title="Ranged" />
-          <div className="game-sub-section game-unit-combat-row-cards"></div>
-        </div>
-        <div className="game-unit-board-combat-row">
-          <img className="game-unit-combat-row-icon" src="images/combats/siege.png" title="Siege" />
-          <div className="game-sub-section game-unit-combat-row-cards"></div>
-        </div>
+        {renderCombatRow({
+          ...props,
+          player: self,
+          isSelf: true,
+          combat: Combat.Close,
+        })}
+        {renderCombatRow({
+          ...props,
+          isSelf: true,
+          player: self,
+          combat: Combat.Ranged,
+        })}
+        {renderCombatRow({
+          ...props,
+          player: self,
+          isSelf: true,
+          combat: Combat.Siege,
+        })}
       </div>
     </>
+  )
+}
+
+function renderCombatRow({
+  game,
+  cardSelected,
+  combat,
+  playUnit: { playUnit },
+  checkAuth,
+  player,
+  isTurn,
+  isSelf,
+  setFullUnit,
+  setCardSelected,
+}: {
+  game: Game
+  cardSelected: DeckUnit | undefined
+  combat: Combat
+  playUnit: PlayUnitProps
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  player: GamePlayer
+  isTurn?: boolean
+  isSelf?: boolean
+  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+}) {
+  const titledCombat = toTitleCase(combat)
+  const validRow = isSelf && cardSelected && cardSelected.unit.combats && cardSelected.unit.combats.includes(combat)
+  const invalidRow = cardSelected && cardSelected.unit.combats && !cardSelected.unit.combats.includes(combat)
+  let description = `${titledCombat} combat row`
+  if (cardSelected) {
+    if (isSelf) {
+      if (validRow) {
+        if (isTurn) {
+          description = `Place here for ${cardSelected.unit.name} to fight as a ${titledCombat} unit`
+        } else {
+          description = 'It is not your turn to play'
+        }
+      } else if (invalidRow) {
+        description = `${cardSelected.unit.name} is not eligible to fight as a ${titledCombat} unit`
+      }
+    } else {
+      description = `${cardSelected.unit.name} cannot fight for your opponent`
+    }
+  }
+  const playerRound = player.rounds[game.round.current]
+  const playerRow =
+    combat === Combat.Close ? playerRound.close : combat === Combat.Ranged ? playerRound.ranged : playerRound.siege
+
+  return (
+    <div className="game-unit-board-combat-row">
+      <img
+        className="game-unit-combat-row-icon"
+        src={`images/combats/${combat.toLocaleLowerCase()}.png`}
+        title={titledCombat}
+      />
+      <div
+        className={`game-sub-section game-unit-combat-row-cards ${
+          validRow ? `${HTML_CLASSES.ItemHighlighted} game-unit-combat-row-valid` : ''
+        } ${!isTurn || invalidRow ? 'game-unit-combat-row-invalid' : ''}`}
+        style={{
+          cursor: validRow && isTurn ? 'pointer' : cardSelected ? 'not-allowed' : 'default',
+          borderStyle: validRow ? (isTurn ? 'solid' : 'dotted') : 'none',
+        }}
+        title={description}
+        onClick={async () => {
+          if (isSelf && isTurn && cardSelected?.unit && validRow) {
+            await retryCheckingAuth({
+              checkAuth,
+              method: async () => {
+                await playUnit({
+                  variables: {
+                    game: game.id,
+                    combat: combat,
+                    unit: cardSelected?.unit.id,
+                  },
+                })
+                setCardSelected(undefined)
+              },
+            })
+          }
+        }}
+      >
+        {playerRow.units.map((gameUnit) => {
+          return (
+            <UnitGameCard
+              key={gameUnit.unit.id}
+              deckUnit={{
+                artStyle: gameUnit.artStyle,
+                unit: gameUnit.unit,
+              }}
+              selected={gameUnit.unit.id === cardSelected?.unit.id}
+              dotted={!isTurn}
+              setFullUnit={setFullUnit}
+              cursor="default"
+            />
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
@@ -1062,7 +1283,7 @@ function renderSetDeck({
 }) {
   const resolvedSetDeckError = getApolloError(setDeckError)
   return (
-    <div className="game-section">
+    <div id="gameSetDeckContainer" className="game-section">
       <Centered>
         {alreadySet ? (
           <div className="waiting-container">
@@ -1329,7 +1550,7 @@ function renderRedraw({
                     <div
                       className={`${HTML_CLASSES.GameDeckRedrawCard} ${
                         cardSelected && index === gameDeck.redraws.length
-                          ? HTML_CLASSES.GameDeckRedrawAvailable
+                          ? `${HTML_CLASSES.ItemHighlighted} game-deck-redraw-available`
                           : 'game-deck-redraw-unavailable'
                       }`}
                       title={
@@ -1415,11 +1636,13 @@ function renderHand({
   cardSelected,
   setCardSelected,
   setFullUnit,
+  isTurn,
 }: {
   hand: DeckUnit[] | undefined
   cardSelected: DeckUnit | undefined
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  isTurn: boolean
 }) {
   const sortedUnits = !hand
     ? []
@@ -1450,6 +1673,7 @@ function renderHand({
                 <UnitGameCard
                   deckUnit={deckUnit}
                   selected={deckUnit.unit.id === cardSelected?.unit.id}
+                  dotted={!isTurn}
                   setFullUnit={setFullUnit}
                 />
                 {notSelected && <div title={deckUnit.unit.name} className="game-card-wrapper-not-selected"></div>}
@@ -1558,4 +1782,23 @@ interface ReadyProps {
   ) => Promise<FetchResult<ReadyMutation>>
   readyError: ApolloError | undefined
   readyLoading: boolean
+}
+
+interface PlayUnitProps {
+  playUnit: (
+    options?:
+      | MutationFunctionOptions<
+          PlayUnitMutation,
+          Exact<{
+            game: Scalars['ID']['input']
+            unit: Scalars['ID']['input']
+            combat: Combat
+          }>,
+          DefaultContext,
+          ApolloCache<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+        >
+      | undefined
+  ) => Promise<FetchResult<PlayUnitMutation>>
+  playUnitError: ApolloError | undefined
+  playUnitLoading: boolean
 }
