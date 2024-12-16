@@ -12,13 +12,14 @@ fragment GamePlayerFragment on GamePlayer {
   }
   ready
   rounds {
-    score
     close {
       ...PlayerCombatRowFragment
     }
+    passed
     ranged {
       ...PlayerCombatRowFragment
     }
+    score
     siege {
       ...PlayerCombatRowFragment
     }

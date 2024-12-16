@@ -52,13 +52,10 @@ A list of things to be done in the future.
 
 - playUnit loading icon
 - playUnit error
-- have "updated" be field in game update filter
 - full screen card cycle left/right through other cards in row?
 - unitPlayed subscription
 - history (merged GamePlayers moves?)
-- display strength per combat row
-- option to pass
-- loading icon when opponents turn
+- loading icon when opponents turn?
 - auto-pass if out of cards
 - determine win conditions
 - if effective strength greater than normal strength, green. If less, red.

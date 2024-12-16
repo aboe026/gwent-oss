@@ -243,6 +243,7 @@ export default gql`
     moves: [Move!]! @column(overrideType: "Array<MoveDbObject>")
     score: Int! @column
     won: Boolean! @column
+    passed: Boolean! @column
   }
 
   type PlayerCombatRow @entity {
@@ -376,6 +377,9 @@ export default gql`
 
     "De-authenticate a user."
     logout: Boolean!
+
+    "Pass for the rest of the round in a game."
+    playPass(game: ID!): Game!
 
     "Play a Unit card in a game."
     playUnit(game: ID!, unit: ID!, combat: Combat!): Game!

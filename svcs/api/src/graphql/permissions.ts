@@ -155,6 +155,7 @@ export default shield(
       addUser: allow,
       login: allow,
       logout: allow,
+      playPass: chain(isAuthenticatedRule, isPlayerRule),
       playUnit: chain(isAuthenticatedRule, isPlayerRule),
       ready: chain(isAuthenticatedRule, isPlayerRule),
       redraw: chain(isAuthenticatedRule, isPlayerRule),

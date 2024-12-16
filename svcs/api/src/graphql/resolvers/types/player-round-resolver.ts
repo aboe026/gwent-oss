@@ -59,6 +59,7 @@ export default class PlayerRoundResolver {
       score: round.score,
       won: round.won,
       moves: round.moves,
+      passed: round.passed,
     }
   }
 

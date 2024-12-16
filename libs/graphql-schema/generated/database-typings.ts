@@ -286,6 +286,8 @@ export type Mutation = {
   login: User;
   /** De-authenticate a user. */
   logout: Scalars['Boolean']['output'];
+  /** Pass for the rest of the round in a game. */
+  playPass: Game;
   /** Play a Unit card in a game. */
   playUnit: Game;
   /** Mark player as ready to play the game, no more deck modifications allowed. */
@@ -321,6 +323,11 @@ export type MutationAddUserArgs = {
 export type MutationLoginArgs = {
   name: Scalars['String']['input'];
   password: Scalars['String']['input'];
+};
+
+
+export type MutationPlayPassArgs = {
+  game: Scalars['ID']['input'];
 };
 
 
@@ -363,6 +370,7 @@ export type PlayerRound = {
   __typename?: 'PlayerRound';
   close: PlayerCombatRow;
   moves: Array<Move>;
+  passed: Scalars['Boolean']['output'];
   ranged: PlayerCombatRow;
   score: Scalars['Int']['output'];
   siege: PlayerCombatRow;
@@ -633,6 +641,7 @@ export type PlayerCombatRowDbObject = {
 export type PlayerRoundDbObject = {
   close: PlayerCombatRowDbObject,
   moves: Array<MoveDbObject>,
+  passed: boolean,
   ranged: PlayerCombatRowDbObject,
   score: number,
   siege: PlayerCombatRowDbObject,

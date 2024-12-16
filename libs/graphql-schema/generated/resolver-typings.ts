@@ -290,6 +290,8 @@ export type Mutation = {
   login: User;
   /** De-authenticate a user. */
   logout: Scalars['Boolean']['output'];
+  /** Pass for the rest of the round in a game. */
+  playPass: Game;
   /** Play a Unit card in a game. */
   playUnit: Game;
   /** Mark player as ready to play the game, no more deck modifications allowed. */
@@ -325,6 +327,11 @@ export type MutationAddUserArgs = {
 export type MutationLoginArgs = {
   name: Scalars['String']['input'];
   password: Scalars['String']['input'];
+};
+
+
+export type MutationPlayPassArgs = {
+  game: Scalars['ID']['input'];
 };
 
 
@@ -367,6 +374,7 @@ export type PlayerRound = {
   __typename?: 'PlayerRound';
   close: PlayerCombatRow;
   moves: Array<Move>;
+  passed: Scalars['Boolean']['output'];
   ranged: PlayerCombatRow;
   score: Scalars['Int']['output'];
   siege: PlayerCombatRow;
@@ -844,6 +852,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   addUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserArgs, 'name' | 'password'>>;
   login?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'name' | 'password'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  playPass?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationPlayPassArgs, 'game'>>;
   playUnit?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationPlayUnitArgs, 'combat' | 'game' | 'unit'>>;
   ready?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationReadyArgs, 'game'>>;
   redraw?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType, RequireFields<MutationRedrawArgs, 'game' | 'unit'>>;
@@ -860,6 +869,7 @@ export type PlayerCombatRowResolvers<ContextType = Context, ParentType extends R
 export type PlayerRoundResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PlayerRound'] = ResolversParentTypes['PlayerRound']> = {
   close?: Resolver<ResolversTypes['PlayerCombatRow'], ParentType, ContextType>;
   moves?: Resolver<Array<ResolversTypes['Move']>, ParentType, ContextType>;
+  passed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   ranged?: Resolver<ResolversTypes['PlayerCombatRow'], ParentType, ContextType>;
   score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   siege?: Resolver<ResolversTypes['PlayerCombatRow'], ParentType, ContextType>;

@@ -44,10 +44,13 @@ import {
   Combat,
   usePlayUnitMutation,
   PlayUnitMutation,
+  usePlayPassMutation,
+  PlayPassMutation,
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
 import CoinToss from '../components/CoinToss'
+import Confirm from '../components/Confirm'
 import DeckEditor from '../components/DeckEditor'
 import DeckList from '../components/DeckList'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
@@ -87,6 +90,7 @@ export default function GamePage() {
   const [fullUnit, setFullUnit] = useState<DeckUnit | undefined>()
   const [playerOrder, setPlayerOrder] = useState<GamePlayer[]>([])
   const [coinTossVisible, setCoinTossVisible] = useState(false)
+  const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
   const { checkAuth, user } = useUserContext()
   const navigate = useNavigate()
   const { pathname } = useLocation()
@@ -210,6 +214,7 @@ export default function GamePage() {
     },
   })
   const [ready, { loading: readyLoading, error: readyError }] = useReadyMutation() // Apollo automatically handles cache changes on update
+  const [playPass, { loading: playPassLoading, error: playPassError }] = usePlayPassMutation()
   const [playUnit, { loading: playUnitLoading, error: playUnitError }] = usePlayUnitMutation({
     update(cache, { data }) {
       if (data?.playUnit && user && cardSelected) {
@@ -301,6 +306,13 @@ export default function GamePage() {
           playUnitError,
           playUnitLoading,
         },
+        playPass: {
+          playPass,
+          playPassError,
+          playPassLoading,
+        },
+        setPassConfirmationOpen,
+        passConfirmationOpen,
       })
 }
 
@@ -400,7 +412,10 @@ function renderExistingGame({
   setPlayerOrder,
   coinTossVisible,
   setCoinTossVisible,
+  setPassConfirmationOpen,
   playUnit,
+  playPass: { playPass, playPassError, playPassLoading },
+  passConfirmationOpen,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
@@ -408,6 +423,7 @@ function renderExistingGame({
   setDeckListOpen: Dispatch<SetStateAction<boolean>>
   deckEditorOpen: boolean
   setDeckEditorOpen: Dispatch<SetStateAction<boolean>>
+  setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
   game: Game | undefined
   gameError: ApolloError | undefined
   gameLoading: boolean
@@ -446,6 +462,8 @@ function renderExistingGame({
   coinTossVisible: boolean
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
   playUnit: PlayUnitProps
+  playPass: PlayPassProps
+  passConfirmationOpen: boolean
 }) {
   const resolvedGameError = getApolloError(gameError)
   const resolvedGameDeckError = getApolloError(gameDeckError)
@@ -528,6 +546,30 @@ function renderExistingGame({
           setCardSelected(undefined)
         }}
       />
+      <Confirm
+        title="Pass Round"
+        id="gamePass"
+        message="Are you sure you wish to pass? You will not be able to play any more units the rest of this round."
+        error={playPassError}
+        loading={playPassLoading}
+        onClose={() => setPassConfirmationOpen(false)}
+        open={passConfirmationOpen}
+        onSubmit={async () => {
+          await retryCheckingAuth({
+            checkAuth,
+            method: async () => {
+              await playPass({
+                variables: {
+                  game: game.id,
+                },
+              })
+            },
+          })
+        }}
+        submitVariables={{
+          game: game.id,
+        }}
+      />
       <div id="gameContainerUpper">
         {renderGameInfo({
           game,
@@ -539,6 +581,7 @@ function renderExistingGame({
           gameRefetch,
           gameDeckRefetch,
           coinTossVisible,
+          setPassConfirmationOpen,
         })}
         {renderCenter({
           cardSelected,
@@ -652,6 +695,7 @@ function renderGameInfo({
   gameRefetch,
   gameDeckRefetch,
   coinTossVisible,
+  setPassConfirmationOpen,
 }: {
   self: GamePlayer
   opponent: GamePlayer
@@ -678,6 +722,7 @@ function renderGameInfo({
       | undefined
   ) => Promise<ApolloQueryResult<GameDeckQuery>>
   coinTossVisible: boolean
+  setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
   return (
     <div id="gameInfoContainer" className="game-edge-container">
@@ -692,6 +737,7 @@ function renderGameInfo({
         undrawn: opponent.counts?.undrawn,
         leader: opponent.leader,
         coinTossVisible,
+        setPassConfirmationOpen,
       })}
       {renderSharedInfo({
         game,
@@ -713,6 +759,7 @@ function renderGameInfo({
         deckName: gameDeck?.from?.name,
         deckUpdated: gameDeck?.from?.created,
         coinTossVisible,
+        setPassConfirmationOpen,
       })}
     </div>
   )
@@ -791,6 +838,7 @@ function renderPlayerInfo({
   deckUpdated,
   isSelf,
   coinTossVisible,
+  setPassConfirmationOpen,
 }: {
   id: string
   player: GamePlayer
@@ -804,6 +852,7 @@ function renderPlayerInfo({
   deckUpdated?: Date
   isSelf: boolean
   coinTossVisible: boolean
+  setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
   const isTurn = game.turn && game.turn.user.name === player.user.name
   let title = ''
@@ -843,6 +892,8 @@ function renderPlayerInfo({
           game,
           player,
           isSelf,
+          isTurn,
+          setPassConfirmationOpen,
         })}
       </div>
       {!faction ? (
@@ -882,7 +933,19 @@ function renderPlayerInfo({
   )
 }
 
-function renderScore({ player, game, isSelf }: { player: GamePlayer; game: Game; isSelf: boolean }) {
+function renderScore({
+  player,
+  game,
+  isSelf,
+  isTurn,
+  setPassConfirmationOpen,
+}: {
+  player: GamePlayer
+  game: Game
+  isSelf: boolean
+  isTurn?: boolean | null | undefined
+  setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
+}) {
   const playerRound = player.rounds[game.round.current]
   const roundsCanLose = Math.ceil(game.round.maximum / 2)
   const playerScore = game.players.find((gamePlayer) => gamePlayer.user.name === player.user.name)?.rounds[
@@ -892,6 +955,22 @@ function renderScore({ player, game, isSelf }: { player: GamePlayer; game: Game;
     game.round.current
   ].score as number
   const winning = playerScore > opponentScore
+  let passTitle = 'Select to pass, after which you cannot play any more units the rest of this round'
+  if (playerRound.passed) {
+    if (isSelf) {
+      passTitle = 'You have already passed the rest of the round'
+    } else {
+      passTitle = 'Your opponent has chosen to pass the rest of the round'
+    }
+  } else {
+    if (isSelf) {
+      if (isTurn) {
+        passTitle = 'Select to pass, after which you cannot play any more units the rest of this round'
+      } else {
+        passTitle = 'Cannot pass while it is not your turn'
+      }
+    }
+  }
 
   return (
     <div className="game-player-container">
@@ -904,21 +983,42 @@ function renderScore({ player, game, isSelf }: { player: GamePlayer; game: Game;
         <div className={`game-player-sub-section ${HTML_CLASSES.GamePlayerName}`} title={player.user.name}>
           {player.user.name}
         </div>
-        <div className="game-player-rounds-score">
-          <div className="game-player-rounds">
-            {Array.from(Array(roundsCanLose), (_, i) => i + 1).map((index) => {
-              const roundLost = index > roundsCanLose
-              return (
-                <div
-                  key={index}
-                  className={`game-round-token ${
-                    roundLost ? 'game-round-token-lost' : HTML_CLASSES.GamePlayerRoundTokenWon
-                  }`}
-                  title={roundLost ? 'Round Lost' : 'Round Left'}
-                ></div>
-              )
-            })}
+        <div className="game-player-rounds-container">
+          <div className="game-player-rounds-score">
+            <div className="game-player-rounds">
+              {Array.from(Array(roundsCanLose), (_, i) => i + 1).map((index) => {
+                const roundLost = index > roundsCanLose
+                return (
+                  <div
+                    key={index}
+                    className={`game-round-token ${
+                      roundLost ? 'game-round-token-lost' : HTML_CLASSES.GamePlayerRoundTokenWon
+                    }`}
+                    title={roundLost ? 'Round Lost' : 'Round Left'}
+                  ></div>
+                )
+              })}
+            </div>
           </div>
+          {playerRound.passed ? (
+            <span className="game-player-passed " title={passTitle}>
+              Passed
+            </span>
+          ) : (
+            isSelf &&
+            game.status === GameStatus.Playing && (
+              <button
+                id={HTML_IDS.DeckEditorCancel}
+                type="button"
+                disabled={!isTurn} // TODO: disabled when playPassLoading is true
+                onClick={() => setPassConfirmationOpen(true)}
+                title={passTitle}
+                style={{ cursor: isTurn ? 'pointer' : 'not-allowed' }}
+              >
+                Pass
+              </button>
+            )
+          )}
         </div>
       </div>
       <div className="game-score-container" style={{ borderColor: winning ? '#267402' : 'darkgray' }}>
@@ -1218,11 +1318,14 @@ function renderCombatRow({
 
   return (
     <div className="game-unit-board-combat-row">
-      <img
-        className="game-unit-combat-row-icon"
-        src={`images/combats/${combat.toLocaleLowerCase()}.png`}
-        title={titledCombat}
-      />
+      <div className="game-unit-board-combat-icon-score">
+        <img
+          className="game-unit-combat-row-icon"
+          src={`images/combats/${combat.toLocaleLowerCase()}.png`}
+          title={titledCombat}
+        />
+        <div>{playerRow.score}</div>
+      </div>
       <div
         className={`game-sub-section game-unit-combat-row-cards ${
           validRow ? `${HTML_CLASSES.ItemHighlighted} game-unit-combat-row-valid` : ''
@@ -1801,4 +1904,21 @@ interface PlayUnitProps {
   ) => Promise<FetchResult<PlayUnitMutation>>
   playUnitError: ApolloError | undefined
   playUnitLoading: boolean
+}
+
+interface PlayPassProps {
+  playPass: (
+    options?:
+      | MutationFunctionOptions<
+          PlayPassMutation,
+          Exact<{
+            game: Scalars['ID']['input']
+          }>,
+          DefaultContext,
+          ApolloCache<any> // eslint-disable-line @typescript-eslint/no-explicit-any
+        >
+      | undefined
+  ) => Promise<FetchResult<PlayPassMutation>>
+  playPassError: ApolloError | undefined
+  playPassLoading: boolean
 }

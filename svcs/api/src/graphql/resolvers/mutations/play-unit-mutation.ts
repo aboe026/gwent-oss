@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import { Combat, Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
-import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
@@ -10,7 +10,6 @@ import { GraphQLResolveInfo } from 'graphql'
 import MutationUtil from './mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
-import { sortObjectArray } from '@gwent/utils'
 import UnitStore from '../../../database/stores/unit-store'
 
 /**
@@ -103,31 +102,13 @@ export default class PlayUnitMutation {
     player.deck.hand = player.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== unitId)
 
     // set next player
-    const usersByOrder: GamePlayerDbObject[] = sortObjectArray({
-      array: game.players,
-      sortProperties: ['order'],
+    const nextPlayerId = MutationUtil.getNextPlayerId({
+      currentPlayer: player,
+      game,
+      logger: PlayUnitMutation.logger,
+      logPrefix,
     })
-    let nextPlayerId: ObjectId | undefined = undefined
-    const currentPlayerOrder = player.order
-    if (currentPlayerOrder === undefined || currentPlayerOrder === null) {
-      const message = `Could not determine order of current player "${player.user.id}": "${currentPlayerOrder}".`
-      PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    PlayUnitMutation.logger.trace(`currentPlayerOrder: "${currentPlayerOrder}"`)
-    for (let i = 0; i < game.players.length && nextPlayerId === undefined; i++) {
-      PlayUnitMutation.logger.trace(`i: "${i}"`)
-      if (player.order !== undefined) {
-        const potentialNextPlayer = usersByOrder[(currentPlayerOrder + i + 1) % game.players.length]
-        if (PlayUnitMutation.logger.isTraceEnabled()) {
-          PlayUnitMutation.logger.trace(`potentialNextPlayer: "${JSON.stringify(potentialNextPlayer)}"`)
-        }
-        const playerHasPassed = false // TODO: determine if potential player has passed or not
-        if (!playerHasPassed) {
-          nextPlayerId = potentialNextPlayer.user
-        }
-      }
-    }
+
     if (!nextPlayerId) {
       // all players have passed, end round
       console.log('TEST no next player id')

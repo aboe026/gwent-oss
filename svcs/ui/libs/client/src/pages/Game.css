@@ -186,6 +186,15 @@ th {
   display: flex;
   flex-grow: 1;
   width: 100%;
+  gap: 10px;
+}
+
+.game-player-passed {
+  border-style: solid;
+  border-color: #5e027a;
+  border-radius: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 .game-section > .game-player-section {
@@ -201,6 +210,11 @@ th {
 
 .game-player-rounds-score {
   display: flex;
+}
+
+.game-player-rounds-container {
+  display: flex;
+  justify-content: space-between;
 }
 
 .game-player-rounds {
@@ -296,6 +310,15 @@ th {
   gap: 10px;
 }
 
+.game-unit-board-combat-icon-score {
+  display: flex;
+  flex-direction: column;
+  width: 50px;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
 .game-unit-combat-row-valid {
   cursor: pointer;
 }
@@ -305,10 +328,7 @@ th {
 }
 
 .game-unit-combat-row-icon {
-  margin-top: auto;
-  margin-bottom: auto;
-  max-width: 10%;
-  max-height: 50%;
+  width: 100%;
 }
 
 .game-round-token {

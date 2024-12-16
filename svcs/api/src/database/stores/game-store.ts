@@ -44,6 +44,7 @@ export default class GameStore extends Store {
         ranged: row,
         siege: row,
         won: false,
+        passed: false,
       })
     }
     const game: Document = {

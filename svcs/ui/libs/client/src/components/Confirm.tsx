@@ -2,6 +2,7 @@ import { ApolloError } from '@apollo/client'
 
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'
+import './Confirm.css'
 
 /**
  * A dialog asking a user if they really want to perform an action.
@@ -30,11 +31,13 @@ export default function Confirm({
   loading,
   message,
   open,
+  title,
 }: ConfirmProps) {
   const resolvedError = getApolloError(error)
   return open ? (
     <div className="whole-screen-overlay">
       <div className="whole-screen-dialog" id={id}>
+        {title && <span className="confirm-title">{title}</span>}
         <span className="confirm-message">{message}</span>
         {resolvedError && <span className={HTML_CLASSES.ErrorText}>{resolvedError}</span>}
         <div className="actions">
@@ -69,4 +72,5 @@ interface ConfirmProps {
   loading: boolean
   message: string
   open: boolean
+  title?: string
 }

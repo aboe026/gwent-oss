@@ -6,7 +6,7 @@ import { FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
 import FactionStore from '../../../database/stores/faction-store'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
-import { getDuplicateItems, randomizeOrder } from '@gwent/utils'
+import { getDuplicateItems, randomizeOrder, sortObjectArray } from '@gwent/utils'
 import { PubSubEvents } from '@gwent/constants'
 import { GameDbObject, GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
 
@@ -65,6 +65,50 @@ export default class MutationUtil {
       game,
       player,
     }
+  }
+
+  static getNextPlayerId({
+    game,
+    currentPlayer,
+    logger,
+    logPrefix,
+  }: {
+    game: GameDbObject
+    currentPlayer: GamePlayerDbObject
+    logger: Logger
+    logPrefix: string
+  }): ObjectId | undefined {
+    const usersByOrder: GamePlayerDbObject[] = sortObjectArray({
+      array: game.players,
+      sortProperties: ['order'],
+    })
+    if (logger.isTraceEnabled()) {
+      logger.trace(`${logPrefix} getNextPlayerId usersByOrder: "${JSON.stringify(usersByOrder)}"`)
+    }
+    let nextPlayerId: ObjectId | undefined = undefined
+    const currentPlayerOrder = currentPlayer.order
+    logger.trace(`${logPrefix} getNextPlayerId currentPlayerOrder: "${currentPlayerOrder}"`)
+    if (currentPlayerOrder === undefined || currentPlayerOrder === null) {
+      const message = `Could not determine order of current player "${currentPlayer.user.id}": "${currentPlayerOrder}".`
+      logger.warn(`${logPrefix} getNextPlayerId failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    for (let i = 0; i < game.players.length && nextPlayerId === undefined; i++) {
+      logger.trace(`${logPrefix} getNextPlayerId i: "${i}"`)
+      if (currentPlayer.order !== undefined) {
+        const potentialNextPlayer = usersByOrder[(currentPlayerOrder + i + 1) % game.players.length]
+        if (logger.isTraceEnabled()) {
+          logger.trace(`${logPrefix} getNextPlayerId potentialNextPlayer: "${JSON.stringify(potentialNextPlayer)}"`)
+        }
+        if (potentialNextPlayer.rounds[game.round.current].passed) {
+          logger.debug(`${logPrefix} player ${potentialNextPlayer.user}" has already passed, ignoring for next player.`)
+        } else {
+          logger.debug(`${logPrefix} player ${potentialNextPlayer.user}" has not yet passed, setting as next player.`)
+          nextPlayerId = potentialNextPlayer.user
+        }
+      }
+    }
+    return nextPlayerId
   }
 
   /**
