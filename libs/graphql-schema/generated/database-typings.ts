@@ -463,7 +463,8 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
-  unitPlayedForGame: Game;
+  /** The unit card played on a game and the updated Game. */
+  unitPlayedOnGame: UnitPlayedOnGame;
   /** A unit was redrawn for a game deck the user owns. */
   unitRedrawn: GameUnitRedrawn;
 };
@@ -486,6 +487,12 @@ export type Unit = {
   scorchScope?: Maybe<Combat>;
   special?: Maybe<Scalars['Boolean']['output']>;
   strength?: Maybe<Scalars['Int']['output']>;
+};
+
+export type UnitPlayedOnGame = {
+  __typename?: 'UnitPlayedOnGame';
+  game: Game;
+  unit: DeckUnit;
 };
 
 export type UnitStats = {

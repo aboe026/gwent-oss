@@ -17,7 +17,7 @@ import {
   useGameReadySubscription,
   useGameSetSubscription,
   useOrderSetSubscription,
-  useUnitPlayedForGameSubscription,
+  useUnitPlayedOnGameSubscription,
   useUnitRedrawnSubscription,
 } from '@gwent/graphql-schema/apollo-typings'
 import updateGameDeckCacheOnRedraw from './util/update-game-deck-cache-on-redraw'
@@ -169,10 +169,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useUnitPlayedForGameSubscription({
+  useUnitPlayedOnGameSubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const updatedGame = data.data?.unitPlayedForGame
+      const updatedGame = data.data?.unitPlayedOnGame.game
       if (updatedGame) {
         client.cache.updateQuery<GameQuery>(
           {

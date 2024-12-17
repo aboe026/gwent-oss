@@ -72,14 +72,15 @@ export default class SubscriptionResolver {
             })
         ),
       },
-      unitPlayedForGame: {
+      unitPlayedOnGame: {
         subscribe: withFilter(
-          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.UnitPlayedForGame]),
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.UnitPlayedOnGame]),
           async (payload, args, ctx) =>
             SubscriptionResolver.filterPlayerOnGame({
               ctx,
               payload,
-              subscriptionName: 'unitPlayedForGame',
+              subscriptionName: 'unitPlayedOnGame',
+              nestedGameProperty: 'game',
             })
         ),
       },
@@ -205,17 +206,19 @@ export default class SubscriptionResolver {
     payload,
     ctx,
     subscriptionName,
+    nestedGameProperty,
   }: {
     payload: any // eslint-disable-line @typescript-eslint/no-explicit-any
     ctx: Context
     subscriptionName: string
+    nestedGameProperty?: string
   }): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
       SubscriptionResolver.logger.trace(`${subscriptionName} payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`${subscriptionName} ctx: "${JSON.stringify(ctx)}"`)
     }
     const userId = ctx.session?.user?._id.toString()
-    const game: Game = payload[subscriptionName]
+    const game: Game = nestedGameProperty ? payload[subscriptionName][nestedGameProperty] : payload[subscriptionName]
     const gameId = game.id
     SubscriptionResolver.logger.debug(`${subscriptionName} with userId: "${userId}", gameId: "${gameId}"`)
     if (userId) {
@@ -306,8 +309,11 @@ export interface OrderSetPayload {
   orderSet: Game
 }
 
-export interface UnitPlayedForGamePayload {
-  unitPlayedForGame: Game
+export interface UnitPlayedOnGamePayload {
+  unitPlayedOnGame: {
+    game: Game
+    unit: DeckUnit
+  }
 }
 
 export interface UnitRedrawnPayload {

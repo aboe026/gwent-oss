@@ -467,7 +467,8 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
-  unitPlayedForGame: Game;
+  /** The unit card played on a game and the updated Game. */
+  unitPlayedOnGame: UnitPlayedOnGame;
   /** A unit was redrawn for a game deck the user owns. */
   unitRedrawn: GameUnitRedrawn;
 };
@@ -490,6 +491,12 @@ export type Unit = {
   scorchScope?: Maybe<Combat>;
   special?: Maybe<Scalars['Boolean']['output']>;
   strength?: Maybe<Scalars['Int']['output']>;
+};
+
+export type UnitPlayedOnGame = {
+  __typename?: 'UnitPlayedOnGame';
+  game: Game;
+  unit: DeckUnit;
 };
 
 export type UnitStats = {
@@ -643,6 +650,7 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<{}>;
   Unit: ResolverTypeWrapper<Unit>;
+  UnitPlayedOnGame: ResolverTypeWrapper<Omit<UnitPlayedOnGame, 'game'> & { game: ResolversTypes['Game'] }>;
   UnitStats: ResolverTypeWrapper<UnitStats>;
   User: ResolverTypeWrapper<User>;
 };
@@ -684,6 +692,7 @@ export type ResolversParentTypes = {
   String: Scalars['String']['output'];
   Subscription: {};
   Unit: Unit;
+  UnitPlayedOnGame: Omit<UnitPlayedOnGame, 'game'> & { game: ResolversParentTypes['Game'] };
   UnitStats: UnitStats;
   User: User;
 };
@@ -916,7 +925,7 @@ export type SubscriptionResolvers<ContextType = Context, ParentType extends Reso
   gameReady?: SubscriptionResolver<ResolversTypes['Game'], "gameReady", ParentType, ContextType>;
   gameSet?: SubscriptionResolver<ResolversTypes['Game'], "gameSet", ParentType, ContextType>;
   orderSet?: SubscriptionResolver<ResolversTypes['Game'], "orderSet", ParentType, ContextType>;
-  unitPlayedForGame?: SubscriptionResolver<ResolversTypes['Game'], "unitPlayedForGame", ParentType, ContextType>;
+  unitPlayedOnGame?: SubscriptionResolver<ResolversTypes['UnitPlayedOnGame'], "unitPlayedOnGame", ParentType, ContextType>;
   unitRedrawn?: SubscriptionResolver<ResolversTypes['GameUnitRedrawn'], "unitRedrawn", ParentType, ContextType>;
 };
 
@@ -937,6 +946,12 @@ export type UnitResolvers<ContextType = Context, ParentType extends ResolversPar
   scorchScope?: Resolver<Maybe<ResolversTypes['Combat']>, ParentType, ContextType>;
   special?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   strength?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UnitPlayedOnGameResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UnitPlayedOnGame'] = ResolversParentTypes['UnitPlayedOnGame']> = {
+  game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
+  unit?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1003,6 +1018,7 @@ export type Resolvers<ContextType = Context> = {
   Setting?: SettingResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Unit?: UnitResolvers<ContextType>;
+  UnitPlayedOnGame?: UnitPlayedOnGameResolvers<ContextType>;
   UnitStats?: UnitStatsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 };
