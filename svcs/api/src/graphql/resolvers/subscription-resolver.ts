@@ -36,13 +36,23 @@ export default class SubscriptionResolver {
       gameAdded: {
         subscribe: withFilter(
           () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.GameAdded]),
-          async (payload, args, ctx) => SubscriptionResolver.filterGameAdded(payload, ctx)
+          async (payload, args, ctx) =>
+            SubscriptionResolver.filterPlayerOnGame({
+              ctx,
+              payload,
+              subscriptionName: 'gameAdded',
+            })
         ),
       },
       gameReady: {
         subscribe: withFilter(
           () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.GameReady]),
-          async (payload, args, ctx) => SubscriptionResolver.filterGameReady(payload, ctx)
+          async (payload, args, ctx) =>
+            SubscriptionResolver.filterPlayerOnGame({
+              ctx,
+              payload,
+              subscriptionName: 'gameReady',
+            })
         ),
       },
       gameSet: {
@@ -54,7 +64,23 @@ export default class SubscriptionResolver {
       orderSet: {
         subscribe: withFilter(
           () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.OrderSet]),
-          async (payload, args, ctx) => SubscriptionResolver.filterOrderSet(payload, ctx)
+          async (payload, args, ctx) =>
+            SubscriptionResolver.filterPlayerOnGame({
+              ctx,
+              payload,
+              subscriptionName: 'orderSet',
+            })
+        ),
+      },
+      unitPlayedForGame: {
+        subscribe: withFilter(
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.UnitPlayedForGame]),
+          async (payload, args, ctx) =>
+            SubscriptionResolver.filterPlayerOnGame({
+              ctx,
+              payload,
+              subscriptionName: 'unitPlayedForGame',
+            })
         ),
       },
       unitRedrawn: {
@@ -138,64 +164,6 @@ export default class SubscriptionResolver {
   }
 
   /**
-   * Filter out added Games that are not relevant for the user.
-   *
-   * @param payload The game to potentially publish.
-   * @param ctx The context of the connection contiaining user information.
-   * @returns True if the game should be published for the user, false if not.
-   */
-  private static filterGameAdded(payload: GameAddedPayload, ctx: Context): boolean {
-    if (SubscriptionResolver.logger.isTraceEnabled()) {
-      SubscriptionResolver.logger.trace(`gameAdded payload: "${JSON.stringify(payload)}"`)
-      SubscriptionResolver.logger.trace(`gameAdded ctx: "${JSON.stringify(ctx)}"`)
-    }
-    const userId = ctx.session?.user?._id.toString()
-    const gameId = payload.gameAdded.id
-    if (userId) {
-      if (payload.gameAdded.players.some((player) => player.user.id === userId)) {
-        SubscriptionResolver.logger.debug(`Publishing gameAdded for game "${gameId}" to user "${userId}".`)
-        return true
-      } else {
-        SubscriptionResolver.logger.debug(
-          `Not publishing gameAdded for game "${gameId}": User "${userId}" not a player on game.`
-        )
-      }
-    } else {
-      SubscriptionResolver.logger.debug(`Not publishing gameAdded for game "${gameId}": No user on context.`)
-    }
-    return false
-  }
-
-  /**
-   * Filter out ready Games that are not relevant for the user.
-   *
-   * @param payload The ready game to potentially publish.
-   * @param ctx The context of the connection contiaining user information.
-   * @returns True if the ready game should be published for the user, false if not.
-   */
-  private static filterGameReady(payload: GameReadyPayload, ctx: Context): boolean {
-    if (SubscriptionResolver.logger.isTraceEnabled()) {
-      SubscriptionResolver.logger.trace(`gameReady payload: "${JSON.stringify(payload)}"`)
-      SubscriptionResolver.logger.trace(`gameReady ctx: "${JSON.stringify(ctx)}"`)
-    }
-    const userId = ctx.session?.user?._id.toString()
-    const gameId = payload.gameReady.id
-    if (userId) {
-      if (payload.gameReady.players.some((player) => player.user.id === userId)) {
-        SubscriptionResolver.logger.debug(`Publishing gameReady for game "${gameId}" to user "${userId}".`)
-        return true
-      } else {
-        SubscriptionResolver.logger.debug(
-          `Not publishing gameReady for game "${gameId}": User "${userId}" not a player on game.`
-        )
-      }
-    } else {
-      SubscriptionResolver.logger.debug(`Not publishing gameReady for game "${gameId}": No user on context.`)
-    }
-    return false
-  }
-
-  /**
    * Filter out set Games that are not relevant for the user.
    *
    * @param payload The set game to potentially publish.
@@ -233,32 +201,34 @@ export default class SubscriptionResolver {
     return false
   }
 
-  /**
-   * Filter out ordered Games that are not relevant for the user.
-   *
-   * @param payload The ordered game to potentially publish.
-   * @param ctx The context of the connection contiaining user information.
-   * @returns True if the ordered game should be published for the user, false if not.
-   */
-  private static filterOrderSet(payload: OrderSetPayload, ctx: Context): boolean {
+  private static filterPlayerOnGame({
+    payload,
+    ctx,
+    subscriptionName,
+  }: {
+    payload: any // eslint-disable-line @typescript-eslint/no-explicit-any
+    ctx: Context
+    subscriptionName: string
+  }): boolean {
     if (SubscriptionResolver.logger.isTraceEnabled()) {
-      SubscriptionResolver.logger.trace(`orderSet payload: "${JSON.stringify(payload)}"`)
-      SubscriptionResolver.logger.trace(`orderSet ctx: "${JSON.stringify(ctx)}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} payload: "${JSON.stringify(payload)}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} ctx: "${JSON.stringify(ctx)}"`)
     }
     const userId = ctx.session?.user?._id.toString()
-    const gameId = payload.orderSet.id
-    SubscriptionResolver.logger.debug(`orderSet with userId: "${userId}", gameId: "${gameId}"`)
+    const game: Game = payload[subscriptionName]
+    const gameId = game.id
+    SubscriptionResolver.logger.debug(`${subscriptionName} with userId: "${userId}", gameId: "${gameId}"`)
     if (userId) {
-      if (payload.orderSet.players.some((player) => player.user.id === userId)) {
-        SubscriptionResolver.logger.debug(`Publishing orderSet for game "${gameId}" to user "${userId}".`)
+      if (game.players.some((player) => player.user.id === userId)) {
+        SubscriptionResolver.logger.debug(`Publishing ${subscriptionName} for game "${gameId}" to user "${userId}".`)
         return true
       } else {
         SubscriptionResolver.logger.debug(
-          `Not publishing orderSet for game "${gameId}": User "${userId}" not a player on game.`
+          `Not publishing ${subscriptionName} for game "${gameId}": User "${userId}" not a player on game.`
         )
       }
     } else {
-      SubscriptionResolver.logger.debug(`Not publishing orderSet for game "${gameId}": No user on context.`)
+      SubscriptionResolver.logger.debug(`Not publishing ${subscriptionName} for game "${gameId}": No user on context.`)
     }
     return false
   }
@@ -334,6 +304,10 @@ export interface GameSetPayload {
 
 export interface OrderSetPayload {
   orderSet: Game
+}
+
+export interface UnitPlayedForGamePayload {
+  unitPlayedForGame: Game
 }
 
 export interface UnitRedrawnPayload {
