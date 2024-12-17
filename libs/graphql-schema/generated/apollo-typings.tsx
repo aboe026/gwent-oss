@@ -466,6 +466,8 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
+  /** The unit card played from a deck and the updated GameDeck. */
+  unitPlayedFromDeck: UnitPlayedFromDeck;
   /** The unit card played on a game and the updated Game. */
   unitPlayedOnGame: UnitPlayedOnGame;
   /** A unit was redrawn for a game deck the user owns. */
@@ -490,6 +492,13 @@ export type Unit = {
   scorchScope?: Maybe<Combat>;
   special?: Maybe<Scalars['Boolean']['output']>;
   strength?: Maybe<Scalars['Int']['output']>;
+};
+
+export type UnitPlayedFromDeck = {
+  __typename?: 'UnitPlayedFromDeck';
+  deck: GameDeck;
+  game: Game;
+  unit: DeckUnit;
 };
 
 export type UnitPlayedOnGame = {
@@ -720,6 +729,11 @@ export type SetOrderMutationVariables = Exact<{
 
 
 export type SetOrderMutation = { __typename?: 'Mutation', setOrder: { __typename?: 'Game', created: any, id: string, status: GameStatus, updated: any, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', passed: boolean, score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, round: { __typename?: 'GameRound', current: number, maximum: number }, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type UnitPlayedFromDeckSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UnitPlayedFromDeckSubscription = { __typename?: 'Subscription', unitPlayedFromDeck: { __typename?: 'UnitPlayedFromDeck', game: { __typename?: 'Game', id: string }, unit: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } } } };
 
 export type UnitPlayedOnGameSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
@@ -1898,6 +1912,40 @@ export function useSetOrderMutation(baseOptions?: Apollo.MutationHookOptions<Set
 export type SetOrderMutationHookResult = ReturnType<typeof useSetOrderMutation>;
 export type SetOrderMutationResult = Apollo.MutationResult<SetOrderMutation>;
 export type SetOrderMutationOptions = Apollo.BaseMutationOptions<SetOrderMutation, SetOrderMutationVariables>;
+export const UnitPlayedFromDeckDocument = gql`
+    subscription UnitPlayedFromDeck {
+  unitPlayedFromDeck {
+    game {
+      id
+    }
+    unit {
+      ...DeckUnitFragment
+    }
+  }
+}
+    ${DeckUnitFragmentFragmentDoc}`;
+
+/**
+ * __useUnitPlayedFromDeckSubscription__
+ *
+ * To run a query within a React component, call `useUnitPlayedFromDeckSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useUnitPlayedFromDeckSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useUnitPlayedFromDeckSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useUnitPlayedFromDeckSubscription(baseOptions?: Apollo.SubscriptionHookOptions<UnitPlayedFromDeckSubscription, UnitPlayedFromDeckSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<UnitPlayedFromDeckSubscription, UnitPlayedFromDeckSubscriptionVariables>(UnitPlayedFromDeckDocument, options);
+      }
+export type UnitPlayedFromDeckSubscriptionHookResult = ReturnType<typeof useUnitPlayedFromDeckSubscription>;
+export type UnitPlayedFromDeckSubscriptionResult = Apollo.SubscriptionResult<UnitPlayedFromDeckSubscription>;
 export const UnitPlayedOnGameDocument = gql`
     subscription UnitPlayedOnGame {
   unitPlayedOnGame {

@@ -320,8 +320,15 @@ export default gql`
 
   type GameUnitRedrawn {
     from: DeckUnit!
+    deck: GameDeck!
     game: Game!
     to: DeckUnit!
+  }
+
+  type UnitPlayedFromDeck {
+    deck: GameDeck!
+    game: Game!
+    unit: DeckUnit!
   }
 
   type UnitPlayedOnGame {
@@ -415,6 +422,8 @@ export default gql`
     gameSet: Game!
     "The order has been set for a game the user is a player on."
     orderSet: Game!
+    "The unit card played from a deck and the updated GameDeck."
+    unitPlayedFromDeck: UnitPlayedFromDeck!
     "The unit card played on a game and the updated Game."
     unitPlayedOnGame: UnitPlayedOnGame!
     "A unit was redrawn for a game deck the user owns."

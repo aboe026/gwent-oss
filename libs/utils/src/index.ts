@@ -3,6 +3,7 @@ import { formatDay, formatTime } from './format-date'
 import formatGameStatus from './format-game-status'
 import getCombatImage from './get-combat-image'
 import getDuplicateItems from './get-duplicate-items'
+import { getNestedProperty } from './sort'
 import getRandomSubset from './get-random-subset'
 import getUniqueItems from './get-unique-items'
 import getUnitStats from './get-unit-stats'
@@ -19,6 +20,7 @@ export {
   formatGameStatus,
   getCombatImage,
   getDuplicateItems,
+  getNestedProperty,
   getRandomSubset,
   getUniqueItems,
   getUnitStats as getDeckStats,

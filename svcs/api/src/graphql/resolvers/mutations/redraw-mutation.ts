@@ -5,6 +5,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import { DeckUnit, MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
+import GameDeckResolver from '../types/game-deck-resolver'
 import { GamePlayerDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
@@ -169,12 +170,22 @@ export default class RedrawMutation {
       RedrawMutation.logger.trace(`${logPrefix} resolvedFrom: "${JSON.stringify(resolvedFrom)}"`)
     }
 
+    const updatedGameDeck = updatedGame.players.find((player) => player.user.toString() === userId.toString())?.deck
+    if (!updatedGameDeck) {
+      const message = `Could not get updated game deck when redrawing unit "${unitId}" on game "${gameId}".`
+      RedrawMutation.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    const resolvedGameDeck = await GameDeckResolver.fromObject({
+      gameDeck: updatedGameDeck,
+    })
+
     EventManager.pubsub.publish(PubSubEvents.UnitRedrawn, {
       unitRedrawn: {
         from: resolvedFrom,
+        deck: resolvedGameDeck,
         game: resolvedGame,
         to: resolvedTo,
-        ownerId: userId,
       },
     })
 

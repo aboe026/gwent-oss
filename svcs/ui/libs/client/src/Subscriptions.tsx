@@ -17,6 +17,7 @@ import {
   useGameReadySubscription,
   useGameSetSubscription,
   useOrderSetSubscription,
+  useUnitPlayedFromDeckSubscription,
   useUnitPlayedOnGameSubscription,
   useUnitRedrawnSubscription,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -162,6 +163,33 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game: updatedGame,
+              }
+            }
+          }
+        )
+      }
+    },
+  })
+  useUnitPlayedFromDeckSubscription({
+    skip: !user,
+    onData: ({ data, client }) => {
+      const game = data.data?.unitPlayedFromDeck.game
+      const playedUnit = data.data?.unitPlayedFromDeck.unit
+      if (playedUnit) {
+        client.cache.updateQuery<GameDeckQuery>(
+          {
+            query: GameDeckDocument,
+            variables: {
+              id: game?.id,
+            },
+          },
+          (previous) => {
+            if (previous?.gameDeck) {
+              return {
+                gameDeck: {
+                  ...previous.gameDeck,
+                  hand: previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.unit.id),
+                },
               }
             }
           }

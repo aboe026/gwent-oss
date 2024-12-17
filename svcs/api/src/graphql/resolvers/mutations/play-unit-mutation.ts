@@ -4,6 +4,7 @@ import { Combat, Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolv
 import { Context } from '@gwent/graphql-schema/context'
 import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
+import GameDeckResolver from '../types/game-deck-resolver'
 import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
@@ -136,9 +137,20 @@ export default class PlayUnitMutation {
     const resolvedUnit = await DeckUnitResolver.fromObject({
       deckUnit,
     })
+    const resolvedGameDeck = await GameDeckResolver.fromObject({
+      gameDeck: player.deck,
+    })
 
     EventManager.pubsub.publish(PubSubEvents.UnitPlayedOnGame, {
       unitPlayedOnGame: {
+        game: resolvedGame,
+        unit: resolvedUnit,
+      },
+    })
+
+    EventManager.pubsub.publish(PubSubEvents.UnitPlayedFromDeck, {
+      unitPlayedFromDeck: {
+        deck: resolvedGameDeck,
         game: resolvedGame,
         unit: resolvedUnit,
       },

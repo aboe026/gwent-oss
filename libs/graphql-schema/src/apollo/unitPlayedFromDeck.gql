@@ -1,0 +1,10 @@
+subscription UnitPlayedFromDeck {
+  unitPlayedFromDeck {
+    game {
+      id
+    }
+    unit {
+      ...DeckUnitFragment
+    }
+  }
+}
