@@ -476,6 +476,8 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
+  /** A user has passed the rest of the round for a game. */
+  passPlayed: Game;
   /** The unit card played from a deck and the updated GameDeck. */
   unitPlayedFromDeck: UnitPlayedFromDeck;
   /** The unit card played on a game and the updated Game. */
@@ -690,6 +692,11 @@ export type OrderSetSubscriptionVariables = Exact<{ [key: string]: never; }>;
 
 
 export type OrderSetSubscription = { __typename?: 'Subscription', orderSet: { __typename?: 'Game', created: any, id: string, round: number, status: GameStatus, updated: any, config: { __typename?: 'GameConfig', lives: number }, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', passed: boolean, result?: RoundResult | null, score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
+
+export type PassPlayedSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PassPlayedSubscription = { __typename?: 'Subscription', passPlayed: { __typename?: 'Game', created: any, id: string, round: number, status: GameStatus, updated: any, config: { __typename?: 'GameConfig', lives: number }, creator: { __typename?: 'User', id: string, name: string }, players: Array<{ __typename?: 'GamePlayer', ready: boolean, counts?: { __typename?: 'GamePlayerUnitCounts', discard: number, hand: number, undrawn: number } | null, faction?: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string } | null, leader?: { __typename?: 'Leader', ability: string, image: string, name: string } | null, rounds: Array<{ __typename?: 'PlayerRound', passed: boolean, result?: RoundResult | null, score: number, close: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, ranged: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> }, siege: { __typename?: 'PlayerCombatRow', score: number, units: Array<{ __typename?: 'GameUnit', artStyle: number, effectiveStrength?: number | null, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } }>, user: { __typename?: 'User', id: string, name: string } }>, turn?: { __typename?: 'GamePlayer', user: { __typename?: 'User', id: string, name: string } } | null, victors: Array<{ __typename?: 'User', id: string, name: string }> } };
 
 export type PlayPassMutationVariables = Exact<{
   game: Scalars['ID']['input'];
@@ -1720,6 +1727,35 @@ export function useOrderSetSubscription(baseOptions?: Apollo.SubscriptionHookOpt
       }
 export type OrderSetSubscriptionHookResult = ReturnType<typeof useOrderSetSubscription>;
 export type OrderSetSubscriptionResult = Apollo.SubscriptionResult<OrderSetSubscription>;
+export const PassPlayedDocument = gql`
+    subscription PassPlayed {
+  passPlayed {
+    ...GameFragment
+  }
+}
+    ${GameFragmentFragmentDoc}`;
+
+/**
+ * __usePassPlayedSubscription__
+ *
+ * To run a query within a React component, call `usePassPlayedSubscription` and pass it any options that fit your needs.
+ * When your component renders, `usePassPlayedSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = usePassPlayedSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function usePassPlayedSubscription(baseOptions?: Apollo.SubscriptionHookOptions<PassPlayedSubscription, PassPlayedSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<PassPlayedSubscription, PassPlayedSubscriptionVariables>(PassPlayedDocument, options);
+      }
+export type PassPlayedSubscriptionHookResult = ReturnType<typeof usePassPlayedSubscription>;
+export type PassPlayedSubscriptionResult = Apollo.SubscriptionResult<PassPlayedSubscription>;
 export const PlayPassDocument = gql`
     mutation PlayPass($game: ID!) {
   playPass(game: $game) {

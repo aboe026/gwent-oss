@@ -48,6 +48,7 @@ import {
   PlayPassMutation,
   RoundResult,
   PlayerRound,
+  GameUnit,
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
@@ -79,6 +80,11 @@ import { useUserContext } from '../App'
 import WholeScreenDialog from '../components/WholeScreenDialog'
 import './Game.css'
 
+interface UnitForPlayer {
+  unit: DeckUnit | GameUnit
+  playerId: string | undefined
+}
+
 /**
  * A user created Game.
  *
@@ -89,7 +95,7 @@ export default function GamePage() {
   const [deckListOpen, setDeckListOpen] = useState(false)
   const [deckEditorOpen, setDeckEditorOpen] = useState(false)
   const [cardSelected, setCardSelected] = useState<DeckUnit | undefined>()
-  const [fullUnit, setFullUnit] = useState<DeckUnit | undefined>()
+  const [fullUnit, setFullUnit] = useState<UnitForPlayer | undefined>()
   const [playerOrder, setPlayerOrder] = useState<GamePlayer[]>([])
   const [coinTossVisible, setCoinTossVisible] = useState(false)
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
@@ -441,8 +447,8 @@ function renderExistingGame({
   gameDeckError: ApolloError | undefined
   gameDeckLoading: boolean
   ready: ReadyProps
-  fullUnit: DeckUnit | undefined
-  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  fullUnit: UnitForPlayer | undefined
+  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   gameRefetch: (
     variables?:
       | Partial<
@@ -482,20 +488,21 @@ function renderExistingGame({
     self = game.players.find((player) => player.user.name === user.name)
   }
 
-  let nextUnit: DeckUnit | undefined
-  let previousUnit: DeckUnit | undefined
-  if (fullUnit && gameDeck?.hand) {
-    const sortedHand = sortObjectArray({
-      sortProperties: ['unit.strength', 'unit.id'],
-      array: gameDeck.hand,
-    })
-    const handIds = sortedHand.map((deckUnit) => deckUnit.unit.id)
-    if (handIds?.includes(fullUnit.unit.id)) {
-      const fullUnitPosition = sortedHand.findIndex((deckUnit) => deckUnit.unit.id === fullUnit.unit.id)
-      nextUnit = sortedHand[fullUnitPosition + 1]
-      previousUnit = sortedHand[fullUnitPosition - 1]
+  const potentialUnitArrays: (DeckUnit[] | GameUnit[] | undefined)[] = [gameDeck?.hand]
+  if (game?.players) {
+    for (const gamePlayer of game.players) {
+      if (!fullUnit?.playerId || fullUnit.playerId === gamePlayer.user.id) {
+        const playerRound = gamePlayer.rounds[game.round]
+        potentialUnitArrays.push(playerRound.close.units)
+        potentialUnitArrays.push(playerRound.ranged.units)
+        potentialUnitArrays.push(playerRound.siege.units)
+      }
     }
   }
+  const { next: nextUnit, previous: previousUnit } = getNeighboringUnits({
+    deckUnit: fullUnit?.unit,
+    arrays: potentialUnitArrays,
+  })
 
   return gameLoading || gameDeckLoading ? (
     <Centered>
@@ -530,19 +537,25 @@ function renderExistingGame({
   ) : (
     <div id={HTML_IDS.GameContainer}>
       <UnitFullCard
-        fullUnit={fullUnit}
+        fullUnit={fullUnit?.unit as DeckUnit}
         hasNext={nextUnit !== undefined}
         hasPrevious={previousUnit !== undefined}
         onSelect={() => {}}
         onPrevious={() => {
           if (previousUnit) {
-            setFullUnit(previousUnit)
+            setFullUnit({
+              unit: previousUnit,
+              playerId: fullUnit?.playerId,
+            })
             setCardSelected(previousUnit)
           }
         }}
         onNext={() => {
           if (nextUnit) {
-            setFullUnit(nextUnit)
+            setFullUnit({
+              unit: nextUnit,
+              playerId: fullUnit?.playerId,
+            })
             setCardSelected(nextUnit)
           }
         }}
@@ -690,6 +703,46 @@ function renderExistingGame({
       )}
     </div>
   )
+}
+
+function getNeighboringUnits({
+  deckUnit,
+  arrays,
+}: {
+  deckUnit: DeckUnit | GameUnit | undefined
+  arrays: (DeckUnit[] | GameUnit[] | undefined)[]
+}): NeighborUnits {
+  let previous: DeckUnit | undefined = undefined
+  let next: DeckUnit | undefined = undefined
+  if (deckUnit !== undefined) {
+    let found = false
+    for (let i = 0; i < arrays.length && !found; i++) {
+      const array = arrays[i]
+      if (array) {
+        const sortedArray = sortObjectArray({
+          sortProperties: ['unit.strength', 'unit.id'],
+          array,
+        })
+        const unitIds = sortedArray.map((arrayDeckUnit) => arrayDeckUnit.unit.id)
+        if (unitIds?.includes(deckUnit.unit.id)) {
+          found = true
+          const deckUnitIndex = sortedArray.findIndex((arrayDeckUnit) => arrayDeckUnit.unit.id === deckUnit.unit.id)
+          next = sortedArray[deckUnitIndex + 1] as DeckUnit
+          previous = sortedArray[deckUnitIndex - 1] as DeckUnit
+        }
+      }
+    }
+  }
+
+  return {
+    previous,
+    next,
+  }
+}
+
+interface NeighborUnits {
+  previous: DeckUnit | undefined
+  next: DeckUnit | undefined
 }
 
 function renderGameInfo({
@@ -1169,7 +1222,7 @@ function renderCenter({
   ready: ReadyProps
   setDeckListOpen: Dispatch<SetStateAction<boolean>>
   setDeck: SetDeckProps
-  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setOrder: SetOrderProps
   playerOrder: GamePlayer[]
@@ -1247,7 +1300,7 @@ function renderBattlefield({
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
   self: GamePlayer
   opponent: GamePlayer
-  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
 }) {
   const rowsToHighlight = (cardSelected && cardSelected.unit.combats) || []
@@ -1337,7 +1390,7 @@ function renderCombatRow({
   player: GamePlayer
   isTurn?: boolean
   isSelf?: boolean
-  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
 }) {
   const titledCombat = toTitleCase(combat)
@@ -1362,6 +1415,10 @@ function renderCombatRow({
   const playerRound = player.rounds[game.round - 1]
   const playerRow =
     combat === Combat.Close ? playerRound.close : combat === Combat.Ranged ? playerRound.ranged : playerRound.siege
+  const sortedUnits = sortObjectArray({
+    array: playerRow.units,
+    sortProperties: ['unit.strength', 'unit.id'],
+  })
 
   return (
     <div className="game-unit-board-combat-row">
@@ -1400,7 +1457,7 @@ function renderCombatRow({
           }
         }}
       >
-        {playerRow.units.map((gameUnit) => {
+        {sortedUnits.map((gameUnit) => {
           return (
             <UnitGameCard
               key={gameUnit.unit.id}
@@ -1410,7 +1467,12 @@ function renderCombatRow({
               }}
               selected={gameUnit.unit.id === cardSelected?.unit.id}
               dotted={!isTurn}
-              setFullUnit={setFullUnit}
+              onFullscreen={() =>
+                setFullUnit({
+                  unit: gameUnit,
+                  playerId: player.user.id,
+                })
+              }
               cursor="default"
             />
           )
@@ -1624,7 +1686,7 @@ function renderRedraw({
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
   redraw: RedrawProps
   ready: ReadyProps
-  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   self: GamePlayer
   coinTossVisible: boolean
@@ -1669,8 +1731,11 @@ function renderRedraw({
                       <UnitGameCard
                         deckUnit={fromCard}
                         cursor={'unset'}
-                        setFullUnit={() => {
-                          setFullUnit(fromCard)
+                        onFullscreen={() => {
+                          setFullUnit({
+                            unit: fromCard,
+                            playerId: self.user.id,
+                          })
                           if (handIds.includes(fromCard.unit.id)) {
                             setCardSelected(fromCard)
                           }
@@ -1681,8 +1746,11 @@ function renderRedraw({
                         <UnitGameCard
                           deckUnit={toCard}
                           cursor={'unset'}
-                          setFullUnit={() => {
-                            setFullUnit(toCard)
+                          onFullscreen={() => {
+                            setFullUnit({
+                              unit: toCard,
+                              playerId: self.user.id,
+                            })
                             if (handIds.includes(toCard.unit.id)) {
                               setCardSelected(toCard)
                             }
@@ -1792,7 +1860,7 @@ function renderHand({
   hand: DeckUnit[] | undefined
   cardSelected: DeckUnit | undefined
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
-  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   isTurn: boolean
   gameStatus: GameStatus
 }) {
@@ -1830,7 +1898,12 @@ function renderHand({
                   deckUnit={deckUnit}
                   selected={deckUnit.unit.id === cardSelected?.unit.id}
                   dotted={gameStatus === GameStatus.Playing && !isTurn}
-                  setFullUnit={setFullUnit}
+                  onFullscreen={() =>
+                    setFullUnit({
+                      unit: deckUnit,
+                      playerId: undefined,
+                    })
+                  }
                 />
                 {notSelected && <div title={deckUnit.unit.name} className="game-card-wrapper-not-selected"></div>}
               </div>

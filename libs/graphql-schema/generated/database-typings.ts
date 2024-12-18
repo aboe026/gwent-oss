@@ -473,6 +473,8 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
+  /** A user has passed the rest of the round for a game. */
+  passPlayed: Game;
   /** The unit card played from a deck and the updated GameDeck. */
   unitPlayedFromDeck: UnitPlayedFromDeck;
   /** The unit card played on a game and the updated Game. */

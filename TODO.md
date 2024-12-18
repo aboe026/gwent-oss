@@ -10,6 +10,7 @@ A list of things to be done in the future.
   - STARTING_HAND_SIZE
   - MAX_SPECIALS
   - min units?
+- split subscriptions into separate files (similar to resolvers)
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - implement history?
 - enter key does not create game in UI?
@@ -58,11 +59,8 @@ A list of things to be done in the future.
 
 - playUnit loading icon
 - playUnit error
-- full screen card cycle left/right through other cards in row?
-- unitPlayed subscription
 - history (merged GamePlayers moves?)
 - loading icon when opponents turn?
-- auto-pass if out of cards
 - if effective strength greater than normal strength, green. If less, red.
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability

@@ -2,13 +2,14 @@ import { ObjectId } from 'mongodb'
 
 import { Game, MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
+import EventManager from '../../event-manager'
 import { GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
 import MutationUtil from './mutation-util'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
@@ -207,8 +208,14 @@ export default class PlayPassMutation {
       userId,
     })
 
-    return GameResolver.fromObject({
+    const resolvedGame = await GameResolver.fromObject({
       game: updatedGame,
     })
+
+    EventManager.pubsub.publish(PubSubEvents.PassPlayed, {
+      passPlayed: resolvedGame,
+    })
+
+    return resolvedGame
   }
 }

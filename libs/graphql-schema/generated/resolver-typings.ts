@@ -477,6 +477,8 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
+  /** A user has passed the rest of the round for a game. */
+  passPlayed: Game;
   /** The unit card played from a deck and the updated GameDeck. */
   unitPlayedFromDeck: UnitPlayedFromDeck;
   /** The unit card played on a game and the updated Game. */
@@ -948,6 +950,7 @@ export type SubscriptionResolvers<ContextType = Context, ParentType extends Reso
   gameReady?: SubscriptionResolver<ResolversTypes['Game'], "gameReady", ParentType, ContextType>;
   gameSet?: SubscriptionResolver<ResolversTypes['Game'], "gameSet", ParentType, ContextType>;
   orderSet?: SubscriptionResolver<ResolversTypes['Game'], "orderSet", ParentType, ContextType>;
+  passPlayed?: SubscriptionResolver<ResolversTypes['Game'], "passPlayed", ParentType, ContextType>;
   unitPlayedFromDeck?: SubscriptionResolver<ResolversTypes['UnitPlayedFromDeck'], "unitPlayedFromDeck", ParentType, ContextType>;
   unitPlayedOnGame?: SubscriptionResolver<ResolversTypes['UnitPlayedOnGame'], "unitPlayedOnGame", ParentType, ContextType>;
   unitRedrawn?: SubscriptionResolver<ResolversTypes['GameUnitRedrawn'], "unitRedrawn", ParentType, ContextType>;
