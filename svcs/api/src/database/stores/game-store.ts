@@ -5,11 +5,10 @@ import {
   DeckDbObject,
   DeckUnitDbObject,
   GameDbObject,
-  PlayerCombatRow,
-  PlayerRound,
+  GamePlayerDbObject,
   RedrawDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import { MAX_ROUNDS } from '@gwent/constants'
+import { STARTING_LIVES } from '@gwent/constants'
 import Store from './store'
 
 /**
@@ -31,23 +30,10 @@ export default class GameStore extends Store {
     GameStore.logger.debug(`Adding game by creator "${creatorId}"`)
     const created = new Date()
     const playerIds = [creatorId, ...opponentIds]
-    const rounds: PlayerRound[] = []
-    const row: PlayerCombatRow = {
-      score: 0,
-      units: [],
-    }
-    for (let i = 0; i < MAX_ROUNDS; i++) {
-      rounds.push({
-        moves: [],
-        score: 0,
-        close: row,
-        ranged: row,
-        siege: row,
-        won: false,
-        passed: false,
-      })
-    }
     const game: Document = {
+      config: {
+        lives: STARTING_LIVES,
+      },
       created,
       creator: new ObjectId(creatorId),
       players: playerIds.map((playerId) => {
@@ -60,14 +46,11 @@ export default class GameStore extends Store {
             undrawn: [],
           },
           ready: false,
-          rounds,
+          rounds: [],
           user: new ObjectId(playerId),
         }
       }),
-      round: {
-        current: 0,
-        maximum: MAX_ROUNDS,
-      },
+      round: 0,
       updated: created,
       weather: [],
       victors: [],
@@ -307,20 +290,26 @@ export default class GameStore extends Store {
   static async setReady({
     gameId,
     userId,
+    previousUpdate,
+    players,
+    currentRound,
   }: {
     gameId: ObjectId | string
     userId: ObjectId | string
+    previousUpdate: Date
+    players: GamePlayerDbObject[]
+    currentRound: number
   }): Promise<GameDbObject | undefined> {
     GameStore.logger.debug(`Marking game "${gameId}" ready for user "${userId}"`)
     const filter: Filter<Document> = {
       _id: new ObjectId(gameId),
-      'players.user': new ObjectId(userId),
-      'players.ready': false,
+      updated: previousUpdate,
     }
     const update: UpdateFilter<Document> = {
       $set: {
         updated: new Date(),
-        'players.$.ready': true,
+        players,
+        round: currentRound,
       },
     }
     if (GameStore.logger.isTraceEnabled()) {

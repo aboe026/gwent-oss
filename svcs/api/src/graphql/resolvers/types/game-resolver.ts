@@ -55,6 +55,7 @@ export default class GameResolver {
     })
 
     return {
+      config: game.config,
       created: game.created,
       creator: creator || (resolvedUsers?.find((user) => user.id === game.creator.toString()) as User),
       id: game._id.toString(),

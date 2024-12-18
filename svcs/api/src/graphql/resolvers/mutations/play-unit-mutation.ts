@@ -48,7 +48,6 @@ export default class PlayUnitMutation {
     }
     const response = await MutationUtil.getGamePlayer({
       gameId,
-      logger: PlayUnitMutation.logger,
       logPrefix,
       userId,
     })
@@ -82,52 +81,54 @@ export default class PlayUnitMutation {
     // TODO: throw error if unit cannot be used in row of args.combat
 
     // play unit
-    const currentRound = player.rounds[game.round.current]
-    const { close, ranged, siege } = currentRound
-    const combatRow = args.combat === Combat.Close ? close : args.combat === Combat.Ranged ? ranged : siege
-    combatRow.score = combatRow.score + (unit.strength || 0)
-    combatRow.units.push(deckUnit)
-    player.rounds[game.round.current] = {
-      ...currentRound,
-      moves: [
-        ...currentRound.moves,
-        {
-          created: new Date(),
-          unit: new ObjectId(unitId),
-          type: 'UNIT',
-        },
-      ],
-      score: currentRound.score + (unit.strength || 0),
-      close,
-      ranged,
-      siege,
-    }
-    player.deck.hand = player.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== unitId)
+    game.players = game.players.map((gamePlayer) => {
+      if (gamePlayer.user.toString() === player.user.toString()) {
+        const playerRound = gamePlayer.rounds[game.round - 1]
+        const { close, ranged, siege } = playerRound
+        const combatRow = args.combat === Combat.Close ? close : args.combat === Combat.Ranged ? ranged : siege
+        combatRow.score = combatRow.score + (unit.strength || 0)
+        combatRow.units.push(deckUnit)
+        return {
+          ...gamePlayer,
+          rounds: gamePlayer.rounds.map((round, index) => {
+            if (index === game.round - 1) {
+              return {
+                ...round,
+                close,
+                moves: [
+                  ...round.moves,
+                  {
+                    created: new Date(),
+                    unit: new ObjectId(unitId),
+                    type: 'UNIT',
+                  },
+                ],
+                ranged,
+                score: playerRound.score + (unit.strength || 0),
+                siege,
+              }
+            }
+            return round
+          }),
+          deck: {
+            ...gamePlayer.deck,
+            hand: gamePlayer.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== unitId),
+          },
+        }
+      }
+      return gamePlayer
+    })
 
     // set next player
-    const nextPlayerId = MutationUtil.getNextPlayerId({
+    const nextPlayerId = MutationUtil.getNextPlayerIdForCurrentRound({
       currentPlayer: player,
       game,
-      logger: PlayUnitMutation.logger,
       logPrefix,
     })
 
-    if (!nextPlayerId) {
-      // all players have passed, end round
-      console.log('TEST no next player id')
-    }
-
     const updatedGame = await GameStore.makeMove({
       nextTurn: nextPlayerId,
-      updatedGame: {
-        ...game,
-        players: game.players.map((gamePlayer) => {
-          if (gamePlayer.user.toString() === player.user.toString()) {
-            return player
-          }
-          return gamePlayer
-        }),
-      },
+      updatedGame: game,
       userId,
     })
 

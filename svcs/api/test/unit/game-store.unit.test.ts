@@ -2,7 +2,6 @@ import { Document, Filter, FindOptions, ObjectId, UpdateFilter } from 'mongodb'
 
 import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
-import { MAX_ROUNDS } from '@gwent/constants'
 import TestUtil from '../test-util'
 
 describe('game-store', () => {
@@ -203,10 +202,9 @@ async function testAddGame({
   traceEnabled?: boolean
 }) {
   const created = new Date()
-  const expected: GameDbObject = {
-    _id: new ObjectId(),
+  const expected = TestUtil.getDbGame({
     created,
-    creator: new ObjectId(creatorId),
+    creator: creatorId,
     players: [creatorId, ...opponentIds].map((playerId) =>
       TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
@@ -215,13 +213,8 @@ async function testAddGame({
         user: playerId,
       })
     ),
-    round: {
-      current: 0,
-      maximum: MAX_ROUNDS,
-    },
     updated: created,
-    victors: [],
-  }
+  })
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   GameStore['logger'] = {

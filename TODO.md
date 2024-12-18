@@ -4,6 +4,12 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- move all hard-coded config to GameConfig
+  - PLAYER_COUNTS (or can this just be inferred from game.players size?)
+  - MAX_REDRAWS
+  - STARTING_HAND_SIZE
+  - MAX_SPECIALS
+  - min units?
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - implement history?
 - enter key does not create game in UI?
@@ -57,8 +63,9 @@ A list of things to be done in the future.
 - history (merged GamePlayers moves?)
 - loading icon when opponents turn?
 - auto-pass if out of cards
-- determine win conditions
 - if effective strength greater than normal strength, green. If less, red.
+- Units can be discarded instead of played (discardUnit mutation?)
+- some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 
 - games list improvements
   - progress bar for game status
@@ -69,6 +76,7 @@ A list of things to be done in the future.
 - implement user registration
   - register with email
   - need to verify in email to get account created
+- auto-pass after certain amount of time
 - email notifications?
 - edit deck
 - delete deck

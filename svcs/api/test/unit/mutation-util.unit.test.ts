@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import { FactionDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { FactionDbObject, GameDbObject, PlayerCombatRowDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
@@ -12,6 +12,416 @@ import EventManager from '../../src/graphql/event-manager'
 import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 
 describe('mutation-util', () => {
+  describe('isGameOver', () => {
+    describe('best of 1', () => {
+      const maxRounds = 1
+      it('returns false if no rounds have been played', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(0), getGamePlayerWithWins(0)],
+              currentRound: 0,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns true if 1 player has 1 win after 1 round', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(0)],
+              currentRound: 1,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns true if 2 players have 1 win after 1 round', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
+              currentRound: 1,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+    })
+    describe('best of 2', () => {
+      const maxRounds = 2
+      it('returns false if no rounds have been played', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(0), getGamePlayerWithWins(0)],
+              currentRound: 0,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 1 player has 1 win after 1 round', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(0)],
+              currentRound: 1,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 2 players have 1 win after 1 round', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
+              currentRound: 1,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns true if 1 player has 2 wins after 2 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(0)],
+              currentRound: 2,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns true if 2 players have 1 win after 2 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
+              currentRound: 2,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+    })
+    describe('best of 3', () => {
+      const maxRounds = 3
+      it('returns false if no rounds have been played', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(0), getGamePlayerWithWins(0)],
+              currentRound: 0,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 1 player has 1 win after 1 round', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(0)],
+              currentRound: 1,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 2 players have 1 win after 1 round', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
+              currentRound: 1,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns true if 1 player has 2 wins after 2 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(0)],
+              currentRound: 2,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns false if 2 players have 1 win after 2 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
+              currentRound: 2,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 2 players have 2 wins after 2 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
+              currentRound: 2,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns true if 1 player has 3 wins after 3 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(0)],
+              currentRound: 3,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns true if 1 player has 2 wins and the other has 1 win after 3 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(1)],
+              currentRound: 3,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns true if 2 players have 2 wins after 3 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(2)],
+              currentRound: 3,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns true if 2 players have 3 wins after 3 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(3)],
+              currentRound: 3,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+    })
+    describe('best of 5', () => {
+      const maxRounds = 5
+      it('returns false if no rounds have been played', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(0), getGamePlayerWithWins(0)],
+              currentRound: 0,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 1 player has 1 win after 1 round', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(0)],
+              currentRound: 1,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 2 players have 1 win after 1 round', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
+              currentRound: 1,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 1 player has 2 wins after 2 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(0)],
+              currentRound: 2,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 2 players have 1 win after 2 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
+              currentRound: 2,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 2 players have 2 wins after 2 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
+              currentRound: 2,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns true if 1 player has 3 wins after 3 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(0)],
+              currentRound: 3,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns false if 1 player has 2 wins and the other has 1 win after 3 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(1)],
+              currentRound: 3,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 2 players have 2 wins after 3 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(2)],
+              currentRound: 3,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 2 players have 3 wins after 3 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(3)],
+              currentRound: 3,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns true if 1 player has 4 wins after 4 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(4), getGamePlayerWithWins(0)],
+              currentRound: 4,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns false if 2 players have 2 wins after 4 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(2)],
+              currentRound: 4,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 1 player has 4 wins and the other has 3 wins after 4 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(4), getGamePlayerWithWins(3)],
+              currentRound: 4,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns false if 2 players have 4 wins after 4 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(4), getGamePlayerWithWins(4)],
+              currentRound: 4,
+            }),
+            maxRounds,
+          })
+        ).toEqual(false)
+      })
+      it('returns true if 2 players have 5 wins after 5 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(5), getGamePlayerWithWins(5)],
+              currentRound: 5,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns true if 1 player has 5 wins after 5 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(5), getGamePlayerWithWins(0)],
+              currentRound: 5,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns true if 1 player has 3 wins and the other has 2 after 5 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(2)],
+              currentRound: 5,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+      it('returns true if 1 player has 4 wins and the other has 1 after 5 rounds', () => {
+        expect(
+          MutationUtil.isGameOver({
+            game: TestUtil.getDbGame({
+              players: [getGamePlayerWithWins(4), getGamePlayerWithWins(1)],
+              currentRound: 5,
+            }),
+            maxRounds,
+          })
+        ).toEqual(true)
+      })
+    })
+  })
   describe('setGameTurnOrder', () => {
     const gameId = new ObjectId().toString()
     const userId = new ObjectId().toString()
@@ -513,6 +923,26 @@ describe('mutation-util', () => {
     })
   })
 })
+
+function getGamePlayerWithWins(wins: number) {
+  const gamePlayer = TestUtil.getDbGamePlayer({})
+  const combatRow: PlayerCombatRowDbObject = {
+    score: 0,
+    units: [],
+  }
+  for (let i = 0; i < wins; i++) {
+    gamePlayer.rounds[i] = {
+      close: combatRow,
+      moves: [],
+      passed: false,
+      ranged: combatRow,
+      score: 0,
+      siege: combatRow,
+      won: true,
+    }
+  }
+  return gamePlayer
+}
 
 async function testSetGameTurnOrder({
   userId,

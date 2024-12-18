@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import {
+  Combat,
   Deck,
   DeckUnit,
   Dlc,
@@ -13,7 +14,6 @@ import {
   GamePlayer,
   GameStatus,
   Leader,
-  PlayerRound,
   Redraw,
   Unit,
   UnitStats,
@@ -30,11 +30,12 @@ import {
   GameDeckDbObject,
   GamePlayerDbObject,
   LeaderDbObject,
+  PlayerRoundDbObject,
   RedrawDbObject,
   UnitDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import { MAX_ROUNDS, STARTING_HAND_SIZE } from '@gwent/constants'
+import { STARTING_HAND_SIZE } from '@gwent/constants'
 
 export default class TestUtil {
   static getDbUnit({
@@ -415,6 +416,8 @@ export default class TestUtil {
     players,
     turn,
     victors = [],
+    updated = new Date(),
+    currentRound = 0,
   }: {
     id?: ObjectId | string
     created?: Date
@@ -422,6 +425,8 @@ export default class TestUtil {
     players?: GamePlayerDbObject[]
     turn?: ObjectId | string
     victors?: (ObjectId | string)[]
+    updated?: Date
+    currentRound?: number
   }): GameDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
@@ -452,12 +457,13 @@ export default class TestUtil {
         },
       ],
       round: {
-        current: 0,
-        maximum: MAX_ROUNDS,
+        current: currentRound,
+        maximum: 2,
       },
       turn: turn ? new ObjectId(turn) : undefined,
-      updated: new Date(),
+      updated,
       victors: victors.map((victor) => new ObjectId(victor)),
+      weather: [],
     }
   }
 
@@ -471,13 +477,18 @@ export default class TestUtil {
         }),
       id: game._id.toString(),
       players: game.players.map((player) => {
-        return {
+        return TestUtil.getGamePlayer({
+          faction: TestUtil.getFaction({
+            id: player.deck.from?.faction,
+          }),
+          leader: TestUtil.getLeader({
+            id: player.deck.from?.leader,
+          }),
           ready: player.ready,
-          rounds: player.rounds,
           user: TestUtil.getUser({
             id: player.user,
           }),
-        }
+        })
       }),
       round: game.round,
       status: GameStatus.Decking,
@@ -487,6 +498,7 @@ export default class TestUtil {
           id: victorId,
         })
       ),
+      weather: game.weather.map((weather) => weather as Combat),
     }
   }
 
@@ -504,11 +516,12 @@ export default class TestUtil {
       ],
       round: {
         current: 0,
-        maximum: MAX_ROUNDS,
+        maximum: 2,
       },
       status: GameStatus.Decking,
       updated: new Date(),
       victors: [],
+      weather: [],
     }
   }
 
@@ -565,7 +578,7 @@ export default class TestUtil {
   }: {
     deck?: GameDeckDbObject
     ready?: boolean
-    rounds?: PlayerRound[]
+    rounds?: PlayerRoundDbObject[]
     order?: number
     user?: ObjectId | string
   }): GamePlayerDbObject {

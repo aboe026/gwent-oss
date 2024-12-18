@@ -143,17 +143,25 @@ export enum FactionKey {
 
 export type Game = {
   __typename?: 'Game';
+  config: GameConfig;
   created: Scalars['DateTime']['output'];
   creator: User;
   id: Scalars['ID']['output'];
   players: Array<GamePlayer>;
-  round: GameRound;
+  /** The current round the game is in. 1-based indexing. A value of zero indicates the game has not yet started. */
+  round: Scalars['Int']['output'];
   status: GameStatus;
   /** Whose turn it currently is to make a move. */
   turn?: Maybe<GamePlayer>;
   updated: Scalars['DateTime']['output'];
   victors: Array<User>;
   weather: Array<Combat>;
+};
+
+export type GameConfig = {
+  __typename?: 'GameConfig';
+  /** The number of lives each player starts with at the beginning of the game. */
+  lives: Scalars['Int']['output'];
 };
 
 export type GameDeck = {
@@ -208,14 +216,6 @@ export type GamePlayerUnitCounts = {
   undrawn: Scalars['Int']['output'];
 };
 
-export type GameRound = {
-  __typename?: 'GameRound';
-  /** The current round the game is in. Zero based indexing. */
-  current: Scalars['Int']['output'];
-  /** The maximum number of rounds the game can have. If no user has won a majority of games after that many rounds, the game ends in a tie between the users who have won the most rounds. */
-  maximum: Scalars['Int']['output'];
-};
-
 export enum GameStatus {
   /** Players are choosing their decks to use for the game. */
   Decking = 'DECKING',
@@ -238,6 +238,7 @@ export type GameUnit = {
 
 export type GameUnitRedrawn = {
   __typename?: 'GameUnitRedrawn';
+  deck: GameDeck;
   from: DeckUnit;
   game: Game;
   to: DeckUnit;
@@ -372,9 +373,9 @@ export type PlayerRound = {
   moves: Array<Move>;
   passed: Scalars['Boolean']['output'];
   ranged: PlayerCombatRow;
+  result?: Maybe<RoundResult>;
   score: Scalars['Int']['output'];
   siege: PlayerCombatRow;
-  won: Scalars['Boolean']['output'];
 };
 
 export type Query = {
@@ -432,6 +433,15 @@ export type Redraw = {
   from: DeckUnit;
   to: DeckUnit;
 };
+
+export enum RoundResult {
+  /** Tied for the win with another player in the round. */
+  Drew = 'DREW',
+  /** Beaten by another player in the round. */
+  Lost = 'LOST',
+  /** Beat all other players in the round. */
+  Won = 'WON'
+}
 
 export type Setting = {
   __typename?: 'Setting';
@@ -588,11 +598,12 @@ export type FactionDbObject = {
 };
 
 export type GameDbObject = {
+  config: GameConfig,
   created: any,
   creator: ObjectId,
   _id: ObjectId,
   players: Array<GamePlayerDbObject>,
-  round: GameRound,
+  round: number,
   turn?: ObjectId,
   updated: any,
   victors: Array<ObjectId>,
@@ -660,9 +671,9 @@ export type PlayerRoundDbObject = {
   moves: Array<MoveDbObject>,
   passed: boolean,
   ranged: PlayerCombatRowDbObject,
+  result?: Maybe<string>,
   score: number,
   siege: PlayerCombatRowDbObject,
-  won: boolean,
 };
 
 export type RedrawDbObject = {

@@ -10,7 +10,7 @@ export const PLAYER_COUNTS = {
 }
 export const MAX_REDRAWS = 2
 export const STARTING_HAND_SIZE = 10
-export const MAX_ROUNDS = 3
+export const STARTING_LIVES = 2
 export const MAX_SPECIALS = 10
 
 export const NOT_AUTHENTICATED_MESSAGE = 'Not Authenticated. Login or provide credentials.'
