@@ -53,11 +53,8 @@ A list of things to be done in the future.
 
 - playUnit loading icon
 - playUnit error
-- full screen card cycle left/right through other cards in row?
-- unitPlayed subscription
 - history (merged GamePlayers moves?)
 - loading icon when opponents turn?
-- auto-pass if out of cards
 - determine win conditions
 - if effective strength greater than normal strength, green. If less, red.
 

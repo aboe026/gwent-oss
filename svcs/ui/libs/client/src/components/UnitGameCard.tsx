@@ -1,6 +1,5 @@
 import { CgMaximizeAlt } from 'react-icons/cg'
 import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
-import { Dispatch, SetStateAction } from 'react'
 import { getCombatImage, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES } from '@gwent/constants'
 import StrengthCircle from './StrengthCircle'
@@ -16,7 +15,7 @@ export default function UnitGameCard({
   iconSize = '34px',
   selected,
   cursor = 'pointer',
-  setFullUnit,
+  onFullscreen,
   dotted,
 }: UnitGameCardProps) {
   const combatSymbol = getCombatImage(deckUnit)
@@ -40,7 +39,7 @@ export default function UnitGameCard({
       <div
         className={`${HTML_CLASSES.UnitGameCardFullScreen} icon-container pointable`}
         title="Fullscreen"
-        onClick={() => setFullUnit(deckUnit)}
+        onClick={() => onFullscreen(deckUnit)}
       >
         <CgMaximizeAlt className="unit-game-card-fullscreen-icon" />
       </div>
@@ -76,5 +75,5 @@ interface UnitGameCardProps {
   selected?: boolean
   dotted?: boolean
   cursor?: string
-  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  onFullscreen: (deckUnit: DeckUnit) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
