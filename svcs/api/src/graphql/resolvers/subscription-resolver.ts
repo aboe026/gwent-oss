@@ -94,6 +94,17 @@ export default class SubscriptionResolver {
             })
         ),
       },
+      passPlayed: {
+        subscribe: withFilter(
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.PassPlayed]),
+          async (payload, args, ctx) =>
+            SubscriptionResolver.filterPlayerOnGame({
+              ctx,
+              payload,
+              subscriptionName: 'passPlayed',
+            })
+        ),
+      },
       unitPlayedFromDeck: {
         subscribe: withFilter(
           () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.UnitPlayedFromDeck]),
@@ -247,6 +258,10 @@ export interface GameSetPayload {
 
 export interface OrderSetPayload {
   orderSet: Game
+}
+
+export interface PassPlayedPayload {
+  passPlayed: Game
 }
 
 export interface UnitPlayedFromDeckPayload {

@@ -4,6 +4,7 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- split subscriptions into separate files (similar to resolvers)
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - implement history?
 - enter key does not create game in UI?

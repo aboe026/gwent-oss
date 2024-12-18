@@ -17,6 +17,7 @@ import {
   useGameReadySubscription,
   useGameSetSubscription,
   useOrderSetSubscription,
+  usePassPlayedSubscription,
   useUnitPlayedFromDeckSubscription,
   useUnitPlayedOnGameSubscription,
   useUnitRedrawnSubscription,
@@ -163,6 +164,29 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game: updatedGame,
+              }
+            }
+          }
+        )
+      }
+    },
+  })
+  usePassPlayedSubscription({
+    skip: !user,
+    onData: ({ data, client }) => {
+      const game = data.data?.passPlayed
+      if (game) {
+        client.cache.updateQuery<GameQuery>(
+          {
+            query: GameDocument,
+            variables: {
+              id: game.id,
+            },
+          },
+          (previous) => {
+            if (previous?.game) {
+              return {
+                game,
               }
             }
           }
