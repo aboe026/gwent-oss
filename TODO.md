@@ -4,6 +4,9 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- combine repeated props into single object (like renderCombatRow in renderBattlefield)
+- collapse UI method props when they are long (like PlayUnitProps)
+- alphabetize UI props/method inputs
 - split subscriptions into separate files (similar to resolvers)
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
 - implement history?
@@ -51,13 +54,23 @@ A list of things to be done in the future.
 
 ## Features
 
-- playUnit loading icon
 - playUnit error
 - history (merged GamePlayers moves?)
 - loading icon when opponents turn?
 - determine win conditions
-- if effective strength greater than normal strength, green. If less, red.
+- transition battlefield cards to "lost" after round over
+- animations/text of what opponent did?
+- how to make pass more obvious?
 
+  - white flag icon?
+  - white border on battlefield?
+
+- fix layout on small width screen
+
+  - player score
+  - have combat rows overlap each other like hand
+
+- if effective strength greater than normal strength, green. If less, red.
 - games list improvements
   - progress bar for game status
   - highlight games waiting on you?

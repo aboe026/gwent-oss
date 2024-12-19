@@ -2,6 +2,7 @@ import { ApolloError } from '@apollo/client'
 
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'
+import LoadingBar from './LoadingBar'
 import './Confirm.css'
 
 /**
@@ -41,6 +42,7 @@ export default function Confirm({
         <span className="confirm-message">{message}</span>
         {resolvedError && <span className={HTML_CLASSES.ErrorText}>{resolvedError}</span>}
         <div className="actions">
+          {loading && <LoadingBar height="25px" />}
           <button className="secondary" type="button" disabled={loading} autoFocus onClick={() => onClose(false)}>
             {cancelLabel}
           </button>
