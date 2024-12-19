@@ -89,6 +89,15 @@ export default gql`
     SET
   }
 
+  enum RoundResult {
+    "Beat all other players in the round."
+    WON
+    "Beaten by another player in the round."
+    LOST
+    "Tied for the win with another player in the round."
+    DREW
+  }
+
   enum SettingKey {
     SESSION_TIMEOUT_SECONDS
   }
@@ -149,17 +158,24 @@ export default gql`
   }
 
   type Game @entity {
+    config: GameConfig! @column
     created: DateTime! @column
     creator: User! @column(overrideType: "ObjectId")
     id: ID! @id @map(path: "_id")
     players: [GamePlayer!]! @column(overrideType: "Array<GamePlayerDbObject>")
-    round: GameRound! @column
+    "The current round the game is in. 1-based indexing. A value of zero indicates the game has not yet started."
+    round: Int! @column
     status: GameStatus!
     "Whose turn it currently is to make a move."
     turn: GamePlayer @column(overrideType: "ObjectId")
     updated: DateTime! @column
     victors: [User!]! @column(overrideType: "Array<ObjectId>")
     weather: [Combat!]! @column
+  }
+
+  type GameConfig {
+    "The number of lives each player starts with at the beginning of the game."
+    lives: Int! @column
   }
 
   type GameDeck @entity {
@@ -188,13 +204,6 @@ export default gql`
     ready: Boolean! @column
     rounds: [PlayerRound!]! @column(overrideType: "Array<PlayerRoundDbObject>")
     user: User! @column(overrideType: "ObjectId")
-  }
-
-  type GameRound {
-    "The current round the game is in. Zero based indexing."
-    current: Int! @column
-    "The maximum number of rounds the game can have. If no user has won a majority of games after that many rounds, the game ends in a tie between the users who have won the most rounds."
-    maximum: Int! @column
   }
 
   type GamePlayerUnitCounts {
@@ -238,12 +247,12 @@ export default gql`
 
   type PlayerRound @entity {
     close: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
-    ranged: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
-    siege: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
     moves: [Move!]! @column(overrideType: "Array<MoveDbObject>")
-    score: Int! @column
-    won: Boolean! @column
     passed: Boolean! @column
+    ranged: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
+    result: RoundResult @column
+    score: Int! @column
+    siege: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
   }
 
   type PlayerCombatRow @entity {

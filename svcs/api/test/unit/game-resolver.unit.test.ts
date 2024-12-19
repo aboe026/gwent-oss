@@ -5,7 +5,6 @@ import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import { MAX_ROUNDS } from '@gwent/constants'
 import TestUtil from '../test-util'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 import Verifier from '../../src/util/verifier'
@@ -25,19 +24,12 @@ describe('game-resolver', () => {
         }),
       ]
       await testResolveFromObject({
-        game: {
-          _id: gameId,
-          created: new Date(),
-          creator: new ObjectId(user.id),
+        game: TestUtil.getDbGame({
+          id: gameId,
+          creator: user.id,
           players,
-
-          round: {
-            current: 0,
-            maximum: MAX_ROUNDS,
-          },
-          updated: new Date(),
-          victors: [new ObjectId(victor.id)],
-        },
+          victors: [victor.id],
+        }),
         resolvedUsers: [user, victor],
         resolvedVictors: [victor],
         resolvedGamePlayers: [
@@ -70,19 +62,13 @@ describe('game-resolver', () => {
         }),
       ]
       await testResolveFromObject({
-        game: {
-          _id: gameId,
-          created: new Date(),
-          creator: new ObjectId(user.id),
+        game: TestUtil.getDbGame({
+          id: gameId,
+          creator: user.id,
           players,
-          round: {
-            current: 0,
-            maximum: MAX_ROUNDS,
-          },
-          updated: new Date(),
-          turn: new ObjectId(user.id),
-          victors: [new ObjectId(victor.id)],
-        },
+          turn: user.id,
+          victors: [victor.id],
+        }),
         creator: user,
         users: [victor],
         resolvedGamePlayers: [
@@ -107,43 +93,22 @@ describe('game-resolver', () => {
       const gameId = new ObjectId()
       const creator = TestUtil.getUser({})
       const player = TestUtil.getUser({})
-      const game: GameDbObject = {
-        _id: gameId,
-        created: new ObjectId(),
-        creator: new ObjectId(creator.id),
+      const game = TestUtil.getDbGame({
+        id: gameId,
+        creator: creator.id,
         players: [
           TestUtil.getDbGamePlayer({
             user: player.id,
           }),
         ],
-        round: {
-          current: 0,
-          maximum: MAX_ROUNDS,
-        },
-        updated: new Date(),
-        victors: [],
-      }
+      })
       await testResolveFromArray({
         games: [game],
         resolvedUsers: [creator, player],
         resolvedGames: [
-          {
-            created: game.created,
-            creator: creator,
-            id: game._id.toString(),
-            players: [
-              TestUtil.getGamePlayer({
-                user: creator,
-              }),
-              TestUtil.getGamePlayer({
-                user: player,
-              }),
-            ],
-            round: game.round,
-            status: GameStatus.Decking,
-            updated: game.updated,
-            victors: [],
-          },
+          TestUtil.getGameFromDbGame({
+            game,
+          }),
         ],
         userResolverCalls: [[[creator.id, player.id]]],
         gameResolverCalls: [
@@ -168,20 +133,9 @@ describe('game-resolver', () => {
       const game = TestUtil.getDbGame({})
       await testResolveById({
         game,
-        resolvedGame: {
-          created: game.created,
-          creator: {
-            created: new Date(),
-            id: game.creator.toString(),
-            name: 'creator-name',
-          },
-          id: game._id.toString(),
-          players: [],
-          round: game.round,
-          status: GameStatus.Decking,
-          updated: game.updated,
-          victors: [],
-        },
+        resolvedGame: TestUtil.getGameFromDbGame({
+          game,
+        }),
       })
     })
   })

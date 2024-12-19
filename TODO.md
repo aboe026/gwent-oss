@@ -7,9 +7,14 @@ A list of things to be done in the future.
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)
 - collapse UI method props when they are long (like PlayUnitProps)
 - alphabetize UI props/method inputs
+- move all hard-coded config to GameConfig
+  - PLAYER_COUNTS (or can this just be inferred from game.players size?)
+  - MAX_REDRAWS
+  - STARTING_HAND_SIZE
+  - MAX_SPECIALS
+  - min units?
 - split subscriptions into separate files (similar to resolvers)
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
-- implement history?
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
 - do not store yarn binary in source
@@ -57,18 +62,16 @@ A list of things to be done in the future.
 - playUnit error
 - history (merged GamePlayers moves?)
 - loading icon when opponents turn?
-- determine win conditions
 - transition battlefield cards to "lost" after round over
 - animations/text of what opponent did?
 - how to make pass more obvious?
-
   - white flag icon?
   - white border on battlefield?
-
 - fix layout on small width screen
-
   - player score
   - have combat rows overlap each other like hand
+- Units can be discarded instead of played (discardUnit mutation?)
+- some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 
 - if effective strength greater than normal strength, green. If less, red.
 - games list improvements
@@ -80,6 +83,7 @@ A list of things to be done in the future.
 - implement user registration
   - register with email
   - need to verify in email to get account created
+- auto-pass after certain amount of time
 - email notifications?
 - edit deck
 - delete deck

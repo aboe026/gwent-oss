@@ -46,6 +46,8 @@ import {
   PlayUnitMutation,
   usePlayPassMutation,
   PlayPassMutation,
+  RoundResult,
+  PlayerRound,
   GameUnit,
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
@@ -319,6 +321,7 @@ export default function GamePage() {
         },
         setPassConfirmationOpen,
         passConfirmationOpen,
+        navigate,
       })
 }
 
@@ -422,6 +425,7 @@ function renderExistingGame({
   playUnit,
   playPass: { playPass, playPassError, playPassLoading },
   passConfirmationOpen,
+  navigate,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
@@ -470,6 +474,7 @@ function renderExistingGame({
   playUnit: PlayUnitProps
   playPass: PlayPassProps
   passConfirmationOpen: boolean
+  navigate: NavigateFunction
 }) {
   const resolvedGameError = getApolloError(gameError)
   const resolvedGameDeckError = getApolloError(gameDeckError)
@@ -484,10 +489,10 @@ function renderExistingGame({
   }
 
   const potentialUnitArrays: (DeckUnit[] | GameUnit[] | undefined)[] = [gameDeck?.hand]
-  if (game?.players) {
+  if (game?.players && game.round > 0) {
     for (const gamePlayer of game.players) {
       if (!fullUnit?.playerId || fullUnit.playerId === gamePlayer.user.id) {
-        const playerRound = gamePlayer.rounds[game.round.current]
+        const playerRound = gamePlayer.rounds[game.round - 1]
         potentialUnitArrays.push(playerRound.close.units)
         potentialUnitArrays.push(playerRound.ranged.units)
         potentialUnitArrays.push(playerRound.siege.units)
@@ -621,6 +626,7 @@ function renderExistingGame({
           coinTossVisible,
           setCoinTossVisible,
           playUnit,
+          navigate,
         })}
         {renderHistory()}
       </div>
@@ -632,6 +638,7 @@ function renderExistingGame({
           setFullUnit,
           isTurn: game.turn?.user.name === self.user.name,
           playUnitLoading: playUnit.playUnitLoading,
+          gameStatus: game.status,
         })}
       </div>
       {(deckListOpen || deckEditorOpen) && (
@@ -864,7 +871,7 @@ function renderSharedInfo({
         {game.status === GameStatus.Playing && (
           <div>
             <span>Round:</span>
-            <span>{`${game.round.current + 1}/${game.round.maximum}`}</span>
+            <span>{game.round}</span>
           </div>
         )}
         <div
@@ -1020,37 +1027,64 @@ function renderScore({
   playUnitLoading: boolean
   playPassLoading: boolean
 }) {
-  const playerRound = player.rounds[game.round.current]
-  const roundsCanLose = Math.ceil(game.round.maximum / 2)
-  const playerScore = game.players.find((gamePlayer) => gamePlayer.user.name === player.user.name)?.rounds[
-    game.round.current
-  ].score as number
-  const opponentScore = game.players.find((gamePlayer) => gamePlayer.user.name !== player.user.name)?.rounds[
-    game.round.current
-  ].score as number
-  const winning = playerScore > opponentScore
-  let passTitle = 'Select to pass, after which you cannot play any more units the rest of this round'
-  if (playPassLoading) {
-    passTitle = 'Cannot pass while waiting for pass to take effect'
-  } else {
-    if (playUnitLoading) {
-      passTitle = 'Cannot pass while saving unit to the battlefield'
+  let playerRound: PlayerRound | undefined = undefined
+  let winning = false
+  let passTitle = ''
+  if (game.round > 0) {
+    playerRound = player.rounds[game.round - 1]
+    const playerScore = playerRound.score
+    const opponent = game.players.find((gamePlayer) => gamePlayer.user.name !== player.user.name)
+    if (opponent) {
+      const opponentScore = opponent.rounds[game.round - 1].score
+      winning = playerScore > opponentScore
+    }
+    if (playPassLoading) {
+      passTitle = 'Cannot pass while waiting for pass to take effect'
     } else {
-      if (playerRound.passed) {
-        if (isSelf) {
-          passTitle = 'You have already passed the rest of the round'
-        } else {
-          passTitle = 'Your opponent has chosen to pass the rest of the round'
-        }
+      if (playUnitLoading) {
+        passTitle = 'Cannot pass while saving unit to the battlefield'
       } else {
-        if (isSelf) {
-          if (isTurn) {
-            passTitle = 'Select to pass, after which you cannot play any more units the rest of this round'
+        if (playerRound.passed) {
+          if (isSelf) {
+            passTitle = 'You have already passed the rest of the round'
           } else {
-            passTitle = 'Cannot pass while it is not your turn'
+            passTitle = 'Your opponent has chosen to pass the rest of the round'
+          }
+        } else {
+          if (isSelf) {
+            if (isTurn) {
+              passTitle = 'Select to pass, after which you cannot play any more units the rest of this round'
+            } else {
+              passTitle = 'Cannot pass while it is not your turn'
+            }
           }
         }
       }
+    }
+  }
+  const sortedRounds: {
+    round: PlayerRound
+    number: number
+  }[] = []
+  const livesRemaining =
+    game.config.lives -
+    player.rounds.filter((round) => round.result === RoundResult.Lost || round.result === RoundResult.Drew).length
+  for (let i = 0; i < livesRemaining; i++) {
+    sortedRounds.push({
+      number: game.round + i + 1,
+      round: {} as any as PlayerRound, // eslint-disable-line @typescript-eslint/no-explicit-any
+    })
+  }
+  const roundToNumberMap = player.rounds.map((round, index) => {
+    return {
+      round,
+      number: index + 1,
+    }
+  })
+  const roundsPlayed = roundToNumberMap.filter((round) => round.round.result)
+  for (const roundPlayed of roundsPlayed) {
+    if (roundPlayed.round.result !== RoundResult.Won) {
+      sortedRounds.push(roundPlayed)
     }
   }
   const canPass = isTurn && !playPassLoading && !playUnitLoading
@@ -1069,45 +1103,55 @@ function renderScore({
         <div className="game-player-rounds-container">
           <div className="game-player-rounds-score">
             <div className="game-player-rounds">
-              {Array.from(Array(roundsCanLose), (_, i) => i + 1).map((index) => {
-                const roundLost = index > roundsCanLose
+              {sortedRounds.map((round, index) => {
+                let title = 'Life remaining'
+                if (round.round.result === RoundResult.Drew) {
+                  title = `Life lost due to tie on round ${round.number}`
+                } else if (round.round.result === RoundResult.Lost) {
+                  title = `Life lost due to loss on round ${round.number}`
+                }
                 return (
                   <div
                     key={index}
                     className={`game-round-token ${
-                      roundLost ? 'game-round-token-lost' : HTML_CLASSES.GamePlayerRoundTokenWon
+                      round.round.result === RoundResult.Lost || round.round.result === RoundResult.Drew
+                        ? 'game-round-token-lost'
+                        : HTML_CLASSES.GamePlayerRoundTokenWon
                     }`}
-                    title={roundLost ? 'Round Lost' : 'Round Left'}
+                    title={title}
                   ></div>
                 )
               })}
             </div>
           </div>
-          {playerRound.passed ? (
-            <span className="game-player-passed " title={passTitle}>
-              Passed
-            </span>
-          ) : (
-            isSelf &&
-            game.status === GameStatus.Playing && (
-              <button
-                id={HTML_IDS.DeckEditorCancel}
-                type="button"
-                disabled={!canPass}
-                onClick={() => setPassConfirmationOpen(true)}
-                title={passTitle}
-                style={{ cursor: canPass ? 'pointer' : 'not-allowed' }}
-              >
-                Pass
-              </button>
-            )
-          )}
+          {playerRound &&
+            (playerRound.passed ? (
+              <span className="game-player-passed " title={passTitle}>
+                Passed
+              </span>
+            ) : (
+              isSelf &&
+              game.status === GameStatus.Playing && (
+                <button
+                  id={HTML_IDS.DeckEditorCancel}
+                  type="button"
+                  disabled={!canPass}
+                  onClick={() => setPassConfirmationOpen(true)}
+                  title={passTitle}
+                  style={{ cursor: canPass ? 'pointer' : 'not-allowed' }}
+                >
+                  Pass
+                </button>
+              )
+            ))}
         </div>
       </div>
       <div className="game-score-container" style={{ borderColor: winning ? '#267402' : 'darkgray' }}>
-        <span className={HTML_CLASSES.GamePlayerScore} title="Score">
-          {playerRound?.score || 0}
-        </span>
+        {playerRound && (
+          <span className={HTML_CLASSES.GamePlayerScore} title="Score">
+            {playerRound.score}
+          </span>
+        )}
       </div>
     </div>
   )
@@ -1195,6 +1239,7 @@ function renderCenter({
   coinTossVisible,
   setCoinTossVisible,
   playUnit,
+  navigate,
 }: {
   game: Game
   gameDeck: GameDeck | undefined
@@ -1215,53 +1260,55 @@ function renderCenter({
   coinTossVisible: boolean
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
   playUnit: PlayUnitProps
+  navigate: NavigateFunction
 }) {
   return (
     <div id={HTML_IDS.GameCenterContainer}>
-      {game.status === GameStatus.Decking ? (
-        renderSetDeck({
-          alreadySet: !!gameDeck?.from,
-          game,
-          setDeck,
-          setDeckListOpen,
-        })
-      ) : game.status === GameStatus.Playing ? (
-        renderBattlefield({
-          cardSelected,
-          playUnit,
-          checkAuth,
-          game,
-          self,
-          opponent,
-          setFullUnit,
-          setCardSelected,
-        })
-      ) : game.status === GameStatus.Ordering ? (
-        renderSetOrder({
-          checkAuth,
-          game,
-          self,
-          setOrder,
-          playerOrder,
-          setPlayerOrder,
-        })
-      ) : game.status === GameStatus.Redrawing ? (
-        renderRedraw({
-          cardSelected,
-          checkAuth,
-          game,
-          gameDeck,
-          ready,
-          redraw,
-          setFullUnit,
-          setCardSelected,
-          self,
-          coinTossVisible,
-          setCoinTossVisible,
-        })
-      ) : (
-        <div className="game-section"></div>
-      )}
+      {game.status === GameStatus.Decking
+        ? renderSetDeck({
+            alreadySet: !!gameDeck?.from,
+            game,
+            setDeck,
+            setDeckListOpen,
+          })
+        : game.status === GameStatus.Ordering
+        ? renderSetOrder({
+            checkAuth,
+            game,
+            self,
+            setOrder,
+            playerOrder,
+            setPlayerOrder,
+          })
+        : game.status === GameStatus.Redrawing
+        ? renderRedraw({
+            cardSelected,
+            checkAuth,
+            game,
+            gameDeck,
+            ready,
+            redraw,
+            setFullUnit,
+            setCardSelected,
+            self,
+            coinTossVisible,
+            setCoinTossVisible,
+          })
+        : game.status === GameStatus.Playing
+        ? renderBattlefield({
+            cardSelected,
+            playUnit,
+            checkAuth,
+            game,
+            self,
+            opponent,
+            setFullUnit,
+            setCardSelected,
+          })
+        : renderGameSummary({
+            game,
+            navigate,
+          })}
     </div>
   )
 }
@@ -1395,7 +1442,7 @@ function renderCombatRow({
       description = `${cardSelected.unit.name} cannot fight for your opponent`
     }
   }
-  const playerRound = player.rounds[game.round.current]
+  const playerRound = player.rounds[game.round - 1]
   const playerRow =
     combat === Combat.Close ? playerRound.close : combat === Combat.Ranged ? playerRound.ranged : playerRound.siege
   const sortedUnits = sortObjectArray({
@@ -1839,6 +1886,7 @@ function renderHand({
   setFullUnit,
   isTurn,
   playUnitLoading,
+  gameStatus,
 }: {
   hand: DeckUnit[] | undefined
   cardSelected: DeckUnit | undefined
@@ -1846,6 +1894,7 @@ function renderHand({
   setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   isTurn: boolean
   playUnitLoading: boolean
+  gameStatus: GameStatus
 }) {
   const sortedUnits = !hand
     ? []
@@ -1856,9 +1905,13 @@ function renderHand({
   return (
     <div id="gameHandContainer">
       <div id={HTML_IDS.GameHand} className="game-section">
-        {!hand ? (
+        {!hand && !isTurn ? (
           <Centered>
             <img src="images/stats/units.png" title="Hand" className={HTML_CLASSES.GameHandIcon} />
+          </Centered>
+        ) : (!hand || hand.length === 0) && isTurn ? (
+          <Centered>
+            <span>You have no units left in your hand. Either use your Leader ability or Pass.</span>
           </Centered>
         ) : (
           sortedUnits.map((deckUnit, index) => {
@@ -1887,7 +1940,7 @@ function renderHand({
                 <UnitGameCard
                   deckUnit={deckUnit}
                   selected={deckUnit.unit.id === cardSelected?.unit.id}
-                  dotted={!isTurn}
+                  dotted={gameStatus === GameStatus.Playing && !isTurn}
                   title={title}
                   onFullscreen={() =>
                     setFullUnit({
@@ -1902,6 +1955,53 @@ function renderHand({
           })
         )}
       </div>
+    </div>
+  )
+}
+
+function renderGameSummary({ game, navigate }: { game: Game; navigate: NavigateFunction }) {
+  const victorNames = game.victors.map((victor) => victor.name)
+  const victoryText = `Congratulations to the victor${victorNames.length > 1 ? 's' : ''}:`
+  return (
+    <div id="gameSummaryContainer" className="game-section">
+      <div>
+        <span>{victoryText}</span>
+        <div id="gameVictors">
+          {victorNames.map((victorName, index) => (
+            <span key={index}>{victorName}</span>
+          ))}
+        </div>
+      </div>
+      <table id="gameVictorBreakdown">
+        <caption>Breakdown of round by score:</caption>
+        <thead>
+          <tr>
+            <th>User</th>
+            {Array.from(Array(game.round), (_, i) => i + 1).map((index) => (
+              <th key={index}>Round {index}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {game.players.map((player, playerIndex) => (
+            <tr key={playerIndex}>
+              <td className="game-victor-username">{player.user.name}</td>
+              {player.rounds.map((round, roundIndex) => (
+                <td
+                  className="game-victor-round-score"
+                  key={roundIndex}
+                  style={{ borderColor: round.result === RoundResult.Won ? '#267402' : '#970014' }}
+                >
+                  {round.score}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <button id="gamesSummaryGames" type="button" onClick={() => navigate(ROUTES.Games.path)}>
+        Back to Games
+      </button>
     </div>
   )
 }

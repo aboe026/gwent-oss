@@ -2,7 +2,7 @@ import { t } from 'testcafe'
 
 import { Deck, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
 import { formatDay, formatTime } from '@gwent/utils'
-import { HTML_CLASSES, MAX_ROUNDS } from '@gwent/constants'
+import { HTML_CLASSES } from '@gwent/constants'
 
 export default class GamePlayerInfo {
   private elements
@@ -50,7 +50,7 @@ export default class GamePlayerInfo {
     turn?: PlayerTurn
   }) {
     await t.expect(this.elements.Name.innerText).eql(name)
-    await t.expect(this.elements.TokensWon.count).eql(MAX_ROUNDS - 1 - losses)
+    await t.expect(this.elements.TokensWon.count).eql(2 - 1 - losses) // TODO: change "2" to game.lives
     await t.expect(this.elements.Score.innerText).eql(score.toString())
     if ([faction, leader, undrawn, hand, discards].includes(undefined)) {
       await t.expect(this.elements.DeckPlaceholder.exists).ok()

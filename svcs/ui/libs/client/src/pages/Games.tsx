@@ -334,7 +334,7 @@ function renderHeader({
         <div>Players</div>
         <div>Factions</div>
         <div>Status</div>
-        <div>Victor</div>
+        <div>Victor(s)</div>
       </div>
     </div>
   )

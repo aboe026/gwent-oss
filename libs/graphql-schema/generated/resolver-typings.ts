@@ -147,17 +147,25 @@ export enum FactionKey {
 
 export type Game = {
   __typename?: 'Game';
+  config: GameConfig;
   created: Scalars['DateTime']['output'];
   creator: User;
   id: Scalars['ID']['output'];
   players: Array<GamePlayer>;
-  round: GameRound;
+  /** The current round the game is in. 1-based indexing. A value of zero indicates the game has not yet started. */
+  round: Scalars['Int']['output'];
   status: GameStatus;
   /** Whose turn it currently is to make a move. */
   turn?: Maybe<GamePlayer>;
   updated: Scalars['DateTime']['output'];
   victors: Array<User>;
   weather: Array<Combat>;
+};
+
+export type GameConfig = {
+  __typename?: 'GameConfig';
+  /** The number of lives each player starts with at the beginning of the game. */
+  lives: Scalars['Int']['output'];
 };
 
 export type GameDeck = {
@@ -210,14 +218,6 @@ export type GamePlayerUnitCounts = {
   discard: Scalars['Int']['output'];
   hand: Scalars['Int']['output'];
   undrawn: Scalars['Int']['output'];
-};
-
-export type GameRound = {
-  __typename?: 'GameRound';
-  /** The current round the game is in. Zero based indexing. */
-  current: Scalars['Int']['output'];
-  /** The maximum number of rounds the game can have. If no user has won a majority of games after that many rounds, the game ends in a tie between the users who have won the most rounds. */
-  maximum: Scalars['Int']['output'];
 };
 
 export enum GameStatus {
@@ -377,9 +377,9 @@ export type PlayerRound = {
   moves: Array<Move>;
   passed: Scalars['Boolean']['output'];
   ranged: PlayerCombatRow;
+  result?: Maybe<RoundResult>;
   score: Scalars['Int']['output'];
   siege: PlayerCombatRow;
-  won: Scalars['Boolean']['output'];
 };
 
 export type Query = {
@@ -437,6 +437,15 @@ export type Redraw = {
   from: DeckUnit;
   to: DeckUnit;
 };
+
+export enum RoundResult {
+  /** Tied for the win with another player in the round. */
+  Drew = 'DREW',
+  /** Beaten by another player in the round. */
+  Lost = 'LOST',
+  /** Beat all other players in the round. */
+  Won = 'WON'
+}
 
 export type Setting = {
   __typename?: 'Setting';
@@ -634,12 +643,12 @@ export type ResolversTypes = {
   FactionKey: FactionKey;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
   Game: ResolverTypeWrapper<Omit<Game, 'players' | 'turn'> & { players: Array<ResolversTypes['GamePlayer']>, turn?: Maybe<ResolversTypes['GamePlayer']> }>;
+  GameConfig: ResolverTypeWrapper<GameConfig>;
   GameDeck: ResolverTypeWrapper<GameDeck>;
   GameDeckSet: ResolverTypeWrapper<Omit<GameDeckSet, 'game'> & { game: ResolversTypes['Game'] }>;
   GameDeckStatus: GameDeckStatus;
   GamePlayer: ResolverTypeWrapper<Omit<GamePlayer, 'counts' | 'rounds'> & { counts?: Maybe<ResolversTypes['GamePlayerUnitCounts']>, rounds: Array<ResolversTypes['PlayerRound']> }>;
   GamePlayerUnitCounts: ResolverTypeWrapper<GamePlayerUnitCounts>;
-  GameRound: ResolverTypeWrapper<GameRound>;
   GameStatus: GameStatus;
   GameUnit: ResolverTypeWrapper<GameUnit>;
   GameUnitRedrawn: ResolverTypeWrapper<Omit<GameUnitRedrawn, 'game'> & { game: ResolversTypes['Game'] }>;
@@ -655,6 +664,7 @@ export type ResolversTypes = {
   PlayerRound: ResolverTypeWrapper<Omit<PlayerRound, 'moves'> & { moves: Array<ResolversTypes['Move']> }>;
   Query: ResolverTypeWrapper<{}>;
   Redraw: ResolverTypeWrapper<Redraw>;
+  RoundResult: RoundResult;
   SemVer: ResolverTypeWrapper<Scalars['SemVer']['output']>;
   Setting: ResolverTypeWrapper<Setting>;
   SettingKey: SettingKey;
@@ -681,11 +691,11 @@ export type ResolversParentTypes = {
   Faction: Faction;
   Float: Scalars['Float']['output'];
   Game: Omit<Game, 'players' | 'turn'> & { players: Array<ResolversParentTypes['GamePlayer']>, turn?: Maybe<ResolversParentTypes['GamePlayer']> };
+  GameConfig: GameConfig;
   GameDeck: GameDeck;
   GameDeckSet: Omit<GameDeckSet, 'game'> & { game: ResolversParentTypes['Game'] };
   GamePlayer: Omit<GamePlayer, 'counts' | 'rounds'> & { counts?: Maybe<ResolversParentTypes['GamePlayerUnitCounts']>, rounds: Array<ResolversParentTypes['PlayerRound']> };
   GamePlayerUnitCounts: GamePlayerUnitCounts;
-  GameRound: GameRound;
   GameUnit: GameUnit;
   GameUnitRedrawn: Omit<GameUnitRedrawn, 'game'> & { game: ResolversParentTypes['Game'] };
   ID: Scalars['ID']['output'];
@@ -771,16 +781,22 @@ export type FactionResolvers<ContextType = Context, ParentType extends Resolvers
 };
 
 export type GameResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Game'] = ResolversParentTypes['Game']> = {
+  config?: Resolver<ResolversTypes['GameConfig'], ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   players?: Resolver<Array<ResolversTypes['GamePlayer']>, ParentType, ContextType>;
-  round?: Resolver<ResolversTypes['GameRound'], ParentType, ContextType>;
+  round?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['GameStatus'], ParentType, ContextType>;
   turn?: Resolver<Maybe<ResolversTypes['GamePlayer']>, ParentType, ContextType>;
   updated?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   victors?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
   weather?: Resolver<Array<ResolversTypes['Combat']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GameConfigResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameConfig'] = ResolversParentTypes['GameConfig']> = {
+  lives?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -814,12 +830,6 @@ export type GamePlayerUnitCountsResolvers<ContextType = Context, ParentType exte
   discard?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   hand?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   undrawn?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type GameRoundResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameRound'] = ResolversParentTypes['GameRound']> = {
-  current?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  maximum?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -896,9 +906,9 @@ export type PlayerRoundResolvers<ContextType = Context, ParentType extends Resol
   moves?: Resolver<Array<ResolversTypes['Move']>, ParentType, ContextType>;
   passed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   ranged?: Resolver<ResolversTypes['PlayerCombatRow'], ParentType, ContextType>;
+  result?: Resolver<Maybe<ResolversTypes['RoundResult']>, ParentType, ContextType>;
   score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   siege?: Resolver<ResolversTypes['PlayerCombatRow'], ParentType, ContextType>;
-  won?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1021,11 +1031,11 @@ export type Resolvers<ContextType = Context> = {
   Effect?: EffectResolvers<ContextType>;
   Faction?: FactionResolvers<ContextType>;
   Game?: GameResolvers<ContextType>;
+  GameConfig?: GameConfigResolvers<ContextType>;
   GameDeck?: GameDeckResolvers<ContextType>;
   GameDeckSet?: GameDeckSetResolvers<ContextType>;
   GamePlayer?: GamePlayerResolvers<ContextType>;
   GamePlayerUnitCounts?: GamePlayerUnitCountsResolvers<ContextType>;
-  GameRound?: GameRoundResolvers<ContextType>;
   GameUnit?: GameUnitResolvers<ContextType>;
   GameUnitRedrawn?: GameUnitRedrawnResolvers<ContextType>;
   Leader?: LeaderResolvers<ContextType>;

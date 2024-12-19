@@ -1,5 +1,5 @@
 import { GameUnitDbObject, PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
-import { GameUnit, PlayerRound } from '@gwent/graphql-schema/resolver-typings'
+import { GameUnit, PlayerRound, RoundResult } from '@gwent/graphql-schema/resolver-typings'
 import GameUnitResolver from './game-unit-resolver'
 
 export default class PlayerRoundResolver {
@@ -57,7 +57,7 @@ export default class PlayerRoundResolver {
         ),
       },
       score: round.score,
-      won: round.won,
+      result: round.result ? (round.result as RoundResult) : undefined,
       moves: round.moves,
       passed: round.passed,
     }

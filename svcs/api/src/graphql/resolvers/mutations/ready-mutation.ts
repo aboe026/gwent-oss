@@ -8,6 +8,7 @@ import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
+import MutationUtil from './mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
 
@@ -80,9 +81,39 @@ export default class ReadyMutation {
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
+    game.players = game.players.map((gamePlayer) => {
+      let ready = gamePlayer.ready
+      if (gamePlayer.user.toString() === userId.toString()) {
+        ready = true
+      }
+      return {
+        ...gamePlayer,
+        ready,
+      }
+    })
+    const unreadyPlayers = game.players.filter((gamePlayer) => gamePlayer.ready === false)
+    if (ReadyMutation.logger.isTraceEnabled()) {
+      ReadyMutation.logger.trace(
+        `${logPrefix} game "${game._id}" unreadyPlayers: "${JSON.stringify(
+          unreadyPlayers.map((unreadyPlayer) => unreadyPlayer.user)
+        )}`
+      )
+    }
+    if (unreadyPlayers.length === 0) {
+      ReadyMutation.logger.debug(`${logPrefix} game "${game._id}" has all players ready, starting first round`)
+      game.players = MutationUtil.initializeNewRound({
+        players: game.players,
+      })
+    }
+    const currentRound = unreadyPlayers.length === 0 ? 1 : 0
+    ReadyMutation.logger.trace(`${logPrefix} game "${game._id}" currentRound: "${currentRound}`)
+
     const updatedGame = await GameStore.setReady({
       gameId,
       userId,
+      players: game.players,
+      previousUpdate: game.updated,
+      currentRound,
     })
     if (ReadyMutation.logger.isTraceEnabled()) {
       ReadyMutation.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
