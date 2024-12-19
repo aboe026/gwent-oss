@@ -489,10 +489,10 @@ function renderExistingGame({
   }
 
   const potentialUnitArrays: (DeckUnit[] | GameUnit[] | undefined)[] = [gameDeck?.hand]
-  if (game?.players) {
+  if (game?.players && game.round > 0) {
     for (const gamePlayer of game.players) {
       if (!fullUnit?.playerId || fullUnit.playerId === gamePlayer.user.id) {
-        const playerRound = gamePlayer.rounds[game.round]
+        const playerRound = gamePlayer.rounds[game.round - 1]
         potentialUnitArrays.push(playerRound.close.units)
         potentialUnitArrays.push(playerRound.ranged.units)
         potentialUnitArrays.push(playerRound.siege.units)

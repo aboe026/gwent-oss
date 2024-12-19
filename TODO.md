@@ -12,7 +12,6 @@ A list of things to be done in the future.
   - min units?
 - split subscriptions into separate files (similar to resolvers)
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
-- implement history?
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
 - do not store yarn binary in source
@@ -61,10 +60,10 @@ A list of things to be done in the future.
 - playUnit error
 - history (merged GamePlayers moves?)
 - loading icon when opponents turn?
-- if effective strength greater than normal strength, green. If less, red.
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 
+- if effective strength greater than normal strength, green. If less, red.
 - games list improvements
   - progress bar for game status
   - highlight games waiting on you?
