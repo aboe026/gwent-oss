@@ -272,6 +272,7 @@ export type MovePass = {
 export type MoveUnit = {
   __typename?: 'MoveUnit';
   created: Scalars['DateTime']['output'];
+  row: Combat;
   unit: DeckUnit;
 };
 
@@ -660,7 +661,8 @@ export type MovePassDbObject = {
 
 export type MoveUnitDbObject = {
   created: any,
-  unit: ObjectId,
+  row: string,
+  unit: DeckUnitDbObject,
 };
 
 export type PlayerCombatRowDbObject = {

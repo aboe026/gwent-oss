@@ -240,7 +240,8 @@ export default gql`
 
   type MoveUnit @entity {
     created: DateTime! @column
-    unit: DeckUnit! @column(overrideType: "ObjectId")
+    row: Combat! @column
+    unit: DeckUnit! @column(overrideType: "DeckUnitDbObject")
   }
 
   union Move @union(discriminatorField: "type") = MoveLeader | MovePass | MoveUnit

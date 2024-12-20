@@ -5,7 +5,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
 import GameDeckResolver from '../types/game-deck-resolver'
-import { GameStatus } from '@gwent/graphql-schema/database-typings'
+import { GameStatus, MoveDbObject, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
@@ -92,17 +92,22 @@ export default class PlayUnitMutation {
           ...gamePlayer,
           rounds: gamePlayer.rounds.map((round, index) => {
             if (index === game.round - 1) {
+              const unitMove: MoveUnitDbObject = {
+                created: new Date(),
+                row: args.combat,
+                unit: deckUnit,
+              }
+              // TODO: add "type" as "additionalField" to "MoveUnit" in schema?
+              // TODO: but how to type that field to TypeScript enum (that is not in schema?)
+              // TODO: then can avoid needing to create "intermediate" MoveUnitDbObject first
+              const move: MoveDbObject = {
+                ...unitMove,
+                type: 'UNIT',
+              }
               return {
                 ...round,
                 close,
-                moves: [
-                  ...round.moves,
-                  {
-                    created: new Date(),
-                    unit: new ObjectId(unitId),
-                    type: 'UNIT',
-                  },
-                ],
+                moves: [...round.moves, move],
                 ranged,
                 score: playerRound.score + (unit.strength || 0),
                 siege,

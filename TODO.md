@@ -11,7 +11,7 @@ A list of things to be done in the future.
   - MAX_SPECIALS
   - min units?
 - split subscriptions into separate files (similar to resolvers)
-- Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
+- Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status, gamesList doesn't need all details that game page does)
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
 - do not store yarn binary in source
@@ -23,9 +23,10 @@ A list of things to be done in the future.
 - Remove @map directive for ID types?
 - Switch DeckUnit to be same as Unit but single image instead of array
   - Have Unit interface with following implementations:
-    - AvailableUnit (same as Unit)
+    - AvailableUnit
+      - images (all possible art styles you can choose for the image)
     - DeckUnit
-      - image for chosen art style
+      - image (for chosen art style)
     - GameUnit
       - image (for chosen art style)
       - effectiveStrength (for strength after all active effects applied)
@@ -58,10 +59,10 @@ A list of things to be done in the future.
 
 - playUnit loading icon
 - playUnit error
-- history (merged GamePlayers moves?)
 - loading icon when opponents turn?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
+- clicking history entry highlights/animates card (if still on battlefield)
 
 - if effective strength greater than normal strength, green. If less, red.
 - games list improvements

@@ -1,0 +1,41 @@
+import { Combat, Move } from '@gwent/graphql-schema/resolver-typings'
+import DeckUnitResolver from './deck-unit-resolver'
+import LeaderResolver from './leader-resolver'
+import {
+  MoveDbObject,
+  MoveLeaderDbObject,
+  MovePassDbObject,
+  MoveUnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
+
+export default class PlayerMoveResolver {
+  static async fromObject({ move }: { move: MoveDbObject }): Promise<Move> {
+    if (move.type === 'LEADER') {
+      const leaderMove = move as MoveLeaderDbObject
+      return {
+        created: leaderMove.created,
+        leader: await LeaderResolver.fromId({
+          id: leaderMove.leader,
+        }),
+        __typename: 'MoveLeader', // TODO: keep "__typename" here or add it in resolves?
+      }
+    } else if (move.type === 'PASS') {
+      const passMove = move as MovePassDbObject
+      return {
+        created: passMove.created,
+        __typename: 'MovePass',
+      }
+    } else if (move.type === 'UNIT') {
+      const unitMove = move as MoveUnitDbObject
+      return {
+        created: unitMove.created,
+        unit: await DeckUnitResolver.fromObject({
+          deckUnit: unitMove.unit,
+        }),
+        row: unitMove.row as Combat,
+        __typename: 'MoveUnit',
+      }
+    }
+    throw Error(`Invalid Move type "${move.type}".`)
+  }
+}

@@ -197,6 +197,16 @@ td {
   text-align: center;
 }
 
+#gameHistoryContainer {
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  display: flex;
+  flex-direction: column-reverse;
+  padding: 10px;
+  gap: 20px;
+  overflow-y: auto;
+}
+
 .game-edge-container {
   display: flex;
   flex-direction: column;
@@ -367,7 +377,7 @@ td {
 }
 
 .game-round-token-won {
-  background-color: darkred;
+  background-color: #970014;
 }
 
 .game-deck-choosing {
@@ -563,4 +573,67 @@ td {
 .game-victor-round-score {
   border-style: solid;
   border-width: 2px;
+}
+
+.game-history-round-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.game-history-round-name {
+  text-align: center;
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.game-history-move {
+  display: flex;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
+  border-radius: 5px;
+  padding: 10px;
+  background-color: darkgray;
+}
+
+.game-history-move-self {
+  flex-direction: row-reverse;
+}
+
+.game-history-move-text {
+  text-wrap: balance;
+}
+
+.game-history-move-text-opponent {
+  text-align: right;
+}
+
+.game-history-move-username {
+  font-weight: bold;
+}
+
+.game-history-move-image-container-outer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 25%;
+}
+
+.game-history-move-image-container-inner {
+  width: 100%;
+  aspect-ratio: 309 / 444;
+}
+
+.game-history-move-image {
+  height: 100%;
+  width: 100%;
+  border-radius: 10px;
+}
+
+.game-history-move-user-description {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 75%;
 }

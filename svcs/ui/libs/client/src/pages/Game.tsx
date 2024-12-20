@@ -49,6 +49,7 @@ import {
   RoundResult,
   PlayerRound,
   GameUnit,
+  Move,
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
@@ -626,7 +627,10 @@ function renderExistingGame({
           playUnit,
           navigate,
         })}
-        {renderHistory()}
+        {renderHistory({
+          game,
+          self,
+        })}
       </div>
       <div id="gameContainerLower">
         {renderHand({
@@ -1118,7 +1122,7 @@ function renderScore({
       </div>
       <div className="game-score-container" style={{ borderColor: winning ? '#267402' : 'darkgray' }}>
         {playerRound && (
-          <span className={HTML_CLASSES.GamePlayerScore} title="Score">
+          <span className={HTML_CLASSES.GamePlayerScore} title="Score for the current round">
             {playerRound.score}
           </span>
         )}
@@ -1962,12 +1966,91 @@ function renderGameSummary({ game, navigate }: { game: Game; navigate: NavigateF
   )
 }
 
-function renderHistory() {
+interface PlayerMove {
+  move: Move
+  playerIndex: number
+}
+
+function renderHistory({ game, self }: { game: Game; self: GamePlayer }) {
+  const movesByRounds: {
+    round: number
+    playerMove: PlayerMove[]
+  }[] = []
+  for (let i = game.round - 1; i >= 0; i--) {
+    const allPlayerMoves: PlayerMove[] = []
+    for (let j = 0; j < game.players.length; j++) {
+      allPlayerMoves.push(
+        ...game.players[j].rounds[i].moves.map((move) => {
+          return {
+            move,
+            playerIndex: j,
+          }
+        })
+      )
+    }
+    movesByRounds.push({
+      round: i + 1,
+      playerMove: sortObjectArray({
+        array: allPlayerMoves,
+        sortProperties: ['move.created'],
+      }),
+    })
+  }
   return (
     <div className="game-edge-container game-section">
-      <Centered classname="game-history-placeholder">
-        <CgTime color="black" className={HTML_CLASSES.GameHistoryIcon} title="History" />
-      </Centered>
+      {game.round === 0 ? (
+        <Centered classname="game-history-placeholder">
+          <CgTime color="black" className={HTML_CLASSES.GameHistoryIcon} title="History" />
+        </Centered>
+      ) : (
+        <div id="gameHistoryContainer">
+          {movesByRounds.map((movesByRound) => (
+            <div className="game-history-round-container" key={movesByRound.round}>
+              <div className="game-history-round-name">Round {movesByRound.round}</div>
+              {movesByRound.playerMove.map((playerMove, index) => {
+                const gamePlayer = game.players[playerMove.playerIndex]
+                const isSelf = gamePlayer.user.name === self.user.name
+                const textClass = `game-history-move-text ${
+                  isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'
+                }`
+                let description = ''
+                let image = ''
+                let imageTitle = ''
+                let error = false
+                if (playerMove.move.__typename === 'MoveLeader') {
+                  description = `Activated leader ${playerMove.move.leader.name} ability`
+                  image = playerMove.move.leader.image
+                } else if (playerMove.move.__typename === 'MovePass') {
+                  description = `Passed the rest of round ${movesByRound.round}`
+                } else if (playerMove.move.__typename === 'MoveUnit') {
+                  description = `${playerMove.move.unit.unit.name} deployed as ${toTitleCase(playerMove.move.row)}`
+                  image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
+                  imageTitle = playerMove.move.unit.unit.name
+                } else {
+                  description = `Invalid move type: "${playerMove.move.__typename}"`
+                  error = true
+                }
+                return (
+                  <div
+                    key={`r${movesByRound.round}-i${index}`}
+                    className={`game-history-move ${isSelf ? 'game-history-move-self' : 'game-history-move-opponent'}`}
+                  >
+                    <div className="game-history-move-image-container-outer">
+                      <div className="game-history-move-image-container-inner">
+                        {image && <img className="game-history-move-image" src={image} title={imageTitle} />}
+                      </div>
+                    </div>
+                    <div className="game-history-move-user-description">
+                      <div className={`${textClass} game-history-move-username`}>{gamePlayer.user.name}</div>
+                      <div className={`${textClass} ${error ? 'error-text' : ''}`}>{description}</div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -15,6 +15,29 @@ fragment GamePlayerFragment on GamePlayer {
     close {
       ...PlayerCombatRowFragment
     }
+    moves {
+      ... on MoveLeader {
+        created
+        leader {
+          image
+          name
+        }
+      }
+      ... on MovePass {
+        created
+      }
+      ... on MoveUnit {
+        created
+        row
+        unit {
+          artStyle
+          unit {
+            name
+            images
+          }
+        }
+      }
+    }
     passed
     ranged {
       ...PlayerCombatRowFragment

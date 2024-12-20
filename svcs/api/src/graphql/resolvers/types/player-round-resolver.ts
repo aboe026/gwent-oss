@@ -1,6 +1,7 @@
 import { GameUnitDbObject, PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
-import { GameUnit, PlayerRound, RoundResult } from '@gwent/graphql-schema/resolver-typings'
+import { GameUnit, Move, PlayerRound, RoundResult } from '@gwent/graphql-schema/resolver-typings'
 import GameUnitResolver from './game-unit-resolver'
+import PlayerMoveResolver from './player-move-resolver'
 
 export default class PlayerRoundResolver {
   static async fromObject({
@@ -27,6 +28,15 @@ export default class PlayerRoundResolver {
       resolvedGameUnits = await GameUnitResolver.fromArray({
         gameUnits,
       })
+    }
+    const moves: Move[] = []
+    for (const move of round.moves) {
+      // TODO: pass GameUnit (as DeckUnit) to move resolver so don't need to re-query unit object
+      moves.push(
+        await PlayerMoveResolver.fromObject({
+          move,
+        })
+      )
     }
     return {
       close: {
@@ -58,7 +68,7 @@ export default class PlayerRoundResolver {
       },
       score: round.score,
       result: round.result ? (round.result as RoundResult) : undefined,
-      moves: round.moves,
+      moves,
       passed: round.passed,
     }
   }
