@@ -2070,7 +2070,10 @@ function renderHistory({
       }),
     })
   }
-  const showLoading = game.turn?.user.name !== self.user.name || playUnitLoading || playPassLoading
+  const showLoading =
+    (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
+    playUnitLoading ||
+    playPassLoading
   const loadingTitle = playUnitLoading
     ? `Waiting for ${cardSelected?.unit.name || 'unit'} to be deployed to the battlefield`
     : playPassLoading
