@@ -591,6 +591,7 @@ function renderExistingGame({
       />
       <div id="gameContainerUpper">
         {renderGameInfo({
+          cardSelected,
           game,
           opponent,
           self,
@@ -630,6 +631,9 @@ function renderExistingGame({
           navigate,
         })}
         {renderHistory({
+          cardSelected,
+          playPassLoading,
+          playUnitLoading: playUnit.playUnitLoading,
           game,
           self,
         })}
@@ -753,6 +757,7 @@ interface NeighborUnits {
 }
 
 function renderGameInfo({
+  cardSelected,
   self,
   opponent,
   game,
@@ -766,6 +771,7 @@ function renderGameInfo({
   playUnitLoading,
   playPassLoading,
 }: {
+  cardSelected: DeckUnit | undefined
   self: GamePlayer
   opponent: GamePlayer
   game: Game
@@ -798,6 +804,7 @@ function renderGameInfo({
   return (
     <div id="gameInfoContainer" className="game-edge-container">
       {renderPlayerInfo({
+        cardSelected,
         game,
         id: HTML_IDS.GameInfoOpponentContainer,
         player: opponent,
@@ -820,6 +827,7 @@ function renderGameInfo({
         gameDeckRefetch,
       })}
       {renderPlayerInfo({
+        cardSelected,
         game,
         id: HTML_IDS.GameInfoSelfContainer,
         player: self,
@@ -901,6 +909,7 @@ function renderSharedInfo({
 }
 
 function renderPlayerInfo({
+  cardSelected,
   id,
   player,
   game,
@@ -917,6 +926,7 @@ function renderPlayerInfo({
   playUnitLoading,
   playPassLoading,
 }: {
+  cardSelected: DeckUnit | undefined
   id: string
   player: GamePlayer
   game: Game
@@ -968,6 +978,7 @@ function renderPlayerInfo({
     >
       <div className="game-sub-section game-info-section game-player-section">
         {renderScore({
+          cardSelected,
           game,
           player,
           isSelf,
@@ -1015,6 +1026,7 @@ function renderPlayerInfo({
 }
 
 function renderScore({
+  cardSelected,
   player,
   game,
   isSelf,
@@ -1023,6 +1035,7 @@ function renderScore({
   playUnitLoading,
   playPassLoading,
 }: {
+  cardSelected: DeckUnit | undefined
   player: GamePlayer
   game: Game
   isSelf: boolean
@@ -1043,10 +1056,12 @@ function renderScore({
       winning = playerScore > opponentScore
     }
     if (playPassLoading) {
-      passTitle = 'Cannot pass while waiting for pass to take effect'
+      passTitle = 'Waiting for Pass to be recognized on the battlefield'
     } else {
       if (playUnitLoading) {
-        passTitle = 'Cannot pass while saving unit to the battlefield'
+        passTitle = `Cannot pass while waiting for ${
+          cardSelected?.unit.name || 'unit'
+        } to be deployed to the battlefield`
       } else {
         if (playerRound.passed) {
           if (isSelf) {
@@ -1922,11 +1937,13 @@ function renderHand({
             const selected = deckUnit.unit.id === cardSelected?.unit.id
             const notSelected = cardSelected?.unit.id && !selected
             let title = deckUnit.unit.name
+            let cursor = 'pointer'
             if (playUnitLoading && cardSelected) {
               if (cardSelected.unit.id === deckUnit.unit.id) {
-                title = `Waiting for unit ${cardSelected.unit.name} to be saved on the battlefield`
+                title = `Waiting for ${cardSelected.unit.name} to be deployed to the battlefield`
               } else {
-                title = `Cannot select other cards while waiting for unit ${cardSelected.unit.name} to be played`
+                title = `Cannot select other units while waiting for ${cardSelected.unit.name} to be deployed`
+                cursor = 'not-allowed'
               }
             }
 
@@ -1942,6 +1959,7 @@ function renderHand({
                 style={index === sortedUnits.length - 1 ? { marginRight: '-18px' } : {}}
               >
                 <UnitGameCard
+                  cursor={cursor}
                   deckUnit={deckUnit}
                   selected={deckUnit.unit.id === cardSelected?.unit.id}
                   dotted={gameStatus === GameStatus.Playing && !isTurn}
@@ -2015,7 +2033,19 @@ interface PlayerMove {
   playerIndex: number
 }
 
-function renderHistory({ game, self }: { game: Game; self: GamePlayer }) {
+function renderHistory({
+  cardSelected,
+  game,
+  playPassLoading,
+  playUnitLoading,
+  self,
+}: {
+  cardSelected: DeckUnit | undefined
+  game: Game
+  playPassLoading: boolean
+  playUnitLoading: boolean
+  self: GamePlayer
+}) {
   const movesByRounds: {
     round: number
     playerMove: PlayerMove[]
@@ -2040,6 +2070,12 @@ function renderHistory({ game, self }: { game: Game; self: GamePlayer }) {
       }),
     })
   }
+  const showLoading = game.turn?.user.name !== self.user.name || playUnitLoading || playPassLoading
+  const loadingTitle = playUnitLoading
+    ? `Waiting for ${cardSelected?.unit.name || 'unit'} to be deployed to the battlefield`
+    : playPassLoading
+    ? 'Waiting for Pass to be recognized on the battlefield'
+    : 'Waiting for opponent to make their move'
   return (
     <div className="game-edge-container game-section">
       {game.round === 0 ? (
@@ -2091,6 +2127,11 @@ function renderHistory({ game, self }: { game: Game; self: GamePlayer }) {
                   </div>
                 )
               })}
+              {showLoading && (
+                <div className="game-history-loading-container">
+                  <LoadingSpinner size="100px" title={loadingTitle} />
+                </div>
+              )}
             </div>
           ))}
         </div>
