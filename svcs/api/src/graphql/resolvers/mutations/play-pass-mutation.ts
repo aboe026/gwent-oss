@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import { Game, MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../event-manager'
+import GameDeckResolver from '../types/game-deck-resolver'
 import { GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
@@ -11,6 +12,7 @@ import { GraphQLResolveInfo } from 'graphql'
 import MutationUtil from './mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
+import { RoundEndedForDeckPayload } from '../subscription-resolver'
 
 /**
  * A class for executing the playPass GraphQL Mutation.
@@ -149,6 +151,23 @@ export default class PlayPassMutation {
         }" of game "${game._id}"`
       )
 
+      // add remaining battlefield cards to discards
+      game.players = game.players.map((gamePlayer) => {
+        const playerRound = gamePlayer.rounds[game.round - 1]
+        return {
+          ...gamePlayer,
+          deck: {
+            ...gamePlayer.deck,
+            discard: [
+              ...gamePlayer.deck.discard,
+              ...playerRound.close.units,
+              ...playerRound.ranged.units,
+              ...playerRound.siege.units,
+            ],
+          },
+        }
+      })
+
       const gameOver = MutationUtil.isGameOver({
         game,
         logPrefix,
@@ -215,6 +234,19 @@ export default class PlayPassMutation {
     EventManager.pubsub.publish(PubSubEvents.PassPlayed, {
       passPlayed: resolvedGame,
     })
+
+    if (roundOver) {
+      for (const gamePlayer of updatedGame.players) {
+        EventManager.pubsub.publish(PubSubEvents.RoundEndedForDeck, {
+          roundEndedForDeck: {
+            deck: await GameDeckResolver.fromObject({
+              gameDeck: gamePlayer.deck,
+            }),
+            game: resolvedGame,
+          },
+        } as RoundEndedForDeckPayload)
+      }
+    }
 
     return resolvedGame
   }

@@ -335,6 +335,11 @@ export default gql`
     to: DeckUnit!
   }
 
+  type RoundEndedForDeck {
+    deck: GameDeck!
+    game: Game!
+  }
+
   type UnitPlayedFromDeck {
     deck: GameDeck!
     game: Game!
@@ -434,6 +439,8 @@ export default gql`
     orderSet: Game!
     "A user has passed the rest of the round for a game."
     passPlayed: Game!
+    "A round has finished which triggers updates to the GameDeck for each player on the game."
+    roundEndedForDeck: RoundEndedForDeck!
     "The unit card played from a deck and the updated GameDeck."
     unitPlayedFromDeck: UnitPlayedFromDeck!
     "The unit card played on a game and the updated Game."

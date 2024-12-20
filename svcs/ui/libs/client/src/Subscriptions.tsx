@@ -18,6 +18,7 @@ import {
   useGameSetSubscription,
   useOrderSetSubscription,
   usePassPlayedSubscription,
+  useRoundEndedForDeckSubscription,
   useUnitPlayedFromDeckSubscription,
   useUnitPlayedOnGameSubscription,
   useUnitRedrawnSubscription,
@@ -164,6 +165,30 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game: updatedGame,
+              }
+            }
+          }
+        )
+      }
+    },
+  })
+  useRoundEndedForDeckSubscription({
+    skip: !user,
+    onData: ({ data, client }) => {
+      const game = data.data?.roundEndedForDeck.game
+      const gameDeck = data.data?.roundEndedForDeck.deck
+      if (game && gameDeck) {
+        client.cache.updateQuery<GameDeckQuery>(
+          {
+            query: GameDeckDocument,
+            variables: {
+              game: game.id,
+            },
+          },
+          (previous) => {
+            if (previous?.gameDeck) {
+              return {
+                gameDeck,
               }
             }
           }

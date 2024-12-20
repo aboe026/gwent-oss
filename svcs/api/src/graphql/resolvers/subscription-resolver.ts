@@ -105,6 +105,24 @@ export default class SubscriptionResolver {
             })
         ),
       },
+      roundEndedForDeck: {
+        subscribe: withFilter(
+          () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.RoundEndedForDeck]),
+          async (payload, args, ctx) =>
+            SubscriptionResolver.filterDeckOwner({
+              ctx,
+              payload,
+              subscriptionName: 'roundEndedForDeck',
+              nestedDeckPath: 'deck.from',
+            }) &&
+            SubscriptionResolver.filterPlayerOnGame({
+              ctx,
+              payload,
+              subscriptionName: 'roundEndedForDeck',
+              nestedGamePath: 'game',
+            })
+        ),
+      },
       unitPlayedFromDeck: {
         subscribe: withFilter(
           () => EventManager.pubsub.asyncIterableIterator([PubSubEvents.UnitPlayedFromDeck]),
@@ -262,6 +280,13 @@ export interface OrderSetPayload {
 
 export interface PassPlayedPayload {
   passPlayed: Game
+}
+
+export interface RoundEndedForDeckPayload {
+  roundEndedForDeck: {
+    deck: GameDeck
+    game: Game
+  }
 }
 
 export interface UnitPlayedFromDeckPayload {

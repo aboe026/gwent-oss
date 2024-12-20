@@ -438,6 +438,12 @@ export type Redraw = {
   to: DeckUnit;
 };
 
+export type RoundEndedForDeck = {
+  __typename?: 'RoundEndedForDeck';
+  deck: GameDeck;
+  game: Game;
+};
+
 export enum RoundResult {
   /** Tied for the win with another player in the round. */
   Drew = 'DREW',
@@ -479,6 +485,8 @@ export type Subscription = {
   orderSet: Game;
   /** A user has passed the rest of the round for a game. */
   passPlayed: Game;
+  /** A round has finished which triggers updates to the GameDeck for each player on the game. */
+  roundEndedForDeck: RoundEndedForDeck;
   /** The unit card played from a deck and the updated GameDeck. */
   unitPlayedFromDeck: UnitPlayedFromDeck;
   /** The unit card played on a game and the updated Game. */
@@ -731,6 +739,11 @@ export type RedrawMutationVariables = Exact<{
 
 
 export type RedrawMutation = { __typename?: 'Mutation', redraw: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } } };
+
+export type RoundEndedForDeckSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RoundEndedForDeckSubscription = { __typename?: 'Subscription', roundEndedForDeck: { __typename?: 'RoundEndedForDeck', game: { __typename?: 'Game', id: string }, deck: { __typename?: 'GameDeck', discard: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, from?: { __typename?: 'Deck', created: any, id: string, name: string, faction: { __typename?: 'Faction', ability?: string | null, id: string, image: string, key: FactionKey, name: string }, leader: { __typename?: 'Leader', ability: string, image: string, name: string } } | null, hand: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }>, redraws: Array<{ __typename?: 'Redraw', from: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }, to: { __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } } }>, undrawn: Array<{ __typename?: 'DeckUnit', artStyle: number, unit: { __typename?: 'Unit', combats?: Array<Combat> | null, deckable: boolean, hero?: boolean | null, id: string, images: Array<string>, name: string, quote: string, special?: boolean | null, strength?: number | null, dlc?: { __typename?: 'Dlc', name: string, image: string, key: DlcKey } | null, effects?: Array<{ __typename?: 'Effect', ability: string, image: string, key: EffectKey, name: string }> | null, faction: { __typename?: 'Faction', image: string, key: FactionKey, name: string } } }> } } };
 
 export type SetDeckMutationVariables = Exact<{
   game: Scalars['ID']['input'];
@@ -1915,6 +1928,40 @@ export function useRedrawMutation(baseOptions?: Apollo.MutationHookOptions<Redra
 export type RedrawMutationHookResult = ReturnType<typeof useRedrawMutation>;
 export type RedrawMutationResult = Apollo.MutationResult<RedrawMutation>;
 export type RedrawMutationOptions = Apollo.BaseMutationOptions<RedrawMutation, RedrawMutationVariables>;
+export const RoundEndedForDeckDocument = gql`
+    subscription RoundEndedForDeck {
+  roundEndedForDeck {
+    game {
+      id
+    }
+    deck {
+      ...GameDeckFragment
+    }
+  }
+}
+    ${GameDeckFragmentFragmentDoc}`;
+
+/**
+ * __useRoundEndedForDeckSubscription__
+ *
+ * To run a query within a React component, call `useRoundEndedForDeckSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useRoundEndedForDeckSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRoundEndedForDeckSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useRoundEndedForDeckSubscription(baseOptions?: Apollo.SubscriptionHookOptions<RoundEndedForDeckSubscription, RoundEndedForDeckSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<RoundEndedForDeckSubscription, RoundEndedForDeckSubscriptionVariables>(RoundEndedForDeckDocument, options);
+      }
+export type RoundEndedForDeckSubscriptionHookResult = ReturnType<typeof useRoundEndedForDeckSubscription>;
+export type RoundEndedForDeckSubscriptionResult = Apollo.SubscriptionResult<RoundEndedForDeckSubscription>;
 export const SetDeckDocument = gql`
     mutation SetDeck($game: ID!, $deck: ID!) {
   setDeck(game: $game, deck: $deck) {

@@ -6,6 +6,7 @@ export const PubSubEvents = {
   GameSet: 'GameSet',
   OrderSet: 'OrderSet',
   PassPlayed: 'PassPlayed',
+  RoundEndedForDeck: 'roundEndedForDeck',
   UnitPlayedFromDeck: 'UnitPlayedFromDeck',
   UnitPlayedOnGame: 'UnitPlayedOnGame',
   UnitRedrawn: 'UnitRedrawn',

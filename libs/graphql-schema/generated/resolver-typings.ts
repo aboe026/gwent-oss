@@ -439,6 +439,12 @@ export type Redraw = {
   to: DeckUnit;
 };
 
+export type RoundEndedForDeck = {
+  __typename?: 'RoundEndedForDeck';
+  deck: GameDeck;
+  game: Game;
+};
+
 export enum RoundResult {
   /** Tied for the win with another player in the round. */
   Drew = 'DREW',
@@ -480,6 +486,8 @@ export type Subscription = {
   orderSet: Game;
   /** A user has passed the rest of the round for a game. */
   passPlayed: Game;
+  /** A round has finished which triggers updates to the GameDeck for each player on the game. */
+  roundEndedForDeck: RoundEndedForDeck;
   /** The unit card played from a deck and the updated GameDeck. */
   unitPlayedFromDeck: UnitPlayedFromDeck;
   /** The unit card played on a game and the updated Game. */
@@ -665,6 +673,7 @@ export type ResolversTypes = {
   PlayerRound: ResolverTypeWrapper<Omit<PlayerRound, 'moves'> & { moves: Array<ResolversTypes['Move']> }>;
   Query: ResolverTypeWrapper<{}>;
   Redraw: ResolverTypeWrapper<Redraw>;
+  RoundEndedForDeck: ResolverTypeWrapper<Omit<RoundEndedForDeck, 'game'> & { game: ResolversTypes['Game'] }>;
   RoundResult: RoundResult;
   SemVer: ResolverTypeWrapper<Scalars['SemVer']['output']>;
   Setting: ResolverTypeWrapper<Setting>;
@@ -711,6 +720,7 @@ export type ResolversParentTypes = {
   PlayerRound: Omit<PlayerRound, 'moves'> & { moves: Array<ResolversParentTypes['Move']> };
   Query: {};
   Redraw: Redraw;
+  RoundEndedForDeck: Omit<RoundEndedForDeck, 'game'> & { game: ResolversParentTypes['Game'] };
   SemVer: Scalars['SemVer']['output'];
   Setting: Setting;
   String: Scalars['String']['output'];
@@ -933,6 +943,12 @@ export type RedrawResolvers<ContextType = Context, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type RoundEndedForDeckResolvers<ContextType = Context, ParentType extends ResolversParentTypes['RoundEndedForDeck'] = ResolversParentTypes['RoundEndedForDeck']> = {
+  deck?: Resolver<ResolversTypes['GameDeck'], ParentType, ContextType>;
+  game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface SemVerScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['SemVer'], any> {
   name: 'SemVer';
 }
@@ -953,6 +969,7 @@ export type SubscriptionResolvers<ContextType = Context, ParentType extends Reso
   gameSet?: SubscriptionResolver<ResolversTypes['Game'], "gameSet", ParentType, ContextType>;
   orderSet?: SubscriptionResolver<ResolversTypes['Game'], "orderSet", ParentType, ContextType>;
   passPlayed?: SubscriptionResolver<ResolversTypes['Game'], "passPlayed", ParentType, ContextType>;
+  roundEndedForDeck?: SubscriptionResolver<ResolversTypes['RoundEndedForDeck'], "roundEndedForDeck", ParentType, ContextType>;
   unitPlayedFromDeck?: SubscriptionResolver<ResolversTypes['UnitPlayedFromDeck'], "unitPlayedFromDeck", ParentType, ContextType>;
   unitPlayedOnGame?: SubscriptionResolver<ResolversTypes['UnitPlayedOnGame'], "unitPlayedOnGame", ParentType, ContextType>;
   unitRedrawn?: SubscriptionResolver<ResolversTypes['GameUnitRedrawn'], "unitRedrawn", ParentType, ContextType>;
@@ -1050,6 +1067,7 @@ export type Resolvers<ContextType = Context> = {
   PlayerRound?: PlayerRoundResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Redraw?: RedrawResolvers<ContextType>;
+  RoundEndedForDeck?: RoundEndedForDeckResolvers<ContextType>;
   SemVer?: GraphQLScalarType;
   Setting?: SettingResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;

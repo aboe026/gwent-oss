@@ -633,7 +633,9 @@ function renderExistingGame({
         {renderHistory({
           cardSelected,
           playPassLoading,
+          playPassError,
           playUnitLoading: playUnit.playUnitLoading,
+          playUnitError: playUnit.playUnitError,
           game,
           self,
         })}
@@ -2037,13 +2039,17 @@ function renderHistory({
   cardSelected,
   game,
   playPassLoading,
+  playPassError,
   playUnitLoading,
+  playUnitError,
   self,
 }: {
   cardSelected: DeckUnit | undefined
   game: Game
   playPassLoading: boolean
+  playPassError: ApolloError | undefined
   playUnitLoading: boolean
+  playUnitError: ApolloError | undefined
   self: GamePlayer
 }) {
   const movesByRounds: {
@@ -2079,6 +2085,8 @@ function renderHistory({
     : playPassLoading
     ? 'Waiting for Pass to be recognized on the battlefield'
     : 'Waiting for opponent to make their move'
+  const resolvedPlayPassError = getApolloError(playPassError)
+  const resolvedPlayUnitError = getApolloError(playUnitError)
   return (
     <div className="game-edge-container game-section">
       {game.round === 0 ? (
@@ -2090,6 +2098,16 @@ function renderHistory({
           {showLoading && (
             <div className="game-history-loading-container">
               <LoadingSpinner size="100px" title={loadingTitle} />
+            </div>
+          )}
+          {resolvedPlayPassError && (
+            <div>
+              <div className="error-text">{`Error attempting to pass: ${resolvedPlayPassError}`}</div>
+            </div>
+          )}
+          {resolvedPlayUnitError && (
+            <div>
+              <div className="error-text">{`Error playing unit "${cardSelected?.unit.name}": ${resolvedPlayUnitError}`}</div>
             </div>
           )}
           {movesByRounds.map((movesByRound) => (

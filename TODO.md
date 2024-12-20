@@ -60,9 +60,6 @@ A list of things to be done in the future.
 
 ## Features
 
-- playUnit error
-- loading icon when opponents turn?
-- transition battlefield cards to "lost" after round over
 - animations/text of what opponent did?
 - how to make pass more obvious?
   - white flag icon?
