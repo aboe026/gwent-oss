@@ -5,6 +5,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../event-manager'
 import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameReadyPayload } from '../subscription-resolver'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
@@ -129,7 +130,7 @@ export default class ReadyMutation {
 
     EventManager.pubsub.publish(PubSubEvents.GameReady, {
       gameReady: resolvedGame,
-    })
+    } as GameReadyPayload)
 
     return resolvedGame
   }

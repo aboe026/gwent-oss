@@ -1932,7 +1932,7 @@ function renderHand({
           </Centered>
         ) : (!hand || hand.length === 0) && isTurn ? (
           <Centered>
-            <span>You have no units left in your hand. Either use your Leader ability or Pass.</span>
+            <span>You have no units left in your hand. Either activate your Leader ability or Pass.</span>
           </Centered>
         ) : (
           sortedUnits.map((deckUnit, index) => {

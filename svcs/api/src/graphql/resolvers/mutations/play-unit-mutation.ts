@@ -13,6 +13,7 @@ import { GraphQLResolveInfo } from 'graphql'
 import MutationUtil from './mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
+import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../subscription-resolver'
 import UnitStore from '../../../database/stores/unit-store'
 
 /**
@@ -152,7 +153,7 @@ export default class PlayUnitMutation {
         game: resolvedGame,
         unit: resolvedUnit,
       },
-    })
+    } as UnitPlayedOnGamePayload)
 
     EventManager.pubsub.publish(PubSubEvents.UnitPlayedFromDeck, {
       unitPlayedFromDeck: {
@@ -160,7 +161,7 @@ export default class PlayUnitMutation {
         game: resolvedGame,
         unit: resolvedUnit,
       },
-    })
+    } as UnitPlayedFromDeckPayload)
 
     return resolvedGame
   }

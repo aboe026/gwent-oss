@@ -2,6 +2,7 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
+import { DeckSetPayload, GameSetPayload } from '../subscription-resolver'
 import DeckStore from '../../../database/stores/deck-store'
 import EventManager from '../../event-manager'
 import { GameDeck, MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -149,13 +150,13 @@ export default class SetDeckMutation {
         deck: resolvedDeck,
         game: resolvedGame,
       },
-    })
+    } as DeckSetPayload)
 
     if (!updatedGame.players.find((player) => !player.deck.from)) {
       // all players have chosen decks, notify clients
       EventManager.pubsub.publish(PubSubEvents.GameSet, {
         gameSet: resolvedGame,
-      })
+      } as GameSetPayload)
       await MutationUtil.setGameTurnOrder({
         userId,
         gameId,

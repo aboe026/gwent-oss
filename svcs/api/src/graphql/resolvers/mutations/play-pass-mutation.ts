@@ -11,8 +11,8 @@ import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
 import MutationUtil from './mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
+import { PassPlayedPayload, RoundEndedForDeckPayload } from '../subscription-resolver'
 import { RequestedFields } from '@gwent/graphql-schema'
-import { RoundEndedForDeckPayload } from '../subscription-resolver'
 
 /**
  * A class for executing the playPass GraphQL Mutation.
@@ -233,7 +233,7 @@ export default class PlayPassMutation {
 
     EventManager.pubsub.publish(PubSubEvents.PassPlayed, {
       passPlayed: resolvedGame,
-    })
+    } as PassPlayedPayload)
 
     if (roundOver) {
       for (const gamePlayer of updatedGame.players) {

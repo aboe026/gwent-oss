@@ -13,6 +13,7 @@ import {
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getDuplicateItems, randomizeOrder, sortObjectArray } from '@gwent/utils'
+import { OrderSetPayload } from '../subscription-resolver'
 import { PubSubEvents } from '@gwent/constants'
 
 /**
@@ -400,7 +401,7 @@ export default class MutationUtil {
 
     EventManager.pubsub.publish(PubSubEvents.OrderSet, {
       orderSet: resolvedGame,
-    })
+    } as OrderSetPayload)
 
     return resolvedGame
   }

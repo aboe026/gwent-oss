@@ -13,6 +13,7 @@ import { getRandomSubset } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import { MAX_REDRAWS, NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
+import { UnitRedrawnPayload } from '../subscription-resolver'
 
 /**
  * A class for executing the redraw GraphQL Mutation.
@@ -187,7 +188,7 @@ export default class RedrawMutation {
         game: resolvedGame,
         to: resolvedTo,
       },
-    })
+    } as UnitRedrawnPayload)
 
     return resolvedTo
   }
