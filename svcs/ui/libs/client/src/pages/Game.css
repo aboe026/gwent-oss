@@ -112,11 +112,10 @@
 
 #gameHand {
   display: flex;
-  height: 100%;
+  height: calc(100% - 20px);
   width: calc(100% - 20px);
   justify-content: center;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding: 10px;
 }
 
 #gameDeckOverlay {
