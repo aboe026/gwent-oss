@@ -601,6 +601,8 @@ function renderExistingGame({
           gameDeckRefetch,
           coinTossVisible,
           setPassConfirmationOpen,
+          playUnitLoading: playUnit.playUnitLoading,
+          playPassLoading,
         })}
         {renderCenter({
           cardSelected,
@@ -639,6 +641,7 @@ function renderExistingGame({
           setCardSelected,
           setFullUnit,
           isTurn: game.turn?.user.name === self.user.name,
+          playUnitLoading: playUnit.playUnitLoading,
           gameStatus: game.status,
         })}
       </div>
@@ -760,6 +763,8 @@ function renderGameInfo({
   gameDeckRefetch,
   coinTossVisible,
   setPassConfirmationOpen,
+  playUnitLoading,
+  playPassLoading,
 }: {
   self: GamePlayer
   opponent: GamePlayer
@@ -787,6 +792,8 @@ function renderGameInfo({
   ) => Promise<ApolloQueryResult<GameDeckQuery>>
   coinTossVisible: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
+  playUnitLoading: boolean
+  playPassLoading: boolean
 }) {
   return (
     <div id="gameInfoContainer" className="game-edge-container">
@@ -802,6 +809,8 @@ function renderGameInfo({
         leader: opponent.leader,
         coinTossVisible,
         setPassConfirmationOpen,
+        playUnitLoading,
+        playPassLoading,
       })}
       {renderSharedInfo({
         game,
@@ -824,6 +833,8 @@ function renderGameInfo({
         deckUpdated: gameDeck?.from?.created,
         coinTossVisible,
         setPassConfirmationOpen,
+        playUnitLoading,
+        playPassLoading,
       })}
     </div>
   )
@@ -903,6 +914,8 @@ function renderPlayerInfo({
   isSelf,
   coinTossVisible,
   setPassConfirmationOpen,
+  playUnitLoading,
+  playPassLoading,
 }: {
   id: string
   player: GamePlayer
@@ -917,6 +930,8 @@ function renderPlayerInfo({
   isSelf: boolean
   coinTossVisible: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
+  playUnitLoading: boolean
+  playPassLoading: boolean
 }) {
   const isTurn = game.turn && game.turn.user.name === player.user.name
   let title = ''
@@ -958,6 +973,8 @@ function renderPlayerInfo({
           isSelf,
           isTurn,
           setPassConfirmationOpen,
+          playUnitLoading,
+          playPassLoading,
         })}
       </div>
       {!faction ? (
@@ -1003,12 +1020,16 @@ function renderScore({
   isSelf,
   isTurn,
   setPassConfirmationOpen,
+  playUnitLoading,
+  playPassLoading,
 }: {
   player: GamePlayer
   game: Game
   isSelf: boolean
   isTurn?: boolean | null | undefined
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
+  playUnitLoading: boolean
+  playPassLoading: boolean
 }) {
   let playerRound: PlayerRound | undefined = undefined
   let winning = false
@@ -1021,18 +1042,26 @@ function renderScore({
       const opponentScore = opponent.rounds[game.round - 1].score
       winning = playerScore > opponentScore
     }
-    if (playerRound.passed) {
-      if (isSelf) {
-        passTitle = 'You have already passed the rest of the round'
-      } else {
-        passTitle = 'Your opponent has chosen to pass the rest of the round'
-      }
+    if (playPassLoading) {
+      passTitle = 'Cannot pass while waiting for pass to take effect'
     } else {
-      if (isSelf) {
-        if (isTurn) {
-          passTitle = 'Select to pass, after which you cannot play any more units the rest of this round'
+      if (playUnitLoading) {
+        passTitle = 'Cannot pass while saving unit to the battlefield'
+      } else {
+        if (playerRound.passed) {
+          if (isSelf) {
+            passTitle = 'You have already passed the rest of the round'
+          } else {
+            passTitle = 'Your opponent has chosen to pass the rest of the round'
+          }
         } else {
-          passTitle = 'Cannot pass while it is not your turn'
+          if (isSelf) {
+            if (isTurn) {
+              passTitle = 'Select to pass, after which you cannot play any more units the rest of this round'
+            } else {
+              passTitle = 'Cannot pass while it is not your turn'
+            }
+          }
         }
       }
     }
@@ -1062,6 +1091,7 @@ function renderScore({
       sortedRounds.push(roundPlayed)
     }
   }
+  const canPass = isTurn && !playPassLoading && !playUnitLoading
 
   return (
     <div className="game-player-container">
@@ -1109,10 +1139,10 @@ function renderScore({
                 <button
                   id={HTML_IDS.DeckEditorCancel}
                   type="button"
-                  disabled={!isTurn} // TODO: disabled when playPassLoading is true
+                  disabled={!canPass}
                   onClick={() => setPassConfirmationOpen(true)}
                   title={passTitle}
-                  style={{ cursor: isTurn ? 'pointer' : 'not-allowed' }}
+                  style={{ cursor: canPass ? 'pointer' : 'not-allowed' }}
                 >
                   Pass
                 </button>
@@ -1859,6 +1889,7 @@ function renderHand({
   setCardSelected,
   setFullUnit,
   isTurn,
+  playUnitLoading,
   gameStatus,
 }: {
   hand: DeckUnit[] | undefined
@@ -1866,6 +1897,7 @@ function renderHand({
   setCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   isTurn: boolean
+  playUnitLoading: boolean
   gameStatus: GameStatus
 }) {
   const sortedUnits = !hand
@@ -1889,12 +1921,23 @@ function renderHand({
           sortedUnits.map((deckUnit, index) => {
             const selected = deckUnit.unit.id === cardSelected?.unit.id
             const notSelected = cardSelected?.unit.id && !selected
+            let title = deckUnit.unit.name
+            if (playUnitLoading && cardSelected) {
+              if (cardSelected.unit.id === deckUnit.unit.id) {
+                title = `Waiting for unit ${cardSelected.unit.name} to be saved on the battlefield`
+              } else {
+                title = `Cannot select other cards while waiting for unit ${cardSelected.unit.name} to be played`
+              }
+            }
+
             return (
               <div
                 className={`game-card-wrapper ${selected ? 'game-card-wrapper-selected' : ''}`}
                 key={deckUnit.unit.id}
                 onClick={() => {
-                  setCardSelected(selected ? undefined : deckUnit)
+                  if (!playUnitLoading) {
+                    setCardSelected(selected ? undefined : deckUnit)
+                  }
                 }}
                 style={index === sortedUnits.length - 1 ? { marginRight: '-18px' } : {}}
               >
@@ -1902,6 +1945,7 @@ function renderHand({
                   deckUnit={deckUnit}
                   selected={deckUnit.unit.id === cardSelected?.unit.id}
                   dotted={gameStatus === GameStatus.Playing && !isTurn}
+                  title={title}
                   onFullscreen={() =>
                     setFullUnit({
                       unit: deckUnit,
@@ -1909,7 +1953,7 @@ function renderHand({
                     })
                   }
                 />
-                {notSelected && <div title={deckUnit.unit.name} className="game-card-wrapper-not-selected"></div>}
+                {notSelected && <div title={title} className="game-card-wrapper-not-selected"></div>}
               </div>
             )
           })

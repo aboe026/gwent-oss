@@ -4,6 +4,9 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- combine repeated props into single object (like renderCombatRow in renderBattlefield)
+- collapse UI method props when they are long (like PlayUnitProps)
+- alphabetize UI props/method inputs
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)
   - MAX_REDRAWS
@@ -57,9 +60,16 @@ A list of things to be done in the future.
 
 ## Features
 
-- playUnit loading icon
 - playUnit error
 - loading icon when opponents turn?
+- transition battlefield cards to "lost" after round over
+- animations/text of what opponent did?
+- how to make pass more obvious?
+  - white flag icon?
+  - white border on battlefield?
+- fix layout on small width screen
+  - player score
+  - have combat rows overlap each other like hand
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - clicking history entry highlights/animates card (if still on battlefield)

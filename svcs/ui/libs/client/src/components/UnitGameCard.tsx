@@ -16,23 +16,21 @@ export default function UnitGameCard({
   selected,
   cursor = 'pointer',
   onFullscreen,
+  title,
   dotted,
 }: UnitGameCardProps) {
   const combatSymbol = getCombatImage(deckUnit)
   const combatTitle = deckUnit.unit.combats
     ? deckUnit.unit.combats.map((combat) => toTitleCase(combat)).join(' or ')
     : ''
+  const unitTitle = title || deckUnit.unit.name
   return (
     <div
       className={`${HTML_CLASSES.UnitGameCardContainer} ${selected ? HTML_CLASSES.ItemHighlighted : ''}`}
-      title={deckUnit.unit.name}
+      title={unitTitle}
       style={{ cursor, borderStyle: selected ? (dotted ? 'dotted' : 'solid') : 'none' }}
     >
-      <img
-        className="unit-game-card-image"
-        title={deckUnit.unit.name}
-        src={deckUnit.unit.images[deckUnit.artStyle - 1]}
-      />
+      <img className="unit-game-card-image" title={unitTitle} src={deckUnit.unit.images[deckUnit.artStyle - 1]} />
       <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>
         <StrengthCircle size={'100%'} unit={deckUnit.unit} />
       </div>
@@ -75,5 +73,6 @@ interface UnitGameCardProps {
   selected?: boolean
   dotted?: boolean
   cursor?: string
+  title?: string
   onFullscreen: (deckUnit: DeckUnit) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
