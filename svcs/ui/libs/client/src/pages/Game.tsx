@@ -2084,6 +2084,11 @@ function renderHistory({
         </Centered>
       ) : (
         <div id="gameHistoryContainer">
+          {showLoading && (
+            <div className="game-history-loading-container">
+              <LoadingSpinner size="100px" title={loadingTitle} />
+            </div>
+          )}
           {movesByRounds.map((movesByRound) => (
             <div className="game-history-round-container" key={movesByRound.round}>
               <div className="game-history-round-name">Round {movesByRound.round}</div>
@@ -2127,11 +2132,6 @@ function renderHistory({
                   </div>
                 )
               })}
-              {showLoading && (
-                <div className="game-history-loading-container">
-                  <LoadingSpinner size="100px" title={loadingTitle} />
-                </div>
-              )}
             </div>
           ))}
         </div>
