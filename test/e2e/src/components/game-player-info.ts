@@ -12,6 +12,7 @@ export default class GamePlayerInfo {
       Container: container,
       Name: container.find(`.${HTML_CLASSES.GamePlayerName}`),
       TokensWon: container.find(`.${HTML_CLASSES.GamePlayerRoundTokenWon}`),
+      TokensLost: container.find(`.${HTML_CLASSES.GamePlayerRoundTokenLost}`),
       Score: container.find(`.${HTML_CLASSES.GamePlayerScore}`),
       DeckPlaceholder: container.find(`.${HTML_CLASSES.GameDeckIcon}`),
       FactionImage: container.find(`.${HTML_CLASSES.GamePlayerFactionImage}`),
@@ -35,11 +36,13 @@ export default class GamePlayerInfo {
     score = 0,
     undrawn,
     losses = 0,
+    lives = 2,
     from,
     turn,
   }: {
     name: string
     losses?: number
+    lives?: number
     score?: number
     faction?: Faction
     leader?: Leader
@@ -50,7 +53,8 @@ export default class GamePlayerInfo {
     turn?: PlayerTurn
   }) {
     await t.expect(this.elements.Name.innerText).eql(name)
-    await t.expect(this.elements.TokensWon.count).eql(2 - 1 - losses) // TODO: change "2" to game.lives
+    await t.expect(this.elements.TokensWon.count).eql(lives - losses)
+    await t.expect(this.elements.TokensLost.count).eql(losses)
     await t.expect(this.elements.Score.innerText).eql(score.toString())
     if ([faction, leader, undrawn, hand, discards].includes(undefined)) {
       await t.expect(this.elements.DeckPlaceholder.exists).ok()

@@ -1136,7 +1136,7 @@ function renderScore({
                     key={index}
                     className={`game-round-token ${
                       round.round.result === RoundResult.Lost || round.round.result === RoundResult.Drew
-                        ? 'game-round-token-lost'
+                        ? HTML_CLASSES.GamePlayerRoundTokenLost
                         : HTML_CLASSES.GamePlayerRoundTokenWon
                     }`}
                     title={title}
@@ -1470,9 +1470,17 @@ function renderCombatRow({
     array: playerRow.units,
     sortProperties: ['unit.strength', 'unit.id'],
   })
+  let id = ''
+  if (combat === Combat.Close) {
+    id = isSelf ? HTML_IDS.GameCombatRowCloseSelf : HTML_IDS.GameCombatRowCloseOpponent
+  } else if (combat === Combat.Ranged) {
+    id = isSelf ? HTML_IDS.GameCombatRowRangedSelf : HTML_IDS.GameCombatRowRangedOpponent
+  } else {
+    id = isSelf ? HTML_IDS.GameCombatRowSiegeSelf : HTML_IDS.GameCombatRowSiegeOpponent
+  }
 
   return (
-    <div className="game-unit-board-combat-row">
+    <div id={id} className="game-unit-board-combat-row">
       <div className="game-unit-board-combat-icon-score">
         <img
           className="game-unit-combat-row-icon"
@@ -2094,7 +2102,7 @@ function renderHistory({
           <CgTime color="black" className={HTML_CLASSES.GameHistoryIcon} title="History" />
         </Centered>
       ) : (
-        <div id="gameHistoryContainer">
+        <div id={HTML_IDS.GameHistoryContainer}>
           {showLoading && (
             <div className="game-history-loading-container">
               <LoadingSpinner size="100px" title={loadingTitle} />
@@ -2111,8 +2119,8 @@ function renderHistory({
             </div>
           )}
           {movesByRounds.map((movesByRound) => (
-            <div className="game-history-round-container" key={movesByRound.round}>
-              <div className="game-history-round-name">Round {movesByRound.round}</div>
+            <div className={HTML_CLASSES.GameHistoryRoundContainer} key={movesByRound.round}>
+              <div className={HTML_CLASSES.GameHistoryRoundName}>Round {movesByRound.round}</div>
               {movesByRound.playerMove.map((playerMove, index) => {
                 const gamePlayer = game.players[playerMove.playerIndex]
                 const isSelf = gamePlayer.user.name === self.user.name
@@ -2139,7 +2147,9 @@ function renderHistory({
                 return (
                   <div
                     key={`r${movesByRound.round}-i${index}`}
-                    className={`game-history-move ${isSelf ? 'game-history-move-self' : 'game-history-move-opponent'}`}
+                    className={`${HTML_CLASSES.GameHistoryMove} ${
+                      isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
+                    }`}
                   >
                     <div className="game-history-move-image-container-outer">
                       <div className="game-history-move-image-container-inner">
@@ -2147,8 +2157,16 @@ function renderHistory({
                       </div>
                     </div>
                     <div className="game-history-move-user-description">
-                      <div className={`${textClass} game-history-move-username`}>{gamePlayer.user.name}</div>
-                      <div className={`${textClass} ${error ? 'error-text' : ''}`}>{description}</div>
+                      <div className={`${textClass} ${HTML_CLASSES.GameHistoryMoveUsername}`}>
+                        {gamePlayer.user.name}
+                      </div>
+                      <div
+                        className={`${textClass} ${error ? 'error-text' : ''} ${
+                          HTML_CLASSES.GameHistoryMoveDescription
+                        }`}
+                      >
+                        {description}
+                      </div>
                     </div>
                   </div>
                 )

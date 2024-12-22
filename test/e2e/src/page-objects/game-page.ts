@@ -1,14 +1,14 @@
 import { ObjectId } from 'mongodb'
 import { Selector, t } from 'testcafe'
 
-import { Deck, DeckUnit, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, DeckUnit, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import DeckEditor from '../components/deck-editor'
 import DeckList, { DeckInfo } from '../components/deck-list'
 import E2eUtil from '../util/e2e-util'
 import GamePlayerInfo, { PlayerTurn } from '../components/game-player-info'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
 import { Leader } from '@gwent/graphql-schema/resolver-typings'
-import { sortObjectArray } from '@gwent/utils'
+import { sortObjectArray, toTitleCase } from '@gwent/utils'
 
 const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)
 const existingGameContainer = Selector(`#${HTML_IDS.GameContainer}`)
@@ -24,6 +24,7 @@ export default class GamePage {
     InfoOpponentContainer: existingGameContainer.find(`#${HTML_IDS.GameInfoOpponentContainer}`),
     Hand: existingGameContainer.find(`#${HTML_IDS.GameHand}`),
     HandIcon: existingGameContainer.find(`.${HTML_CLASSES.GameHandIcon}`),
+    HistoryContainer: existingGameContainer.find(`#${HTML_IDS.GameHistoryContainer}`),
     HistoryIcon: existingGameContainer.find(`.${HTML_CLASSES.GameHistoryIcon}`),
     CenterContainer: existingGameContainer.find(`#${HTML_IDS.GameCenterContainer}`),
     SetDeck: existingGameContainer.find(`#${HTML_IDS.GameSetDeck}`),
@@ -207,9 +208,41 @@ export default class GamePage {
     }
   }
 
-  static async verifyHistory() {
-    await t.expect(GamePage.elements.HistoryIcon.exists).ok()
-    await t.expect(GamePage.elements.HistoryIcon.visible).ok()
+  static async verifyHistory(moves?: HistoryMove[][]) {
+    if (moves) {
+      const expected: string[] = []
+      for (let i = 0; i < moves.length; i++) {
+        expected.push(`Round ${i + 1}`)
+        for (let j = 0; j < moves[i].length; j++) {
+          const move = moves[i][j]
+          expected.push(`${move.userName}: ${move.unitName} deployed as ${toTitleCase(move.combatRow)}`)
+        }
+      }
+      const actual: string[] = []
+      const rounds = GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`)
+      const roundCount = await rounds.count
+      for (let i = 0; i < roundCount; i++) {
+        const roundContainer = rounds.nth(i)
+        const movesCount = await roundContainer.child().count
+        for (let j = 0; j < movesCount; j++) {
+          const move = roundContainer.child().nth(j)
+          if (j === 0) {
+            actual.push(await move.innerText)
+          } else {
+            actual.push(
+              `${await move.find(`.${HTML_CLASSES.GameHistoryMoveUsername}`).innerText}: ${await move.find(
+                `.${HTML_CLASSES.GameHistoryMoveDescription}`
+              ).innerText}`
+            )
+          }
+        }
+      }
+      // TODO: verify loading
+      await t.expect(actual).eql(expected)
+    } else {
+      await t.expect(GamePage.elements.HistoryIcon.exists).ok()
+      await t.expect(GamePage.elements.HistoryIcon.visible).ok()
+    }
   }
 
   static async verifyCenter({
@@ -319,12 +352,14 @@ export default class GamePage {
     hand,
     redraws,
     turnOrder,
+    moves,
   }: {
     self: GamePlayerExpected
     opponent: GamePlayerExpected
     hand?: string[] | DeckUnit[]
     redraws?: Redraws[]
     turnOrder?: string[] | boolean
+    moves?: HistoryMove[][]
   }) {
     let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
@@ -361,7 +396,7 @@ export default class GamePage {
     await GamePage.verifyHand({
       names: handUnitNames,
     })
-    await GamePage.verifyHistory()
+    await GamePage.verifyHistory(moves)
     await GamePage.verifyCenter({
       redraws,
       turnOrder,
@@ -532,6 +567,22 @@ export default class GamePage {
   static async setOrder() {
     await t.click(GamePage.elements.OrderSet)
   }
+
+  static async moveUnit({ unitName, row }: { unitName: string; row: Combat }) {
+    await t.click(
+      GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
+    )
+    // TODO: verify card and row highlighted
+    await t.click(
+      `#${
+        row === Combat.Close
+          ? HTML_IDS.GameCombatRowCloseSelf
+          : row === Combat.Ranged
+          ? HTML_IDS.GameCombatRowRangedSelf
+          : HTML_IDS.GameCombatRowSiegeSelf
+      }`
+    )
+  }
 }
 
 export interface GamePlayerExpected {
@@ -551,4 +602,10 @@ export interface GamePlayerExpected {
 interface Redraws {
   from: string
   to: string
+}
+
+interface HistoryMove {
+  userName: string
+  unitName: string
+  combatRow: Combat
 }
