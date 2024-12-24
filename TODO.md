@@ -60,6 +60,7 @@ A list of things to be done in the future.
 
 ## Features
 
+- remove "statsModifier"
 - animations/text of what opponent did?
 - how to make pass more obvious?
   - white flag icon?

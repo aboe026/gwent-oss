@@ -159,6 +159,27 @@ export function getDeckUnitFragment({ statsModifier = '' }: { statsModifier?: st
   `
 }
 
+export function getMoveFragment() {
+  return `
+    ... on MoveLeader {
+      created
+      leader {
+        ${getLeaderFragment({})}
+      }
+    }
+    ... on MovePass {
+      created
+    }
+    ... on MoveUnit {
+      created
+      row
+      unit {
+        ${getDeckUnitFragment({})}
+      }
+    }
+  `
+}
+
 export function getGamePlayerFragment({ statsModifier = '' }: { statsModifier?: string }): string {
   return `
     counts {
@@ -175,8 +196,22 @@ export function getGamePlayerFragment({ statsModifier = '' }: { statsModifier?: 
     order
     ready
     rounds {
+      close {
+        ${getPlayerCombatRowFragment()}
+      }
+      moves {
+        ${getMoveFragment()}
+      }
+      passed
+      ranged {
+        ${getPlayerCombatRowFragment()}
+      }
+      result
       score
-      won
+      siege {
+        ${getPlayerCombatRowFragment()}
+      }
+
     }
     user {
       ${getUserFragment()}
@@ -186,6 +221,9 @@ export function getGamePlayerFragment({ statsModifier = '' }: { statsModifier?: 
 
 export function getGameFragment({ statsModifier = '' }: { statsModifier?: string }): string {
   return `
+    config {
+      lives
+    }
     created
     creator {
       ${getUserFragment()}
@@ -194,10 +232,7 @@ export function getGameFragment({ statsModifier = '' }: { statsModifier?: string
     players {
       ${getGamePlayerFragment({ statsModifier })}
     }
-    round {
-      current
-      maximum
-    }
+    round
     status
     turn {
       ${getGamePlayerFragment({ statsModifier })}
@@ -230,6 +265,25 @@ export function getGameDeckFragment({ statsModifier = '' }: { statsModifier?: st
     }
     undrawn {
       ${getDeckUnitFragment({ statsModifier })}
+    }
+  `
+}
+
+export function getGameUnitFragment() {
+  return `
+    artStyle
+    effectiveStrength
+    unit {
+      ${getUnitFragment({})}
+    }
+  `
+}
+
+export function getPlayerCombatRowFragment() {
+  return `
+    score
+    units {
+      ${getGameUnitFragment()}
     }
   `
 }

@@ -429,6 +429,9 @@ export default class TestUtil {
     currentRound?: number
   }): GameDbObject {
     return {
+      config: {
+        lives: 2,
+      },
       _id: id ? new ObjectId(id) : new ObjectId(),
       created: created || new Date(),
       creator: creator ? new ObjectId(creator) : new ObjectId(),
@@ -456,10 +459,7 @@ export default class TestUtil {
           user: new ObjectId(),
         },
       ],
-      round: {
-        current: currentRound,
-        maximum: 2,
-      },
+      round: currentRound,
       turn: turn ? new ObjectId(turn) : undefined,
       updated,
       victors: victors.map((victor) => new ObjectId(victor)),
@@ -469,6 +469,9 @@ export default class TestUtil {
 
   static getGameFromDbGame({ game, creator }: { game: GameDbObject; creator?: User }): Game {
     return {
+      config: {
+        lives: 2,
+      },
       created: game.created,
       creator:
         creator ||
@@ -504,6 +507,9 @@ export default class TestUtil {
 
   static getGame({ id, creator, players }: { id?: ObjectId | string; creator?: User; players?: GamePlayer[] }): Game {
     return {
+      config: {
+        lives: 2,
+      },
       created: new Date(),
       creator: creator || TestUtil.getUser({}),
       id: (id || new ObjectId()).toString(),
@@ -514,10 +520,7 @@ export default class TestUtil {
           user: TestUtil.getUser({}),
         },
       ],
-      round: {
-        current: 0,
-        maximum: 2,
-      },
+      round: 0,
       status: GameStatus.Decking,
       updated: new Date(),
       victors: [],

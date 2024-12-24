@@ -66,20 +66,43 @@ export default class PlayUnitMutation {
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
-    // TODO: ensure it is users turn
-    // TODO: ensure unit is in players hand
+    if (game.turn?.toString() !== userId.toString()) {
+      const message = 'Cannot play unit when it is not your turn.'
+      PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
 
     const deckUnits = player.deck.hand.filter((hand) => hand.unit.toString() === unitId)
-    // TODO: throw error if not in hand
-    // TODO: throw error if more than 1 in hand
+    if (deckUnits.length === 0) {
+      const message = `Invalid unit "${unitId}": not in hand.`
+      PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    } else if (deckUnits.length > 1) {
+      const message = `Found more than 1 unit with ID "${unitId}"`
+      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: ${JSON.stringify(deckUnits)}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
     const deckUnit = deckUnits[0]
 
     const units = await UnitStore.get({
       ids: [unitId],
     })
-    // TODO: throw error if cannot find unit
+    if (units.length === 0) {
+      const message = `Could not find unit with ID "${unitId}"`
+      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    } else if (units.length > 1) {
+      const message = `Found multiple units with ID "${unitId}"`
+      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: ${JSON.stringify(units)}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
     const unit = units[0]
-    // TODO: throw error if unit cannot be used in row of args.combat
+
+    if (!unit.combats || !unit.combats.includes(args.combat)) {
+      const message = `Combat "${args.combat}" does match unit combats of "${JSON.stringify(unit.combats)}"`
+      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
 
     // play unit
     game.players = game.players.map((gamePlayer) => {
@@ -88,7 +111,10 @@ export default class PlayUnitMutation {
         const { close, ranged, siege } = playerRound
         const combatRow = args.combat === Combat.Close ? close : args.combat === Combat.Ranged ? ranged : siege
         combatRow.score = combatRow.score + (unit.strength || 0)
-        combatRow.units.push(deckUnit)
+        combatRow.units.push({
+          ...deckUnit,
+          effectiveStrength: unit.strength,
+        })
         return {
           ...gamePlayer,
           rounds: gamePlayer.rounds.map((round, index) => {
