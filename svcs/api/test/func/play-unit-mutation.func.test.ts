@@ -10,6 +10,7 @@ import {
   GamePlayer,
   GameStatus,
   GameUnit,
+  MoveUnit,
   PlayerCombatRow,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
@@ -226,6 +227,7 @@ describe('play-unit-mutation', () => {
           ],
         })
       })
+      // TODO: tests for when in DONE state
       it('returns error if not users turn', async () => {
         await expect(
           graphql({
@@ -248,31 +250,6 @@ describe('play-unit-mutation', () => {
         ).resolves.toEqual({
           data: null,
           errors: [new GraphQLError('Cannot play unit when it is not your turn.')],
-        })
-      })
-      it('returns error if unit not in hand', async () => {
-        const unitId = new ObjectId()
-        await expect(
-          graphql({
-            schema,
-            source: `mutation {
-              playUnit(
-                game: "${game.id}"
-                combat: ${Combat.Close}
-                unit: "${unitId}"
-              ) {
-                ${getGameFragment({})}
-              }
-            }`,
-            contextValue: {
-              session: {
-                user: TestUtil.getDbUserFromUser(game.turn?.user.id === self.id ? self : opponent),
-              },
-            },
-          })
-        ).resolves.toEqual({
-          data: null,
-          errors: [new GraphQLError(`Invalid unit "${unitId}": not in hand.`)],
         })
       })
       it('returns error if unit not in hand', async () => {
@@ -366,11 +343,8 @@ describe('play-unit-mutation', () => {
           score: 0,
           units: [],
         }
-        const updatedGameDeck = await getGameDeck({
-          gameId: game.id,
-          userId: self.id,
-        })
-        updatedGameDeck.hand = updatedGameDeck.hand.filter((handUnit) => handUnit.unit.id !== deckUnit.unit.id)
+        gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== deckUnit.unit.id)
+        const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
         await expect(
           graphql({
             schema,
@@ -396,7 +370,7 @@ describe('play-unit-mutation', () => {
               players: [
                 expectizeGamePlayer({
                   user: self,
-                  gameDeck: updatedGameDeck,
+                  gameDeck,
                   order: game.players.find((player) => player.user.id === self.id)?.order,
                   ready: true,
                   rounds: [
@@ -407,7 +381,7 @@ describe('play-unit-mutation', () => {
                           created: expect.any(Date),
                           row: combat,
                           unit: deckUnit,
-                        },
+                        } as MoveUnit,
                       ],
                       ranged: combat === Combat.Ranged ? expectedCombatRow : emptyCombatRow,
                       siege: combat === Combat.Siege ? expectedCombatRow : emptyCombatRow,
@@ -415,11 +389,11 @@ describe('play-unit-mutation', () => {
                     }),
                   ],
                 }),
-                game.players.find((player) => player.user.id === opponent.id) as GamePlayer,
+                opponentGamePlayer,
               ],
               status: GameStatus.Playing,
               round: 1,
-              turn: game.players.find((player) => player.user.id !== game.turn?.user.id),
+              turn: opponentGamePlayer,
             }),
           },
         })

@@ -2,6 +2,7 @@ import { graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import {
+  Combat,
   Deck,
   DeckUnit,
   Faction,
@@ -443,4 +444,70 @@ export async function ready({
     throw Error(JSON.stringify(response.errors))
   }
   return response.data?.ready as Game
+}
+
+export async function playPass({
+  gameId,
+  userId,
+}: {
+  gameId: string | ObjectId
+  userId: string | ObjectId
+}): Promise<Game> {
+  const response = await graphql({
+    schema,
+    source: `mutation {
+      playPass(
+        game: "${gameId}"
+      ) {
+        ${getGameFragment({})}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.playPass as Game
+}
+
+export async function playUnit({
+  gameId,
+  userId,
+  unitId,
+  combat,
+}: {
+  gameId: string | ObjectId
+  userId: string | ObjectId
+  unitId: string | ObjectId
+  combat: Combat
+}): Promise<Game> {
+  const response = await graphql({
+    schema,
+    source: `mutation {
+      playUnit(
+        game: "${gameId}"
+        unit: "${unitId}"
+        combat: ${combat}
+      ) {
+        ${getGameFragment({})}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.playUnit as Game
 }

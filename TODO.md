@@ -71,6 +71,12 @@ A list of things to be done in the future.
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - clicking history entry highlights/animates card (if still on battlefield)
+- e2e tests
+- unit tests
+- ensure js-docs
+- increment version
+- permissions func tests
+- delete db for func tests before every test (instead of before every file)
 
 - if effective strength greater than normal strength, green. If less, red.
 - games list improvements
