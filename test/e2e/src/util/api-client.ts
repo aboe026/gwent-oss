@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import urljoin from 'url-join'
 
 import {
+  Combat,
   Deck,
   DeckUnit,
   Faction,
@@ -260,6 +261,32 @@ export default class ApiClient {
       }
     )
     return response.gameDeck
+  }
+
+  async playUnit({
+    gameId,
+    unitId,
+    combat,
+  }: {
+    gameId: string | ObjectId
+    unitId: string | ObjectId
+    combat: Combat
+  }): Promise<Game> {
+    const response: any = await this._client.request(
+      gql`
+        mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat!) {
+          playUnit(game: $game, unit: $unit, combat: $combat) {
+            ${this.fieldsOnGame()}
+          }
+        }
+      `,
+      {
+        game: gameId.toString(),
+        unit: unitId.toString(),
+        combat,
+      }
+    )
+    return response.playUnit
   }
 
   async setOrder({ gameId, userIds }: { gameId: string | ObjectId; userIds: (string | ObjectId)[] }): Promise<Game> {

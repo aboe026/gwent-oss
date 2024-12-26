@@ -13,6 +13,7 @@ export const HTML_CLASSES = {
   DeckListDeckContainer: 'deck-list-deck-container',
   DeckListSetForGame: 'deck-list-action-set-for-game',
   ErrorText: 'error-text',
+  GameCombatRowCards: 'game-unit-combat-row-cards',
   GameDeckIcon: 'game-deck-icon',
   GameHandIcon: 'game-hand-icon',
   GameHistoryIcon: 'game-history-icon',

@@ -1490,7 +1490,7 @@ function renderCombatRow({
         <div>{playerRow.score}</div>
       </div>
       <div
-        className={`game-sub-section game-unit-combat-row-cards ${
+        className={`game-sub-section ${HTML_CLASSES.GameCombatRowCards} ${
           validRow ? `${HTML_CLASSES.ItemHighlighted} game-unit-combat-row-valid` : ''
         } ${!isTurn || invalidRow ? 'game-unit-combat-row-invalid' : ''}`}
         style={{

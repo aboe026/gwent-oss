@@ -19,7 +19,7 @@ interface GamePlayTestCtx extends E2eCtx {
   scenario: string
   self: ContextGamePlayer
   opponent: ContextGamePlayer
-  northerRealms: {
+  scoiatael: {
     faction: FactionKey
     leader: string
     units: string[]
@@ -45,31 +45,31 @@ fixture('Game Play')
       name: `${t.ctx.scenario}-opponent-${t.ctx.start}`,
     })
 
-    t.ctx.northerRealms = {
-      faction: FactionKey.NorthernRealms,
-      leader: 'Foltest Son of Medell',
+    t.ctx.scoiatael = {
+      faction: FactionKey.ScoiaTael,
+      leader: 'Francesca Findabair the Beautiful',
       units: [
-        'Ballista',
-        'Dethmold',
+        'Barclay Els',
+        'Ciaran aep Easnillien',
+        'Dennis Cranmer',
+        'Dol Blathanna Archer',
+        'Dol Blathanna Scout',
+        'Eithne',
         'Emiel Regis Rohellec Terzieff',
-        'Esterad Thyssen',
-        'John Natalis',
-        'Keira Metz',
-        'Philippa Eilhart',
-        'Redanian Foot Soldier',
+        'Filavandrel aen Fidhail',
+        'Ida Emean aep Sivney',
+        'Iorveth',
+        'Mahakaman Defender',
+        'Mahakaman Defender',
+        'Riordain',
         'Roach',
-        'Sabrina Glevissig',
-        'Sheldon Skaggs',
-        'Siege Tower',
-        'Siegfried of Denesle',
-        'Sile de Tansarville',
-        'Trebuchet',
-        'Trebuchet',
+        'Saesenthessis',
+        'Toruviel',
         'Triss Merigold',
-        'Vernon Roche',
-        'Ves',
         'Vesemir',
-        'Yarpen Zigrin',
+        'Vrihedd Brigade Recruit',
+        'Vrihedd Brigade Veteran',
+        'Yaevinn',
         'Zoltan Chivay',
       ],
     }
@@ -112,10 +112,10 @@ fixture('Game Play')
     t.ctx.game = await selfClient.addGame([opponent.name])
 
     const selfDeck = await selfClient.addDeck({
-      faction: t.ctx.northerRealms.faction,
-      leaderName: t.ctx.northerRealms.leader,
+      faction: t.ctx.scoiatael.faction,
+      leaderName: t.ctx.scoiatael.leader,
       name: `${t.ctx.scenario}-self-deck-${Date.now()}`,
-      unitNames: t.ctx.northerRealms.units,
+      unitNames: t.ctx.scoiatael.units,
     })
     const opponentDeck = await opponentClient.addDeck({
       faction: t.ctx.nilfgaard.faction,
@@ -142,44 +142,44 @@ fixture('Game Play')
         gameId: t.ctx.game.id,
       }),
     }
+    await selfClient.setOrder({
+      gameId: t.ctx.game.id,
+      userIds: [self.id, opponent.id],
+    })
     await t.ctx.self.client.ready(t.ctx.game.id)
     await t.ctx.opponent.client.ready(t.ctx.game.id)
 
     t.ctx.game = await selfClient.getGame(t.ctx.game.id)
   })
 
-test.only('Can play a unit card', async (t) => {
-  const winner = t.ctx.game.turn?.user.id === t.ctx.self.user.id ? t.ctx.self : t.ctx.opponent
-  const loser = t.ctx.game.turn?.user.id === t.ctx.opponent.user.id ? t.ctx.self : t.ctx.opponent
-
-  await LoginPage.login({
-    username: winner.user.name,
-  })
-
+test('Can play a unit as first move', async (t) => {
   const selfPlayer = E2eHelper.getGamePlayer({
-    player: winner,
+    player: t.ctx.self,
     turn: PlayerTurn.Current,
     ready: true,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
-    player: loser,
+    player: t.ctx.opponent,
     ready: true,
+  })
+  await LoginPage.login({
+    username: t.ctx.self.user.name,
   })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
-    hand: winner.gameDeck.hand,
+    hand: t.ctx.self.gameDeck.hand,
     moves: [[]],
   })
-  const unitToMove = winner.gameDeck.hand[0]
-  const combatRow = (unitToMove.unit.combats as Combat[])[0]
+  const unitToMove = t.ctx.self.gameDeck.hand[0]
+  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
   await GamePage.moveUnit({
     unitName: unitToMove.unit.name,
     row: combatRow,
   })
 
-  winner.gameDeck.hand = winner.gameDeck.hand.filter((hand) => hand.unit.id !== unitToMove.unit.id)
+  t.ctx.self.gameDeck.hand = t.ctx.self.gameDeck.hand.filter((hand) => hand.unit.id !== unitToMove.unit.id)
   selfPlayer.turn = undefined
   selfPlayer.hand = 9
   opponentPlayer.turn = PlayerTurn.Current
@@ -190,13 +190,98 @@ test.only('Can play a unit card', async (t) => {
       ...selfPlayer,
       score: unitToMove.unit.strength || 0,
     },
-    hand: winner.gameDeck.hand,
+    hand: t.ctx.self.gameDeck.hand,
     moves: [
       [
         {
           combatRow: combatRow,
           unitName: unitToMove.unit.name,
-          userName: winner.user.name,
+          userName: t.ctx.self.user.name,
+        },
+      ],
+    ],
+  })
+})
+
+test('Can play a unit after opponent plays unit', async (t) => {
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: PlayerTurn.Current,
+    ready: true,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    ready: true,
+  })
+  const unitToMoveSelf = t.ctx.self.gameDeck.hand[0]
+  const combatRowSelf = unitToMoveSelf.unit.combats ? unitToMoveSelf.unit.combats[0] : Combat.Close
+  await t.ctx.self.client.playUnit({
+    gameId: t.ctx.game.id,
+    unitId: unitToMoveSelf.unit.id,
+    combat: combatRowSelf,
+  })
+  t.ctx.self.gameDeck.hand = t.ctx.self.gameDeck.hand.filter((hand) => hand.unit.id !== unitToMoveSelf.unit.id)
+  selfPlayer.turn = undefined
+  selfPlayer.hand = 9
+  opponentPlayer.turn = PlayerTurn.Current
+  await LoginPage.login({
+    username: t.ctx.opponent.user.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+
+  await GamePage.verify({
+    opponent: {
+      ...selfPlayer,
+      score: unitToMoveSelf.unit.strength || 0,
+    },
+    self: opponentPlayer,
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [
+      [
+        {
+          combatRow: combatRowSelf,
+          unitName: unitToMoveSelf.unit.name,
+          userName: t.ctx.self.user.name,
+        },
+      ],
+    ],
+  })
+
+  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand[0]
+  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unitToMoveOpponent.unit.name,
+    row: combatRowOpponent,
+  })
+
+  t.ctx.opponent.gameDeck.hand = t.ctx.opponent.gameDeck.hand.filter(
+    (hand) => hand.unit.id !== unitToMoveOpponent.unit.id
+  )
+  opponentPlayer.turn = undefined
+  opponentPlayer.hand = 9
+  selfPlayer.turn = PlayerTurn.Current
+
+  await GamePage.verify({
+    opponent: {
+      ...selfPlayer,
+      score: unitToMoveSelf.unit.strength || 0,
+    },
+    self: {
+      ...opponentPlayer,
+      score: unitToMoveOpponent.unit.strength || 0,
+    },
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [
+      [
+        {
+          combatRow: combatRowSelf,
+          unitName: unitToMoveSelf.unit.name,
+          userName: t.ctx.self.user.name,
+        },
+        {
+          combatRow: combatRowOpponent,
+          unitName: unitToMoveOpponent.unit.name,
+          userName: t.ctx.opponent.user.name,
         },
       ],
     ],

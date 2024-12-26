@@ -569,11 +569,8 @@ export default class GamePage {
   }
 
   static async moveUnit({ unitName, row }: { unitName: string; row: Combat }) {
-    await t.click(
-      GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
-    )
-    // TODO: verify card and row highlighted
-    await t.click(
+    const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
+    const combatRow = GamePage.elements.CenterContainer.find(
       `#${
         row === Combat.Close
           ? HTML_IDS.GameCombatRowCloseSelf
@@ -581,7 +578,13 @@ export default class GamePage {
           ? HTML_IDS.GameCombatRowRangedSelf
           : HTML_IDS.GameCombatRowSiegeSelf
       }`
-    )
+    ).find(`.${HTML_CLASSES.GameCombatRowCards}`)
+    await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
+    await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
+    await t.click(card)
+    await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+    await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+    await t.click(combatRow)
   }
 }
 
