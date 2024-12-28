@@ -41,13 +41,19 @@ export default function Confirm({
         {title && <span className="confirm-title">{title}</span>}
         <span className="confirm-message">{message}</span>
         {resolvedError && <span className={HTML_CLASSES.ErrorText}>{resolvedError}</span>}
-        <div className="actions">
+        <div className={HTML_CLASSES.ActionsContainer}>
           {loading && <LoadingBar height="25px" />}
-          <button className="secondary" type="button" disabled={loading} autoFocus onClick={() => onClose(false)}>
+          <button
+            className={HTML_CLASSES.ActionsSecondary}
+            type="button"
+            disabled={loading}
+            autoFocus
+            onClick={() => onClose(false)}
+          >
             {cancelLabel}
           </button>
           <button
-            className="primary"
+            className={HTML_CLASSES.ActionsPrimary}
             type="button"
             disabled={loading}
             onClick={async () => {

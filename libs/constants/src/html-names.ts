@@ -1,4 +1,7 @@
 export const HTML_CLASSES = {
+  ActionsContainer: 'actions',
+  ActionsPrimary: 'primary',
+  ActionsSecondary: 'secondary',
   COIN_FLIP_RESULT_TEXT: 'coin-flip-result-text',
   DeckEditorFactionPickerName: 'deck-editor-faction-picker-name',
   DeckEditorLeaderPickerName: 'deck-editor-leader-picker-name',
@@ -158,6 +161,8 @@ export const HTML_IDS = {
   GameOrderSet: 'gameOrderSet',
   GameOrderWaiting: 'gameOrderWaiting',
   GameOrderCoinToss: 'gameOrderCoinToss',
+  GamePass: 'gamePass',
+  GamePassConfirmContainer: 'gamePassConfirmationContainer',
   Games: 'games',
   GamesCreate: 'gamesCreate',
   GamesNoneCreate: 'gamesNoneCreate',

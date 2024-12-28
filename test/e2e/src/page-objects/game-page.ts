@@ -2,6 +2,7 @@ import { ObjectId } from 'mongodb'
 import { Selector, t } from 'testcafe'
 
 import { Combat, Deck, DeckUnit, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import Confirm from '../components/confirm'
 import DeckEditor from '../components/deck-editor'
 import DeckList, { DeckInfo } from '../components/deck-list'
 import E2eUtil from '../util/e2e-util'
@@ -47,6 +48,7 @@ export default class GamePage {
     OrderWaiting: existingGameContainer.find(`#${HTML_IDS.GameOrderWaiting}`),
     CoinTossContainer: existingGameContainer.find(`#${HTML_IDS.GameOrderCoinToss}`),
     Error: Selector(`.${HTML_CLASSES.ErrorText}`),
+    Pass: existingGameContainer.find(`#${HTML_IDS.GamePass}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -208,20 +210,24 @@ export default class GamePage {
     }
   }
 
-  static async verifyHistory(moves?: HistoryMove[][]) {
+  static async verifyHistory(moves?: (HistoryMove | HistoryPass)[][]) {
     if (moves) {
       const expected: string[] = []
       for (let i = 0; i < moves.length; i++) {
         expected.push(`Round ${i + 1}`)
         for (let j = 0; j < moves[i].length; j++) {
           const move = moves[i][j]
-          expected.push(`${move.userName}: ${move.unitName} deployed as ${toTitleCase(move.combatRow)}`)
+          if ('combatRow' in move) {
+            expected.push(`${move.userName}: ${move.unitName} deployed as ${toTitleCase(move.combatRow)}`)
+          } else {
+            expected.push(`${move.userName}: Passed the rest of round ${move.round}`)
+          }
         }
       }
       const actual: string[] = []
       const rounds = GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`)
       const roundCount = await rounds.count
-      for (let i = 0; i < roundCount; i++) {
+      for (let i = roundCount - 1; i >= 0; i--) {
         const roundContainer = rounds.nth(i)
         const movesCount = await roundContainer.child().count
         for (let j = 0; j < movesCount; j++) {
@@ -359,8 +365,10 @@ export default class GamePage {
     hand?: string[] | DeckUnit[]
     redraws?: Redraws[]
     turnOrder?: string[] | boolean
-    moves?: HistoryMove[][]
+    moves?: (HistoryMove | HistoryPass)[][]
   }) {
+    // TODO: verify passed status
+    // TODO: verify round
     let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
       handUnitNames = hand as string[]
@@ -568,6 +576,18 @@ export default class GamePage {
     await t.click(GamePage.elements.OrderSet)
   }
 
+  static async pass({ cancel = false }: { cancel?: boolean }) {
+    await t.click(GamePage.elements.Pass)
+    const confirmDialog = new Confirm(HTML_IDS.GamePassConfirmContainer)
+    await t.expect(confirmDialog.elements.Container.exists).ok()
+    await t.expect(confirmDialog.elements.Container.visible).ok()
+    if (cancel) {
+      await confirmDialog.cancel()
+    } else {
+      await confirmDialog.confirm()
+    }
+  }
+
   static async moveUnit({ unitName, row }: { unitName: string; row: Combat }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
     const combatRow = GamePage.elements.CenterContainer.find(
@@ -611,4 +631,9 @@ interface HistoryMove {
   userName: string
   unitName: string
   combatRow: Combat
+}
+
+interface HistoryPass {
+  userName: string
+  round: number
 }

@@ -567,7 +567,7 @@ function renderExistingGame({
       />
       <Confirm
         title="Pass Round"
-        id="gamePass"
+        id={HTML_IDS.GamePassConfirmContainer}
         message="Are you sure you wish to pass? You will not be able to play any more units the rest of this round."
         error={playPassError}
         loading={playPassLoading}
@@ -1154,7 +1154,7 @@ function renderScore({
               isSelf &&
               game.status === GameStatus.Playing && (
                 <button
-                  id={HTML_IDS.DeckEditorCancel}
+                  id={HTML_IDS.GamePass}
                   type="button"
                   disabled={!canPass}
                   onClick={() => setPassConfirmationOpen(true)}

@@ -263,6 +263,22 @@ export default class ApiClient {
     return response.gameDeck
   }
 
+  async playPass({ gameId }: { gameId: string | ObjectId }): Promise<Game> {
+    const response: any = await this._client.request(
+      gql`
+        mutation PlayPass($game: ID!) {
+          playPass(game: $game) {
+            ${this.fieldsOnGame()}
+          }
+        }
+      `,
+      {
+        game: gameId.toString(),
+      }
+    )
+    return response.playPass
+  }
+
   async playUnit({
     gameId,
     unitId,
