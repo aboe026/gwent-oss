@@ -236,6 +236,7 @@ test('Can pass after opponent passes', async (t) => {
       losses: 1,
     },
     hand: t.ctx.opponent.gameDeck.hand,
+    round: 2,
     moves: [
       [
         {

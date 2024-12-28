@@ -30,6 +30,7 @@ export default class GamePage {
     CenterContainer: existingGameContainer.find(`#${HTML_IDS.GameCenterContainer}`),
     SetDeck: existingGameContainer.find(`#${HTML_IDS.GameSetDeck}`),
     Ready: existingGameContainer.find(`#${HTML_IDS.GameReady}`),
+    Round: existingGameContainer.find(`#${HTML_IDS.GameRound}`),
     UnitBoard: existingGameContainer.find(`.${HTML_CLASSES.GameUnitBoardSide}`),
     RedrawCard: existingGameContainer.find(`.${HTML_CLASSES.GameDeckRedrawCard}`),
     RedrawAvailable: existingGameContainer.find(`.${HTML_CLASSES.ItemHighlighted}`),
@@ -116,6 +117,10 @@ export default class GamePage {
 
   static async clickCreate() {
     await t.click(GamePage.elements.NewGameCreate)
+  }
+
+  static async verifyMiddle({ round }: { round: number }) {
+    await t.expect(GamePage.elements.Round.innerText).eql(`Round: ${round}`)
   }
 
   static async verifySelf({
@@ -359,6 +364,7 @@ export default class GamePage {
     redraws,
     turnOrder,
     moves,
+    round = 1,
   }: {
     self: GamePlayerExpected
     opponent: GamePlayerExpected
@@ -366,6 +372,7 @@ export default class GamePage {
     redraws?: Redraws[]
     turnOrder?: string[] | boolean
     moves?: (HistoryMove | HistoryPass)[][]
+    round?: number
   }) {
     // TODO: verify passed status
     // TODO: verify round
@@ -378,6 +385,9 @@ export default class GamePage {
         array: hand,
       }).map((deckUnit) => (deckUnit as DeckUnit).unit.name) as string[]
     }
+    await GamePage.verifyMiddle({
+      round,
+    })
     await GamePage.verifySelf({
       name: self.name,
       faction: self.faction,

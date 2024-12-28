@@ -884,8 +884,7 @@ function renderSharedInfo({
       <div id="gameInfoSharedDetails" className="game-section">
         {game.status === GameStatus.Playing && (
           <div>
-            <span>Round:</span>
-            <span>{game.round}</span>
+            <span id={HTML_IDS.GameRound}>Round: {game.round}</span>
           </div>
         )}
         <div

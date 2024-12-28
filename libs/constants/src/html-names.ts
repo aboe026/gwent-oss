@@ -152,6 +152,7 @@ export const HTML_IDS = {
   GameRedrawContainer: 'gameRedrawContainer',
   GameReady: 'gameReady',
   GameRefresh: 'gameRefresh',
+  GameRound: 'gameRound',
   GameDeckError: 'gameDeckError',
   GameOrderError: 'gameOrderError',
   GameRedrawError: 'gameRedrawError',
