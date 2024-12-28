@@ -1,5 +1,5 @@
 import ApiClient from '../util/api-client'
-import { Deck, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
@@ -201,6 +201,7 @@ test('Can pass after opponent passes', async (t) => {
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
     ready: true,
+    passed: true,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
@@ -225,16 +226,13 @@ test('Can pass after opponent passes', async (t) => {
     ],
   })
   await GamePage.pass({})
+  selfPlayer.losses = 1
+  selfPlayer.passed = undefined
+  opponentPlayer.losses = 1
 
   await GamePage.verify({
-    opponent: {
-      ...selfPlayer,
-      losses: 1,
-    },
-    self: {
-      ...opponentPlayer,
-      losses: 1,
-    },
+    opponent: selfPlayer,
+    self: opponentPlayer,
     hand: t.ctx.opponent.gameDeck.hand,
     round: 2,
     moves: [
@@ -249,6 +247,72 @@ test('Can pass after opponent passes', async (t) => {
         },
       ],
       [],
+    ],
+  })
+})
+
+test('Pass after opponent plays unit', async (t) => {
+  const unitToMove = t.ctx.self.gameDeck.hand[0]
+  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
+  t.ctx.self.gameDeck.hand = t.ctx.self.gameDeck.hand.filter((hand) => hand.unit.id !== unitToMove.unit.id)
+  await t.ctx.self.client.playUnit({
+    gameId: t.ctx.game.id,
+    unitId: unitToMove.unit.id,
+    combat: combatRow,
+  })
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    ready: true,
+    score: unitToMove.unit.strength || 0,
+    hand: 9,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    ready: true,
+    turn: PlayerTurn.Current,
+  })
+  await LoginPage.login({
+    username: t.ctx.opponent.user.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+
+  await GamePage.verify({
+    opponent: selfPlayer,
+    self: opponentPlayer,
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unitToMove.unit.name,
+          combatRow,
+        },
+      ],
+    ],
+  })
+
+  await GamePage.pass({})
+
+  opponentPlayer.turn = undefined
+  opponentPlayer.passed = true
+  selfPlayer.turn = PlayerTurn.Current
+
+  await GamePage.verify({
+    opponent: selfPlayer,
+    self: opponentPlayer,
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [
+      [
+        {
+          combatRow: combatRow,
+          unitName: unitToMove.unit.name,
+          userName: t.ctx.self.user.name,
+        },
+        {
+          userName: t.ctx.opponent.user.name,
+          round: 1,
+        },
+      ],
     ],
   })
 })

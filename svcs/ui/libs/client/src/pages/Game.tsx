@@ -1146,7 +1146,7 @@ function renderScore({
           </div>
           {playerRound &&
             (playerRound.passed ? (
-              <span className="game-player-passed " title={passTitle}>
+              <span className={HTML_CLASSES.GamePlayerPassed} title={passTitle}>
                 Passed
               </span>
             ) : (
@@ -2103,7 +2103,7 @@ function renderHistory({
       ) : (
         <div id={HTML_IDS.GameHistoryContainer}>
           {showLoading && (
-            <div className="game-history-loading-container">
+            <div className={HTML_CLASSES.GameHistoryLoadingContainer}>
               <LoadingSpinner size="100px" title={loadingTitle} />
             </div>
           )}

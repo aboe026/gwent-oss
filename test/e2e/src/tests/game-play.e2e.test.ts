@@ -287,3 +287,71 @@ test('Can play a unit after opponent plays unit', async (t) => {
     ],
   })
 })
+
+test('Play unit after opponent plays pass', async (t) => {
+  await t.ctx.self.client.playPass({
+    gameId: t.ctx.game.id,
+  })
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    ready: true,
+    passed: true,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    ready: true,
+    turn: PlayerTurn.Current,
+  })
+  await LoginPage.login({
+    username: t.ctx.opponent.user.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+
+  await GamePage.verify({
+    opponent: selfPlayer,
+    self: opponentPlayer,
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [
+      [
+        {
+          userName: t.ctx.self.user.name,
+          round: 1,
+        },
+      ],
+    ],
+  })
+
+  const unitToMove = t.ctx.opponent.gameDeck.hand[0]
+  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unitToMove.unit.name,
+    row: combatRow,
+  })
+
+  t.ctx.opponent.gameDeck.hand = t.ctx.opponent.gameDeck.hand.filter((hand) => hand.unit.id !== unitToMove.unit.id)
+  opponentPlayer.turn = PlayerTurn.Current
+  opponentPlayer.hand = 9
+  selfPlayer.turn = undefined
+
+  await GamePage.verify({
+    opponent: selfPlayer,
+    self: {
+      ...opponentPlayer,
+      score: unitToMove.unit.strength || 0,
+    },
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [
+      [
+        {
+          userName: t.ctx.self.user.name,
+          round: 1,
+        },
+        {
+          combatRow: combatRow,
+          unitName: unitToMove.unit.name,
+          userName: t.ctx.opponent.user.name,
+        },
+      ],
+    ],
+  })
+})

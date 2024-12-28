@@ -77,6 +77,7 @@ A list of things to be done in the future.
 - increment version
 - permissions func tests
 - delete db for func tests before every test (instead of before every file)
+- remove "Can " prefix for test names
 
 - if effective strength greater than normal strength, green. If less, red.
 - games list improvements

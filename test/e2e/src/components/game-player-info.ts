@@ -2,7 +2,7 @@ import { t } from 'testcafe'
 
 import { Deck, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
 import { formatDay, formatTime } from '@gwent/utils'
-import { HTML_CLASSES } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 
 export default class GamePlayerInfo {
   private elements
@@ -24,6 +24,8 @@ export default class GamePlayerInfo {
       DiscardCount: container.find(`.${HTML_CLASSES.GamePlayerDiscardCount}`),
       DeckName: container.find(`.${HTML_CLASSES.GamePlayerDeckName}`),
       DeckDate: container.find(`.${HTML_CLASSES.GamePlayerDeckDate}`),
+      Pass: container.find(`#${HTML_IDS.GamePass}`),
+      Passed: container.find(`.${HTML_CLASSES.GamePlayerPassed}`),
     }
   }
 
@@ -39,6 +41,7 @@ export default class GamePlayerInfo {
     lives = 2,
     from,
     turn,
+    passed,
   }: {
     name: string
     losses?: number
@@ -51,6 +54,7 @@ export default class GamePlayerInfo {
     discards?: number
     from?: Deck | null
     turn?: PlayerTurn
+    passed?: boolean
   }) {
     await t.expect(this.elements.Name.innerText).eql(name)
     await t.expect(this.elements.TokensWon.count).eql(lives - losses)
@@ -97,6 +101,18 @@ export default class GamePlayerInfo {
       await t
         .expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerFutureTurn))
         .eql(turn === PlayerTurn.Future)
+      if (passed === undefined) {
+        await t.expect(this.elements.Passed.exists).notOk()
+        await t.expect(this.elements.Pass.exists).notOk()
+      } else if (passed) {
+        await t.expect(this.elements.Passed.exists).ok()
+        await t.expect(this.elements.Passed.visible).ok()
+        await t.expect(this.elements.Pass.exists).notOk()
+      } else {
+        await t.expect(this.elements.Pass.exists).ok()
+        await t.expect(this.elements.Pass.visible).ok()
+        await t.expect(this.elements.Passed.exists).notOk()
+      }
     }
   }
 }

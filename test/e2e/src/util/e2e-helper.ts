@@ -16,25 +16,35 @@ export class E2eHelper {
     player,
     turn,
     ready,
+    passed,
+    score,
+    hand = STARTING_HAND_SIZE,
   }: {
     player: ContextGamePlayer
     turn?: PlayerTurn
     ready?: boolean
+    passed?: boolean
+    score?: number
+    hand?: number
   }): GamePlayerExpected {
     const gamePlayer: GamePlayerExpected = {
       name: player.user.name,
       discard: 0,
       faction: player.deck.faction,
       leader: player.deck.leader,
-      hand: STARTING_HAND_SIZE,
+      hand,
       undrawn: player.deck.units.length - STARTING_HAND_SIZE,
       from: player.deck,
+      score,
     }
     if (turn !== undefined) {
       gamePlayer.turn = turn
     }
     if (ready !== undefined) {
       gamePlayer.ready = ready
+    }
+    if (passed !== undefined) {
+      gamePlayer.passed = passed
     }
     return gamePlayer
   }

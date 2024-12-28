@@ -442,9 +442,10 @@ td {
 }
 
 .game-player-name-lives {
-  flex-grow: 1;
   display: flex;
+  flex-grow: 1;
   flex-direction: column;
+  width: 50%;
   justify-content: space-between;
   gap: 10px;
 }
@@ -457,6 +458,7 @@ td {
 
 .game-player-faction-image {
   width: 25%;
+  min-width: 50px;
 }
 
 .game-player-faction-ability {
@@ -471,6 +473,7 @@ td {
 
 .game-player-leader-image {
   width: 25%;
+  min-width: 50px;
   border-radius: 5px;
 }
 

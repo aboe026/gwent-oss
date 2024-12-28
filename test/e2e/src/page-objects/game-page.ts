@@ -27,6 +27,7 @@ export default class GamePage {
     HandIcon: existingGameContainer.find(`.${HTML_CLASSES.GameHandIcon}`),
     HistoryContainer: existingGameContainer.find(`#${HTML_IDS.GameHistoryContainer}`),
     HistoryIcon: existingGameContainer.find(`.${HTML_CLASSES.GameHistoryIcon}`),
+    HistoryLoading: existingGameContainer.find(`.${HTML_CLASSES.GameHistoryLoadingContainer}`),
     CenterContainer: existingGameContainer.find(`#${HTML_IDS.GameCenterContainer}`),
     SetDeck: existingGameContainer.find(`#${HTML_IDS.GameSetDeck}`),
     Ready: existingGameContainer.find(`#${HTML_IDS.GameReady}`),
@@ -134,6 +135,7 @@ export default class GamePage {
     losses,
     from,
     turn,
+    passed = false,
   }: {
     name: string
     losses?: number
@@ -145,6 +147,7 @@ export default class GamePage {
     discards?: number
     from?: Deck | null
     turn?: PlayerTurn
+    passed?: boolean
   }) {
     const info = new GamePlayerInfo(GamePage.elements.InfoSelfContainer)
     await info.verify({
@@ -158,6 +161,7 @@ export default class GamePage {
       losses,
       from,
       turn,
+      passed,
     })
   }
 
@@ -171,6 +175,7 @@ export default class GamePage {
     undrawn,
     losses,
     turn,
+    passed,
   }: {
     name: string
     losses?: number
@@ -181,6 +186,7 @@ export default class GamePage {
     hand?: number
     discards?: number
     turn?: PlayerTurn
+    passed?: boolean
   }) {
     const info = new GamePlayerInfo(GamePage.elements.InfoOpponentContainer)
     await info.verify({
@@ -193,6 +199,7 @@ export default class GamePage {
       undrawn,
       losses,
       turn,
+      passed,
     })
   }
 
@@ -215,7 +222,7 @@ export default class GamePage {
     }
   }
 
-  static async verifyHistory(moves?: (HistoryMove | HistoryPass)[][]) {
+  static async verifyHistory({ moves, waiting }: { moves?: (HistoryMove | HistoryPass)[][]; waiting?: boolean }) {
     if (moves) {
       const expected: string[] = []
       for (let i = 0; i < moves.length; i++) {
@@ -248,8 +255,11 @@ export default class GamePage {
           }
         }
       }
-      // TODO: verify loading
       await t.expect(actual).eql(expected)
+      await t.expect(GamePage.elements.HistoryLoading.exists).eql(!!waiting)
+      if (waiting) {
+        await t.expect(GamePage.elements.HistoryLoading.visible).ok()
+      }
     } else {
       await t.expect(GamePage.elements.HistoryIcon.exists).ok()
       await t.expect(GamePage.elements.HistoryIcon.visible).ok()
@@ -374,8 +384,6 @@ export default class GamePage {
     moves?: (HistoryMove | HistoryPass)[][]
     round?: number
   }) {
-    // TODO: verify passed status
-    // TODO: verify round
     let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
       handUnitNames = hand as string[]
@@ -399,6 +407,7 @@ export default class GamePage {
       losses: self.losses,
       from: self.from,
       turn: self.turn,
+      passed: self.passed,
     })
     await GamePage.verifyOpponent({
       name: opponent.name,
@@ -410,11 +419,15 @@ export default class GamePage {
       score: opponent.score,
       losses: opponent.losses,
       turn: opponent.turn,
+      passed: opponent.passed,
     })
     await GamePage.verifyHand({
       names: handUnitNames,
     })
-    await GamePage.verifyHistory(moves)
+    await GamePage.verifyHistory({
+      moves,
+      waiting: opponent.turn === PlayerTurn.Current,
+    })
     await GamePage.verifyCenter({
       redraws,
       turnOrder,
@@ -630,6 +643,7 @@ export interface GamePlayerExpected {
   ready?: boolean
   from?: Deck | null
   turn?: PlayerTurn
+  passed?: boolean
 }
 
 interface Redraws {
