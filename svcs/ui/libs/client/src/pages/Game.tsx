@@ -1994,10 +1994,10 @@ function renderGameSummary({ game, navigate }: { game: Game; navigate: NavigateF
   const victorNames = game.victors.map((victor) => victor.name)
   const victoryText = `Congratulations to the victor${victorNames.length > 1 ? 's' : ''}:`
   return (
-    <div id="gameSummaryContainer" className="game-section">
-      <div>
-        <span>{victoryText}</span>
-        <div id="gameVictors">
+    <div id={HTML_IDS.GameSummaryContainer} className="game-section">
+      <div id={HTML_IDS.GameSummaryVictorsContainer}>
+        <span id={HTML_IDS.GameSummaryCongratulations}>{victoryText}</span>
+        <div id={HTML_IDS.GameSummaryVictorsList}>
           {victorNames.map((victorName, index) => (
             <span key={index}>{victorName}</span>
           ))}

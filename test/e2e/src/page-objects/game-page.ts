@@ -51,6 +51,8 @@ export default class GamePage {
     CoinTossContainer: existingGameContainer.find(`#${HTML_IDS.GameOrderCoinToss}`),
     Error: Selector(`.${HTML_CLASSES.ErrorText}`),
     Pass: existingGameContainer.find(`#${HTML_IDS.GamePass}`),
+    SummaryContainer: existingGameContainer.find(`#${HTML_IDS.GameSummaryContainer}`),
+    SummaryVictors: existingGameContainer.find(`#${HTML_IDS.GameSummaryVictorsList}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -120,8 +122,12 @@ export default class GamePage {
     await t.click(GamePage.elements.NewGameCreate)
   }
 
-  static async verifyMiddle({ round }: { round: number }) {
-    await t.expect(GamePage.elements.Round.innerText).eql(`Round: ${round}`)
+  static async verifyMiddle({ round }: { round?: number }) {
+    await t.expect(GamePage.elements.Round.exists).eql(!!round)
+    if (round) {
+      await t.expect(GamePage.elements.Round.visible).ok()
+      await t.expect(GamePage.elements.Round.innerText).eql(`Round: ${round}`)
+    }
   }
 
   static async verifySelf({
@@ -273,6 +279,7 @@ export default class GamePage {
     opponentReady,
     redraws,
     turnOrder,
+    victors,
   }: {
     selfSet?: boolean
     opponentSet?: boolean
@@ -283,8 +290,16 @@ export default class GamePage {
       to: string
     }[]
     turnOrder?: string[] | boolean
+    victors?: string[]
   }) {
-    if (selfReady && opponentReady) {
+    if (victors) {
+      await t.expect(GamePage.elements.SummaryContainer.exists).ok()
+      await t.expect(GamePage.elements.SummaryContainer.visible).ok()
+      await t.expect(GamePage.elements.SummaryVictors.exists).ok()
+      await t.expect(GamePage.elements.SummaryVictors.visible).ok()
+      await t.expect(GamePage.elements.SummaryVictors.innerText).eql(victors.join('\n'))
+      // TODO: verify round scores
+    } else if (selfReady && opponentReady) {
       await t.expect(GamePage.elements.UnitBoard.exists).ok()
       await t.expect(GamePage.elements.UnitBoard.visible).ok()
       await t.expect(GamePage.elements.UnitBoard.count).eql(2)
@@ -375,6 +390,7 @@ export default class GamePage {
     turnOrder,
     moves,
     round = 1,
+    victors,
   }: {
     self: GamePlayerExpected
     opponent: GamePlayerExpected
@@ -383,6 +399,7 @@ export default class GamePage {
     turnOrder?: string[] | boolean
     moves?: (HistoryMove | HistoryPass)[][]
     round?: number
+    victors?: string[]
   }) {
     let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
@@ -394,7 +411,7 @@ export default class GamePage {
       }).map((deckUnit) => (deckUnit as DeckUnit).unit.name) as string[]
     }
     await GamePage.verifyMiddle({
-      round,
+      round: victors ? undefined : round,
     })
     await GamePage.verifySelf({
       name: self.name,
@@ -435,6 +452,7 @@ export default class GamePage {
       selfReady: self.ready,
       selfSet: !!self.from,
       opponentSet: !!opponent.from,
+      victors,
     })
   }
 

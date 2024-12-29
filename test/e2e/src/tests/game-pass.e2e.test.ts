@@ -316,3 +316,6 @@ test('Pass after opponent plays unit', async (t) => {
     ],
   })
 })
+
+// TODO: test pass but cancel
+// TODO: can't pass while not turn

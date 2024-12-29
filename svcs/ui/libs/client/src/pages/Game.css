@@ -182,7 +182,17 @@ th {
   gap: 10px;
 }
 
-#gameVictors {
+#gameSummaryVictorsContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+#gameSummaryCongratulations {
+  text-align: center;
+}
+
+#gameSummaryVictorsList {
   display: flex;
   flex-direction: column;
   justify-content: center;
