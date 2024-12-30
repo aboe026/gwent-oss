@@ -709,13 +709,13 @@ interface Redraws {
   to: string
 }
 
-interface HistoryMove {
+export interface HistoryMove {
   userName: string
   unitName: string
   combatRow: Combat
 }
 
-interface HistoryPass {
+export interface HistoryPass {
   userName: string
   round: number
 }
