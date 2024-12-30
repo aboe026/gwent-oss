@@ -1517,22 +1517,23 @@ function renderCombatRow({
       >
         {sortedUnits.map((gameUnit) => {
           return (
-            <UnitGameCard
-              key={gameUnit.unit.id}
-              deckUnit={{
-                artStyle: gameUnit.artStyle,
-                unit: gameUnit.unit,
-              }}
-              selected={gameUnit.unit.id === cardSelected?.unit.id}
-              dotted={!isTurn}
-              onFullscreen={() =>
-                setFullUnit({
-                  unit: gameUnit,
-                  playerId: player.user.id,
-                })
-              }
-              cursor="default"
-            />
+            <div className="game-combat-card-wrapper" key={gameUnit.unit.id}>
+              <UnitGameCard
+                deckUnit={{
+                  artStyle: gameUnit.artStyle,
+                  unit: gameUnit.unit,
+                }}
+                selected={gameUnit.unit.id === cardSelected?.unit.id}
+                dotted={!isTurn}
+                onFullscreen={() =>
+                  setFullUnit({
+                    unit: gameUnit,
+                    playerId: player.user.id,
+                  })
+                }
+                cursor="default"
+              />
+            </div>
           )
         })}
       </div>
@@ -1942,7 +1943,7 @@ function renderHand({
             <span>You have no units left in your hand. Either activate your Leader ability or Pass.</span>
           </Centered>
         ) : (
-          sortedUnits.map((deckUnit, index) => {
+          sortedUnits.map((deckUnit) => {
             const selected = deckUnit.unit.id === cardSelected?.unit.id
             const notSelected = cardSelected?.unit.id && !selected
             let title = deckUnit.unit.name
@@ -1958,14 +1959,13 @@ function renderHand({
 
             return (
               <div
-                className={`game-card-wrapper ${selected ? 'game-card-wrapper-selected' : ''}`}
+                className={`game-hand-card-wrapper ${selected ? 'game-hand-card-wrapper-selected' : ''}`}
                 key={deckUnit.unit.id}
                 onClick={() => {
                   if (!playUnitLoading) {
                     setCardSelected(selected ? undefined : deckUnit)
                   }
                 }}
-                style={index === sortedUnits.length - 1 ? { marginRight: '-18px' } : {}}
               >
                 <UnitGameCard
                   cursor={cursor}
@@ -1980,7 +1980,7 @@ function renderHand({
                     })
                   }
                 />
-                {notSelected && <div title={title} className="game-card-wrapper-not-selected"></div>}
+                {notSelected && <div title={title} className="game-hand-card-wrapper-not-selected"></div>}
               </div>
             )
           })

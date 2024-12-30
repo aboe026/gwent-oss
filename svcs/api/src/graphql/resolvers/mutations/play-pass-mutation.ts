@@ -26,7 +26,7 @@ export default class PlayPassMutation {
       PlayPassMutation.logger.error(`No user on context for playPass mutation: "${JSON.stringify(context.session)}".`)
       return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    const logPrefix = `playPass by "${userId}"`
+    let logPrefix = `playPass by "${userId}"`
     if (PlayPassMutation.logger.isTraceEnabled()) {
       PlayPassMutation.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
       PlayPassMutation.logger.trace(
@@ -38,6 +38,7 @@ export default class PlayPassMutation {
     }
 
     const gameId = args.game
+    logPrefix += ` on game "${gameId}"`
 
     const response = await MutationUtil.getGamePlayer({
       gameId,
