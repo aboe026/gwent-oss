@@ -1367,6 +1367,8 @@ function renderBattlefield({
     }
   }
   const isTurn = game.turn?.user.name === self.user.name
+  const selfPassed = self.rounds[game.round - 1].passed
+  const opponentPassed = opponent.rounds[game.round - 1].passed
   const props = {
     cardSelected,
     playUnit,
@@ -1378,7 +1380,12 @@ function renderBattlefield({
   }
   return (
     <>
-      <div className={`${HTML_CLASSES.GameUnitBoardSide} game-section`}>
+      <div
+        className={`${HTML_CLASSES.GameUnitBoardSide} ${
+          opponentPassed ? HTML_CLASSES.GameUnitBoardSidePassed : ''
+        } game-section`}
+        title={opponentPassed ? 'Your oppponent has passed the rest of this round' : ''}
+      >
         {renderCombatRow({
           ...props,
           player: opponent,
@@ -1395,7 +1402,12 @@ function renderBattlefield({
           combat: Combat.Close,
         })}
       </div>
-      <div className={`${HTML_CLASSES.GameUnitBoardSide} game-section`}>
+      <div
+        className={`${HTML_CLASSES.GameUnitBoardSide} ${
+          selfPassed ? HTML_CLASSES.GameUnitBoardSidePassed : ''
+        } game-section`}
+        title={selfPassed ? 'You have passed the rest of this round' : ''}
+      >
         {renderCombatRow({
           ...props,
           player: self,

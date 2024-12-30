@@ -345,6 +345,13 @@ td {
   padding: 10px;
 }
 
+.game-unit-board-side-passed {
+  border-style: solid;
+  border-color: purple;
+  border-radius: 5px;
+  border-width: 5px;
+}
+
 .game-unit-combat-row-cards {
   display: flex;
   justify-content: center;
