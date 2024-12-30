@@ -1,5 +1,5 @@
 import ApiClient from '../util/api-client'
-import { Deck, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
@@ -7,6 +7,7 @@ import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
+import { sortObjectArray } from '@gwent/utils'
 
 interface ContextGamePlayer {
   user: User
@@ -152,6 +153,255 @@ fixture('Game Victories')
     t.ctx.game = await selfClient.getGame(t.ctx.game.id)
   })
 
+test('All wins ends in victory after 2 rounds', async (t) => {
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: PlayerTurn.Current,
+    ready: true,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    ready: true,
+  })
+  await LoginPage.login({
+    username: t.ctx.self.user.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [[]],
+  })
+
+  // round 1
+  const sortedHand = sortObjectArray({
+    array: t.ctx.self.gameDeck.hand,
+    sortProperties: ['unit.strength', 'unit.id'],
+    reverse: true,
+  })
+  const unit1 = sortedHand[0]
+  const combat1 = unit1.unit.combats ? unit1.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unit1.unit.name,
+    row: combat1,
+  })
+  selfPlayer.turn = undefined
+  t.ctx.self.gameDeck.hand = t.ctx.self.gameDeck.hand.filter((card) => card.unit.id !== unit1.unit.id)
+  selfPlayer.hand = 9
+  selfPlayer.score = unit1.unit.strength || 0
+  opponentPlayer.turn = PlayerTurn.Current
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unit1.unit.name,
+          combatRow: combat1,
+        },
+      ],
+    ],
+  })
+
+  await t.ctx.opponent.client.playPass({
+    gameId: t.ctx.game.id,
+  })
+  selfPlayer.turn = PlayerTurn.Current
+  opponentPlayer.passed = true
+  opponentPlayer.turn = undefined
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    round: 1,
+    moves: [
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unit1.unit.name,
+          combatRow: combat1,
+        },
+        {
+          userName: t.ctx.opponent.user.name,
+          round: 1,
+        },
+      ],
+    ],
+  })
+
+  await GamePage.pass({})
+  selfPlayer.score = 0
+  selfPlayer.discard = 1
+  opponentPlayer.losses = 1
+  opponentPlayer.passed = undefined
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    round: 2,
+    moves: [
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unit1.unit.name,
+          combatRow: combat1,
+        },
+        {
+          userName: t.ctx.opponent.user.name,
+          round: 1,
+        },
+        {
+          userName: t.ctx.self.user.name,
+          round: 1,
+        },
+      ],
+      [],
+    ],
+  })
+
+  // round 2
+  const unit2 = sortedHand[1]
+  const combat2 = unit2.unit.combats ? unit2.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unit2.unit.name,
+    row: combat2,
+  })
+  t.ctx.self.gameDeck.hand = t.ctx.self.gameDeck.hand.filter((card) => card.unit.id !== unit2.unit.id)
+  selfPlayer.turn = undefined
+  selfPlayer.hand = 8
+  selfPlayer.score += unit2.unit.strength || 0
+  opponentPlayer.turn = PlayerTurn.Current
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    round: 2,
+    moves: [
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unit1.unit.name,
+          combatRow: combat1,
+        },
+        {
+          userName: t.ctx.opponent.user.name,
+          round: 1,
+        },
+        {
+          userName: t.ctx.self.user.name,
+          round: 1,
+        },
+      ],
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unit2.unit.name,
+          combatRow: combat2,
+        },
+      ],
+    ],
+  })
+
+  await t.ctx.opponent.client.playPass({
+    gameId: t.ctx.game.id,
+  })
+  selfPlayer.turn = PlayerTurn.Current
+  opponentPlayer.turn = undefined
+  opponentPlayer.passed = true
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    round: 2,
+    moves: [
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unit1.unit.name,
+          combatRow: combat1,
+        },
+        {
+          userName: t.ctx.opponent.user.name,
+          round: 1,
+        },
+        {
+          userName: t.ctx.self.user.name,
+          round: 1,
+        },
+      ],
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unit2.unit.name,
+          combatRow: combat2,
+        },
+        {
+          userName: t.ctx.opponent.user.name,
+          round: 2,
+        },
+      ],
+    ],
+  })
+
+  await GamePage.pass({})
+  selfPlayer.turn = undefined
+  selfPlayer.passed = true
+  selfPlayer.discard = 2
+  opponentPlayer.losses = 2
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    round: 2,
+    moves: [
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unit1.unit.name,
+          combatRow: combat1,
+        },
+        {
+          userName: t.ctx.opponent.user.name,
+          round: 1,
+        },
+        {
+          userName: t.ctx.self.user.name,
+          round: 1,
+        },
+      ],
+      [
+        {
+          userName: t.ctx.self.user.name,
+          unitName: unit2.unit.name,
+          combatRow: combat2,
+        },
+        {
+          userName: t.ctx.opponent.user.name,
+          round: 2,
+        },
+        {
+          userName: t.ctx.self.user.name,
+          round: 2,
+        },
+      ],
+    ],
+    victors: [t.ctx.self.user.name],
+    rounds: [
+      {
+        opponent: 0,
+        self: unit1.unit.strength || 0,
+      },
+      {
+        opponent: 0,
+        self: unit2.unit.strength || 0,
+      },
+    ],
+  })
+})
+
 test('All passes ends in tie after 2 rounds', async (t) => {
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -281,6 +531,16 @@ test('All passes ends in tie after 2 rounds', async (t) => {
       ],
     ],
     victors: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+    rounds: [
+      {
+        opponent: 0,
+        self: 0,
+      },
+      {
+        opponent: 0,
+        self: 0,
+      },
+    ],
   })
 })
 

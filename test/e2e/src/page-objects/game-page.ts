@@ -53,6 +53,7 @@ export default class GamePage {
     Pass: existingGameContainer.find(`#${HTML_IDS.GamePass}`),
     SummaryContainer: existingGameContainer.find(`#${HTML_IDS.GameSummaryContainer}`),
     SummaryVictors: existingGameContainer.find(`#${HTML_IDS.GameSummaryVictorsList}`),
+    SummaryRoundBreakdown: existingGameContainer.find(`#${HTML_IDS.GameSummaryRoundBreakdown}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -280,6 +281,7 @@ export default class GamePage {
     redraws,
     turnOrder,
     victors,
+    rounds = [],
   }: {
     selfSet?: boolean
     opponentSet?: boolean
@@ -291,6 +293,7 @@ export default class GamePage {
     }[]
     turnOrder?: string[] | boolean
     victors?: string[]
+    rounds?: RoundScores[]
   }) {
     if (victors) {
       await t.expect(GamePage.elements.SummaryContainer.exists).ok()
@@ -298,7 +301,41 @@ export default class GamePage {
       await t.expect(GamePage.elements.SummaryVictors.exists).ok()
       await t.expect(GamePage.elements.SummaryVictors.visible).ok()
       await t.expect(GamePage.elements.SummaryVictors.innerText).eql(victors.join('\n'))
-      // TODO: verify round scores
+      const expectedRounds: string[] = []
+      for (let i = 0; i < rounds.length; i++) {
+        expectedRounds.push(`Round "${i + 1}" self "${rounds[i].self}" opponent "${rounds[i].opponent}"`)
+      }
+      const actualRounds: string[] = []
+      const selfRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorRow}`).nth(0)
+      const selfRounds = selfRow.find(`.${HTML_CLASSES.GameSummaryVictorRound}`)
+      const selfRoundsCount = await selfRounds.count
+      const opponentRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorRow}`).nth(1)
+      const opponentRounds = opponentRow.find(`.${HTML_CLASSES.GameSummaryVictorRound}`)
+      const opponentRoundsCount = await opponentRounds.count
+      const greaterRowsCount = selfRoundsCount > opponentRoundsCount ? selfRoundsCount : opponentRoundsCount
+      for (let i = 0; i < greaterRowsCount; i++) {
+        let selfRoundScore = ''
+        let opponentRoundScore = ''
+        if (i < selfRoundsCount) {
+          selfRoundScore = await selfRounds.nth(i).innerText
+        }
+        if (i < opponentRoundsCount) {
+          opponentRoundScore = await opponentRounds.nth(i).innerText
+        }
+        actualRounds.push(`Round "${i + 1}" self "${selfRoundScore}" opponent "${opponentRoundScore}"`)
+      }
+      await t.expect(actualRounds).eql(expectedRounds)
+      for (let i = 0; i < rounds.length; i++) {
+        const round = rounds[i]
+        await t.expect(selfRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundWon)).eql(round.self > round.opponent)
+        await t.expect(selfRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundLost)).eql(round.self <= round.opponent)
+        await t
+          .expect(opponentRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundWon))
+          .eql(round.opponent > round.self)
+        await t
+          .expect(opponentRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundLost))
+          .eql(round.opponent <= round.self)
+      }
     } else if (selfReady && opponentReady) {
       await t.expect(GamePage.elements.UnitBoard.exists).ok()
       await t.expect(GamePage.elements.UnitBoard.visible).ok()
@@ -391,6 +428,7 @@ export default class GamePage {
     moves,
     round = 1,
     victors,
+    rounds,
   }: {
     self: GamePlayerExpected
     opponent: GamePlayerExpected
@@ -400,6 +438,7 @@ export default class GamePage {
     moves?: (HistoryMove | HistoryPass)[][]
     round?: number
     victors?: string[]
+    rounds?: RoundScores[]
   }) {
     let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
@@ -453,6 +492,7 @@ export default class GamePage {
       selfSet: !!self.from,
       opponentSet: !!opponent.from,
       victors,
+      rounds,
     })
   }
 
@@ -678,4 +718,9 @@ interface HistoryMove {
 interface HistoryPass {
   userName: string
   round: number
+}
+
+interface RoundScores {
+  self: number
+  opponent: number
 }

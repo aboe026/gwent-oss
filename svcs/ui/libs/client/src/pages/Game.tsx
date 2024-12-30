@@ -2003,7 +2003,7 @@ function renderGameSummary({ game, navigate }: { game: Game; navigate: NavigateF
           ))}
         </div>
       </div>
-      <table id="gameVictorBreakdown">
+      <table id={HTML_IDS.GameSummaryRoundBreakdown}>
         <caption>Breakdown of round by score:</caption>
         <thead>
           <tr>
@@ -2015,13 +2015,16 @@ function renderGameSummary({ game, navigate }: { game: Game; navigate: NavigateF
         </thead>
         <tbody>
           {game.players.map((player, playerIndex) => (
-            <tr key={playerIndex}>
+            <tr key={playerIndex} className={HTML_CLASSES.GameSummaryVictorRow}>
               <td className="game-victor-username">{player.user.name}</td>
               {player.rounds.map((round, roundIndex) => (
                 <td
-                  className="game-victor-round-score"
+                  className={`${HTML_CLASSES.GameSummaryVictorRound} ${
+                    round.result === RoundResult.Won
+                      ? HTML_CLASSES.GameSummaryRoundWon
+                      : HTML_CLASSES.GameSummaryRoundLost
+                  }`}
                   key={roundIndex}
-                  style={{ borderColor: round.result === RoundResult.Won ? '#267402' : '#970014' }}
                 >
                   {round.score}
                 </td>

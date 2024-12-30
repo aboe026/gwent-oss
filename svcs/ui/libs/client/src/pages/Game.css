@@ -199,12 +199,12 @@ th {
   align-items: center;
 }
 
-#gameVictorBreakdown th,
+#gameSummaryRoundBreakdown th,
 td {
   border: 1px dotted #999;
 }
 
-#gameVictorBreakdown td {
+#gameSummaryRoundBreakdown td {
   text-align: center;
 }
 
@@ -584,9 +584,17 @@ td {
   gap: 10px;
 }
 
-.game-victor-round-score {
+.game-summary-victor-round {
   border-style: solid;
   border-width: 2px;
+}
+
+.game-summary-round-won {
+  border-color: #267402;
+}
+
+.game-summary-round-lost {
+  border-color: #970014;
 }
 
 .game-history-round-container {
