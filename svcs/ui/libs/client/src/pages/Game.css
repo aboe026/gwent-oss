@@ -345,9 +345,17 @@ td {
   padding: 10px;
 }
 
+.game-unit-board-side-passed {
+  border-style: solid;
+  border-color: purple;
+  border-radius: 5px;
+  border-width: 5px;
+}
+
 .game-unit-combat-row-cards {
   display: flex;
   justify-content: center;
+  width: calc(100% - 60px);
 }
 
 .game-unit-board-combat-row {
@@ -543,7 +551,7 @@ td {
   opacity: 50%;
 }
 
-.game-card-wrapper {
+.game-hand-card-wrapper {
   position: relative;
   display: flex;
   height: 100%;
@@ -551,13 +559,17 @@ td {
   padding-right: 10px;
 }
 
-.game-card-wrapper:last-child,
-.game-card-wrapper:hover,
-.game-card-wrapper-selected {
+.game-hand-card-wrapper:last-child {
+  margin-right: -18px;
+}
+
+.game-hand-card-wrapper:last-child,
+.game-hand-card-wrapper:hover,
+.game-hand-card-wrapper-selected {
   min-width: 120px;
 }
 
-.game-card-wrapper-not-selected {
+.game-hand-card-wrapper-not-selected {
   position: absolute;
   background-color: gray;
   aspect-ratio: 309 / 444;
@@ -565,6 +577,24 @@ td {
   height: 100%;
   border-radius: 10px;
   opacity: 50%;
+}
+
+.game-combat-card-wrapper {
+  position: relative;
+  display: flex;
+  height: 100%;
+  min-width: 10px;
+  padding-right: 10px;
+}
+
+.game-combat-card-wrapper:last-child {
+  margin-right: -10px;
+}
+
+.game-combat-card-wrapper:last-child,
+.game-combat-card-wrapper:hover,
+.game-combat-card-wrapper-selected {
+  min-width: 60px;
 }
 
 .game-history-placeholder {

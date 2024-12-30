@@ -46,6 +46,7 @@ export const HTML_CLASSES = {
   GameHistoryMoveUsername: 'game-history-move-username',
   GameHistoryMoveDescription: 'game-history-move-description',
   GameUnitBoardSide: 'game-unit-board-side',
+  GameUnitBoardSidePassed: 'game-unit-board-side-passed',
   GameRowCreatedDay: 'game-row-created-day',
   GameRowCreatedTime: 'game-row-created-time',
   GameRowUpdatedDay: 'game-row-updated-day',

@@ -67,7 +67,6 @@ A list of things to be done in the future.
   - white border on battlefield?
 - fix layout on small width screen
   - player score
-  - have combat rows overlap each other like hand
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - clicking history entry highlights/animates card (if still on battlefield)
