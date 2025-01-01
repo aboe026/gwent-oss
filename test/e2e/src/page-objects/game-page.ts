@@ -440,6 +440,7 @@ export default class GamePage {
     victors?: string[]
     rounds?: RoundScores[]
   }) {
+    // TODO: for passes, verify player battlefield has purple outline
     let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
       handUnitNames = hand as string[]
