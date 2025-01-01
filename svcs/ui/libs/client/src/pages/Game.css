@@ -282,7 +282,7 @@ td {
 .game-info-player-container {
   display: flex;
   flex-direction: column;
-  height: 45%;
+  height: calc(45% - 20px);
   gap: 10px;
   padding: 10px;
   overflow-y: auto;
@@ -290,6 +290,7 @@ td {
 
 .game-info-player-turn {
   flex-direction: column;
+  height: calc(45% - 30px);
   border-width: 5px;
   border-color: #0152cc;
   border-style: solid;
@@ -301,11 +302,23 @@ td {
 }
 
 .game-score-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 10px;
-  border-radius: 10px;
+  padding-left: 15px;
+  padding-right: 15px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.game-score-container-winning {
   border-width: 5px;
   border-style: solid;
   border-radius: 5px;
+  border-color: #267402;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .game-section {
@@ -346,6 +359,7 @@ td {
 }
 
 .game-unit-board-side-passed {
+  height: calc(50% - 35px);
   border-style: solid;
   border-color: purple;
   border-radius: 5px;

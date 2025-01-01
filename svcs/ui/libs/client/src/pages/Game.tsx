@@ -956,7 +956,7 @@ function renderPlayerInfo({
       }
     } else {
       if (isTurn) {
-        title = isSelf ? 'You will have the first turn' : 'Your opponent will go first this round'
+        title = isSelf ? 'You will have the first turn' : 'Your opponent will have the first turn'
       } else {
         title = isSelf ? 'Your opponent will have the first turn' : 'Your opponent will go after you this round'
       }
@@ -968,6 +968,7 @@ function renderPlayerInfo({
       }
     }
   }
+
   return (
     <div
       id={id}
@@ -1120,53 +1121,55 @@ function renderScore({
         <div className={`game-player-sub-section ${HTML_CLASSES.GamePlayerName}`} title={player.user.name}>
           {player.user.name}
         </div>
-        <div className="game-player-rounds-container">
-          <div className="game-player-rounds-score">
-            <div className="game-player-rounds">
-              {sortedRounds.map((round, index) => {
-                let title = 'Life remaining'
-                if (round.round.result === RoundResult.Drew) {
-                  title = `Life lost due to tie on round ${round.number}`
-                } else if (round.round.result === RoundResult.Lost) {
-                  title = `Life lost due to loss on round ${round.number}`
-                }
-                return (
-                  <div
-                    key={index}
-                    className={`game-round-token ${
-                      round.round.result === RoundResult.Lost || round.round.result === RoundResult.Drew
-                        ? HTML_CLASSES.GamePlayerRoundTokenLost
-                        : HTML_CLASSES.GamePlayerRoundTokenWon
-                    }`}
-                    title={title}
-                  ></div>
-                )
-              })}
+        {(game.status === GameStatus.Playing || game.status === GameStatus.Done) && (
+          <div className="game-player-rounds-container">
+            <div className="game-player-rounds-score">
+              <div className="game-player-rounds">
+                {sortedRounds.map((round, index) => {
+                  let title = 'Life remaining'
+                  if (round.round.result === RoundResult.Drew) {
+                    title = `Life lost due to tie on round ${round.number}`
+                  } else if (round.round.result === RoundResult.Lost) {
+                    title = `Life lost due to loss on round ${round.number}`
+                  }
+                  return (
+                    <div
+                      key={index}
+                      className={`game-round-token ${
+                        round.round.result === RoundResult.Lost || round.round.result === RoundResult.Drew
+                          ? HTML_CLASSES.GamePlayerRoundTokenLost
+                          : HTML_CLASSES.GamePlayerRoundTokenWon
+                      }`}
+                      title={title}
+                    ></div>
+                  )
+                })}
+              </div>
             </div>
+            {playerRound &&
+              (playerRound.passed ? (
+                <span className={HTML_CLASSES.GamePlayerPassed} title={passTitle}>
+                  Passed
+                </span>
+              ) : (
+                isSelf &&
+                game.status === GameStatus.Playing && (
+                  <button
+                    id={HTML_IDS.GamePass}
+                    type="button"
+                    disabled={!canPass}
+                    onClick={() => setPassConfirmationOpen(true)}
+                    title={passTitle}
+                    style={{ cursor: canPass ? 'pointer' : 'not-allowed' }}
+                  >
+                    Pass
+                  </button>
+                )
+              ))}
           </div>
-          {playerRound &&
-            (playerRound.passed ? (
-              <span className={HTML_CLASSES.GamePlayerPassed} title={passTitle}>
-                Passed
-              </span>
-            ) : (
-              isSelf &&
-              game.status === GameStatus.Playing && (
-                <button
-                  id={HTML_IDS.GamePass}
-                  type="button"
-                  disabled={!canPass}
-                  onClick={() => setPassConfirmationOpen(true)}
-                  title={passTitle}
-                  style={{ cursor: canPass ? 'pointer' : 'not-allowed' }}
-                >
-                  Pass
-                </button>
-              )
-            ))}
-        </div>
+        )}
       </div>
-      <div className="game-score-container" style={{ borderColor: winning ? '#267402' : 'darkgray' }}>
+      <div className={`game-score-container ${winning ? 'game-score-container-winning' : ''}`}>
         {playerRound && (
           <span className={HTML_CLASSES.GamePlayerScore} title="Score for the current round">
             {playerRound.score}
