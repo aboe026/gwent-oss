@@ -1,4 +1,4 @@
-import { Deck, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import ApiClient from './api-client'
 import { GamePlayerExpected } from '../page-objects/game-page'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
@@ -47,5 +47,53 @@ export class E2eHelper {
       gamePlayer.passed = passed
     }
     return gamePlayer
+  }
+
+  static addUnitToGamePlayer({
+    player,
+    unitName,
+    score,
+    row,
+  }: {
+    player: GamePlayerExpected
+    unitName: string
+    score: number
+    row: Combat
+  }): void {
+    if (row === Combat.Close) {
+      player.close = {
+        score: (player.close?.score || 0) + score,
+        unitNames: [...(player.close?.unitNames || []), unitName],
+      }
+    } else if (row === Combat.Ranged) {
+      player.ranged = {
+        score: (player.ranged?.score || 0) + score,
+        unitNames: [...(player.ranged?.unitNames || []), unitName],
+      }
+    } else if (row === Combat.Siege) {
+      player.siege = {
+        score: (player.siege?.score || 0) + score,
+        unitNames: [...(player.siege?.unitNames || []), unitName],
+      }
+    }
+  }
+
+  static resetPlayerCombatRow({ player, row }: { player: GamePlayerExpected; row: Combat }) {
+    if (row === Combat.Close) {
+      player.close = {
+        score: 0,
+        unitNames: [],
+      }
+    } else if (row === Combat.Ranged) {
+      player.ranged = {
+        score: 0,
+        unitNames: [],
+      }
+    } else if (row === Combat.Siege) {
+      player.siege = {
+        score: 0,
+        unitNames: [],
+      }
+    }
   }
 }

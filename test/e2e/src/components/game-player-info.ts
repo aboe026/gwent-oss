@@ -102,16 +102,16 @@ export default class GamePlayerInfo {
         .expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerFutureTurn))
         .eql(turn === PlayerTurn.Future)
       if (passed === undefined) {
-        await t.expect(this.elements.Passed.exists).notOk()
-        await t.expect(this.elements.Pass.exists).notOk()
+        await t.expect(this.elements.Passed.exists).notOk(`User "${name}"`)
+        await t.expect(this.elements.Pass.exists).notOk(`User "${name}"`)
       } else if (passed) {
-        await t.expect(this.elements.Passed.exists).ok()
-        await t.expect(this.elements.Passed.visible).ok()
-        await t.expect(this.elements.Pass.exists).notOk()
+        await t.expect(this.elements.Passed.exists).ok(`User "${name}"`)
+        await t.expect(this.elements.Passed.visible).ok(`User "${name}"`)
+        await t.expect(this.elements.Pass.exists).notOk(`User "${name}"`)
       } else {
-        await t.expect(this.elements.Pass.exists).ok()
-        await t.expect(this.elements.Pass.visible).ok()
-        await t.expect(this.elements.Passed.exists).notOk()
+        await t.expect(this.elements.Pass.exists).ok(`User "${name}"`)
+        await t.expect(this.elements.Pass.visible).ok(`User "${name}"`)
+        await t.expect(this.elements.Passed.exists).notOk(`User "${name}"`)
       }
     }
   }

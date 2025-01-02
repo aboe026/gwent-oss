@@ -3,7 +3,7 @@ import { Combat, Deck, FactionKey, Game, GameDeck, User } from '@gwent/graphql-s
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
-import GamePage from '../page-objects/game-page'
+import GamePage, { HistoryMove, HistoryPass } from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
@@ -182,6 +182,12 @@ test('Can play a unit as first move', async (t) => {
   t.ctx.self.gameDeck.hand = t.ctx.self.gameDeck.hand.filter((hand) => hand.unit.id !== unitToMove.unit.id)
   selfPlayer.turn = undefined
   selfPlayer.hand = 9
+  E2eHelper.addUnitToGamePlayer({
+    player: selfPlayer,
+    row: combatRow,
+    score: unitToMove.unit.strength || 0,
+    unitName: unitToMove.unit.name,
+  })
   opponentPlayer.turn = PlayerTurn.Current
 
   await GamePage.verify({
@@ -213,6 +219,7 @@ test('Can play a unit after opponent plays unit', async (t) => {
     player: t.ctx.opponent,
     ready: true,
   })
+  const moves: (HistoryMove | HistoryPass)[] = []
   const unitToMoveSelf = t.ctx.self.gameDeck.hand[0]
   const combatRowSelf = unitToMoveSelf.unit.combats ? unitToMoveSelf.unit.combats[0] : Combat.Close
   await t.ctx.self.client.playUnit({
@@ -223,6 +230,18 @@ test('Can play a unit after opponent plays unit', async (t) => {
   t.ctx.self.gameDeck.hand = t.ctx.self.gameDeck.hand.filter((hand) => hand.unit.id !== unitToMoveSelf.unit.id)
   selfPlayer.turn = undefined
   selfPlayer.hand = 9
+  selfPlayer.score = unitToMoveSelf.unit.strength || 0
+  E2eHelper.addUnitToGamePlayer({
+    player: selfPlayer,
+    row: combatRowSelf,
+    score: unitToMoveSelf.unit.strength || 0,
+    unitName: unitToMoveSelf.unit.name,
+  })
+  moves.push({
+    combatRow: combatRowSelf,
+    unitName: unitToMoveSelf.unit.name,
+    userName: t.ctx.self.user.name,
+  })
   opponentPlayer.turn = PlayerTurn.Current
   await LoginPage.login({
     username: t.ctx.opponent.user.name,
@@ -230,21 +249,10 @@ test('Can play a unit after opponent plays unit', async (t) => {
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
 
   await GamePage.verify({
-    opponent: {
-      ...selfPlayer,
-      score: unitToMoveSelf.unit.strength || 0,
-    },
+    opponent: selfPlayer,
     self: opponentPlayer,
     hand: t.ctx.opponent.gameDeck.hand,
-    moves: [
-      [
-        {
-          combatRow: combatRowSelf,
-          unitName: unitToMoveSelf.unit.name,
-          userName: t.ctx.self.user.name,
-        },
-      ],
-    ],
+    moves: [moves],
   })
 
   const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand[0]
@@ -259,38 +267,36 @@ test('Can play a unit after opponent plays unit', async (t) => {
   )
   opponentPlayer.turn = undefined
   opponentPlayer.hand = 9
+  opponentPlayer.score = unitToMoveOpponent.unit.strength || 0
+  E2eHelper.addUnitToGamePlayer({
+    player: opponentPlayer,
+    row: combatRowOpponent,
+    score: unitToMoveOpponent.unit.strength || 0,
+    unitName: unitToMoveOpponent.unit.name,
+  })
   selfPlayer.turn = PlayerTurn.Current
+  moves.push({
+    combatRow: combatRowOpponent,
+    unitName: unitToMoveOpponent.unit.name,
+    userName: t.ctx.opponent.user.name,
+  })
 
   await GamePage.verify({
-    opponent: {
-      ...selfPlayer,
-      score: unitToMoveSelf.unit.strength || 0,
-    },
-    self: {
-      ...opponentPlayer,
-      score: unitToMoveOpponent.unit.strength || 0,
-    },
+    opponent: selfPlayer,
+    self: opponentPlayer,
     hand: t.ctx.opponent.gameDeck.hand,
-    moves: [
-      [
-        {
-          combatRow: combatRowSelf,
-          unitName: unitToMoveSelf.unit.name,
-          userName: t.ctx.self.user.name,
-        },
-        {
-          combatRow: combatRowOpponent,
-          unitName: unitToMoveOpponent.unit.name,
-          userName: t.ctx.opponent.user.name,
-        },
-      ],
-    ],
+    moves: [moves],
   })
 })
 
 test('Play unit after opponent plays pass', async (t) => {
+  const moves: (HistoryMove | HistoryPass)[] = []
   await t.ctx.self.client.playPass({
     gameId: t.ctx.game.id,
+  })
+  moves.push({
+    userName: t.ctx.self.user.name,
+    round: 1,
   })
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -311,14 +317,7 @@ test('Play unit after opponent plays pass', async (t) => {
     opponent: selfPlayer,
     self: opponentPlayer,
     hand: t.ctx.opponent.gameDeck.hand,
-    moves: [
-      [
-        {
-          userName: t.ctx.self.user.name,
-          round: 1,
-        },
-      ],
-    ],
+    moves: [moves],
   })
 
   const unitToMove = t.ctx.opponent.gameDeck.hand[0]
@@ -331,28 +330,25 @@ test('Play unit after opponent plays pass', async (t) => {
   t.ctx.opponent.gameDeck.hand = t.ctx.opponent.gameDeck.hand.filter((hand) => hand.unit.id !== unitToMove.unit.id)
   opponentPlayer.turn = PlayerTurn.Current
   opponentPlayer.hand = 9
+  opponentPlayer.score = unitToMove.unit.strength || 0
+  E2eHelper.addUnitToGamePlayer({
+    player: opponentPlayer,
+    row: combatRow,
+    score: unitToMove.unit.strength || 0,
+    unitName: unitToMove.unit.name,
+  })
+  moves.push({
+    combatRow: combatRow,
+    unitName: unitToMove.unit.name,
+    userName: t.ctx.opponent.user.name,
+  })
   selfPlayer.turn = undefined
 
   await GamePage.verify({
     opponent: selfPlayer,
-    self: {
-      ...opponentPlayer,
-      score: unitToMove.unit.strength || 0,
-    },
+    self: opponentPlayer,
     hand: t.ctx.opponent.gameDeck.hand,
-    moves: [
-      [
-        {
-          userName: t.ctx.self.user.name,
-          round: 1,
-        },
-        {
-          combatRow: combatRow,
-          unitName: unitToMove.unit.name,
-          userName: t.ctx.opponent.user.name,
-        },
-      ],
-    ],
+    moves: [moves],
   })
 })
 

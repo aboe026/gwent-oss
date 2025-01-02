@@ -57,6 +57,12 @@ export default class GamePage {
     SummaryRoundBreakdown: existingGameContainer.find(`#${HTML_IDS.GameSummaryRoundBreakdown}`),
     BattlefieldOpponent: centerContainer.find(`.${HTML_CLASSES.GameUnitBoardSide}`).nth(0),
     BattlefieldSelf: centerContainer.find(`.${HTML_CLASSES.GameUnitBoardSide}`).nth(1),
+    CombatRowCloseSelf: centerContainer.find(`#${HTML_IDS.GameCombatRowCloseSelf}`),
+    CombatRowRangedSelf: centerContainer.find(`#${HTML_IDS.GameCombatRowRangedSelf}`),
+    CombatRowSiegeSelf: centerContainer.find(`#${HTML_IDS.GameCombatRowSiegeSelf}`),
+    CombatRowCloseOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowCloseOpponent}`),
+    CombatRowRangedOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowRangedOpponent}`),
+    CombatRowSiegeOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowSiegeOpponent}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -276,6 +282,35 @@ export default class GamePage {
     }
   }
 
+  static async verifyCombatRow({
+    rowSelector,
+    isSelf,
+    rowName,
+    score,
+    unitNames,
+  }: {
+    rowSelector: Selector
+    isSelf: boolean
+    rowName: Combat
+    score: number
+    unitNames: string[]
+  }) {
+    await t.expect(rowSelector.exists).ok()
+    await t.expect(rowSelector.visible).ok()
+    const actualUnitNames: string[] = []
+    const rowCards = rowSelector.find(`.${HTML_CLASSES.GameCombatRowCards}`).child()
+    const rowCardsCount = await rowCards.count
+    for (let i = 0; i < rowCardsCount; i++) {
+      actualUnitNames.push(
+        (await rowCards.nth(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`).getAttribute('title')) || ''
+      )
+    }
+    await t.expect(actualUnitNames).eql(unitNames, `${rowName} row for ${isSelf ? 'self' : 'opponent'}`)
+    await t
+      .expect(rowSelector.find(`.${HTML_CLASSES.GameUnitBoardCombatScore}`).innerText)
+      .eql(score.toString(), `${rowName} row for ${isSelf ? 'self' : 'opponent'}`)
+  }
+
   static async verifyCenter({
     self,
     opponent,
@@ -346,7 +381,48 @@ export default class GamePage {
       await t
         .expect(GamePage.elements.BattlefieldOpponent.hasClass(HTML_CLASSES.GameUnitBoardSidePassed))
         .eql(!!opponent.passed)
-      // TODO: verify combat cards
+      await GamePage.verifyCombatRow({
+        rowName: Combat.Close,
+        rowSelector: GamePage.elements.CombatRowCloseSelf,
+        score: self.close?.score || 0,
+        unitNames: self.close?.unitNames || [],
+        isSelf: true,
+      })
+      await GamePage.verifyCombatRow({
+        rowName: Combat.Ranged,
+        rowSelector: GamePage.elements.CombatRowRangedSelf,
+        score: self.ranged?.score || 0,
+        unitNames: self.ranged?.unitNames || [],
+        isSelf: true,
+      })
+      await GamePage.verifyCombatRow({
+        rowName: Combat.Siege,
+        rowSelector: GamePage.elements.CombatRowSiegeSelf,
+        score: self.siege?.score || 0,
+        unitNames: self.siege?.unitNames || [],
+        isSelf: true,
+      })
+      await GamePage.verifyCombatRow({
+        rowName: Combat.Close,
+        rowSelector: GamePage.elements.CombatRowCloseOpponent,
+        score: opponent.close?.score || 0,
+        unitNames: opponent.close?.unitNames || [],
+        isSelf: false,
+      })
+      await GamePage.verifyCombatRow({
+        rowName: Combat.Ranged,
+        rowSelector: GamePage.elements.CombatRowRangedOpponent,
+        score: opponent.ranged?.score || 0,
+        unitNames: opponent.ranged?.unitNames || [],
+        isSelf: false,
+      })
+      await GamePage.verifyCombatRow({
+        rowName: Combat.Siege,
+        rowSelector: GamePage.elements.CombatRowSiegeOpponent,
+        score: opponent.siege?.score || 0,
+        unitNames: opponent.siege?.unitNames || [],
+        isSelf: false,
+      })
     } else if (self.ready && !opponent.ready) {
       await t.expect(GamePage.elements.CenterContainer.innerText).eql('Waiting for opponent to be ready...')
     } else if (redraws) {
@@ -496,11 +572,17 @@ export default class GamePage {
         ready: self.ready,
         set: !!self.from,
         passed: self.passed,
+        close: self.close,
+        ranged: self.ranged,
+        siege: self.siege,
       },
       opponent: {
         ready: opponent.ready,
         set: !!opponent.from,
         passed: opponent.passed,
+        close: opponent.close,
+        ranged: opponent.ranged,
+        siege: opponent.siege,
       },
       redraws,
       turnOrder,
@@ -715,6 +797,9 @@ export interface GamePlayerExpected {
   from?: Deck | null
   turn?: PlayerTurn
   passed?: boolean
+  close?: CombatRow
+  ranged?: CombatRow
+  siege?: CombatRow
 }
 
 interface Redraws {

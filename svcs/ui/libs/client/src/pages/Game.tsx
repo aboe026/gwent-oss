@@ -1503,7 +1503,7 @@ function renderCombatRow({
           src={`images/combats/${combat.toLocaleLowerCase()}.png`}
           title={titledCombat}
         />
-        <div>{playerRow.score}</div>
+        <div className={HTML_CLASSES.GameUnitBoardCombatScore}>{playerRow.score}</div>
       </div>
       <div
         className={`game-sub-section ${HTML_CLASSES.GameCombatRowCards} ${
