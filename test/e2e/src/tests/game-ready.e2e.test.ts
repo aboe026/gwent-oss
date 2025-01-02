@@ -214,8 +214,10 @@ test('Can set ready without redrawing any cards after opponent is ready', async 
     self: {
       ...selfPlayer,
       ready: true,
+      passed: false,
     },
     hand: t.ctx.self.gameDeck.hand,
+    moves: [[]],
   })
 })
 
@@ -313,8 +315,10 @@ test('Can set ready after redrawing once after opponent is ready', async (t) => 
     self: {
       ...selfPlayer,
       ready: true,
+      passed: false,
     },
     hand: t.ctx.self.gameDeck.hand,
+    moves: [[]],
   })
 })
 
@@ -434,7 +438,9 @@ test('Can set ready after redrawing twice after opponent is ready', async (t) =>
     self: {
       ...selfPlayer,
       ready: true,
+      passed: false,
     },
     hand: t.ctx.self.gameDeck.hand,
+    moves: [[]],
   })
 })

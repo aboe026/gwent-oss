@@ -42,6 +42,7 @@ export default class GamePlayerInfo {
     from,
     turn,
     passed,
+    allReady,
   }: {
     name: string
     losses?: number
@@ -55,11 +56,18 @@ export default class GamePlayerInfo {
     from?: Deck | null
     turn?: PlayerTurn
     passed?: boolean
+    allReady?: boolean
   }) {
     await t.expect(this.elements.Name.innerText).eql(name)
-    await t.expect(this.elements.TokensWon.count).eql(lives - losses)
-    await t.expect(this.elements.TokensLost.count).eql(losses)
-    await t.expect(this.elements.Score.innerText).eql(score.toString())
+    if (!allReady) {
+      await t.expect(this.elements.TokensWon.exists).notOk()
+      await t.expect(this.elements.TokensLost.exists).notOk()
+    }
+    if (allReady) {
+      await t.expect(this.elements.TokensWon.count).eql(lives - losses)
+      await t.expect(this.elements.TokensLost.count).eql(losses)
+      await t.expect(this.elements.Score.innerText).eql(score.toString())
+    }
     if ([faction, leader, undrawn, hand, discards].includes(undefined)) {
       await t.expect(this.elements.DeckPlaceholder.exists).ok()
       await t.expect(this.elements.DeckPlaceholder.visible).ok()

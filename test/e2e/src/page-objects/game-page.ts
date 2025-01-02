@@ -151,7 +151,8 @@ export default class GamePage {
     losses,
     from,
     turn,
-    passed = false,
+    passed,
+    allReady,
   }: {
     name: string
     losses?: number
@@ -164,6 +165,7 @@ export default class GamePage {
     from?: Deck | null
     turn?: PlayerTurn
     passed?: boolean
+    allReady?: boolean
   }) {
     const info = new GamePlayerInfo(GamePage.elements.InfoSelfContainer)
     await info.verify({
@@ -178,6 +180,7 @@ export default class GamePage {
       from,
       turn,
       passed,
+      allReady,
     })
   }
 
@@ -192,6 +195,7 @@ export default class GamePage {
     losses,
     turn,
     passed,
+    allReady,
   }: {
     name: string
     losses?: number
@@ -203,6 +207,7 @@ export default class GamePage {
     discards?: number
     turn?: PlayerTurn
     passed?: boolean
+    allReady?: boolean
   }) {
     const info = new GamePlayerInfo(GamePage.elements.InfoOpponentContainer)
     await info.verify({
@@ -216,6 +221,7 @@ export default class GamePage {
       losses,
       turn,
       passed,
+      allReady,
     })
   }
 
@@ -533,7 +539,7 @@ export default class GamePage {
       }).map((deckUnit) => (deckUnit as DeckUnit).unit.name) as string[]
     }
     await GamePage.verifyMiddle({
-      round: victors ? undefined : round,
+      round: !self.ready || !opponent.ready || victors ? undefined : round,
     })
     await GamePage.verifySelf({
       name: self.name,
@@ -547,6 +553,7 @@ export default class GamePage {
       from: self.from,
       turn: self.turn,
       passed: self.passed,
+      allReady: self.ready && opponent.ready,
     })
     await GamePage.verifyOpponent({
       name: opponent.name,
@@ -559,6 +566,7 @@ export default class GamePage {
       losses: opponent.losses,
       turn: opponent.turn,
       passed: opponent.passed,
+      allReady: self.ready && opponent.ready,
     })
     await GamePage.verifyHand({
       names: handUnitNames,
