@@ -60,6 +60,7 @@ A list of things to be done in the future.
 
 ## Features
 
+- e2e test for session expiration on playPass/playUnit
 - remove "statsModifier"
 - animations/text of what opponent did?
 - how to make pass more obvious?

@@ -14,6 +14,7 @@ import { sortObjectArray, toTitleCase } from '@gwent/utils'
 const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)
 const existingGameContainer = Selector(`#${HTML_IDS.GameContainer}`)
 const authErrorContainer = Selector(`#${HTML_IDS.GameAuthErrorContainer}`)
+const centerContainer = existingGameContainer.find(`#${HTML_IDS.GameCenterContainer}`)
 
 export default class GamePage {
   static elements = {
@@ -28,7 +29,7 @@ export default class GamePage {
     HistoryContainer: existingGameContainer.find(`#${HTML_IDS.GameHistoryContainer}`),
     HistoryIcon: existingGameContainer.find(`.${HTML_CLASSES.GameHistoryIcon}`),
     HistoryLoading: existingGameContainer.find(`.${HTML_CLASSES.GameHistoryLoadingContainer}`),
-    CenterContainer: existingGameContainer.find(`#${HTML_IDS.GameCenterContainer}`),
+    CenterContainer: centerContainer,
     SetDeck: existingGameContainer.find(`#${HTML_IDS.GameSetDeck}`),
     Ready: existingGameContainer.find(`#${HTML_IDS.GameReady}`),
     Round: existingGameContainer.find(`#${HTML_IDS.GameRound}`),
@@ -54,6 +55,8 @@ export default class GamePage {
     SummaryContainer: existingGameContainer.find(`#${HTML_IDS.GameSummaryContainer}`),
     SummaryVictors: existingGameContainer.find(`#${HTML_IDS.GameSummaryVictorsList}`),
     SummaryRoundBreakdown: existingGameContainer.find(`#${HTML_IDS.GameSummaryRoundBreakdown}`),
+    BattlefieldOpponent: centerContainer.find(`.${HTML_CLASSES.GameUnitBoardSide}`).nth(0),
+    BattlefieldSelf: centerContainer.find(`.${HTML_CLASSES.GameUnitBoardSide}`).nth(1),
   }
 
   static getUrl(gameId?: string): string {
@@ -274,19 +277,15 @@ export default class GamePage {
   }
 
   static async verifyCenter({
-    selfSet,
-    opponentSet,
-    selfReady,
-    opponentReady,
+    self,
+    opponent,
     redraws,
     turnOrder,
     victors,
     rounds = [],
   }: {
-    selfSet?: boolean
-    opponentSet?: boolean
-    selfReady?: boolean
-    opponentReady?: boolean
+    self: CenterPlayer
+    opponent: CenterPlayer
     redraws?: {
       from: string
       to: string
@@ -336,11 +335,19 @@ export default class GamePage {
           .expect(opponentRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundLost))
           .eql(round.opponent <= round.self)
       }
-    } else if (selfReady && opponentReady) {
-      await t.expect(GamePage.elements.UnitBoard.exists).ok()
-      await t.expect(GamePage.elements.UnitBoard.visible).ok()
-      await t.expect(GamePage.elements.UnitBoard.count).eql(2)
-    } else if (selfReady && !opponentReady) {
+    } else if (self.ready && opponent.ready) {
+      await t.expect(GamePage.elements.BattlefieldSelf.exists).ok()
+      await t.expect(GamePage.elements.BattlefieldSelf.visible).ok()
+      await t.expect(GamePage.elements.BattlefieldOpponent.exists).ok()
+      await t.expect(GamePage.elements.BattlefieldOpponent.visible).ok()
+      await t
+        .expect(GamePage.elements.BattlefieldSelf.hasClass(HTML_CLASSES.GameUnitBoardSidePassed))
+        .eql(!!self.passed)
+      await t
+        .expect(GamePage.elements.BattlefieldOpponent.hasClass(HTML_CLASSES.GameUnitBoardSidePassed))
+        .eql(!!opponent.passed)
+      // TODO: verify combat cards
+    } else if (self.ready && !opponent.ready) {
       await t.expect(GamePage.elements.CenterContainer.innerText).eql('Waiting for opponent to be ready...')
     } else if (redraws) {
       await t.expect(GamePage.elements.RedrawPair.count).eql(redraws.length)
@@ -369,7 +376,7 @@ export default class GamePage {
       await GamePage.verifyOrder({
         turnOrder,
       })
-    } else if (selfSet && !opponentSet) {
+    } else if (self.set && !opponent.set) {
       await t.expect(GamePage.elements.CenterContainer.innerText).eql('Waiting for opponent to choose deck...')
     } else {
       await t.expect(GamePage.elements.SetDeck.exists).ok()
@@ -440,7 +447,6 @@ export default class GamePage {
     victors?: string[]
     rounds?: RoundScores[]
   }) {
-    // TODO: for passes, verify player battlefield has purple outline
     let handUnitNames: string[] | undefined = undefined
     if (hand && typeof hand[0] === 'string') {
       handUnitNames = hand as string[]
@@ -486,12 +492,18 @@ export default class GamePage {
       waiting: opponent.turn === PlayerTurn.Current,
     })
     await GamePage.verifyCenter({
+      self: {
+        ready: self.ready,
+        set: !!self.from,
+        passed: self.passed,
+      },
+      opponent: {
+        ready: opponent.ready,
+        set: !!opponent.from,
+        passed: opponent.passed,
+      },
       redraws,
       turnOrder,
-      opponentReady: opponent.ready,
-      selfReady: self.ready,
-      selfSet: !!self.from,
-      opponentSet: !!opponent.from,
       victors,
       rounds,
     })
@@ -724,4 +736,18 @@ export interface HistoryPass {
 interface RoundScores {
   self: number
   opponent: number
+}
+
+interface CombatRow {
+  score: number
+  unitNames: string[]
+}
+
+interface CenterPlayer {
+  set?: boolean
+  ready?: boolean
+  passed?: boolean
+  close?: CombatRow
+  ranged?: CombatRow
+  siege?: CombatRow
 }
