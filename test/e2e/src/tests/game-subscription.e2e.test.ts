@@ -1327,6 +1327,7 @@ test('Page automatically updates after pass at round end via API on game page', 
     unitId: unitToMove.unit.id,
     combat: combatRow,
   })
+  // TODO: centralize this logic (which is repeated every time unit is played in E2E) in method to reduce duplicate code?
   gameDeckSelf.hand = gameDeckSelf.hand.filter((card) => card.unit.id !== unitToMove.unit.id)
   selfPlayer.hand = 9
   selfPlayer.score = unitToMove.unit.strength || 0
