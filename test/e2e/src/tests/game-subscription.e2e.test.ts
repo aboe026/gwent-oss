@@ -697,8 +697,10 @@ test('Page automatically updates after game ready via API after opponent ready o
     self: {
       ...selfPlayer,
       ready: true,
+      passed: false,
     },
     hand: gameDeckSelf.hand,
+    moves: [[]],
   })
 })
 
@@ -858,8 +860,10 @@ test('Page automatically updates after game ready via API after opponent ready o
     self: {
       ...selfPlayer,
       ready: true,
+      passed: false,
     },
     hand: gameDeckSelf.hand,
+    moves: [[]],
   })
 })
 

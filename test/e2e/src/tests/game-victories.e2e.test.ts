@@ -131,6 +131,7 @@ fixture('Game Victories')
       player: t.ctx.self,
       turn: PlayerTurn.Current,
       ready: true,
+      passed: false,
     })
     t.ctx.opponentPlayer = E2eHelper.getGamePlayer({
       player: t.ctx.opponent,
@@ -369,7 +370,7 @@ test('Self passes ends in loss after 2 rounds', async (t) => {
     gameId: t.ctx.game.id,
   })
   t.ctx.selfPlayer.losses = 1
-  t.ctx.selfPlayer.passed = undefined
+  t.ctx.selfPlayer.passed = false
   t.ctx.opponentPlayer.score = 0
   t.ctx.opponentPlayer.discard = 1
   E2eHelper.resetPlayerCombatRow({
@@ -681,7 +682,7 @@ test('Win loss win ends in victory', async (t) => {
   await t.ctx.opponent.client.playPass({
     gameId: t.ctx.game.id,
   })
-  t.ctx.selfPlayer.passed = undefined
+  t.ctx.selfPlayer.passed = false
   t.ctx.selfPlayer.score = 0
   t.ctx.selfPlayer.losses = 1
   t.ctx.opponentPlayer.score = 0
@@ -910,7 +911,7 @@ test('Win loss loss ends in defeat', async (t) => {
   await t.ctx.opponent.client.playPass({
     gameId: t.ctx.game.id,
   })
-  t.ctx.selfPlayer.passed = undefined
+  t.ctx.selfPlayer.passed = false
   t.ctx.selfPlayer.score = 0
   t.ctx.selfPlayer.losses = 1
   t.ctx.opponentPlayer.score = 0
@@ -1145,7 +1146,7 @@ test('Win loss tie ends in tie', async (t) => {
   await t.ctx.opponent.client.playPass({
     gameId: t.ctx.game.id,
   })
-  t.ctx.selfPlayer.passed = undefined
+  t.ctx.selfPlayer.passed = false
   t.ctx.selfPlayer.score = 0
   t.ctx.selfPlayer.losses = 1
   t.ctx.opponentPlayer.score = 0
@@ -1270,7 +1271,7 @@ test('Loss win win ends in victory', async (t) => {
   await t.ctx.opponent.client.playPass({
     gameId: t.ctx.game.id,
   })
-  t.ctx.selfPlayer.passed = undefined
+  t.ctx.selfPlayer.passed = false
   t.ctx.selfPlayer.score = 0
   t.ctx.selfPlayer.losses = 1
   t.ctx.opponentPlayer.score = 0
@@ -1502,7 +1503,7 @@ test('Loss win loss ends in defeat', async (t) => {
   await t.ctx.opponent.client.playPass({
     gameId: t.ctx.game.id,
   })
-  t.ctx.selfPlayer.passed = undefined
+  t.ctx.selfPlayer.passed = false
   t.ctx.selfPlayer.score = 0
   t.ctx.selfPlayer.losses = 1
   t.ctx.opponentPlayer.score = 0
@@ -1732,7 +1733,7 @@ test('Loss win tie ends in tie', async (t) => {
   await t.ctx.opponent.client.playPass({
     gameId: t.ctx.game.id,
   })
-  t.ctx.selfPlayer.passed = undefined
+  t.ctx.selfPlayer.passed = false
   t.ctx.selfPlayer.score = 0
   t.ctx.selfPlayer.losses = 1
   t.ctx.opponentPlayer.score = 0

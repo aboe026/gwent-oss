@@ -157,6 +157,7 @@ test('Can pass as first move', async (t) => {
     player: t.ctx.self,
     turn: PlayerTurn.Current,
     ready: true,
+    passed: false,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
@@ -206,6 +207,7 @@ test('Can pass after opponent passes', async (t) => {
     player: t.ctx.opponent,
     ready: true,
     turn: PlayerTurn.Current,
+    passed: false,
   })
   await LoginPage.login({
     username: t.ctx.opponent.user.name,
@@ -228,7 +230,7 @@ test('Can pass after opponent passes', async (t) => {
   selfPlayer.losses = 1
   selfPlayer.passed = undefined
   opponentPlayer.losses = 1
-  opponentPlayer.passed = undefined
+  opponentPlayer.passed = false
 
   await GamePage.verify({
     opponent: selfPlayer,
@@ -270,6 +272,7 @@ test('Pass after opponent plays unit', async (t) => {
     player: t.ctx.opponent,
     ready: true,
     turn: PlayerTurn.Current,
+    passed: false,
   })
   E2eHelper.addUnitToGamePlayer({
     player: selfPlayer,

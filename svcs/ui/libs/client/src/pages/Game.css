@@ -79,6 +79,10 @@
   height: 100%;
 }
 
+#gameOrderingContainer {
+  height: 100%;
+}
+
 #gameOrderCoinToss {
   height: 100%;
 }

@@ -14,7 +14,7 @@
     "remove-context-overrides": "yarn g:ts-node scripts/remove-context-overrides.ts",
     "start": "yarn g:npm-run-all --sequential build start-testcafe",
     "start-testcafe": "cross-env START_APP=true testcafe --config-file=build/.testcaferc.js",
-    "start-gwent": "cd $PROJECT_CWD && cross-env SESSION_TIMEOUT_SECONDS=20 MONGO_DB=gwent-e2e yarn start",
+    "start-gwent": "cd $PROJECT_CWD && cross-env SESSION_TIMEOUT_SECONDS=60 MONGO_DB=gwent-e2e yarn start",
     "test": "testcafe --config-file=build/.testcaferc.js --debug-on-fail",
     "start-docker": "yarn remove-context-overrides && docker run --rm -v $PROJECT_CWD:/gwent -w /gwent/test/e2e -it testcafe/testcafe:yarn-pnp chromium build/tests --config-file=build/.testcaferc.js",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",

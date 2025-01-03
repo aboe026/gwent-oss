@@ -270,6 +270,7 @@ test('Speed Run', async (t) => {
   })
   await GamePage.ready()
   gamePlayer2.ready = true
+  gamePlayer2.passed = false
   gamePlayer2.turn = updatedGame.turn?.user.name === username2 ? PlayerTurn.Current : undefined
   gamePlayer1.turn = updatedGame.turn?.user.name === username1 ? PlayerTurn.Current : undefined
   await GamePage.verify({
@@ -277,6 +278,7 @@ test('Speed Run', async (t) => {
     opponent: gamePlayer1,
     hand: gameDeck2.hand,
     redraws: [],
+    moves: [[]],
   })
 })
 
@@ -671,13 +673,15 @@ test('Scenic Route', async (t) => {
       },
     ],
   })
-  gamePlayer1.ready = true
   await GamePage.ready()
+  gamePlayer1.ready = true
+  gamePlayer1.passed = false
   gamePlayer1.turn = game.players.at(-1)?.user.name === username1 ? PlayerTurn.Current : undefined
   gamePlayer2.turn = game.players.at(-1)?.user.name === username2 ? PlayerTurn.Current : undefined
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: redraw4GameDeck1.hand,
+    moves: [[]],
   })
 })

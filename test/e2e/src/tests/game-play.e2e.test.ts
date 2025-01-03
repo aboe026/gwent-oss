@@ -157,6 +157,7 @@ test('Can play a unit as first move', async (t) => {
     player: t.ctx.self,
     turn: PlayerTurn.Current,
     ready: true,
+    passed: false,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
@@ -218,6 +219,7 @@ test('Can play a unit after opponent plays unit', async (t) => {
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
     ready: true,
+    passed: false,
   })
   const moves: (HistoryMove | HistoryPass)[] = []
   const unitToMoveSelf = t.ctx.self.gameDeck.hand[0]
@@ -307,6 +309,7 @@ test('Play unit after opponent plays pass', async (t) => {
     player: t.ctx.opponent,
     ready: true,
     turn: PlayerTurn.Current,
+    passed: false,
   })
   await LoginPage.login({
     username: t.ctx.opponent.user.name,

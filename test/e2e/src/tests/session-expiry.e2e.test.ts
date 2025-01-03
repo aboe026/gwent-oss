@@ -31,7 +31,7 @@ fixture('Session Expiry').before(async (ctx) => {
     name: username,
   })
   ctx.sessionTimeoutSeconds = await new ApiClient({ username }).getSetting<number>(SettingKey.SessionTimeoutSeconds)
-  const requiredTimeoutSeconds = 20
+  const requiredTimeoutSeconds = 60
   if (ctx.sessionTimeoutSeconds !== requiredTimeoutSeconds) {
     throw Error(
       `Sessions timeout of "${ctx.sessionTimeoutSeconds}" seconds does not equal required value of "${requiredTimeoutSeconds}" for E2E tests.`
