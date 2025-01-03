@@ -15,6 +15,7 @@ const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)
 const existingGameContainer = Selector(`#${HTML_IDS.GameContainer}`)
 const authErrorContainer = Selector(`#${HTML_IDS.GameAuthErrorContainer}`)
 const centerContainer = existingGameContainer.find(`#${HTML_IDS.GameCenterContainer}`)
+const historyContainer = existingGameContainer.find(`#${HTML_IDS.GameHistoryContainer}`)
 
 export default class GamePage {
   static elements = {
@@ -26,9 +27,9 @@ export default class GamePage {
     InfoOpponentContainer: existingGameContainer.find(`#${HTML_IDS.GameInfoOpponentContainer}`),
     Hand: existingGameContainer.find(`#${HTML_IDS.GameHand}`),
     HandIcon: existingGameContainer.find(`.${HTML_CLASSES.GameHandIcon}`),
-    HistoryContainer: existingGameContainer.find(`#${HTML_IDS.GameHistoryContainer}`),
-    HistoryIcon: existingGameContainer.find(`.${HTML_CLASSES.GameHistoryIcon}`),
-    HistoryLoading: existingGameContainer.find(`.${HTML_CLASSES.GameHistoryLoadingContainer}`),
+    HistoryContainer: historyContainer,
+    HistoryIcon: historyContainer.find(`.${HTML_CLASSES.GameHistoryIcon}`),
+    HistoryLoading: historyContainer.find(`.${HTML_CLASSES.GameHistoryLoadingContainer}`),
     CenterContainer: centerContainer,
     SetDeck: existingGameContainer.find(`#${HTML_IDS.GameSetDeck}`),
     Ready: existingGameContainer.find(`#${HTML_IDS.GameReady}`),
@@ -63,6 +64,7 @@ export default class GamePage {
     CombatRowCloseOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowCloseOpponent}`),
     CombatRowRangedOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowRangedOpponent}`),
     CombatRowSiegeOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowSiegeOpponent}`),
+    HistoryError: historyContainer.find(`.${HTML_CLASSES.GameHistoryError}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -718,6 +720,10 @@ export default class GamePage {
 
   static async verifyReadyError(error: string) {
     await t.expect(GamePage.elements.ReadyError.innerText).eql(error)
+  }
+
+  static async verifyHistoryError(error: string) {
+    await t.expect(GamePage.elements.HistoryError.innerText).eql(error)
   }
 
   static async verifyAuthError() {

@@ -2127,12 +2127,12 @@ function renderHistory({
             </div>
           )}
           {resolvedPlayPassError && (
-            <div>
+            <div className={HTML_CLASSES.GameHistoryError}>
               <div className="error-text">{`Error attempting to pass: ${resolvedPlayPassError}`}</div>
             </div>
           )}
           {resolvedPlayUnitError && (
-            <div>
+            <div className={HTML_CLASSES.GameHistoryError}>
               <div className="error-text">{`Error playing unit "${cardSelected?.unit.name}": ${resolvedPlayUnitError}`}</div>
             </div>
           )}
