@@ -62,20 +62,20 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useDeckSetSubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const updatedGameDeck = data.data?.deckSet.deck
-      const updatedGame = data.data?.deckSet.game
-      if (updatedGameDeck && updatedGame) {
+      const gameDeck = data.data?.deckSet.deck
+      const game = data.data?.deckSet.game
+      if (gameDeck && game) {
         client.cache.updateQuery<GameDeckQuery>(
           {
             query: GameDeckDocument,
             variables: {
-              game: updatedGame.id,
+              game: game.id,
             },
           },
           (previous) => {
             if (!previous?.gameDeck) {
               return {
-                gameDeck: updatedGameDeck,
+                gameDeck,
               }
             }
           }
@@ -106,19 +106,19 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useGameReadySubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const updatedGame = data.data?.gameReady
-      if (updatedGame) {
+      const game = data.data?.gameReady
+      if (game) {
         client.cache.updateQuery<GameQuery>(
           {
             query: GameDocument,
             variables: {
-              id: updatedGame.id,
+              id: game.id,
             },
           },
           (previous) => {
             if (previous?.game) {
               return {
-                game: updatedGame,
+                game,
               }
             }
           }
@@ -129,19 +129,19 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useGameSetSubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const updatedGame = data.data?.gameSet
-      if (updatedGame) {
+      const game = data.data?.gameSet
+      if (game) {
         client.cache.updateQuery<GameQuery>(
           {
             query: GameDocument,
             variables: {
-              id: updatedGame.id,
+              id: game.id,
             },
           },
           (previous) => {
             if (previous?.game) {
               return {
-                game: updatedGame,
+                game,
               }
             }
           }
@@ -152,19 +152,19 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useOrderSetSubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const updatedGame = data.data?.orderSet
-      if (updatedGame) {
+      const game = data.data?.orderSet
+      if (game) {
         client.cache.updateQuery<GameQuery>(
           {
             query: GameDocument,
             variables: {
-              id: updatedGame.id,
+              id: game.id,
             },
           },
           (previous) => {
             if (previous?.game) {
               return {
-                game: updatedGame,
+                game,
               }
             }
           }
@@ -224,12 +224,12 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     onData: ({ data, client }) => {
       const game = data.data?.unitPlayedFromDeck.game
       const playedUnit = data.data?.unitPlayedFromDeck.unit
-      if (playedUnit) {
+      if (game && playedUnit) {
         client.cache.updateQuery<GameDeckQuery>(
           {
             query: GameDeckDocument,
             variables: {
-              id: game?.id,
+              game: game.id,
             },
           },
           (previous) => {
@@ -249,19 +249,19 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useUnitPlayedOnGameSubscription({
     skip: !user,
     onData: ({ data, client }) => {
-      const updatedGame = data.data?.unitPlayedOnGame.game
-      if (updatedGame) {
+      const game = data.data?.unitPlayedOnGame.game
+      if (game) {
         client.cache.updateQuery<GameQuery>(
           {
             query: GameDocument,
             variables: {
-              id: updatedGame.id,
+              id: game.id,
             },
           },
           (previous) => {
             if (previous?.game) {
               return {
-                game: updatedGame,
+                game,
               }
             }
           }
