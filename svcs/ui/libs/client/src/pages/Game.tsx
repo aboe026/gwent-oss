@@ -582,7 +582,6 @@ function renderExistingGame({
                   game: game.id,
                 },
               })
-              // TODO: test this to see if works/needed
               setPassConfirmationOpen(false)
             },
           })

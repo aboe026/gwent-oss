@@ -58,7 +58,13 @@ export default function Confirm({
             disabled={loading}
             onClick={async () => {
               await onSubmit({ variables: submitVariables })
-              onClose(false)
+              // intentionally do not call onClose automatically here
+              // because this can cause some discrepancy in behavior for
+              // components that have an onSubmit with a retryCheckingAuth
+              // which would error out here (and not have the auto-onClose here called)
+              // and then need to manually close the dialog on its own in the
+              // retryCheckingAuth method (so it gets called properly after the second attempt if auth fails at first)
+              // so better just to have the onSubmit always close the confirm itself
             }}
           >
             {submitLabel}

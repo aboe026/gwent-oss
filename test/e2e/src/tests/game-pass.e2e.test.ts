@@ -1,10 +1,12 @@
 import ApiClient from '../util/api-client'
 import { Combat, Deck, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import Confirm from '../components/confirm'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
 import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
+import { HTML_IDS } from '@gwent/constants'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
 
@@ -326,5 +328,69 @@ test('Pass after opponent plays unit', async (t) => {
   })
 })
 
-// TODO: test pass but cancel
-// TODO: can't pass while not turn
+test('Cancelling pass confirmation does not trigger pass', async (t) => {
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: PlayerTurn.Current,
+    ready: true,
+    passed: false,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    ready: true,
+  })
+  await LoginPage.login({
+    username: t.ctx.self.user.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [[]],
+  })
+  await GamePage.pass({
+    cancel: true,
+  })
+
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [[]],
+  })
+})
+
+test('Cannot pass when not turn', async (t) => {
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: PlayerTurn.Current,
+    ready: true,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    ready: true,
+    passed: false,
+  })
+  await LoginPage.login({
+    username: t.ctx.opponent.user.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: selfPlayer,
+    self: opponentPlayer,
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [[]],
+  })
+
+  await t.click(GamePage.elements.Pass)
+  const confirmDialog = new Confirm(HTML_IDS.GamePassConfirmContainer)
+  await t.expect(confirmDialog.elements.Container.exists).notOk()
+
+  await GamePage.verify({
+    opponent: selfPlayer,
+    self: opponentPlayer,
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [[]],
+  })
+})

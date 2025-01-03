@@ -890,6 +890,9 @@ test('Change user after session expires shows new users data', async (t) => {
   })
 })
 
+// TODO: playUnit
+// TODO: playPass
+
 async function reAuthenticate(username: string, t: E2ETestController<SessionExpiryFixtureCtx, E2eCtx>) {
   await LoginForm.verifyPresence({
     title: 'Session Timed Out',

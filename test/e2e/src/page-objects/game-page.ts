@@ -772,7 +772,7 @@ export default class GamePage {
     }
   }
 
-  static async moveUnit({ unitName, row }: { unitName: string; row: Combat }) {
+  static async moveUnit({ unitName, row, verify = true }: { unitName: string; row: Combat; verify?: boolean }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
     const combatRow = GamePage.elements.CenterContainer.find(
       `#${
@@ -786,8 +786,10 @@ export default class GamePage {
     await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
     await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
     await t.click(card)
-    await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
-    await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+    if (verify) {
+      await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+    }
     await t.click(combatRow)
   }
 }

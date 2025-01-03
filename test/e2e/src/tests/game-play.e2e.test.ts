@@ -355,5 +355,88 @@ test('Play unit after opponent plays pass', async (t) => {
   })
 })
 
-// TODO: test playing unit in row it cannot be in
-// TODO: cannot play unit when not turn
+test('Cannot play unit on invalid row', async (t) => {
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: PlayerTurn.Current,
+    ready: true,
+    passed: false,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    ready: true,
+  })
+  await LoginPage.login({
+    username: t.ctx.self.user.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [[]],
+  })
+  const unitToMove = t.ctx.self.gameDeck.hand[0]
+  const invalidCombats = [Combat.Close, Combat.Ranged, Combat.Siege]
+  if (unitToMove.unit.combats) {
+    for (const combat of unitToMove.unit.combats) {
+      const index = invalidCombats.indexOf(combat)
+      if (index >= 0) {
+        invalidCombats.splice(index, 1)
+      }
+    }
+  }
+  if (invalidCombats.length <= 0) {
+    throw Error(`Could not find any invalid combat rows for unit "${unitToMove.unit.name}"`)
+  }
+  const combatRow = invalidCombats[0]
+  await GamePage.moveUnit({
+    unitName: unitToMove.unit.name,
+    row: combatRow,
+    verify: false,
+  })
+
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [[]],
+  })
+})
+
+test('Cannot play unit when not turn', async (t) => {
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.self,
+    turn: PlayerTurn.Current,
+    ready: true,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: t.ctx.opponent,
+    ready: true,
+    passed: false,
+  })
+  await LoginPage.login({
+    username: t.ctx.opponent.user.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: selfPlayer,
+    self: opponentPlayer,
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [[]],
+  })
+  const unitToMove = t.ctx.opponent.gameDeck.hand[0]
+  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unitToMove.unit.name,
+    row: combatRow,
+    verify: false,
+  })
+
+  await GamePage.verify({
+    opponent: selfPlayer,
+    self: opponentPlayer,
+    hand: t.ctx.opponent.gameDeck.hand,
+    moves: [[]],
+  })
+})
