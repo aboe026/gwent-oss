@@ -1,6 +1,6 @@
-import { Combat, Deck, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, DeckUnit, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import ApiClient from './api-client'
-import { GamePlayerExpected } from '../page-objects/game-page'
+import { GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 import { PlayerTurn } from '../components/game-player-info'
 
@@ -95,5 +95,37 @@ export class E2eHelper {
         unitNames: [],
       }
     }
+  }
+
+  static playUnit({
+    player,
+    deckUnit,
+    row,
+    gameDeck,
+    moves,
+  }: {
+    player: GamePlayerExpected
+    deckUnit: DeckUnit
+    row?: Combat
+    gameDeck: GameDeck
+    moves: (HistoryMove | HistoryPass)[]
+  }) {
+    if (!row) {
+      row = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
+    }
+    player.score = (player.score || 0) + (deckUnit.unit.strength || 0)
+    player.hand = (player.hand || STARTING_HAND_SIZE) - 1
+    gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
+    E2eHelper.addUnitToGamePlayer({
+      player: player,
+      unitName: deckUnit.unit.name,
+      row,
+      score: deckUnit.unit.strength || 0,
+    })
+    moves.push({
+      userName: player.name,
+      unitName: deckUnit.unit.name,
+      combatRow: row,
+    })
   }
 }

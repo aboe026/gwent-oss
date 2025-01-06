@@ -1,7 +1,17 @@
 import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
-import { addDeck, addGame, addUser, getGame, getGameDeck, ready, setDeck, setOrder } from './util/graphql-util'
+import {
+  addDeck,
+  addGame,
+  addUser,
+  getGame,
+  getGameDeck,
+  playPass,
+  ready,
+  setDeck,
+  setOrder,
+} from './util/graphql-util'
 import {
   Combat,
   Deck,
@@ -227,7 +237,77 @@ describe('play-unit-mutation', () => {
           ],
         })
       })
-      // TODO: tests for when in DONE state
+      it('returns error if game is in DONE status', async () => {
+        const game2 = await addGame({
+          creator: self,
+          opponentNames: [opponent.name],
+        })
+        await setDeck({
+          deckId: deckSelf.id,
+          gameId: game2.id,
+          userId: self.id,
+        })
+        await setDeck({
+          deckId: deckOpponent.id,
+          gameId: game2.id,
+          userId: opponent.id,
+        })
+        await setOrder({
+          gameId: game2.id,
+          userId: self.id,
+          users: [self.id, opponent.id],
+        })
+        await ready({
+          gameId: game2.id,
+          userId: self.id,
+        })
+        await ready({
+          gameId: game2.id,
+          userId: opponent.id,
+        })
+        await playPass({
+          gameId: game2.id,
+          userId: self.id,
+        })
+        await playPass({
+          gameId: game2.id,
+          userId: opponent.id,
+        })
+        await playPass({
+          gameId: game2.id,
+          userId: opponent.id,
+        })
+        await playPass({
+          gameId: game2.id,
+          userId: self.id,
+        })
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              playUnit(
+                game: "${game2.id}"
+                combat: ${Combat.Close}
+                unit: "${new ObjectId()}"
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: TestUtil.getDbUserFromUser(self),
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [
+            new GraphQLError(
+              `Invalid game status "${GameStatus.Done}": Can only play units for game with status "${GameStatus.Playing}".`
+            ),
+          ],
+        })
+      })
       it('returns error if not users turn', async () => {
         await expect(
           graphql({

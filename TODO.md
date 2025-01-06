@@ -81,6 +81,7 @@ A list of things to be done in the future.
 - games list improvements
   - progress bar for game status
   - highlight games waiting on you?
+  - subscriptions for status changes?
 - implement audit actions
   - status of attempt, success, failure
   - all actions so can know who does what in which order

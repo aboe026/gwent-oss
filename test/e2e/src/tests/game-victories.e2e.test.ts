@@ -306,11 +306,11 @@ test('Opponent passes ends in victory after 2 rounds', async (t) => {
     victors: [t.ctx.self.user.name],
     rounds: [
       {
-        self: unit1.unit.strength || 0,
+        creator: unit1.unit.strength || 0,
         opponent: 0,
       },
       {
-        self: unit2.unit.strength || 0,
+        creator: unit2.unit.strength || 0,
         opponent: 0,
       },
     ],
@@ -460,11 +460,11 @@ test('Self passes ends in loss after 2 rounds', async (t) => {
     victors: [t.ctx.opponent.user.name],
     rounds: [
       {
-        self: 0,
+        creator: 0,
         opponent: unit1.unit.strength || 0,
       },
       {
-        self: 0,
+        creator: 0,
         opponent: unit2.unit.strength || 0,
       },
     ],
@@ -543,11 +543,11 @@ test('All passes ends in tie after 2 rounds', async (t) => {
     victors: [t.ctx.self.user.name, t.ctx.opponent.user.name],
     rounds: [
       {
-        self: 0,
+        creator: 0,
         opponent: 0,
       },
       {
-        self: 0,
+        creator: 0,
         opponent: 0,
       },
     ],
@@ -768,15 +768,15 @@ test('Win loss win ends in victory', async (t) => {
     victors: [t.ctx.self.user.name],
     rounds: [
       {
-        self: unitSelf1.unit.strength || 0,
+        creator: unitSelf1.unit.strength || 0,
         opponent: 0,
       },
       {
-        self: 0,
+        creator: 0,
         opponent: unitOpponent1.unit.strength || 0,
       },
       {
-        self: unitSelf2.unit.strength || 0,
+        creator: unitSelf2.unit.strength || 0,
         opponent: 0,
       },
     ],
@@ -1003,15 +1003,15 @@ test('Win loss loss ends in defeat', async (t) => {
     victors: [t.ctx.opponent.user.name],
     rounds: [
       {
-        self: unitSelf1.unit.strength || 0,
+        creator: unitSelf1.unit.strength || 0,
         opponent: 0,
       },
       {
-        self: 0,
+        creator: 0,
         opponent: unitOpponent1.unit.strength || 0,
       },
       {
-        self: 0,
+        creator: 0,
         opponent: unitOpponent2.unit.strength || 0,
       },
     ],
@@ -1204,15 +1204,15 @@ test('Win loss tie ends in tie', async (t) => {
     victors: [t.ctx.self.user.name, t.ctx.opponent.user.name],
     rounds: [
       {
-        self: unitSelf1.unit.strength || 0,
+        creator: unitSelf1.unit.strength || 0,
         opponent: 0,
       },
       {
-        self: 0,
+        creator: 0,
         opponent: unitOpponent1.unit.strength || 0,
       },
       {
-        self: 0,
+        creator: 0,
         opponent: 0,
       },
     ],
@@ -1436,15 +1436,15 @@ test('Loss win win ends in victory', async (t) => {
     victors: [t.ctx.self.user.name],
     rounds: [
       {
-        self: 0,
+        creator: 0,
         opponent: unitOpponent1.unit.strength || 0,
       },
       {
-        self: unitSelf1.unit.strength || 0,
+        creator: unitSelf1.unit.strength || 0,
         opponent: 0,
       },
       {
-        self: unitSelf2.unit.strength || 0,
+        creator: unitSelf2.unit.strength || 0,
         opponent: 0,
       },
     ],
@@ -1666,15 +1666,15 @@ test('Loss win loss ends in defeat', async (t) => {
     victors: [t.ctx.opponent.user.name],
     rounds: [
       {
-        self: 0,
+        creator: 0,
         opponent: unitOpponent1.unit.strength || 0,
       },
       {
-        self: unitSelf1.unit.strength || 0,
+        creator: unitSelf1.unit.strength || 0,
         opponent: 0,
       },
       {
-        self: 0,
+        creator: 0,
         opponent: unitOpponent2.unit.strength || 0,
       },
     ],
@@ -1864,15 +1864,15 @@ test('Loss win tie ends in tie', async (t) => {
     victors: [t.ctx.self.user.name, t.ctx.opponent.user.name],
     rounds: [
       {
-        self: 0,
+        creator: 0,
         opponent: unitOpponent1.unit.strength || 0,
       },
       {
-        self: unitSelf1.unit.strength || 0,
+        creator: unitSelf1.unit.strength || 0,
         opponent: 0,
       },
       {
-        self: 0,
+        creator: 0,
         opponent: 0,
       },
     ],
