@@ -56,6 +56,7 @@ export default class GamePage {
     SummaryContainer: existingGameContainer.find(`#${HTML_IDS.GameSummaryContainer}`),
     SummaryVictors: existingGameContainer.find(`#${HTML_IDS.GameSummaryVictorsList}`),
     SummaryRoundBreakdown: existingGameContainer.find(`#${HTML_IDS.GameSummaryRoundBreakdown}`),
+    SummaryGames: existingGameContainer.find(`#${HTML_IDS.GameSummaryGames}`),
     BattlefieldOpponent: centerContainer.find(`.${HTML_CLASSES.GameUnitBoardSide}`).nth(0),
     BattlefieldSelf: centerContainer.find(`.${HTML_CLASSES.GameUnitBoardSide}`).nth(1),
     CombatRowCloseSelf: centerContainer.find(`#${HTML_IDS.GameCombatRowCloseSelf}`),
@@ -345,7 +346,7 @@ export default class GamePage {
       await t.expect(GamePage.elements.SummaryVictors.innerText).eql(victors.join('\n'))
       const expectedRounds: string[] = []
       for (let i = 0; i < rounds.length; i++) {
-        expectedRounds.push(`Round "${i + 1}" self "${rounds[i].self}" opponent "${rounds[i].opponent}"`)
+        expectedRounds.push(`Round "${i + 1}" self "${rounds[i].creator}" opponent "${rounds[i].opponent}"`)
       }
       const actualRounds: string[] = []
       const selfRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorRow}`).nth(0)
@@ -369,14 +370,16 @@ export default class GamePage {
       await t.expect(actualRounds).eql(expectedRounds)
       for (let i = 0; i < rounds.length; i++) {
         const round = rounds[i]
-        await t.expect(selfRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundWon)).eql(round.self > round.opponent)
-        await t.expect(selfRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundLost)).eql(round.self <= round.opponent)
+        await t.expect(selfRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundWon)).eql(round.creator > round.opponent)
+        await t
+          .expect(selfRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundLost))
+          .eql(round.creator <= round.opponent)
         await t
           .expect(opponentRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundWon))
-          .eql(round.opponent > round.self)
+          .eql(round.opponent > round.creator)
         await t
           .expect(opponentRounds.nth(i).hasClass(HTML_CLASSES.GameSummaryRoundLost))
-          .eql(round.opponent <= round.self)
+          .eql(round.opponent <= round.creator)
       }
     } else if (self.ready && opponent.ready) {
       await t.expect(GamePage.elements.BattlefieldSelf.exists).ok()
@@ -798,6 +801,10 @@ export default class GamePage {
     }
     await t.click(combatRow)
   }
+
+  static async summaryGoToGames() {
+    await t.click(GamePage.elements.SummaryGames)
+  }
 }
 
 export interface GamePlayerExpected {
@@ -835,7 +842,7 @@ export interface HistoryPass {
 }
 
 interface RoundScores {
-  self: number
+  creator: number
   opponent: number
 }
 

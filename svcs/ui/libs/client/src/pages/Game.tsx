@@ -2049,7 +2049,7 @@ function renderGameSummary({ game, navigate }: { game: Game; navigate: NavigateF
           ))}
         </tbody>
       </table>
-      <button id="gamesSummaryGames" type="button" onClick={() => navigate(ROUTES.Games.path)}>
+      <button id={HTML_IDS.GameSummaryGames} type="button" onClick={() => navigate(ROUTES.Games.path)}>
         Back to Games
       </button>
     </div>
@@ -2114,13 +2114,13 @@ function renderHistory({
   const resolvedPlayPassError = getApolloError(playPassError)
   const resolvedPlayUnitError = getApolloError(playUnitError)
   return (
-    <div className="game-edge-container game-section">
+    <div id={HTML_IDS.GameHistoryContainer} className="game-edge-container game-section">
       {game.round === 0 ? (
         <Centered classname="game-history-placeholder">
           <CgTime color="black" className={HTML_CLASSES.GameHistoryIcon} title="History" />
         </Centered>
       ) : (
-        <div id={HTML_IDS.GameHistoryContainer}>
+        <>
           {showLoading && (
             <div className={HTML_CLASSES.GameHistoryLoadingContainer}>
               <LoadingSpinner size="100px" title={loadingTitle} />
@@ -2191,7 +2191,7 @@ function renderHistory({
               })}
             </div>
           ))}
-        </div>
+        </>
       )}
     </div>
   )
