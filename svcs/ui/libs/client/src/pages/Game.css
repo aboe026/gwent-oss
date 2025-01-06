@@ -603,6 +603,7 @@ td {
   height: 100%;
   min-width: 10px;
   padding-right: 10px;
+  aspect-ratio: 309 / 444;
 }
 
 .game-combat-card-wrapper:last-child {

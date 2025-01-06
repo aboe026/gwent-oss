@@ -60,16 +60,12 @@ A list of things to be done in the future.
 
 ## Features
 
-- e2e test for session expiration on playPass/playUnit
 - remove "statsModifier"
 - animations/text of what opponent did?
 - how to make pass more obvious?
   - white flag icon?
-  - white border on battlefield?
 - fix layout on small width screen
   - player score
-- Units can be discarded instead of played (discardUnit mutation?)
-- some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - clicking history entry highlights/animates card (if still on battlefield)
 - e2e tests
 - unit tests
@@ -79,6 +75,8 @@ A list of things to be done in the future.
 - delete db for func tests before every test (instead of before every file)
 - remove "Can " prefix for test names
 
+- Units can be discarded instead of played (discardUnit mutation?)
+- some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - if effective strength greater than normal strength, green. If less, red.
 - games list improvements
   - progress bar for game status

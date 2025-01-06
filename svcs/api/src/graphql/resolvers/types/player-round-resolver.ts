@@ -1,5 +1,10 @@
-import { GameUnitDbObject, PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
-import { GameUnit, Move, PlayerRound, RoundResult } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, GameUnit, Leader, Move, PlayerRound, RoundResult } from '@gwent/graphql-schema/resolver-typings'
+import {
+  GameUnitDbObject,
+  MoveLeaderDbObject,
+  MoveUnitDbObject,
+  PlayerRoundDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from './game-unit-resolver'
 import PlayerMoveResolver from './player-move-resolver'
 
@@ -7,9 +12,11 @@ export default class PlayerRoundResolver {
   static async fromObject({
     round,
     gameUnits,
+    leader,
   }: {
     round: PlayerRoundDbObject
     gameUnits?: GameUnit[]
+    leader?: Leader
   }): Promise<PlayerRound> {
     let resolvedGameUnits: GameUnit[] = []
     if (gameUnits) {
@@ -31,10 +38,26 @@ export default class PlayerRoundResolver {
     }
     const moves: Move[] = []
     for (const move of round.moves) {
-      // TODO: pass GameUnit (as DeckUnit) to move resolver so don't need to re-query unit object
+      let deckUnit: DeckUnit | undefined = undefined
+      if (move.type === 'UNIT') {
+        const gameUnit = resolvedGameUnits.find(
+          (gameUnit) => gameUnit.unit.id === (move as MoveUnitDbObject).unit.unit.toString()
+        )
+        if (gameUnit) {
+          deckUnit = gameUnit as DeckUnit
+        }
+      }
+      let moveLeader: Leader | undefined = undefined
+      if (move.type === 'LEADER') {
+        if (leader && leader.id === (move as MoveLeaderDbObject).leader.toString()) {
+          moveLeader = leader
+        }
+      }
       moves.push(
         await PlayerMoveResolver.fromObject({
           move,
+          deckUnit,
+          leader: moveLeader,
         })
       )
     }
@@ -73,7 +96,13 @@ export default class PlayerRoundResolver {
     }
   }
 
-  static async fromArray({ rounds }: { rounds: PlayerRoundDbObject[] }): Promise<PlayerRound[]> {
+  static async fromArray({
+    rounds,
+    leader,
+  }: {
+    rounds: PlayerRoundDbObject[]
+    leader?: Leader
+  }): Promise<PlayerRound[]> {
     const gameUnits: GameUnitDbObject[] = []
     for (const round of rounds) {
       for (const close of round.close.units) {
@@ -96,6 +125,7 @@ export default class PlayerRoundResolver {
         await PlayerRoundResolver.fromObject({
           round,
           gameUnits: resolvedGameUnits,
+          leader,
         })
       )
     }

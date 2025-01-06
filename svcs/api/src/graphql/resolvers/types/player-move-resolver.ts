@@ -1,4 +1,4 @@
-import { Combat, Move } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, DeckUnit, Leader, Move } from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from './deck-unit-resolver'
 import LeaderResolver from './leader-resolver'
 import {
@@ -9,14 +9,24 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 
 export default class PlayerMoveResolver {
-  static async fromObject({ move }: { move: MoveDbObject }): Promise<Move> {
+  static async fromObject({
+    move,
+    leader,
+    deckUnit,
+  }: {
+    move: MoveDbObject
+    leader?: Leader
+    deckUnit?: DeckUnit
+  }): Promise<Move> {
     if (move.type === 'LEADER') {
       const leaderMove = move as MoveLeaderDbObject
       return {
         created: leaderMove.created,
-        leader: await LeaderResolver.fromId({
-          id: leaderMove.leader,
-        }),
+        leader:
+          leader ||
+          (await LeaderResolver.fromId({
+            id: leaderMove.leader,
+          })),
         __typename: 'MoveLeader', // TODO: keep "__typename" here or add it in resolves?
       }
     } else if (move.type === 'PASS') {
@@ -29,9 +39,11 @@ export default class PlayerMoveResolver {
       const unitMove = move as MoveUnitDbObject
       return {
         created: unitMove.created,
-        unit: await DeckUnitResolver.fromObject({
-          deckUnit: unitMove.unit,
-        }),
+        unit:
+          deckUnit ||
+          (await DeckUnitResolver.fromObject({
+            deckUnit: unitMove.unit,
+          })),
         row: unitMove.row as Combat,
         __typename: 'MoveUnit',
       }
