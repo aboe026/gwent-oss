@@ -7,6 +7,7 @@ import {
   MovePassDbObject,
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { MoveType } from '@gwent/graphql-schema'
 
 export default class PlayerMoveResolver {
   static async fromObject({
@@ -18,7 +19,7 @@ export default class PlayerMoveResolver {
     leader?: Leader
     deckUnit?: DeckUnit
   }): Promise<Move> {
-    if (move.type === 'LEADER') {
+    if (move.type === MoveType.Leader) {
       const leaderMove = move as MoveLeaderDbObject
       return {
         created: leaderMove.created,
@@ -29,13 +30,13 @@ export default class PlayerMoveResolver {
           })),
         __typename: 'MoveLeader', // TODO: keep "__typename" here or add it in resolves?
       }
-    } else if (move.type === 'PASS') {
+    } else if (move.type === MoveType.Pass) {
       const passMove = move as MovePassDbObject
       return {
         created: passMove.created,
         __typename: 'MovePass',
       }
-    } else if (move.type === 'UNIT') {
+    } else if (move.type === MoveType.Unit) {
       const unitMove = move as MoveUnitDbObject
       return {
         created: unitMove.created,

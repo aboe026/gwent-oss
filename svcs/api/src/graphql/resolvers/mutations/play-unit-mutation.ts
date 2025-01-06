@@ -5,14 +5,14 @@ import { Context } from '@gwent/graphql-schema/context'
 import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
 import GameDeckResolver from '../types/game-deck-resolver'
-import { GameStatus, MoveDbObject, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameStatus, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
+import { MoveType, RequestedFields } from '@gwent/graphql-schema'
 import MutationUtil from './mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
-import { RequestedFields } from '@gwent/graphql-schema'
 import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../subscription-resolver'
 import UnitStore from '../../../database/stores/unit-store'
 
@@ -119,17 +119,11 @@ export default class PlayUnitMutation {
           ...gamePlayer,
           rounds: gamePlayer.rounds.map((round, index) => {
             if (index === game.round - 1) {
-              const unitMove: MoveUnitDbObject = {
+              const move: MoveUnitDbObject = {
                 created: new Date(),
                 row: args.combat,
                 unit: deckUnit,
-              }
-              // TODO: add "type" as "additionalField" to "MoveUnit" in schema?
-              // TODO: but how to type that field to TypeScript enum (that is not in schema?)
-              // TODO: then can avoid needing to create "intermediate" MoveUnitDbObject first
-              const move: MoveDbObject = {
-                ...unitMove,
-                type: 'UNIT',
+                type: MoveType.Unit,
               }
               return {
                 ...round,

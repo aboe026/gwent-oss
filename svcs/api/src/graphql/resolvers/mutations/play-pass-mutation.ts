@@ -9,10 +9,10 @@ import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
+import { MoveType, RequestedFields } from '@gwent/graphql-schema'
 import MutationUtil from './mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import { PassPlayedPayload, RoundEndedForDeckPayload } from '../subscription-resolver'
-import { RequestedFields } from '@gwent/graphql-schema'
 
 /**
  * A class for executing the playPass GraphQL Mutation.
@@ -89,7 +89,7 @@ export default class PlayPassMutation {
                 ...round.moves,
                 {
                   created: new Date(),
-                  type: 'PASS', // TODO: make enum
+                  type: MoveType.Pass,
                 },
               ]
               round.passed = true

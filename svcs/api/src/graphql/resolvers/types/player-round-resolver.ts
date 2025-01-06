@@ -6,6 +6,7 @@ import {
   PlayerRoundDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from './game-unit-resolver'
+import { MoveType } from '@gwent/graphql-schema'
 import PlayerMoveResolver from './player-move-resolver'
 
 export default class PlayerRoundResolver {
@@ -39,7 +40,7 @@ export default class PlayerRoundResolver {
     const moves: Move[] = []
     for (const move of round.moves) {
       let deckUnit: DeckUnit | undefined = undefined
-      if (move.type === 'UNIT') {
+      if (move.type === MoveType.Unit) {
         const gameUnit = resolvedGameUnits.find(
           (gameUnit) => gameUnit.unit.id === (move as MoveUnitDbObject).unit.unit.toString()
         )
@@ -48,7 +49,7 @@ export default class PlayerRoundResolver {
         }
       }
       let moveLeader: Leader | undefined = undefined
-      if (move.type === 'LEADER') {
+      if (move.type === MoveType.Leader) {
         if (leader && leader.id === (move as MoveLeaderDbObject).leader.toString()) {
           moveLeader = leader
         }

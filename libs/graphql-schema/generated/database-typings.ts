@@ -1,3 +1,4 @@
+import { MoveType } from '../src/move-type'
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -661,16 +662,19 @@ export type MoveDbObject = (MoveLeaderDbObject | MovePassDbObject | MoveUnitDbOb
 export type MoveLeaderDbObject = {
   created: any,
   leader: ObjectId,
+  type: MoveType,
 };
 
 export type MovePassDbObject = {
   created: any,
+  type: MoveType,
 };
 
 export type MoveUnitDbObject = {
   created: any,
   row: string,
   unit: DeckUnitDbObject,
+  type: MoveType,
 };
 
 export type PlayerCombatRowDbObject = {

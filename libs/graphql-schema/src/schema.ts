@@ -229,16 +229,16 @@ export default gql`
     quote: String! @column
   }
 
-  type MoveLeader @entity {
+  type MoveLeader @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
     created: DateTime! @column
     leader: Leader! @column(overrideType: "ObjectId")
   }
 
-  type MovePass @entity {
+  type MovePass @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
     created: DateTime! @column
   }
 
-  type MoveUnit @entity {
+  type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
     created: DateTime! @column
     row: Combat! @column
     unit: DeckUnit! @column(overrideType: "DeckUnitDbObject")

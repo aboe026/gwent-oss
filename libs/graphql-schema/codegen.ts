@@ -4,7 +4,15 @@ const config: CodegenConfig = {
   schema: './src/schema.ts',
   generates: {
     './generated/database-typings.ts': {
-      plugins: ['typescript', 'typescript-mongodb'],
+      plugins: [
+        'typescript',
+        'typescript-mongodb',
+        {
+          add: {
+            content: `import { MoveType } from '../src/move-type'`,
+          },
+        },
+      ],
     },
     './generated/resolver-typings.ts': {
       plugins: ['typescript', 'typescript-resolvers'],
