@@ -6,12 +6,13 @@ import { DeckUnit, MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typ
 import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
 import GameDeckResolver from '../types/game-deck-resolver'
-import { GamePlayerDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
+import { GameStatus, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getRandomSubset } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import { MAX_REDRAWS, NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
+import MutationUtil from './mutation-util'
 import { RequestedFields } from '@gwent/graphql-schema'
 import { UnitRedrawnPayload } from '../subscription-resolver'
 
@@ -47,38 +48,27 @@ export default class RedrawMutation {
     }
     const gameId = args.game
     const unitId = args.unit
-    if (!ObjectId.isValid(gameId)) {
-      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+
     if (!ObjectId.isValid(unitId)) {
       const message = `Unit ID "${unitId}" is not a valid MongoDB ObjectId.`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    const game = await GameStore.getById({
-      id: gameId,
+
+    const response = await MutationUtil.getGamePlayer({
+      gameId,
+      logPrefix,
+      userId,
+      status: GameStatus.Redrawing,
+      label: 'redraw',
     })
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+
+    if (response instanceof Error) {
+      return response as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    if (!game) {
-      const message = `Game with ID "${gameId}" does not exist.`
-      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    const player: GamePlayerDbObject | undefined = game.players.find(
-      (player) => player.user.toString() === userId.toString()
-    )
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
-    }
-    if (!player) {
-      const message = `Not a player on game "${gameId}".`
-      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+
+    const { player } = response
+
     if (player.ready) {
       const message = `Cannot redraw after game "${gameId}" is marked as ready.`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)

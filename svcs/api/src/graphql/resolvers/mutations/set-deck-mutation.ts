@@ -8,6 +8,7 @@ import EventManager from '../../event-manager'
 import { GameDeck, MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckResolver from '../types/game-deck-resolver'
 import GameResolver from '../types/game-resolver'
+import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getRandomSubset } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
@@ -47,11 +48,7 @@ export default class SetDeckMutation {
     }
     const gameId = args.game
     const deckId = args.deck
-    if (!ObjectId.isValid(gameId)) {
-      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+
     if (!ObjectId.isValid(deckId)) {
       const message = `Deck ID "${deckId}" is not a valid MongoDB ObjectId.`
       SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
@@ -70,27 +67,20 @@ export default class SetDeckMutation {
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
-    const game = await GameStore.getById({
-      id: gameId,
+    const response = await MutationUtil.getGamePlayer({
+      gameId,
+      logPrefix,
+      userId,
+      status: GameStatus.Decking,
+      label: 'set deck',
     })
-    if (SetDeckMutation.logger.isTraceEnabled()) {
-      SetDeckMutation.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
-    }
-    if (!game) {
-      const message = `Game with ID "${gameId}" does not exist.`
-      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+
+    if (response instanceof Error) {
+      return response as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
-    const player = game.players.find((player) => player.user.toString() === userId.toString())
-    if (SetDeckMutation.logger.isTraceEnabled()) {
-      SetDeckMutation.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
-    }
-    if (!player) {
-      const message = `Not a player on game "${gameId}".`
-      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    const { player } = response
+
     if (player.deck.from !== null && player.deck.from !== undefined) {
       const message = `Deck already set for game "${gameId}".`
       SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)

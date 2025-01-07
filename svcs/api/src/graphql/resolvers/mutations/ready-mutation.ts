@@ -1,10 +1,9 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../event-manager'
 import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
-import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import { GameReadyPayload } from '../subscription-resolver'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
@@ -44,33 +43,21 @@ export default class ReadyMutation {
       )
     }
     const gameId = args.game
-    if (!ObjectId.isValid(gameId)) {
-      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    const game = await GameStore.getById({
-      id: gameId,
+
+    const response = await MutationUtil.getGamePlayer({
+      gameId,
+      logPrefix,
+      userId,
+      status: GameStatus.Redrawing,
+      label: 'mark ready',
     })
-    if (ReadyMutation.logger.isTraceEnabled()) {
-      ReadyMutation.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+
+    if (response instanceof Error) {
+      return response as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    if (!game) {
-      const message = `Game with ID "${gameId}" does not exist.`
-      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    const player: GamePlayerDbObject | undefined = game.players.find(
-      (player) => player.user.toString() === userId.toString()
-    )
-    if (ReadyMutation.logger.isTraceEnabled()) {
-      ReadyMutation.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
-    }
-    if (!player) {
-      const message = `Not a player on game "${gameId}".`
-      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+
+    const { game, player } = response
+
     if (!player.deck.from) {
       const message = `Must set deck on game "${gameId}" first.`
       ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)

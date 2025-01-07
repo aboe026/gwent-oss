@@ -51,6 +51,9 @@ export default class PlayUnitMutation {
       gameId,
       logPrefix,
       userId,
+      status: GameStatus.Playing,
+      turn: true,
+      label: 'play units',
     })
 
     if (response instanceof Error) {
@@ -58,19 +61,6 @@ export default class PlayUnitMutation {
     }
 
     const { game, player } = response
-
-    const gameStatus = GameResolver.getStatus(game)
-    if (gameStatus !== GameStatus.Playing) {
-      const message = `Invalid game status "${gameStatus}": Can only play units for game with status "${GameStatus.Playing}".`
-      PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-
-    if (game.turn?.toString() !== userId.toString()) {
-      const message = 'Cannot play unit when it is not your turn.'
-      PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
 
     const deckUnits = player.deck.hand.filter((hand) => hand.unit.toString() === unitId)
     if (deckUnits.length === 0) {
