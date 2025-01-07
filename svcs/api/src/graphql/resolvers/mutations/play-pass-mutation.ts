@@ -44,6 +44,9 @@ export default class PlayPassMutation {
       gameId,
       logPrefix,
       userId,
+      status: GameStatus.Playing,
+      turn: true,
+      label: 'pass round',
     })
 
     if (response instanceof Error) {
@@ -52,20 +55,6 @@ export default class PlayPassMutation {
 
     const { game, player } = response
 
-    // TODO: combind status check and turn check in getGamePlayer method? (with optional method params to trigger)
-    const gameStatus = GameResolver.getStatus(game)
-    if (gameStatus !== GameStatus.Playing) {
-      const message = `Invalid game status "${gameStatus}": Can only pass for game with status "${GameStatus.Playing}".`
-      PlayPassMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-
-    if (game.turn?.toString() !== userId.toString()) {
-      const message = 'Cannot pass round when it is not your turn.'
-      // TODO: add game id to all logger warn/errors (add it to logPrefix?)
-      PlayPassMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
     const playerRound = player.rounds[game.round - 1]
     if (!playerRound) {
       const message = `Could not get round "${game.round}" for player "${player.user}"`

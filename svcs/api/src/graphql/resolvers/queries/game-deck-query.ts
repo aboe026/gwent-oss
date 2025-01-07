@@ -1,11 +1,10 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { GameDeck, QueryGameDeckArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckResolver from '../types/game-deck-resolver'
-import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
+import MutationUtil from '../mutations/mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import { RequestedFields } from '@gwent/graphql-schema'
 
@@ -39,32 +38,19 @@ export default class GameDeckQuery {
       )
     }
     const gameId = args.game
-    if (!ObjectId.isValid(gameId)) {
-      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      GameDeckQuery.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    const game = await GameStore.getById({
-      id: gameId,
+
+    const response = await MutationUtil.getGamePlayer({
+      gameId,
+      logPrefix,
+      userId,
     })
-    if (GameDeckQuery.logger.isTraceEnabled()) {
-      GameDeckQuery.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+
+    if (response instanceof Error) {
+      return response as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    if (!game) {
-      const message = `Game with ID "${gameId}" does not exist.`
-      GameDeckQuery.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const player = game.players.find((player) => player.user.toString() === userId.toString())
-    if (GameDeckQuery.logger.isTraceEnabled()) {
-      GameDeckQuery.logger.trace(`${logPrefix} player: "${JSON.stringify(player)}"`)
-    }
-    if (!player) {
-      const message = `Not a player on game "${gameId}".`
-      GameDeckQuery.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+
+    const { player } = response
+
     if (player.deck.from) {
       return GameDeckResolver.fromObject({
         gameDeck: player.deck,

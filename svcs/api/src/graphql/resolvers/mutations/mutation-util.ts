@@ -7,6 +7,7 @@ import FactionStore from '../../../database/stores/faction-store'
 import {
   GameDbObject,
   GamePlayerDbObject,
+  GameStatus,
   PlayerCombatRowDbObject,
   RoundResult,
 } from '@gwent/graphql-schema/database-typings'
@@ -26,10 +27,16 @@ export default class MutationUtil {
     gameId,
     logPrefix,
     userId,
+    status,
+    turn,
+    label,
   }: {
     gameId: string
     logPrefix: string
     userId: ObjectId
+    status?: GameStatus
+    turn?: boolean
+    label?: string
   }): Promise<
     | Error
     | {
@@ -53,22 +60,42 @@ export default class MutationUtil {
       MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    const player: GamePlayerDbObject | undefined = game.players.find(
-      (player) => player.user.toString() === userId.toString()
-    )
-    // TODO: use filter in case more than 1 player (in which case throw error)
+    const players: GamePlayerDbObject[] = game.players.filter((player) => player.user.toString() === userId.toString())
     if (MutationUtil.logger.isTraceEnabled()) {
-      MutationUtil.logger.trace(`${logPrefix} getGamePlayer game "${game._id}" player: "${JSON.stringify(player)}"`)
+      MutationUtil.logger.trace(`${logPrefix} getGamePlayer game "${game._id}" players: "${JSON.stringify(players)}"`)
     }
-    if (!player) {
+    if (players.length === 0) {
       const message = `Not a player on game "${gameId}".`
       MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
+    if (players.length > 1) {
+      const message = `Found more than 1 player with ID "${userId}" on game "${gameId}".`
+      MutationUtil.logger.error(`${logPrefix} getGamePlayer failed: ${message}: ${JSON.stringify(players)}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+
+    if (status) {
+      const gameStatus = GameResolver.getStatus(game)
+      if (gameStatus !== status) {
+        const message = `Invalid game status "${gameStatus}": Can only ${label} for game with status "${status}".`
+        MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
+        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      }
+    }
+
+    if (turn) {
+      if (game.turn?.toString() !== userId.toString()) {
+        const message = `Cannot ${label} when it is not your turn.`
+        // TODO: add game id to all logger warn/errors (add it to logPrefix?)
+        MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
+        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      }
+    }
 
     return {
       game,
-      player,
+      player: players[0],
     }
   }
 
