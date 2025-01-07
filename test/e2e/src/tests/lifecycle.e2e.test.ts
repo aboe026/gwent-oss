@@ -24,52 +24,52 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 fixture('Lifecycle').page(env.BASE_URL)
 
 const nilfgaardUnits = [
+  'Albrich',
   'Assire var Anahid',
   'Black Infantry Archer',
-  'Black Infantry Archer',
   'Cahir Mawr Dyffryn aep Ceallach',
-  'Cirilla Fiona Elen Riannon',
-  'Decoy',
-  'Etolian Auxiliary Archers',
+  'Cynthia',
+  'Emiel Regis Rohellec Terzieff',
   'Fringilla Vigo',
-  'Geralt of Rivia',
   'Heavy Zerrikanian Fire Scorpion',
-  'Impera Brigade Guard',
-  'Impera Brigade Guard',
-  'Impera Brigade Guard',
-  'Impera Brigade Guard',
   'Letho of Gulet',
-  'Menno Coehoorn',
+  'Morteisen',
   'Morvran Voorhis',
-  'Nausicaa Cavalry Rider',
-  'Nausicaa Cavalry Rider',
-  'Nausicaa Cavalry Rider',
-  'Rainfarn',
+  'Puttkammer',
+  'Renuald aep Matsen',
+  'Roach',
+  'Siege Engineer',
+  'Sweers',
+  'Tibor Eggebracht',
+  'Triss Merigold',
+  'Vanhemar',
+  'Vesemir',
+  'Vreemde',
   'Zerrikanian Fire Scorpion',
 ]
 const scoiataelUnits = [
   'Barclay Els',
+  'Ciaran aep Easnillien',
   'Dennis Cranmer',
   'Dol Blathanna Archer',
   'Dol Blathanna Scout',
-  'Dwarven Skirmisher',
   'Eithne',
-  'Elven Skirmisher',
+  'Emiel Regis Rohellec Terzieff',
   'Filavandrel aen Fidhail',
-  'Havekar Healer',
-  'Havekar Smuggler',
   'Ida Emean aep Sivney',
   'Iorveth',
-  'Isengrim Faoiltiarna',
   'Mahakaman Defender',
-  'Milva',
+  'Mahakaman Defender',
   'Riordain',
+  'Roach',
   'Saesenthessis',
-  'Schirru',
   'Toruviel',
+  'Triss Merigold',
+  'Vesemir',
   'Vrihedd Brigade Recruit',
   'Vrihedd Brigade Veteran',
   'Yaevinn',
+  'Zoltan Chivay',
 ]
 
 test('Speed Run', async (t) => {
@@ -524,6 +524,8 @@ test('Speed Run', async (t) => {
 
 test('Scenic Route', async (t) => {
   const scenario = 'lifecycle-scenic-route'
+
+  // user1 signup and create deck
   const username1 = `${scenario}-user-1-${t.ctx.start}`
   const deckName1 = `${scenario}-deck-1-${t.ctx.start}`
   await SignupPage.signUp({
@@ -575,6 +577,7 @@ test('Scenic Route', async (t) => {
   await ProfilePage.logout()
   await LoginPage.verifyNotLoggedIn({})
 
+  // user2 signup, create deck, game and set deck
   const username2 = `${scenario}-user-2-${t.ctx.start}`
   const deckName2 = `${scenario}-deck-2-${t.ctx.start}`
   await SignupPage.signUp({
@@ -662,6 +665,7 @@ test('Scenic Route', async (t) => {
     hand: gameDeck2.hand,
   })
 
+  // user1 set deck
   await Banner.goTo(Banner.elements.MenuProfile)
   await ProfilePage.verify({
     username: username2,
@@ -705,7 +709,6 @@ test('Scenic Route', async (t) => {
     neutralFaction,
   })
   const gameDeck1 = await client1.getGameDeck(gameId)
-  const updatedGame = await client1.getGame(gameId)
   const gamePlayer1: GamePlayerExpected = {
     name: username1,
     faction: faction1,
@@ -722,6 +725,7 @@ test('Scenic Route', async (t) => {
     turnOrder: [],
   })
 
+  // user2 set order and redraw 2
   await Banner.goTo(Banner.elements.MenuProfile)
   await ProfilePage.verify({
     username: username1,
@@ -750,22 +754,22 @@ test('Scenic Route', async (t) => {
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: gameDeck2.hand,
-    turnOrder: game.players.map((player) => player.user.name),
+    turnOrder: [username2, username1],
   })
-  await GamePage.moveTurnOrderLater(game.players[0].user.name)
+  await GamePage.moveTurnOrderLater(username2)
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: gameDeck2.hand,
-    turnOrder: game.players.map((player) => player.user.name).reverse(),
+    turnOrder: [username1, username2],
   })
   await GamePage.setOrder()
   await GamePage.verifyCoinToss({
-    won: game.players.at(-1)?.user.name === username2,
+    won: false,
     wait: true,
   })
-  gamePlayer1.turn = updatedGame.players.at(-1)?.user.name === username1 ? PlayerTurn.Future : undefined
-  gamePlayer2.turn = updatedGame.players.at(-1)?.user.name === username2 ? PlayerTurn.Future : undefined
+  gamePlayer1.turn = PlayerTurn.Future
+  gamePlayer2.turn = undefined
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
@@ -822,6 +826,7 @@ test('Scenic Route', async (t) => {
     ],
   })
 
+  // user1 redraw 2 and play unit for round 1
   await Banner.goTo(Banner.elements.MenuProfile)
   await ProfilePage.verify({
     username: username2,
@@ -848,7 +853,7 @@ test('Scenic Route', async (t) => {
   })
   await GamesPage.selectGame(0)
   await GamePage.verifyCoinToss({
-    won: game.players.at(-1)?.user.name === username1,
+    won: true,
     wait: true,
   })
   await GamePage.verify({
@@ -893,13 +898,585 @@ test('Scenic Route', async (t) => {
   await GamePage.ready()
   gamePlayer1.ready = true
   gamePlayer1.passed = false
-  gamePlayer1.turn = game.players.at(-1)?.user.name === username1 ? PlayerTurn.Current : undefined
-  gamePlayer2.turn = game.players.at(-1)?.user.name === username2 ? PlayerTurn.Current : undefined
+  gamePlayer1.turn = PlayerTurn.Current
+  const moves1: (HistoryMove | HistoryPass)[] = []
+  const moves2: (HistoryMove | HistoryPass)[] = []
+  const moves3: (HistoryMove | HistoryPass)[] = []
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: redraw4GameDeck1.hand,
-    moves: [[]],
+    moves: [moves1],
   })
-  // TODO: actually play moves/pass for both of these
+
+  const sortedHandSelf = sortObjectArray({
+    array: redraw4GameDeck1.hand,
+    sortProperties: ['unit.strength', 'unit.id'],
+    reverse: true,
+  })
+  const unit1Self = sortedHandSelf[0]
+  const combat1Self = unit1Self.unit.combats ? unit1Self.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unit1Self.unit.name,
+    row: combat1Self,
+  })
+  E2eHelper.playUnit({
+    player: gamePlayer1,
+    gameDeck: redraw4GameDeck1,
+    deckUnit: unit1Self,
+    moves: moves1,
+    row: combat1Self,
+  })
+  gamePlayer1.turn = undefined
+  gamePlayer2.turn = PlayerTurn.Current
+  await GamePage.verify({
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: redraw4GameDeck1.hand,
+    moves: [moves1],
+  })
+
+  // user2 play unit for round 1
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username1,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username2,
+  })
+  await Banner.verify(username2)
+  await HomePage.verify(username2)
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Playing,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  gamePlayer1.passed = undefined
+  gamePlayer2.passed = false
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    moves: [moves1],
+  })
+
+  const sortedHandOpponent = sortObjectArray({
+    array: redraw2GameDeck2.hand,
+    sortProperties: ['unit.strength', 'unit.id'],
+    reverse: true,
+  })
+  const unit1Opponent = sortedHandOpponent[sortedHandOpponent.length - 1]
+  const combat1Opponent = unit1Opponent.unit.combats ? unit1Opponent.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unit1Opponent.unit.name,
+    row: combat1Opponent,
+  })
+  E2eHelper.playUnit({
+    player: gamePlayer2,
+    gameDeck: redraw2GameDeck2,
+    deckUnit: unit1Opponent,
+    moves: moves1,
+    row: combat1Opponent,
+  })
+  gamePlayer2.turn = undefined
+  gamePlayer1.turn = PlayerTurn.Current
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    moves: [moves1],
+  })
+
+  // user1 pass round 1
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username2,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username1,
+  })
+  await Banner.verify(username1)
+  await HomePage.verify(username1)
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Playing,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  gamePlayer1.passed = false
+  gamePlayer2.passed = undefined
+  await GamePage.verify({
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: redraw4GameDeck1.hand,
+    moves: [moves1],
+  })
+
+  await GamePage.pass({})
+  gamePlayer1.passed = true
+  gamePlayer1.turn = undefined
+  gamePlayer2.turn = PlayerTurn.Current
+  moves1.push({
+    userName: gamePlayer1.name,
+    round: 1,
+  })
+  await GamePage.verify({
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: redraw4GameDeck1.hand,
+    moves: [moves1],
+  })
+
+  // user 2 pass round 1
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username1,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username2,
+  })
+  await Banner.verify(username2)
+  await HomePage.verify(username2)
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Playing,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  gamePlayer2.passed = false
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    moves: [moves1],
+  })
+
+  await GamePage.pass({})
+  gamePlayer1.passed = undefined
+  gamePlayer1.turn = PlayerTurn.Current
+  gamePlayer2.losses = 1
+  gamePlayer2.passed = false
+  gamePlayer2.turn = undefined
+  moves1.push({
+    userName: gamePlayer2.name,
+    round: 1,
+  })
+  E2eHelper.endRound({
+    creator: gamePlayer2,
+    opponent: gamePlayer1,
+  })
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    round: 2,
+    moves: [moves1, moves2],
+  })
+
+  // user 1 play unit for round 2
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username2,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username1,
+  })
+  await Banner.verify(username1)
+  await HomePage.verify(username1)
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Playing,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  gamePlayer1.passed = false
+  gamePlayer2.passed = undefined
+  await GamePage.verify({
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: redraw4GameDeck1.hand,
+    round: 2,
+    moves: [moves1, moves2],
+  })
+
+  const unit2Self = sortedHandSelf[sortedHandSelf.length - 1]
+  const combat2Self = unit2Self.unit.combats ? unit2Self.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unit2Self.unit.name,
+    row: combat2Self,
+  })
+  E2eHelper.playUnit({
+    player: gamePlayer1,
+    gameDeck: redraw4GameDeck1,
+    deckUnit: unit2Self,
+    moves: moves2,
+    row: combat2Self,
+  })
+  gamePlayer1.turn = undefined
+  gamePlayer2.turn = PlayerTurn.Current
+  await GamePage.verify({
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: redraw4GameDeck1.hand,
+    round: 2,
+    moves: [moves1, moves2],
+  })
+
+  // user 2 play unit for round 2
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username1,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username2,
+  })
+  await Banner.verify(username2)
+  await HomePage.verify(username2)
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Playing,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  gamePlayer1.passed = undefined
+  gamePlayer2.passed = false
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    round: 2,
+    moves: [moves1, moves2],
+  })
+
+  const unit2Opponent = sortedHandOpponent[0]
+  const combat2Opponent = unit2Opponent.unit.combats ? unit2Opponent.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unit2Opponent.unit.name,
+    row: combat2Opponent,
+  })
+  E2eHelper.playUnit({
+    player: gamePlayer2,
+    gameDeck: redraw2GameDeck2,
+    deckUnit: unit2Opponent,
+    moves: moves2,
+    row: combat2Opponent,
+  })
+  gamePlayer1.turn = PlayerTurn.Current
+  gamePlayer2.turn = undefined
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    round: 2,
+    moves: [moves1, moves2],
+  })
+
+  // user 1 pass for round 2
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username2,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username1,
+  })
+  await Banner.verify(username1)
+  await HomePage.verify(username1)
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Playing,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  gamePlayer1.passed = false
+  gamePlayer2.passed = undefined
+  await GamePage.verify({
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: redraw4GameDeck1.hand,
+    round: 2,
+    moves: [moves1, moves2],
+  })
+
+  await GamePage.pass({})
+  gamePlayer1.passed = true
+  gamePlayer1.turn = undefined
+  gamePlayer2.turn = PlayerTurn.Current
+  moves2.push({
+    userName: gamePlayer1.name,
+    round: 2,
+  })
+  await GamePage.verify({
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: redraw4GameDeck1.hand,
+    round: 2,
+    moves: [moves1, moves2],
+  })
+
+  // user 2 pass for round 2 and round 3
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username1,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username2,
+  })
+  await Banner.verify(username2)
+  await HomePage.verify(username2)
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Playing,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  gamePlayer2.passed = false
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    round: 2,
+    moves: [moves1, moves2],
+  })
+
+  await GamePage.pass({})
+  gamePlayer1.passed = undefined
+  gamePlayer1.losses = 1
+  moves2.push({
+    userName: gamePlayer2.name,
+    round: 2,
+  })
+  E2eHelper.endRound({
+    creator: gamePlayer2,
+    opponent: gamePlayer1,
+  })
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    round: 3,
+    moves: [moves1, moves2, moves3],
+  })
+
+  await GamePage.pass({})
+  gamePlayer1.turn = PlayerTurn.Current
+  gamePlayer2.passed = true
+  gamePlayer2.turn = undefined
+  moves3.push({
+    userName: gamePlayer2.name,
+    round: 3,
+  })
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    round: 3,
+    moves: [moves1, moves2, moves3],
+  })
+
+  // user 1 pass for round 3 to end game
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username2,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username1,
+  })
+  await Banner.verify(username1)
+  await HomePage.verify(username1)
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Playing,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  gamePlayer1.passed = false
+  gamePlayer2.passed = true
+  await GamePage.verify({
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: redraw4GameDeck1.hand,
+    round: 3,
+    moves: [moves1, moves2, moves3],
+  })
+
+  await GamePage.pass({})
+  gamePlayer1.passed = true
+  gamePlayer1.losses = 2
+  gamePlayer1.turn = undefined
+  gamePlayer2.losses = 2
+  moves3.push({
+    userName: gamePlayer1.name,
+    round: 3,
+  })
+  E2eHelper.endRound({
+    creator: gamePlayer2,
+    opponent: gamePlayer1,
+  })
+  await GamePage.verify({
+    self: gamePlayer1,
+    opponent: gamePlayer2,
+    hand: redraw4GameDeck1.hand,
+    round: 3,
+    moves: [moves1, moves2, moves3],
+    victors: [gamePlayer2.name, gamePlayer1.name],
+    rounds: [
+      {
+        creator: unit1Opponent.unit.strength || 0,
+        opponent: unit1Self.unit.strength || 0,
+      },
+      {
+        creator: unit2Opponent.unit.strength || 0,
+        opponent: unit2Self.unit.strength || 0,
+      },
+      {
+        creator: 0,
+        opponent: 0,
+      },
+    ],
+  })
+
+  await GamePage.summaryGoToGames()
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Done,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+        victors: [gamePlayer2.name, gamePlayer1.name],
+      },
+    ],
+  })
+
+  // user 2 verifies game summary
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username1,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username2,
+  })
+  await Banner.verify(username2)
+  await HomePage.verify(username2)
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: username2,
+        players: [username2, username1],
+        status: GameStatus.Done,
+        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
+        victors: [gamePlayer2.name, gamePlayer1.name],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+  await GamePage.verify({
+    self: gamePlayer2,
+    opponent: gamePlayer1,
+    hand: redraw2GameDeck2.hand,
+    round: 3,
+    moves: [moves1, moves2, moves3],
+    victors: [gamePlayer2.name, gamePlayer1.name],
+    rounds: [
+      {
+        creator: unit1Opponent.unit.strength || 0,
+        opponent: unit1Self.unit.strength || 0,
+      },
+      {
+        creator: unit2Opponent.unit.strength || 0,
+        opponent: unit2Self.unit.strength || 0,
+      },
+      {
+        creator: 0,
+        opponent: 0,
+      },
+    ],
+  })
 })

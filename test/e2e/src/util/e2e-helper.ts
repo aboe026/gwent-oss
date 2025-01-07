@@ -78,23 +78,28 @@ export class E2eHelper {
     }
   }
 
-  static resetPlayerCombatRow({ player, row }: { player: GamePlayerExpected; row: Combat }) {
+  static resetPlayerCombatRow({ player, row }: { player: GamePlayerExpected; row: Combat }): number {
+    let discardsForRow = 0
     if (row === Combat.Close) {
+      discardsForRow = (player.close?.unitNames || []).length
       player.close = {
         score: 0,
         unitNames: [],
       }
     } else if (row === Combat.Ranged) {
+      discardsForRow = (player.ranged?.unitNames || []).length
       player.ranged = {
         score: 0,
         unitNames: [],
       }
     } else if (row === Combat.Siege) {
+      discardsForRow = (player.siege?.unitNames || []).length
       player.siege = {
         score: 0,
         unitNames: [],
       }
     }
+    return discardsForRow
   }
 
   static playUnit({
@@ -127,5 +132,46 @@ export class E2eHelper {
       unitName: deckUnit.unit.name,
       combatRow: row,
     })
+  }
+
+  static endRound({ creator, opponent }: { creator: GamePlayerExpected; opponent: GamePlayerExpected }) {
+    creator.score = 0
+    opponent.score = 0
+    creator.discard =
+      (creator.discard || 0) +
+      E2eHelper.resetPlayerCombatRow({
+        player: creator,
+        row: Combat.Close,
+      })
+    creator.discard =
+      (creator.discard || 0) +
+      E2eHelper.resetPlayerCombatRow({
+        player: creator,
+        row: Combat.Ranged,
+      })
+    creator.discard =
+      (creator.discard || 0) +
+      E2eHelper.resetPlayerCombatRow({
+        player: creator,
+        row: Combat.Siege,
+      })
+    opponent.discard =
+      (opponent.discard || 0) +
+      E2eHelper.resetPlayerCombatRow({
+        player: opponent,
+        row: Combat.Close,
+      })
+    opponent.discard =
+      (opponent.discard || 0) +
+      E2eHelper.resetPlayerCombatRow({
+        player: opponent,
+        row: Combat.Ranged,
+      })
+    opponent.discard =
+      (opponent.discard || 0) +
+      E2eHelper.resetPlayerCombatRow({
+        player: opponent,
+        row: Combat.Siege,
+      })
   }
 }

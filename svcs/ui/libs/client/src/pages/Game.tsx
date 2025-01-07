@@ -1871,7 +1871,6 @@ function renderRedraw({
                       }}
                     ></div>
                   )}
-                  {index < MAX_REDRAWS - 1 && <div></div>}
                 </div>
               )
             })}
