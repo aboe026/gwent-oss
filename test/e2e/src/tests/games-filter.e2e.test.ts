@@ -197,7 +197,6 @@ fixture('Games Filter')
       deckId: deck1.id,
       gameId: game2.id,
     })
-    await client1.ready(game2.id)
     await client2.setDeck({
       deckId: deck2.id,
       gameId: game2.id,
@@ -210,16 +209,17 @@ fixture('Games Filter')
       deckId: deck5.id,
       gameId: game3.id,
     })
+    await client1.ready(game2.id)
     await client2.ready(game2.id)
     await client1.setDeck({
       deckId: deck1.id,
       gameId: game4.id,
     })
-    await client1.ready(game4.id)
     await client2.setDeck({
       deckId: deck3.id,
       gameId: game4.id,
     })
+    await client1.ready(game4.id)
     await client2.ready(game4.id)
     await client1.setDeck({
       deckId: deck4.id,

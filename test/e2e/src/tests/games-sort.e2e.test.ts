@@ -96,11 +96,11 @@ fixture('Games Sort')
       deckId: deck1.id,
       gameId: t.ctx.game2.id,
     })
-    await client1.ready(t.ctx.game2.id)
     await client2.setDeck({
       deckId: deck2.id,
       gameId: t.ctx.game2.id,
     })
+    await client1.ready(t.ctx.game2.id)
     await client2.ready(t.ctx.game2.id)
     t.ctx.game1 = await client1.getGame(t.ctx.game1.id)
     t.ctx.game2 = await client2.getGame(t.ctx.game2.id)

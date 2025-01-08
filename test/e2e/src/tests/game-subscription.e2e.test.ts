@@ -919,6 +919,10 @@ test('Game not marked as ready if use API to mark other game as ready', async (t
     deckId: t.ctx.opponent.deck.id,
     gameId: game2.id,
   })
+  await t.ctx.self.client.setOrder({
+    gameId: game2.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
   await t.ctx.self.client.ready(game2.id)
   await GamePage.verify({
     opponent: opponentPlayer,
