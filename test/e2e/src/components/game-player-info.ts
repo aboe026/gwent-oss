@@ -105,10 +105,12 @@ export default class GamePlayerInfo {
         await t.expect(this.elements.DeckName.exists).notOk()
         await t.expect(this.elements.DeckDate.exists).notOk()
       }
-      await t.expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerTurn)).eql(turn !== undefined)
+      await t
+        .expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerTurn))
+        .eql(turn !== undefined, `user "${name}"`)
       await t
         .expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerFutureTurn))
-        .eql(turn === PlayerTurn.Future)
+        .eql(turn === PlayerTurn.Future, `user "${name}"`)
       if (passed === undefined) {
         await t.expect(this.elements.Passed.exists).notOk(`User "${name}"`)
         await t.expect(this.elements.Pass.exists).notOk(`User "${name}"`)

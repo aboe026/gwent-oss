@@ -204,7 +204,7 @@ th {
 }
 
 #gameSummaryRoundBreakdown th,
-td {
+#gameSummaryRoundBreakdown td {
   border: 1px dotted #999;
 }
 
@@ -445,9 +445,10 @@ td {
 
 .game-deck-redraw-pair {
   display: flex;
-  align-items: center;
   height: 100%;
   gap: 10px;
+  justify-content: center;
+  align-items: center;
 }
 
 .game-deck-redraw-transform {
