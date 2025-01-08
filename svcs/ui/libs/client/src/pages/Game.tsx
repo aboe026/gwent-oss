@@ -7,6 +7,7 @@ import {
   MutationFunctionOptions,
 } from '@apollo/client'
 import { CgArrowLongRight, CgChevronUp, CgChevronDown, CgPlayButton, CgSync, CgTime } from 'react-icons/cg'
+import { createRef, RefObject } from 'react'
 import { Link, NavigateFunction, useLocation, useNavigate } from 'react-router'
 
 import {
@@ -81,11 +82,6 @@ import { useUserContext } from '../App'
 import WholeScreenDialog from '../components/WholeScreenDialog'
 import './Game.css'
 
-interface UnitForPlayer {
-  unit: DeckUnit | GameUnit
-  playerId: string | undefined
-}
-
 /**
  * A user created Game.
  *
@@ -96,6 +92,7 @@ export default function GamePage() {
   const [deckListOpen, setDeckListOpen] = useState(false)
   const [deckEditorOpen, setDeckEditorOpen] = useState(false)
   const [handCardSelected, setHandCardSelected] = useState<DeckUnit | undefined>()
+  const [historyCardSelected, setHistoryCardSelected] = useState<UnitForPlayer | undefined>()
   const [fullUnit, setFullUnit] = useState<UnitForPlayer | undefined>()
   const [playerOrder, setPlayerOrder] = useState<GamePlayer[]>([])
   const [coinTossVisible, setCoinTossVisible] = useState(false)
@@ -256,6 +253,59 @@ export default function GamePage() {
     }
   }, [currentGame])
 
+  const historyRefs: {
+    [key: string]: RefObject<HTMLDivElement>
+  } = {}
+  const movesByRounds: MoveForRound[] = []
+  if (gameData?.game) {
+    const game = gameData?.game
+    for (let i = game.round - 1; i >= 0; i--) {
+      const allPlayerMoves: PlayerMove[] = []
+      for (let j = 0; j < game.players.length; j++) {
+        for (let k = 0; k < game.players[j].rounds[i].moves.length; k++) {
+          const refId = `${i}.${j}.${k}`
+          const ref = createRef<HTMLDivElement>()
+          historyRefs[refId] = ref
+          allPlayerMoves.push({
+            move: game.players[j].rounds[i].moves[k] as Move,
+            playerIndex: j,
+            ref,
+          })
+        }
+      }
+      movesByRounds.push({
+        round: i + 1,
+        playerMoves: sortObjectArray({
+          array: allPlayerMoves,
+          sortProperties: ['move.created'],
+        }),
+      })
+    }
+  }
+
+  function scrollHistoryIntoView({ playerId, unit }: UnitForPlayer) {
+    if (gameData?.game && playerId) {
+      const game = gameData.game
+      const roundIndex = game.round - 1
+      const playerIndex = game.players.map((player) => player.user.id).indexOf(playerId)
+      let moveIndex: number | undefined = undefined
+      for (
+        let i = game.players[playerIndex].rounds[roundIndex].moves.length - 1;
+        i >= 0 && moveIndex === undefined;
+        i--
+      ) {
+        const move = game.players[playerIndex].rounds[roundIndex].moves[i]
+        if (move.__typename === 'MoveUnit' && move.unit.unit.id === unit.unit.id) {
+          moveIndex = i
+        }
+      }
+      if (moveIndex !== undefined) {
+        const stringRefId = `${roundIndex}.${playerIndex}.${moveIndex}`
+        historyRefs[stringRefId].current?.scrollIntoView()
+      }
+    }
+  }
+
   return isNew
     ? renderNewGame({
         addGame: {
@@ -323,6 +373,10 @@ export default function GamePage() {
         setPassConfirmationOpen,
         passConfirmationOpen,
         navigate,
+        historyCardSelected,
+        setHistoryCardSelected,
+        movesByRounds,
+        scrollHistoryIntoView,
       })
 }
 
@@ -427,6 +481,10 @@ function renderExistingGame({
   playPass: { playPass, playPassError, playPassLoading },
   passConfirmationOpen,
   navigate,
+  historyCardSelected,
+  setHistoryCardSelected,
+  movesByRounds,
+  scrollHistoryIntoView,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
@@ -476,6 +534,10 @@ function renderExistingGame({
   playPass: PlayPassProps
   passConfirmationOpen: boolean
   navigate: NavigateFunction
+  historyCardSelected: UnitForPlayer | undefined
+  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  movesByRounds: MoveForRound[]
+  scrollHistoryIntoView: (args: UnitForPlayer) => void
 }) {
   const resolvedGameError = getApolloError(gameError)
   const resolvedGameDeckError = getApolloError(gameDeckError)
@@ -549,6 +611,7 @@ function renderExistingGame({
               playerId: fullUnit?.playerId,
             })
             setHandCardSelected(previousUnit)
+            setHistoryCardSelected(undefined)
           }
         }}
         onNext={() => {
@@ -558,11 +621,13 @@ function renderExistingGame({
               playerId: fullUnit?.playerId,
             })
             setHandCardSelected(nextUnit)
+            setHistoryCardSelected(undefined)
           }
         }}
         onClose={() => {
           setFullUnit(undefined)
           setHandCardSelected(undefined)
+          setHistoryCardSelected(undefined)
         }}
       />
       <Confirm
@@ -630,6 +695,9 @@ function renderExistingGame({
           setCoinTossVisible,
           playUnit,
           navigate,
+          historyCardSelected,
+          setHistoryCardSelected,
+          scrollHistoryIntoView,
         })}
         {renderHistory({
           handCardSelected,
@@ -639,6 +707,10 @@ function renderExistingGame({
           playUnitError: playUnit.playUnitError,
           game,
           self,
+          setHandCardSelected,
+          historyCardSelected,
+          setHistoryCardSelected,
+          movesByRounds,
         })}
       </div>
       <div id="gameContainerLower">
@@ -650,6 +722,7 @@ function renderExistingGame({
           isTurn: game.turn?.user.name === self.user.name,
           playUnitLoading: playUnit.playUnitLoading,
           gameStatus: game.status,
+          setHistoryCardSelected,
         })}
       </div>
       {(deckListOpen || deckEditorOpen) && (
@@ -1264,6 +1337,9 @@ function renderCenter({
   setCoinTossVisible,
   playUnit,
   navigate,
+  historyCardSelected,
+  setHistoryCardSelected,
+  scrollHistoryIntoView,
 }: {
   game: Game
   gameDeck: GameDeck | undefined
@@ -1285,6 +1361,9 @@ function renderCenter({
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
   playUnit: PlayUnitProps
   navigate: NavigateFunction
+  historyCardSelected: UnitForPlayer | undefined
+  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  scrollHistoryIntoView: (args: UnitForPlayer) => void
 }) {
   return (
     <div id={HTML_IDS.GameCenterContainer}>
@@ -1328,6 +1407,9 @@ function renderCenter({
             opponent,
             setFullUnit,
             setHandCardSelected,
+            historyCardSelected,
+            setHistoryCardSelected,
+            scrollHistoryIntoView,
           })
         : renderGameSummary({
             game,
@@ -1346,6 +1428,9 @@ function renderBattlefield({
   setFullUnit,
   opponent,
   setHandCardSelected,
+  historyCardSelected,
+  setHistoryCardSelected,
+  scrollHistoryIntoView,
 }: {
   game: Game
   handCardSelected: DeckUnit | undefined
@@ -1356,6 +1441,9 @@ function renderBattlefield({
   opponent: GamePlayer
   setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  historyCardSelected: UnitForPlayer | undefined
+  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  scrollHistoryIntoView: (args: UnitForPlayer) => void
 }) {
   const rowsToHighlight = (handCardSelected && handCardSelected.unit.combats) || []
   const rowsToBlock = []
@@ -1381,6 +1469,9 @@ function renderBattlefield({
     isTurn,
     setFullUnit,
     setHandCardSelected,
+    historyCardSelected,
+    setHistoryCardSelected,
+    scrollHistoryIntoView,
   }
   return (
     <>
@@ -1446,6 +1537,9 @@ function renderCombatRow({
   isSelf,
   setFullUnit,
   setHandCardSelected,
+  historyCardSelected,
+  setHistoryCardSelected,
+  scrollHistoryIntoView,
 }: {
   game: Game
   handCardSelected: DeckUnit | undefined
@@ -1458,6 +1552,9 @@ function renderCombatRow({
   isSelf?: boolean
   setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  historyCardSelected: UnitForPlayer | undefined
+  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  scrollHistoryIntoView: (args: UnitForPlayer) => void
 }) {
   const titledCombat = toTitleCase(combat)
   const validRow =
@@ -1534,22 +1631,42 @@ function renderCombatRow({
         }}
       >
         {sortedUnits.map((gameUnit) => {
+          const selectedInHistory =
+            historyCardSelected &&
+            historyCardSelected.unit.unit.id === gameUnit.unit.id &&
+            historyCardSelected.playerId === player.user.id
+
           return (
-            <div className="game-combat-card-wrapper" key={gameUnit.unit.id}>
+            <div
+              className="game-combat-card-wrapper"
+              key={gameUnit.unit.id}
+              onClick={() => {
+                if (selectedInHistory) {
+                  setHistoryCardSelected(undefined)
+                } else {
+                  const unitForPlayer: UnitForPlayer = {
+                    playerId: player.user.id,
+                    unit: gameUnit,
+                  }
+                  setHistoryCardSelected(unitForPlayer)
+                  scrollHistoryIntoView(unitForPlayer)
+                }
+                setHandCardSelected(undefined)
+              }}
+            >
               <UnitGameCard
                 deckUnit={{
                   artStyle: gameUnit.artStyle,
                   unit: gameUnit.unit,
                 }}
-                selected={gameUnit.unit.id === handCardSelected?.unit.id}
-                dotted={!isTurn}
+                selected={gameUnit.unit.id === handCardSelected?.unit.id || selectedInHistory}
+                dotted={!isTurn && !selectedInHistory}
                 onFullscreen={() =>
                   setFullUnit({
                     unit: gameUnit,
                     playerId: player.user.id,
                   })
                 }
-                cursor="default"
               />
             </div>
           )
@@ -1934,6 +2051,7 @@ function renderHand({
   isTurn,
   playUnitLoading,
   gameStatus,
+  setHistoryCardSelected,
 }: {
   hand: DeckUnit[] | undefined
   handCardSelected: DeckUnit | undefined
@@ -1942,6 +2060,7 @@ function renderHand({
   isTurn: boolean
   playUnitLoading: boolean
   gameStatus: GameStatus
+  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const sortedUnits = !hand
     ? []
@@ -1982,6 +2101,7 @@ function renderHand({
                 onClick={() => {
                   if (!playUnitLoading) {
                     setHandCardSelected(selected ? undefined : deckUnit)
+                    setHistoryCardSelected(undefined)
                   }
                 }}
               >
@@ -2058,12 +2178,8 @@ function renderGameSummary({ game, navigate }: { game: Game; navigate: NavigateF
   )
 }
 
-interface PlayerMove {
-  move: Move
-  playerIndex: number
-}
-
 function renderHistory({
+  movesByRounds,
   handCardSelected,
   game,
   playPassLoading,
@@ -2071,7 +2187,11 @@ function renderHistory({
   playUnitLoading,
   playUnitError,
   self,
+  setHandCardSelected,
+  historyCardSelected,
+  setHistoryCardSelected,
 }: {
+  movesByRounds: MoveForRound[]
   handCardSelected: DeckUnit | undefined
   game: Game
   playPassLoading: boolean
@@ -2079,31 +2199,10 @@ function renderHistory({
   playUnitLoading: boolean
   playUnitError: ApolloError | undefined
   self: GamePlayer
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  historyCardSelected: UnitForPlayer | undefined
+  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
-  const movesByRounds: {
-    round: number
-    playerMove: PlayerMove[]
-  }[] = []
-  for (let i = game.round - 1; i >= 0; i--) {
-    const allPlayerMoves: PlayerMove[] = []
-    for (let j = 0; j < game.players.length; j++) {
-      allPlayerMoves.push(
-        ...game.players[j].rounds[i].moves.map((move) => {
-          return {
-            move,
-            playerIndex: j,
-          }
-        })
-      )
-    }
-    movesByRounds.push({
-      round: i + 1,
-      playerMove: sortObjectArray({
-        array: allPlayerMoves,
-        sortProperties: ['move.created'],
-      }),
-    })
-  }
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
     playUnitLoading ||
@@ -2141,9 +2240,11 @@ function renderHistory({
           {movesByRounds.map((movesByRound) => (
             <div className={HTML_CLASSES.GameHistoryRoundContainer} key={movesByRound.round}>
               <div className={HTML_CLASSES.GameHistoryRoundName}>Round {movesByRound.round}</div>
-              {movesByRound.playerMove.map((playerMove, index) => {
+              {movesByRound.playerMoves.map((playerMove, index) => {
                 const gamePlayer = game.players[playerMove.playerIndex]
                 const isSelf = gamePlayer.user.name === self.user.name
+                let isSelected = false
+                let isOnBattlefield = false
                 const textClass = `game-history-move-text ${
                   isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'
                 }`
@@ -2160,16 +2261,56 @@ function renderHistory({
                   description = `${playerMove.move.unit.unit.name} deployed as ${toTitleCase(playerMove.move.row)}`
                   image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
                   imageTitle = playerMove.move.unit.unit.name
+                  if (
+                    historyCardSelected &&
+                    historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
+                    gamePlayer.user.id === historyCardSelected.playerId
+                  ) {
+                    isSelected = true
+                    const playerRound = gamePlayer.rounds[game.round - 1]
+                    const userUnitsOnBattlefield: string[] = []
+                    for (const closeUnit of playerRound.close.units) {
+                      userUnitsOnBattlefield.push(closeUnit.unit.id)
+                    }
+                    for (const rangedUnit of playerRound.ranged.units) {
+                      userUnitsOnBattlefield.push(rangedUnit.unit.id)
+                    }
+                    for (const siegeUnit of playerRound.siege.units) {
+                      userUnitsOnBattlefield.push(siegeUnit.unit.id)
+                    }
+                    isOnBattlefield = userUnitsOnBattlefield.includes(playerMove.move.unit.unit.id)
+                  }
                 } else {
                   description = `Invalid move type: "${playerMove.move.__typename}"`
                   error = true
                 }
+
                 return (
                   <div
                     key={`r${movesByRound.round}-i${index}`}
+                    ref={playerMove.ref}
                     className={`${HTML_CLASSES.GameHistoryMove} ${
                       isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
-                    }`}
+                    } ${isSelected ? 'item-highlighted' : ''} `}
+                    style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
+                    title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
+                    onClick={() => {
+                      if (playerMove.move.__typename === 'MoveUnit') {
+                        if (
+                          historyCardSelected &&
+                          historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
+                          historyCardSelected.playerId === gamePlayer.user.id
+                        ) {
+                          setHistoryCardSelected(undefined)
+                        } else {
+                          setHistoryCardSelected({
+                            playerId: gamePlayer.user.id,
+                            unit: playerMove.move.unit,
+                          })
+                        }
+                        setHandCardSelected(undefined)
+                      }
+                    }}
                   >
                     <div className="game-history-move-image-container-outer">
                       <div className="game-history-move-image-container-inner">
@@ -2321,4 +2462,20 @@ interface PlayPassProps {
   ) => Promise<FetchResult<PlayPassMutation>>
   playPassError: ApolloError | undefined
   playPassLoading: boolean
+}
+
+interface UnitForPlayer {
+  unit: DeckUnit | GameUnit
+  playerId: string | undefined
+}
+
+interface PlayerMove {
+  move: Move
+  playerIndex: number
+  ref: RefObject<HTMLDivElement>
+}
+
+interface MoveForRound {
+  round: number
+  playerMoves: PlayerMove[]
 }

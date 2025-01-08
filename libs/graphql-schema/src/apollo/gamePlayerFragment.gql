@@ -33,6 +33,7 @@ fragment GamePlayerFragment on GamePlayer {
           artStyle
           unit {
             name
+            id
             images
           }
         }
