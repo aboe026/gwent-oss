@@ -10,6 +10,7 @@ import { HTML_IDS } from '@gwent/constants'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
 
+// TODO: replace with E2eHelper ContextGamePlayer
 interface ContextGamePlayer {
   user: User
   client: ApiClient
@@ -279,7 +280,7 @@ test('Pass after opponent plays unit', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: selfPlayer,
     row: combatRow,
-    score: unitToMove.unit.strength || 0,
+    strength: unitToMove.unit.strength || 0,
     unitName: unitToMove.unit.name,
   })
   await LoginPage.login({

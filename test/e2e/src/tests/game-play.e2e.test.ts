@@ -186,7 +186,7 @@ test('Can play a unit as first move', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: selfPlayer,
     row: combatRow,
-    score: unitToMove.unit.strength || 0,
+    strength: unitToMove.unit.strength || 0,
     unitName: unitToMove.unit.name,
   })
   opponentPlayer.turn = PlayerTurn.Current
@@ -236,7 +236,7 @@ test('Can play a unit after opponent plays unit', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: selfPlayer,
     row: combatRowSelf,
-    score: unitToMoveSelf.unit.strength || 0,
+    strength: unitToMoveSelf.unit.strength || 0,
     unitName: unitToMoveSelf.unit.name,
   })
   moves.push({
@@ -273,7 +273,7 @@ test('Can play a unit after opponent plays unit', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: opponentPlayer,
     row: combatRowOpponent,
-    score: unitToMoveOpponent.unit.strength || 0,
+    strength: unitToMoveOpponent.unit.strength || 0,
     unitName: unitToMoveOpponent.unit.name,
   })
   selfPlayer.turn = PlayerTurn.Current
@@ -337,7 +337,7 @@ test('Play unit after opponent plays pass', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: opponentPlayer,
     row: combatRow,
-    score: unitToMove.unit.strength || 0,
+    strength: unitToMove.unit.strength || 0,
     unitName: unitToMove.unit.name,
   })
   moves.push({
@@ -401,6 +401,10 @@ test('Cannot play unit on invalid row', async (t) => {
     self: selfPlayer,
     hand: t.ctx.self.gameDeck.hand,
     moves: [[]],
+    highlightedHandCard: {
+      unitName: unitToMove.unit.name,
+      rows: unitToMove.unit.combats,
+    },
   })
 })
 
@@ -438,5 +442,10 @@ test('Cannot play unit when not turn', async (t) => {
     self: opponentPlayer,
     hand: t.ctx.opponent.gameDeck.hand,
     moves: [[]],
+    highlightedHandCard: {
+      unitName: unitToMove.unit.name,
+      rows: unitToMove.unit.combats,
+      dotted: true,
+    },
   })
 })

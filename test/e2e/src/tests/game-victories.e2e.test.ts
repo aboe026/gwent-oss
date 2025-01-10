@@ -177,10 +177,11 @@ test('Opponent passes ends in victory after 2 rounds', async (t) => {
   t.ctx.self.gameDeck.hand = t.ctx.self.gameDeck.hand.filter((card) => card.unit.id !== unit1.unit.id)
   t.ctx.selfPlayer.hand = 9
   t.ctx.selfPlayer.score = unit1.unit.strength || 0
+  // TODO: use helper methods (E2eHelper.playUnit, E2eHelper.endRound) to reduce duplicate code
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combat1,
-    score: unit1.unit.strength || 0,
+    strength: unit1.unit.strength || 0,
     unitName: unit1.unit.name,
   })
   t.ctx.opponentPlayer.turn = PlayerTurn.Current
@@ -249,7 +250,7 @@ test('Opponent passes ends in victory after 2 rounds', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combat2,
-    score: unit2.unit.strength || 0,
+    strength: unit2.unit.strength || 0,
     unitName: unit2.unit.name,
   })
   t.ctx.opponentPlayer.turn = PlayerTurn.Current
@@ -351,7 +352,7 @@ test('Self passes ends in loss after 2 rounds', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combat1,
-    score: unit1.unit.strength || 0,
+    strength: unit1.unit.strength || 0,
     unitName: unit1.unit.name,
   })
   t.ctx.round1Moves.push({
@@ -404,7 +405,7 @@ test('Self passes ends in loss after 2 rounds', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combat2,
-    score: unit2.unit.strength || 0,
+    strength: unit2.unit.strength || 0,
     unitName: unit2.unit.name,
   })
   t.ctx.round2Moves.push({
@@ -574,7 +575,7 @@ test('Win loss win ends in victory', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combatSelf1,
-    score: unitSelf1.unit.strength || 0,
+    strength: unitSelf1.unit.strength || 0,
     unitName: unitSelf1.unit.name,
   })
   t.ctx.opponentPlayer.turn = PlayerTurn.Current
@@ -663,7 +664,7 @@ test('Win loss win ends in victory', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combatOpponent1,
-    score: unitOpponent1.unit.strength || 0,
+    strength: unitOpponent1.unit.strength || 0,
     unitName: unitOpponent1.unit.name,
   })
   t.ctx.round2Moves.push({
@@ -734,7 +735,7 @@ test('Win loss win ends in victory', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combatSelf2,
-    score: unitSelf2.unit.strength || 0,
+    strength: unitSelf2.unit.strength || 0,
     unitName: unitSelf2.unit.name,
   })
   t.ctx.round3Moves.push({
@@ -803,7 +804,7 @@ test('Win loss loss ends in defeat', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combatSelf1,
-    score: unitSelf1.unit.strength || 0,
+    strength: unitSelf1.unit.strength || 0,
     unitName: unitSelf1.unit.name,
   })
   t.ctx.opponentPlayer.turn = PlayerTurn.Current
@@ -892,7 +893,7 @@ test('Win loss loss ends in defeat', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combatOpponent1,
-    score: unitOpponent1.unit.strength || 0,
+    strength: unitOpponent1.unit.strength || 0,
     unitName: unitOpponent1.unit.name,
   })
   t.ctx.round2Moves.push({
@@ -947,7 +948,7 @@ test('Win loss loss ends in defeat', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combatOpponent2,
-    score: unitOpponent2.unit.strength || 0,
+    strength: unitOpponent2.unit.strength || 0,
     unitName: unitOpponent2.unit.name,
   })
   t.ctx.round3Moves.push({
@@ -1038,7 +1039,7 @@ test('Win loss tie ends in tie', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combatSelf1,
-    score: unitSelf1.unit.strength || 0,
+    strength: unitSelf1.unit.strength || 0,
     unitName: unitSelf1.unit.name,
   })
   t.ctx.opponentPlayer.turn = PlayerTurn.Current
@@ -1127,7 +1128,7 @@ test('Win loss tie ends in tie', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combatOpponent1,
-    score: unitOpponent1.unit.strength || 0,
+    strength: unitOpponent1.unit.strength || 0,
     unitName: unitOpponent1.unit.name,
   })
   t.ctx.round2Moves.push({
@@ -1253,7 +1254,7 @@ test('Loss win win ends in victory', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combatOpponent1,
-    score: unitOpponent1.unit.strength || 0,
+    strength: unitOpponent1.unit.strength || 0,
     unitName: unitOpponent1.unit.name,
   })
   t.ctx.round1Moves.push({
@@ -1328,7 +1329,7 @@ test('Loss win win ends in victory', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combatSelf1,
-    score: unitSelf1.unit.strength || 0,
+    strength: unitSelf1.unit.strength || 0,
     unitName: unitSelf1.unit.name,
   })
   t.ctx.round2Moves.push({
@@ -1379,7 +1380,7 @@ test('Loss win win ends in victory', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combatSelf2,
-    score: unitSelf2.unit.strength || 0,
+    strength: unitSelf2.unit.strength || 0,
     unitName: unitSelf2.unit.name,
   })
   t.ctx.opponentPlayer.turn = PlayerTurn.Current
@@ -1485,7 +1486,7 @@ test('Loss win loss ends in defeat', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combatOpponent1,
-    score: unitOpponent1.unit.strength || 0,
+    strength: unitOpponent1.unit.strength || 0,
     unitName: unitOpponent1.unit.name,
   })
   t.ctx.round1Moves.push({
@@ -1560,7 +1561,7 @@ test('Loss win loss ends in defeat', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combatSelf1,
-    score: unitSelf1.unit.strength || 0,
+    strength: unitSelf1.unit.strength || 0,
     unitName: unitSelf1.unit.name,
   })
   t.ctx.round2Moves.push({
@@ -1626,7 +1627,7 @@ test('Loss win loss ends in defeat', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combatOpponent2,
-    score: unitOpponent2.unit.strength || 0,
+    strength: unitOpponent2.unit.strength || 0,
     unitName: unitOpponent2.unit.name,
   })
   t.ctx.round3Moves.push({
@@ -1715,7 +1716,7 @@ test('Loss win tie ends in tie', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.opponentPlayer,
     row: combatOpponent1,
-    score: unitOpponent1.unit.strength || 0,
+    strength: unitOpponent1.unit.strength || 0,
     unitName: unitOpponent1.unit.name,
   })
   t.ctx.round1Moves.push({
@@ -1790,7 +1791,7 @@ test('Loss win tie ends in tie', async (t) => {
   E2eHelper.addUnitToGamePlayer({
     player: t.ctx.selfPlayer,
     row: combatSelf1,
-    score: unitSelf1.unit.strength || 0,
+    strength: unitSelf1.unit.strength || 0,
     unitName: unitSelf1.unit.name,
   })
   t.ctx.round2Moves.push({
