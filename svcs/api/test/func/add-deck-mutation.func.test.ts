@@ -36,7 +36,7 @@ describe('add-deck-mutation', () => {
                 leader: "${leaderId}",
                 units: [${await getUnitsInput(faction)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -68,7 +68,7 @@ describe('add-deck-mutation', () => {
                 leader: "${leaderId}",
                 units: [{id: "${unitId}"}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -98,7 +98,7 @@ describe('add-deck-mutation', () => {
                 leader: "${new ObjectId().toString()}",
                 units: [${await getUnitsInput(faction)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -129,7 +129,7 @@ describe('add-deck-mutation', () => {
                 leader: "${leaderId}",
                 units: [${await getUnitsInput(faction)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -166,7 +166,7 @@ describe('add-deck-mutation', () => {
                 leader: "${leaderId}",
                 units: [${await getUnitsInput(factionKey)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -209,7 +209,7 @@ describe('add-deck-mutation', () => {
                   }
                 ]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -250,7 +250,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -300,7 +300,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -342,7 +342,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -383,7 +383,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -428,7 +428,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -473,7 +473,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -514,7 +514,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${await getUnitsInput(faction)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -546,7 +546,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -584,7 +584,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -622,7 +622,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -660,7 +660,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -698,7 +698,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -746,7 +746,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${unitsInput}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -794,7 +794,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${unitsInput}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -842,7 +842,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {

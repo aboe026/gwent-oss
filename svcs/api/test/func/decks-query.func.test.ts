@@ -25,7 +25,7 @@ describe('decks-query', () => {
         schema,
         source: `{
           decks {
-            ${getDeckFragment({})}
+            ${getDeckFragment()}
           }
         }`,
         contextValue: {
@@ -58,7 +58,7 @@ describe('decks-query', () => {
         schema,
         source: `{
           decks {
-            ${getDeckFragment({})}
+            ${getDeckFragment()}
           }
         }`,
         contextValue: {
@@ -112,7 +112,7 @@ describe('decks-query', () => {
         schema,
         source: `{
           decks {
-            ${getDeckFragment({})}
+            ${getDeckFragment()}
           }
         }`,
         contextValue: {

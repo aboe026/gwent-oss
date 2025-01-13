@@ -30,7 +30,7 @@ describe('game-deck-query', () => {
             schema,
             source: `{
               gameDeck(game: "${gameId}") {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -57,7 +57,7 @@ describe('game-deck-query', () => {
             schema,
             source: `{
               gameDeck(game: "${id.toString()}") {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -91,7 +91,7 @@ describe('game-deck-query', () => {
             schema,
             source: `{
               gameDeck(game: "${game.id}") {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -125,7 +125,7 @@ describe('game-deck-query', () => {
             schema,
             source: `{
               gameDeck(game: "${game.id}") {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -166,7 +166,7 @@ describe('game-deck-query', () => {
             schema,
             source: `{
               gameDeck(game: "${game.id}") {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -206,7 +206,7 @@ describe('game-deck-query', () => {
           schema,
           source: `{
             gameDeck(game: "${game.id}") {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -257,7 +257,7 @@ describe('game-deck-query', () => {
           schema,
           source: `{
             gameDeck(game: "${game.id}") {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {

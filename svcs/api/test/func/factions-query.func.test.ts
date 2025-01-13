@@ -23,7 +23,7 @@ describe('factions-query', () => {
         schema,
         source: `{
           factions {
-            ${getFactionFragment({})}
+            ${getFactionFragment()}
           }
         }`,
         contextValue: {
@@ -48,7 +48,7 @@ describe('factions-query', () => {
           factions(
             keys: [${FactionKey.Neutral}]
           ) {
-            ${getFactionFragment({})}
+            ${getFactionFragment()}
           }
         }`,
         contextValue: {
@@ -73,7 +73,7 @@ describe('factions-query', () => {
           factions(
             keys: [${FactionKey.NorthernRealms}, ${FactionKey.Neutral}]
           ) {
-            ${getFactionFragment({})}
+            ${getFactionFragment()}
           }
         }`,
         contextValue: {
@@ -102,7 +102,7 @@ describe('factions-query', () => {
           FactionKey.NorthernRealms
         }, ${FactionKey.ScoiaTael}, ${FactionKey.Skellige}]
           ) {
-            ${getFactionFragment({})}
+            ${getFactionFragment()}
           }
         }`,
         contextValue: {

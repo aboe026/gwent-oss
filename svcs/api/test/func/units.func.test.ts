@@ -23,7 +23,7 @@ describe('units', () => {
         schema,
         source: `{
           units {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -46,7 +46,7 @@ describe('units', () => {
         schema,
         source: `{
           units(deckable: true) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -69,7 +69,7 @@ describe('units', () => {
         schema,
         source: `{
           units(deckable: false) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -94,7 +94,7 @@ describe('units', () => {
         schema,
         source: `{
           units(factions: []) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -117,7 +117,7 @@ describe('units', () => {
         schema,
         source: `{
           units(factions: [${faction}]) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -141,7 +141,7 @@ describe('units', () => {
         schema,
         source: `{
           units(factions: [${faction}]) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -165,7 +165,7 @@ describe('units', () => {
         schema,
         source: `{
           units(factions: [${faction}]) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -189,7 +189,7 @@ describe('units', () => {
         schema,
         source: `{
           units(factions: [${faction}]) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -213,7 +213,7 @@ describe('units', () => {
         schema,
         source: `{
           units(factions: [${faction}]) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -237,7 +237,7 @@ describe('units', () => {
         schema,
         source: `{
           units(factions: [${faction}]) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -261,7 +261,7 @@ describe('units', () => {
         schema,
         source: `{
           units(factions: ${factions}) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {
@@ -287,7 +287,7 @@ describe('units', () => {
         schema,
         source: `{
           units(factions: ${factions}) {
-            ${getUnitFragment({})}
+            ${getUnitFragment()}
           }
         }`,
         contextValue: {

@@ -30,7 +30,7 @@ describe('game-query', () => {
             schema,
             source: `{
               game(id: "${gameId}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -54,7 +54,7 @@ describe('game-query', () => {
             schema,
             source: `{
               game(id: "${new ObjectId()}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -86,7 +86,7 @@ describe('game-query', () => {
             schema,
             source: `{
               game(id: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -118,7 +118,7 @@ describe('game-query', () => {
             schema,
             source: `{
               game(id: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -160,7 +160,7 @@ describe('game-query', () => {
             schema,
             source: `{
               game(id: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -212,7 +212,7 @@ describe('game-query', () => {
             schema,
             source: `{
               game(id: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -264,7 +264,7 @@ describe('game-query', () => {
             schema,
             source: `{
               game(id: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -348,7 +348,7 @@ describe('game-query', () => {
             schema,
             source: `{
               game(id: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {

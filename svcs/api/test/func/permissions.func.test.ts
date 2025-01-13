@@ -54,7 +54,7 @@ describe('permissions', () => {
             schema,
             source: `{
               decks {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
           })
@@ -71,7 +71,7 @@ describe('permissions', () => {
             schema,
             source: `{
               factions {
-                ${getFactionFragment({})}
+                ${getFactionFragment()}
               }
             }`,
           })
@@ -96,7 +96,7 @@ describe('permissions', () => {
               game(
                 id: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
           })
@@ -120,7 +120,7 @@ describe('permissions', () => {
               game(
                 id: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -152,7 +152,7 @@ describe('permissions', () => {
               gameDeck(
                 game: "${game.id}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
           })
@@ -178,7 +178,7 @@ describe('permissions', () => {
               gameDeck(
                 game: "${game.id}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -204,7 +204,7 @@ describe('permissions', () => {
             schema,
             source: `{
               games {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
           })
@@ -221,7 +221,7 @@ describe('permissions', () => {
             schema,
             source: `{
               leaders {
-                ${getLeaderFragment({})}
+                ${getLeaderFragment()}
               }
             }`,
           })
@@ -255,7 +255,7 @@ describe('permissions', () => {
             schema,
             source: `{
               units {
-                ${getUnitFragment({})}
+                ${getUnitFragment()}
               }
             }`,
           })
@@ -279,7 +279,7 @@ describe('permissions', () => {
                 leader: "${await getLeaderId({ name: 'Eredin Bringer of Death' })}",
                 units: [${await getUnitsInput(FactionKey.Monsters)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
           })
@@ -299,7 +299,7 @@ describe('permissions', () => {
               addGame(
                 opponentNames: ["${opponent.name}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
           })
@@ -355,7 +355,7 @@ describe('permissions', () => {
                 unit: "${unit.id}"
                 combat: ${unit.combats ? unit.combats[0] : Combat.Close}
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
           })
@@ -410,7 +410,7 @@ describe('permissions', () => {
                 unit: "${unit.id}"
                 combat: ${unit.combats ? unit.combats[0] : Combat.Close}
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -470,7 +470,7 @@ describe('permissions', () => {
               playPass(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
           })
@@ -522,7 +522,7 @@ describe('permissions', () => {
               playPass(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -574,7 +574,7 @@ describe('permissions', () => {
               ready(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
           })
@@ -618,7 +618,7 @@ describe('permissions', () => {
               ready(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -671,7 +671,7 @@ describe('permissions', () => {
                 game: "${game.id}"
                 unit: "${deck1.units[0].unit.id}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
           })
@@ -716,7 +716,7 @@ describe('permissions', () => {
                 game: "${game.id}"
                 unit: "${deck1.units[0].unit.id}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -754,7 +754,7 @@ describe('permissions', () => {
                 game: "${game.id}",
                 deck: "${deck.id}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
           })
@@ -784,7 +784,7 @@ describe('permissions', () => {
                 game: "${game.id}",
                 deck: "${deck.id}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -820,7 +820,7 @@ describe('permissions', () => {
                 game: "${game.id}",
                 deck: "${deck.id}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -873,7 +873,7 @@ describe('permissions', () => {
                 game: "${game.id}",
                 users: ["${user1.id}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
           })
@@ -918,7 +918,7 @@ describe('permissions', () => {
                 game: "${game.id}",
                 users: ["${user1.id}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {

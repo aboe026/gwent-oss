@@ -26,7 +26,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -59,7 +59,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -90,7 +90,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -121,7 +121,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -156,7 +156,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -193,7 +193,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -228,7 +228,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -265,7 +265,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -300,7 +300,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -341,7 +341,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -394,7 +394,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -465,7 +465,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -537,7 +537,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -617,7 +617,7 @@ describe('games-query', () => {
           schema,
           source: `{
             games {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {

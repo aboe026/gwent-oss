@@ -59,7 +59,7 @@ describe('set-order-mutation', () => {
                 game: "${gameId}"
                 users: ["${user1.id}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -113,7 +113,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${userId}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -140,7 +140,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${id.toString()}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -174,7 +174,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -206,7 +206,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -248,7 +248,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -290,7 +290,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -347,7 +347,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -400,7 +400,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${user1.id}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -456,7 +456,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -514,7 +514,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${id}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -568,7 +568,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${user1.id}", "${id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -623,7 +623,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${id1}", "${id2}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -678,7 +678,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${user1.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -735,7 +735,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${user1.id}", "${user1.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -793,7 +793,7 @@ describe('set-order-mutation', () => {
               game: "${game.id}"
               users: ["${user1.id}", "${user2.id}"]
             ) {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -863,7 +863,7 @@ describe('set-order-mutation', () => {
               game: "${game.id}"
               users: ["${user2.id}", "${user1.id}"]
             ) {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -932,7 +932,7 @@ describe('set-order-mutation', () => {
             setOrder(
               game: "${game.id}"
             ) {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {

@@ -46,7 +46,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${gameId}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -70,7 +70,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${new ObjectId()}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -102,7 +102,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -132,7 +132,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -190,7 +190,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -256,7 +256,7 @@ describe('ready-mutation', () => {
           schema,
           source: `mutation {
             ready(game: "${game.id}") {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -320,7 +320,7 @@ describe('ready-mutation', () => {
           schema,
           source: `mutation {
             ready(game: "${game.id}") {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {

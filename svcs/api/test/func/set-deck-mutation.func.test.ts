@@ -50,7 +50,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck.id}"
               game: "${gameId}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
             contextValue: {
@@ -95,7 +95,7 @@ describe('set-deck-mutation', () => {
               deck: "${deckId}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
             contextValue: {
@@ -123,7 +123,7 @@ describe('set-deck-mutation', () => {
                 deck: "${deckId}"
                 game: "${new ObjectId()}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -156,7 +156,7 @@ describe('set-deck-mutation', () => {
                 deck: "${deck.id}"
                 game: "${gameId}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -196,7 +196,7 @@ describe('set-deck-mutation', () => {
                 deck: "${deck.id}"
                 game: "${game.id}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -257,7 +257,7 @@ describe('set-deck-mutation', () => {
                 deck: "${deck.id}"
                 game: "${game.id}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -309,7 +309,7 @@ describe('set-deck-mutation', () => {
                 deck: "${deckId}"
                 game: "${game.id}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -347,7 +347,7 @@ describe('set-deck-mutation', () => {
                 deck: "${deck.id}"
                 game: "${game.id}"
               ) {
-                ${getGameDeckFragment({})}
+                ${getGameDeckFragment()}
               }
             }`,
             contextValue: {
@@ -392,7 +392,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -466,7 +466,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -551,7 +551,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck1.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -605,7 +605,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck2.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -692,7 +692,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck1.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -746,7 +746,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck2.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -833,7 +833,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck1.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -887,7 +887,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck2.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -977,7 +977,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck1.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {
@@ -1031,7 +1031,7 @@ describe('set-deck-mutation', () => {
               deck: "${deck2.id}"
               game: "${game.id}"
             ) {
-              ${getGameDeckFragment({})}
+              ${getGameDeckFragment()}
             }
           }`,
           contextValue: {

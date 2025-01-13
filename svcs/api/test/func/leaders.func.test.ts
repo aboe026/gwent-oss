@@ -23,7 +23,7 @@ describe('leaders', () => {
         schema,
         source: `{
           leaders(factions: []) {
-            ${getLeaderFragment({})}
+            ${getLeaderFragment()}
           }
         }`,
         contextValue: {
@@ -46,7 +46,7 @@ describe('leaders', () => {
         schema,
         source: `{
           leaders(factions: [${faction}]) {
-            ${getLeaderFragment({})}
+            ${getLeaderFragment()}
           }
         }`,
         contextValue: {
@@ -69,7 +69,7 @@ describe('leaders', () => {
         schema,
         source: `{
           leaders(factions: [${FactionKey.Neutral}]) {
-            ${getLeaderFragment({})}
+            ${getLeaderFragment()}
           }
         }`,
         contextValue: {
@@ -92,7 +92,7 @@ describe('leaders', () => {
         schema,
         source: `{
           leaders(factions: [${faction}]) {
-            ${getLeaderFragment({})}
+            ${getLeaderFragment()}
           }
         }`,
         contextValue: {
@@ -116,7 +116,7 @@ describe('leaders', () => {
         schema,
         source: `{
           leaders(factions: [${faction}]) {
-            ${getLeaderFragment({})}
+            ${getLeaderFragment()}
           }
         }`,
         contextValue: {
@@ -140,7 +140,7 @@ describe('leaders', () => {
         schema,
         source: `{
           leaders(factions: [${faction}]) {
-            ${getLeaderFragment({})}
+            ${getLeaderFragment()}
           }
         }`,
         contextValue: {
@@ -164,7 +164,7 @@ describe('leaders', () => {
         schema,
         source: `{
           leaders(factions: [${faction}]) {
-            ${getLeaderFragment({})}
+            ${getLeaderFragment()}
           }
         }`,
         contextValue: {
@@ -188,7 +188,7 @@ describe('leaders', () => {
         schema,
         source: `{
           leaders(factions: ${factions}) {
-            ${getLeaderFragment({})}
+            ${getLeaderFragment()}
           }
         }`,
         contextValue: {
@@ -214,7 +214,7 @@ describe('leaders', () => {
         schema,
         source: `{
           leaders(factions: ${factions}) {
-            ${getLeaderFragment({})}
+            ${getLeaderFragment()}
           }
         }`,
         contextValue: {

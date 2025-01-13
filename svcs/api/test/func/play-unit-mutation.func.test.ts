@@ -102,7 +102,7 @@ describe('play-unit-mutation', () => {
                 combat: ${Combat.Close}
                 unit: "invalid"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -130,7 +130,7 @@ describe('play-unit-mutation', () => {
                 combat: ${Combat.Close}
                 unit: "${new ObjectId()}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -172,7 +172,7 @@ describe('play-unit-mutation', () => {
                 combat: ${Combat.Close}
                 unit: "${new ObjectId()}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -219,7 +219,7 @@ describe('play-unit-mutation', () => {
                 combat: ${Combat.Close}
                 unit: "${new ObjectId()}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -290,7 +290,7 @@ describe('play-unit-mutation', () => {
                 combat: ${Combat.Close}
                 unit: "${new ObjectId()}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -318,7 +318,7 @@ describe('play-unit-mutation', () => {
                 combat: ${Combat.Close}
                 unit: "${new ObjectId()}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -343,7 +343,7 @@ describe('play-unit-mutation', () => {
                 combat: ${Combat.Close}
                 unit: "${unitId}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -382,7 +382,7 @@ describe('play-unit-mutation', () => {
                 combat: ${combat}
                 unit: "${deckUnit.unit.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -434,7 +434,7 @@ describe('play-unit-mutation', () => {
                 combat: ${combat}
                 unit: "${deckUnit.unit.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {

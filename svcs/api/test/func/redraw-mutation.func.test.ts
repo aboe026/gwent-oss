@@ -61,7 +61,7 @@ describe('redraw-mutation', () => {
               game: "${gameId}"
               unit: "${unitToRedraw1.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
             contextValue: {
@@ -116,7 +116,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitId}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
             contextValue: {
@@ -144,7 +144,7 @@ describe('redraw-mutation', () => {
                 game: "${id.toString()}"
                 unit: "${new ObjectId()}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -179,7 +179,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${new ObjectId()}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -212,7 +212,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${new ObjectId()}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -273,7 +273,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${gameDeckSelf.hand[3].unit.id}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -336,7 +336,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${gameDeckSelf.hand[3].unit.id}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -390,7 +390,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${unitId}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -449,7 +449,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${unitToRedraw}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -528,7 +528,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitToRedraw1.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
           contextValue: {
@@ -590,7 +590,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitToRedraw2.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
           contextValue: {
@@ -656,7 +656,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitToRedraw3.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
           contextValue: {
@@ -718,7 +718,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitToRedraw4.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
           contextValue: {

@@ -105,7 +105,7 @@ describe('play-pass-mutation', () => {
               playPass(
                 game: "${game2.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -145,7 +145,7 @@ describe('play-pass-mutation', () => {
               playPass(
                 game: "${game2.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -190,7 +190,7 @@ describe('play-pass-mutation', () => {
               playPass(
                 game: "${game2.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -259,7 +259,7 @@ describe('play-pass-mutation', () => {
               playPass(
                 game: "${game2.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -285,7 +285,7 @@ describe('play-pass-mutation', () => {
               playPass(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -314,7 +314,7 @@ describe('play-pass-mutation', () => {
               playPass(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -394,7 +394,7 @@ describe('play-pass-mutation', () => {
               playPass(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -510,7 +510,7 @@ describe('play-pass-mutation', () => {
               playPass(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {

@@ -32,7 +32,7 @@ describe('add-game-mutation', () => {
               addGame(
                 opponentNames: ["${name2}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
           })
@@ -51,7 +51,7 @@ describe('add-game-mutation', () => {
               addGame(
                 opponentNames: []
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -80,7 +80,7 @@ describe('add-game-mutation', () => {
                   "${name2}"
                 ]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -109,7 +109,7 @@ describe('add-game-mutation', () => {
                   "${name2}"
                 ]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -140,7 +140,7 @@ describe('add-game-mutation', () => {
                   "${name3}"
                 ]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -165,7 +165,7 @@ describe('add-game-mutation', () => {
               addGame(
                 opponentNames: ["${name2}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -193,7 +193,7 @@ describe('add-game-mutation', () => {
               addGame(
                 opponentNames: ["${name2}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
