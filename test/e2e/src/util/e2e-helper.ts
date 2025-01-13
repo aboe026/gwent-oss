@@ -1,8 +1,9 @@
-import { Combat, Deck, DeckUnit, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import ApiClient from './api-client'
-import { GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
+import { Combat, Deck, DeckUnit, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import GamePage, { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import { PlayerTurn } from '../components/game-player-info'
+import { sortObjectArray } from '@gwent/utils'
+import { STARTING_HAND_SIZE } from '@gwent/constants'
 
 export interface ContextGamePlayer {
   user: User
@@ -52,28 +53,32 @@ export class E2eHelper {
   static addUnitToGamePlayer({
     player,
     unitName,
-    score,
+    strength,
     row,
   }: {
     player: GamePlayerExpected
     unitName: string
-    score: number
+    strength?: number
     row: Combat
   }): void {
+    const unit: CombatUnit = {
+      name: unitName,
+      strength,
+    }
     if (row === Combat.Close) {
       player.close = {
-        score: (player.close?.score || 0) + score,
-        unitNames: [...(player.close?.unitNames || []), unitName],
+        score: (player.close?.score || 0) + (strength || 0),
+        units: [...(player.close?.units || []), unit],
       }
     } else if (row === Combat.Ranged) {
       player.ranged = {
-        score: (player.ranged?.score || 0) + score,
-        unitNames: [...(player.ranged?.unitNames || []), unitName],
+        score: (player.ranged?.score || 0) + (strength || 0),
+        units: [...(player.ranged?.units || []), unit],
       }
     } else if (row === Combat.Siege) {
       player.siege = {
-        score: (player.siege?.score || 0) + score,
-        unitNames: [...(player.siege?.unitNames || []), unitName],
+        score: (player.siege?.score || 0) + (strength || 0),
+        units: [...(player.siege?.units || []), unit],
       }
     }
   }
@@ -81,22 +86,22 @@ export class E2eHelper {
   static resetPlayerCombatRow({ player, row }: { player: GamePlayerExpected; row: Combat }): number {
     let discardsForRow = 0
     if (row === Combat.Close) {
-      discardsForRow = (player.close?.unitNames || []).length
+      discardsForRow = (player.close?.units || []).length
       player.close = {
         score: 0,
-        unitNames: [],
+        units: [],
       }
     } else if (row === Combat.Ranged) {
-      discardsForRow = (player.ranged?.unitNames || []).length
+      discardsForRow = (player.ranged?.units || []).length
       player.ranged = {
         score: 0,
-        unitNames: [],
+        units: [],
       }
     } else if (row === Combat.Siege) {
-      discardsForRow = (player.siege?.unitNames || []).length
+      discardsForRow = (player.siege?.units || []).length
       player.siege = {
         score: 0,
-        unitNames: [],
+        units: [],
       }
     }
     return discardsForRow
@@ -125,7 +130,7 @@ export class E2eHelper {
       player: player,
       unitName: deckUnit.unit.name,
       row,
-      score: deckUnit.unit.strength || 0,
+      strength: deckUnit.unit.strength || 0,
     })
     moves.push({
       userName: player.name,
@@ -174,4 +179,210 @@ export class E2eHelper {
         row: Combat.Siege,
       })
   }
+
+  static async playStrongestCards({
+    self,
+    opponent,
+    moves,
+    uiDriven,
+    gameId,
+    round,
+    debug,
+  }: {
+    self: CardPlayer
+    opponent: CardPlayer
+    moves: (HistoryMove | HistoryPass)[]
+    uiDriven?: boolean
+    verifyEachMovement?: boolean
+    gameId: string
+    round: number
+    debug?: boolean
+  }): Promise<{
+    selfPlayedCards: CombatCard[]
+    opponentPlayedCards: CombatCard[]
+  }> {
+    const sortedHandSelf = sortObjectArray({
+      array: self.player.gameDeck.hand,
+      sortProperties: ['unit.strength', 'unit.name', 'unit.id'],
+      reverse: true,
+    })
+    const sortedHandOpponent = sortObjectArray({
+      array: opponent.player.gameDeck.hand,
+      sortProperties: ['unit.strength', 'unit.name', 'unit.id'],
+      reverse: true,
+    })
+    const numberOfCardsToPlaySelf = self.numberToPlay === undefined ? sortedHandSelf.length - 1 : self.numberToPlay
+    const numberOfCardsToPlayOpponent =
+      opponent.numberToPlay === undefined ? sortedHandOpponent.length - 1 : opponent.numberToPlay
+    let selfHandIndex = 0
+    let opponentHandIndex = 0
+    let selfScore = 0
+    let opponentScore = 0
+    const verify = false
+    const logPrefix = 'playStrongetsCards'
+    const selfPlayedCards: CombatCard[] = []
+    const opponentPlayedCards: CombatCard[] = []
+
+    while (selfHandIndex < numberOfCardsToPlaySelf && opponentHandIndex < numberOfCardsToPlayOpponent) {
+      if (debug) {
+        console.log(`${logPrefix} selfHandIndex: "${selfHandIndex}"`)
+        console.log(`${logPrefix} opponentHandIndex: "${opponentHandIndex}"`)
+      }
+      if (self.expected.turn) {
+        if (debug) {
+          console.log(`${logPrefix} self turn`)
+        }
+        if (selfHandIndex < sortedHandSelf.length) {
+          const selfUnit = sortedHandSelf[selfHandIndex]
+          if (selfUnit.unit.combats) {
+            if (debug) {
+              console.log(`${logPrefix} playing self unit "${selfUnit.unit.name}"`)
+            }
+            selfScore += selfUnit.unit.strength || 0
+            const combat = selfUnit.unit.combats[0]
+            if (uiDriven) {
+              await GamePage.moveUnit({
+                unitName: selfUnit.unit.name,
+                row: combat,
+              })
+            } else {
+              await self.player.client.playUnit({
+                gameId,
+                unitId: selfUnit.unit.id,
+                combat,
+              })
+            }
+            selfPlayedCards.push({
+              name: selfUnit.unit.name,
+              row: combat,
+            })
+            E2eHelper.playUnit({
+              player: self.expected,
+              gameDeck: self.player.gameDeck,
+              deckUnit: selfUnit,
+              moves: moves,
+              row: combat,
+            })
+            if (!opponent.expected.passed) {
+              self.expected.turn = undefined
+              opponent.expected.turn = PlayerTurn.Current
+            }
+            if (verify) {
+              await GamePage.verify({
+                opponent: opponent.expected,
+                self: self.expected,
+                hand: self.player.gameDeck.hand,
+                moves: [moves],
+              })
+            }
+          } else {
+            if (debug) {
+              console.log(`${logPrefix} no combats for self unit "${selfUnit.unit.name}" so cannot play, skipping`)
+            }
+          }
+          selfHandIndex++
+        } else if (!self.expected.passed) {
+          if (debug) {
+            console.log(`${logPrefix} self has run out of cards in hand, will pass`)
+          }
+          await GamePage.pass({})
+          self.expected.passed = true
+          moves.push({
+            userName: self.player.user.name,
+            round,
+          })
+        } else {
+          console.log(`${logPrefix} self should not get here?`)
+        }
+      }
+
+      if (opponent.expected.turn) {
+        if (debug) {
+          console.log(`${logPrefix} opponent turn`)
+        }
+        if (opponentHandIndex < sortedHandOpponent.length) {
+          const opponentUnit = sortedHandOpponent[opponentHandIndex]
+          if (opponentUnit.unit.combats) {
+            if (debug) {
+              console.log(`${logPrefix} playing opponent unit "${opponentUnit.unit.name}"`)
+            }
+            opponentScore += opponentUnit.unit.strength || 0
+            const combat = opponentUnit.unit.combats[0]
+            await opponent.player.client.playUnit({
+              gameId: gameId,
+              unitId: opponentUnit.unit.id,
+              combat,
+            })
+            opponentPlayedCards.push({
+              name: opponentUnit.unit.name,
+              row: combat,
+            })
+            E2eHelper.playUnit({
+              player: opponent.expected,
+              gameDeck: opponent.player.gameDeck,
+              deckUnit: opponentUnit,
+              moves: moves,
+              row: combat,
+            })
+            if (!self.expected.passed) {
+              opponent.expected.turn = undefined
+              self.expected.turn = PlayerTurn.Current
+            }
+            if (verify) {
+              await GamePage.verify({
+                opponent: opponent.expected,
+                self: self.expected,
+                hand: self.player.gameDeck.hand,
+                moves: [moves],
+              })
+            }
+          } else {
+            if (debug) {
+              console.log(
+                `${logPrefix} no combats for opponent unit "${opponentUnit.unit.name}" so cannot play, skipping`
+              )
+            }
+          }
+          opponentHandIndex++
+        } else if (!opponent.expected.passed) {
+          if (debug) {
+            console.log(`${logPrefix}  opponent has run out of cards in hand, will pass`)
+          }
+          await opponent.player.client.playPass({
+            gameId: gameId,
+          })
+          opponent.expected.passed = true
+          moves.push({
+            userName: opponent.player.user.name,
+            round: 1,
+          })
+        } else {
+          if (debug) {
+            console.log(`${logPrefix}  opponent should not get here?`)
+          }
+        }
+      }
+    }
+
+    if (debug) {
+      console.log(`${logPrefix} selfScore: "${selfScore}"`)
+      console.log(`${logPrefix} opponentScore: "${opponentScore}"`)
+    }
+
+    return {
+      selfPlayedCards,
+      opponentPlayedCards,
+    }
+  }
+}
+
+interface CardPlayer {
+  numberToPlay?: number
+  player: ContextGamePlayer
+  expected: GamePlayerExpected
+}
+
+interface CombatCard {
+  name: string
+  row: Combat
 }

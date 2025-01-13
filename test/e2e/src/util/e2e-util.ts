@@ -12,6 +12,18 @@ export default class E2eUtil {
     return url
   })
 
+  static isElementInViewport = ClientFunction((boundaries: TextRectangle) => {
+    const windowHeight = window.innerHeight
+    const windowWidth = window.innerWidth
+
+    return (
+      boundaries.bottom > 0 &&
+      boundaries.right > 0 &&
+      boundaries.left < (windowWidth || document.documentElement.clientWidth) &&
+      boundaries.top < (windowHeight || document.documentElement.clientHeight)
+    )
+  })
+
   static async verifyCurrentUrl(expectedPath: string) {
     await t.expect(E2eUtil.getCurrentUrl()).eql(E2eUtil.getUrl(expectedPath))
   }

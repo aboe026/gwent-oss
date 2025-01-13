@@ -1582,7 +1582,7 @@ function renderCombatRow({
     combat === Combat.Close ? playerRound.close : combat === Combat.Ranged ? playerRound.ranged : playerRound.siege
   const sortedUnits = sortObjectArray({
     array: playerRow.units,
-    sortProperties: ['unit.strength', 'unit.id'],
+    sortProperties: ['unit.strength', 'unit.name', 'unit.id'],
   })
   let id = ''
   if (combat === Combat.Close) {
@@ -1641,17 +1641,23 @@ function renderCombatRow({
               className="game-combat-card-wrapper"
               key={gameUnit.unit.id}
               onClick={() => {
-                if (selectedInHistory) {
-                  setHistoryCardSelected(undefined)
-                } else {
-                  const unitForPlayer: UnitForPlayer = {
-                    playerId: player.user.id,
-                    unit: gameUnit,
+                const cardBeingPlayed =
+                  isTurn &&
+                  handCardSelected &&
+                  (!handCardSelected.unit.combats || handCardSelected.unit.combats.includes(combat))
+                if (!cardBeingPlayed) {
+                  if (selectedInHistory) {
+                    setHistoryCardSelected(undefined)
+                  } else {
+                    const unitForPlayer: UnitForPlayer = {
+                      playerId: player.user.id,
+                      unit: gameUnit,
+                    }
+                    setHistoryCardSelected(unitForPlayer)
+                    scrollHistoryIntoView(unitForPlayer)
                   }
-                  setHistoryCardSelected(unitForPlayer)
-                  scrollHistoryIntoView(unitForPlayer)
+                  setHandCardSelected(undefined)
                 }
-                setHandCardSelected(undefined)
               }}
             >
               <UnitGameCard

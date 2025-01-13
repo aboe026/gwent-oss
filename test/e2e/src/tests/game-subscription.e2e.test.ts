@@ -995,7 +995,7 @@ test('Page automatically updates after unit played via API on game page', async 
   E2eHelper.addUnitToGamePlayer({
     player: selfPlayer,
     row: combatRow,
-    score: unitToMove.unit.strength || 0,
+    strength: unitToMove.unit.strength || 0,
     unitName: unitToMove.unit.name,
   })
   opponentPlayer.turn = PlayerTurn.Current
@@ -1090,7 +1090,7 @@ test('Page automatically updates after opponent plays unit via API on game page'
   E2eHelper.addUnitToGamePlayer({
     player: opponentPlayer,
     row: combatRow,
-    score: unitToMove.unit.strength || 0,
+    strength: unitToMove.unit.strength || 0,
     unitName: unitToMove.unit.name,
   })
   moves.push({
@@ -1182,7 +1182,7 @@ test('Page automatically updates after unit played via API on games list', async
   E2eHelper.addUnitToGamePlayer({
     player: selfPlayer,
     row: combatRow,
-    score: unitToMove.unit.strength || 0,
+    strength: unitToMove.unit.strength || 0,
     unitName: unitToMove.unit.name,
   })
   opponentPlayer.turn = PlayerTurn.Current
@@ -1338,7 +1338,7 @@ test('Page automatically updates after pass at round end via API on game page', 
   E2eHelper.addUnitToGamePlayer({
     player: selfPlayer,
     row: combatRow,
-    score: unitToMove.unit.strength || 0,
+    strength: unitToMove.unit.strength || 0,
     unitName: unitToMove.unit.name,
   })
   moves.push({

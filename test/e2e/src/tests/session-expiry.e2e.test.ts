@@ -985,7 +985,7 @@ test('Play unit after session expires', async (t) => {
     player: currentPlayer,
     unitName: unitToMove.unit.name,
     row: combat,
-    score: unitToMove.unit.strength || 0,
+    strength: unitToMove.unit.strength || 0,
   })
   otherPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
@@ -1177,7 +1177,7 @@ test('Play pass at end of round after session expires', async (t) => {
     player: currentPlayer,
     unitName: unitToMove.unit.name,
     row: combat,
-    score: unitToMove.unit.strength || 0,
+    strength: unitToMove.unit.strength || 0,
   })
   round1Moves.push({
     userName: currentPlayer.name,
