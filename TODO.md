@@ -60,20 +60,20 @@ A list of things to be done in the future.
 
 ## Features
 
+- remove ids from errors and put them in logPrefix
 - remove "statsModifier"
 - animations/text of what opponent did?
 - how to make pass more obvious?
   - white flag icon?
 - fix layout on small width screen
   - player score
-- clicking history entry highlights/animates card (if still on battlefield)
 - e2e tests
 - unit tests
 - ensure js-docs
 - increment version
-- permissions func tests
 - delete db for func tests before every test (instead of before every file)
 - remove "Can " prefix for test names
+- make "combat" argument optional for "playUnit" mutation? (throw error if unit has multiple combats and none specified, otherwise default to the only one it can do)
 
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability

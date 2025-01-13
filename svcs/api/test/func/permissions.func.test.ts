@@ -1,10 +1,10 @@
 import { GraphQLError, graphql } from 'graphql'
 
-import { addDeck, addGame, addUser, getLeaderId, getUnitsInput, setDeck } from './util/graphql-util'
+import { addDeck, addGame, addUser, getLeaderId, getUnitsInput, ready, setDeck } from './util/graphql-util'
+import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import {
   getDeckFragment,
   getDeckUnitFragment,
@@ -306,6 +306,236 @@ describe('permissions', () => {
         ).resolves.toEqual({
           data: null,
           errors: [new GraphQLError(NOT_AUTHENTICATED_MESSAGE)],
+        })
+      })
+    })
+    describe('playUnit', () => {
+      it('returns error if not authenticated', async () => {
+        const user1 = await addUser(`user-1-${Date.now()}`)
+        const user2 = await addUser(`user-2-${Date.now()}`)
+        const deck1 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: 'deck1',
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: 'deck2',
+          userId: user2.id,
+        })
+        const game = await addGame({
+          opponentNames: [user2.name],
+          creator: user1,
+        })
+        const gameDeck = await setDeck({
+          deckId: deck1.id,
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await setDeck({
+          deckId: deck2.id,
+          gameId: game.id,
+          userId: user2.id,
+        })
+        await ready({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await ready({
+          gameId: game.id,
+          userId: user2.id,
+        })
+        const unit = gameDeck.hand[0].unit
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              playUnit(
+                game: "${game.id}"
+                unit: "${unit.id}"
+                combat: ${unit.combats ? unit.combats[0] : Combat.Close}
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(NOT_AUTHENTICATED_MESSAGE)],
+        })
+      })
+      it('returns error if not a player', async () => {
+        const user1 = await addUser(`user-1-${Date.now()}`)
+        const user2 = await addUser(`user-2-${Date.now()}`)
+        const user3 = await addUser(`user-3-${Date.now()}`)
+        const deck1 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: 'deck1',
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: 'deck2',
+          userId: user2.id,
+        })
+        const game = await addGame({
+          opponentNames: [user2.name],
+          creator: user1,
+        })
+        const gameDeck = await setDeck({
+          deckId: deck1.id,
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await setDeck({
+          deckId: deck2.id,
+          gameId: game.id,
+          userId: user2.id,
+        })
+        await ready({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await ready({
+          gameId: game.id,
+          userId: user2.id,
+        })
+        const unit = gameDeck.hand[0].unit
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              playUnit(
+                game: "${game.id}"
+                unit: "${unit.id}"
+                combat: ${unit.combats ? unit.combats[0] : Combat.Close}
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user3.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(NOT_AUTHORIZED_MESSAGE)],
+        })
+      })
+    })
+    describe('playPass', () => {
+      it('returns error if not authenticated', async () => {
+        const user1 = await addUser(`user-1-${Date.now()}`)
+        const user2 = await addUser(`user-2-${Date.now()}`)
+        const deck1 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: 'deck1',
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: 'deck2',
+          userId: user2.id,
+        })
+        const game = await addGame({
+          opponentNames: [user2.name],
+          creator: user1,
+        })
+        await setDeck({
+          deckId: deck1.id,
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await setDeck({
+          deckId: deck2.id,
+          gameId: game.id,
+          userId: user2.id,
+        })
+        await ready({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await ready({
+          gameId: game.id,
+          userId: user2.id,
+        })
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              playPass(
+                game: "${game.id}"
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(NOT_AUTHENTICATED_MESSAGE)],
+        })
+      })
+      it('returns error if not a player', async () => {
+        const user1 = await addUser(`user-1-${Date.now()}`)
+        const user2 = await addUser(`user-2-${Date.now()}`)
+        const user3 = await addUser(`user-3-${Date.now()}`)
+        const deck1 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: 'deck1',
+          userId: user1.id,
+        })
+        const deck2 = await addDeck({
+          faction: FactionKey.Monsters,
+          name: 'deck2',
+          userId: user2.id,
+        })
+        const game = await addGame({
+          opponentNames: [user2.name],
+          creator: user1,
+        })
+        await setDeck({
+          deckId: deck1.id,
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await setDeck({
+          deckId: deck2.id,
+          gameId: game.id,
+          userId: user2.id,
+        })
+        await ready({
+          gameId: game.id,
+          userId: user1.id,
+        })
+        await ready({
+          gameId: game.id,
+          userId: user2.id,
+        })
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              playPass(
+                game: "${game.id}"
+              ) {
+                ${getGameFragment({})}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: {
+                  _id: user3.id,
+                },
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(NOT_AUTHORIZED_MESSAGE)],
         })
       })
     })

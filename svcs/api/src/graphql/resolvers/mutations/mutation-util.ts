@@ -87,7 +87,6 @@ export default class MutationUtil {
     if (turn) {
       if (game.turn?.toString() !== userId.toString()) {
         const message = `Cannot ${label} when it is not your turn.`
-        // TODO: add game id to all logger warn/errors (add it to logPrefix?)
         MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
         return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
       }

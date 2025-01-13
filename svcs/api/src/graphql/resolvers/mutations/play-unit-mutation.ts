@@ -28,7 +28,7 @@ export default class PlayUnitMutation {
       PlayUnitMutation.logger.error(`No user on context for playUnit mutation: "${JSON.stringify(context.session)}".`)
       return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    const logPrefix = `playUnit by "${userId}"`
+    let logPrefix = `playUnit by "${userId}"`
     if (PlayUnitMutation.logger.isTraceEnabled()) {
       PlayUnitMutation.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
       PlayUnitMutation.logger.trace(
@@ -41,6 +41,8 @@ export default class PlayUnitMutation {
 
     const gameId = args.game
     const unitId = args.unit
+
+    logPrefix += ` for unit "${unitId}" on game "${gameId}"`
 
     if (!ObjectId.isValid(unitId)) {
       const message = `Unit ID "${unitId}" is not a valid MongoDB ObjectId.`
@@ -64,13 +66,13 @@ export default class PlayUnitMutation {
 
     const deckUnits = player.deck.hand.filter((hand) => hand.unit.toString() === unitId)
     if (deckUnits.length === 0) {
-      const message = `Invalid unit "${unitId}": not in hand.`
+      const message = 'Unit not in hand.'
       PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     } else if (deckUnits.length > 1) {
       const message = `Found more than 1 unit with ID "${unitId}"`
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: ${JSON.stringify(deckUnits)}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const deckUnit = deckUnits[0]
 
@@ -78,13 +80,13 @@ export default class PlayUnitMutation {
       ids: [unitId],
     })
     if (units.length === 0) {
-      const message = `Could not find unit with ID "${unitId}"`
+      const message = 'Unit does not exist.'
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     } else if (units.length > 1) {
       const message = `Found multiple units with ID "${unitId}"`
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: ${JSON.stringify(units)}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const unit = units[0]
 

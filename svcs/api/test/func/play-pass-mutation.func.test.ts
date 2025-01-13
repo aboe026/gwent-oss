@@ -30,6 +30,7 @@ import DbUtil from './util/db-util'
 import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
+import { sortObjectArray } from '@gwent/utils'
 import TestUtil from '../test-util'
 
 describe('play-pass-mutation', () => {
@@ -117,7 +118,7 @@ describe('play-pass-mutation', () => {
           data: null,
           errors: [
             new GraphQLError(
-              `Invalid game status "${GameStatus.Decking}": Can only pass for game with status "${GameStatus.Playing}".`
+              `Invalid game status "${GameStatus.Decking}": Can only pass round for game with status "${GameStatus.Playing}".`
             ),
           ],
         })
@@ -157,7 +158,7 @@ describe('play-pass-mutation', () => {
           data: null,
           errors: [
             new GraphQLError(
-              `Invalid game status "${GameStatus.Ordering}": Can only pass for game with status "${GameStatus.Playing}".`
+              `Invalid game status "${GameStatus.Ordering}": Can only pass round for game with status "${GameStatus.Playing}".`
             ),
           ],
         })
@@ -202,7 +203,7 @@ describe('play-pass-mutation', () => {
           data: null,
           errors: [
             new GraphQLError(
-              `Invalid game status "${GameStatus.Redrawing}": Can only pass for game with status "${GameStatus.Playing}".`
+              `Invalid game status "${GameStatus.Redrawing}": Can only pass round for game with status "${GameStatus.Playing}".`
             ),
           ],
         })
@@ -271,7 +272,7 @@ describe('play-pass-mutation', () => {
           data: null,
           errors: [
             new GraphQLError(
-              `Invalid game status "${GameStatus.Done}": Can only pass for game with status "${GameStatus.Playing}".`
+              `Invalid game status "${GameStatus.Done}": Can only pass round for game with status "${GameStatus.Playing}".`
             ),
           ],
         })
@@ -442,11 +443,17 @@ describe('play-pass-mutation', () => {
         })
       })
       it('plays pass after opponent has passed', async () => {
-        const gameDeckSelf = await getGameDeck({
-          gameId: game.id,
-          userId: self.id,
+        const gameDeckSelf = sortObjectArray({
+          array: (
+            await getGameDeck({
+              gameId: game.id,
+              userId: self.id,
+            })
+          ).hand,
+          sortProperties: ['unit.strength', 'unit.name'],
+          reverse: true,
         })
-        const deckUnit = gameDeckSelf.hand[0]
+        const deckUnit = gameDeckSelf[0]
         const deckUnitCombat = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
         await playUnit({
           gameId: game.id,

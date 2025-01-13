@@ -28,7 +28,7 @@ export default class PlayerMoveResolver {
           (await LeaderResolver.fromId({
             id: leaderMove.leader,
           })),
-        __typename: 'MoveLeader', // TODO: keep "__typename" here or add it in resolves?
+        __typename: 'MoveLeader',
       }
     } else if (move.type === MoveType.Pass) {
       const passMove = move as MovePassDbObject
