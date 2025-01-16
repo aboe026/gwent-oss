@@ -2101,7 +2101,7 @@ function renderHand({
 
             return (
               <div
-                className={`game-hand-card-wrapper ${selected ? 'game-hand-card-wrapper-selected' : ''}`}
+                className={`${HTML_CLASSES.GameHandCardWrapper} ${selected ? 'game-hand-card-wrapper-selected' : ''}`}
                 key={deckUnit.unit.id}
                 onClick={() => {
                   if (!playUnitLoading) {
@@ -2123,7 +2123,7 @@ function renderHand({
                     })
                   }
                 />
-                {notSelected && <div title={title} className="game-hand-card-wrapper-not-selected"></div>}
+                {notSelected && <div title={title} className={HTML_CLASSES.GameHandCardWrapperNotSelected}></div>}
               </div>
             )
           })

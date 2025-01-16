@@ -896,7 +896,9 @@ export default class GamePage {
 
   static async selectHandUnit({ unitName }: { unitName: string }) {
     await t.click(
-      GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
+      GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+        .withAttribute('title', unitName)
+        .parent(`.${HTML_CLASSES.GameHandCardWrapper}`)
     )
   }
 
