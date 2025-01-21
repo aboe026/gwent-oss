@@ -1221,13 +1221,13 @@ function renderScore({
               </div>
             </div>
             {playerRound &&
+              game.status === GameStatus.Playing &&
               (playerRound.passed ? (
                 <span className={HTML_CLASSES.GamePlayerPassed} title={passTitle}>
                   Passed
                 </span>
               ) : (
-                isSelf &&
-                game.status === GameStatus.Playing && (
+                isSelf && (
                   <button
                     id={HTML_IDS.GamePass}
                     type="button"
@@ -1243,13 +1243,15 @@ function renderScore({
           </div>
         )}
       </div>
-      <div className={`game-score-container ${winning ? 'game-score-container-winning' : ''}`}>
-        {playerRound && (
-          <span className={HTML_CLASSES.GamePlayerScore} title="Score for the current round">
-            {playerRound.score}
-          </span>
-        )}
-      </div>
+      {game.status === GameStatus.Playing && (
+        <div className={`game-score-container ${winning ? 'game-score-container-winning' : ''}`}>
+          {playerRound && (
+            <span className={HTML_CLASSES.GamePlayerScore} title="Score for the current round">
+              {playerRound.score}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }

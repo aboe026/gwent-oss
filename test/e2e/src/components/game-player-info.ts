@@ -35,7 +35,7 @@ export default class GamePlayerInfo {
     faction,
     hand,
     leader,
-    score = 0,
+    score,
     undrawn,
     losses = 0,
     lives = 2,
@@ -66,7 +66,11 @@ export default class GamePlayerInfo {
     if (allReady) {
       await t.expect(this.elements.TokensWon.count).eql(lives - losses)
       await t.expect(this.elements.TokensLost.count).eql(losses)
-      await t.expect(this.elements.Score.innerText).eql(score.toString())
+      if (score === undefined) {
+        await t.expect(this.elements.Score.exists).notOk()
+      } else {
+        await t.expect(this.elements.Score.innerText).eql(score.toString())
+      }
     }
     if ([faction, leader, undrawn, hand, discards].includes(undefined)) {
       await t.expect(this.elements.DeckPlaceholder.exists).ok()

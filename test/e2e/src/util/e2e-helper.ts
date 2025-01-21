@@ -118,7 +118,7 @@ export class E2eHelper {
     deckUnit: DeckUnit
     row?: Combat
     gameDeck: GameDeck
-    moves: (HistoryMove | HistoryPass)[]
+    moves?: (HistoryMove | HistoryPass)[]
   }) {
     if (!row) {
       row = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
@@ -132,14 +132,24 @@ export class E2eHelper {
       row,
       strength: deckUnit.unit.strength || 0,
     })
-    moves.push({
-      userName: player.name,
-      unitName: deckUnit.unit.name,
-      combatRow: row,
-    })
+    if (moves) {
+      moves.push({
+        userName: player.name,
+        unitName: deckUnit.unit.name,
+        combatRow: row,
+      })
+    }
   }
 
-  static endRound({ creator, opponent }: { creator: GamePlayerExpected; opponent: GamePlayerExpected }) {
+  static endRound({
+    creator,
+    opponent,
+    gameOver,
+  }: {
+    creator: GamePlayerExpected
+    opponent: GamePlayerExpected
+    gameOver?: boolean
+  }) {
     creator.score = 0
     opponent.score = 0
     creator.discard =
@@ -178,6 +188,14 @@ export class E2eHelper {
         player: opponent,
         row: Combat.Siege,
       })
+    if (gameOver) {
+      creator.score = undefined
+      creator.passed = undefined
+      creator.turn = undefined
+      opponent.score = undefined
+      opponent.passed = undefined
+      opponent.turn = undefined
+    }
   }
 
   static async playStrongestCards({

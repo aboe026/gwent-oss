@@ -161,10 +161,12 @@ test('Can pass as first move', async (t) => {
     turn: PlayerTurn.Current,
     ready: true,
     passed: false,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
     ready: true,
+    score: 0,
   })
   await LoginPage.login({
     username: t.ctx.self.user.name,
@@ -205,12 +207,14 @@ test('Can pass after opponent passes', async (t) => {
     player: t.ctx.self,
     ready: true,
     passed: true,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
     ready: true,
     turn: PlayerTurn.Current,
     passed: false,
+    score: 0,
   })
   await LoginPage.login({
     username: t.ctx.opponent.user.name,
@@ -276,6 +280,7 @@ test('Pass after opponent plays unit', async (t) => {
     ready: true,
     turn: PlayerTurn.Current,
     passed: false,
+    score: 0,
   })
   E2eHelper.addUnitToGamePlayer({
     player: selfPlayer,
@@ -335,10 +340,12 @@ test('Cancelling pass confirmation does not trigger pass', async (t) => {
     turn: PlayerTurn.Current,
     ready: true,
     passed: false,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
     ready: true,
+    score: 0,
   })
   await LoginPage.login({
     username: t.ctx.self.user.name,
@@ -367,11 +374,13 @@ test('Cannot pass when not turn', async (t) => {
     player: t.ctx.self,
     turn: PlayerTurn.Current,
     ready: true,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
     ready: true,
     passed: false,
+    score: 0,
   })
   await LoginPage.login({
     username: t.ctx.opponent.user.name,

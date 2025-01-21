@@ -665,6 +665,7 @@ test('Page automatically updates after game ready via API after opponent ready o
       user: t.ctx.self.user,
     },
     turn: won ? PlayerTurn.Future : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -675,6 +676,7 @@ test('Page automatically updates after game ready via API after opponent ready o
     },
     turn: won ? undefined : PlayerTurn.Future,
     ready: true,
+    score: 0,
   })
   await t.ctx.opponent.client.ready(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
@@ -804,6 +806,7 @@ test('Page automatically updates after game ready via API after opponent ready o
       user: t.ctx.self.user,
     },
     turn: won ? PlayerTurn.Future : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -814,6 +817,7 @@ test('Page automatically updates after game ready via API after opponent ready o
     },
     turn: won ? undefined : PlayerTurn.Future,
     ready: true,
+    score: 0,
   })
   await t.ctx.opponent.client.ready(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
@@ -957,6 +961,7 @@ test('Page automatically updates after unit played via API on game page', async 
     ready: true,
     passed: false,
     turn: PlayerTurn.Current,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -966,6 +971,7 @@ test('Page automatically updates after unit played via API on game page', async 
       user: t.ctx.opponent.user,
     },
     ready: true,
+    score: 0,
   })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verify({
@@ -988,16 +994,13 @@ test('Page automatically updates after unit played via API on game page', async 
     unitId: unitToMove.unit.id,
     combat: combatRow,
   })
-  selfPlayer.turn = undefined
-  gameDeckSelf.hand = gameDeckSelf.hand.filter((card) => card.unit.id !== unitToMove.unit.id)
-  selfPlayer.hand = 9
-  selfPlayer.score = unitToMove.unit.strength || 0
-  E2eHelper.addUnitToGamePlayer({
+  E2eHelper.playUnit({
     player: selfPlayer,
+    gameDeck: gameDeckSelf,
+    deckUnit: unitToMove,
     row: combatRow,
-    strength: unitToMove.unit.strength || 0,
-    unitName: unitToMove.unit.name,
   })
+  selfPlayer.turn = undefined
   opponentPlayer.turn = PlayerTurn.Current
 
   await GamePage.verify({
@@ -1041,6 +1044,7 @@ test('Page automatically updates after opponent plays unit via API on game page'
     ready: true,
     passed: false,
     turn: PlayerTurn.Current,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -1050,6 +1054,7 @@ test('Page automatically updates after opponent plays unit via API on game page'
       user: t.ctx.opponent.user,
     },
     ready: true,
+    score: 0,
   })
   const moves: (HistoryMove | HistoryPass)[] = []
 
@@ -1085,18 +1090,12 @@ test('Page automatically updates after opponent plays unit via API on game page'
     unitId: unitToMove.unit.id,
     combat: combatRow,
   })
-  opponentPlayer.hand = 9
-  opponentPlayer.score = unitToMove.unit.strength || 0
-  E2eHelper.addUnitToGamePlayer({
+  E2eHelper.playUnit({
     player: opponentPlayer,
+    gameDeck: gameDeckOpponent,
+    deckUnit: unitToMove,
     row: combatRow,
-    strength: unitToMove.unit.strength || 0,
-    unitName: unitToMove.unit.name,
-  })
-  moves.push({
-    userName: opponentPlayer.name,
-    unitName: unitToMove.unit.name,
-    combatRow: combatRow,
+    moves,
   })
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -1131,6 +1130,7 @@ test('Page automatically updates after unit played via API on games list', async
     ready: true,
     passed: false,
     turn: PlayerTurn.Current,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -1140,6 +1140,7 @@ test('Page automatically updates after unit played via API on games list', async
       user: t.ctx.opponent.user,
     },
     ready: true,
+    score: 0,
   })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verify({
@@ -1175,16 +1176,13 @@ test('Page automatically updates after unit played via API on games list', async
     unitId: unitToMove.unit.id,
     combat: combatRow,
   })
-  selfPlayer.turn = undefined
-  gameDeckSelf.hand = gameDeckSelf.hand.filter((card) => card.unit.id !== unitToMove.unit.id)
-  selfPlayer.hand = 9
-  selfPlayer.score = unitToMove.unit.strength || 0
-  E2eHelper.addUnitToGamePlayer({
+  E2eHelper.playUnit({
     player: selfPlayer,
+    gameDeck: gameDeckSelf,
+    deckUnit: unitToMove,
     row: combatRow,
-    strength: unitToMove.unit.strength || 0,
-    unitName: unitToMove.unit.name,
   })
+  selfPlayer.turn = undefined
   opponentPlayer.turn = PlayerTurn.Current
 
   await GamesPage.verify({
@@ -1242,6 +1240,7 @@ test('Page automatically updates after pass at round start via API on game page'
     ready: true,
     passed: false,
     turn: PlayerTurn.Current,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -1251,6 +1250,7 @@ test('Page automatically updates after pass at round start via API on game page'
       user: t.ctx.opponent.user,
     },
     ready: true,
+    score: 0,
   })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verify({
@@ -1307,6 +1307,7 @@ test('Page automatically updates after pass at round end via API on game page', 
     ready: true,
     passed: false,
     turn: PlayerTurn.Current,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -1316,6 +1317,7 @@ test('Page automatically updates after pass at round end via API on game page', 
       user: t.ctx.opponent.user,
     },
     ready: true,
+    score: 0,
   })
   const moves: (HistoryMove | HistoryPass)[] = []
 
@@ -1331,20 +1333,12 @@ test('Page automatically updates after pass at round end via API on game page', 
     unitId: unitToMove.unit.id,
     combat: combatRow,
   })
-  // TODO: centralize this logic (which is repeated every time unit is played in E2E) in method to reduce duplicate code?
-  gameDeckSelf.hand = gameDeckSelf.hand.filter((card) => card.unit.id !== unitToMove.unit.id)
-  selfPlayer.hand = 9
-  selfPlayer.score = unitToMove.unit.strength || 0
-  E2eHelper.addUnitToGamePlayer({
+  E2eHelper.playUnit({
     player: selfPlayer,
+    gameDeck: gameDeckSelf,
+    deckUnit: unitToMove,
     row: combatRow,
-    strength: unitToMove.unit.strength || 0,
-    unitName: unitToMove.unit.name,
-  })
-  moves.push({
-    userName: t.ctx.self.user.name,
-    unitName: unitToMove.unit.name,
-    combatRow: combatRow,
+    moves,
   })
 
   await t.ctx.opponent.client.playPass({
@@ -1368,17 +1362,15 @@ test('Page automatically updates after pass at round end via API on game page', 
     gameId: t.ctx.game.id,
   })
   opponentPlayer.passed = undefined
-  opponentPlayer.losses = 1
-  selfPlayer.score = 0
-  selfPlayer.discard = 1
-  E2eHelper.resetPlayerCombatRow({
-    player: selfPlayer,
-    row: combatRow,
-  })
   moves.push({
     userName: t.ctx.self.user.name,
     round: 1,
   })
+  E2eHelper.endRound({
+    creator: selfPlayer,
+    opponent: opponentPlayer,
+  })
+  opponentPlayer.losses = 1
 
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -1414,6 +1406,7 @@ test('Page automatically updates after pass via API on games list', async (t) =>
     ready: true,
     passed: false,
     turn: PlayerTurn.Current,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -1423,6 +1416,7 @@ test('Page automatically updates after pass via API on games list', async (t) =>
       user: t.ctx.opponent.user,
     },
     ready: true,
+    score: 0,
   })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verify({

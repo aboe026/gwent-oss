@@ -153,6 +153,7 @@ test('Speed Run', async (t) => {
     losses: 0,
     undrawn: gameDeck2.undrawn.length,
     from: gameDeck2.from,
+    score: 0,
   }
   await GamePage.verify({
     self: gamePlayer2,
@@ -216,6 +217,7 @@ test('Speed Run', async (t) => {
     losses: 0,
     undrawn: gameDeck1.undrawn.length,
     from: gameDeck1.from,
+    score: 0,
   }
   await GamePage.verify({
     self: gamePlayer1,
@@ -406,18 +408,16 @@ test('Speed Run', async (t) => {
   })
 
   await GamePage.pass({})
-  gamePlayer1.losses = 1
   gamePlayer1.passed = undefined
-  gamePlayer2.score = 0
-  gamePlayer2.discard = 1
-  E2eHelper.resetPlayerCombatRow({
-    player: gamePlayer2,
-    row: combat2,
-  })
   moves1.push({
     userName: username2,
     round: 1,
   })
+  E2eHelper.endRound({
+    creator: gamePlayer1,
+    opponent: gamePlayer2,
+  })
+  gamePlayer1.losses = 1
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
@@ -480,14 +480,17 @@ test('Speed Run', async (t) => {
   })
 
   await GamePage.pass({})
-  gamePlayer1.turn = undefined
-  gamePlayer1.passed = true
-  gamePlayer1.losses = 2
-  gamePlayer2.losses = 1
   moves2.push({
     userName: username1,
     round: 2,
   })
+  E2eHelper.endRound({
+    creator: gamePlayer1,
+    opponent: gamePlayer2,
+    gameOver: true,
+  })
+  gamePlayer1.losses = 2
+  gamePlayer2.losses = 1
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
@@ -656,6 +659,7 @@ test('Scenic Route', async (t) => {
     hand: STARTING_HAND_SIZE,
     undrawn: deck2.units.length - STARTING_HAND_SIZE,
     from: gameDeck2.from,
+    score: 0,
   }
   await GamePage.verify({
     self: gamePlayer2,
@@ -717,6 +721,7 @@ test('Scenic Route', async (t) => {
     hand: STARTING_HAND_SIZE,
     undrawn: deck1.units.length - STARTING_HAND_SIZE,
     from: gameDeck1.from,
+    score: 0,
   }
   await GamePage.verify({
     self: gamePlayer1,
@@ -1381,10 +1386,6 @@ test('Scenic Route', async (t) => {
   })
 
   await GamePage.pass({})
-  gamePlayer1.passed = true
-  gamePlayer1.losses = 2
-  gamePlayer1.turn = undefined
-  gamePlayer2.losses = 2
   moves3.push({
     userName: gamePlayer1.name,
     round: 3,
@@ -1392,7 +1393,10 @@ test('Scenic Route', async (t) => {
   E2eHelper.endRound({
     creator: gamePlayer2,
     opponent: gamePlayer1,
+    gameOver: true,
   })
+  gamePlayer1.losses = 2
+  gamePlayer2.losses = 2
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,

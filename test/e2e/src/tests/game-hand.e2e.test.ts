@@ -125,10 +125,12 @@ fixture('Game Hand')
       turn: PlayerTurn.Current,
       ready: true,
       passed: false,
+      score: 0,
     })
     t.ctx.opponentPlayer = E2eHelper.getGamePlayer({
       player: t.ctx.opponent,
       ready: true,
+      score: 0,
     })
     await selfClient.setOrder({
       gameId: t.ctx.game.id,

@@ -936,6 +936,7 @@ test('Play unit after session expires', async (t) => {
     },
     ready: true,
     turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Current : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -946,6 +947,7 @@ test('Play unit after session expires', async (t) => {
     },
     ready: true,
     turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Current : undefined,
+    score: 0,
   })
   const currentPlayer = updatedGame.turn?.user.id === self.id ? selfPlayer : opponentPlayer
   const currentGameDeck = updatedGame.turn?.user.id === self.id ? gameDeckSelf : gameDeckOpponent
@@ -977,16 +979,13 @@ test('Play unit after session expires', async (t) => {
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await GamePage.verifyHistoryError(`Error playing unit "${unitToMove.unit.name}": ${NOT_AUTHENTICATED_MESSAGE}`)
   await reAuthenticate(currentPlayer.name, t)
-  currentGameDeck.hand = currentGameDeck.hand.filter((card) => card.unit.id !== unitToMove.unit.id)
-  currentPlayer.hand = 9
-  currentPlayer.turn = undefined
-  currentPlayer.score = unitToMove.unit.strength || 0
-  E2eHelper.addUnitToGamePlayer({
+  E2eHelper.playUnit({
     player: currentPlayer,
-    unitName: unitToMove.unit.name,
+    gameDeck: currentGameDeck,
+    deckUnit: unitToMove,
     row: combat,
-    strength: unitToMove.unit.strength || 0,
   })
+  currentPlayer.turn = undefined
   otherPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: otherPlayer,
@@ -1049,6 +1048,7 @@ test('Play pass to start round after session expires', async (t) => {
     },
     ready: true,
     turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Current : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -1059,6 +1059,7 @@ test('Play pass to start round after session expires', async (t) => {
     },
     ready: true,
     turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Current : undefined,
+    score: 0,
   })
   const currentPlayer = updatedGame.turn?.user.id === self.id ? selfPlayer : opponentPlayer
   const currentGameDeck = updatedGame.turn?.user.id === self.id ? gameDeckSelf : gameDeckOpponent
@@ -1144,6 +1145,7 @@ test('Play pass at end of round after session expires', async (t) => {
     ready: true,
     passed: false,
     turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Current : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -1155,6 +1157,7 @@ test('Play pass at end of round after session expires', async (t) => {
     ready: true,
     passed: false,
     turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Current : undefined,
+    score: 0,
   })
   const currentPlayer = updatedGame.turn?.user.id === self.id ? selfPlayer : opponentPlayer
   const currentGameDeck = updatedGame.turn?.user.id === self.id ? gameDeckSelf : gameDeckOpponent
@@ -1170,24 +1173,17 @@ test('Play pass at end of round after session expires', async (t) => {
   const unitToMove = sortedHand[0]
   const combat = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
   const currentClient = updatedGame.turn?.user.id === self.id ? clientSelf : clientOpponent
-  currentGameDeck.hand = currentGameDeck.hand.filter((card) => card.unit.id !== unitToMove.unit.id)
-  currentPlayer.hand = 9
-  currentPlayer.score = unitToMove.unit.strength || 0
-  E2eHelper.addUnitToGamePlayer({
-    player: currentPlayer,
-    unitName: unitToMove.unit.name,
-    row: combat,
-    strength: unitToMove.unit.strength || 0,
-  })
-  round1Moves.push({
-    userName: currentPlayer.name,
-    unitName: unitToMove.unit.name,
-    combatRow: combat,
-  })
   await currentClient.playUnit({
     gameId: game.id,
     unitId: unitToMove.unit.id,
     combat,
+  })
+  E2eHelper.playUnit({
+    player: currentPlayer,
+    gameDeck: currentGameDeck,
+    deckUnit: unitToMove,
+    row: combat,
+    moves: round1Moves,
   })
 
   // other pass
@@ -1218,18 +1214,16 @@ test('Play pass at end of round after session expires', async (t) => {
   await GamePage.verifyHistoryError(`Error attempting to pass: ${NOT_AUTHENTICATED_MESSAGE}`)
   await reAuthenticate(currentPlayer.name, t)
   currentPlayer.passed = false
-  currentPlayer.score = 0
-  currentPlayer.discard = 1
   otherPlayer.passed = undefined
-  otherPlayer.losses = 1
-  E2eHelper.resetPlayerCombatRow({
-    player: currentPlayer,
-    row: combat,
-  })
   round1Moves.push({
     userName: currentPlayer.name,
     round: 1,
   })
+  E2eHelper.endRound({
+    creator: currentPlayer,
+    opponent: opponentPlayer,
+  })
+  otherPlayer.losses = 1
   await GamePage.verify({
     opponent: otherPlayer,
     self: currentPlayer,
