@@ -158,6 +158,7 @@ export const HTML_IDS = {
   GameCombatRowRangedSelf: 'gameCombatRowRangedSelf',
   GameCombatRowSiegeSelf: 'gameCombatRowSiegeSelf',
   GameHand: 'gameHand',
+  gameHandNoUnitsLeft: 'gameHandNoUnitsLeft',
   GameHistoryContainer: 'gameHistoryContainer',
   GameInfoOpponentContainer: 'gameInfoOpponentContainer',
   GameInfoSelfContainer: 'gameInfoSelfContainer',

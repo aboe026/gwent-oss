@@ -229,9 +229,9 @@ export class E2eHelper {
       sortProperties: ['unit.strength', 'unit.name', 'unit.id'],
       reverse: true,
     })
-    const numberOfCardsToPlaySelf = self.numberToPlay === undefined ? sortedHandSelf.length - 1 : self.numberToPlay
+    const numberOfCardsToPlaySelf = self.numberToPlay === undefined ? sortedHandSelf.length : self.numberToPlay
     const numberOfCardsToPlayOpponent =
-      opponent.numberToPlay === undefined ? sortedHandOpponent.length - 1 : opponent.numberToPlay
+      opponent.numberToPlay === undefined ? sortedHandOpponent.length : opponent.numberToPlay
     let selfHandIndex = 0
     let opponentHandIndex = 0
     let selfScore = 0
@@ -240,8 +240,12 @@ export class E2eHelper {
     const logPrefix = 'playStrongetsCards'
     const selfPlayedCards: CombatCard[] = []
     const opponentPlayedCards: CombatCard[] = []
+    if (debug) {
+      console.log(`${logPrefix} numberOfCardsToPlaySelf: "${numberOfCardsToPlaySelf}"`)
+      console.log(`${logPrefix} numberOfCardsToPlayOpponent: "${numberOfCardsToPlayOpponent}"`)
+    }
 
-    while (selfHandIndex < numberOfCardsToPlaySelf && opponentHandIndex < numberOfCardsToPlayOpponent) {
+    while (selfHandIndex < numberOfCardsToPlaySelf || opponentHandIndex < numberOfCardsToPlayOpponent) {
       if (debug) {
         console.log(`${logPrefix} selfHandIndex: "${selfHandIndex}"`)
         console.log(`${logPrefix} opponentHandIndex: "${opponentHandIndex}"`)
@@ -250,7 +254,7 @@ export class E2eHelper {
         if (debug) {
           console.log(`${logPrefix} self turn`)
         }
-        if (selfHandIndex < sortedHandSelf.length) {
+        if (selfHandIndex < numberOfCardsToPlaySelf) {
           const selfUnit = sortedHandSelf[selfHandIndex]
           if (selfUnit.unit.combats) {
             if (debug) {
@@ -305,12 +309,14 @@ export class E2eHelper {
           }
           await GamePage.pass({})
           self.expected.passed = true
+          self.expected.turn = undefined
+          opponent.expected.turn = PlayerTurn.Current
           moves.push({
             userName: self.player.user.name,
             round,
           })
         } else {
-          console.log(`${logPrefix} self should not get here?`)
+          console.log(`${logPrefix} self has nothing to do`)
         }
       }
 
@@ -318,7 +324,7 @@ export class E2eHelper {
         if (debug) {
           console.log(`${logPrefix} opponent turn`)
         }
-        if (opponentHandIndex < sortedHandOpponent.length) {
+        if (opponentHandIndex < numberOfCardsToPlayOpponent) {
           const opponentUnit = sortedHandOpponent[opponentHandIndex]
           if (opponentUnit.unit.combats) {
             if (debug) {
@@ -364,19 +370,21 @@ export class E2eHelper {
           opponentHandIndex++
         } else if (!opponent.expected.passed) {
           if (debug) {
-            console.log(`${logPrefix}  opponent has run out of cards in hand, will pass`)
+            console.log(`${logPrefix} opponent has run out of cards in hand, will pass`)
           }
           await opponent.player.client.playPass({
             gameId: gameId,
           })
           opponent.expected.passed = true
+          opponent.expected.turn = undefined
+          self.expected.turn = PlayerTurn.Current
           moves.push({
             userName: opponent.player.user.name,
             round: 1,
           })
         } else {
           if (debug) {
-            console.log(`${logPrefix}  opponent should not get here?`)
+            console.log(`${logPrefix} nothing for opponent to do`)
           }
         }
       }

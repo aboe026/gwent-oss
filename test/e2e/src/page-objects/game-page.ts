@@ -27,6 +27,7 @@ export default class GamePage {
     InfoOpponentContainer: existingGameContainer.find(`#${HTML_IDS.GameInfoOpponentContainer}`),
     Hand: existingGameContainer.find(`#${HTML_IDS.GameHand}`),
     HandIcon: existingGameContainer.find(`.${HTML_CLASSES.GameHandIcon}`),
+    HandNoUnitsLeft: existingGameContainer.find(`#${HTML_IDS.gameHandNoUnitsLeft}`),
     HistoryContainer: historyContainer,
     HistoryIcon: historyContainer.find(`.${HTML_CLASSES.GameHistoryIcon}`),
     HistoryLoading: historyContainer.find(`.${HTML_CLASSES.GameHistoryLoadingContainer}`),
@@ -261,6 +262,10 @@ export default class GamePage {
         return expectedName
       })
       await t.expect(actualNames).eql(expectedNames)
+      if (names.length === 0) {
+        await t.expect(GamePage.elements.HandNoUnitsLeft.exists).ok()
+        await t.expect(GamePage.elements.HandNoUnitsLeft.visible).ok()
+      }
     } else {
       await t.expect(GamePage.elements.HandIcon.exists).ok()
       await t.expect(GamePage.elements.HandIcon.visible).ok()

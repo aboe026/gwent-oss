@@ -450,3 +450,28 @@ test('Selecting another hand unit while not turn dotted highlights appropriate c
     },
   })
 })
+
+test('Playing all units in hand shows message to user to pass or activate leader ability', async (t) => {
+  await E2eHelper.playStrongestCards({
+    gameId: t.ctx.game.id,
+    moves: t.ctx.round1Moves,
+    opponent: {
+      player: t.ctx.opponent,
+      expected: t.ctx.opponentPlayer,
+      numberToPlay: 0,
+    },
+    self: {
+      player: t.ctx.self,
+      expected: t.ctx.selfPlayer,
+    },
+    round: 1,
+    uiDriven: true,
+  })
+
+  await GamePage.verify({
+    opponent: t.ctx.opponentPlayer,
+    self: t.ctx.selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [t.ctx.round1Moves],
+  })
+})
