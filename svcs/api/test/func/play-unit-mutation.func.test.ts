@@ -329,7 +329,7 @@ describe('play-unit-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Cannot play unit when it is not your turn.')],
+          errors: [new GraphQLError('Cannot play units when it is not your turn.')],
         })
       })
       it('returns error if unit not in hand', async () => {
@@ -354,7 +354,7 @@ describe('play-unit-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Invalid unit "${unitId}": not in hand.`)],
+          errors: [new GraphQLError('Unit not in hand.')],
         })
       })
       it('returns error if combat does not match unit combat', async () => {
