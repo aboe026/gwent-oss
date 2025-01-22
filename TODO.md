@@ -61,9 +61,6 @@ A list of things to be done in the future.
 ## Features
 
 - remove ids from errors and put them in logPrefix
-- e2e tests for "game-hand", verify clicking unit in hand properly highlights things
-  - fullscreen
-  - dotted when not turn
 - remove "statsModifier"
 - animations/text of what opponent did?
 - how to make pass more obvious?
