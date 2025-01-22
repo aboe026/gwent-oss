@@ -253,9 +253,8 @@ test('Selecting hand unit while not turn dotted highlights appropriate single co
     gameDeck: t.ctx.self.gameDeck,
     moves: t.ctx.round1Moves,
     row: combat,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -315,9 +314,8 @@ test('Selecting hand unit while not turn dotted highlights appropriate multi com
     gameDeck: t.ctx.self.gameDeck,
     moves: t.ctx.round1Moves,
     row: combat,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -410,9 +408,8 @@ test('Selecting another hand unit while not turn dotted highlights appropriate c
     gameDeck: t.ctx.self.gameDeck,
     moves: t.ctx.round1Moves,
     row: combat,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,

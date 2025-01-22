@@ -810,20 +810,18 @@ test('Moving to previous and next units works for a combat row card', async (t) 
     deckUnit: sortedCloseCards[0],
     row: Combat.Close,
     moves,
+    switchTurnsWith: gamePlayerOpponent,
   })
-  gamePlayerSelf.turn = undefined
-  gamePlayerOpponent.turn = PlayerTurn.Current
 
   await clientOpponent.playPass({
     gameId: game.id,
   })
-  moves.push({
-    userName: opponent.name,
+  E2eHelper.playPass({
+    player: gamePlayerOpponent,
     round: 1,
+    moves,
+    switchTurnsWith: gamePlayerSelf,
   })
-  gamePlayerSelf.turn = PlayerTurn.Current
-  gamePlayerOpponent.turn = undefined
-  gamePlayerOpponent.passed = true
 
   await GamePage.moveUnit({
     unitName: sortedCloseCards[1].unit.name,

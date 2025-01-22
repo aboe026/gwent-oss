@@ -999,9 +999,8 @@ test('Page automatically updates after unit played via API on game page', async 
     gameDeck: gameDeckSelf,
     deckUnit: unitToMove,
     row: combatRow,
+    switchTurnsWith: opponentPlayer,
   })
-  selfPlayer.turn = undefined
-  opponentPlayer.turn = PlayerTurn.Current
 
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -1061,12 +1060,11 @@ test('Page automatically updates after opponent plays unit via API on game page'
   await t.ctx.self.client.playPass({
     gameId: t.ctx.game.id,
   })
-  selfPlayer.passed = true
-  selfPlayer.turn = undefined
-  opponentPlayer.turn = PlayerTurn.Current
-  moves.push({
-    userName: t.ctx.self.user.name,
+  E2eHelper.playPass({
+    player: selfPlayer,
     round: 1,
+    moves,
+    switchTurnsWith: opponentPlayer,
   })
 
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
@@ -1181,9 +1179,8 @@ test('Page automatically updates after unit played via API on games list', async
     gameDeck: gameDeckSelf,
     deckUnit: unitToMove,
     row: combatRow,
+    switchTurnsWith: opponentPlayer,
   })
-  selfPlayer.turn = undefined
-  opponentPlayer.turn = PlayerTurn.Current
 
   await GamesPage.verify({
     games: [
@@ -1254,8 +1251,8 @@ test('Page automatically updates after pass at round start via API on game page'
   })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verify({
-    opponent: opponentPlayer,
     self: selfPlayer,
+    opponent: opponentPlayer,
     hand: gameDeckSelf.hand,
     moves: [[]],
   })
@@ -1263,13 +1260,15 @@ test('Page automatically updates after pass at round start via API on game page'
   await t.ctx.self.client.playPass({
     gameId: t.ctx.game.id,
   })
-  selfPlayer.passed = true
-  selfPlayer.turn = undefined
-  opponentPlayer.turn = PlayerTurn.Current
+  E2eHelper.playPass({
+    player: selfPlayer,
+    round: 1,
+    switchTurnsWith: opponentPlayer,
+  })
 
   await GamePage.verify({
-    opponent: opponentPlayer,
     self: selfPlayer,
+    opponent: opponentPlayer,
     hand: gameDeckSelf.hand,
     moves: [
       [
@@ -1344,10 +1343,10 @@ test('Page automatically updates after pass at round end via API on game page', 
   await t.ctx.opponent.client.playPass({
     gameId: t.ctx.game.id,
   })
-  opponentPlayer.passed = true
-  moves.push({
-    userName: t.ctx.opponent.user.name,
+  E2eHelper.playPass({
+    player: opponentPlayer,
     round: 1,
+    moves,
   })
 
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
@@ -1361,16 +1360,16 @@ test('Page automatically updates after pass at round end via API on game page', 
   await t.ctx.self.client.playPass({
     gameId: t.ctx.game.id,
   })
-  opponentPlayer.passed = undefined
-  moves.push({
-    userName: t.ctx.self.user.name,
+  E2eHelper.playPass({
+    player: selfPlayer,
     round: 1,
+    moves,
   })
   E2eHelper.endRound({
     creator: selfPlayer,
     opponent: opponentPlayer,
+    losers: [opponentPlayer],
   })
-  opponentPlayer.losses = 1
 
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -1442,9 +1441,11 @@ test('Page automatically updates after pass via API on games list', async (t) =>
   await t.ctx.self.client.playPass({
     gameId: t.ctx.game.id,
   })
-  selfPlayer.passed = true
-  selfPlayer.turn = undefined
-  opponentPlayer.turn = PlayerTurn.Current
+  E2eHelper.playPass({
+    player: selfPlayer,
+    round: 1,
+    switchTurnsWith: opponentPlayer,
+  })
 
   await GamesPage.verify({
     games: [

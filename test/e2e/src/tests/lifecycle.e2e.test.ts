@@ -287,6 +287,7 @@ test('Speed Run', async (t) => {
   gamePlayer2.ready = true
   gamePlayer2.passed = false
   gamePlayer2.turn = PlayerTurn.Current
+  let round = 1
   const moves1: (HistoryMove | HistoryPass)[] = []
   const moves2: (HistoryMove | HistoryPass)[] = []
   await GamePage.verify({
@@ -306,13 +307,12 @@ test('Speed Run', async (t) => {
     unitName: unit2.unit.name,
     row: combat2,
   })
-  gamePlayer1.turn = PlayerTurn.Current
-  gamePlayer2.turn = undefined
   E2eHelper.playUnit({
     player: gamePlayer2,
     deckUnit: unit2,
     gameDeck: gameDeck2,
     moves: moves1,
+    switchTurnsWith: gamePlayer1,
   })
   await GamePage.verify({
     self: gamePlayer2,
@@ -358,13 +358,12 @@ test('Speed Run', async (t) => {
     moves: [moves1],
   })
   await GamePage.pass({})
-  moves1.push({
-    userName: username1,
-    round: 1,
+  E2eHelper.playPass({
+    player: gamePlayer1,
+    round,
+    moves: moves1,
+    switchTurnsWith: gamePlayer2,
   })
-  gamePlayer1.passed = true
-  gamePlayer1.turn = undefined
-  gamePlayer2.turn = PlayerTurn.Current
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
@@ -408,37 +407,38 @@ test('Speed Run', async (t) => {
   })
 
   await GamePage.pass({})
-  gamePlayer1.passed = undefined
-  moves1.push({
-    userName: username2,
-    round: 1,
+  E2eHelper.playPass({
+    player: gamePlayer2,
+    round,
+    moves: moves1,
   })
+  // TODO: rename to self/opponent
   E2eHelper.endRound({
-    creator: gamePlayer1,
-    opponent: gamePlayer2,
+    creator: gamePlayer2,
+    opponent: gamePlayer1,
+    losers: [gamePlayer1],
   })
-  gamePlayer1.losses = 1
+  round = 2
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: gameDeck2.hand,
-    round: 2,
+    round,
     moves: [moves1, moves2],
   })
 
   await GamePage.pass({})
-  gamePlayer1.turn = PlayerTurn.Current
-  gamePlayer2.passed = true
-  gamePlayer2.turn = undefined
-  moves2.push({
-    userName: username2,
-    round: 2,
+  E2eHelper.playPass({
+    player: gamePlayer2,
+    round,
+    moves: moves2,
+    switchTurnsWith: gamePlayer1,
   })
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: gameDeck2.hand,
-    round: 2,
+    round,
     moves: [moves1, moves2],
   })
 
@@ -475,27 +475,27 @@ test('Speed Run', async (t) => {
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: gameDeck1.hand,
-    round: 2,
+    round,
     moves: [moves1, moves2],
   })
 
   await GamePage.pass({})
-  moves2.push({
-    userName: username1,
-    round: 2,
+  E2eHelper.playPass({
+    player: gamePlayer1,
+    round,
+    moves: moves2,
   })
   E2eHelper.endRound({
     creator: gamePlayer1,
     opponent: gamePlayer2,
+    losers: [gamePlayer1, gamePlayer2],
     gameOver: true,
   })
-  gamePlayer1.losses = 2
-  gamePlayer2.losses = 1
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: gameDeck1.hand,
-    round: 2,
+    round,
     moves: [moves1, moves2],
     victors: [username2],
     rounds: [
@@ -907,6 +907,7 @@ test('Scenic Route', async (t) => {
   const moves1: (HistoryMove | HistoryPass)[] = []
   const moves2: (HistoryMove | HistoryPass)[] = []
   const moves3: (HistoryMove | HistoryPass)[] = []
+  let round = 1
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
@@ -931,9 +932,8 @@ test('Scenic Route', async (t) => {
     deckUnit: unit1Self,
     moves: moves1,
     row: combat1Self,
+    switchTurnsWith: gamePlayer2,
   })
-  gamePlayer1.turn = undefined
-  gamePlayer2.turn = PlayerTurn.Current
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
@@ -993,9 +993,8 @@ test('Scenic Route', async (t) => {
     deckUnit: unit1Opponent,
     moves: moves1,
     row: combat1Opponent,
+    switchTurnsWith: gamePlayer1,
   })
-  gamePlayer2.turn = undefined
-  gamePlayer1.turn = PlayerTurn.Current
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
@@ -1039,12 +1038,11 @@ test('Scenic Route', async (t) => {
   })
 
   await GamePage.pass({})
-  gamePlayer1.passed = true
-  gamePlayer1.turn = undefined
-  gamePlayer2.turn = PlayerTurn.Current
-  moves1.push({
-    userName: gamePlayer1.name,
-    round: 1,
+  E2eHelper.playPass({
+    player: gamePlayer1,
+    round,
+    moves: moves1,
+    switchTurnsWith: gamePlayer2,
   })
   await GamePage.verify({
     self: gamePlayer1,
@@ -1088,24 +1086,23 @@ test('Scenic Route', async (t) => {
   })
 
   await GamePage.pass({})
-  gamePlayer1.passed = undefined
-  gamePlayer1.turn = PlayerTurn.Current
-  gamePlayer2.losses = 1
-  gamePlayer2.passed = false
-  gamePlayer2.turn = undefined
-  moves1.push({
-    userName: gamePlayer2.name,
-    round: 1,
+  E2eHelper.playPass({
+    player: gamePlayer2,
+    round,
+    moves: moves1,
+    switchTurnsWith: gamePlayer1,
   })
   E2eHelper.endRound({
     creator: gamePlayer2,
     opponent: gamePlayer1,
+    losers: [gamePlayer2],
   })
+  round = 2
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: redraw2GameDeck2.hand,
-    round: 2,
+    round,
     moves: [moves1, moves2],
   })
 
@@ -1157,14 +1154,13 @@ test('Scenic Route', async (t) => {
     deckUnit: unit2Self,
     moves: moves2,
     row: combat2Self,
+    switchTurnsWith: gamePlayer2,
   })
-  gamePlayer1.turn = undefined
-  gamePlayer2.turn = PlayerTurn.Current
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: redraw4GameDeck1.hand,
-    round: 2,
+    round,
     moves: [moves1, moves2],
   })
 
@@ -1216,9 +1212,8 @@ test('Scenic Route', async (t) => {
     deckUnit: unit2Opponent,
     moves: moves2,
     row: combat2Opponent,
+    switchTurnsWith: gamePlayer1,
   })
-  gamePlayer1.turn = PlayerTurn.Current
-  gamePlayer2.turn = undefined
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
@@ -1264,18 +1259,17 @@ test('Scenic Route', async (t) => {
   })
 
   await GamePage.pass({})
-  gamePlayer1.passed = true
-  gamePlayer1.turn = undefined
-  gamePlayer2.turn = PlayerTurn.Current
-  moves2.push({
-    userName: gamePlayer1.name,
-    round: 2,
+  E2eHelper.playPass({
+    player: gamePlayer1,
+    round,
+    moves: moves2,
+    switchTurnsWith: gamePlayer2,
   })
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: redraw4GameDeck1.hand,
-    round: 2,
+    round,
     moves: [moves1, moves2],
   })
 
@@ -1315,37 +1309,37 @@ test('Scenic Route', async (t) => {
   })
 
   await GamePage.pass({})
-  gamePlayer1.passed = undefined
-  gamePlayer1.losses = 1
-  moves2.push({
-    userName: gamePlayer2.name,
-    round: 2,
+  E2eHelper.playPass({
+    player: gamePlayer2,
+    round,
+    moves: moves2,
   })
   E2eHelper.endRound({
     creator: gamePlayer2,
     opponent: gamePlayer1,
+    losers: [gamePlayer1],
   })
+  round = 3
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: redraw2GameDeck2.hand,
-    round: 3,
+    round,
     moves: [moves1, moves2, moves3],
   })
 
   await GamePage.pass({})
-  gamePlayer1.turn = PlayerTurn.Current
-  gamePlayer2.passed = true
-  gamePlayer2.turn = undefined
-  moves3.push({
-    userName: gamePlayer2.name,
-    round: 3,
+  E2eHelper.playPass({
+    player: gamePlayer2,
+    round,
+    moves: moves3,
+    switchTurnsWith: gamePlayer1,
   })
   await GamePage.verify({
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: redraw2GameDeck2.hand,
-    round: 3,
+    round,
     moves: [moves1, moves2, moves3],
   })
 
@@ -1386,22 +1380,22 @@ test('Scenic Route', async (t) => {
   })
 
   await GamePage.pass({})
-  moves3.push({
-    userName: gamePlayer1.name,
-    round: 3,
+  E2eHelper.playPass({
+    player: gamePlayer1,
+    round,
+    moves: moves3,
   })
   E2eHelper.endRound({
     creator: gamePlayer2,
     opponent: gamePlayer1,
+    losers: [gamePlayer1, gamePlayer2],
     gameOver: true,
   })
-  gamePlayer1.losses = 2
-  gamePlayer2.losses = 2
   await GamePage.verify({
     self: gamePlayer1,
     opponent: gamePlayer2,
     hand: redraw4GameDeck1.hand,
-    round: 3,
+    round,
     moves: [moves1, moves2, moves3],
     victors: [gamePlayer2.name, gamePlayer1.name],
     rounds: [
@@ -1465,7 +1459,7 @@ test('Scenic Route', async (t) => {
     self: gamePlayer2,
     opponent: gamePlayer1,
     hand: redraw2GameDeck2.hand,
-    round: 3,
+    round,
     moves: [moves1, moves2, moves3],
     victors: [gamePlayer2.name, gamePlayer1.name],
     rounds: [

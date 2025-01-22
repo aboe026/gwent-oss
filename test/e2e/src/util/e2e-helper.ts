@@ -113,12 +113,14 @@ export class E2eHelper {
     row,
     gameDeck,
     moves,
+    switchTurnsWith,
   }: {
     player: GamePlayerExpected
     deckUnit: DeckUnit
     row?: Combat
     gameDeck: GameDeck
     moves?: (HistoryMove | HistoryPass)[]
+    switchTurnsWith?: GamePlayerExpected
   }) {
     if (!row) {
       row = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
@@ -127,7 +129,7 @@ export class E2eHelper {
     player.hand = (player.hand || STARTING_HAND_SIZE) - 1
     gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
     E2eHelper.addUnitToGamePlayer({
-      player: player,
+      player,
       unitName: deckUnit.unit.name,
       row,
       strength: deckUnit.unit.strength || 0,
@@ -139,16 +141,46 @@ export class E2eHelper {
         combatRow: row,
       })
     }
+    if (switchTurnsWith) {
+      player.turn = undefined
+      switchTurnsWith.turn = PlayerTurn.Current
+    }
+  }
+
+  static playPass({
+    player,
+    moves,
+    round,
+    switchTurnsWith,
+  }: {
+    player: GamePlayerExpected
+    moves?: (HistoryMove | HistoryPass)[]
+    round?: number
+    switchTurnsWith?: GamePlayerExpected
+  }) {
+    player.passed = true
+    if (moves && round) {
+      moves.push({
+        userName: player.name,
+        round,
+      })
+    }
+    if (switchTurnsWith) {
+      player.turn = undefined
+      switchTurnsWith.turn = PlayerTurn.Current
+    }
   }
 
   static endRound({
     creator,
     opponent,
     gameOver,
+    losers,
   }: {
     creator: GamePlayerExpected
     opponent: GamePlayerExpected
     gameOver?: boolean
+    losers: GamePlayerExpected[]
   }) {
     creator.score = 0
     opponent.score = 0
@@ -188,13 +220,17 @@ export class E2eHelper {
         player: opponent,
         row: Combat.Siege,
       })
+    creator.passed = false
+    opponent.passed = undefined
     if (gameOver) {
-      creator.score = undefined
       creator.passed = undefined
+      creator.score = undefined
       creator.turn = undefined
       opponent.score = undefined
-      opponent.passed = undefined
       opponent.turn = undefined
+    }
+    for (const loser of losers) {
+      loser.losses = (loser.losses || 0) + 1
     }
   }
 
@@ -308,12 +344,11 @@ export class E2eHelper {
             console.log(`${logPrefix} self has run out of cards in hand, will pass`)
           }
           await GamePage.pass({})
-          self.expected.passed = true
-          self.expected.turn = undefined
-          opponent.expected.turn = PlayerTurn.Current
-          moves.push({
-            userName: self.player.user.name,
+          E2eHelper.playPass({
+            player: self.expected,
             round,
+            moves,
+            switchTurnsWith: opponent.expected,
           })
         } else {
           console.log(`${logPrefix} self has nothing to do`)
@@ -375,12 +410,11 @@ export class E2eHelper {
           await opponent.player.client.playPass({
             gameId: gameId,
           })
-          opponent.expected.passed = true
-          opponent.expected.turn = undefined
-          self.expected.turn = PlayerTurn.Current
-          moves.push({
-            userName: opponent.player.user.name,
-            round: 1,
+          E2eHelper.playPass({
+            player: opponent.expected,
+            round,
+            moves,
+            switchTurnsWith: self.expected,
           })
         } else {
           if (debug) {

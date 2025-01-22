@@ -186,9 +186,8 @@ test('Can play a unit as first move', async (t) => {
     gameDeck: t.ctx.self.gameDeck,
     deckUnit: unitToMove,
     row: combatRow,
+    switchTurnsWith: opponentPlayer,
   })
-  selfPlayer.turn = undefined
-  opponentPlayer.turn = PlayerTurn.Current
 
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -236,9 +235,8 @@ test('Can play a unit after opponent plays unit', async (t) => {
     deckUnit: unitToMoveSelf,
     row: combatRowSelf,
     moves,
+    switchTurnsWith: opponentPlayer,
   })
-  selfPlayer.turn = undefined
-  opponentPlayer.turn = PlayerTurn.Current
   await LoginPage.login({
     username: t.ctx.opponent.user.name,
   })
@@ -263,9 +261,8 @@ test('Can play a unit after opponent plays unit', async (t) => {
     deckUnit: unitToMoveOpponent,
     row: combatRowOpponent,
     moves,
+    switchTurnsWith: selfPlayer,
   })
-  opponentPlayer.turn = undefined
-  selfPlayer.turn = PlayerTurn.Current
 
   await GamePage.verify({
     opponent: selfPlayer,
@@ -276,26 +273,28 @@ test('Can play a unit after opponent plays unit', async (t) => {
 })
 
 test('Play unit after opponent plays pass', async (t) => {
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await t.ctx.self.client.playPass({
-    gameId: t.ctx.game.id,
-  })
-  moves.push({
-    userName: t.ctx.self.user.name,
-    round: 1,
-  })
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
     ready: true,
     passed: true,
+    turn: PlayerTurn.Current,
     score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
     ready: true,
-    turn: PlayerTurn.Current,
     passed: false,
     score: 0,
+  })
+  const moves: (HistoryMove | HistoryPass)[] = []
+  await t.ctx.self.client.playPass({
+    gameId: t.ctx.game.id,
+  })
+  E2eHelper.playPass({
+    player: selfPlayer,
+    round: 1,
+    moves,
+    switchTurnsWith: opponentPlayer,
   })
   await LoginPage.login({
     username: t.ctx.opponent.user.name,
@@ -321,10 +320,8 @@ test('Play unit after opponent plays pass', async (t) => {
     deckUnit: unitToMove,
     row: combatRow,
     moves,
+    switchTurnsWith: opponentPlayer,
   })
-
-  opponentPlayer.turn = PlayerTurn.Current
-  selfPlayer.turn = undefined
 
   await GamePage.verify({
     opponent: selfPlayer,

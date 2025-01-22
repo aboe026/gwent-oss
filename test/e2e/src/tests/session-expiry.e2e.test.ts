@@ -984,9 +984,8 @@ test('Play unit after session expires', async (t) => {
     gameDeck: currentGameDeck,
     deckUnit: unitToMove,
     row: combat,
+    switchTurnsWith: otherPlayer,
   })
-  currentPlayer.turn = undefined
-  otherPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: otherPlayer,
     self: currentPlayer,
@@ -1081,9 +1080,11 @@ test('Play pass to start round after session expires', async (t) => {
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await GamePage.verifyHistoryError(`Error attempting to pass: ${NOT_AUTHENTICATED_MESSAGE}`)
   await reAuthenticate(currentPlayer.name, t)
-  currentPlayer.passed = true
-  currentPlayer.turn = undefined
-  otherPlayer.turn = PlayerTurn.Current
+  E2eHelper.playPass({
+    player: currentPlayer,
+    round: 1,
+    switchTurnsWith: otherPlayer,
+  })
   await GamePage.verify({
     opponent: otherPlayer,
     self: currentPlayer,
@@ -1163,6 +1164,7 @@ test('Play pass at end of round after session expires', async (t) => {
   const currentGameDeck = updatedGame.turn?.user.id === self.id ? gameDeckSelf : gameDeckOpponent
   const otherPlayer = updatedGame.turn?.user.id === self.id ? opponentPlayer : selfPlayer
   const round1Moves: (HistoryMove | HistoryPass)[] = []
+  let round = 1
 
   // current play unit
   const sortedHand = sortObjectArray({
@@ -1187,14 +1189,14 @@ test('Play pass at end of round after session expires', async (t) => {
   })
 
   // other pass
-  otherPlayer.passed = true
-  round1Moves.push({
-    userName: otherPlayer.name,
-    round: 1,
-  })
   const otherClient = updatedGame.turn?.user.id === opponent.id ? clientSelf : clientOpponent
   await otherClient.playPass({
     gameId: game.id,
+  })
+  E2eHelper.playPass({
+    player: otherPlayer,
+    round,
+    moves: round1Moves,
   })
 
   await E2eUtil.goTo(LoginPage.getUrl())
@@ -1213,22 +1215,22 @@ test('Play pass at end of round after session expires', async (t) => {
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await GamePage.verifyHistoryError(`Error attempting to pass: ${NOT_AUTHENTICATED_MESSAGE}`)
   await reAuthenticate(currentPlayer.name, t)
-  currentPlayer.passed = false
-  otherPlayer.passed = undefined
-  round1Moves.push({
-    userName: currentPlayer.name,
-    round: 1,
+  E2eHelper.playPass({
+    player: currentPlayer,
+    round,
+    moves: round1Moves,
   })
   E2eHelper.endRound({
     creator: currentPlayer,
     opponent: opponentPlayer,
+    losers: [otherPlayer],
   })
-  otherPlayer.losses = 1
+  round = 2
   await GamePage.verify({
     opponent: otherPlayer,
     self: currentPlayer,
     hand: currentGameDeck.hand,
-    round: 2,
+    round,
     moves: [round1Moves, []],
   })
 })
