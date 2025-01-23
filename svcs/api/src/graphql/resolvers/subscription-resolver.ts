@@ -183,7 +183,7 @@ export default class SubscriptionResolver {
       SubscriptionResolver.logger.trace(`${subscriptionName} filterDeckOwner payload: "${JSON.stringify(payload)}"`)
       SubscriptionResolver.logger.trace(`${subscriptionName} filterDeckOwner ctx: "${JSON.stringify(ctx)}"`)
       SubscriptionResolver.logger.trace(`${subscriptionName} filterDeckOwner subscriptionName: "${subscriptionName}"`)
-      SubscriptionResolver.logger.trace(`${subscriptionName} filterDeckOwner nestedGameProperty: "${nestedDeckPath}"`)
+      SubscriptionResolver.logger.trace(`${subscriptionName} filterDeckOwner nestedDeckPath: "${nestedDeckPath}"`)
     }
     const userId = ctx.session?.user?._id.toString()
     const deck: Deck = getNestedProperty({
@@ -224,9 +224,7 @@ export default class SubscriptionResolver {
       SubscriptionResolver.logger.trace(
         `${subscriptionName} filterPlayerOnGame subscriptionName: "${subscriptionName}"`
       )
-      SubscriptionResolver.logger.trace(
-        `${subscriptionName} filterPlayerOnGame nestedGameProperty: "${nestedGamePath}"`
-      )
+      SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame nestedGamePath: "${nestedGamePath}"`)
     }
     const userId = ctx.session?.user?._id.toString()
     const game: Game = getNestedProperty({
@@ -234,7 +232,6 @@ export default class SubscriptionResolver {
       nestedProperty: `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`,
     })
     const gameId = game.id
-    SubscriptionResolver.logger.debug(`${subscriptionName} with userId: "${userId}", gameId: "${gameId}"`)
     if (userId) {
       if (game.players.some((player) => player.user.id === userId)) {
         SubscriptionResolver.logger.debug(`Publishing ${subscriptionName} for game "${gameId}" to user "${userId}".`)

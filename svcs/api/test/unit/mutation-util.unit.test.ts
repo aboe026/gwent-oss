@@ -1,424 +1,1049 @@
 import { ObjectId } from 'mongodb'
 
+import EventManager from '../../src/graphql/event-manager'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import { FactionDbObject, GameDbObject, PlayerCombatRowDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  FactionDbObject,
+  GameDbObject,
+  GamePlayerDbObject,
+  GameStatus,
+  RoundResult,
+} from '@gwent/graphql-schema/database-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
+import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
 import { PubSubEvents } from '@gwent/constants'
 import TestUtil from '../test-util'
-import EventManager from '../../src/graphql/event-manager'
-import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 
 describe('mutation-util', () => {
+  describe('getGamePlayer', () => {
+    const userId = new ObjectId()
+    const logPrefix = `playUnit by "${userId}"`
+    it('returns error if gameId invalid', async () => {
+      const gameId = 'invalid'
+      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      await testGetGamePlayer({
+        gameId,
+        userId,
+        logPrefix,
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
+      })
+    })
+    it('returns error if no game found', async () => {
+      const gameId = new ObjectId().toString()
+      const message = `Game with ID "${gameId}" does not exist.`
+      await testGetGamePlayer({
+        gameId,
+        userId,
+        logPrefix,
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
+      })
+    })
+    it('returns error if player not on game', async () => {
+      const gameId = new ObjectId().toString()
+      const message = `Not a player on game "${gameId}".`
+      await testGetGamePlayer({
+        gameId,
+        userId,
+        logPrefix,
+        getGameResponse: TestUtil.getDbGame({
+          id: gameId,
+        }),
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
+      })
+    })
+    it('returns error if more than 1 player with userId found', async () => {
+      const gameId = new ObjectId().toString()
+      const message = `Found more than 1 player with ID "${userId}" on game "${gameId}"`
+      const game = TestUtil.getDbGame({
+        id: gameId,
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: userId,
+          }),
+          TestUtil.getDbGamePlayer({
+            user: userId,
+          }),
+        ],
+      })
+      await testGetGamePlayer({
+        gameId,
+        userId,
+        logPrefix,
+        getGameResponse: game,
+        expected: Error(`${message}.`),
+        errorCalls: [[`${logPrefix} getGamePlayer failed: ${message}: "${JSON.stringify(game.players)}"`]],
+      })
+    })
+    it('returns error if game is wrong status', async () => {
+      const gameId = new ObjectId().toString()
+      const label = 'do something'
+      const requiredStatus = GameStatus.Playing
+      const actualStatus = GameStatus.Decking
+      const message = `Invalid game status "${actualStatus}": Can only ${label} for game with status "${requiredStatus}".`
+      const game = TestUtil.getDbGame({
+        id: gameId,
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: userId,
+          }),
+        ],
+      })
+      await testGetGamePlayer({
+        gameId,
+        userId,
+        logPrefix,
+        label,
+        status: requiredStatus,
+        getGameResponse: game,
+        expected: Error(message),
+        statusCalls: [[game]],
+        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
+      })
+    })
+    it('returns error if it is not users turn when required', async () => {
+      const gameId = new ObjectId().toString()
+      const label = 'do something'
+      const message = `Cannot ${label} when it is not your turn.`
+      await testGetGamePlayer({
+        gameId,
+        userId,
+        logPrefix,
+        label,
+        turn: true,
+        getGameResponse: TestUtil.getDbGame({
+          id: gameId,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+            }),
+          ],
+        }),
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
+      })
+    })
+    it('returns game and player if no errors', async () => {
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: userId,
+          }),
+        ],
+      })
+      await testGetGamePlayer({
+        gameId: game._id.toString(),
+        userId,
+        logPrefix,
+        getGameResponse: game,
+        expected: {
+          game,
+          player: game.players[0],
+        },
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: userId,
+          }),
+        ],
+      })
+      await testGetGamePlayer({
+        gameId: game._id.toString(),
+        userId,
+        logPrefix,
+        getGameResponse: game,
+        expected: {
+          game,
+          player: game.players[0],
+        },
+        traceEnabled: true,
+      })
+    })
+  })
+  describe('getNextPlayerIdForCurrentRound', () => {
+    const userId = new ObjectId()
+    const logPrefix = `playUnit by "${userId}"`
+    it('returns error if current player does not have order', () => {
+      const player = TestUtil.getDbGamePlayer({
+        user: userId,
+      })
+      const message = `Could not determine order of current player "${userId}": "undefined".`
+      testGetNextPlayerIdForCurrentRound({
+        game: TestUtil.getDbGame({
+          players: [player],
+        }),
+        currentPlayer: player,
+        logPrefix,
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} getNextPlayerIdForCurrentRound failed: ${message}`]],
+        traceCalls: [[`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "undefined"`]],
+      })
+    })
+    it('returns second player in turn order when first players turn and second player has not passed', () => {
+      const player1 = TestUtil.getDbGamePlayer({
+        user: userId,
+        order: 0,
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        order: 1,
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      testGetNextPlayerIdForCurrentRound({
+        game: TestUtil.getDbGame({
+          players: [player1, player2],
+          round: 1,
+        }),
+        currentPlayer: player1,
+        logPrefix,
+        expected: player2.user,
+        debugCalls: [
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+        ],
+      })
+    })
+    it('returns first player in turn order when second players turn and first player has not passed', () => {
+      const player1 = TestUtil.getDbGamePlayer({
+        user: userId,
+        order: 0,
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        order: 1,
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      testGetNextPlayerIdForCurrentRound({
+        game: TestUtil.getDbGame({
+          players: [player1, player2],
+          round: 1,
+        }),
+        currentPlayer: player2,
+        logPrefix,
+        expected: player1.user,
+        debugCalls: [
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+        ],
+      })
+    })
+    it('returns first player in turn order when first players turn and second player has passed', () => {
+      const player1 = TestUtil.getDbGamePlayer({
+        user: userId,
+        order: 0,
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        order: 1,
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            passed: true,
+          }),
+        ],
+      })
+      testGetNextPlayerIdForCurrentRound({
+        game: TestUtil.getDbGame({
+          players: [player1, player2],
+          round: 1,
+        }),
+        currentPlayer: player1,
+        logPrefix,
+        expected: player1.user,
+        debugCalls: [
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
+          ],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+        ],
+      })
+    })
+    it('returns second player in turn order when second players turn and first player has passed', () => {
+      const player1 = TestUtil.getDbGamePlayer({
+        user: userId,
+        order: 0,
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            passed: true,
+          }),
+        ],
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        order: 1,
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      testGetNextPlayerIdForCurrentRound({
+        game: TestUtil.getDbGame({
+          players: [player1, player2],
+          round: 1,
+        }),
+        currentPlayer: player2,
+        logPrefix,
+        expected: player2.user,
+        debugCalls: [
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
+          ],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+        ],
+      })
+    })
+    it('returns second player in turn order when first players turn and both have passed', () => {
+      const player1 = TestUtil.getDbGamePlayer({
+        user: userId,
+        order: 0,
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            passed: true,
+          }),
+        ],
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        order: 1,
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            passed: true,
+          }),
+        ],
+      })
+      testGetNextPlayerIdForCurrentRound({
+        game: TestUtil.getDbGame({
+          players: [player1, player2],
+          round: 1,
+        }),
+        currentPlayer: player1,
+        logPrefix,
+        expected: player2.user,
+        errorCalls: [
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound No user eligible to be next player for round "1", getting player to start round "2" based off game turn order`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
+          ],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
+          ],
+        ],
+      })
+    })
+    it('returns second player in turn order when second players turn and both have passed', () => {
+      const player1 = TestUtil.getDbGamePlayer({
+        user: userId,
+        order: 0,
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            passed: true,
+          }),
+        ],
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        order: 1,
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            passed: true,
+          }),
+        ],
+      })
+      testGetNextPlayerIdForCurrentRound({
+        game: TestUtil.getDbGame({
+          players: [player1, player2],
+          round: 1,
+        }),
+        currentPlayer: player2,
+        logPrefix,
+        expected: player2.user,
+        errorCalls: [
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound No user eligible to be next player for round "1", getting player to start round "2" based off game turn order`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
+          ],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
+          ],
+        ],
+      })
+    })
+    it('logs to trace if enabled', () => {
+      const player1 = TestUtil.getDbGamePlayer({
+        user: userId,
+        order: 0,
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        order: 1,
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      testGetNextPlayerIdForCurrentRound({
+        game: TestUtil.getDbGame({
+          players: [player1, player2],
+          round: 1,
+        }),
+        currentPlayer: player1,
+        logPrefix,
+        expected: player2.user,
+        traceEnabled: true,
+        debugCalls: [
+          [
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} getNextPlayerIdForCurrentRound usersByOrder: "${JSON.stringify([player1, player2])}"`],
+          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          [`${logPrefix} getNextPlayerIdForCurrentRound potentialNextPlayer: "${JSON.stringify(player2)}"`],
+        ],
+      })
+    })
+    // TODO: test for other rounds (2, 3)
+  })
+  describe('getPlayerIdForNextRound', () => {
+    const userId = new ObjectId()
+    const gameId = new ObjectId()
+    const logPrefix = `playPass by "${userId}" on game "${gameId}"`
+    it('returns last round winner if first player won', () => {
+      const game = TestUtil.getDbGame({
+        id: gameId,
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: userId,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Won,
+              }),
+            ],
+          }),
+          TestUtil.getDbGamePlayer({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Lost,
+              }),
+            ],
+          }),
+        ],
+      })
+      testGetPlayerIdForNextRound({
+        game,
+        logPrefix,
+        expected: userId,
+        debugCalls: [
+          [
+            `${logPrefix} getPlayerIdForNextRound single user "${userId}" won round "1", setting them as player for round "2"`,
+          ],
+        ],
+        traceCalls: [[`${logPrefix} getPlayerIdForNextRound nextRound: "2"`]],
+      })
+    })
+    it('returns last round winner if last player won', () => {
+      const game = TestUtil.getDbGame({
+        id: gameId,
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Lost,
+              }),
+            ],
+          }),
+          TestUtil.getDbGamePlayer({
+            user: userId,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Won,
+              }),
+            ],
+          }),
+        ],
+      })
+      testGetPlayerIdForNextRound({
+        game,
+        logPrefix,
+        expected: userId,
+        debugCalls: [
+          [
+            `${logPrefix} getPlayerIdForNextRound single user "${userId}" won round "1", setting them as player for round "2"`,
+          ],
+        ],
+        traceCalls: [[`${logPrefix} getPlayerIdForNextRound nextRound: "2"`]],
+      })
+    })
+    it('returns first game order player if both drew last round', () => {
+      const game = TestUtil.getDbGame({
+        id: gameId,
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            order: 0,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Drew,
+              }),
+            ],
+          }),
+          TestUtil.getDbGamePlayer({
+            user: userId,
+            order: 1,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Drew,
+              }),
+            ],
+          }),
+        ],
+      })
+      testGetPlayerIdForNextRound({
+        game,
+        logPrefix,
+        expected: userId,
+        debugCalls: [
+          [
+            `${logPrefix} getPlayerIdForNextRound no single user won round "1", setting next player as "${userId}" for round "2" based on game order`,
+          ],
+        ],
+        traceCalls: [[`${logPrefix} getPlayerIdForNextRound nextRound: "2"`]],
+      })
+    })
+    it('returns second game order player if both drew last round', () => {
+      const game = TestUtil.getDbGame({
+        id: gameId,
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            order: 1,
+            user: userId,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Drew,
+              }),
+            ],
+          }),
+          TestUtil.getDbGamePlayer({
+            order: 0,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Drew,
+              }),
+            ],
+          }),
+        ],
+      })
+      testGetPlayerIdForNextRound({
+        game,
+        logPrefix,
+        expected: userId,
+        debugCalls: [
+          [
+            `${logPrefix} getPlayerIdForNextRound no single user won round "1", setting next player as "${userId}" for round "2" based on game order`,
+          ],
+        ],
+        traceCalls: [[`${logPrefix} getPlayerIdForNextRound nextRound: "2"`]],
+      })
+    })
+    it('returns last round winner if first player won', () => {
+      const game = TestUtil.getDbGame({
+        id: gameId,
+        round: 1,
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: userId,
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Won,
+              }),
+            ],
+          }),
+          TestUtil.getDbGamePlayer({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                result: RoundResult.Lost,
+              }),
+            ],
+          }),
+        ],
+      })
+      testGetPlayerIdForNextRound({
+        game,
+        logPrefix,
+        expected: userId,
+        debugCalls: [
+          [
+            `${logPrefix} getPlayerIdForNextRound single user "${userId}" won round "1", setting them as player for round "2"`,
+          ],
+        ],
+        traceEnabled: true,
+        traceCalls: [
+          [`${logPrefix} getPlayerIdForNextRound nextRound: "2"`],
+          [
+            `${logPrefix} getPlayerIdForNextRound usersByOrder: "${JSON.stringify([
+              game.players[0],
+              game.players[1],
+            ])}"`,
+          ],
+          [`${logPrefix} getPlayerIdForNextRound roundWinners: "${JSON.stringify([userId])}"`],
+        ],
+      })
+    })
+  })
   describe('isGameOver', () => {
-    describe('best of 1', () => {
-      const maxRounds = 1
-      it('returns false if no rounds have been played', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(0), getGamePlayerWithWins(0)],
-              currentRound: 0,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns true if 1 player has 1 win after 1 round', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(0)],
-              currentRound: 1,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns true if 2 players have 1 win after 1 round', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
-              currentRound: 1,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
+    const game = TestUtil.getDbGame({})
+    const logPrefix = `playPass by "${game.creator}"`
+    it('returns false if no rounds have been played', () => {
+      testIsGameOver({
+        game,
+        logPrefix,
+        expected: false,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "2"`],
+        ],
       })
     })
-    describe('best of 2', () => {
-      const maxRounds = 2
-      it('returns false if no rounds have been played', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(0), getGamePlayerWithWins(0)],
-              currentRound: 0,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns false if 1 player has 1 win after 1 round', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(0)],
-              currentRound: 1,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns false if 2 players have 1 win after 1 round', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
-              currentRound: 1,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns true if 1 player has 2 wins after 2 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(0)],
-              currentRound: 2,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns true if 2 players have 1 win after 2 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
-              currentRound: 2,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
+    it('returns false if 1 rounds played with 1 loss for first player', () => {
+      testIsGameOver({
+        game: {
+          ...game,
+          round: 1,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+              ],
+            },
+            game.players[1],
+          ],
+        },
+        logPrefix,
+        expected: false,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "2"`],
+        ],
       })
     })
-    describe('best of 3', () => {
-      const maxRounds = 3
-      it('returns false if no rounds have been played', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(0), getGamePlayerWithWins(0)],
-              currentRound: 0,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns false if 1 player has 1 win after 1 round', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(0)],
-              currentRound: 1,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns false if 2 players have 1 win after 1 round', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
-              currentRound: 1,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns true if 1 player has 2 wins after 2 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(0)],
-              currentRound: 2,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns false if 2 players have 1 win after 2 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
-              currentRound: 2,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns false if 2 players have 2 wins after 2 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
-              currentRound: 2,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns true if 1 player has 3 wins after 3 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(0)],
-              currentRound: 3,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns true if 1 player has 2 wins and the other has 1 win after 3 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(1)],
-              currentRound: 3,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns true if 2 players have 2 wins after 3 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(2)],
-              currentRound: 3,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns true if 2 players have 3 wins after 3 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(3)],
-              currentRound: 3,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
+    it('returns false if 1 rounds played with 1 loss for second player', () => {
+      testIsGameOver({
+        game: {
+          ...game,
+          round: 1,
+          players: [
+            game.players[0],
+            {
+              ...game.players[1],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+              ],
+            },
+          ],
+        },
+        logPrefix,
+        expected: false,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "1"`],
+        ],
       })
     })
-    describe('best of 5', () => {
-      const maxRounds = 5
-      it('returns false if no rounds have been played', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(0), getGamePlayerWithWins(0)],
-              currentRound: 0,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
+    it('returns false if 1 rounds played with 1 draw for each player', () => {
+      testIsGameOver({
+        game: {
+          ...game,
+          round: 1,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Drew,
+                }),
+              ],
+            },
+            {
+              ...game.players[1],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Drew,
+                }),
+              ],
+            },
+          ],
+        },
+        logPrefix,
+        expected: false,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "1"`],
+        ],
       })
-      it('returns false if 1 player has 1 win after 1 round', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(0)],
-              currentRound: 1,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
+    })
+    it('returns true if 2 rounds played with 2 losses for first player', () => {
+      testIsGameOver({
+        game: {
+          ...game,
+          round: 2,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+              ],
+            },
+            game.players[1],
+          ],
+        },
+        logPrefix,
+        expected: true,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "1" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "2"`],
+        ],
       })
-      it('returns false if 2 players have 1 win after 1 round', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
-              currentRound: 1,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
+    })
+    it('returns true if 2 rounds played with 2 losses for second player', () => {
+      testIsGameOver({
+        game: {
+          ...game,
+          round: 2,
+          players: [
+            game.players[0],
+            {
+              ...game.players[1],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+              ],
+            },
+          ],
+        },
+        logPrefix,
+        expected: true,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "1" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "0"`],
+        ],
       })
-      it('returns false if 1 player has 2 wins after 2 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(0)],
-              currentRound: 2,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
+    })
+    it('returns false if 2 rounds played with 1 loss for each player', () => {
+      testIsGameOver({
+        game: {
+          ...game,
+          round: 2,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+                TestUtil.getDbPlayerRound({}),
+              ],
+            },
+            {
+              ...game.players[1],
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+              ],
+            },
+          ],
+        },
+        logPrefix,
+        expected: false,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "1"`],
+        ],
       })
-      it('returns false if 2 players have 1 win after 2 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
-              currentRound: 2,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
+    })
+    it('returns true if 3 rounds played with 2 losses for first player', () => {
+      testIsGameOver({
+        game: {
+          ...game,
+          round: 3,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+              ],
+            },
+            {
+              ...game.players[1],
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+              ],
+            },
+          ],
+        },
+        logPrefix,
+        expected: true,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "1" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "3"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "1"`],
+        ],
       })
-      it('returns false if 2 players have 2 wins after 2 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(1), getGamePlayerWithWins(1)],
-              currentRound: 2,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
+    })
+    it('returns true if 3 rounds played with 2 losses for second player', () => {
+      testIsGameOver({
+        game: {
+          ...game,
+          round: 3,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+                TestUtil.getDbPlayerRound({}),
+              ],
+            },
+            {
+              ...game.players[1],
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+              ],
+            },
+          ],
+        },
+        logPrefix,
+        expected: true,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "1" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "3"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "0"`],
+        ],
       })
-      it('returns true if 1 player has 3 wins after 3 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(0)],
-              currentRound: 3,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
+    })
+    it('returns true if 3 rounds played with 2 losses for each player', () => {
+      testIsGameOver({
+        game: {
+          ...game,
+          round: 3,
+          players: [
+            {
+              ...game.players[0],
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Drew,
+                }),
+              ],
+            },
+            {
+              ...game.players[1],
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Lost,
+                }),
+                TestUtil.getDbPlayerRound({
+                  result: RoundResult.Drew,
+                }),
+              ],
+            },
+          ],
+        },
+        logPrefix,
+        expected: true,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "0" player(s) with lives left.`,
+          ],
+        ],
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "3"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "0"`],
+        ],
       })
-      it('returns false if 1 player has 2 wins and the other has 1 win after 3 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(1)],
-              currentRound: 3,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns false if 2 players have 2 wins after 3 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(2)],
-              currentRound: 3,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns false if 2 players have 3 wins after 3 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(3)],
-              currentRound: 3,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns true if 1 player has 4 wins after 4 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(4), getGamePlayerWithWins(0)],
-              currentRound: 4,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns false if 2 players have 2 wins after 4 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(2), getGamePlayerWithWins(2)],
-              currentRound: 4,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns false if 1 player has 4 wins and the other has 3 wins after 4 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(4), getGamePlayerWithWins(3)],
-              currentRound: 4,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns false if 2 players have 4 wins after 4 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(4), getGamePlayerWithWins(4)],
-              currentRound: 4,
-            }),
-            maxRounds,
-          })
-        ).toEqual(false)
-      })
-      it('returns true if 2 players have 5 wins after 5 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(5), getGamePlayerWithWins(5)],
-              currentRound: 5,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns true if 1 player has 5 wins after 5 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(5), getGamePlayerWithWins(0)],
-              currentRound: 5,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns true if 1 player has 3 wins and the other has 2 after 5 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(3), getGamePlayerWithWins(2)],
-              currentRound: 5,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
-      })
-      it('returns true if 1 player has 4 wins and the other has 1 after 5 rounds', () => {
-        expect(
-          MutationUtil.isGameOver({
-            game: TestUtil.getDbGame({
-              players: [getGamePlayerWithWins(4), getGamePlayerWithWins(1)],
-              currentRound: 5,
-            }),
-            maxRounds,
-          })
-        ).toEqual(true)
+    })
+    it('logs to trace if enabled', () => {
+      testIsGameOver({
+        game,
+        logPrefix,
+        expected: false,
+        debugCalls: [
+          [
+            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
+          ],
+        ],
+        traceEnabled: true,
+        traceCalls: [
+          [`${logPrefix} isGameOver game "${game._id}" currentRound: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "0"`],
+          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "2"`],
+          [
+            `${logPrefix} isGameOver game "${game._id}" playersWithLivesLeft: "${JSON.stringify(
+              game.players.map((player) => player.user)
+            )}"`,
+          ],
+        ],
       })
     })
   })
@@ -924,24 +1549,195 @@ describe('mutation-util', () => {
   })
 })
 
-function getGamePlayerWithWins(wins: number) {
-  const gamePlayer = TestUtil.getDbGamePlayer({})
-  const combatRow: PlayerCombatRowDbObject = {
-    score: 0,
-    units: [],
+async function testGetGamePlayer({
+  gameId,
+  userId,
+  status,
+  logPrefix,
+  label,
+  turn,
+  getGameResponse,
+  getStatusResponse,
+  expected,
+  statusCalls = [],
+  errorCalls = [],
+  warnCalls = [],
+  traceEnabled,
+}: {
+  gameId: string
+  userId: ObjectId
+  logPrefix: string
+  status?: GameStatus
+  label?: string
+  turn?: boolean
+  getGameResponse?: GameDbObject | undefined
+  getStatusResponse?: GameStatus
+  expected: GamePlayerResponse | Error
+  statusCalls?: GameDbObject[][]
+  errorCalls?: string[][]
+  warnCalls?: string[][]
+  traceEnabled?: boolean
+}) {
+  const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
+  const getStatusSpy = jest.spyOn(GameResolver, 'getStatus')
+  if (getStatusResponse) {
+    getStatusSpy.mockReturnValue(getStatusResponse)
   }
-  for (let i = 0; i < wins; i++) {
-    gamePlayer.rounds[i] = {
-      close: combatRow,
-      moves: [],
-      passed: false,
-      ranged: combatRow,
-      score: 0,
-      siege: combatRow,
-      won: true,
-    }
-  }
-  return gamePlayer
+  const errorSpy = jest.fn().mockImplementation()
+  const warnSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MutationUtil['logger'] = {
+    error: errorSpy,
+    warn: warnSpy,
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+
+  await expect(
+    MutationUtil.getGamePlayer({
+      gameId,
+      userId,
+      logPrefix,
+      status,
+      label,
+      turn,
+    })
+  ).resolves.toEqual(expected)
+
+  expect(getGameSpy.mock.calls).toEqual(
+    ObjectId.isValid(gameId)
+      ? [
+          [
+            {
+              id: gameId,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(getStatusSpy.mock.calls).toEqual(statusCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(warnSpy.mock.calls).toEqual(warnCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [`${logPrefix} getGamePlayer game: "${JSON.stringify(getGameResponse)}"`],
+          [`${logPrefix} getGamePlayer game "${gameId}" players: "${JSON.stringify(getGameResponse?.players)}"`],
+        ]
+      : []
+  )
+}
+
+function testGetNextPlayerIdForCurrentRound({
+  game,
+  currentPlayer,
+  logPrefix,
+  expected,
+  errorCalls = [],
+  debugCalls = [],
+  traceEnabled,
+  traceCalls = [],
+}: {
+  game: GameDbObject
+  currentPlayer: GamePlayerDbObject
+  logPrefix: string
+  expected: ObjectId | Error
+  errorCalls?: string[][]
+  debugCalls?: string[][]
+  traceEnabled?: boolean
+  traceCalls?: string[][]
+}) {
+  const errorSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MutationUtil['logger'] = {
+    error: errorSpy,
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+
+  expect(
+    MutationUtil.getNextPlayerIdForCurrentRound({
+      game,
+      currentPlayer,
+      logPrefix,
+    })
+  ).toEqual(expected)
+
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
+}
+
+function testGetPlayerIdForNextRound({
+  game,
+  logPrefix,
+  expected,
+  debugCalls = [],
+  traceEnabled,
+  traceCalls = [],
+}: {
+  game: GameDbObject
+  logPrefix: string
+  expected: ObjectId
+  debugCalls?: string[][]
+  traceEnabled?: boolean
+  traceCalls?: string[][]
+}) {
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MutationUtil['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+
+  expect(
+    MutationUtil.getPlayerIdForNextRound({
+      game,
+      logPrefix,
+    })
+  ).toEqual(expected)
+
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
+}
+
+function testIsGameOver({
+  game,
+  logPrefix,
+  expected,
+  debugCalls = [],
+  traceEnabled,
+  traceCalls = [],
+}: {
+  game: GameDbObject
+  logPrefix: string
+  expected: boolean
+  debugCalls?: string[][]
+  traceEnabled?: boolean
+  traceCalls?: string[][]
+}) {
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MutationUtil['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+
+  expect(
+    MutationUtil.isGameOver({
+      game,
+      logPrefix,
+    })
+  ).toEqual(expected)
+
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 
 async function testSetGameTurnOrder({

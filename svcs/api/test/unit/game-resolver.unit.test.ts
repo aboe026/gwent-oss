@@ -374,6 +374,9 @@ async function testResolveFromObject({
       users,
     })
   ).resolves.toEqual({
+    config: {
+      lives: 2,
+    },
     created: game.created,
     creator: creator || resolvedUsers[0],
     id: game._id.toString(),
@@ -385,6 +388,7 @@ async function testResolveFromObject({
       ? resolvedGamePlayers.find((player) => player.user.id.toString() === game.turn?.toString())
       : undefined,
     victors,
+    weather: [],
   })
 
   expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)

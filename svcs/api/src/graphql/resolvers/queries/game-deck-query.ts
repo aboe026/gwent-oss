@@ -52,10 +52,13 @@ export default class GameDeckQuery {
     const { player } = response
 
     if (player.deck.from) {
+      GameDeckQuery.logger.trace(`${logPrefix} has deck "${player.deck.from._id}", resolving.`)
       return GameDeckResolver.fromObject({
         gameDeck: player.deck,
       })
+    } else {
+      GameDeckQuery.logger.trace(`${logPrefix} does not have deck, nothing to resolve.`)
+      return null
     }
-    return null
   }
 }

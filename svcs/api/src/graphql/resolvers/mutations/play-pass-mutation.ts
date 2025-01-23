@@ -220,16 +220,20 @@ export default class PlayPassMutation {
         game.round = game.round + 1
       }
     } else {
-      nextPlayerId = MutationUtil.getNextPlayerIdForCurrentRound({
+      const potentialNextPlayerId = MutationUtil.getNextPlayerIdForCurrentRound({
         game,
         currentPlayer: player,
         logPrefix,
       })
+      if (potentialNextPlayerId instanceof Error) {
+        return potentialNextPlayerId as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      }
+      nextPlayerId = potentialNextPlayerId
     }
 
     const updatedGame = await GameStore.makeMove({
       nextTurn: nextPlayerId,
-      updatedGame: game,
+      game,
       userId,
     })
 

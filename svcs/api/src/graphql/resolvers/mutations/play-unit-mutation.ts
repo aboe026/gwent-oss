@@ -143,10 +143,13 @@ export default class PlayUnitMutation {
       game,
       logPrefix,
     })
+    if (nextPlayerId instanceof Error) {
+      return nextPlayerId as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
 
     const updatedGame = await GameStore.makeMove({
       nextTurn: nextPlayerId,
-      updatedGame: game,
+      game,
       userId,
     })
 

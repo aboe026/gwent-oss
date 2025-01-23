@@ -37,13 +37,7 @@ export default class MutationUtil {
     status?: GameStatus
     turn?: boolean
     label?: string
-  }): Promise<
-    | Error
-    | {
-        game: GameDbObject
-        player: GamePlayerDbObject
-      }
-  > {
+  }): Promise<GamePlayerResponse | Error> {
     if (!ObjectId.isValid(gameId)) {
       const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
       MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
@@ -70,9 +64,9 @@ export default class MutationUtil {
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     if (players.length > 1) {
-      const message = `Found more than 1 player with ID "${userId}" on game "${gameId}".`
-      MutationUtil.logger.error(`${logPrefix} getGamePlayer failed: ${message}: ${JSON.stringify(players)}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      const message = `Found more than 1 player with ID "${userId}" on game "${gameId}"`
+      MutationUtil.logger.error(`${logPrefix} getGamePlayer failed: ${message}: "${JSON.stringify(players)}"`)
+      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
     if (status) {
@@ -106,7 +100,7 @@ export default class MutationUtil {
     game: GameDbObject
     currentPlayer: GamePlayerDbObject
     logPrefix: string
-  }): ObjectId {
+  }): ObjectId | Error {
     const currentRound = game.round
     const usersByOrder: GamePlayerDbObject[] = sortObjectArray({
       array: game.players,
@@ -121,9 +115,11 @@ export default class MutationUtil {
     const currentPlayerOrder = currentPlayer.order
     MutationUtil.logger.trace(`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "${currentPlayerOrder}"`)
     if (currentPlayerOrder === undefined || currentPlayerOrder === null) {
-      const message = `Could not determine order of current player "${currentPlayer.user.id}": "${currentPlayerOrder}".`
-      MutationUtil.logger.warn(`${logPrefix} getNextPlayerIdForCurrentRound failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      const message = `Could not determine order of current player "${currentPlayer.user}": "${currentPlayerOrder}".`
+      MutationUtil.logger.error(`${logPrefix} getNextPlayerIdForCurrentRound failed: ${message}`)
+      // TODO: check for errors where this is called
+      // TODO: throw error instead of returning error
+      return Error(message)
     }
     for (let i = 0; i < game.players.length && nextPlayerId === undefined; i++) {
       MutationUtil.logger.trace(`${logPrefix} getNextPlayerIdForCurrentRound i: "${i}"`)
@@ -136,7 +132,7 @@ export default class MutationUtil {
         }
         if (potentialNextPlayer.rounds[currentRound - 1].passed) {
           MutationUtil.logger.trace(
-            `${logPrefix} getNextPlayerIdForCurrentRound player ${potentialNextPlayer.user}" has already passed, ignoring for next player.`
+            `${logPrefix} getNextPlayerIdForCurrentRound player "${potentialNextPlayer.user}" has already passed, ignoring for next player.`
           )
         } else {
           MutationUtil.logger.debug(
@@ -182,7 +178,7 @@ export default class MutationUtil {
       const nextUser = roundWinners[0].user
       MutationUtil.logger.debug(
         `${logPrefix} getPlayerIdForNextRound single user "${nextUser}" won round "${
-          game.round - 1
+          game.round
         }", setting them as player for round "${game.round + 1}"`
       )
       return nextUser
@@ -191,7 +187,7 @@ export default class MutationUtil {
     const nextUser = usersByOrder[game.round % game.players.length].user
     MutationUtil.logger.debug(
       `${logPrefix} getPlayerIdForNextRound no single user won round "${
-        game.round - 1
+        game.round
       }", setting next player as "${nextUser}" for round "${game.round + 1}" based on game order`
     )
     return nextUser
@@ -431,4 +427,9 @@ export default class MutationUtil {
 
     return resolvedGame
   }
+}
+
+export interface GamePlayerResponse {
+  game: GameDbObject
+  player: GamePlayerDbObject
 }

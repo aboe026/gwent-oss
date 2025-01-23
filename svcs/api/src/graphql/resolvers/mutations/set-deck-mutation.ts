@@ -55,6 +55,7 @@ export default class SetDeckMutation {
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
+    // TODO: replace with helper method to getUserDeck (verify user owns deck as well?)
     const deck = await DeckStore.getById({
       id: deckId,
     })

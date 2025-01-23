@@ -52,8 +52,8 @@ export default class GameStore extends Store {
       }),
       round: 0,
       updated: created,
-      weather: [],
       victors: [],
+      weather: [],
     }
     if (GameStore.logger.isTraceEnabled()) {
       GameStore.logger.trace(`Adding game: "${JSON.stringify(game)}"`)
@@ -324,36 +324,30 @@ export default class GameStore extends Store {
   }
 
   static async makeMove({
-    updatedGame,
+    game,
     userId,
     nextTurn,
   }: {
-    updatedGame: GameDbObject
+    game: GameDbObject
     userId: ObjectId | string
     nextTurn?: ObjectId | string
   }): Promise<GameDbObject> {
-    GameStore.logger.debug(
-      `Move made on game "${updatedGame._id}" by user "${userId}", setting next move to "${nextTurn}"`
-    )
+    GameStore.logger.debug(`Move made on game "${game._id}" by user "${userId}", setting next move to "${nextTurn}"`)
     const filter: Filter<Document> = {
-      _id: updatedGame._id,
+      _id: game._id,
       turn: new ObjectId(userId),
-      updated: updatedGame.updated,
+      updated: game.updated,
     }
     const update: UpdateFilter<Document> = {
       $set: {
-        ...updatedGame,
+        ...game,
         updated: new Date(),
         turn: new ObjectId(nextTurn),
       },
     }
     if (GameStore.logger.isTraceEnabled()) {
-      GameStore.logger.trace(
-        `move on game "${updatedGame._id}" by user "${userId}" filter: "${JSON.stringify(filter)}"`
-      )
-      GameStore.logger.trace(
-        `move on game "${updatedGame._id}" by user "${userId}" update: "${JSON.stringify(update)}"`
-      )
+      GameStore.logger.trace(`move on game "${game._id}" by user "${userId}" filter: "${JSON.stringify(filter)}"`)
+      GameStore.logger.trace(`move on game "${game._id}" by user "${userId}" update: "${JSON.stringify(update)}"`)
     }
     return GameStore.update<GameDbObject>({
       filter,

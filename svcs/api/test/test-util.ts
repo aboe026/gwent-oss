@@ -30,12 +30,15 @@ import {
   GameDeckDbObject,
   GamePlayerDbObject,
   LeaderDbObject,
+  MoveDbObject,
+  PlayerCombatRowDbObject,
   PlayerRoundDbObject,
   RedrawDbObject,
+  RoundResult,
   UnitDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
+import { STARTING_HAND_SIZE, STARTING_LIVES } from '@gwent/constants'
 
 export default class TestUtil {
   static getDbUnit({
@@ -417,7 +420,7 @@ export default class TestUtil {
     turn,
     victors = [],
     updated = new Date(),
-    currentRound = 0,
+    round = 0,
   }: {
     id?: ObjectId | string
     created?: Date
@@ -426,11 +429,11 @@ export default class TestUtil {
     turn?: ObjectId | string
     victors?: (ObjectId | string)[]
     updated?: Date
-    currentRound?: number
+    round?: number
   }): GameDbObject {
     return {
       config: {
-        lives: 2,
+        lives: STARTING_LIVES,
       },
       _id: id ? new ObjectId(id) : new ObjectId(),
       created: created || new Date(),
@@ -459,7 +462,7 @@ export default class TestUtil {
           user: new ObjectId(),
         },
       ],
-      round: currentRound,
+      round,
       turn: turn ? new ObjectId(turn) : undefined,
       updated,
       victors: victors.map((victor) => new ObjectId(victor)),
@@ -505,7 +508,17 @@ export default class TestUtil {
     }
   }
 
-  static getGame({ id, creator, players }: { id?: ObjectId | string; creator?: User; players?: GamePlayer[] }): Game {
+  static getGame({
+    id,
+    creator,
+    players,
+    round = 0,
+  }: {
+    id?: ObjectId | string
+    creator?: User
+    players?: GamePlayer[]
+    round?: number
+  }): Game {
     return {
       config: {
         lives: 2,
@@ -520,7 +533,7 @@ export default class TestUtil {
           user: TestUtil.getUser({}),
         },
       ],
-      round: 0,
+      round,
       status: GameStatus.Decking,
       updated: new Date(),
       victors: [],
@@ -569,6 +582,57 @@ export default class TestUtil {
       hand: hand || [],
       redraws: redraws || [],
       undrawn: undrawn || [],
+    }
+  }
+
+  static getGameDeckFromDbGameDeck(gameDeck: GameDeckDbObject): GameDeck {
+    return {
+      discard: gameDeck.discard.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      hand: gameDeck.hand.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      redraws: gameDeck.redraws.map((redraw) => {
+        return {
+          from: TestUtil.getDeckUnitFromDbDeckUnit(redraw.from),
+          to: TestUtil.getDeckUnitFromDbDeckUnit(redraw.to),
+        }
+      }),
+      undrawn: gameDeck.undrawn.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      from: gameDeck.from
+        ? TestUtil.getDeckFromDbDeck({
+            deck: gameDeck.from,
+          })
+        : undefined,
+    }
+  }
+
+  static getDbPlayerRound({
+    close,
+    ranged,
+    siege,
+    moves = [],
+    score = 0,
+    passed = false,
+    result,
+  }: {
+    close?: PlayerCombatRowDbObject
+    ranged?: PlayerCombatRowDbObject
+    siege?: PlayerCombatRowDbObject
+    moves?: MoveDbObject[]
+    score?: number
+    passed?: boolean
+    result?: RoundResult
+  }): PlayerRoundDbObject {
+    const combatRow: PlayerCombatRowDbObject = {
+      score: 0,
+      units: [],
+    }
+    return {
+      close: close || combatRow,
+      moves,
+      ranged: ranged || combatRow,
+      siege: siege || combatRow,
+      score,
+      passed,
+      result,
     }
   }
 

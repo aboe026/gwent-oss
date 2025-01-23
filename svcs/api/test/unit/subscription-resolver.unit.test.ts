@@ -2,8 +2,8 @@ import * as graphqlSubscriptions from 'graphql-subscriptions'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
+import { Deck, Game } from '@gwent/graphql-schema/resolver-typings'
 import EventManager from '../../src/graphql/event-manager'
-import { Game, GameDeck, GamePlayer } from '@gwent/graphql-schema/resolver-typings'
 import { PubSubEvents } from '@gwent/constants'
 import SubscriptionResolver, {
   DeckAddedPayload,
@@ -12,22 +12,22 @@ import SubscriptionResolver, {
   GameReadyPayload,
   GameSetPayload,
   OrderSetPayload,
+  PassPlayedPayload,
+  RoundEndedForDeckPayload,
+  UnitPlayedFromDeckPayload,
+  UnitPlayedOnGamePayload,
   UnitRedrawnPayload,
 } from '../../src/graphql/resolvers/subscription-resolver'
 import TestUtil from '../test-util'
+import * as utils from '@gwent/utils'
 
 describe('subscription-resolver', () => {
   describe('getResolvers', () => {
     it('returns subscriptions with calls to withFilter', () => {
       const withFilterSpy = jest.spyOn(graphqlSubscriptions, 'withFilter').mockReturnValue((() => {}) as any)
       const asyncIteratorSpy = jest.spyOn(EventManager.pubsub, 'asyncIterableIterator').mockReturnValue('' as any)
-      const filterDeckAddedSpy = jest.spyOn(SubscriptionResolver as any, 'filterDeckAdded').mockResolvedValue('')
-      const filterDeckSetSpy = jest.spyOn(SubscriptionResolver as any, 'filterDeckSet').mockResolvedValue('')
-      const filterGameAddedSpy = jest.spyOn(SubscriptionResolver as any, 'filterGameAdded').mockResolvedValue('')
-      const filterGameReadySpy = jest.spyOn(SubscriptionResolver as any, 'filterGameReady').mockResolvedValue('')
-      const filterGameSetSpy = jest.spyOn(SubscriptionResolver as any, 'filterGameSet').mockResolvedValue('')
-      const filterOrderSetSpy = jest.spyOn(SubscriptionResolver as any, 'filterOrderSet').mockResolvedValue('')
-      const filterUnitRedrawnSpy = jest.spyOn(SubscriptionResolver as any, 'filterUnitRedrawn').mockResolvedValue('')
+      const filterDeckOwnerSpy = jest.spyOn(SubscriptionResolver as any, 'filterDeckOwner').mockResolvedValue('')
+      const filterPlayerOnGameSpy = jest.spyOn(SubscriptionResolver as any, 'filterPlayerOnGame').mockResolvedValue('')
       const result = SubscriptionResolver.getResolvers()
       expect(result).toEqual({
         deckAdded: {
@@ -48,6 +48,18 @@ describe('subscription-resolver', () => {
         orderSet: {
           subscribe: expect.any(Function),
         },
+        passPlayed: {
+          subscribe: expect.any(Function),
+        },
+        roundEndedForDeck: {
+          subscribe: expect.any(Function),
+        },
+        unitPlayedFromDeck: {
+          subscribe: expect.any(Function),
+        },
+        unitPlayedOnGame: {
+          subscribe: expect.any(Function),
+        },
         unitRedrawn: {
           subscribe: expect.any(Function),
         },
@@ -60,6 +72,10 @@ describe('subscription-resolver', () => {
         result.gameReady &&
         result.gameSet &&
         result.orderSet &&
+        result.passPlayed &&
+        result.roundEndedForDeck &&
+        result.unitPlayedFromDeck &&
+        result.unitPlayedOnGame &&
         result.unitRedrawn
       ) {
         expect((result.deckAdded as any).subscribe()).toEqual(undefined)
@@ -68,9 +84,17 @@ describe('subscription-resolver', () => {
         expect((result.gameReady as any).subscribe()).toEqual(undefined)
         expect((result.gameSet as any).subscribe()).toEqual(undefined)
         expect((result.orderSet as any).subscribe()).toEqual(undefined)
+        expect((result.passPlayed as any).subscribe()).toEqual(undefined)
+        expect((result.roundEndedForDeck as any).subscribe()).toEqual(undefined)
+        expect((result.unitPlayedFromDeck as any).subscribe()).toEqual(undefined)
+        expect((result.unitPlayedOnGame as any).subscribe()).toEqual(undefined)
         expect((result.unitRedrawn as any).subscribe()).toEqual(undefined)
 
         expect(withFilterSpy.mock.calls).toEqual([
+          [expect.any(Function), expect.any(Function)],
+          [expect.any(Function), expect.any(Function)],
+          [expect.any(Function), expect.any(Function)],
+          [expect.any(Function), expect.any(Function)],
           [expect.any(Function), expect.any(Function)],
           [expect.any(Function), expect.any(Function)],
           [expect.any(Function), expect.any(Function)],
@@ -88,6 +112,10 @@ describe('subscription-resolver', () => {
         withFilterSpy.mock.calls[4][0]()
         withFilterSpy.mock.calls[5][0]()
         withFilterSpy.mock.calls[6][0]()
+        withFilterSpy.mock.calls[7][0]()
+        withFilterSpy.mock.calls[8][0]()
+        withFilterSpy.mock.calls[9][0]()
+        withFilterSpy.mock.calls[10][0]()
 
         expect(asyncIteratorSpy.mock.calls).toEqual([
           [[PubSubEvents.DeckAdded]],
@@ -96,15 +124,14 @@ describe('subscription-resolver', () => {
           [[PubSubEvents.GameReady]],
           [[PubSubEvents.GameSet]],
           [[PubSubEvents.OrderSet]],
+          [[PubSubEvents.PassPlayed]],
+          [[PubSubEvents.RoundEndedForDeck]],
+          [[PubSubEvents.UnitPlayedFromDeck]],
+          [[PubSubEvents.UnitPlayedOnGame]],
           [[PubSubEvents.UnitRedrawn]],
         ])
-        expect(filterDeckAddedSpy.mock.calls).toEqual([])
-        expect(filterDeckSetSpy.mock.calls).toEqual([])
-        expect(filterGameAddedSpy.mock.calls).toEqual([])
-        expect(filterGameReadySpy.mock.calls).toEqual([])
-        expect(filterGameSetSpy.mock.calls).toEqual([])
-        expect(filterOrderSetSpy.mock.calls).toEqual([])
-        expect(filterUnitRedrawnSpy.mock.calls).toEqual([])
+        expect(filterDeckOwnerSpy.mock.calls).toEqual([])
+        expect(filterPlayerOnGameSpy.mock.calls).toEqual([])
 
         const deckAddedPayload: DeckAddedPayload = { deckAdded: TestUtil.getDeck({}) }
         const deckSetPayload: DeckSetPayload = {
@@ -117,11 +144,31 @@ describe('subscription-resolver', () => {
         const gameReadyPayload: GameReadyPayload = { gameReady: TestUtil.getGame({}) }
         const gameSetPayload: GameSetPayload = { gameSet: TestUtil.getGame({}) }
         const orderSetPayload: OrderSetPayload = { orderSet: TestUtil.getGame({}) }
+        const passPlayedPayload: PassPlayedPayload = { passPlayed: TestUtil.getGame({}) }
+        const roundEndedForDeckPayload: RoundEndedForDeckPayload = {
+          roundEndedForDeck: {
+            deck: TestUtil.getGameDeck({}),
+            game: TestUtil.getGame({}),
+          },
+        }
+        const unitPlayedFromDeckPayload: UnitPlayedFromDeckPayload = {
+          unitPlayedFromDeck: {
+            deck: TestUtil.getGameDeck({}),
+            game: TestUtil.getGame({}),
+            unit: TestUtil.getDeckUnit({}),
+          },
+        }
+        const unitPlayedOnGamePayload: UnitPlayedOnGamePayload = {
+          unitPlayedOnGame: {
+            game: TestUtil.getGame({}),
+            unit: TestUtil.getDeckUnit({}),
+          },
+        }
         const unitRedrawnPayload: UnitRedrawnPayload = {
           unitRedrawn: {
             from: TestUtil.getDeckUnit({}),
+            deck: TestUtil.getGameDeck({}),
             game: TestUtil.getGame({}),
-            ownerId: new ObjectId(),
             to: TestUtil.getDeckUnit({}),
           },
         }
@@ -136,795 +183,267 @@ describe('subscription-resolver', () => {
         withFilterSpy.mock.calls[3][1](gameReadyPayload, undefined, context)
         withFilterSpy.mock.calls[4][1](gameSetPayload, undefined, context)
         withFilterSpy.mock.calls[5][1](orderSetPayload, undefined, context)
-        withFilterSpy.mock.calls[6][1](unitRedrawnPayload, undefined, context)
+        withFilterSpy.mock.calls[6][1](passPlayedPayload, undefined, context)
+        withFilterSpy.mock.calls[7][1](roundEndedForDeckPayload, undefined, context)
+        withFilterSpy.mock.calls[8][1](unitPlayedFromDeckPayload, undefined, context)
+        withFilterSpy.mock.calls[9][1](unitPlayedOnGamePayload, undefined, context)
+        withFilterSpy.mock.calls[10][1](unitRedrawnPayload, undefined, context)
 
-        expect(filterDeckAddedSpy.mock.calls).toEqual([[deckAddedPayload, context]])
-        expect(filterDeckSetSpy.mock.calls).toEqual([[deckSetPayload, context]])
-        expect(filterGameAddedSpy.mock.calls).toEqual([[gameAddedPayload, context]])
-        expect(filterGameReadySpy.mock.calls).toEqual([[gameReadyPayload, context]])
-        expect(filterGameSetSpy.mock.calls).toEqual([[gameSetPayload, context]])
-        expect(filterOrderSetSpy.mock.calls).toEqual([[orderSetPayload, context]])
-        expect(filterUnitRedrawnSpy.mock.calls).toEqual([[unitRedrawnPayload, context]])
+        expect(filterDeckOwnerSpy.mock.calls).toEqual([
+          [
+            {
+              ctx: context,
+              payload: deckAddedPayload,
+              subscriptionName: 'deckAdded',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: deckSetPayload,
+              subscriptionName: 'deckSet',
+              nestedDeckPath: 'deck.from',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: roundEndedForDeckPayload,
+              subscriptionName: 'roundEndedForDeck',
+              nestedDeckPath: 'deck.from',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: unitPlayedFromDeckPayload,
+              subscriptionName: 'unitPlayedFromDeck',
+              nestedDeckPath: 'deck.from',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: unitRedrawnPayload,
+              subscriptionName: 'unitRedrawn',
+              nestedDeckPath: 'deck.from',
+            },
+          ],
+        ])
+        expect(filterPlayerOnGameSpy.mock.calls).toEqual([
+          [
+            {
+              ctx: context,
+              payload: deckSetPayload,
+              subscriptionName: 'deckSet',
+              nestedGamePath: 'game',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: gameAddedPayload,
+              subscriptionName: 'gameAdded',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: gameReadyPayload,
+              subscriptionName: 'gameReady',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: gameSetPayload,
+              subscriptionName: 'gameSet',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: orderSetPayload,
+              subscriptionName: 'orderSet',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: passPlayedPayload,
+              subscriptionName: 'passPlayed',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: roundEndedForDeckPayload,
+              subscriptionName: 'roundEndedForDeck',
+              nestedGamePath: 'game',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: unitPlayedOnGamePayload,
+              subscriptionName: 'unitPlayedOnGame',
+              nestedGamePath: 'game',
+            },
+          ],
+          [
+            {
+              ctx: context,
+              payload: unitRedrawnPayload,
+              subscriptionName: 'unitRedrawn',
+              nestedGamePath: 'game',
+            },
+          ],
+        ])
       } else {
         expect('should not get here').toEqual(undefined)
       }
     })
   })
-  describe('filterDeckAdded', () => {
-    it('returns false if no user on context', () => {
-      const deckId = new ObjectId()
-      testFilterDeckAdded({
-        deckId: deckId.toString(),
-        deckOwner: new ObjectId().toString(),
-        userId: undefined,
-        expected: false,
-        debugCalls: [[`Not publishing deckAdded for deck "${deckId}": No user on context.`]],
-      })
-    })
-    it('returns false if user does not match deck owner', () => {
-      const deckId = new ObjectId()
-      const deckOwner = new ObjectId()
-      const userId = new ObjectId()
-      testFilterDeckAdded({
-        deckId: deckId.toString(),
-        deckOwner: deckOwner.toString(),
-        userId,
-        expected: false,
-        debugCalls: [
-          [`Not publishing deckAdded for deck "${deckId}": User "${userId}" is not the deck owner "${deckOwner}".`],
-        ],
-      })
-    })
-    it('returns true if user matches deck owner', () => {
-      const deckId = new ObjectId()
-      const deckOwner = new ObjectId()
-      testFilterDeckAdded({
-        deckId: deckId.toString(),
-        deckOwner: deckOwner.toString(),
-        userId: deckOwner,
-        expected: true,
-        debugCalls: [[`Publishing deckAdded for deck "${deckId}" to user "${deckOwner}".`]],
-      })
-    })
-    it('logs to trace if enabled', () => {
-      const deckId = new ObjectId()
-      const deckOwner = new ObjectId()
-      testFilterDeckAdded({
-        deckId: deckId.toString(),
-        deckOwner: deckOwner.toString(),
-        userId: deckOwner,
-        expected: true,
-        debugCalls: [[`Publishing deckAdded for deck "${deckId}" to user "${deckOwner}".`]],
-        traceEnabled: true,
-      })
-    })
-  })
-  describe('filterDeckSet', () => {
-    it('returns false if no user on context', () => {
-      const deck = TestUtil.getGameDeck({
-        from: TestUtil.getDeck({}),
-      })
-      const game = TestUtil.getGame({})
-      testFilterDeckSet({
-        deck,
-        game,
-        expected: false,
-        debugCalls: [[`Not publishing deckSet for deck "${deck.from?.id}" on game "${game.id}": No user on context.`]],
-      })
-    })
-    it('returns false if not a player on game', () => {
-      const userId = new ObjectId()
-      const deck = TestUtil.getGameDeck({
-        from: TestUtil.getDeck({}),
-      })
-      const game = TestUtil.getGame({})
-      testFilterDeckSet({
-        userId,
-        deck,
-        game,
-        expected: false,
-        debugCalls: [
-          [
-            `Not publishing deckSet for deck "${deck.from?.id}" on game "${game.id}": User "${userId}" not a player on game.`,
-          ],
-        ],
-      })
-    })
-    it('returns false if not deck owner', () => {
-      const userId = new ObjectId()
-      const owner = new ObjectId()
-      const deck = TestUtil.getGameDeck({
-        from: TestUtil.getDeck({
-          user: TestUtil.getUser({
-            id: owner,
-          }),
-        }),
-      })
-      const game = TestUtil.getGame({
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-          }),
-          TestUtil.getGamePlayer({}),
-        ],
-      })
-      testFilterDeckSet({
-        userId,
-        deck,
-        game,
-        expected: false,
-        debugCalls: [
-          [
-            `Not publishing deckSet for deck "${deck.from?.id}" on game "${game.id}": User "${userId}" is not the deck owner "${owner}".`,
-          ],
-        ],
-      })
-    })
-    it('returns true if player and deck owner', () => {
-      const userId = new ObjectId()
-      const deck = TestUtil.getGameDeck({
-        from: TestUtil.getDeck({
-          user: TestUtil.getUser({
-            id: userId,
-          }),
-        }),
-      })
-      const game = TestUtil.getGame({
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-          }),
-          TestUtil.getGamePlayer({}),
-        ],
-      })
-      testFilterDeckSet({
-        userId,
-        deck,
-        game,
-        expected: true,
-        debugCalls: [[`Publishing deckSet for deck "${deck.from?.id}" on game "${game.id}" to user "${userId}".`]],
-      })
-    })
-    it('logs to trace if enabled', () => {
-      const userId = new ObjectId()
-      const deck = TestUtil.getGameDeck({
-        from: TestUtil.getDeck({
-          user: TestUtil.getUser({
-            id: userId,
-          }),
-        }),
-      })
-      const game = TestUtil.getGame({
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-          }),
-          TestUtil.getGamePlayer({}),
-        ],
-      })
-      testFilterDeckSet({
-        userId,
-        deck,
-        game,
-        expected: true,
-        debugCalls: [[`Publishing deckSet for deck "${deck.from?.id}" on game "${game.id}" to user "${userId}".`]],
-        traceEnabled: true,
-      })
-    })
-  })
-  describe('filterGameAdded', () => {
-    it('returns false if no user on context', () => {
-      const gameId = new ObjectId()
-      testFilterGameAdded({
-        gameId: gameId.toString(),
-        playerIds: [],
-        userId: undefined,
-        expected: false,
-        debugCalls: [[`Not publishing gameAdded for game "${gameId}": No user on context.`]],
-      })
-    })
-    it('returns false if user not a player on game', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      testFilterGameAdded({
-        gameId: gameId.toString(),
-        playerIds: [new ObjectId().toString(), new ObjectId().toString()],
-        userId,
-        expected: false,
-        debugCalls: [[`Not publishing gameAdded for game "${gameId}": User "${userId}" not a player on game.`]],
-      })
-    })
-    it('returns true if user is first player on game', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      testFilterGameAdded({
-        gameId: gameId.toString(),
-        playerIds: [userId.toString(), new ObjectId().toString()],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing gameAdded for game "${gameId}" to user "${userId}".`]],
-      })
-    })
-    it('returns true if user is last player on game', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      testFilterGameAdded({
-        gameId: gameId.toString(),
-        playerIds: [new ObjectId().toString(), userId.toString()],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing gameAdded for game "${gameId}" to user "${userId}".`]],
-      })
-    })
-    it('logs to trace if enabled', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      testFilterGameAdded({
-        gameId: gameId.toString(),
-        playerIds: [userId.toString(), new ObjectId().toString()],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing gameAdded for game "${gameId}" to user "${userId}".`]],
-        traceEnabled: true,
-      })
-    })
-  })
-  describe('filterGameReady', () => {
-    it('returns false if no user on context', () => {
-      const gameId = new ObjectId()
-      testFilterGameReady({
-        gameId: gameId.toString(),
-        players: [],
-        userId: undefined,
-        expected: false,
-        debugCalls: [[`Not publishing gameReady for game "${gameId}": No user on context.`]],
-      })
-    })
-    it('returns false if user not a player on game', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      testFilterGameReady({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({}),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({}),
-          }),
-        ],
-        userId,
-        expected: false,
-        debugCalls: [[`Not publishing gameReady for game "${gameId}": User "${userId}" not a player on game.`]],
-      })
-    })
-    it('returns true if user is first player', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameReady({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-            ready: true,
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-          }),
-        ],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing gameReady for game "${gameId}" to user "${userId}".`]],
-      })
-    })
-    it('returns true if user is last player', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameReady({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-            ready: true,
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-            ready: true,
-          }),
-        ],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing gameReady for game "${gameId}" to user "${userId}".`]],
-      })
-    })
-    it('logs to trace if enabled', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameReady({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-            ready: true,
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-          }),
-        ],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing gameReady for game "${gameId}" to user "${userId}".`]],
-        traceEnabled: true,
-      })
-    })
-  })
-  describe('filterGameSet', () => {
-    it('returns false if no user on context', () => {
-      const gameId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [],
-        userId: undefined,
-        expected: false,
-        debugCalls: [[`Not publishing gameSet for game "${gameId}": No user on context.`]],
-      })
-    })
-    it('returns false if user not a player on game', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [TestUtil.getGamePlayer({}), TestUtil.getGamePlayer({})],
-        userId,
-        expected: false,
-        debugCalls: [[`Not publishing gameSet for game "${gameId}": User "${userId}" not a player on game.`]],
-      })
-    })
-    it('returns false if user is first player and no players set', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-          }),
-        ],
-        userId,
-        expected: false,
-        debugCalls: [
-          [`Not publishing gameSet for game "${gameId}": Player(s) "${JSON.stringify([userId, opponentId])}" not set.`],
-        ],
-      })
-    })
-    it('returns false if user is first player and user not set', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-        ],
-        userId,
-        expected: false,
-        debugCalls: [[`Not publishing gameSet for game "${gameId}": Player(s) "${JSON.stringify([userId])}" not set.`]],
-      })
-    })
-    it('returns false if user is first player and opponent not set', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-          }),
-        ],
-        userId,
-        expected: false,
-        debugCalls: [
-          [`Not publishing gameSet for game "${gameId}": Player(s) "${JSON.stringify([opponentId])}" not set.`],
-        ],
-      })
-    })
-    it('returns false if user is last player and no players set', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-          }),
-        ],
-        userId,
-        expected: false,
-        debugCalls: [
-          [`Not publishing gameSet for game "${gameId}": Player(s) "${JSON.stringify([opponentId, userId])}" not set.`],
-        ],
-      })
-    })
-    it('returns false if user is last player and user not set', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-          }),
-        ],
-        userId,
-        expected: false,
-        debugCalls: [[`Not publishing gameSet for game "${gameId}": Player(s) "${JSON.stringify([userId])}" not set.`]],
-      })
-    })
-    it('returns false if user is last player and opponent not set', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-        ],
-        userId,
-        expected: false,
-        debugCalls: [
-          [`Not publishing gameSet for game "${gameId}": Player(s) "${JSON.stringify([opponentId])}" not set.`],
-        ],
-      })
-    })
-    it('returns true if user is first and all players set', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-        ],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing gameSet for game "${gameId}" to user "${userId}".`]],
-      })
-    })
-    it('returns true if user is last and all players set', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-        ],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing gameSet for game "${gameId}" to user "${userId}".`]],
-      })
-    })
-    it('logs to trace if enabled', () => {
-      const gameId = new ObjectId()
-      const userId = new ObjectId()
-      const opponentId = new ObjectId()
-      testFilterGameSet({
-        gameId: gameId.toString(),
-        players: [
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: opponentId,
-            }),
-            faction: TestUtil.getFaction({}),
-            leader: TestUtil.getLeader({}),
-          }),
-        ],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing gameSet for game "${gameId}" to user "${userId}".`]],
-        traceEnabled: true,
-      })
-    })
-  })
-  describe('filterOrderSet', () => {
-    const gameId = new ObjectId()
+  describe('filterDeckOwner', () => {
+    const subscriptionName = 'test'
     const userId = new ObjectId()
+    const deck = TestUtil.getDeck({
+      user: TestUtil.getUser({
+        id: userId,
+      }),
+    })
     it('returns false if no user on context', () => {
-      testFilterOrderSet({
-        gameId: gameId.toString(),
-        playerIds: [],
-        userId: undefined,
+      const deck = TestUtil.getDeck({})
+      testFilterDeckOwner({
+        subscriptionName,
+        deck,
         expected: false,
-        debugCalls: [[`Not publishing orderSet for game "${gameId}": No user on context.`]],
-      })
-    })
-    it('returns false if user not a player on game', () => {
-      testFilterOrderSet({
-        gameId: gameId.toString(),
-        playerIds: [new ObjectId().toString(), new ObjectId().toString()],
-        userId,
-        expected: false,
-        debugCalls: [[`Not publishing orderSet for game "${gameId}": User "${userId}" not a player on game.`]],
-      })
-    })
-    it('returns true if user is first player on game', () => {
-      testFilterOrderSet({
-        gameId: gameId.toString(),
-        playerIds: [userId.toString(), new ObjectId().toString()],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing orderSet for game "${gameId}" to user "${userId}".`]],
-      })
-    })
-    it('returns true if user is last player on game', () => {
-      testFilterOrderSet({
-        gameId: gameId.toString(),
-        playerIds: [new ObjectId().toString(), userId.toString()],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing orderSet for game "${gameId}" to user "${userId}".`]],
-      })
-    })
-    it('logs to trace if enabled', () => {
-      testFilterOrderSet({
-        gameId: gameId.toString(),
-        playerIds: [userId.toString(), new ObjectId().toString()],
-        userId,
-        expected: true,
-        debugCalls: [[`Publishing orderSet for game "${gameId}" to user "${userId}".`]],
-        traceEnabled: true,
-      })
-    })
-  })
-  describe('filterUnitRedrawn', () => {
-    const gameId = new ObjectId().toString()
-    const ownerId = new ObjectId().toString()
-    const userId = new ObjectId()
-    const fromId = new ObjectId().toString()
-    const toId = new ObjectId().toString()
-    it('returns false if no user on context', () => {
-      testFilterUnitRedrawn({
-        gameId: gameId.toString(),
-        ownerId,
-        fromId,
-        toId,
-        userId: undefined,
-        expected: false,
-        debugCalls: [[`Not publishing unitRedrawn for unit "${fromId}" on game "${gameId}": No user on context.`]],
-      })
-    })
-    it('returns false if user not a player on game', () => {
-      testFilterUnitRedrawn({
-        gameId: gameId.toString(),
-        playerIds: [new ObjectId().toString(), new ObjectId().toString()],
-        ownerId,
-        fromId,
-        toId,
-        userId,
-        expected: false,
-        debugCalls: [
-          [
-            `Not publishing unitRedrawn for unit "${fromId}" on game "${gameId}": User "${userId}" not a player on game.`,
-          ],
-        ],
+        debugCalls: [[`Not publishing ${subscriptionName} for deck "${deck.id}": No user on context.`]],
       })
     })
     it('returns false if user not deck owner', () => {
-      testFilterUnitRedrawn({
-        gameId: gameId.toString(),
-        playerIds: [userId.toString(), ownerId],
-        ownerId,
-        fromId,
-        toId,
+      const unownedDeck = TestUtil.getDeck({})
+      testFilterDeckOwner({
+        subscriptionName,
         userId,
+        deck: unownedDeck,
         expected: false,
         debugCalls: [
           [
-            `Not publishing unitRedrawn for unit "${fromId}" on game "${gameId}": User "${userId}" is not deck owner "${ownerId}".`,
+            `Not publishing ${subscriptionName} for deck "${unownedDeck.id}": User "${userId}" is not the deck owner "${unownedDeck.user.id}".`,
           ],
         ],
       })
     })
     it('returns true if user is deck owner', () => {
-      testFilterUnitRedrawn({
-        gameId: gameId.toString(),
-        playerIds: [userId.toString(), ownerId],
-        ownerId: userId.toString(),
-        fromId,
-        toId,
+      testFilterDeckOwner({
+        subscriptionName,
         userId,
+        deck,
         expected: true,
-        debugCalls: [[`Publishing unitRedrawn for unit "${fromId}" on game "${gameId}" to user "${userId}".`]],
+        debugCalls: [[`Publishing ${subscriptionName} for deck "${deck.id}" to user "${userId}".`]],
+      })
+    })
+    it('uses correct nestedProperty if nestedDeckPath specified', () => {
+      testFilterDeckOwner({
+        subscriptionName,
+        userId,
+        deck,
+        nestedDeckPath: 'nested',
+        expected: true,
+        debugCalls: [[`Publishing ${subscriptionName} for deck "${deck.id}" to user "${userId}".`]],
       })
     })
     it('logs to trace if enabled', () => {
-      testFilterUnitRedrawn({
-        gameId: gameId.toString(),
-        playerIds: [userId.toString(), ownerId],
-        ownerId: userId.toString(),
-        fromId,
-        toId,
+      testFilterDeckOwner({
+        subscriptionName,
         userId,
+        deck,
         expected: true,
-        debugCalls: [[`Publishing unitRedrawn for unit "${fromId}" on game "${gameId}" to user "${userId}".`]],
+        debugCalls: [[`Publishing ${subscriptionName} for deck "${deck.id}" to user "${userId}".`]],
+        traceEnabled: true,
+      })
+    })
+  })
+  describe('filterPlayerOnGame', () => {
+    const subscriptionName = 'test'
+    const userId = new ObjectId()
+    const game = TestUtil.getGame({
+      players: [
+        TestUtil.getGamePlayer({
+          user: TestUtil.getUser({
+            id: userId,
+          }),
+        }),
+      ],
+    })
+    it('returns false if no user on context', () => {
+      testFilterPlayerOnGame({
+        subscriptionName,
+        game,
+        expected: false,
+        debugCalls: [[`Not publishing ${subscriptionName} for game "${game.id}": No user on context.`]],
+      })
+    })
+    it('returns false if user not game player', () => {
+      const nonPlayerGame = TestUtil.getGame({})
+      testFilterPlayerOnGame({
+        subscriptionName,
+        userId,
+        game: nonPlayerGame,
+        expected: false,
+        debugCalls: [
+          [`Not publishing ${subscriptionName} for game "${nonPlayerGame.id}": User "${userId}" not a player on game.`],
+        ],
+      })
+    })
+    it('returns true if user game player', () => {
+      testFilterPlayerOnGame({
+        subscriptionName,
+        userId,
+        game,
+        expected: true,
+        debugCalls: [[`Publishing ${subscriptionName} for game "${game.id}" to user "${userId}".`]],
+      })
+    })
+    it('uses correct nestedProperty if nestedDeckPath specified', () => {
+      testFilterPlayerOnGame({
+        subscriptionName,
+        userId,
+        game,
+        nestedGamePath: 'nested',
+        expected: true,
+        debugCalls: [[`Publishing ${subscriptionName} for game "${game.id}" to user "${userId}".`]],
+      })
+    })
+    it('returns true if user game player', () => {
+      testFilterPlayerOnGame({
+        subscriptionName,
+        userId,
+        game,
+        expected: true,
+        debugCalls: [[`Publishing ${subscriptionName} for game "${game.id}" to user "${userId}".`]],
         traceEnabled: true,
       })
     })
   })
 })
 
-function testFilterDeckAdded({
-  deckId,
-  deckOwner,
+function testFilterDeckOwner({
   userId,
-  expected,
-  debugCalls = [],
-  traceEnabled,
-}: {
-  deckId: string
-  deckOwner: string
-  userId?: ObjectId
-  expected: boolean
-  debugCalls?: string[][]
-  traceEnabled?: boolean
-}) {
-  const payload: DeckAddedPayload = {
-    deckAdded: TestUtil.getDeck({
-      id: deckId,
-      user: TestUtil.getUser({
-        id: deckOwner,
-      }),
-    }),
-  }
-  const ctx: Context = {
-    session: {},
-  }
-  if (userId && ctx.session) {
-    ctx.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
-  }
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  SubscriptionResolver['logger'] = {
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
-
-  expect(SubscriptionResolver['filterDeckAdded'](payload, ctx)).toEqual(expected)
-
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [[`deckAdded payload: "${JSON.stringify(payload)}"`], [`deckAdded ctx: "${JSON.stringify(ctx)}"`]]
-      : []
-  )
-}
-
-function testFilterDeckSet({
-  userId,
-  game,
+  payload,
+  nestedDeckPath,
+  subscriptionName,
   deck,
   expected,
   debugCalls = [],
   traceEnabled,
 }: {
   userId?: ObjectId
-  game: Game
-  deck: GameDeck
+  payload?: any
+  nestedDeckPath?: string
+  subscriptionName: string
+  deck: Deck
   expected: boolean
   debugCalls?: string[][]
   traceEnabled?: boolean
@@ -937,12 +456,9 @@ function testFilterDeckSet({
       id: userId,
     })
   }
-  const payload: DeckSetPayload = {
-    deckSet: {
-      deck,
-      game,
-    },
-  }
+
+  const getNestedPropertySpy = jest.spyOn(utils, 'getNestedProperty').mockReturnValue(deck)
+
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   SubscriptionResolver['logger'] = {
@@ -951,279 +467,100 @@ function testFilterDeckSet({
     trace: traceSpy,
   } as any
 
-  expect(SubscriptionResolver['filterDeckSet'](payload, ctx)).toEqual(expected)
-
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`deckSet payload: "${JSON.stringify(payload)}"`], [`deckSet ctx: "${JSON.stringify(ctx)}"`]] : []
-  )
-}
-
-function testFilterGameAdded({
-  gameId,
-  playerIds,
-  userId,
-  expected,
-  debugCalls = [],
-  traceEnabled,
-}: {
-  gameId: string
-  playerIds: string[]
-  userId?: ObjectId
-  expected: boolean
-  debugCalls?: string[][]
-  traceEnabled?: boolean
-}) {
-  const payload: GameAddedPayload = {
-    gameAdded: TestUtil.getGame({
-      id: gameId,
-      players: playerIds.map((playerId) =>
-        TestUtil.getGamePlayer({
-          user: TestUtil.getUser({
-            id: playerId,
-          }),
-        })
-      ),
-    }),
-  }
-  const ctx: Context = {
-    session: {},
-  }
-  if (userId && ctx.session) {
-    ctx.session.user = TestUtil.getDbUser({
-      id: userId,
+  expect(
+    SubscriptionResolver['filterDeckOwner']({
+      ctx,
+      nestedDeckPath,
+      payload,
+      subscriptionName,
     })
-  }
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  SubscriptionResolver['logger'] = {
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
+  ).toEqual(expected)
 
-  expect(SubscriptionResolver['filterGameAdded'](payload, ctx)).toEqual(expected)
-
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [[`gameAdded payload: "${JSON.stringify(payload)}"`], [`gameAdded ctx: "${JSON.stringify(ctx)}"`]]
-      : []
-  )
-}
-
-function testFilterGameReady({
-  gameId,
-  players,
-  userId,
-  expected,
-  debugCalls = [],
-  traceEnabled,
-}: {
-  gameId: string
-  players: GamePlayer[]
-  userId?: ObjectId
-  expected: boolean
-  debugCalls?: string[][]
-  traceEnabled?: boolean
-}) {
-  const payload: GameReadyPayload = {
-    gameReady: TestUtil.getGame({
-      id: gameId,
-      players,
-    }),
-  }
-  const ctx: Context = {
-    session: {},
-  }
-  if (userId && ctx.session) {
-    ctx.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
-  }
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  SubscriptionResolver['logger'] = {
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
-
-  expect(SubscriptionResolver['filterGameReady'](payload, ctx)).toEqual(expected)
-
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [[`gameReady payload: "${JSON.stringify(payload)}"`], [`gameReady ctx: "${JSON.stringify(ctx)}"`]]
-      : []
-  )
-}
-
-function testFilterGameSet({
-  gameId,
-  players,
-  userId,
-  expected,
-  debugCalls = [],
-  traceEnabled,
-}: {
-  gameId: string
-  players: GamePlayer[]
-  userId?: ObjectId
-  expected: boolean
-  debugCalls?: string[][]
-  traceEnabled?: boolean
-}) {
-  const payload: GameSetPayload = {
-    gameSet: TestUtil.getGame({
-      id: gameId,
-      players,
-    }),
-  }
-  const ctx: Context = {
-    session: {},
-  }
-  if (userId && ctx.session) {
-    ctx.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
-  }
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  SubscriptionResolver['logger'] = {
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
-
-  expect(SubscriptionResolver['filterGameSet'](payload, ctx)).toEqual(expected)
-
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`gameSet payload: "${JSON.stringify(payload)}"`], [`gameSet ctx: "${JSON.stringify(ctx)}"`]] : []
-  )
-}
-
-function testFilterOrderSet({
-  gameId,
-  playerIds,
-  userId,
-  expected,
-  debugCalls = [],
-  traceEnabled,
-}: {
-  gameId: string
-  playerIds: string[]
-  userId?: ObjectId
-  expected: boolean
-  debugCalls?: string[][]
-  traceEnabled?: boolean
-}) {
-  const payload: OrderSetPayload = {
-    orderSet: TestUtil.getGame({
-      id: gameId,
-      players: playerIds.map((playerId) =>
-        TestUtil.getGamePlayer({
-          user: TestUtil.getUser({
-            id: playerId,
-          }),
-        })
-      ),
-    }),
-  }
-  const ctx: Context = {
-    session: {},
-  }
-  if (userId && ctx.session) {
-    ctx.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
-  }
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  SubscriptionResolver['logger'] = {
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
-
-  expect(SubscriptionResolver['filterOrderSet'](payload, ctx)).toEqual(expected)
-
-  expect(debugSpy.mock.calls).toEqual([[`orderSet with userId: "${userId}", gameId: "${gameId}"`], ...debugCalls])
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`orderSet payload: "${JSON.stringify(payload)}"`], [`orderSet ctx: "${JSON.stringify(ctx)}"`]] : []
-  )
-}
-
-function testFilterUnitRedrawn({
-  gameId,
-  ownerId,
-  fromId,
-  toId,
-  playerIds = [],
-  userId,
-  expected,
-  debugCalls = [],
-  traceEnabled,
-}: {
-  gameId: string
-  ownerId: string
-  fromId: string
-  toId: string
-  playerIds?: string[]
-  userId?: ObjectId
-  expected: boolean
-  debugCalls?: string[][]
-  traceEnabled?: boolean
-}) {
-  const payload: UnitRedrawnPayload = {
-    unitRedrawn: {
-      from: TestUtil.getDeckUnit({
-        id: fromId,
-      }),
-      game: TestUtil.getGame({
-        id: gameId,
-        players: playerIds.map((playerId) =>
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: playerId,
-            }),
-          })
-        ),
-      }),
-      ownerId,
-      to: TestUtil.getDeckUnit({
-        id: toId,
-      }),
-    },
-  }
-  const ctx: Context = {
-    session: {},
-  }
-  if (userId && ctx.session) {
-    ctx.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
-  }
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  SubscriptionResolver['logger'] = {
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
-
-  expect(SubscriptionResolver['filterUnitRedrawn'](payload, ctx)).toEqual(expected)
-
-  expect(debugSpy.mock.calls).toEqual([
+  expect(getNestedPropertySpy.mock.calls).toEqual([
     [
-      `unitRedrawn with userId: "${userId}", gameId: "${gameId}", fromId: "${fromId}", toId: "${toId}", ownerId: "${ownerId}"`,
+      {
+        obj: payload,
+        nestedProperty: `${subscriptionName}${nestedDeckPath ? `.${nestedDeckPath}` : ''}`,
+      },
     ],
-    ...debugCalls,
   ])
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
-      ? [[`unitRedrawn payload: "${JSON.stringify(payload)}"`], [`unitRedrawn ctx: "${JSON.stringify(ctx)}"`]]
+      ? [
+          [`${subscriptionName} filterDeckOwner payload: "${JSON.stringify(payload)}"`],
+          [`${subscriptionName} filterDeckOwner ctx: "${JSON.stringify(ctx)}"`],
+          [`${subscriptionName} filterDeckOwner subscriptionName: "${subscriptionName}"`],
+          [`${subscriptionName} filterDeckOwner nestedDeckPath: "${nestedDeckPath}"`],
+        ]
+      : []
+  )
+}
+
+function testFilterPlayerOnGame({
+  userId,
+  payload,
+  nestedGamePath,
+  subscriptionName,
+  game,
+  expected,
+  debugCalls = [],
+  traceEnabled,
+}: {
+  userId?: ObjectId
+  payload?: any
+  nestedGamePath?: string
+  subscriptionName: string
+  game: Game
+  expected: boolean
+  debugCalls?: string[][]
+  traceEnabled?: boolean
+}) {
+  const ctx: Context = {
+    session: {},
+  }
+  if (userId && ctx.session) {
+    ctx.session.user = TestUtil.getDbUser({
+      id: userId,
+    })
+  }
+
+  const getNestedPropertySpy = jest.spyOn(utils, 'getNestedProperty').mockReturnValue(game)
+
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  SubscriptionResolver['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+
+  expect(
+    SubscriptionResolver['filterPlayerOnGame']({
+      ctx,
+      nestedGamePath,
+      payload,
+      subscriptionName,
+    })
+  ).toEqual(expected)
+
+  expect(getNestedPropertySpy.mock.calls).toEqual([
+    [
+      {
+        obj: payload,
+        nestedProperty: `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`,
+      },
+    ],
+  ])
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [`${subscriptionName} filterPlayerOnGame payload: "${JSON.stringify(payload)}"`],
+          [`${subscriptionName} filterPlayerOnGame ctx: "${JSON.stringify(ctx)}"`],
+          [`${subscriptionName} filterPlayerOnGame subscriptionName: "${subscriptionName}"`],
+          [`${subscriptionName} filterPlayerOnGame nestedGamePath: "${nestedGamePath}"`],
+        ]
       : []
   )
 }

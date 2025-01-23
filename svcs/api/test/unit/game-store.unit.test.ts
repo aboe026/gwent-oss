@@ -176,7 +176,7 @@ describe('game-store', () => {
         userId: new ObjectId().toString(),
       })
     })
-    it('calls out to update and returns result if id strings', async () => {
+    it('calls out to update and returns result if id ObjectIds', async () => {
       await testSetReady({
         gameId: new ObjectId(),
         userId: new ObjectId(),
@@ -185,6 +185,27 @@ describe('game-store', () => {
     it('logs out info if trace enabled', async () => {
       await testSetReady({
         gameId: new ObjectId(),
+        userId: new ObjectId(),
+        traceEnabled: true,
+      })
+    })
+  })
+  describe('makeMove', () => {
+    it('calls out to update and returns result if id strings', async () => {
+      await testMakeMove({
+        nextTurn: new ObjectId().toString(),
+        userId: new ObjectId().toString(),
+      })
+    })
+    it('calls out to update and returns result if id ObjectIds', async () => {
+      await testMakeMove({
+        nextTurn: new ObjectId(),
+        userId: new ObjectId(),
+      })
+    })
+    it('logs out info if trace enabled', async () => {
+      await testMakeMove({
+        nextTurn: new ObjectId(),
         userId: new ObjectId(),
         traceEnabled: true,
       })
@@ -631,6 +652,8 @@ async function testSetReady({
   userId: string | ObjectId
   traceEnabled?: boolean
 }) {
+  const previousUpdate = new Date()
+  const currentRound = 1
   const deck = TestUtil.getDbDeck({
     user: userId,
   })
@@ -659,13 +682,13 @@ async function testSetReady({
   const updateSpy = jest.spyOn(GameStore as any, 'update').mockResolvedValue(updatedGame)
   const filter: Filter<Document> = {
     _id: new ObjectId(gameId),
-    'players.user': new ObjectId(userId),
-    'players.ready': false,
+    updated: previousUpdate,
   }
   const update: UpdateFilter<Document> = {
     $set: {
       updated,
-      'players.$.ready': true,
+      players: updatedGame.players,
+      round: currentRound,
     },
   }
 
@@ -673,6 +696,9 @@ async function testSetReady({
     GameStore.setReady({
       gameId,
       userId,
+      previousUpdate,
+      players: updatedGame.players,
+      currentRound,
     })
   ).resolves.toEqual(updatedGame)
 
@@ -692,6 +718,77 @@ async function testSetReady({
       ? [
           [`ready for game "${gameId}" by user "${userId}" filter: "${JSON.stringify(filter)}"`],
           [`ready for game "${gameId}" by user "${userId}" update: "${JSON.stringify(update)}"`],
+        ]
+      : []
+  )
+}
+
+async function testMakeMove({
+  nextTurn,
+  userId,
+  traceEnabled,
+}: {
+  nextTurn: string | ObjectId
+  userId: string | ObjectId
+  traceEnabled?: boolean
+}) {
+  const game = TestUtil.getDbGame({
+    creator: userId,
+  })
+  const updated = new Date()
+  const udatedGame: GameDbObject = {
+    ...game,
+    updated,
+    turn: new ObjectId(nextTurn),
+  }
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  GameStore['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => updated)
+  const updateSpy = jest.spyOn(GameStore as any, 'update').mockResolvedValue(udatedGame)
+  const filter: Filter<Document> = {
+    _id: new ObjectId(game._id),
+    turn: new ObjectId(userId),
+    updated: game.updated,
+  }
+  const update: UpdateFilter<Document> = {
+    $set: {
+      ...game,
+      updated,
+      turn: new ObjectId(nextTurn),
+    },
+  }
+
+  await expect(
+    GameStore.makeMove({
+      game: game,
+      userId,
+      nextTurn,
+    })
+  ).resolves.toEqual(udatedGame)
+
+  expect(updateSpy.mock.calls).toEqual([
+    [
+      {
+        filter,
+        update,
+        verifyExistence: false,
+      },
+    ],
+  ])
+  expect(dateSpy.mock.calls).toEqual([[]])
+  expect(debugSpy.mock.calls).toEqual([
+    [`Move made on game "${game._id}" by user "${userId}", setting next move to "${nextTurn}"`],
+  ])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [`move on game "${game._id}" by user "${userId}" filter: "${JSON.stringify(filter)}"`],
+          [`move on game "${game._id}" by user "${userId}" update: "${JSON.stringify(update)}"`],
         ]
       : []
   )
