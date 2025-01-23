@@ -27,6 +27,7 @@ export default class GamePage {
     InfoOpponentContainer: existingGameContainer.find(`#${HTML_IDS.GameInfoOpponentContainer}`),
     Hand: existingGameContainer.find(`#${HTML_IDS.GameHand}`),
     HandIcon: existingGameContainer.find(`.${HTML_CLASSES.GameHandIcon}`),
+    HandNoUnitsLeft: existingGameContainer.find(`#${HTML_IDS.gameHandNoUnitsLeft}`),
     HistoryContainer: historyContainer,
     HistoryIcon: historyContainer.find(`.${HTML_CLASSES.GameHistoryIcon}`),
     HistoryLoading: historyContainer.find(`.${HTML_CLASSES.GameHistoryLoadingContainer}`),
@@ -228,7 +229,7 @@ export default class GamePage {
     })
   }
 
-  static async getCard(name: string) {
+  static async getHandCard(name: string) {
     return GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', name)
   }
 
@@ -261,6 +262,10 @@ export default class GamePage {
         return expectedName
       })
       await t.expect(actualNames).eql(expectedNames)
+      if (names.length === 0) {
+        await t.expect(GamePage.elements.HandNoUnitsLeft.exists).ok()
+        await t.expect(GamePage.elements.HandNoUnitsLeft.visible).ok()
+      }
     } else {
       await t.expect(GamePage.elements.HandIcon.exists).ok()
       await t.expect(GamePage.elements.HandIcon.visible).ok()
@@ -812,8 +817,18 @@ export default class GamePage {
     await t.click(GamePage.elements.RedrawCard)
   }
 
-  static async openFullCard(name: string) {
-    const card = await GamePage.getCard(name)
+  static async fullscreenHandCard(name: string) {
+    const card = await GamePage.getHandCard(name)
+    await t.hover(card.find(`.${HTML_CLASSES.UnitGameCardStrength}`))
+    await t.click(card.find(`.${HTML_CLASSES.UnitGameCardFullScreen}`))
+  }
+
+  static async fullscreenCombatCard({ unitName, row, self }: { unitName: string; row: Combat; self: boolean }) {
+    const card = await GamePage.getBattlefieldCard({
+      unitName,
+      row,
+      self,
+    })
     await t.hover(card.find(`.${HTML_CLASSES.UnitGameCardStrength}`))
     await t.click(card.find(`.${HTML_CLASSES.UnitGameCardFullScreen}`))
   }
@@ -896,7 +911,9 @@ export default class GamePage {
 
   static async selectHandUnit({ unitName }: { unitName: string }) {
     await t.click(
-      GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
+      GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+        .withAttribute('title', unitName)
+        .parent(`.${HTML_CLASSES.GameHandCardWrapper}`)
     )
   }
 
@@ -961,7 +978,7 @@ export default class GamePage {
     await t.click(historyUnit)
   }
 
-  static async selectBattlefieldCard({ unitName, row, self }: { unitName: string; row: Combat; self: boolean }) {
+  static async getBattlefieldCard({ unitName, row, self }: { unitName: string; row: Combat; self: boolean }) {
     let rowSelector: Selector | undefined = undefined
     if (self) {
       if (row === Combat.Close) {
@@ -982,18 +999,27 @@ export default class GamePage {
     }
     const rowCards = rowSelector.find(`.${HTML_CLASSES.GameCombatRowCards}`).child()
     const rowCardsCount = await rowCards.count
-    let cardFound = false
+    let matchingCard: Selector | undefined
     for (let i = 0; i < rowCardsCount; i++) {
       const rowCard = rowCards.nth(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
       const cardName = (await rowCard.getAttribute('title')) || ''
       if (cardName === unitName) {
-        cardFound = true
-        await t.click(rowCard)
+        matchingCard = rowCard
       }
     }
-    if (!cardFound) {
+    if (!matchingCard) {
       throw Error(`Could not find unit "${unitName}" in row "${row}" for "${self ? 'self' : 'opponent'}" to select`)
     }
+    return matchingCard
+  }
+
+  static async selectBattlefieldCard({ unitName, row, self }: { unitName: string; row: Combat; self: boolean }) {
+    const card = await this.getBattlefieldCard({
+      unitName,
+      row,
+      self,
+    })
+    await t.click(card)
   }
 }
 

@@ -132,10 +132,12 @@ fixture('Game History')
       turn: PlayerTurn.Current,
       ready: true,
       passed: false,
+      score: 0,
     })
     t.ctx.opponentPlayer = E2eHelper.getGamePlayer({
       player: t.ctx.opponent,
       ready: true,
+      score: 0,
     })
     await selfClient.setOrder({
       gameId: t.ctx.game.id,
@@ -179,9 +181,8 @@ test('Selecting self unit when not turn in history highlights it and card on bat
     deckUnit: unitToMove,
     moves: t.ctx.round1Moves,
     row: combat,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -245,9 +246,8 @@ test('Selecting self unit when not turn on combat row highlights it and move in 
     deckUnit: unitToMove,
     moves: t.ctx.round1Moves,
     row: combat,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -309,9 +309,8 @@ test('Selecting self unit when turn in history highlights it and card on battlef
     deckUnit: unitToMoveSelf,
     moves: t.ctx.round1Moves,
     row: combatSelf,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -337,9 +336,8 @@ test('Selecting self unit when turn in history highlights it and card on battlef
     deckUnit: unitToMoveOpponent,
     moves: t.ctx.round1Moves,
     row: combatOpponent,
+    switchTurnsWith: t.ctx.selfPlayer,
   })
-  t.ctx.selfPlayer.turn = PlayerTurn.Current
-  t.ctx.opponentPlayer.turn = undefined
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -403,9 +401,8 @@ test('Selecting self unit when turn on combat row highlights it and move in hist
     deckUnit: unitToMoveSelf,
     moves: t.ctx.round1Moves,
     row: combatSelf,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -431,9 +428,8 @@ test('Selecting self unit when turn on combat row highlights it and move in hist
     deckUnit: unitToMoveOpponent,
     moves: t.ctx.round1Moves,
     row: combatOpponent,
+    switchTurnsWith: t.ctx.selfPlayer,
   })
-  t.ctx.selfPlayer.turn = PlayerTurn.Current
-  t.ctx.opponentPlayer.turn = undefined
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -495,9 +491,8 @@ test('Selecting opponent unit when turn in history highlights it and card on bat
     deckUnit: unitToMoveSelf,
     moves: t.ctx.round1Moves,
     row: combatSelf,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -523,9 +518,8 @@ test('Selecting opponent unit when turn in history highlights it and card on bat
     deckUnit: unitToMoveOpponent,
     moves: t.ctx.round1Moves,
     row: combatOpponent,
+    switchTurnsWith: t.ctx.selfPlayer,
   })
-  t.ctx.selfPlayer.turn = PlayerTurn.Current
-  t.ctx.opponentPlayer.turn = undefined
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -589,9 +583,8 @@ test('Selecting opponent unit when turn on combat row highlights it and move in 
     deckUnit: unitToMoveSelf,
     moves: t.ctx.round1Moves,
     row: combatSelf,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -617,9 +610,8 @@ test('Selecting opponent unit when turn on combat row highlights it and move in 
     deckUnit: unitToMoveOpponent,
     moves: t.ctx.round1Moves,
     row: combatOpponent,
+    switchTurnsWith: t.ctx.selfPlayer,
   })
-  t.ctx.selfPlayer.turn = PlayerTurn.Current
-  t.ctx.opponentPlayer.turn = undefined
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -681,9 +673,8 @@ test('Selecting opponent unit when not turn in history highlights it and card on
     deckUnit: unitToMoveSelf1,
     moves: t.ctx.round1Moves,
     row: combatSelf1,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -709,9 +700,8 @@ test('Selecting opponent unit when not turn in history highlights it and card on
     deckUnit: unitToMoveOpponent,
     moves: t.ctx.round1Moves,
     row: combatOpponent,
+    switchTurnsWith: t.ctx.selfPlayer,
   })
-  t.ctx.selfPlayer.turn = PlayerTurn.Current
-  t.ctx.opponentPlayer.turn = undefined
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -731,9 +721,8 @@ test('Selecting opponent unit when not turn in history highlights it and card on
     deckUnit: unitToMoveSelf2,
     moves: t.ctx.round1Moves,
     row: combatSelf2,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -797,9 +786,8 @@ test('Selecting opponent unit when not turn on combat row highlights it and move
     deckUnit: unitToMoveSelf1,
     moves: t.ctx.round1Moves,
     row: combatSelf1,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -825,9 +813,8 @@ test('Selecting opponent unit when not turn on combat row highlights it and move
     deckUnit: unitToMoveOpponent,
     moves: t.ctx.round1Moves,
     row: combatOpponent,
+    switchTurnsWith: t.ctx.selfPlayer,
   })
-  t.ctx.selfPlayer.turn = PlayerTurn.Current
-  t.ctx.opponentPlayer.turn = undefined
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -847,9 +834,8 @@ test('Selecting opponent unit when not turn on combat row highlights it and move
     deckUnit: unitToMoveSelf2,
     moves: t.ctx.round1Moves,
     row: combatSelf2,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -911,9 +897,8 @@ test('Select card from history and deselect from battlefield', async (t) => {
     deckUnit: unitToMove,
     moves: t.ctx.round1Moves,
     row: combat,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -976,9 +961,8 @@ test('Select card from battlefield and deselect from history', async (t) => {
     deckUnit: unitToMove,
     moves: t.ctx.round1Moves,
     row: combat,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -1042,9 +1026,8 @@ test('Select card from history deselects card selected in hand', async (t) => {
     deckUnit: unitToMove,
     moves: t.ctx.round1Moves,
     row: combat,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -1111,9 +1094,8 @@ test('Select card from battlefield deselects card selected in hand', async (t) =
     deckUnit: unitToMove,
     moves: t.ctx.round1Moves,
     row: combat,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -1160,6 +1142,7 @@ test('Select card from battlefield deselects card selected in hand', async (t) =
 })
 
 test('Selecting history unit that is no longer on battlefield is dotted', async (t) => {
+  let round = 1
   const sortedHandSelf = sortObjectArray({
     array: t.ctx.self.gameDeck.hand,
     sortProperties: ['unit.strength', 'unit.id'],
@@ -1178,9 +1161,8 @@ test('Selecting history unit that is no longer on battlefield is dotted', async 
     deckUnit: unitToMoveSelf,
     moves: t.ctx.round1Moves,
     row: combatSelf,
+    switchTurnsWith: t.ctx.opponentPlayer,
   })
-  t.ctx.selfPlayer.turn = undefined
-  t.ctx.opponentPlayer.turn = PlayerTurn.Current
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -1191,13 +1173,12 @@ test('Selecting history unit that is no longer on battlefield is dotted', async 
   await t.ctx.opponent.client.playPass({
     gameId: t.ctx.game.id,
   })
-  t.ctx.round1Moves.push({
-    userName: t.ctx.opponent.user.name,
-    round: 1,
+  E2eHelper.playPass({
+    player: t.ctx.opponentPlayer,
+    round,
+    moves: t.ctx.round1Moves,
+    switchTurnsWith: t.ctx.selfPlayer,
   })
-  t.ctx.selfPlayer.turn = PlayerTurn.Current
-  t.ctx.opponentPlayer.turn = undefined
-  t.ctx.opponentPlayer.passed = true
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
@@ -1206,21 +1187,22 @@ test('Selecting history unit that is no longer on battlefield is dotted', async 
   })
 
   await GamePage.pass({})
+  E2eHelper.playPass({
+    player: t.ctx.selfPlayer,
+    round,
+    moves: t.ctx.round1Moves,
+  })
   E2eHelper.endRound({
     creator: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
+    losers: [t.ctx.opponentPlayer],
   })
-  t.ctx.opponentPlayer.passed = undefined
-  t.ctx.opponentPlayer.losses = 1
-  t.ctx.round1Moves.push({
-    userName: t.ctx.self.user.name,
-    round: 1,
-  })
+  round = 2
   await GamePage.verify({
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
     hand: t.ctx.self.gameDeck.hand,
-    round: 2,
+    round,
     moves: [t.ctx.round1Moves, t.ctx.round2Moves],
   })
 
@@ -1234,7 +1216,7 @@ test('Selecting history unit that is no longer on battlefield is dotted', async 
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
     hand: t.ctx.self.gameDeck.hand,
-    round: 2,
+    round,
     moves: [t.ctx.round1Moves, t.ctx.round2Moves],
     highlightedHistory: {
       playerName: t.ctx.self.user.name,
@@ -1255,7 +1237,7 @@ test('Selecting history unit that is no longer on battlefield is dotted', async 
     opponent: t.ctx.opponentPlayer,
     self: t.ctx.selfPlayer,
     hand: t.ctx.self.gameDeck.hand,
-    round: 2,
+    round,
     moves: [t.ctx.round1Moves, t.ctx.round2Moves],
   })
 })

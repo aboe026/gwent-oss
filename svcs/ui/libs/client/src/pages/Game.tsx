@@ -1221,13 +1221,13 @@ function renderScore({
               </div>
             </div>
             {playerRound &&
+              game.status === GameStatus.Playing &&
               (playerRound.passed ? (
                 <span className={HTML_CLASSES.GamePlayerPassed} title={passTitle}>
                   Passed
                 </span>
               ) : (
-                isSelf &&
-                game.status === GameStatus.Playing && (
+                isSelf && (
                   <button
                     id={HTML_IDS.GamePass}
                     type="button"
@@ -1243,13 +1243,15 @@ function renderScore({
           </div>
         )}
       </div>
-      <div className={`game-score-container ${winning ? 'game-score-container-winning' : ''}`}>
-        {playerRound && (
-          <span className={HTML_CLASSES.GamePlayerScore} title="Score for the current round">
-            {playerRound.score}
-          </span>
-        )}
-      </div>
+      {game.status === GameStatus.Playing && (
+        <div className={`game-score-container ${winning ? 'game-score-container-winning' : ''}`}>
+          {playerRound && (
+            <span className={HTML_CLASSES.GamePlayerScore} title="Score for the current round">
+              {playerRound.score}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -2082,7 +2084,9 @@ function renderHand({
           </Centered>
         ) : (!hand || hand.length === 0) && isTurn ? (
           <Centered>
-            <span>You have no units left in your hand. Either activate your Leader ability or Pass.</span>
+            <span id={HTML_IDS.gameHandNoUnitsLeft}>
+              You have no units left in your hand. Either activate your Leader ability or Pass.
+            </span>
           </Centered>
         ) : (
           sortedUnits.map((deckUnit) => {
@@ -2101,7 +2105,7 @@ function renderHand({
 
             return (
               <div
-                className={`game-hand-card-wrapper ${selected ? 'game-hand-card-wrapper-selected' : ''}`}
+                className={`${HTML_CLASSES.GameHandCardWrapper} ${selected ? 'game-hand-card-wrapper-selected' : ''}`}
                 key={deckUnit.unit.id}
                 onClick={() => {
                   if (!playUnitLoading) {
@@ -2123,7 +2127,7 @@ function renderHand({
                     })
                   }
                 />
-                {notSelected && <div title={title} className="game-hand-card-wrapper-not-selected"></div>}
+                {notSelected && <div title={title} className={HTML_CLASSES.GameHandCardWrapperNotSelected}></div>}
               </div>
             )
           })
@@ -2257,12 +2261,16 @@ function renderHistory({
                 let image = ''
                 let imageTitle = ''
                 let error = false
+                let pointable = false
                 if (playerMove.move.__typename === 'MoveLeader') {
                   description = `Activated leader ${playerMove.move.leader.name} ability`
                   image = playerMove.move.leader.image
                 } else if (playerMove.move.__typename === 'MovePass') {
                   description = `Passed the rest of round ${movesByRound.round}`
+                  image = 'images/actions/pass.png'
+                  imageTitle = 'Passed'
                 } else if (playerMove.move.__typename === 'MoveUnit') {
+                  pointable = true
                   description = `${playerMove.move.unit.unit.name} deployed as ${toTitleCase(playerMove.move.row)}`
                   image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
                   imageTitle = playerMove.move.unit.unit.name
@@ -2296,7 +2304,7 @@ function renderHistory({
                     ref={playerMove.ref}
                     className={`${HTML_CLASSES.GameHistoryMove} ${
                       isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
-                    } ${isSelected ? 'item-highlighted' : ''} `}
+                    } ${isSelected ? 'item-highlighted' : ''} ${pointable ? 'pointable' : ''}`}
                     style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
                     title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
                     onClick={() => {

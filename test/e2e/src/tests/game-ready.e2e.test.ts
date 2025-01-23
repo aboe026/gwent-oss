@@ -186,11 +186,13 @@ test('Can set ready without redrawing any cards after opponent is ready', async 
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
     turn: won ? PlayerTurn.Future : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
     turn: won ? undefined : PlayerTurn.Future,
     ready: true,
+    score: 0,
   })
   await t.ctx.opponent.client.ready(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
@@ -272,11 +274,13 @@ test('Can set ready after redrawing once after opponent is ready', async (t) => 
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
     turn: won ? PlayerTurn.Future : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
     turn: won ? undefined : PlayerTurn.Future,
     ready: true,
+    score: 0,
   })
   await t.ctx.opponent.client.redraw({
     gameId: t.ctx.game.id,
@@ -382,11 +386,13 @@ test('Can set ready after redrawing twice after opponent is ready', async (t) =>
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
     turn: won ? PlayerTurn.Future : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.opponent,
     turn: won ? undefined : PlayerTurn.Future,
     ready: true,
+    score: 0,
   })
   await t.ctx.opponent.client.redraw({
     gameId: t.ctx.game.id,
