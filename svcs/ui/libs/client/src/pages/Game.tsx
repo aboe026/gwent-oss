@@ -2261,12 +2261,16 @@ function renderHistory({
                 let image = ''
                 let imageTitle = ''
                 let error = false
+                let pointable = false
                 if (playerMove.move.__typename === 'MoveLeader') {
                   description = `Activated leader ${playerMove.move.leader.name} ability`
                   image = playerMove.move.leader.image
                 } else if (playerMove.move.__typename === 'MovePass') {
                   description = `Passed the rest of round ${movesByRound.round}`
+                  image = 'images/actions/pass.png'
+                  imageTitle = 'Passed'
                 } else if (playerMove.move.__typename === 'MoveUnit') {
+                  pointable = true
                   description = `${playerMove.move.unit.unit.name} deployed as ${toTitleCase(playerMove.move.row)}`
                   image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
                   imageTitle = playerMove.move.unit.unit.name
@@ -2300,7 +2304,7 @@ function renderHistory({
                     ref={playerMove.ref}
                     className={`${HTML_CLASSES.GameHistoryMove} ${
                       isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
-                    } ${isSelected ? 'item-highlighted' : ''} `}
+                    } ${isSelected ? 'item-highlighted' : ''} ${pointable ? 'pointable' : ''}`}
                     style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
                     title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
                     onClick={() => {

@@ -63,8 +63,6 @@ A list of things to be done in the future.
 - remove ids from errors and put them in logPrefix
 - remove "statsModifier"
 - animations/text of what opponent did?
-- how to make pass more obvious?
-  - white flag icon?
 - fix layout on small width screen
   - player score
 - e2e tests
