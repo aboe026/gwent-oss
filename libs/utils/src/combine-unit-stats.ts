@@ -1,5 +1,12 @@
 import { UnitStats } from '@gwent/graphql-schema/resolver-typings'
 
+/**
+ * Combine the statistics of two different unit sets.
+ *
+ * @param firstStats The first set of statistics to combine.
+ * @param secondStats The second set of statistics to combine.
+ * @returns A new set of statistics that is a combination of the two inputted unit sets.
+ */
 export default function combineUnitStats(firstStats: UnitStats, secondStats: UnitStats): UnitStats {
   const weightedAverage =
     (firstStats.strengthAverage * firstStats.units + secondStats.strengthAverage * secondStats.units) /

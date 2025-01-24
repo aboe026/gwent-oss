@@ -4,6 +4,8 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
+- change resolves to try/catch for returning errors (create a special Error type for ones to return to user, else the generic error is sent for security reasons)
 - save game status to database?
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)
 - collapse UI method props when they are long (like PlayUnitProps)
@@ -62,6 +64,7 @@ A list of things to be done in the future.
 
 ## Features
 
+- remove "currentPlayer" from "getNextPlayerIdForCurrentRound" method? Can just get it from game.turn and game.round?
 - remove ids from errors and put them in logPrefix
 - animations/text of what opponent did?
 - fix layout on small width screen

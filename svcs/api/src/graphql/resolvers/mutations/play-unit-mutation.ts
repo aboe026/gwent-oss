@@ -22,6 +22,14 @@ import UnitStore from '../../../database/stores/unit-store'
 export default class PlayUnitMutation {
   private static logger = getLogger('PlayUnitMutation')
 
+  /**
+   * Play a unit for a user on a game.
+   *
+   * @param args The arguments for playing the unit.
+   * @param context The session containing the user playing the unit.
+   * @param info The information about the GraphQL request.
+   * @returns The Game with the unit played for the user.
+   */
   static async playUnit(args: MutationPlayUnitArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const userId = context.session?.user?._id
     if (!userId) {

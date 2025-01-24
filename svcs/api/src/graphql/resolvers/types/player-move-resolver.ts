@@ -9,7 +9,19 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import { MoveType } from '@gwent/graphql-schema'
 
+/**
+ * A class to convert PlayerMove database objects to their GraphQL equivalent.
+ */
 export default class PlayerMoveResolver {
+  /**
+   * Converts a single PlayerMove database object to a single PlayerMove GraphQL object.
+   *
+   * @param config The configuration used to resolve the PlayerMove.
+   * @param config.move The database object to resolve to its GraphQL type.
+   * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
+   * @param config.deckUnit An optional pre-resolved DeckUnit. If not specified, will retreive the DeckUnit from the databae to resolve.
+   * @returns The resolved PlayerMove object matching its GraphQL schema definition.
+   */
   static async fromObject({
     move,
     leader,

@@ -23,6 +23,18 @@ import { PubSubEvents } from '@gwent/constants'
 export default class MutationUtil {
   private static logger = getLogger('MutationUtil')
 
+  /**
+   * Get a game and player on it.
+   *
+   * @param config The configuration to get the Game and the player on it.
+   * @param config.gameId The ID of the game to get.
+   * @param config.userId The ID of the player to get on the game.
+   * @param config.logPrefix The prefix to add to the beginning of log statements.
+   * @param config.status An optional status to require the game to have, otherwise return an error.
+   * @param config.turn Whether or not to enforce that the given game player should be the player with the current turn, otherwise return an error.
+   * @param config.label The label to use when logging and returning errors.
+   * @returns The game and player if they exist, otherwise an Error.
+   */
   static async getGamePlayer({
     gameId,
     logPrefix,
@@ -92,6 +104,15 @@ export default class MutationUtil {
     }
   }
 
+  /**
+   * Gets the ID of the player whose turn it is next in the current round.
+   *
+   * @param config The configuration of used to determine who the next eligible player is on the game.
+   * @param config.game The game to determine the next player of.
+   * @param config.currentPlayer The game player whose turn it currently is.
+   * @param config.logPrefix The prefix to add to the beginning of log statements.
+   * @returns The ID of the player whose turn is next, otherwise an Error.
+   */
   static getNextPlayerIdForCurrentRound({
     game,
     currentPlayer,
@@ -143,6 +164,7 @@ export default class MutationUtil {
       }
     }
     if (!nextPlayerId) {
+      // TODO: return error instead?
       MutationUtil.logger.error(
         `${logPrefix} getNextPlayerIdForCurrentRound No user eligible to be next player for round "${currentRound}", getting player to start round "${
           currentRound + 1
@@ -153,6 +175,14 @@ export default class MutationUtil {
     return nextPlayerId
   }
 
+  /**
+   * Gets the ID of the player whose turn it should be for the start of the next round.
+   *
+   * @param config The configuration of used to determine who should start the next round.
+   * @param config.game The game to determine the started of the next round for.
+   * @param config.logPrefix The prefix to add to the beginning of log statements.
+   * @returns The ID of the player who should start the next round.
+   */
   static getPlayerIdForNextRound({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): ObjectId {
     MutationUtil.logger.trace(`${logPrefix} getPlayerIdForNextRound nextRound: "${game.round + 1}"`)
     const usersByOrder: GamePlayerDbObject[] = sortObjectArray({
@@ -193,6 +223,14 @@ export default class MutationUtil {
     return nextUser
   }
 
+  /**
+   * Whether or not the current round is over.
+   *
+   * @param config The configuration to determine if the round is over or not.
+   * @param config.game The game to check if the current round is over.
+   * @param config.logPrefix The prefix to add to the beginning of log statements.
+   * @returns True if the current round is over, false otherwise.
+   */
   static isRoundOver({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): boolean {
     const currentRound = game.round
     MutationUtil.logger.trace(`${logPrefix} isRoundOver game "${game._id}" currentRound: "${currentRound}"`)
@@ -215,6 +253,14 @@ export default class MutationUtil {
     return true
   }
 
+  /**
+   * Whether or not the game is over.
+   *
+   * @param config The configuration to determine if the game is over or not.
+   * @param config.game The game to check if is finished.
+   * @param config.logPrefix The prefix to add to the beginning of log statements.
+   * @returns True if the game is over, false otherwise.
+   */
   static isGameOver({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): boolean {
     const currentRound = game.round
     MutationUtil.logger.trace(`${logPrefix} isGameOver game "${game._id}" currentRound: "${currentRound}"`)
@@ -249,6 +295,13 @@ export default class MutationUtil {
     return gameOver
   }
 
+  /**
+   * Add a new round to each player on a game in a starting state.
+   *
+   * @param config The configuration used to initialize the new round.
+   * @param config.players The game players to initialize the new round for.
+   * @returns New game players who have a new round added for them.
+   */
   static initializeNewRound({ players }: { players: GamePlayerDbObject[] }): GamePlayerDbObject[] {
     const startingCombatRow: PlayerCombatRowDbObject = {
       score: 0,

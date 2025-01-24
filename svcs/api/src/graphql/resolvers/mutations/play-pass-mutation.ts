@@ -20,6 +20,14 @@ import { PassPlayedPayload, RoundEndedForDeckPayload } from '../subscription-res
 export default class PlayPassMutation {
   private static logger = getLogger('PlayPassMutation')
 
+  /**
+   * Pass the rest of the round for a user. Once a round is passed, the user can no longer play units the rest of the round.
+   *
+   * @param args The arguments for passing the round.
+   * @param context The session containing the user passing.
+   * @param info The information about the GraphQL request.
+   * @returns The Game with the round passed for the user.
+   */
   static async playPass(args: MutationPlayPassArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const userId = context.session?.user?._id
     if (!userId) {
