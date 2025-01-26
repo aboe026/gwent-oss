@@ -323,6 +323,15 @@ export default class GameStore extends Store {
     })
   }
 
+  /**
+   * Take a turn for a user on a game.
+   *
+   * @param config The configuration for the movement to make.
+   * @param config.game The Game object with the effects of the movement.
+   * @param config.userId The MongoDB ObjectId of the user who is making the movement.
+   * @param config.nextTurn The MongoDB ObjectId of the user who is permitted to make the next movement.
+   * @returns The updated game database document.
+   */
   static async makeMove({
     game,
     userId,

@@ -9,7 +9,19 @@ import GameUnitResolver from './game-unit-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 import PlayerMoveResolver from './player-move-resolver'
 
+/**
+ * A class to convert PlayerRound database objects to their GraphQL equivalent.
+ */
 export default class PlayerRoundResolver {
+  /**
+   * Converts a single PlayerRound database object to a single PlayerRound GraphQL object.
+   *
+   * @param config The configuration for resolving the PlayerRound.
+   * @param config.round The database object to resolve to its GraphQL type.
+   * @param config.gameUnits An optional pre-resolved GameUnits. If not specified, will retreive the GameUnits from the databae to resolve.
+   * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
+   * @returns The resolved PlayerRound object matching its GraphQL schema definition.
+   */
   static async fromObject({
     round,
     gameUnits,
@@ -100,6 +112,14 @@ export default class PlayerRoundResolver {
     }
   }
 
+  /**
+   * Converts an array of PlayerRound database objects to an array of PlayerRound GraphQL objects.
+   *
+   * @param config The configuration used to resolve the PlayerRounds.
+   * @param config.rounds The database objects to resolve to their GraphQL types.
+   * @param leaders An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
+   * @returns The resolved PlayerRound array matching the GraphQL schema definition.
+   */
   static async fromArray({
     rounds,
     leader,

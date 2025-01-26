@@ -168,6 +168,16 @@ export default class SubscriptionResolver {
     }
   }
 
+  /**
+   * Whether or not the user owns the deck the message is for.
+   *
+   * @param config The configuration to determine if the user owns the deck.
+   * @param config.ctx The context for the message containing the user.
+   * @param config.nestedDeckPath The optional path of the property within the payload which contains the deck.
+   * @param config.payload The object containing the subscription data, including the deck.
+   * @param config.subscriptionName The name of the subscription for the message.
+   * @returns True if the user owns the deck, false otherwise.
+   */
   private static filterDeckOwner({
     ctx,
     nestedDeckPath,
@@ -207,6 +217,16 @@ export default class SubscriptionResolver {
     return false
   }
 
+  /**
+   * Whether or not the user is a player on the game the message is for.
+   *
+   * @param config The configuration to determine if the user is a player of the game.
+   * @param config.ctx The context for the message containing the user.
+   * @param config.nestedGamePath The optional path of the property within the payload which contains the game.
+   * @param config.payload The object containing the subscription data, including the game.
+   * @param config.subscriptionName The name of the subscription for the message.
+   * @returns True if the user is a player on the game, false otherwise.
+   */
   private static filterPlayerOnGame({
     payload,
     ctx,
