@@ -408,8 +408,8 @@ export default gql`
     "Pass for the rest of the round in a game."
     playPass(game: ID!): Game!
 
-    "Play a Unit card in a game."
-    playUnit(game: ID!, unit: ID!, combat: Combat!): Game!
+    "Play a Unit card in a game. If a unit is eligible for multiple different types of Combat, one must be specified."
+    playUnit(game: ID!, unit: ID!, combat: Combat): Game!
 
     "Mark player as ready to play the game, no more deck modifications allowed."
     ready(game: ID!): Game!

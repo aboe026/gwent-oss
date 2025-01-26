@@ -293,7 +293,7 @@ export type Mutation = {
   logout: Scalars['Boolean']['output'];
   /** Pass for the rest of the round in a game. */
   playPass: Game;
-  /** Play a Unit card in a game. */
+  /** Play a Unit card in a game. If a unit is eligible for multiple different types of Combat, one must be specified. */
   playUnit: Game;
   /** Mark player as ready to play the game, no more deck modifications allowed. */
   ready: Game;
@@ -337,7 +337,7 @@ export type MutationPlayPassArgs = {
 
 
 export type MutationPlayUnitArgs = {
-  combat: Combat;
+  combat?: InputMaybe<Combat>;
   game: Scalars['ID']['input'];
   unit: Scalars['ID']['input'];
 };

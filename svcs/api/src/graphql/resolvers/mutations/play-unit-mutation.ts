@@ -49,6 +49,7 @@ export default class PlayUnitMutation {
 
     const gameId = args.game
     const unitId = args.unit
+    let combat = args.combat
 
     logPrefix += ` for unit "${unitId}" on game "${gameId}"`
 
@@ -98,9 +99,22 @@ export default class PlayUnitMutation {
     }
     const unit = units[0]
 
-    if (!unit.combats || !unit.combats.includes(args.combat)) {
-      const message = `Combat "${args.combat}" does match unit combats of "${JSON.stringify(unit.combats)}".`
-      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}`)
+    if (unit.combats && unit.combats.length > 1 && !combat) {
+      const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
+      PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (unit.combats && unit.combats.length > 0 && combat && !unit.combats.includes(combat)) {
+      const message = `Combat "${combat}" does match unit combats of "${JSON.stringify(unit.combats)}".`
+      PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
+    if (unit.combats && unit.combats.length === 1 && !combat) {
+      combat = unit.combats[0] as Combat
+    }
+    if (!combat) {
+      const message = 'Must specify combat.'
+      PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
@@ -109,7 +123,7 @@ export default class PlayUnitMutation {
       if (gamePlayer.user.toString() === player.user.toString()) {
         const playerRound = gamePlayer.rounds[game.round - 1]
         const { close, ranged, siege } = playerRound
-        const combatRow = args.combat === Combat.Close ? close : args.combat === Combat.Ranged ? ranged : siege
+        const combatRow = combat === Combat.Close ? close : combat === Combat.Ranged ? ranged : siege
         combatRow.score = combatRow.score + (unit.strength || 0)
         combatRow.units.push({
           ...deckUnit,
@@ -121,7 +135,7 @@ export default class PlayUnitMutation {
             if (index === game.round - 1) {
               const move: MoveUnitDbObject = {
                 created: new Date(),
-                row: args.combat,
+                row: combat,
                 unit: deckUnit,
                 type: MoveType.Unit,
               }

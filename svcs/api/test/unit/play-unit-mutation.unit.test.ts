@@ -149,6 +149,26 @@ describe('play-unit-mutation', () => {
         errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`]],
       })
     })
+    it('returns error if combat not specified for multi combat unit', async () => {
+      const deckUnit = TestUtil.getDbUnit({
+        id: unitId,
+        combats: [Combat.Close, Combat.Ranged],
+      })
+      const message = `Must specify combat: One of "${JSON.stringify(deckUnit.combats)}".`
+      const game = getTestGame(gameId, userId, unitId)
+      await testPlayUnit({
+        userId,
+        gameId,
+        unitId,
+        resolvedGameResponse: {
+          game,
+          player: game.players[0],
+        },
+        resolvedUnitsResponse: [deckUnit],
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
     it('returns error if combat does not match unit combats', async () => {
       const combat = Combat.Close
       const deckUnit = TestUtil.getDbUnit({
@@ -161,13 +181,33 @@ describe('play-unit-mutation', () => {
         userId,
         gameId,
         unitId,
+        combat,
         resolvedGameResponse: {
           game,
           player: game.players[0],
         },
         resolvedUnitsResponse: [deckUnit],
         expected: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('returns error if combat not specified on unit without combat', async () => {
+      const deckUnit = TestUtil.getDbUnit({
+        id: unitId,
+      })
+      const message = 'Must specify combat.'
+      const game = getTestGame(gameId, userId, unitId)
+      await testPlayUnit({
+        userId,
+        gameId,
+        unitId,
+        resolvedGameResponse: {
+          game,
+          player: game.players[0],
+        },
+        resolvedUnitsResponse: [deckUnit],
+        expected: Error(message),
+        warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('returns error if getNextPlayerIdForCurrentRound returns error', async () => {
@@ -792,7 +832,7 @@ async function testPlayUnit({
   userId,
   gameId = '',
   unitId = '',
-  combat = Combat.Close,
+  combat,
   resolvedGameResponse,
   resolvedUnitsResponse,
   nextPlayerIdResponse,

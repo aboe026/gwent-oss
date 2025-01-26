@@ -294,7 +294,7 @@ export type Mutation = {
   logout: Scalars['Boolean']['output'];
   /** Pass for the rest of the round in a game. */
   playPass: Game;
-  /** Play a Unit card in a game. */
+  /** Play a Unit card in a game. If a unit is eligible for multiple different types of Combat, one must be specified. */
   playUnit: Game;
   /** Mark player as ready to play the game, no more deck modifications allowed. */
   ready: Game;
@@ -338,7 +338,7 @@ export type MutationPlayPassArgs = {
 
 
 export type MutationPlayUnitArgs = {
-  combat: Combat;
+  combat?: InputMaybe<Combat>;
   game: Scalars['ID']['input'];
   unit: Scalars['ID']['input'];
 };
@@ -900,7 +900,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
   login?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'name' | 'password'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   playPass?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationPlayPassArgs, 'game'>>;
-  playUnit?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationPlayUnitArgs, 'combat' | 'game' | 'unit'>>;
+  playUnit?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationPlayUnitArgs, 'game' | 'unit'>>;
   ready?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationReadyArgs, 'game'>>;
   redraw?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType, RequireFields<MutationRedrawArgs, 'game' | 'unit'>>;
   setDeck?: Resolver<ResolversTypes['GameDeck'], ParentType, ContextType, RequireFields<MutationSetDeckArgs, 'deck' | 'game'>>;

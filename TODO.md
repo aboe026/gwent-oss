@@ -12,6 +12,8 @@ A list of things to be done in the future.
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)
 - collapse UI method props when they are long (like PlayUnitProps)
 - alphabetize UI props/method inputs
+- remove ids from errors and put them in logPrefix
+- improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)
   - MAX_REDRAWS
@@ -67,18 +69,14 @@ A list of things to be done in the future.
 ## Features
 
 - have game card margin account for highlight border so it doesn't move right
-- remove ids from errors and put them in logPrefix
-- animations/text of what opponent did?
-- fix layout on small width screen
-  - player score
 - e2e tests
 - unit tests
 - ensure js-docs
 - increment version
 - delete db for func tests before every test (instead of before every file)
 - remove "Can " prefix for test names
-- make "combat" argument optional for "playUnit" mutation? (throw error if unit has multiple combats and none specified, otherwise default to the only one it can do)
 
+- Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - if effective strength greater than normal strength, green. If less, red.
