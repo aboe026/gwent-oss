@@ -45,7 +45,10 @@ export default class PlayerRoundResolver {
           (gameUnit) => gameUnit.unit.id === (move as MoveUnitDbObject).unit.unit.toString()
         )
         if (gameUnit) {
-          deckUnit = gameUnit as DeckUnit
+          deckUnit = {
+            artStyle: gameUnit.artStyle,
+            unit: gameUnit.unit,
+          }
         }
       }
       let moveLeader: Leader | undefined = undefined

@@ -94,11 +94,9 @@ export default class MutationUtil {
 
   static getNextPlayerIdForCurrentRound({
     game,
-    currentPlayer,
     logPrefix,
   }: {
     game: GameDbObject
-    currentPlayer: GamePlayerDbObject
     logPrefix: string
   }): ObjectId | Error {
     const currentRound = game.round
@@ -111,6 +109,9 @@ export default class MutationUtil {
         `${logPrefix} getNextPlayerIdForCurrentRound usersByOrder: "${JSON.stringify(usersByOrder)}"`
       )
     }
+    const currentPlayer = game.players.find(
+      (gamePlayer) => gamePlayer.user.toString() === game.turn?.toString()
+    ) as GamePlayerDbObject
     let nextPlayerId: ObjectId | undefined = undefined
     const currentPlayerOrder = currentPlayer.order
     MutationUtil.logger.trace(`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "${currentPlayerOrder}"`)
@@ -195,23 +196,21 @@ export default class MutationUtil {
 
   static isRoundOver({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): boolean {
     const currentRound = game.round
-    MutationUtil.logger.trace(`${logPrefix} isRoundOver game "${game._id}" currentRound: "${currentRound}"`)
+    MutationUtil.logger.trace(`${logPrefix} isRoundOver currentRound: "${currentRound}"`)
     for (const player of game.players) {
       const playerRound = player.rounds[currentRound - 1]
       MutationUtil.logger.trace(
-        `${logPrefix} isRoundOver game "${game._id}" player "${player.user}" round "${currentRound}" passed: "${playerRound.passed}"`
+        `${logPrefix} isRoundOver player "${player.user}" round "${currentRound}" passed: "${playerRound.passed}"`
       )
       if (!playerRound.passed) {
         MutationUtil.logger.debug(
-          `${logPrefix} isRoundOver game "${game._id}" player "${player.user}" has not passed, so round "${currentRound}" is not over`
+          `${logPrefix} isRoundOver player "${player.user}" has not passed, so round "${currentRound}" is not over`
         )
         return false
       }
     }
 
-    MutationUtil.logger.debug(
-      `${logPrefix} isRoundOver game "${game._id}" all players have passed, so round "${currentRound}" is over`
-    )
+    MutationUtil.logger.debug(`${logPrefix} isRoundOver all players have passed, so round "${currentRound}" is over`)
     return true
   }
 

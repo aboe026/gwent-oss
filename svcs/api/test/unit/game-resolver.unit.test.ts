@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { Game, GamePlayer, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Game, GamePlayer, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
@@ -68,6 +68,7 @@ describe('game-resolver', () => {
           players,
           turn: user.id,
           victors: [victor.id],
+          weather: [Combat.Close, Combat.Ranged],
         }),
         creator: user,
         users: [victor],
@@ -388,7 +389,7 @@ async function testResolveFromObject({
       ? resolvedGamePlayers.find((player) => player.user.id.toString() === game.turn?.toString())
       : undefined,
     victors,
-    weather: [],
+    weather: game.weather,
   })
 
   expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)

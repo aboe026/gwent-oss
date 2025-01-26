@@ -2,13 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import EventManager from '../../src/graphql/event-manager'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import {
-  FactionDbObject,
-  GameDbObject,
-  GamePlayerDbObject,
-  GameStatus,
-  RoundResult,
-} from '@gwent/graphql-schema/database-typings'
+import { FactionDbObject, GameDbObject, GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
@@ -179,8 +173,8 @@ describe('mutation-util', () => {
       testGetNextPlayerIdForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player],
+          turn: player.user,
         }),
-        currentPlayer: player,
         logPrefix,
         expected: Error(message),
         errorCalls: [[`${logPrefix} getNextPlayerIdForCurrentRound failed: ${message}`]],
@@ -201,8 +195,8 @@ describe('mutation-util', () => {
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
+          turn: player1.user,
         }),
-        currentPlayer: player1,
         logPrefix,
         expected: player2.user,
         debugCalls: [
@@ -230,8 +224,8 @@ describe('mutation-util', () => {
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
+          turn: player2.user,
         }),
-        currentPlayer: player2,
         logPrefix,
         expected: player1.user,
         debugCalls: [
@@ -263,8 +257,8 @@ describe('mutation-util', () => {
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
+          turn: player1.user,
         }),
-        currentPlayer: player1,
         logPrefix,
         expected: player1.user,
         debugCalls: [
@@ -300,8 +294,8 @@ describe('mutation-util', () => {
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
+          turn: player2.user,
         }),
-        currentPlayer: player2,
         logPrefix,
         expected: player2.user,
         debugCalls: [
@@ -341,8 +335,8 @@ describe('mutation-util', () => {
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
+          turn: player1.user,
         }),
-        currentPlayer: player1,
         logPrefix,
         expected: player2.user,
         errorCalls: [
@@ -385,8 +379,8 @@ describe('mutation-util', () => {
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
+          turn: player2.user,
         }),
-        currentPlayer: player2,
         logPrefix,
         expected: player2.user,
         errorCalls: [
@@ -421,8 +415,8 @@ describe('mutation-util', () => {
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
+          turn: player1.user,
         }),
-        currentPlayer: player1,
         logPrefix,
         expected: player2.user,
         traceEnabled: true,
@@ -626,6 +620,130 @@ describe('mutation-util', () => {
             ])}"`,
           ],
           [`${logPrefix} getPlayerIdForNextRound roundWinners: "${JSON.stringify([userId])}"`],
+        ],
+      })
+    })
+  })
+  describe('isRoundOver', () => {
+    const userId = new ObjectId()
+    const opponentId = new ObjectId()
+    const gameId = new ObjectId()
+    const logPrefix = `playPass by "${userId}" on game "${gameId}"`
+    it('returns false if neither player has passed', () => {
+      testIsRoundOver({
+        game: TestUtil.getDbGame({
+          id: gameId,
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [TestUtil.getDbPlayerRound({})],
+            }),
+            TestUtil.getDbGamePlayer({
+              user: opponentId,
+              rounds: [TestUtil.getDbPlayerRound({})],
+            }),
+          ],
+        }),
+        logPrefix,
+        expected: false,
+        debugCalls: [[`${logPrefix} isRoundOver player "${userId}" has not passed, so round "1" is not over`]],
+        traceCalls: [
+          [`${logPrefix} isRoundOver currentRound: "1"`],
+          [`${logPrefix} isRoundOver player "${userId}" round "1" passed: "false"`],
+        ],
+      })
+    })
+    it('returns false if only first player has passed', () => {
+      testIsRoundOver({
+        game: TestUtil.getDbGame({
+          id: gameId,
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  passed: true,
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              user: opponentId,
+              rounds: [TestUtil.getDbPlayerRound({})],
+            }),
+          ],
+        }),
+        logPrefix,
+        expected: false,
+        debugCalls: [[`${logPrefix} isRoundOver player "${opponentId}" has not passed, so round "1" is not over`]],
+        traceCalls: [
+          [`${logPrefix} isRoundOver currentRound: "1"`],
+          [`${logPrefix} isRoundOver player "${userId}" round "1" passed: "true"`],
+          [`${logPrefix} isRoundOver player "${opponentId}" round "1" passed: "false"`],
+        ],
+      })
+    })
+    it('returns false if only second player has passed', () => {
+      testIsRoundOver({
+        game: TestUtil.getDbGame({
+          id: gameId,
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [TestUtil.getDbPlayerRound({})],
+            }),
+            TestUtil.getDbGamePlayer({
+              user: opponentId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  passed: true,
+                }),
+              ],
+            }),
+          ],
+        }),
+        logPrefix,
+        expected: false,
+        debugCalls: [[`${logPrefix} isRoundOver player "${userId}" has not passed, so round "1" is not over`]],
+        traceCalls: [
+          [`${logPrefix} isRoundOver currentRound: "1"`],
+          [`${logPrefix} isRoundOver player "${userId}" round "1" passed: "false"`],
+        ],
+      })
+    })
+    it('returns false if both players have passed', () => {
+      testIsRoundOver({
+        game: TestUtil.getDbGame({
+          id: gameId,
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  passed: true,
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              user: opponentId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  passed: true,
+                }),
+              ],
+            }),
+          ],
+        }),
+        logPrefix,
+        expected: true,
+        debugCalls: [[`${logPrefix} isRoundOver all players have passed, so round "1" is over`]],
+        traceCalls: [
+          [`${logPrefix} isRoundOver currentRound: "1"`],
+          [`${logPrefix} isRoundOver player "${userId}" round "1" passed: "true"`],
+          [`${logPrefix} isRoundOver player "${opponentId}" round "1" passed: "true"`],
         ],
       })
     })
@@ -1632,7 +1750,6 @@ async function testGetGamePlayer({
 
 function testGetNextPlayerIdForCurrentRound({
   game,
-  currentPlayer,
   logPrefix,
   expected,
   errorCalls = [],
@@ -1641,7 +1758,6 @@ function testGetNextPlayerIdForCurrentRound({
   traceCalls = [],
 }: {
   game: GameDbObject
-  currentPlayer: GamePlayerDbObject
   logPrefix: string
   expected: ObjectId | Error
   errorCalls?: string[][]
@@ -1662,7 +1778,6 @@ function testGetNextPlayerIdForCurrentRound({
   expect(
     MutationUtil.getNextPlayerIdForCurrentRound({
       game,
-      currentPlayer,
       logPrefix,
     })
   ).toEqual(expected)
@@ -1697,6 +1812,37 @@ function testGetPlayerIdForNextRound({
 
   expect(
     MutationUtil.getPlayerIdForNextRound({
+      game,
+      logPrefix,
+    })
+  ).toEqual(expected)
+
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
+}
+
+function testIsRoundOver({
+  game,
+  logPrefix,
+  expected,
+  debugCalls = [],
+  traceCalls = [],
+}: {
+  game: GameDbObject
+  logPrefix: string
+  expected: boolean
+  debugCalls?: string[][]
+  traceCalls?: string[][]
+}) {
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MutationUtil['logger'] = {
+    debug: debugSpy,
+    trace: traceSpy,
+  } as any
+
+  expect(
+    MutationUtil.isRoundOver({
       game,
       logPrefix,
     })

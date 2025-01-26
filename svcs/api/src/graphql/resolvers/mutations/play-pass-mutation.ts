@@ -103,11 +103,11 @@ export default class PlayPassMutation {
         const playerRound = gamePlayer.rounds[game.round - 1]
         const roundScore = playerRound.score
         PlayPassMutation.logger.trace(
-          `${logPrefix} game "${game._id}" player "${gamePlayer.user}" round "${game.round}" score: "${roundScore}"`
+          `${logPrefix} player "${gamePlayer.user}" round "${game.round}" score: "${roundScore}"`
         )
         if (roundScore > highestScore) {
           PlayPassMutation.logger.trace(
-            `${logPrefix} game "${game._id}" player "${gamePlayer.user}" score "${roundScore}" is greater than previous highestScore of "${highestScore}", setting high score to theirs for round "${game.round}"`
+            `${logPrefix} player "${gamePlayer.user}" round "${game.round}" score "${roundScore}" is greater than previous highestScore of "${highestScore}", setting it to theirs`
           )
           highestScore = roundScore
           usersWithHighestScore = 1
@@ -115,11 +115,9 @@ export default class PlayPassMutation {
           usersWithHighestScore++
         }
       }
+      PlayPassMutation.logger.trace(`${logPrefix} round "${game.round}" highestScore: "${highestScore}"`)
       PlayPassMutation.logger.trace(
-        `${logPrefix} game "${game._id}" round "${game.round}" highestScore: "${highestScore}"`
-      )
-      PlayPassMutation.logger.trace(
-        `${logPrefix} game "${game._id}" round "${game.round}" usersWithHighestScore: "${usersWithHighestScore}"`
+        `${logPrefix} round "${game.round}" usersWithHighestScore: "${usersWithHighestScore}"`
       )
       const winners: ObjectId[] = []
       game.players = game.players.map((gamePlayer) => {
@@ -138,7 +136,7 @@ export default class PlayPassMutation {
                 result = RoundResult.Lost
               }
               PlayPassMutation.logger.trace(
-                `${logPrefix} game "${game._id}" player "${gamePlayer.user}" round "${game.round}" result: "${result}"`
+                `${logPrefix} player "${gamePlayer.user}" round "${game.round}" result: "${result}"`
               )
               if (result === RoundResult.Won || result === RoundResult.Drew) {
                 winners.push(gamePlayer.user)
@@ -152,9 +150,9 @@ export default class PlayPassMutation {
         }
       })
       PlayPassMutation.logger.debug(
-        `${logPrefix} Player(s) "${JSON.stringify(winners)}" ${winners.length === 1 ? 'won' : 'drew'} round "${
-          game.round
-        }" of game "${game._id}"`
+        `${logPrefix} ends round "${game.round}" in ${winners.length === 1 ? 'win' : 'draw'} for "${JSON.stringify(
+          winners
+        )}"`
       )
 
       // add remaining battlefield cards to discards
@@ -183,17 +181,15 @@ export default class PlayPassMutation {
         let highestWins = 0
         for (const gamePlayer of game.players) {
           const playerWins = gamePlayer.rounds.filter((round) => round.result === RoundResult.Won).length
-          PlayPassMutation.logger.trace(
-            `${logPrefix} game "${game._id}" player "${gamePlayer.user}" playerWins: "${playerWins}"`
-          )
+          PlayPassMutation.logger.trace(`${logPrefix} player "${gamePlayer.user}" playerWins: "${playerWins}"`)
           if (playerWins > highestWins) {
             PlayPassMutation.logger.trace(
-              `${logPrefix} game "${game._id}" player "${gamePlayer.user}" wins "${playerWins}" is greater than previous highestWins of "${playerWins}", setting high wins to theirs`
+              `${logPrefix} player "${gamePlayer.user}" wins "${playerWins}" is greater than previous highestWins of "${highestWins}", setting high wins to theirs`
             )
             highestWins = playerWins
           }
         }
-        PlayPassMutation.logger.trace(`${logPrefix} game "${game._id}" highestWins: "${highestWins}"`)
+        PlayPassMutation.logger.trace(`${logPrefix} highestWins: "${highestWins}"`)
         const victorIds: ObjectId[] = []
         for (const gamePlayer of game.players) {
           const playerWins = gamePlayer.rounds.filter((round) => round.result === RoundResult.Won).length
@@ -201,9 +197,7 @@ export default class PlayPassMutation {
             victorIds.push(gamePlayer.user)
           }
         }
-        PlayPassMutation.logger.debug(
-          `${logPrefix} Players "${JSON.stringify(victorIds)}" are victors of game "${game._id}"`
-        )
+        PlayPassMutation.logger.debug(`${logPrefix} ends game in victory for "${JSON.stringify(victorIds)}"`)
         game.victors = victorIds
       } else {
         // set next player
@@ -222,7 +216,6 @@ export default class PlayPassMutation {
     } else {
       const potentialNextPlayerId = MutationUtil.getNextPlayerIdForCurrentRound({
         game,
-        currentPlayer: player,
         logPrefix,
       })
       if (potentialNextPlayerId instanceof Error) {
@@ -231,11 +224,20 @@ export default class PlayPassMutation {
       nextPlayerId = potentialNextPlayerId
     }
 
+    // TODO: remove "nextTurn" as a parameter for "makeMove"
+    // derive "nextTurn" from "game" parameter (the "turn" property can just be updated there)
+    // derive "currentUser" from "userId" parameter
     const updatedGame = await GameStore.makeMove({
       nextTurn: nextPlayerId,
       game,
       userId,
     })
+
+    if (!updatedGame) {
+      const message = `Could not play pass for game "${gameId}" in probable race condition collision.`
+      PlayPassMutation.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
 
     const resolvedGame = await GameResolver.fromObject({
       game: updatedGame,

@@ -71,7 +71,7 @@ export default class PlayUnitMutation {
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     } else if (deckUnits.length > 1) {
       const message = `Found more than 1 unit with ID "${unitId}"`
-      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: ${JSON.stringify(deckUnits)}`)
+      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`)
       return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const deckUnit = deckUnits[0]
@@ -85,13 +85,13 @@ export default class PlayUnitMutation {
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     } else if (units.length > 1) {
       const message = `Found multiple units with ID "${unitId}"`
-      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: ${JSON.stringify(units)}`)
+      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(units)}"`)
       return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
     const unit = units[0]
 
     if (!unit.combats || !unit.combats.includes(args.combat)) {
-      const message = `Combat "${args.combat}" does match unit combats of "${JSON.stringify(unit.combats)}"`
+      const message = `Combat "${args.combat}" does match unit combats of "${JSON.stringify(unit.combats)}".`
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}`)
       return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
@@ -139,7 +139,6 @@ export default class PlayUnitMutation {
 
     // set next player
     const nextPlayerId = MutationUtil.getNextPlayerIdForCurrentRound({
-      currentPlayer: player,
       game,
       logPrefix,
     })
@@ -152,6 +151,12 @@ export default class PlayUnitMutation {
       game,
       userId,
     })
+
+    if (!updatedGame) {
+      const message = `Could not play unit "${unitId}" for game "${gameId}" in probable race condition collision.`
+      PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+    }
 
     const resolvedGame = await GameResolver.fromObject({
       game: updatedGame,

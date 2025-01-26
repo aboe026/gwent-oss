@@ -48,6 +48,7 @@ export default class TestUtil {
     effects,
     combats,
     effectPrefix,
+    strength,
   }: {
     id?: ObjectId | string
     dlc?: ObjectId | string
@@ -55,6 +56,7 @@ export default class TestUtil {
     effects?: (ObjectId | string)[]
     combats?: string[]
     effectPrefix?: string
+    strength?: number
   }): UnitDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
@@ -68,6 +70,7 @@ export default class TestUtil {
       effects: effects ? effects.map((effect) => new ObjectId(effect)) : undefined,
       combats,
       effectPrefix,
+      strength,
     }
   }
 
@@ -99,14 +102,19 @@ export default class TestUtil {
     created,
     factionId,
     faction,
+    combats,
+    strength,
   }: {
     id?: ObjectId | string
     created?: Date
     factionId?: ObjectId | string
     faction?: Faction
+    combats?: Combat[]
+    strength?: number
   }): Unit {
     return {
       created: created || new Date(),
+      combats,
       deckable: true,
       faction:
         faction ||
@@ -117,6 +125,7 @@ export default class TestUtil {
       images: ['unit-image'],
       name: 'unit-name',
       quote: 'unit-quote',
+      strength,
     }
   }
 
@@ -136,9 +145,9 @@ export default class TestUtil {
     }
   }
 
-  static getDeckUnit({ id }: { id?: ObjectId | string }): DeckUnit {
+  static getDeckUnit({ id, artStyle = 1 }: { id?: ObjectId | string; artStyle?: number }): DeckUnit {
     return {
-      artStyle: 1,
+      artStyle,
       unit: TestUtil.getUnit({
         id,
       }),
@@ -421,6 +430,7 @@ export default class TestUtil {
     victors = [],
     updated = new Date(),
     round = 0,
+    weather = [],
   }: {
     id?: ObjectId | string
     created?: Date
@@ -430,6 +440,7 @@ export default class TestUtil {
     victors?: (ObjectId | string)[]
     updated?: Date
     round?: number
+    weather?: Combat[]
   }): GameDbObject {
     return {
       config: {
@@ -466,15 +477,13 @@ export default class TestUtil {
       turn: turn ? new ObjectId(turn) : undefined,
       updated,
       victors: victors.map((victor) => new ObjectId(victor)),
-      weather: [],
+      weather,
     }
   }
 
   static getGameFromDbGame({ game, creator }: { game: GameDbObject; creator?: User }): Game {
     return {
-      config: {
-        lives: 2,
-      },
+      config: game.config,
       created: game.created,
       creator:
         creator ||
@@ -483,12 +492,14 @@ export default class TestUtil {
         }),
       id: game._id.toString(),
       players: game.players.map((player) => {
+        const faction = TestUtil.getFaction({
+          id: player.deck.from?.faction,
+        })
         return TestUtil.getGamePlayer({
-          faction: TestUtil.getFaction({
-            id: player.deck.from?.faction,
-          }),
+          faction,
           leader: TestUtil.getLeader({
             id: player.deck.from?.leader,
+            faction,
           }),
           ready: player.ready,
           user: TestUtil.getUser({
@@ -621,19 +632,27 @@ export default class TestUtil {
     passed?: boolean
     result?: RoundResult
   }): PlayerRoundDbObject {
-    const combatRow: PlayerCombatRowDbObject = {
-      score: 0,
-      units: [],
-    }
-    return {
-      close: close || combatRow,
+    const round: PlayerRoundDbObject = {
+      close: close || {
+        score: 0,
+        units: [],
+      },
       moves,
-      ranged: ranged || combatRow,
-      siege: siege || combatRow,
+      ranged: ranged || {
+        score: 0,
+        units: [],
+      },
+      siege: siege || {
+        score: 0,
+        units: [],
+      },
       score,
       passed,
-      result,
     }
+    if (result) {
+      round.result = result
+    }
+    return round
   }
 
   static getDbGamePlayer({

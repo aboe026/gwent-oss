@@ -4,6 +4,9 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- have resolves throw custom errors instead of returning general one
+  - in shield file, filter out custom errors from general ones to determine which to show user
+  - have shared method for "getContextUser"
 - save game status to database?
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)
 - collapse UI method props when they are long (like PlayUnitProps)
@@ -62,6 +65,7 @@ A list of things to be done in the future.
 
 ## Features
 
+- have game card margin account for highlight border so it doesn't move right
 - remove ids from errors and put them in logPrefix
 - animations/text of what opponent did?
 - fix layout on small width screen

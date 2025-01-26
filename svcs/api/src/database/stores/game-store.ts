@@ -331,7 +331,7 @@ export default class GameStore extends Store {
     game: GameDbObject
     userId: ObjectId | string
     nextTurn?: ObjectId | string
-  }): Promise<GameDbObject> {
+  }): Promise<GameDbObject | undefined> {
     GameStore.logger.debug(`Move made on game "${game._id}" by user "${userId}", setting next move to "${nextTurn}"`)
     const filter: Filter<Document> = {
       _id: game._id,
