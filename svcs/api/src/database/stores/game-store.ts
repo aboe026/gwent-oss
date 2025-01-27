@@ -335,13 +335,11 @@ export default class GameStore extends Store {
   static async makeMove({
     game,
     userId,
-    nextTurn,
   }: {
     game: GameDbObject
     userId: ObjectId | string
-    nextTurn?: ObjectId | string
   }): Promise<GameDbObject | undefined> {
-    GameStore.logger.debug(`Move made on game "${game._id}" by user "${userId}", setting next move to "${nextTurn}"`)
+    GameStore.logger.debug(`Move made on game "${game._id}" by user "${userId}", setting next move to "${game.turn}"`)
     const filter: Filter<Document> = {
       _id: game._id,
       turn: new ObjectId(userId),
@@ -351,7 +349,6 @@ export default class GameStore extends Store {
       $set: {
         ...game,
         updated: new Date(),
-        turn: new ObjectId(nextTurn),
       },
     }
     if (GameStore.logger.isTraceEnabled()) {

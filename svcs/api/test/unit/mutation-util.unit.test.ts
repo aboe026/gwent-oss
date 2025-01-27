@@ -313,7 +313,7 @@ describe('mutation-util', () => {
         ],
       })
     })
-    it('returns second player in turn order when first players turn and both have passed', () => {
+    it('returns error if both players have passed in the current round', () => {
       const player1 = TestUtil.getDbGamePlayer({
         user: userId,
         order: 0,
@@ -331,6 +331,7 @@ describe('mutation-util', () => {
           }),
         ],
       })
+      const message = 'Could not determine next player for round "1".'
       testGetNextPlayerIdForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
@@ -338,12 +339,8 @@ describe('mutation-util', () => {
           turn: player1.user,
         }),
         logPrefix,
-        expected: player2.user,
-        errorCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound No user eligible to be next player for round "1", getting player to start round "2" based off game turn order`,
-          ],
-        ],
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
         traceCalls: [
           [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
           [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
@@ -353,50 +350,6 @@ describe('mutation-util', () => {
           [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
           [
             `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
-          ],
-        ],
-      })
-    })
-    it('returns second player in turn order when second players turn and both have passed', () => {
-      const player1 = TestUtil.getDbGamePlayer({
-        user: userId,
-        order: 0,
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            passed: true,
-          }),
-        ],
-      })
-      const player2 = TestUtil.getDbGamePlayer({
-        order: 1,
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            passed: true,
-          }),
-        ],
-      })
-      testGetNextPlayerIdForCurrentRound({
-        game: TestUtil.getDbGame({
-          players: [player1, player2],
-          round: 1,
-          turn: player2.user,
-        }),
-        logPrefix,
-        expected: player2.user,
-        errorCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound No user eligible to be next player for round "1", getting player to start round "2" based off game turn order`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
-          ],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
           ],
         ],
       })

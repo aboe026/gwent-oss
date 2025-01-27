@@ -9,7 +9,6 @@ import {
   DeckUnitDbObject,
   GameDbObject,
   GameDeckDbObject,
-  GamePlayerDbObject,
   GameStatus,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -57,20 +56,20 @@ describe('play-unit-mutation', () => {
     it('returns error if unit not in hand', async () => {
       const message = 'Unit not in hand.'
       const game = getTestGame(gameId, userId, unitId)
-      const badPlayer: GamePlayerDbObject = {
-        ...game.players[0],
-        deck: TestUtil.getDbGameDeck({}),
-      }
+      game.players = [
+        {
+          ...game.players[0],
+          deck: TestUtil.getDbGameDeck({}),
+        },
+        game.players[1],
+      ]
       await testPlayUnit({
         userId,
         gameId,
         unitId,
         resolvedGameResponse: {
-          game: {
-            ...game,
-            players: [badPlayer],
-          },
-          player: badPlayer,
+          game,
+          player: game.players[0],
         },
         expected: Error(message),
         warnCalls: [[`${logPrefix} failed: ${message}`]],
@@ -87,23 +86,23 @@ describe('play-unit-mutation', () => {
         }),
       ]
       const game = getTestGame(gameId, userId, unitId)
-      const badPlayer: GamePlayerDbObject = {
-        ...game.players[0],
-        deck: {
-          ...game.players[0].deck,
-          hand: deckUnits,
+      game.players = [
+        {
+          ...game.players[0],
+          deck: {
+            ...game.players[0].deck,
+            hand: deckUnits,
+          },
         },
-      }
+        game.players[1],
+      ]
       await testPlayUnit({
         userId,
         gameId,
         unitId,
         resolvedGameResponse: {
-          game: {
-            ...game,
-            players: [badPlayer],
-          },
-          player: badPlayer,
+          game,
+          player: game.players[0],
         },
         expected: Error(`${message}.`),
         errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`]],
@@ -211,7 +210,7 @@ describe('play-unit-mutation', () => {
       })
     })
     it('returns error if getNextPlayerIdForCurrentRound returns error', async () => {
-      const message = `Could not determine order of current player "${userId}": "undefined".`
+      const message = 'Could not determine next player for round "1".'
       const artStyle = 1
       const strength = 2
       const deckUnit = TestUtil.getDbUnit({
@@ -221,17 +220,22 @@ describe('play-unit-mutation', () => {
       })
       const moveDate = new Date()
       const game = getTestGame(gameId, userId, unitId)
-      const badPlayer: GamePlayerDbObject = {
-        ...game.players[0],
-        order: undefined,
-      }
+      game.players = game.players.map((gamePlayer) => {
+        return {
+          ...gamePlayer,
+          rounds: gamePlayer.rounds.map((round) => {
+            round.passed = true
+            return round
+          }),
+        }
+      })
       const modifiedGame: GameDbObject = {
         ...game,
         players: [
           {
-            ...badPlayer,
+            ...game.players[0],
             deck: {
-              ...badPlayer.deck,
+              ...game.players[0].deck,
               hand: [],
             },
             rounds: [
@@ -261,23 +265,21 @@ describe('play-unit-mutation', () => {
               }),
             ],
           },
+          game.players[1],
         ],
+        turn: game.players[1].user,
       }
       await testPlayUnit({
         userId,
         gameId,
         unitId,
         resolvedGameResponse: {
-          game: {
-            ...game,
-            players: [badPlayer],
-          },
-          player: badPlayer,
+          game,
+          player: game.players[0],
         },
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        nextPlayerIdResponse: Error(message),
         expected: Error(message),
       })
     })
@@ -292,17 +294,13 @@ describe('play-unit-mutation', () => {
       })
       const moveDate = new Date()
       const game = getTestGame(gameId, userId, unitId)
-      const badPlayer: GamePlayerDbObject = {
-        ...game.players[0],
-        order: undefined,
-      }
       const modifiedGame: GameDbObject = {
         ...game,
         players: [
           {
-            ...badPlayer,
+            ...game.players[0],
             deck: {
-              ...badPlayer.deck,
+              ...game.players[0].deck,
               hand: [],
             },
             rounds: [
@@ -332,23 +330,22 @@ describe('play-unit-mutation', () => {
               }),
             ],
           },
+          game.players[1],
         ],
+        turn: game.players[1].user,
       }
       await testPlayUnit({
         userId,
         gameId,
         unitId,
         resolvedGameResponse: {
-          game: {
-            ...game,
-            players: [badPlayer],
-          },
-          player: badPlayer,
+          game,
+          player: game.players[0],
         },
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        nextPlayerIdResponse: new ObjectId(),
+        makeMoveCalled: true,
         makeMoveResponseEmpty: true,
         expected: Error(message),
         errorCalls: [[`${logPrefix} failed: ${message}`]],
@@ -400,7 +397,9 @@ describe('play-unit-mutation', () => {
               }),
             ],
           },
+          game.players[1],
         ],
+        turn: game.players[1].user,
       }
       await testPlayUnit({
         userId,
@@ -413,7 +412,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        nextPlayerIdResponse: new ObjectId(),
+        makeMoveCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -465,7 +464,9 @@ describe('play-unit-mutation', () => {
               }),
             ],
           },
+          game.players[1],
         ],
+        turn: game.players[1].user,
       }
       await testPlayUnit({
         userId,
@@ -479,7 +480,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        nextPlayerIdResponse: new ObjectId(),
+        makeMoveCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -531,7 +532,9 @@ describe('play-unit-mutation', () => {
               }),
             ],
           },
+          game.players[1],
         ],
+        turn: game.players[1].user,
       }
       await testPlayUnit({
         userId,
@@ -545,7 +548,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        nextPlayerIdResponse: new ObjectId(),
+        makeMoveCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -594,7 +597,9 @@ describe('play-unit-mutation', () => {
               }),
             ],
           },
+          game.players[1],
         ],
+        turn: game.players[1].user,
       }
       await testPlayUnit({
         userId,
@@ -607,7 +612,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        nextPlayerIdResponse: new ObjectId(),
+        makeMoveCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -623,19 +628,24 @@ describe('play-unit-mutation', () => {
       })
       const moveDate = new Date()
       const game = getTestGame(gameId, userId, unitId)
-      const firstPlayer = TestUtil.getDbGamePlayer({})
-      const secondPlayer: GamePlayerDbObject = {
-        ...game.players[0],
-        order: 1,
-      }
+      game.players = game.players = [
+        {
+          ...game.players[1],
+          order: 0,
+        },
+        {
+          ...game.players[0],
+          order: 1,
+        },
+      ]
       const modifiedGame: GameDbObject = {
         ...game,
         players: [
-          firstPlayer,
+          game.players[0],
           {
-            ...secondPlayer,
+            ...game.players[1],
             deck: {
-              ...secondPlayer.deck,
+              ...game.players[1].deck,
               hand: [],
             },
             rounds: [
@@ -666,22 +676,20 @@ describe('play-unit-mutation', () => {
             ],
           },
         ],
+        turn: game.players[0].user,
       }
       await testPlayUnit({
         userId,
         gameId,
         unitId,
         resolvedGameResponse: {
-          game: {
-            ...game,
-            players: [firstPlayer, secondPlayer],
-          },
-          player: secondPlayer,
+          game,
+          player: game.players[1],
         },
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        nextPlayerIdResponse: new ObjectId(),
+        makeMoveCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -697,19 +705,20 @@ describe('play-unit-mutation', () => {
       })
       const moveDate = new Date()
       const game = getTestGame(gameId, userId, unitId)
-      const playerWith2Rounds: GamePlayerDbObject = {
-        ...game.players[0],
-        rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
-      }
-      game.players = [playerWith2Rounds]
+      game.players = game.players.map((gamePlayer) => {
+        return {
+          ...gamePlayer,
+          rounds: [...gamePlayer.rounds, TestUtil.getDbPlayerRound({})],
+        }
+      })
       game.round = 2
       const modifiedGame: GameDbObject = {
         ...game,
         players: [
           {
-            ...playerWith2Rounds,
+            ...game.players[0],
             deck: {
-              ...playerWith2Rounds.deck,
+              ...game.players[0].deck,
               hand: [],
             },
             rounds: [
@@ -740,7 +749,9 @@ describe('play-unit-mutation', () => {
               }),
             ],
           },
+          game.players[1],
         ],
+        turn: game.players[1].user,
       }
       await testPlayUnit({
         userId,
@@ -748,12 +759,12 @@ describe('play-unit-mutation', () => {
         unitId,
         resolvedGameResponse: {
           game,
-          player: playerWith2Rounds,
+          player: game.players[0],
         },
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        nextPlayerIdResponse: new ObjectId(),
+        makeMoveCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -805,7 +816,9 @@ describe('play-unit-mutation', () => {
               }),
             ],
           },
+          game.players[1],
         ],
+        turn: game.players[1].user,
       }
       await testPlayUnit({
         userId,
@@ -818,7 +831,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        nextPlayerIdResponse: new ObjectId(),
+        makeMoveCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -835,9 +848,9 @@ async function testPlayUnit({
   combat,
   resolvedGameResponse,
   resolvedUnitsResponse,
-  nextPlayerIdResponse,
   modifiedGame,
   moveDate,
+  makeMoveCalled,
   makeMoveResponseEmpty,
   expected,
   errorCalls = [],
@@ -850,9 +863,9 @@ async function testPlayUnit({
   combat?: Combat
   resolvedGameResponse?: GamePlayerResponse | Error
   resolvedUnitsResponse?: UnitDbObject[]
-  nextPlayerIdResponse?: ObjectId | Error
   modifiedGame?: GameDbObject
   moveDate?: Date
+  makeMoveCalled?: boolean
   makeMoveResponseEmpty?: boolean
   expected: Game | Error
   errorCalls?: string[][]
@@ -881,16 +894,12 @@ async function testPlayUnit({
   if (resolvedUnitsResponse) {
     getUnitsSpy.mockResolvedValue(resolvedUnitsResponse)
   }
-  const nextPlayerIdSpy = jest.spyOn(MutationUtil, 'getNextPlayerIdForCurrentRound')
-  if (nextPlayerIdResponse) {
-    nextPlayerIdSpy.mockReturnValue(nextPlayerIdResponse)
-  }
   const updated = new Date()
 
   const updatedGame: GameDbObject = {
     ...(modifiedGame as GameDbObject),
     updated,
-    turn: nextPlayerIdResponse as ObjectId,
+    turn: userId,
   }
   const makeMoveSpy = jest
     .spyOn(GameStore, 'makeMove')
@@ -963,26 +972,13 @@ async function testPlayUnit({
         ]
       : []
   )
-  expect(nextPlayerIdSpy.mock.calls).toEqual(
-    nextPlayerIdResponse
-      ? [
-          [
-            {
-              game: modifiedGame,
-              logPrefix,
-            },
-          ],
-        ]
-      : []
-  )
   expect(dateSpy.mock.calls).toEqual(moveDate ? [[]] : [])
-  const gameReturned = nextPlayerIdResponse && !(nextPlayerIdResponse instanceof Error) && !makeMoveResponseEmpty
+  const gameReturned = makeMoveCalled && !makeMoveResponseEmpty
   expect(makeMoveSpy.mock.calls).toEqual(
-    nextPlayerIdResponse && !(nextPlayerIdResponse instanceof Error)
+    makeMoveCalled
       ? [
           [
             {
-              nextTurn: nextPlayerIdResponse,
               game: modifiedGame,
               userId,
             },
@@ -1083,7 +1079,12 @@ function getTestGame(gameId: string, userId: ObjectId, unitId: string): GameDbOb
         rounds: [TestUtil.getDbPlayerRound({})],
         order: 0,
       }),
+      TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
+        order: 1,
+      }),
     ],
+    turn: userId,
     round: 1,
   })
 }

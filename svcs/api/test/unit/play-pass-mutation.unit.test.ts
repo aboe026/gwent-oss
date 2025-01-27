@@ -166,7 +166,7 @@ describe('play-pass-mutation', () => {
           },
           secondPlayer,
         ],
-        turn: firstPlayer.user,
+        turn: secondPlayer.user,
       }
       await testPlayPass({
         userId,
@@ -225,7 +225,7 @@ describe('play-pass-mutation', () => {
           },
           secondPlayer,
         ],
-        turn: firstPlayer.user,
+        turn: secondPlayer.user,
       }
       await testPlayPass({
         userId,
@@ -299,7 +299,7 @@ describe('play-pass-mutation', () => {
             ],
           },
         ],
-        turn: firstPlayer.user,
+        turn: secondPlayer.user,
         round: 2,
       }
       await testPlayPass({
@@ -390,7 +390,6 @@ describe('play-pass-mutation', () => {
             ],
           },
         ],
-        turn: firstPlayer.user,
         round: 2,
       }
       await testPlayPass({
@@ -486,7 +485,7 @@ describe('play-pass-mutation', () => {
             ],
           },
         ],
-        turn: firstPlayer.user,
+        turn: undefined,
         round: 2,
         victors: [firstPlayer.user],
       }
@@ -566,7 +565,7 @@ describe('play-pass-mutation', () => {
           },
           secondPlayer,
         ],
-        turn: firstPlayer.user,
+        turn: secondPlayer.user,
       }
       await testPlayPass({
         userId,
@@ -718,7 +717,10 @@ async function testPlayPass({
       ? [
           [
             {
-              game: modifiedGame,
+              game: {
+                ...modifiedGame,
+                turn: userId,
+              },
               logPrefix,
             },
           ],
@@ -731,7 +733,6 @@ async function testPlayPass({
       ? [
           [
             {
-              nextTurn: nextPlayerId,
               game: modifiedGame,
               userId,
             },

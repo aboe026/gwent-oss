@@ -193,19 +193,16 @@ describe('game-store', () => {
   describe('makeMove', () => {
     it('calls out to update and returns result if id strings', async () => {
       await testMakeMove({
-        nextTurn: new ObjectId().toString(),
         userId: new ObjectId().toString(),
       })
     })
     it('calls out to update and returns result if id ObjectIds', async () => {
       await testMakeMove({
-        nextTurn: new ObjectId(),
         userId: new ObjectId(),
       })
     })
     it('logs out info if trace enabled', async () => {
       await testMakeMove({
-        nextTurn: new ObjectId(),
         userId: new ObjectId(),
         traceEnabled: true,
       })
@@ -723,15 +720,7 @@ async function testSetReady({
   )
 }
 
-async function testMakeMove({
-  nextTurn,
-  userId,
-  traceEnabled,
-}: {
-  nextTurn: string | ObjectId
-  userId: string | ObjectId
-  traceEnabled?: boolean
-}) {
+async function testMakeMove({ userId, traceEnabled }: { userId: string | ObjectId; traceEnabled?: boolean }) {
   const game = TestUtil.getDbGame({
     creator: userId,
   })
@@ -739,7 +728,6 @@ async function testMakeMove({
   const udatedGame: GameDbObject = {
     ...game,
     updated,
-    turn: new ObjectId(nextTurn),
   }
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -759,7 +747,6 @@ async function testMakeMove({
     $set: {
       ...game,
       updated,
-      turn: new ObjectId(nextTurn),
     },
   }
 
@@ -767,7 +754,6 @@ async function testMakeMove({
     GameStore.makeMove({
       game: game,
       userId,
-      nextTurn,
     })
   ).resolves.toEqual(udatedGame)
 
@@ -782,7 +768,7 @@ async function testMakeMove({
   ])
   expect(dateSpy.mock.calls).toEqual([[]])
   expect(debugSpy.mock.calls).toEqual([
-    [`Move made on game "${game._id}" by user "${userId}", setting next move to "${nextTurn}"`],
+    [`Move made on game "${game._id}" by user "${userId}", setting next move to "${game.turn}"`],
   ])
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled

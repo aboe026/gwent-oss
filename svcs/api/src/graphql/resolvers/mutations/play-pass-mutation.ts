@@ -232,12 +232,11 @@ export default class PlayPassMutation {
       nextPlayerId = potentialNextPlayerId
     }
 
-    // TODO: remove "nextTurn" as a parameter for "makeMove"
-    // derive "nextTurn" from "game" parameter (the "turn" property can just be updated there)
-    // derive "currentUser" from "userId" parameter
     const updatedGame = await GameStore.makeMove({
-      nextTurn: nextPlayerId,
-      game,
+      game: {
+        ...game,
+        turn: nextPlayerId, // for some reason had to set turn here, if try to just do "game.turn = nextPlayerId" before this unit tests fail due to strange(impossible?) race condition on game turn user
+      },
       userId,
     })
 

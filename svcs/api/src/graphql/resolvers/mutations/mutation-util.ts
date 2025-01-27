@@ -139,8 +139,6 @@ export default class MutationUtil {
     if (currentPlayerOrder === undefined || currentPlayerOrder === null) {
       const message = `Could not determine order of current player "${currentPlayer.user}": "${currentPlayerOrder}".`
       MutationUtil.logger.error(`${logPrefix} getNextPlayerIdForCurrentRound failed: ${message}`)
-      // TODO: check for errors where this is called
-      // TODO: throw error instead of returning error
       return Error(message)
     }
     for (let i = 0; i < game.players.length && nextPlayerId === undefined; i++) {
@@ -165,13 +163,9 @@ export default class MutationUtil {
       }
     }
     if (!nextPlayerId) {
-      // TODO: return error instead?
-      MutationUtil.logger.error(
-        `${logPrefix} getNextPlayerIdForCurrentRound No user eligible to be next player for round "${currentRound}", getting player to start round "${
-          currentRound + 1
-        }" based off game turn order`
-      )
-      nextPlayerId = usersByOrder[currentRound % game.players.length].user
+      const message = `Could not determine next player for round "${currentRound}".`
+      MutationUtil.logger.error(`${logPrefix} failed: ${message}`)
+      return Error(message)
     }
     return nextPlayerId
   }

@@ -169,8 +169,10 @@ export default class PlayUnitMutation {
     }
 
     const updatedGame = await GameStore.makeMove({
-      nextTurn: nextPlayerId,
-      game,
+      game: {
+        ...game,
+        turn: nextPlayerId, // for some reason had to set turn here, if try to just do "game.turn = nextPlayerId" before this unit tests fail due to strange(impossible?) race condition on game turn user
+      },
       userId,
     })
 
