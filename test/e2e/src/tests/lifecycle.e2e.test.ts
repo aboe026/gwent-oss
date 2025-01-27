@@ -414,7 +414,7 @@ test('Speed Run', async (t) => {
   })
   // TODO: rename to self/opponent
   E2eHelper.endRound({
-    creator: gamePlayer2,
+    self: gamePlayer2,
     opponent: gamePlayer1,
     losers: [gamePlayer1],
   })
@@ -486,7 +486,7 @@ test('Speed Run', async (t) => {
     moves: moves2,
   })
   E2eHelper.endRound({
-    creator: gamePlayer1,
+    self: gamePlayer1,
     opponent: gamePlayer2,
     losers: [gamePlayer1, gamePlayer2],
     gameOver: true,
@@ -1093,7 +1093,7 @@ test('Scenic Route', async (t) => {
     switchTurnsWith: gamePlayer1,
   })
   E2eHelper.endRound({
-    creator: gamePlayer2,
+    self: gamePlayer2,
     opponent: gamePlayer1,
     losers: [gamePlayer2],
   })
@@ -1315,7 +1315,7 @@ test('Scenic Route', async (t) => {
     moves: moves2,
   })
   E2eHelper.endRound({
-    creator: gamePlayer2,
+    self: gamePlayer2,
     opponent: gamePlayer1,
     losers: [gamePlayer1],
   })
@@ -1386,7 +1386,7 @@ test('Scenic Route', async (t) => {
     moves: moves3,
   })
   E2eHelper.endRound({
-    creator: gamePlayer2,
+    self: gamePlayer2,
     opponent: gamePlayer1,
     losers: [gamePlayer1, gamePlayer2],
     gameOver: true,

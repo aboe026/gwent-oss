@@ -172,34 +172,34 @@ export class E2eHelper {
   }
 
   static endRound({
-    creator,
+    self,
     opponent,
     gameOver,
     losers,
   }: {
-    creator: GamePlayerExpected
+    self: GamePlayerExpected
     opponent: GamePlayerExpected
     gameOver?: boolean
     losers: GamePlayerExpected[]
   }) {
-    creator.score = 0
+    self.score = 0
     opponent.score = 0
-    creator.discard =
-      (creator.discard || 0) +
+    self.discard =
+      (self.discard || 0) +
       E2eHelper.resetPlayerCombatRow({
-        player: creator,
+        player: self,
         row: Combat.Close,
       })
-    creator.discard =
-      (creator.discard || 0) +
+    self.discard =
+      (self.discard || 0) +
       E2eHelper.resetPlayerCombatRow({
-        player: creator,
+        player: self,
         row: Combat.Ranged,
       })
-    creator.discard =
-      (creator.discard || 0) +
+    self.discard =
+      (self.discard || 0) +
       E2eHelper.resetPlayerCombatRow({
-        player: creator,
+        player: self,
         row: Combat.Siege,
       })
     opponent.discard =
@@ -220,12 +220,12 @@ export class E2eHelper {
         player: opponent,
         row: Combat.Siege,
       })
-    creator.passed = false
+    self.passed = false
     opponent.passed = undefined
     if (gameOver) {
-      creator.passed = undefined
-      creator.score = undefined
-      creator.turn = undefined
+      self.passed = undefined
+      self.score = undefined
+      self.turn = undefined
       opponent.score = undefined
       opponent.turn = undefined
     }

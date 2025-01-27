@@ -215,7 +215,7 @@ test('Opponent passes ends in victory after 2 rounds', async (t) => {
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
   })
@@ -275,7 +275,7 @@ test('Opponent passes ends in victory after 2 rounds', async (t) => {
     moves: t.ctx.round2Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     gameOver: true,
     losers: [t.ctx.opponentPlayer],
@@ -352,7 +352,7 @@ test('Self passes ends in loss after 2 rounds', async (t) => {
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
   })
@@ -413,7 +413,7 @@ test('Self passes ends in loss after 2 rounds', async (t) => {
     moves: t.ctx.round2Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
     gameOver: true,
@@ -464,7 +464,7 @@ test('All passes ends in tie after 2 rounds', async (t) => {
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer, t.ctx.opponentPlayer],
   })
@@ -502,7 +502,7 @@ test('All passes ends in tie after 2 rounds', async (t) => {
     moves: t.ctx.round2Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer, t.ctx.opponentPlayer],
     gameOver: true,
@@ -580,7 +580,7 @@ test('Win loss win ends in victory', async (t) => {
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
   })
@@ -645,7 +645,7 @@ test('Win loss win ends in victory', async (t) => {
     moves: t.ctx.round2Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
   })
@@ -704,7 +704,7 @@ test('Win loss win ends in victory', async (t) => {
     moves: t.ctx.round3Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
     gameOver: true,
@@ -786,7 +786,7 @@ test('Win loss loss ends in defeat', async (t) => {
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
   })
@@ -851,7 +851,7 @@ test('Win loss loss ends in defeat', async (t) => {
     moves: t.ctx.round2Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
   })
@@ -912,7 +912,7 @@ test('Win loss loss ends in defeat', async (t) => {
     moves: t.ctx.round3Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
     gameOver: true,
@@ -994,7 +994,7 @@ test('Win loss tie ends in tie', async (t) => {
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
   })
@@ -1059,7 +1059,7 @@ test('Win loss tie ends in tie', async (t) => {
     moves: t.ctx.round2Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
   })
@@ -1097,7 +1097,7 @@ test('Win loss tie ends in tie', async (t) => {
     moves: t.ctx.round3Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer, t.ctx.opponentPlayer],
     gameOver: true,
@@ -1178,7 +1178,7 @@ test('Loss win win ends in victory', async (t) => {
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
   })
@@ -1242,7 +1242,7 @@ test('Loss win win ends in victory', async (t) => {
     moves: t.ctx.round2Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
   })
@@ -1302,7 +1302,7 @@ test('Loss win win ends in victory', async (t) => {
     moves: t.ctx.round3Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
     gameOver: true,
@@ -1383,7 +1383,7 @@ test('Loss win loss ends in defeat', async (t) => {
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
   })
@@ -1447,7 +1447,7 @@ test('Loss win loss ends in defeat', async (t) => {
     moves: t.ctx.round2Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
   })
@@ -1507,7 +1507,7 @@ test('Loss win loss ends in defeat', async (t) => {
     moves: t.ctx.round3Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
     gameOver: true,
@@ -1588,7 +1588,7 @@ test('Loss win tie ends in tie', async (t) => {
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer],
   })
@@ -1652,7 +1652,7 @@ test('Loss win tie ends in tie', async (t) => {
     moves: t.ctx.round2Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
   })
@@ -1690,7 +1690,7 @@ test('Loss win tie ends in tie', async (t) => {
     moves: t.ctx.round3Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.selfPlayer, t.ctx.opponentPlayer],
     gameOver: true,

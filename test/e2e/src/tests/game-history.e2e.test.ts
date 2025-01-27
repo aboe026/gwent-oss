@@ -1193,7 +1193,7 @@ test('Selecting history unit that is no longer on battlefield is dotted', async 
     moves: t.ctx.round1Moves,
   })
   E2eHelper.endRound({
-    creator: t.ctx.selfPlayer,
+    self: t.ctx.selfPlayer,
     opponent: t.ctx.opponentPlayer,
     losers: [t.ctx.opponentPlayer],
   })

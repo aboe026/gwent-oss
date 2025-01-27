@@ -1221,7 +1221,7 @@ test('Play pass at end of round after session expires', async (t) => {
     moves: round1Moves,
   })
   E2eHelper.endRound({
-    creator: currentPlayer,
+    self: currentPlayer,
     opponent: otherPlayer,
     losers: [otherPlayer],
   })

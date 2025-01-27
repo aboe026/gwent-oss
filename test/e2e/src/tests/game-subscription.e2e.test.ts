@@ -1366,7 +1366,7 @@ test('Page automatically updates after pass at round end via API on game page', 
     moves,
   })
   E2eHelper.endRound({
-    creator: selfPlayer,
+    self: selfPlayer,
     opponent: opponentPlayer,
     losers: [opponentPlayer],
   })

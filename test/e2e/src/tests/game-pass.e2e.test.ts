@@ -241,7 +241,7 @@ test('Can pass after opponent passes', async (t) => {
     moves,
   })
   E2eHelper.endRound({
-    creator: opponentPlayer,
+    self: opponentPlayer,
     opponent: selfPlayer,
     losers: [selfPlayer, opponentPlayer],
   })
