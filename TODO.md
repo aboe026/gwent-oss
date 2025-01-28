@@ -68,12 +68,6 @@ A list of things to be done in the future.
 
 ## Features
 
-- e2e tests
-- unit tests
-- ensure js-docs
-- increment version
-- delete db for func tests before every test (instead of before every file)
-
 - Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
