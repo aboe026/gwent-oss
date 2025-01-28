@@ -68,7 +68,6 @@ A list of things to be done in the future.
 
 ## Features
 
-- have game card margin account for highlight border so it doesn't move right
 - e2e tests
 - unit tests
 - ensure js-docs

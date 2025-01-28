@@ -28,7 +28,11 @@ export default function UnitGameCard({
     <div
       className={`${HTML_CLASSES.UnitGameCardContainer} ${selected ? HTML_CLASSES.ItemHighlighted : ''}`}
       title={unitTitle}
-      style={{ cursor, borderStyle: selected ? (dotted ? 'dotted' : 'solid') : 'none' }}
+      style={{
+        cursor,
+        borderStyle: selected ? (dotted ? 'dotted' : 'solid') : 'none',
+        marginLeft: selected ? '-4px' : '0',
+      }}
     >
       <img className="unit-game-card-image" title={unitTitle} src={deckUnit.unit.images[deckUnit.artStyle - 1]} />
       <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>
