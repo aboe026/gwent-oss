@@ -152,7 +152,7 @@ fixture('Game Play')
     t.ctx.game = await selfClient.getGame(t.ctx.game.id)
   })
 
-test('Can play a unit as first move', async (t) => {
+test('Play a unit as first move', async (t) => {
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
     turn: PlayerTurn.Current,
@@ -208,7 +208,7 @@ test('Can play a unit as first move', async (t) => {
   })
 })
 
-test('Can play a unit after opponent plays unit', async (t) => {
+test('Play a unit after opponent plays unit', async (t) => {
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
     turn: PlayerTurn.Current,

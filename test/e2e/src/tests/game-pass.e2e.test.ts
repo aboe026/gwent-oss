@@ -155,7 +155,7 @@ fixture('Game Pass')
     t.ctx.game = await selfClient.getGame(t.ctx.game.id)
   })
 
-test('Can pass as first move', async (t) => {
+test('Pass as first move', async (t) => {
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
     turn: PlayerTurn.Current,
@@ -200,7 +200,7 @@ test('Can pass as first move', async (t) => {
   })
 })
 
-test('Can pass after opponent passes', async (t) => {
+test('Pass after opponent passes', async (t) => {
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
     ready: true,

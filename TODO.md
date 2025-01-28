@@ -74,7 +74,6 @@ A list of things to be done in the future.
 - ensure js-docs
 - increment version
 - delete db for func tests before every test (instead of before every file)
-- remove "Can " prefix for test names
 
 - Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)

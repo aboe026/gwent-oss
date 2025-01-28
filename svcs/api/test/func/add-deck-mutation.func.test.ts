@@ -532,7 +532,7 @@ describe('add-deck-mutation', () => {
       })
     })
     describe('valid', () => {
-      it('can add deck for monsters faction', async () => {
+      it('add deck for monsters faction', async () => {
         const faction = FactionKey.Monsters
         const leader = 'Eredin Bringer of Death'
         const name = `decks-${Date.now()}`
@@ -570,7 +570,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck for nilfgaardian empire faction', async () => {
+      it('add deck for nilfgaardian empire faction', async () => {
         const faction = FactionKey.NilfgaardianEmpire
         const leader = 'Emhyr var Emreis Invader of the North'
         const name = `decks-${Date.now()}`
@@ -608,7 +608,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck for northern realms faction', async () => {
+      it('add deck for northern realms faction', async () => {
         const faction = FactionKey.NorthernRealms
         const leader = 'Foltest Son of Medell'
         const name = `decks-${Date.now()}`
@@ -646,7 +646,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck for scoiatael faction', async () => {
+      it('add deck for scoiatael faction', async () => {
         const faction = FactionKey.ScoiaTael
         const leader = 'Francesca Findabair Queen of Dol Blathanna'
         const name = `decks-${Date.now()}`
@@ -684,7 +684,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck for skellige faction', async () => {
+      it('add deck for skellige faction', async () => {
         const faction = FactionKey.Skellige
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
@@ -722,7 +722,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck with explicit default artStyles', async () => {
+      it('add deck with explicit default artStyles', async () => {
         const faction = FactionKey.Skellige
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
@@ -770,7 +770,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck with explicit custom artStyles', async () => {
+      it('add deck with explicit custom artStyles', async () => {
         const faction = FactionKey.Skellige
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
@@ -819,7 +819,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck with same name as the deck of another user', async () => {
+      it('add deck with same name as the deck of another user', async () => {
         const faction = FactionKey.NorthernRealms
         const leader = 'Foltest Son of Medell'
         const name = `decks-${Date.now()}`

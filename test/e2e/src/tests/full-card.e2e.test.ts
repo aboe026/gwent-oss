@@ -581,7 +581,7 @@ test('Moving to previous and next units works for a deck card', async (t) => {
   await FullCard.verify({})
 })
 
-test('Can select card for deck', async (t) => {
+test('Select card for deck', async (t) => {
   const client = new ApiClient({
     username: t.ctx.user.name,
   })
