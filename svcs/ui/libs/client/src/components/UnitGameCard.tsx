@@ -31,7 +31,6 @@ export default function UnitGameCard({
       style={{
         cursor,
         borderStyle: selected ? (dotted ? 'dotted' : 'solid') : 'none',
-        marginLeft: selected ? '-4px' : '0',
       }}
     >
       <img className="unit-game-card-image" title={unitTitle} src={deckUnit.unit.images[deckUnit.artStyle - 1]} />

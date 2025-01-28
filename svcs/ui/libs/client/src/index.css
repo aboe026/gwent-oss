@@ -138,6 +138,5 @@ button {
   border-width: 4px;
   border-radius: 10px;
   border-color: #e9a018;
-  margin-top: -4px;
-  margin-right: -8px;
+  margin: -4px;
 }
