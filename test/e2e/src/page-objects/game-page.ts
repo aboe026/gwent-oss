@@ -1062,7 +1062,6 @@ interface RoundScores {
   opponent: number
 }
 
-// TODO: rename "Highlighted" everywhere to "Selected"
 interface HighlightedHandCard {
   unitName: string
   dotted?: boolean

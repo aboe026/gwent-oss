@@ -181,138 +181,6 @@ describe('mutation-util', () => {
         traceCalls: [[`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "undefined"`]],
       })
     })
-    it('returns second player in turn order when first players turn and second player has not passed', () => {
-      const player1 = TestUtil.getDbGamePlayer({
-        user: userId,
-        order: 0,
-        rounds: [TestUtil.getDbPlayerRound({})],
-      })
-      const player2 = TestUtil.getDbGamePlayer({
-        order: 1,
-        rounds: [TestUtil.getDbPlayerRound({})],
-      })
-      testGetNextPlayerIdForCurrentRound({
-        game: TestUtil.getDbGame({
-          players: [player1, player2],
-          round: 1,
-          turn: player1.user,
-        }),
-        logPrefix,
-        expected: player2.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        ],
-      })
-    })
-    it('returns first player in turn order when second players turn and first player has not passed', () => {
-      const player1 = TestUtil.getDbGamePlayer({
-        user: userId,
-        order: 0,
-        rounds: [TestUtil.getDbPlayerRound({})],
-      })
-      const player2 = TestUtil.getDbGamePlayer({
-        order: 1,
-        rounds: [TestUtil.getDbPlayerRound({})],
-      })
-      testGetNextPlayerIdForCurrentRound({
-        game: TestUtil.getDbGame({
-          players: [player1, player2],
-          round: 1,
-          turn: player2.user,
-        }),
-        logPrefix,
-        expected: player1.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        ],
-      })
-    })
-    it('returns first player in turn order when first players turn and second player has passed', () => {
-      const player1 = TestUtil.getDbGamePlayer({
-        user: userId,
-        order: 0,
-        rounds: [TestUtil.getDbPlayerRound({})],
-      })
-      const player2 = TestUtil.getDbGamePlayer({
-        order: 1,
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            passed: true,
-          }),
-        ],
-      })
-      testGetNextPlayerIdForCurrentRound({
-        game: TestUtil.getDbGame({
-          players: [player1, player2],
-          round: 1,
-          turn: player1.user,
-        }),
-        logPrefix,
-        expected: player1.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
-          ],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
-        ],
-      })
-    })
-    it('returns second player in turn order when second players turn and first player has passed', () => {
-      const player1 = TestUtil.getDbGamePlayer({
-        user: userId,
-        order: 0,
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            passed: true,
-          }),
-        ],
-      })
-      const player2 = TestUtil.getDbGamePlayer({
-        order: 1,
-        rounds: [TestUtil.getDbPlayerRound({})],
-      })
-      testGetNextPlayerIdForCurrentRound({
-        game: TestUtil.getDbGame({
-          players: [player1, player2],
-          round: 1,
-          turn: player2.user,
-        }),
-        logPrefix,
-        expected: player2.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
-          ],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
-        ],
-      })
-    })
     it('returns error if both players have passed in the current round', () => {
       const player1 = TestUtil.getDbGamePlayer({
         user: userId,
@@ -354,6 +222,504 @@ describe('mutation-util', () => {
         ],
       })
     })
+    describe('round 1', () => {
+      it('returns second player in turn order when first players turn and second player has not passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 1,
+            turn: player1.user,
+          }),
+          logPrefix,
+          expected: player2.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          ],
+        })
+      })
+      it('returns first player in turn order when second players turn and first player has not passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 1,
+            turn: player2.user,
+          }),
+          logPrefix,
+          expected: player1.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          ],
+        })
+      })
+      it('returns first player in turn order when first players turn and second player has passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+          ],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 1,
+            turn: player1.user,
+          }),
+          logPrefix,
+          expected: player1.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
+            ],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          ],
+        })
+      })
+      it('returns second player in turn order when second players turn and first player has passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+          ],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [TestUtil.getDbPlayerRound({})],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 1,
+            turn: player2.user,
+          }),
+          logPrefix,
+          expected: player2.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
+            ],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          ],
+        })
+      })
+    })
+    describe('round 2', () => {
+      it('returns second player in turn order when first players turn and second player has not passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 2,
+            turn: player1.user,
+          }),
+          logPrefix,
+          expected: player2.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          ],
+        })
+      })
+      it('returns first player in turn order when second players turn and first player has not passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 2,
+            turn: player2.user,
+          }),
+          logPrefix,
+          expected: player1.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          ],
+        })
+      })
+      it('returns first player in turn order when first players turn and second player has passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+          ],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 2,
+            turn: player1.user,
+          }),
+          logPrefix,
+          expected: player1.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
+            ],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          ],
+        })
+      })
+      it('returns second player in turn order when second players turn and first player has passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+          ],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 2,
+            turn: player2.user,
+          }),
+          logPrefix,
+          expected: player2.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
+            ],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          ],
+        })
+      })
+    })
+    describe('round 3', () => {
+      it('returns second player in turn order when first players turn and second player has not passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 3,
+            turn: player1.user,
+          }),
+          logPrefix,
+          expected: player2.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          ],
+        })
+      })
+      it('returns first player in turn order when second players turn and first player has not passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 3,
+            turn: player2.user,
+          }),
+          logPrefix,
+          expected: player1.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+          ],
+        })
+      })
+      it('returns first player in turn order when first players turn and second player has passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+          ],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 3,
+            turn: player1.user,
+          }),
+          logPrefix,
+          expected: player1.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
+            ],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          ],
+        })
+      })
+      it('returns second player in turn order when second players turn and first player has passed', () => {
+        const player1 = TestUtil.getDbGamePlayer({
+          user: userId,
+          order: 0,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+          ],
+        })
+        const player2 = TestUtil.getDbGamePlayer({
+          order: 1,
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({
+              passed: true,
+            }),
+            TestUtil.getDbPlayerRound({}),
+          ],
+        })
+        testGetNextPlayerIdForCurrentRound({
+          game: TestUtil.getDbGame({
+            players: [player1, player2],
+            round: 3,
+            turn: player2.user,
+          }),
+          logPrefix,
+          expected: player2.user,
+          debugCalls: [
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
+            ],
+          ],
+          traceCalls: [
+            [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
+            [
+              `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
+            ],
+            [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          ],
+        })
+      })
+    })
     it('logs to trace if enabled', () => {
       const player1 = TestUtil.getDbGamePlayer({
         user: userId,
@@ -386,7 +752,6 @@ describe('mutation-util', () => {
         ],
       })
     })
-    // TODO: test for other rounds (2, 3)
   })
   describe('getPlayerIdForNextRound', () => {
     const userId = new ObjectId()
