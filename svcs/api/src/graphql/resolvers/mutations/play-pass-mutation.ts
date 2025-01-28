@@ -235,7 +235,8 @@ export default class PlayPassMutation {
     const updatedGame = await GameStore.makeMove({
       game: {
         ...game,
-        turn: nextPlayerId, // for some reason had to set turn here, if try to just do "game.turn = nextPlayerId" before this unit tests fail due to strange(impossible?) race condition on game turn user
+        turn: nextPlayerId ? nextPlayerId : game.turn, // for some reason had to set turn here, if try to just do "game.turn = nextPlayerId" before this unit tests fail due to strange(impossible?) race condition on game turn user
+        // TODO: revert back to "normal" (see play-unit-mutation) once errors are thrown instead of returned
       },
       userId,
     })

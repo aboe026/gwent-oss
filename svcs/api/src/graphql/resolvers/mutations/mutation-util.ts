@@ -342,6 +342,7 @@ export default class MutationUtil {
     logPrefix: string
     allowImplicit: boolean
   }): Promise<Game> {
+    // TODO: have game (and player?) be passed in so don't need to re-query
     const game = await GameStore.getById({
       id: gameId,
     })

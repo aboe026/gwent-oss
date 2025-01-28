@@ -485,7 +485,7 @@ describe('play-pass-mutation', () => {
             ],
           },
         ],
-        turn: undefined,
+        turn: firstPlayer.user,
         round: 2,
         victors: [firstPlayer.user],
       }

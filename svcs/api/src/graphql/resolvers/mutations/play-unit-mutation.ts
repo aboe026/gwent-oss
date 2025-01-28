@@ -168,11 +168,10 @@ export default class PlayUnitMutation {
       return nextPlayerId as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
+    game.turn = nextPlayerId
+
     const updatedGame = await GameStore.makeMove({
-      game: {
-        ...game,
-        turn: nextPlayerId, // for some reason had to set turn here, if try to just do "game.turn = nextPlayerId" before this unit tests fail due to strange(impossible?) race condition on game turn user
-      },
+      game,
       userId,
     })
 
