@@ -306,12 +306,18 @@ export default class MutationUtil {
         rounds: [
           ...gamePlayer.rounds,
           {
-            close: startingCombatRow,
+            close: {
+              ...startingCombatRow,
+            },
             moves: [],
             passed: false,
-            ranged: startingCombatRow,
+            ranged: {
+              ...startingCombatRow,
+            },
             score: 0,
-            siege: startingCombatRow,
+            siege: {
+              ...startingCombatRow,
+            },
           },
         ],
       }
