@@ -4,7 +4,7 @@
 
 ### Added
 
-- Play units and Pass ([#25](https://github.com/aboe026/gwent/pull/25)) (Adam Boe)
+- Play Game ([#25](https://github.com/aboe026/gwent/pull/25)) (Adam Boe)
 
 ## 0.9.2 - 2024-12-10
 
