@@ -2,9 +2,6 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, getGameDeck, ready, redraw, setDeck } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { DeckUnit, FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
 import { getDeckUnitFragment } from './util/fragment-util'
@@ -12,13 +9,6 @@ import { MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('redraw-mutation', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('redraw', () => {
     describe('invalid', () => {
       it('returns error if invalid game ID', async () => {

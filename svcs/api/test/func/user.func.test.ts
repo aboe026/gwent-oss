@@ -2,20 +2,10 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addUser } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('user', () => {
-  beforeEach(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('add', () => {
     it('adds a user if they do not already exist', async () => {
       const name = 'test'

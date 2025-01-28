@@ -1,22 +1,12 @@
 import { graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeFactions, verifyMongoIds } from './util/expect-util'
 import { getFactionFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 
 describe('factions-query', () => {
-  beforeEach(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('factions', () => {
     it('returns all factions if no inputs provided', async () => {
       const response = await graphql({

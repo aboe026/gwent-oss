@@ -2,9 +2,6 @@ import { GraphQLError, graphql } from 'graphql'
 
 import { addDeck, addGame, addUser, getLeaderId, getUnitsInput, ready, setDeck } from './util/graphql-util'
 import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import {
   getDeckFragment,
   getDeckUnitFragment,
@@ -20,13 +17,6 @@ import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/consta
 import schema from '../../src/graphql/executable-schema'
 
 describe('permissions', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('query', () => {
     describe('currentUser', () => {
       it('returns error if not authenticated', async () => {

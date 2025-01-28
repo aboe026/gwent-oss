@@ -1,9 +1,6 @@
 import { GraphQLError, graphql } from 'graphql'
 
 import { addUser } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeGame } from './util/expect-util'
 import { getGameFragment } from './util/fragment-util'
 import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS } from '@gwent/constants'
@@ -11,13 +8,6 @@ import schema from '../../src/graphql/executable-schema'
 import TestUtil from '../test-util'
 
 describe('add-game-mutation', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('addGame', () => {
     describe('invalid', () => {
       it('returns error if user not authentiated', async () => {

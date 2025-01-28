@@ -1,15 +1,11 @@
 import { ObjectId } from 'mongodb'
 
-import DbConnector from '../../src/database/db-connector'
 import DbUtil from './util/db-util'
 import UpgradeStore from '../../src/database/stores/upgrade-store'
 
 describe('upgrade-store', () => {
   beforeEach(async () => {
     await DbUtil.deleteDatabase()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
   })
   describe('addLock', () => {
     it('adds lock to database if none exist', async () => {

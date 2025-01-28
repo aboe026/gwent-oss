@@ -24,9 +24,6 @@ import {
   RoundResult,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
@@ -39,10 +36,6 @@ describe('play-pass-mutation', () => {
   let game: Game
   let deckSelf: Deck
   let deckOpponent: Deck
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
   beforeEach(async () => {
     self = await addUser(`play-pass-self-${Date.now()}`)
     opponent = await addUser(`play-pass-opponent-${Date.now()}`)
@@ -87,9 +80,6 @@ describe('play-pass-mutation', () => {
       gameId: game.id,
       userId: self.id,
     })
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
   })
   describe('playPass', () => {
     describe('invalid', () => {

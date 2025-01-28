@@ -1,22 +1,12 @@
 import { graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeLeaders, verifyMongoIds } from './util/expect-util'
 import { FactionKey } from '@gwent/graphql-schema/database-typings'
 import { getLeaderFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
 
 describe('leaders', () => {
-  beforeEach(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('factions', () => {
     it('returns no leaders if factions empty', async () => {
       const response = await graphql({

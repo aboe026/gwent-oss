@@ -2,9 +2,6 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, ready, setDeck } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
@@ -12,13 +9,6 @@ import { NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('game-query', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('game', () => {
     describe('invalid', () => {
       it('throws error if invalid ObjectId', async () => {

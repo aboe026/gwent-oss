@@ -1,9 +1,6 @@
 import { graphql } from 'graphql'
 
 import { addUser, addDeck } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeDeck, verifyMongoIds } from './util/expect-util'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { getDeckFragment } from './util/fragment-util'
@@ -11,13 +8,6 @@ import { getStrengthUnits } from './util/graphql-util'
 import schema from '../../src/graphql/executable-schema'
 
 describe('decks-query', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('decks', () => {
     it('returns empty array if user has no decks', async () => {
       const user = await addUser(`decks-${Date.now()}`)

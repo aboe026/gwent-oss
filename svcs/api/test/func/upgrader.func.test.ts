@@ -11,9 +11,6 @@ describe('upgrader', () => {
   beforeEach(async () => {
     await DbUtil.deleteDatabase()
   })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('run', () => {
     it('does not create attempt or upgrade if no upgrades', async () => {
       const db = await DbConnector.connect()

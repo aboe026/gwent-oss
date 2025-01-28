@@ -14,9 +14,6 @@ describe('upgrade-1', () => {
   beforeEach(async () => {
     await DbUtil.deleteDatabase()
   })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   it('creates collection and indexes', async () => {
     const db = await DbConnector.connect()
     await verifyCollectionNames({

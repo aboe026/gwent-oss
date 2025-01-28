@@ -2,9 +2,6 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addUser, addDeck, getUnits, getFactionId } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeDeck, verifyMongoIds } from './util/expect-util'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { getDeckFragment } from './util/fragment-util'
@@ -12,13 +9,6 @@ import { getLeaderId, getStrengthUnits, getUnitsInput } from './util/graphql-uti
 import schema from '../../src/graphql/executable-schema'
 
 describe('add-deck-mutation', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('addDeck', () => {
     describe('invalid', () => {
       it('throws error if invalid leader ID', async () => {

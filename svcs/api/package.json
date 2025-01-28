@@ -13,7 +13,7 @@
     "lint:fix": "yarn g:lint-fix",
     "run-built": "yarn node build/src/index.js",
     "start": "yarn g:ts-node src/index.ts",
-    "test-func": "yarn g:jest --test-type=func --runInBand",
+    "test-func": "yarn g:jest --test-type=func --runInBand --setupFilesAfterEnv=./test/func/util/setup.ts",
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",
     "watch-built": "yarn g:ts-node scripts/wait-for-initial-build.ts && yarn g:nodemon --watch build --exec 'yarn node build/src/index.js'",

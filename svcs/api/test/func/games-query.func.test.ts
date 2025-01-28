@@ -1,22 +1,12 @@
 import { graphql } from 'graphql'
 
 import { addDeck, addGame, addUser, ready, setDeck, setOrder } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
 
 describe('games-query', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('games', () => {
     it('returns empty array if no games', async () => {
       const name = `games-${Date.now()}`
