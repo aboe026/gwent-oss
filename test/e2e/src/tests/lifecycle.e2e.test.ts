@@ -412,7 +412,6 @@ test('Speed Run', async (t) => {
     round,
     moves: moves1,
   })
-  // TODO: rename to self/opponent
   E2eHelper.endRound({
     self: gamePlayer2,
     opponent: gamePlayer1,

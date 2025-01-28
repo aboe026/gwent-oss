@@ -1035,7 +1035,7 @@ function renderPlayerInfo({
         title = isSelf ? 'Your opponent will have the first turn' : 'Your opponent will go after you this round'
       }
     }
-    if (isTurn) {
+    if (isTurn && game.status !== GameStatus.Done) {
       borderClass = HTML_CLASSES.GamePlayerTurn
       if (game.status === GameStatus.Redrawing) {
         borderClass += ` ${HTML_CLASSES.GamePlayerFutureTurn}`

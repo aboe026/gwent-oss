@@ -1,19 +1,12 @@
 import ApiClient from '../util/api-client'
-import { Deck, FactionKey, Game, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import { ContextGamePlayer, E2eHelper } from '../util/e2e-helper'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
+import { FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
 import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
-import { E2eHelper } from '../util/e2e-helper'
-
-interface ContextGamePlayer {
-  user: User
-  client: ApiClient
-  deck: Deck
-  gameDeck: GameDeck
-}
 
 interface GameReadyTestCtx extends E2eCtx {
   scenario: string
