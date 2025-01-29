@@ -2,9 +2,6 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, getGameDeck, ready, redraw, setDeck } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { DeckUnit, FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
 import { getDeckUnitFragment } from './util/fragment-util'
@@ -12,13 +9,6 @@ import { MAX_REDRAWS, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('redraw-mutation', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('redraw', () => {
     describe('invalid', () => {
       it('returns error if invalid game ID', async () => {
@@ -61,7 +51,7 @@ describe('redraw-mutation', () => {
               game: "${gameId}"
               unit: "${unitToRedraw1.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
             contextValue: {
@@ -116,7 +106,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitId}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
             contextValue: {
@@ -144,7 +134,7 @@ describe('redraw-mutation', () => {
                 game: "${id.toString()}"
                 unit: "${new ObjectId()}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -179,7 +169,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${new ObjectId()}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -212,7 +202,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${new ObjectId()}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -225,27 +215,41 @@ describe('redraw-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot redraw before deck is set for game "${game.id}".`)],
+          errors: [
+            new GraphQLError(
+              `Invalid game status "${GameStatus.Decking}": Can only redraw for game with status "${GameStatus.Redrawing}".`
+            ),
+          ],
         })
       })
       it('throws error if ready', async () => {
         const name1 = `redraw-1-${Date.now()}`
         const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
-        await addUser(name2)
+        const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
           creator: user1,
         })
-        const deck = await addDeck({
+        const deckSelf = await addDeck({
           faction: FactionKey.Monsters,
-          name: `redraw-${Date.now()}`,
+          name: `redraw-self-${Date.now()}`,
           userId: user1.id,
         })
-        const gameDeck = await setDeck({
-          deckId: deck.id,
+        const deckOpponent = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `redraw-opponent-${Date.now()}`,
+          userId: user2.id,
+        })
+        const gameDeckSelf = await setDeck({
+          deckId: deckSelf.id,
           gameId: game.id,
           userId: user1.id,
+        })
+        await setDeck({
+          deckId: deckOpponent.id,
+          gameId: game.id,
+          userId: user2.id,
         })
         await ready({
           gameId: game.id,
@@ -257,9 +261,9 @@ describe('redraw-mutation', () => {
             source: `mutation {
               redraw(
                 game: "${game.id}"
-                unit: "${gameDeck.hand[3].unit.id}"
+                unit: "${gameDeckSelf.hand[3].unit.id}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -279,29 +283,39 @@ describe('redraw-mutation', () => {
         const name1 = `redraw-1-${Date.now()}`
         const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
-        await addUser(name2)
+        const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
           creator: user1,
         })
-        const deck = await addDeck({
+        const deckSelf = await addDeck({
           faction: FactionKey.Monsters,
-          name: `redraw-${Date.now()}`,
+          name: `redraw-self-${Date.now()}`,
           userId: user1.id,
         })
-        const gameDeck = await setDeck({
-          deckId: deck.id,
+        const deckOpponent = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `redraw-opponent-${Date.now()}`,
+          userId: user2.id,
+        })
+        const gameDeckSelf = await setDeck({
+          deckId: deckSelf.id,
           gameId: game.id,
+          userId: user1.id,
+        })
+        await setDeck({
+          deckId: deckOpponent.id,
+          gameId: game.id,
+          userId: user2.id,
+        })
+        await redraw({
+          gameId: game.id,
+          unitId: gameDeckSelf.hand[0].unit.id,
           userId: user1.id,
         })
         await redraw({
           gameId: game.id,
-          unitId: gameDeck.hand[0].unit.id,
-          userId: user1.id,
-        })
-        await redraw({
-          gameId: game.id,
-          unitId: gameDeck.hand[1].unit.id,
+          unitId: gameDeckSelf.hand[1].unit.id,
           userId: user1.id,
         })
         await expect(
@@ -310,9 +324,9 @@ describe('redraw-mutation', () => {
             source: `mutation {
               redraw(
                 game: "${game.id}"
-                unit: "${gameDeck.hand[3].unit.id}"
+                unit: "${gameDeckSelf.hand[3].unit.id}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -332,22 +346,32 @@ describe('redraw-mutation', () => {
         const name1 = `redraw-1-${Date.now()}`
         const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
-        await addUser(name2)
+        const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
           creator: user1,
         })
-        const deck = await addDeck({
+        const deckSelf = await addDeck({
           faction: FactionKey.Monsters,
-          name: `redraw-${Date.now()}`,
+          name: `redraw-self-${Date.now()}`,
           userId: user1.id,
         })
-        const gameDeck = await setDeck({
-          deckId: deck.id,
+        const deckOpponent = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `redraw-opponent-${Date.now()}`,
+          userId: user2.id,
+        })
+        const gameDeckSelf = await setDeck({
+          deckId: deckSelf.id,
           gameId: game.id,
           userId: user1.id,
         })
-        const unitId = gameDeck.undrawn[0].unit.id
+        await setDeck({
+          deckId: deckOpponent.id,
+          gameId: game.id,
+          userId: user2.id,
+        })
+        const unitId = gameDeckSelf.undrawn[0].unit.id
         await expect(
           graphql({
             schema,
@@ -356,7 +380,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${unitId}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -376,22 +400,32 @@ describe('redraw-mutation', () => {
         const name1 = `redraw-1-${Date.now()}`
         const name2 = `redraw-2-${Date.now()}`
         const user1 = await addUser(name1)
-        await addUser(name2)
+        const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
           creator: user1,
         })
-        const deck = await addDeck({
+        const deckSelf = await addDeck({
           faction: FactionKey.Monsters,
-          name: `redraw-${Date.now()}`,
+          name: `redraw-self-${Date.now()}`,
           userId: user1.id,
         })
-        const gameDeck = await setDeck({
-          deckId: deck.id,
+        const deckOpponent = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `redraw-opponent-${Date.now()}`,
+          userId: user2.id,
+        })
+        const gameDeckSelf = await setDeck({
+          deckId: deckSelf.id,
           gameId: game.id,
           userId: user1.id,
         })
-        const unitToRedraw = gameDeck.hand[0].unit.id
+        await setDeck({
+          deckId: deckOpponent.id,
+          gameId: game.id,
+          userId: user2.id,
+        })
+        const unitToRedraw = gameDeckSelf.hand[0].unit.id
         await redraw({
           gameId: game.id,
           unitId: unitToRedraw,
@@ -405,7 +439,7 @@ describe('redraw-mutation', () => {
                 game: "${game.id}"
                 unit: "${unitToRedraw}"
               ) {
-                ${getDeckUnitFragment({})}
+                ${getDeckUnitFragment()}
               }
             }`,
             contextValue: {
@@ -484,7 +518,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitToRedraw1.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
           contextValue: {
@@ -546,7 +580,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitToRedraw2.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
           contextValue: {
@@ -612,7 +646,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitToRedraw3.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
           contextValue: {
@@ -674,7 +708,7 @@ describe('redraw-mutation', () => {
               game: "${game.id}"
               unit: "${unitToRedraw4.unit.id}"
             ) {
-              ${getDeckUnitFragment({})}
+              ${getDeckUnitFragment()}
             }
           }`,
           contextValue: {

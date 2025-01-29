@@ -1,3 +1,4 @@
+import { MoveType } from '../src/move-type'
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -143,16 +144,25 @@ export enum FactionKey {
 
 export type Game = {
   __typename?: 'Game';
+  config: GameConfig;
   created: Scalars['DateTime']['output'];
   creator: User;
   id: Scalars['ID']['output'];
   players: Array<GamePlayer>;
-  round: GameRound;
+  /** The current round the game is in. 1-based indexing. A value of zero indicates the game has not yet started. */
+  round: Scalars['Int']['output'];
   status: GameStatus;
   /** Whose turn it currently is to make a move. */
   turn?: Maybe<GamePlayer>;
   updated: Scalars['DateTime']['output'];
   victors: Array<User>;
+  weather: Array<Combat>;
+};
+
+export type GameConfig = {
+  __typename?: 'GameConfig';
+  /** The number of lives each player starts with at the beginning of the game. */
+  lives: Scalars['Int']['output'];
 };
 
 export type GameDeck = {
@@ -207,12 +217,6 @@ export type GamePlayerUnitCounts = {
   undrawn: Scalars['Int']['output'];
 };
 
-export type GameRound = {
-  __typename?: 'GameRound';
-  current: Scalars['Int']['output'];
-  maximum: Scalars['Int']['output'];
-};
-
 export enum GameStatus {
   /** Players are choosing their decks to use for the game. */
   Decking = 'DECKING',
@@ -226,8 +230,16 @@ export enum GameStatus {
   Redrawing = 'REDRAWING'
 }
 
+export type GameUnit = {
+  __typename?: 'GameUnit';
+  artStyle: Scalars['Int']['output'];
+  effectiveStrength?: Maybe<Scalars['Int']['output']>;
+  unit: Unit;
+};
+
 export type GameUnitRedrawn = {
   __typename?: 'GameUnitRedrawn';
+  deck: GameDeck;
   from: DeckUnit;
   game: Game;
   to: DeckUnit;
@@ -245,6 +257,26 @@ export type Leader = {
   quote: Scalars['String']['output'];
 };
 
+export type Move = MoveLeader | MovePass | MoveUnit;
+
+export type MoveLeader = {
+  __typename?: 'MoveLeader';
+  created: Scalars['DateTime']['output'];
+  leader: Leader;
+};
+
+export type MovePass = {
+  __typename?: 'MovePass';
+  created: Scalars['DateTime']['output'];
+};
+
+export type MoveUnit = {
+  __typename?: 'MoveUnit';
+  created: Scalars['DateTime']['output'];
+  row: Combat;
+  unit: DeckUnit;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   /** Create a user-defined deck. */
@@ -257,6 +289,10 @@ export type Mutation = {
   login: User;
   /** De-authenticate a user. */
   logout: Scalars['Boolean']['output'];
+  /** Pass for the rest of the round in a game. */
+  playPass: Game;
+  /** Play a Unit card in a game. If a unit is eligible for multiple different types of Combat, one must be specified. */
+  playUnit: Game;
   /** Mark player as ready to play the game, no more deck modifications allowed. */
   ready: Game;
   /** Replace a card in hand with a random one from the deck, before a game starts. */
@@ -293,6 +329,18 @@ export type MutationLoginArgs = {
 };
 
 
+export type MutationPlayPassArgs = {
+  game: Scalars['ID']['input'];
+};
+
+
+export type MutationPlayUnitArgs = {
+  combat?: InputMaybe<Combat>;
+  game: Scalars['ID']['input'];
+  unit: Scalars['ID']['input'];
+};
+
+
 export type MutationReadyArgs = {
   game: Scalars['ID']['input'];
 };
@@ -315,10 +363,21 @@ export type MutationSetOrderArgs = {
   users?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+export type PlayerCombatRow = {
+  __typename?: 'PlayerCombatRow';
+  score: Scalars['Int']['output'];
+  units: Array<GameUnit>;
+};
+
 export type PlayerRound = {
   __typename?: 'PlayerRound';
+  close: PlayerCombatRow;
+  moves: Array<Move>;
+  passed: Scalars['Boolean']['output'];
+  ranged: PlayerCombatRow;
+  result?: Maybe<RoundResult>;
   score: Scalars['Int']['output'];
-  won: Scalars['Boolean']['output'];
+  siege: PlayerCombatRow;
 };
 
 export type Query = {
@@ -377,6 +436,21 @@ export type Redraw = {
   to: DeckUnit;
 };
 
+export type RoundEndedForDeck = {
+  __typename?: 'RoundEndedForDeck';
+  deck: GameDeck;
+  game: Game;
+};
+
+export enum RoundResult {
+  /** Tied for the win with another player in the round. */
+  Drew = 'DREW',
+  /** Beaten by another player in the round. */
+  Lost = 'LOST',
+  /** Beat all other players in the round. */
+  Won = 'WON'
+}
+
 export type Setting = {
   __typename?: 'Setting';
   key: SettingKey;
@@ -407,6 +481,14 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
+  /** A user has passed the rest of the round for a game. */
+  passPlayed: Game;
+  /** A round has finished which triggers updates to the GameDeck for each player on the game. */
+  roundEndedForDeck: RoundEndedForDeck;
+  /** The unit card played from a deck and the updated GameDeck. */
+  unitPlayedFromDeck: UnitPlayedFromDeck;
+  /** The unit card played on a game and the updated Game. */
+  unitPlayedOnGame: UnitPlayedOnGame;
   /** A unit was redrawn for a game deck the user owns. */
   unitRedrawn: GameUnitRedrawn;
 };
@@ -429,6 +511,19 @@ export type Unit = {
   scorchScope?: Maybe<Combat>;
   special?: Maybe<Scalars['Boolean']['output']>;
   strength?: Maybe<Scalars['Int']['output']>;
+};
+
+export type UnitPlayedFromDeck = {
+  __typename?: 'UnitPlayedFromDeck';
+  deck: GameDeck;
+  game: Game;
+  unit: DeckUnit;
+};
+
+export type UnitPlayedOnGame = {
+  __typename?: 'UnitPlayedOnGame';
+  game: Game;
+  unit: DeckUnit;
 };
 
 export type UnitStats = {
@@ -515,14 +610,16 @@ export type FactionDbObject = {
 };
 
 export type GameDbObject = {
+  config: GameConfig,
   created: any,
   creator: ObjectId,
   _id: ObjectId,
   players: Array<GamePlayerDbObject>,
-  round: GameRound,
+  round: number,
   turn?: ObjectId,
   updated: any,
   victors: Array<ObjectId>,
+  weather: Array<string>,
 };
 
 export type GameDeckDbObject = {
@@ -536,9 +633,15 @@ export type GameDeckDbObject = {
 export type GamePlayerDbObject = {
   order?: Maybe<number>,
   ready: boolean,
-  rounds: Array<PlayerRound>,
+  rounds: Array<PlayerRoundDbObject>,
   user: ObjectId,
   deck: GameDeckDbObject,
+};
+
+export type GameUnitDbObject = {
+  artStyle: number,
+  effectiveStrength?: Maybe<number>,
+  unit: ObjectId,
 };
 
 export type LeaderDbObject = {
@@ -550,6 +653,43 @@ export type LeaderDbObject = {
   image: string,
   name: string,
   quote: string,
+};
+
+export type MoveDbObject = (MoveLeaderDbObject | MovePassDbObject | MoveUnitDbObject) & {
+  type: string,
+};
+
+export type MoveLeaderDbObject = {
+  created: any,
+  leader: ObjectId,
+  type: MoveType,
+};
+
+export type MovePassDbObject = {
+  created: any,
+  type: MoveType,
+};
+
+export type MoveUnitDbObject = {
+  created: any,
+  row: string,
+  unit: DeckUnitDbObject,
+  type: MoveType,
+};
+
+export type PlayerCombatRowDbObject = {
+  score: number,
+  units: Array<GameUnitDbObject>,
+};
+
+export type PlayerRoundDbObject = {
+  close: PlayerCombatRowDbObject,
+  moves: Array<MoveDbObject>,
+  passed: boolean,
+  ranged: PlayerCombatRowDbObject,
+  result?: Maybe<string>,
+  score: number,
+  siege: PlayerCombatRowDbObject,
 };
 
 export type RedrawDbObject = {

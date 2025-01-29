@@ -1,8 +1,14 @@
 import { Document, Filter, FindOptions, ObjectId, UpdateFilter } from 'mongodb'
 import { getLogger } from 'log4js'
 
-import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
-import { MAX_ROUNDS } from '@gwent/constants'
+import {
+  DeckDbObject,
+  DeckUnitDbObject,
+  GameDbObject,
+  GamePlayerDbObject,
+  RedrawDbObject,
+} from '@gwent/graphql-schema/database-typings'
+import { STARTING_LIVES } from '@gwent/constants'
 import Store from './store'
 
 /**
@@ -25,6 +31,9 @@ export default class GameStore extends Store {
     const created = new Date()
     const playerIds = [creatorId, ...opponentIds]
     const game: Document = {
+      config: {
+        lives: STARTING_LIVES,
+      },
       created,
       creator: new ObjectId(creatorId),
       players: playerIds.map((playerId) => {
@@ -41,12 +50,10 @@ export default class GameStore extends Store {
           user: new ObjectId(playerId),
         }
       }),
-      round: {
-        current: 0,
-        maximum: MAX_ROUNDS,
-      },
+      round: 0,
       updated: created,
       victors: [],
+      weather: [],
     }
     if (GameStore.logger.isTraceEnabled()) {
       GameStore.logger.trace(`Adding game: "${JSON.stringify(game)}"`)
@@ -283,25 +290,70 @@ export default class GameStore extends Store {
   static async setReady({
     gameId,
     userId,
+    previousUpdate,
+    players,
+    currentRound,
   }: {
     gameId: ObjectId | string
     userId: ObjectId | string
+    previousUpdate: Date
+    players: GamePlayerDbObject[]
+    currentRound: number
   }): Promise<GameDbObject | undefined> {
     GameStore.logger.debug(`Marking game "${gameId}" ready for user "${userId}"`)
     const filter: Filter<Document> = {
       _id: new ObjectId(gameId),
-      'players.user': new ObjectId(userId),
-      'players.ready': false,
+      updated: previousUpdate,
     }
     const update: UpdateFilter<Document> = {
       $set: {
         updated: new Date(),
-        'players.$.ready': true,
+        players,
+        round: currentRound,
       },
     }
     if (GameStore.logger.isTraceEnabled()) {
       GameStore.logger.trace(`ready for game "${gameId}" by user "${userId}" filter: "${JSON.stringify(filter)}"`)
       GameStore.logger.trace(`ready for game "${gameId}" by user "${userId}" update: "${JSON.stringify(update)}"`)
+    }
+    return GameStore.update<GameDbObject>({
+      filter,
+      update,
+      verifyExistence: false,
+    })
+  }
+
+  /**
+   * Take a turn for a user on a game.
+   *
+   * @param config The configuration for the movement to make.
+   * @param config.game The Game object with the effects of the movement.
+   * @param config.userId The MongoDB ObjectId of the user who is making the movement.
+   * @param config.nextTurn The MongoDB ObjectId of the user who is permitted to make the next movement.
+   * @returns The updated game database document.
+   */
+  static async makeMove({
+    game,
+    userId,
+  }: {
+    game: GameDbObject
+    userId: ObjectId | string
+  }): Promise<GameDbObject | undefined> {
+    GameStore.logger.debug(`Move made on game "${game._id}" by user "${userId}", setting next move to "${game.turn}"`)
+    const filter: Filter<Document> = {
+      _id: game._id,
+      turn: new ObjectId(userId),
+      updated: game.updated,
+    }
+    const update: UpdateFilter<Document> = {
+      $set: {
+        ...game,
+        updated: new Date(),
+      },
+    }
+    if (GameStore.logger.isTraceEnabled()) {
+      GameStore.logger.trace(`move on game "${game._id}" by user "${userId}" filter: "${JSON.stringify(filter)}"`)
+      GameStore.logger.trace(`move on game "${game._id}" by user "${userId}" update: "${JSON.stringify(update)}"`)
     }
     return GameStore.update<GameDbObject>({
       filter,

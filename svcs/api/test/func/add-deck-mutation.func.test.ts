@@ -2,9 +2,6 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addUser, addDeck, getUnits, getFactionId } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeDeck, verifyMongoIds } from './util/expect-util'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { getDeckFragment } from './util/fragment-util'
@@ -12,13 +9,6 @@ import { getLeaderId, getStrengthUnits, getUnitsInput } from './util/graphql-uti
 import schema from '../../src/graphql/executable-schema'
 
 describe('add-deck-mutation', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('addDeck', () => {
     describe('invalid', () => {
       it('throws error if invalid leader ID', async () => {
@@ -36,7 +26,7 @@ describe('add-deck-mutation', () => {
                 leader: "${leaderId}",
                 units: [${await getUnitsInput(faction)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -68,7 +58,7 @@ describe('add-deck-mutation', () => {
                 leader: "${leaderId}",
                 units: [{id: "${unitId}"}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -98,7 +88,7 @@ describe('add-deck-mutation', () => {
                 leader: "${new ObjectId().toString()}",
                 units: [${await getUnitsInput(faction)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -129,7 +119,7 @@ describe('add-deck-mutation', () => {
                 leader: "${leaderId}",
                 units: [${await getUnitsInput(faction)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -166,7 +156,7 @@ describe('add-deck-mutation', () => {
                 leader: "${leaderId}",
                 units: [${await getUnitsInput(factionKey)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -209,7 +199,7 @@ describe('add-deck-mutation', () => {
                   }
                 ]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -250,7 +240,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -300,7 +290,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -342,7 +332,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -383,7 +373,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -428,7 +418,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -473,7 +463,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${unitsInput}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -514,7 +504,7 @@ describe('add-deck-mutation', () => {
                 leader: "${await getLeaderId({ name: leader })}",
                 units: [${await getUnitsInput(faction)}]
               ) {
-                ${getDeckFragment({})}
+                ${getDeckFragment()}
               }
             }`,
             contextValue: {
@@ -532,7 +522,7 @@ describe('add-deck-mutation', () => {
       })
     })
     describe('valid', () => {
-      it('can add deck for monsters faction', async () => {
+      it('add deck for monsters faction', async () => {
         const faction = FactionKey.Monsters
         const leader = 'Eredin Bringer of Death'
         const name = `decks-${Date.now()}`
@@ -546,7 +536,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -570,7 +560,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck for nilfgaardian empire faction', async () => {
+      it('add deck for nilfgaardian empire faction', async () => {
         const faction = FactionKey.NilfgaardianEmpire
         const leader = 'Emhyr var Emreis Invader of the North'
         const name = `decks-${Date.now()}`
@@ -584,7 +574,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -608,7 +598,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck for northern realms faction', async () => {
+      it('add deck for northern realms faction', async () => {
         const faction = FactionKey.NorthernRealms
         const leader = 'Foltest Son of Medell'
         const name = `decks-${Date.now()}`
@@ -622,7 +612,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -646,7 +636,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck for scoiatael faction', async () => {
+      it('add deck for scoiatael faction', async () => {
         const faction = FactionKey.ScoiaTael
         const leader = 'Francesca Findabair Queen of Dol Blathanna'
         const name = `decks-${Date.now()}`
@@ -660,7 +650,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -684,7 +674,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck for skellige faction', async () => {
+      it('add deck for skellige faction', async () => {
         const faction = FactionKey.Skellige
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
@@ -698,7 +688,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -722,7 +712,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck with explicit default artStyles', async () => {
+      it('add deck with explicit default artStyles', async () => {
         const faction = FactionKey.Skellige
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
@@ -746,7 +736,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${unitsInput}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -770,7 +760,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck with explicit custom artStyles', async () => {
+      it('add deck with explicit custom artStyles', async () => {
         const faction = FactionKey.Skellige
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
@@ -794,7 +784,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${unitsInput}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {
@@ -819,7 +809,7 @@ describe('add-deck-mutation', () => {
         })
         verifyMongoIds(response.data?.addDeck)
       })
-      it('can add deck with same name as the deck of another user', async () => {
+      it('add deck with same name as the deck of another user', async () => {
         const faction = FactionKey.NorthernRealms
         const leader = 'Foltest Son of Medell'
         const name = `decks-${Date.now()}`
@@ -842,7 +832,7 @@ describe('add-deck-mutation', () => {
               leader: "${await getLeaderId({ name: leader })}",
               units: [${await getUnitsInput(faction)}]
             ) {
-              ${getDeckFragment({})}
+              ${getDeckFragment()}
             }
           }`,
           contextValue: {

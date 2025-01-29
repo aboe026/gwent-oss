@@ -2,7 +2,7 @@ import { t } from 'testcafe'
 
 import { Deck, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
 import { formatDay, formatTime } from '@gwent/utils'
-import { HTML_CLASSES, MAX_ROUNDS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 
 export default class GamePlayerInfo {
   private elements
@@ -12,6 +12,7 @@ export default class GamePlayerInfo {
       Container: container,
       Name: container.find(`.${HTML_CLASSES.GamePlayerName}`),
       TokensWon: container.find(`.${HTML_CLASSES.GamePlayerRoundTokenWon}`),
+      TokensLost: container.find(`.${HTML_CLASSES.GamePlayerRoundTokenLost}`),
       Score: container.find(`.${HTML_CLASSES.GamePlayerScore}`),
       DeckPlaceholder: container.find(`.${HTML_CLASSES.GameDeckIcon}`),
       FactionImage: container.find(`.${HTML_CLASSES.GamePlayerFactionImage}`),
@@ -23,6 +24,8 @@ export default class GamePlayerInfo {
       DiscardCount: container.find(`.${HTML_CLASSES.GamePlayerDiscardCount}`),
       DeckName: container.find(`.${HTML_CLASSES.GamePlayerDeckName}`),
       DeckDate: container.find(`.${HTML_CLASSES.GamePlayerDeckDate}`),
+      Pass: container.find(`#${HTML_IDS.GamePass}`),
+      Passed: container.find(`.${HTML_CLASSES.GamePlayerPassed}`),
     }
   }
 
@@ -32,14 +35,18 @@ export default class GamePlayerInfo {
     faction,
     hand,
     leader,
-    score = 0,
+    score,
     undrawn,
     losses = 0,
+    lives = 2,
     from,
     turn,
+    passed,
+    allReady,
   }: {
     name: string
     losses?: number
+    lives?: number
     score?: number
     faction?: Faction
     leader?: Leader
@@ -48,10 +55,23 @@ export default class GamePlayerInfo {
     discards?: number
     from?: Deck | null
     turn?: PlayerTurn
+    passed?: boolean
+    allReady?: boolean
   }) {
     await t.expect(this.elements.Name.innerText).eql(name)
-    await t.expect(this.elements.TokensWon.count).eql(MAX_ROUNDS - 1 - losses)
-    await t.expect(this.elements.Score.innerText).eql(score.toString())
+    if (!allReady) {
+      await t.expect(this.elements.TokensWon.exists).notOk()
+      await t.expect(this.elements.TokensLost.exists).notOk()
+    }
+    if (allReady) {
+      await t.expect(this.elements.TokensWon.count).eql(lives - losses)
+      await t.expect(this.elements.TokensLost.count).eql(losses)
+      if (score === undefined) {
+        await t.expect(this.elements.Score.exists).notOk()
+      } else {
+        await t.expect(this.elements.Score.innerText).eql(score.toString())
+      }
+    }
     if ([faction, leader, undrawn, hand, discards].includes(undefined)) {
       await t.expect(this.elements.DeckPlaceholder.exists).ok()
       await t.expect(this.elements.DeckPlaceholder.visible).ok()
@@ -89,10 +109,24 @@ export default class GamePlayerInfo {
         await t.expect(this.elements.DeckName.exists).notOk()
         await t.expect(this.elements.DeckDate.exists).notOk()
       }
-      await t.expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerTurn)).eql(turn !== undefined)
+      await t
+        .expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerTurn))
+        .eql(turn !== undefined, `user "${name}"`)
       await t
         .expect(this.elements.Container.hasClass(HTML_CLASSES.GamePlayerFutureTurn))
-        .eql(turn === PlayerTurn.Future)
+        .eql(turn === PlayerTurn.Future, `user "${name}"`)
+      if (passed === undefined) {
+        await t.expect(this.elements.Passed.exists).notOk(`User "${name}"`)
+        await t.expect(this.elements.Pass.exists).notOk(`User "${name}"`)
+      } else if (passed) {
+        await t.expect(this.elements.Passed.exists).ok(`User "${name}"`)
+        await t.expect(this.elements.Passed.visible).ok(`User "${name}"`)
+        await t.expect(this.elements.Pass.exists).notOk(`User "${name}"`)
+      } else {
+        await t.expect(this.elements.Pass.exists).ok(`User "${name}"`)
+        await t.expect(this.elements.Pass.visible).ok(`User "${name}"`)
+        await t.expect(this.elements.Passed.exists).notOk(`User "${name}"`)
+      }
     }
   }
 }

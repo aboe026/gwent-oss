@@ -1,7 +1,6 @@
 import { ObjectId } from 'mongodb'
 
 import allUpgrades from '../../src/database/upgrades/all-upgrades'
-import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import DbUtil from './util/db-util'
 import DlcStore from '../../src/database/stores/dlc-store'
@@ -22,9 +21,6 @@ describe('upgrade-2', () => {
   const upgradeNumber = 2
   beforeEach(async () => {
     await DbUtil.deleteDatabase()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
   })
   it('creates resources', async () => {
     jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue(allUpgrades.slice(0, upgradeNumber - 1))

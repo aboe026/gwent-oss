@@ -1,15 +1,16 @@
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
-import { Deck, FactionKey, Game, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, FactionKey, Game, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
-import GamePage from '../page-objects/game-page'
+import GamePage, { HistoryMove, HistoryPass } from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 import { E2eHelper } from '../util/e2e-helper'
 import { PlayerTurn } from '../components/game-player-info'
+import { sortObjectArray } from '@gwent/utils'
 
 interface GameSubscriptionTestCtx extends E2eCtx {
   scenario: string
@@ -664,6 +665,7 @@ test('Page automatically updates after game ready via API after opponent ready o
       user: t.ctx.self.user,
     },
     turn: won ? PlayerTurn.Future : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -674,6 +676,7 @@ test('Page automatically updates after game ready via API after opponent ready o
     },
     turn: won ? undefined : PlayerTurn.Future,
     ready: true,
+    score: 0,
   })
   await t.ctx.opponent.client.ready(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
@@ -697,8 +700,10 @@ test('Page automatically updates after game ready via API after opponent ready o
     self: {
       ...selfPlayer,
       ready: true,
+      passed: false,
     },
     hand: gameDeckSelf.hand,
+    moves: [[]],
   })
 })
 
@@ -801,6 +806,7 @@ test('Page automatically updates after game ready via API after opponent ready o
       user: t.ctx.self.user,
     },
     turn: won ? PlayerTurn.Future : undefined,
+    score: 0,
   })
   const opponentPlayer = E2eHelper.getGamePlayer({
     player: {
@@ -811,6 +817,7 @@ test('Page automatically updates after game ready via API after opponent ready o
     },
     turn: won ? undefined : PlayerTurn.Future,
     ready: true,
+    score: 0,
   })
   await t.ctx.opponent.client.ready(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
@@ -858,8 +865,10 @@ test('Page automatically updates after game ready via API after opponent ready o
     self: {
       ...selfPlayer,
       ready: true,
+      passed: false,
     },
     hand: gameDeckSelf.hand,
+    moves: [[]],
   })
 })
 
@@ -914,11 +923,554 @@ test('Game not marked as ready if use API to mark other game as ready', async (t
     deckId: t.ctx.opponent.deck.id,
     gameId: game2.id,
   })
+  await t.ctx.self.client.setOrder({
+    gameId: game2.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
   await t.ctx.self.client.ready(game2.id)
   await GamePage.verify({
     opponent: opponentPlayer,
     self: selfPlayer,
     hand: gameDeckSelf.hand,
     redraws: [],
+  })
+})
+
+test('Page automatically updates after unit played via API on game page', async (t) => {
+  const gameDeckSelf = await t.ctx.self.client.setDeck({
+    deckId: t.ctx.self.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
+    deckId: t.ctx.opponent.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  await t.ctx.self.client.setOrder({
+    gameId: t.ctx.game.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
+  await t.ctx.self.client.ready(t.ctx.game.id)
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: t.ctx.self.deck,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+    ready: true,
+    passed: false,
+    turn: PlayerTurn.Current,
+    score: 0,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: t.ctx.opponent.deck,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+    ready: true,
+    score: 0,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [[]],
+  })
+
+  const sortedHand = sortObjectArray({
+    array: gameDeckSelf.hand,
+    sortProperties: ['unit.strength', 'unit.id'],
+    reverse: true,
+  })
+  const unitToMove = sortedHand[0]
+  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
+
+  await t.ctx.self.client.playUnit({
+    gameId: t.ctx.game.id,
+    unitId: unitToMove.unit.id,
+    combat: combatRow,
+  })
+  E2eHelper.playUnit({
+    player: selfPlayer,
+    gameDeck: gameDeckSelf,
+    deckUnit: unitToMove,
+    row: combatRow,
+    switchTurnsWith: opponentPlayer,
+  })
+
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [
+      [
+        {
+          userName: selfPlayer.name,
+          unitName: unitToMove.unit.name,
+          combatRow: combatRow,
+        },
+      ],
+    ],
+  })
+})
+
+test('Page automatically updates after opponent plays unit via API on game page', async (t) => {
+  const gameDeckSelf = await t.ctx.self.client.setDeck({
+    deckId: t.ctx.self.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
+    deckId: t.ctx.opponent.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  await t.ctx.self.client.setOrder({
+    gameId: t.ctx.game.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
+  await t.ctx.self.client.ready(t.ctx.game.id)
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: t.ctx.self.deck,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+    ready: true,
+    passed: false,
+    turn: PlayerTurn.Current,
+    score: 0,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: t.ctx.opponent.deck,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+    ready: true,
+    score: 0,
+  })
+  const moves: (HistoryMove | HistoryPass)[] = []
+
+  await t.ctx.self.client.playPass({
+    gameId: t.ctx.game.id,
+  })
+  E2eHelper.playPass({
+    player: selfPlayer,
+    round: 1,
+    moves,
+    switchTurnsWith: opponentPlayer,
+  })
+
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [moves],
+  })
+
+  const sortedHand = sortObjectArray({
+    array: gameDeckOpponent.hand,
+    sortProperties: ['unit.strength', 'unit.id'],
+    reverse: true,
+  })
+  const unitToMove = sortedHand[0]
+  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
+
+  await t.ctx.opponent.client.playUnit({
+    gameId: t.ctx.game.id,
+    unitId: unitToMove.unit.id,
+    combat: combatRow,
+  })
+  E2eHelper.playUnit({
+    player: opponentPlayer,
+    gameDeck: gameDeckOpponent,
+    deckUnit: unitToMove,
+    row: combatRow,
+    moves,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [moves],
+  })
+})
+
+test('Page automatically updates after unit played via API on games list', async (t) => {
+  const gameDeckSelf = await t.ctx.self.client.setDeck({
+    deckId: t.ctx.self.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
+    deckId: t.ctx.opponent.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  await t.ctx.self.client.setOrder({
+    gameId: t.ctx.game.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
+  await t.ctx.self.client.ready(t.ctx.game.id)
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: t.ctx.self.deck,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+    ready: true,
+    passed: false,
+    turn: PlayerTurn.Current,
+    score: 0,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: t.ctx.opponent.deck,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+    ready: true,
+    score: 0,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [[]],
+  })
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: t.ctx.game.created,
+        owner: t.ctx.self.user.name,
+        players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+        status: GameStatus.Playing,
+        factions: [t.ctx.self.deck.faction.key, t.ctx.opponent.deck.faction.key],
+      },
+    ],
+  })
+
+  const sortedHand = sortObjectArray({
+    array: gameDeckSelf.hand,
+    sortProperties: ['unit.strength', 'unit.id'],
+    reverse: true,
+  })
+  const unitToMove = sortedHand[0]
+  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
+
+  await t.ctx.self.client.playUnit({
+    gameId: t.ctx.game.id,
+    unitId: unitToMove.unit.id,
+    combat: combatRow,
+  })
+  E2eHelper.playUnit({
+    player: selfPlayer,
+    gameDeck: gameDeckSelf,
+    deckUnit: unitToMove,
+    row: combatRow,
+    switchTurnsWith: opponentPlayer,
+  })
+
+  await GamesPage.verify({
+    games: [
+      {
+        created: t.ctx.game.created,
+        owner: t.ctx.self.user.name,
+        players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+        status: GameStatus.Playing,
+        factions: [t.ctx.self.deck.faction.key, t.ctx.opponent.deck.faction.key],
+      },
+    ],
+  })
+
+  await GamesPage.selectGame(0)
+
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [
+      [
+        {
+          userName: selfPlayer.name,
+          unitName: unitToMove.unit.name,
+          combatRow: combatRow,
+        },
+      ],
+    ],
+  })
+})
+
+test('Page automatically updates after pass at round start via API on game page', async (t) => {
+  const gameDeckSelf = await t.ctx.self.client.setDeck({
+    deckId: t.ctx.self.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
+    deckId: t.ctx.opponent.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  await t.ctx.self.client.setOrder({
+    gameId: t.ctx.game.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
+  await t.ctx.self.client.ready(t.ctx.game.id)
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: t.ctx.self.deck,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+    ready: true,
+    passed: false,
+    turn: PlayerTurn.Current,
+    score: 0,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: t.ctx.opponent.deck,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+    ready: true,
+    score: 0,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    self: selfPlayer,
+    opponent: opponentPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [[]],
+  })
+
+  await t.ctx.self.client.playPass({
+    gameId: t.ctx.game.id,
+  })
+  E2eHelper.playPass({
+    player: selfPlayer,
+    round: 1,
+    switchTurnsWith: opponentPlayer,
+  })
+
+  await GamePage.verify({
+    self: selfPlayer,
+    opponent: opponentPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [
+      [
+        {
+          userName: selfPlayer.name,
+          round: 1,
+        },
+      ],
+    ],
+  })
+})
+
+test('Page automatically updates after pass at round end via API on game page', async (t) => {
+  const gameDeckSelf = await t.ctx.self.client.setDeck({
+    deckId: t.ctx.self.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
+    deckId: t.ctx.opponent.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  await t.ctx.self.client.setOrder({
+    gameId: t.ctx.game.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
+  await t.ctx.self.client.ready(t.ctx.game.id)
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: t.ctx.self.deck,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+    ready: true,
+    passed: false,
+    turn: PlayerTurn.Current,
+    score: 0,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: t.ctx.opponent.deck,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+    ready: true,
+    score: 0,
+  })
+  const moves: (HistoryMove | HistoryPass)[] = []
+
+  const sortedHand = sortObjectArray({
+    array: gameDeckSelf.hand,
+    sortProperties: ['unit.strength', 'unit.id'],
+    reverse: true,
+  })
+  const unitToMove = sortedHand[0]
+  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
+  await t.ctx.self.client.playUnit({
+    gameId: t.ctx.game.id,
+    unitId: unitToMove.unit.id,
+    combat: combatRow,
+  })
+  E2eHelper.playUnit({
+    player: selfPlayer,
+    gameDeck: gameDeckSelf,
+    deckUnit: unitToMove,
+    row: combatRow,
+    moves,
+  })
+
+  await t.ctx.opponent.client.playPass({
+    gameId: t.ctx.game.id,
+  })
+  E2eHelper.playPass({
+    player: opponentPlayer,
+    round: 1,
+    moves,
+  })
+
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [moves],
+  })
+
+  await t.ctx.self.client.playPass({
+    gameId: t.ctx.game.id,
+  })
+  E2eHelper.playPass({
+    player: selfPlayer,
+    round: 1,
+    moves,
+  })
+  E2eHelper.endRound({
+    self: selfPlayer,
+    opponent: opponentPlayer,
+    losers: [opponentPlayer],
+  })
+
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    round: 2,
+    moves: [moves, []],
+  })
+})
+
+test('Page automatically updates after pass via API on games list', async (t) => {
+  const gameDeckSelf = await t.ctx.self.client.setDeck({
+    deckId: t.ctx.self.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
+    deckId: t.ctx.opponent.deck.id,
+    gameId: t.ctx.game.id,
+  })
+  await t.ctx.self.client.setOrder({
+    gameId: t.ctx.game.id,
+    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
+  })
+  await t.ctx.self.client.ready(t.ctx.game.id)
+  await t.ctx.opponent.client.ready(t.ctx.game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.self.client,
+      deck: t.ctx.self.deck,
+      gameDeck: gameDeckSelf,
+      user: t.ctx.self.user,
+    },
+    ready: true,
+    passed: false,
+    turn: PlayerTurn.Current,
+    score: 0,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: t.ctx.opponent.client,
+      deck: t.ctx.opponent.deck,
+      gameDeck: gameDeckOpponent,
+      user: t.ctx.opponent.user,
+    },
+    ready: true,
+    score: 0,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [[]],
+  })
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  await GamesPage.verify({
+    games: [
+      {
+        created: t.ctx.game.created,
+        owner: t.ctx.self.user.name,
+        players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+        status: GameStatus.Playing,
+        factions: [t.ctx.self.deck.faction.key, t.ctx.opponent.deck.faction.key],
+      },
+    ],
+  })
+
+  await t.ctx.self.client.playPass({
+    gameId: t.ctx.game.id,
+  })
+  E2eHelper.playPass({
+    player: selfPlayer,
+    round: 1,
+    switchTurnsWith: opponentPlayer,
+  })
+
+  await GamesPage.verify({
+    games: [
+      {
+        created: t.ctx.game.created,
+        owner: t.ctx.self.user.name,
+        players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+        status: GameStatus.Playing,
+        factions: [t.ctx.self.deck.faction.key, t.ctx.opponent.deck.faction.key],
+      },
+    ],
+  })
+  await GamesPage.selectGame(0)
+
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: gameDeckSelf.hand,
+    moves: [
+      [
+        {
+          userName: selfPlayer.name,
+          round: 1,
+        },
+      ],
+    ],
   })
 })

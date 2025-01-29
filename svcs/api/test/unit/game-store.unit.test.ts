@@ -2,7 +2,6 @@ import { Document, Filter, FindOptions, ObjectId, UpdateFilter } from 'mongodb'
 
 import { DeckDbObject, DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
-import { MAX_ROUNDS } from '@gwent/constants'
 import TestUtil from '../test-util'
 
 describe('game-store', () => {
@@ -177,7 +176,7 @@ describe('game-store', () => {
         userId: new ObjectId().toString(),
       })
     })
-    it('calls out to update and returns result if id strings', async () => {
+    it('calls out to update and returns result if id ObjectIds', async () => {
       await testSetReady({
         gameId: new ObjectId(),
         userId: new ObjectId(),
@@ -186,6 +185,24 @@ describe('game-store', () => {
     it('logs out info if trace enabled', async () => {
       await testSetReady({
         gameId: new ObjectId(),
+        userId: new ObjectId(),
+        traceEnabled: true,
+      })
+    })
+  })
+  describe('makeMove', () => {
+    it('calls out to update and returns result if id strings', async () => {
+      await testMakeMove({
+        userId: new ObjectId().toString(),
+      })
+    })
+    it('calls out to update and returns result if id ObjectIds', async () => {
+      await testMakeMove({
+        userId: new ObjectId(),
+      })
+    })
+    it('logs out info if trace enabled', async () => {
+      await testMakeMove({
         userId: new ObjectId(),
         traceEnabled: true,
       })
@@ -203,10 +220,9 @@ async function testAddGame({
   traceEnabled?: boolean
 }) {
   const created = new Date()
-  const expected: GameDbObject = {
-    _id: new ObjectId(),
+  const expected = TestUtil.getDbGame({
     created,
-    creator: new ObjectId(creatorId),
+    creator: creatorId,
     players: [creatorId, ...opponentIds].map((playerId) =>
       TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
@@ -215,13 +231,8 @@ async function testAddGame({
         user: playerId,
       })
     ),
-    round: {
-      current: 0,
-      maximum: MAX_ROUNDS,
-    },
     updated: created,
-    victors: [],
-  }
+  })
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   GameStore['logger'] = {
@@ -638,6 +649,8 @@ async function testSetReady({
   userId: string | ObjectId
   traceEnabled?: boolean
 }) {
+  const previousUpdate = new Date()
+  const currentRound = 1
   const deck = TestUtil.getDbDeck({
     user: userId,
   })
@@ -666,13 +679,13 @@ async function testSetReady({
   const updateSpy = jest.spyOn(GameStore as any, 'update').mockResolvedValue(updatedGame)
   const filter: Filter<Document> = {
     _id: new ObjectId(gameId),
-    'players.user': new ObjectId(userId),
-    'players.ready': false,
+    updated: previousUpdate,
   }
   const update: UpdateFilter<Document> = {
     $set: {
       updated,
-      'players.$.ready': true,
+      players: updatedGame.players,
+      round: currentRound,
     },
   }
 
@@ -680,6 +693,9 @@ async function testSetReady({
     GameStore.setReady({
       gameId,
       userId,
+      previousUpdate,
+      players: updatedGame.players,
+      currentRound,
     })
   ).resolves.toEqual(updatedGame)
 
@@ -699,6 +715,66 @@ async function testSetReady({
       ? [
           [`ready for game "${gameId}" by user "${userId}" filter: "${JSON.stringify(filter)}"`],
           [`ready for game "${gameId}" by user "${userId}" update: "${JSON.stringify(update)}"`],
+        ]
+      : []
+  )
+}
+
+async function testMakeMove({ userId, traceEnabled }: { userId: string | ObjectId; traceEnabled?: boolean }) {
+  const game = TestUtil.getDbGame({
+    creator: userId,
+  })
+  const updated = new Date()
+  const udatedGame: GameDbObject = {
+    ...game,
+    updated,
+  }
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  GameStore['logger'] = {
+    debug: debugSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+    trace: traceSpy,
+  } as any
+  const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => updated)
+  const updateSpy = jest.spyOn(GameStore as any, 'update').mockResolvedValue(udatedGame)
+  const filter: Filter<Document> = {
+    _id: new ObjectId(game._id),
+    turn: new ObjectId(userId),
+    updated: game.updated,
+  }
+  const update: UpdateFilter<Document> = {
+    $set: {
+      ...game,
+      updated,
+    },
+  }
+
+  await expect(
+    GameStore.makeMove({
+      game: game,
+      userId,
+    })
+  ).resolves.toEqual(udatedGame)
+
+  expect(updateSpy.mock.calls).toEqual([
+    [
+      {
+        filter,
+        update,
+        verifyExistence: false,
+      },
+    ],
+  ])
+  expect(dateSpy.mock.calls).toEqual([[]])
+  expect(debugSpy.mock.calls).toEqual([
+    [`Move made on game "${game._id}" by user "${userId}", setting next move to "${game.turn}"`],
+  ])
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled
+      ? [
+          [`move on game "${game._id}" by user "${userId}" filter: "${JSON.stringify(filter)}"`],
+          [`move on game "${game._id}" by user "${userId}" update: "${JSON.stringify(update)}"`],
         ]
       : []
   )

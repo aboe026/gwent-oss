@@ -1,0 +1,7 @@
+fragment GameUnitFragment on GameUnit {
+  artStyle
+  effectiveStrength
+  unit {
+    ...CardUnitFragment
+  }
+}

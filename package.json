@@ -1,6 +1,6 @@
 {
   "name": "@gwent/core",
-  "version": "0.9.2",
+  "version": "0.10.0",
   "author": "Adam Boe",
   "description": "A recreation of the card game Gwent from The Witcher 3: Wild Hunt",
   "scripts": {
@@ -38,7 +38,7 @@
     "start": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent/e2e-tests run start",
     "test": "npm-run-all --sequential lint test-unit test-func test-e2e",
     "test-e2e": "cd test/e2e && yarn start",
-    "test-func": "yarn g:jest --test-type=func --runInBand",
+    "test-func": "yarn g:jest --test-type=func --runInBand --setupFilesAfterEnv=./svcs/api/test/func/util/setup.ts",
     "test-unit": "yarn g:jest --test-type=unit",
     "upgrade-dependencies": "yarn g:ts-node scripts/upgrade-dependencies",
     "watch": "yarn workspaces foreach --worktree --parallel --interlaced run watch"

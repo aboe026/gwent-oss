@@ -10,7 +10,10 @@ import {
   GamePlayerUnitCounts,
   GameStatus,
   Leader,
+  Move,
+  PlayerCombatRow,
   PlayerRound,
+  RoundResult,
   Unit,
   UnitStats,
   User,
@@ -380,6 +383,7 @@ export function expectizeGame({
   players,
   status = GameStatus.Decking,
   turn = null,
+  round = 0,
 }: {
   creator: User
   players: {
@@ -393,8 +397,12 @@ export function expectizeGame({
   }[]
   status?: GameStatus
   turn?: GamePlayer | null
+  round?: number
 }) {
   return {
+    config: {
+      lives: 2,
+    },
     created: expect.any(Date),
     creator,
     id: expect.any(String),
@@ -422,10 +430,7 @@ export function expectizeGame({
       }
       return player
     }),
-    round: {
-      current: 0,
-      maximum: 3,
-    },
+    round,
     status,
     turn,
     updated: expect.any(Date),
@@ -467,20 +472,59 @@ export function expectizeGameDeck({
   }
 }
 
+export function expectizePlayerRound({
+  close = {
+    score: 0,
+    units: [],
+  },
+  moves = [],
+  ranged = {
+    score: 0,
+    units: [],
+  },
+  passed = false,
+  result = null,
+  score = 0,
+  siege = {
+    score: 0,
+    units: [],
+  },
+}: {
+  close?: PlayerCombatRow
+  moves?: Move[]
+  passed?: boolean
+  ranged?: PlayerCombatRow
+  result?: RoundResult | null
+  score?: number
+  siege?: PlayerCombatRow
+}): PlayerRound {
+  return {
+    close,
+    moves,
+    passed,
+    ranged,
+    score,
+    siege,
+    result,
+  }
+}
+
 export function expectizeGamePlayer({
   user,
   gameDeck,
   order = null,
   ready = false,
+  rounds = [],
 }: {
   user: User
   gameDeck: GameDeck
   order?: number | null
   ready?: boolean
+  rounds?: PlayerRound[]
 }): GamePlayer {
   return {
     ready,
-    rounds: [],
+    rounds,
     user,
     counts: {
       discard: gameDeck.discard.length,

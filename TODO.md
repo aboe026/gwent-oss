@@ -2,10 +2,29 @@
 
 A list of things to be done in the future.
 
-- Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status)
-- implement history?
+## Fixes
+
+- change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
+- have resolves throw custom errors instead of returning general one
+  - in shield file, filter out custom errors from general ones to determine which to show user
+  - have shared method for "getContextUser" (and possibly other repeated checks across resolvers)
+- save game status to database?
+- combine repeated props into single object (like renderCombatRow in renderBattlefield)
+- collapse UI method props when they are long (like PlayUnitProps)
+- alphabetize UI props/method inputs
+- remove ids from errors and put them in logPrefix
+- improve UX around game player info (username, score, rounds, passed)
+- move all hard-coded config to GameConfig
+  - PLAYER_COUNTS (or can this just be inferred from game.players size?)
+  - MAX_REDRAWS
+  - STARTING_HAND_SIZE
+  - MAX_SPECIALS
+  - min units?
+- split subscriptions into separate files (similar to resolvers)
+- Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status, gamesList doesn't need all details that game page does)
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
+- rename "redraw" mutation to "redrawUnit"?
 - do not store yarn binary in source
 - do not store yarn sdks in source?
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
@@ -14,9 +33,15 @@ A list of things to be done in the future.
 - Change "ready" mutation to "readyGame"?
 - Remove @map directive for ID types?
 - Switch DeckUnit to be same as Unit but single image instead of array
-  - Have Unit interface with AvailableUnit and DeckUnit implementations
+  - Have Unit interface with following implementations:
+    - AvailableUnit
+      - images (all possible art styles you can choose for the image)
+    - DeckUnit
+      - image (for chosen art style)
+    - GameUnit
+      - image (for chosen art style)
+      - effectiveStrength (for strength after all active effects applied)
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
-  - change schema input to be just an optional image instead of artStyle
 - carry over username (and password?) when switching between log-in and sign-up
 - more accurately type front-end results based on their return fragments
   - type Game = GameQuery['game']
@@ -35,13 +60,40 @@ A list of things to be done in the future.
 - Change schema.ts to schema.gql
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
-- ensure client and server are on same version
-- have game creation in UI have searcheable field for opponent
-  - need query to get users
-    - restrict to users "friends"?
-  - change addGame mutation to accept ids instead of usernames
 - Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
 - Fix root "yarn build"
   - right now it runs "yarn build" in all workspaces simultaneously.
   - This is a problem because there are explicit dependencies on libraries being built first
   - Need to have a script generate dependency tree, then perform builds in reverse order
+
+## Features
+
+- Animations of cards entering battlefield?
+- Units can be discarded instead of played (discardUnit mutation?)
+- some cards (or some scenarios - like scorch?) cannot be revived with medic ability
+- if effective strength greater than normal strength, green. If less, red.
+- games list improvements
+  - progress bar for game status
+  - highlight games waiting on you?
+  - subscriptions for status changes?
+- implement audit actions
+  - status of attempt, success, failure
+  - all actions so can know who does what in which order
+- implement user registration
+  - register with email
+  - need to verify in email to get account created
+- auto-pass after certain amount of time
+- email notifications?
+- edit deck
+- delete deck
+- pagination
+  - decks
+  - games
+- help text on deck builder for effects
+  - question mark next to effects on bottom
+  - pops up full screen dialog with each effect icon, name and description
+- ensure client and server are on same version
+- have game creation in UI have searcheable field for opponent
+  - need query to get users
+    - restrict to users "friends"?
+  - change addGame mutation to accept ids instead of usernames

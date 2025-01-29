@@ -90,7 +90,7 @@ button {
   max-width: 400px;
   margin: auto;
   gap: 10px;
-  padding: 25px 10px;
+  padding: 25px;
   text-align: center;
   z-index: 2;
   background-color: white;
@@ -131,4 +131,12 @@ button {
 
 .skellige-color {
   background-color: #5e027a;
+}
+
+.item-highlighted {
+  border-style: solid;
+  border-width: 4px;
+  border-radius: 10px;
+  border-color: #e9a018;
+  margin: -4px;
 }

@@ -2,6 +2,7 @@ import { graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import {
+  Combat,
   Deck,
   DeckUnit,
   Faction,
@@ -62,7 +63,7 @@ export async function getFactionId({ key }: { key: FactionKey }): Promise<string
     schema,
     source: `{
       factions {
-        ${getFactionFragment({})}
+        ${getFactionFragment()}
       }
     }`,
     contextValue: {
@@ -88,7 +89,7 @@ export async function getLeaderId({ name, faction }: { name?: string; faction?: 
     schema,
     source: `{
       leaders {
-        ${getLeaderFragment({})}
+        ${getLeaderFragment()}
       }
     }`,
     contextValue: {
@@ -127,7 +128,7 @@ export async function getUnits({ factions }: { factions: FactionKey[] }): Promis
     schema,
     source: `{
       units(factions: [${factions.join(',')}], deckable: true) {
-        ${getUnitFragment({})}
+        ${getUnitFragment()}
       }
     }`,
     contextValue: {
@@ -182,13 +183,11 @@ export async function addDeck({
   name,
   leader,
   userId,
-  statsModifier,
 }: {
   name: string
   faction: FactionKey
   leader?: string
   userId?: string
-  statsModifier?: string
 }): Promise<Deck> {
   if (!userId) {
     userId = (await addUser(`addDeck-${Date.now()}`)).id
@@ -205,9 +204,7 @@ export async function addDeck({
         })}",
         units: [${await getUnitsInput(faction)}]
       ) {
-        ${getDeckFragment({
-          statsModifier,
-        })}
+        ${getDeckFragment()}
       }
     }`,
     contextValue: {
@@ -234,7 +231,7 @@ export async function addGame({ opponentNames, creator }: { opponentNames: strin
       addGame(
         opponentNames: ["${opponentNames.join('","')}"]
       ) {
-        ${getGameFragment({})}
+        ${getGameFragment()}
       }
     }`,
     contextValue: {
@@ -260,7 +257,7 @@ export async function getGame({
     schema,
     source: `{
       game(id: "${gameId}") {
-        ${getGameFragment({})}
+        ${getGameFragment()}
       }
     }`,
     contextValue: {
@@ -281,12 +278,10 @@ export async function setDeck({
   deckId,
   gameId,
   userId,
-  statsModifier,
 }: {
   deckId: string | ObjectId
   gameId: string | ObjectId
   userId?: string
-  statsModifier?: string
 }): Promise<GameDeck> {
   if (!userId) {
     userId = (await addUser(`setDeck-${Date.now()}`)).id
@@ -298,9 +293,7 @@ export async function setDeck({
         deck: "${deckId}"
         game: "${gameId}"
       ) {
-        ${getGameDeckFragment({
-          statsModifier,
-        })}
+        ${getGameDeckFragment()}
       }
     }`,
     contextValue: {
@@ -320,19 +313,15 @@ export async function setDeck({
 export async function getGameDeck({
   gameId,
   userId,
-  statsModifier,
 }: {
   gameId: string | ObjectId
   userId: string | ObjectId
-  statsModifier?: string
 }): Promise<GameDeck> {
   const response = await graphql({
     schema,
     source: `{
       gameDeck(game: "${gameId}") {
-        ${getGameDeckFragment({
-          statsModifier,
-        })}
+        ${getGameDeckFragment()}
       }
     }`,
     contextValue: {
@@ -365,7 +354,7 @@ export async function setOrder({
         game: "${gameId}"
         users: ${JSON.stringify(users.map((user) => user.toString()))}
       ) {
-        ${getGameFragment({})}
+        ${getGameFragment()}
       }
     }`,
     contextValue: {
@@ -398,7 +387,7 @@ export async function redraw({
         game: "${gameId}"
         unit: "${unitId}"
       ) {
-        ${getDeckUnitFragment({})}
+        ${getDeckUnitFragment()}
       }
     }`,
     contextValue: {
@@ -428,7 +417,7 @@ export async function ready({
       ready(
         game: "${gameId}"
       ) {
-        ${getGameFragment({})}
+        ${getGameFragment()}
       }
     }`,
     contextValue: {
@@ -443,4 +432,70 @@ export async function ready({
     throw Error(JSON.stringify(response.errors))
   }
   return response.data?.ready as Game
+}
+
+export async function playPass({
+  gameId,
+  userId,
+}: {
+  gameId: string | ObjectId
+  userId: string | ObjectId
+}): Promise<Game> {
+  const response = await graphql({
+    schema,
+    source: `mutation {
+      playPass(
+        game: "${gameId}"
+      ) {
+        ${getGameFragment()}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.playPass as Game
+}
+
+export async function playUnit({
+  gameId,
+  userId,
+  unitId,
+  combat,
+}: {
+  gameId: string | ObjectId
+  userId: string | ObjectId
+  unitId: string | ObjectId
+  combat: Combat
+}): Promise<Game> {
+  const response = await graphql({
+    schema,
+    source: `mutation {
+      playUnit(
+        game: "${gameId}"
+        unit: "${unitId}"
+        combat: ${combat}
+      ) {
+        ${getGameFragment()}
+      }
+    }`,
+    contextValue: {
+      session: {
+        user: {
+          _id: userId,
+        },
+      },
+    },
+  })
+  if (response.errors) {
+    throw Error(JSON.stringify(response.errors))
+  }
+  return response.data?.playUnit as Game
 }

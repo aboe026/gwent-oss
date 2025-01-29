@@ -12,7 +12,42 @@ fragment GamePlayerFragment on GamePlayer {
   }
   ready
   rounds {
+    close {
+      ...PlayerCombatRowFragment
+    }
+    moves {
+      ... on MoveLeader {
+        created
+        leader {
+          image
+          name
+        }
+      }
+      ... on MovePass {
+        created
+      }
+      ... on MoveUnit {
+        created
+        row
+        unit {
+          artStyle
+          unit {
+            name
+            id
+            images
+          }
+        }
+      }
+    }
+    passed
+    ranged {
+      ...PlayerCombatRowFragment
+    }
+    result
     score
+    siege {
+      ...PlayerCombatRowFragment
+    }
   }
   user {
     id

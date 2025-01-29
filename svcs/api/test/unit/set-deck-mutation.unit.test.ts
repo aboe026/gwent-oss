@@ -6,6 +6,7 @@ import {
   DeckUnitDbObject,
   GameDbObject,
   GamePlayerDbObject,
+  GameStatus,
 } from '@gwent/graphql-schema/database-typings'
 import DeckStore from '../../src/database/stores/deck-store'
 import EventManager from '../../src/graphql/event-manager'
@@ -14,7 +15,7 @@ import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolv
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
-import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
+import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
 import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck-mutation'
 import TestUtil from '../test-util'
@@ -22,6 +23,9 @@ import TestUtil from '../test-util'
 describe('set-deck-mutation', () => {
   describe('setDeck', () => {
     const userId = new ObjectId()
+    const gamePlayer = TestUtil.getDbGamePlayer({
+      user: userId,
+    })
     const game = TestUtil.getDbGame({
       creator: userId,
     })
@@ -40,23 +44,41 @@ describe('set-deck-mutation', () => {
       game: game,
     })
     const logPrefix = `setDeck by "${userId}"`
+    const getDeckCalls = [
+      [
+        {
+          id: deck._id.toString(),
+        },
+      ],
+    ]
+    const getGamePlayerCalls = [
+      [
+        {
+          gameId: game._id.toString(),
+          logPrefix,
+          userId,
+          status: GameStatus.Decking,
+          label: 'set deck',
+        },
+      ],
+    ]
+    const setDeckCalls = [
+      [
+        {
+          deck,
+          gameId: game._id.toString(),
+          hand: deck.units.slice(0, STARTING_HAND_SIZE),
+          undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
+          userId,
+        },
+      ],
+    ]
     it('returns error if no user on context', async () => {
       await testSetDeck({
         gameId: game._id.toString(),
         deckId: deck._id.toString(),
         expected: Error(NOT_AUTHENTICATED_MESSAGE),
         errorCalls: [[`No user on context for setDeck mutation: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if invalid game ID', async () => {
-      const gameId = 'invalid'
-      const error = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      await testSetDeck({
-        userId,
-        gameId,
-        deckId: deck._id.toString(),
-        expected: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('returns error if invalid deck ID', async () => {
@@ -77,68 +99,21 @@ describe('set-deck-mutation', () => {
         gameId: game._id.toString(),
         deckId: deck._id.toString(),
         expected: Error(error),
-        getDeckCalls: [
-          [
-            {
-              id: deck._id.toString(),
-            },
-          ],
-        ],
+        getDeckCalls,
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if game does not exist', async () => {
-      const error = `Game with ID "${game._id}" does not exist.`
+    it('returns error if getGamePlayer returns error', async () => {
+      const error = `Game ID "${game._id}" is not a valid MongoDB ObjectId.`
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
         gameId: game._id.toString(),
         getDeckResponse: deck,
+        getGamePlayerResponse: Error(error),
         expected: Error(error),
-        getDeckCalls: [
-          [
-            {
-              id: deck._id.toString(),
-            },
-          ],
-        ],
-        getGameCalls: [
-          [
-            {
-              id: game._id.toString(),
-            },
-          ],
-        ],
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns error if not a player on game', async () => {
-      const error = `Not a player on game "${game._id}".`
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGameResponse: {
-          ...game,
-          players: [],
-        },
-        expected: Error(error),
-        getDeckCalls: [
-          [
-            {
-              id: deck._id.toString(),
-            },
-          ],
-        ],
-        getGameCalls: [
-          [
-            {
-              id: game._id.toString(),
-            },
-          ],
-        ],
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
+        getDeckCalls,
+        getGamePlayerCalls,
       })
     })
     it('returns error if deck is already set', async () => {
@@ -148,32 +123,18 @@ describe('set-deck-mutation', () => {
         deckId: deck._id.toString(),
         gameId: game._id.toString(),
         getDeckResponse: deck,
-        getGameResponse: {
-          ...game,
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({}),
-              }),
-              user: userId,
+        getGamePlayerResponse: {
+          game,
+          player: {
+            ...gamePlayer,
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({}),
             }),
-          ],
+          },
         },
         expected: Error(error),
-        getDeckCalls: [
-          [
-            {
-              id: deck._id.toString(),
-            },
-          ],
-        ],
-        getGameCalls: [
-          [
-            {
-              id: game._id.toString(),
-            },
-          ],
-        ],
+        getDeckCalls,
+        getGamePlayerCalls,
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
@@ -184,24 +145,15 @@ describe('set-deck-mutation', () => {
         deckId: deck._id.toString(),
         gameId: game._id.toString(),
         getDeckResponse: deck,
-        getGameResponse: game,
+        getGamePlayerResponse: {
+          game,
+          player: gamePlayer,
+        },
         setDeckResponse: undefined,
         randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
         expected: Error(error),
-        getDeckCalls: [
-          [
-            {
-              id: deck._id.toString(),
-            },
-          ],
-        ],
-        getGameCalls: [
-          [
-            {
-              id: game._id.toString(),
-            },
-          ],
-        ],
+        getDeckCalls,
+        getGamePlayerCalls,
         getRandomSubsetCalls: [
           [
             {
@@ -210,17 +162,7 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        setDeckCalls: [
-          [
-            {
-              deck,
-              gameId: game._id.toString(),
-              hand: deck.units.slice(0, STARTING_HAND_SIZE),
-              undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
-              userId,
-            },
-          ],
-        ],
+        setDeckCalls,
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
@@ -231,24 +173,15 @@ describe('set-deck-mutation', () => {
         deckId: deck._id.toString(),
         gameId: game._id.toString(),
         getDeckResponse: deck,
-        getGameResponse: game,
+        getGamePlayerResponse: {
+          game,
+          player: gamePlayer,
+        },
         setDeckResponse: TestUtil.getDbGame({}),
         randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
         expected: Error(error),
-        getDeckCalls: [
-          [
-            {
-              id: deck._id.toString(),
-            },
-          ],
-        ],
-        getGameCalls: [
-          [
-            {
-              id: game._id.toString(),
-            },
-          ],
-        ],
+        getDeckCalls,
+        getGamePlayerCalls,
         getRandomSubsetCalls: [
           [
             {
@@ -257,17 +190,7 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        setDeckCalls: [
-          [
-            {
-              deck,
-              gameId: game._id.toString(),
-              hand: deck.units.slice(0, STARTING_HAND_SIZE),
-              undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
-              userId,
-            },
-          ],
-        ],
+        setDeckCalls,
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
@@ -277,25 +200,16 @@ describe('set-deck-mutation', () => {
         deckId: deck._id.toString(),
         gameId: game._id.toString(),
         getDeckResponse: deck,
-        getGameResponse: game,
+        getGamePlayerResponse: {
+          game,
+          player: gamePlayer,
+        },
         setDeckResponse: game,
         randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
         resolveGameResponse: resolvedGame,
         expected,
-        getDeckCalls: [
-          [
-            {
-              id: deck._id.toString(),
-            },
-          ],
-        ],
-        getGameCalls: [
-          [
-            {
-              id: game._id.toString(),
-            },
-          ],
-        ],
+        getDeckCalls,
+        getGamePlayerCalls,
         getRandomSubsetCalls: [
           [
             {
@@ -304,17 +218,7 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        setDeckCalls: [
-          [
-            {
-              deck,
-              gameId: game._id.toString(),
-              hand: deck.units.slice(0, STARTING_HAND_SIZE),
-              undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
-              userId,
-            },
-          ],
-        ],
+        setDeckCalls,
         resolveGameDeckCalls: [
           [
             {
@@ -358,25 +262,16 @@ describe('set-deck-mutation', () => {
         deckId: deck._id.toString(),
         gameId: game._id.toString(),
         getDeckResponse: deck,
-        getGameResponse: game,
+        getGamePlayerResponse: {
+          game,
+          player: gamePlayer,
+        },
         setDeckResponse: gameAllDecksChosen,
         randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
         resolveGameResponse: resolvedGameAllDecksChosen,
         expected,
-        getDeckCalls: [
-          [
-            {
-              id: deck._id.toString(),
-            },
-          ],
-        ],
-        getGameCalls: [
-          [
-            {
-              id: game._id.toString(),
-            },
-          ],
-        ],
+        getDeckCalls,
+        getGamePlayerCalls,
         getRandomSubsetCalls: [
           [
             {
@@ -385,17 +280,7 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        setDeckCalls: [
-          [
-            {
-              deck,
-              gameId: game._id.toString(),
-              hand: deck.units.slice(0, STARTING_HAND_SIZE),
-              undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
-              userId,
-            },
-          ],
-        ],
+        setDeckCalls,
         resolveGameDeckCalls: [
           [
             {
@@ -442,25 +327,16 @@ describe('set-deck-mutation', () => {
         deckId: deck._id.toString(),
         gameId: game._id.toString(),
         getDeckResponse: deck,
-        getGameResponse: game,
+        getGamePlayerResponse: {
+          game,
+          player: gamePlayer,
+        },
         setDeckResponse: game,
         randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
         resolveGameResponse: resolvedGame,
         expected,
-        getDeckCalls: [
-          [
-            {
-              id: deck._id.toString(),
-            },
-          ],
-        ],
-        getGameCalls: [
-          [
-            {
-              id: game._id.toString(),
-            },
-          ],
-        ],
+        getDeckCalls,
+        getGamePlayerCalls,
         getRandomSubsetCalls: [
           [
             {
@@ -469,17 +345,7 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        setDeckCalls: [
-          [
-            {
-              deck,
-              gameId: game._id.toString(),
-              hand: deck.units.slice(0, STARTING_HAND_SIZE),
-              undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
-              userId,
-            },
-          ],
-        ],
+        setDeckCalls,
         resolveGameDeckCalls: [
           [
             {
@@ -512,13 +378,13 @@ async function testSetDeck({
   gameId,
   deckId,
   getDeckResponse,
-  getGameResponse,
+  getGamePlayerResponse,
   randomSubset = [],
   setDeckResponse,
   resolveGameResponse,
   expected,
   getDeckCalls = [],
-  getGameCalls = [],
+  getGamePlayerCalls = [],
   getRandomSubsetCalls = [],
   setDeckCalls = [],
   resolveGameDeckCalls = [],
@@ -533,13 +399,13 @@ async function testSetDeck({
   gameId: string
   deckId: string
   getDeckResponse?: DeckDbObject
-  getGameResponse?: GameDbObject
+  getGamePlayerResponse?: GamePlayerResponse | Error
   randomSubset?: DeckUnitDbObject[]
   setDeckResponse?: GameDbObject
   resolveGameResponse?: Game
   expected: Error | GameDeck
   getDeckCalls?: any[][]
-  getGameCalls?: any[][]
+  getGamePlayerCalls?: any[][]
   getRandomSubsetCalls?: any[][]
   setDeckCalls?: any[][]
   resolveGameDeckCalls?: any[][]
@@ -562,15 +428,19 @@ async function testSetDeck({
     game: gameId,
     deck: deckId,
   }
-  const player = getGameResponse?.players.find(
-    (player) => player.user.toString() === userId?.toString()
-  ) as GamePlayerDbObject
+  let player: GamePlayerDbObject | undefined = undefined
+  if (!(getGamePlayerResponse instanceof Error)) {
+    player = getGamePlayerResponse?.player
+  }
   let handIds: string[] = []
   if (player) {
     handIds = randomSubset.map((deckUnit) => deckUnit.unit.toString())
   }
   const getDeckSpy = jest.spyOn(DeckStore, 'getById').mockResolvedValue(getDeckResponse)
-  const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
+  const getGamePlayerSpy = jest.spyOn(MutationUtil, 'getGamePlayer')
+  if (getGamePlayerResponse) {
+    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+  }
   const getRandomSubsetSpy = jest.spyOn(gwentUtils, 'getRandomSubset').mockReturnValue(randomSubset)
   const setDeckSpy = jest.spyOn(GameStore, 'setDeck').mockResolvedValue(setDeckResponse)
   const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject')
@@ -596,7 +466,7 @@ async function testSetDeck({
   await expect(SetDeckMutation.setDeck(args, context, null as any)).resolves.toEqual(expected)
 
   expect(getDeckSpy.mock.calls).toEqual(getDeckCalls)
-  expect(getGameSpy.mock.calls).toEqual(getGameCalls)
+  expect(getGamePlayerSpy.mock.calls).toEqual(getGamePlayerCalls)
   expect(getRandomSubsetSpy.mock.calls).toEqual(getRandomSubsetCalls)
   expect(setDeckSpy.mock.calls).toEqual(setDeckCalls)
   expect(fromObjectSpy.mock.calls).toEqual(resolveGameDeckCalls)
@@ -627,12 +497,6 @@ async function testSetDeck({
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} deck: "${JSON.stringify(getDeckResponse)}"`],
-          [`${logPrefix} game: "${JSON.stringify(getGameResponse)}"`],
-          [
-            `${logPrefix} player: "${JSON.stringify(
-              (getGameResponse as GameDbObject).players.find((player) => player.user.toString() === userId?.toString())
-            )}"`,
-          ],
           [`${logPrefix} hand: "${JSON.stringify(randomSubset)}"`],
           [
             `${logPrefix} undrawn: "${JSON.stringify(

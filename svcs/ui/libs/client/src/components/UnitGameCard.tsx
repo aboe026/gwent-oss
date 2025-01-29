@@ -1,6 +1,5 @@
 import { CgMaximizeAlt } from 'react-icons/cg'
 import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
-import { Dispatch, SetStateAction } from 'react'
 import { getCombatImage, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES } from '@gwent/constants'
 import StrengthCircle from './StrengthCircle'
@@ -16,30 +15,32 @@ export default function UnitGameCard({
   iconSize = '34px',
   selected,
   cursor = 'pointer',
-  setFullUnit,
+  onFullscreen,
+  title,
+  dotted,
 }: UnitGameCardProps) {
   const combatSymbol = getCombatImage(deckUnit)
   const combatTitle = deckUnit.unit.combats
     ? deckUnit.unit.combats.map((combat) => toTitleCase(combat)).join(' or ')
     : ''
+  const unitTitle = title || deckUnit.unit.name
   return (
     <div
-      className={`${HTML_CLASSES.UnitGameCardContainer} ${selected ? HTML_CLASSES.UnitGameCardSelected : ''}`}
-      title={deckUnit.unit.name}
-      style={{ cursor }}
+      className={`${HTML_CLASSES.UnitGameCardContainer} ${selected ? HTML_CLASSES.ItemHighlighted : ''}`}
+      title={unitTitle}
+      style={{
+        cursor,
+        borderStyle: selected ? (dotted ? 'dotted' : 'solid') : 'none',
+      }}
     >
-      <img
-        className="unit-game-card-image"
-        title={deckUnit.unit.name}
-        src={deckUnit.unit.images[deckUnit.artStyle - 1]}
-      />
+      <img className="unit-game-card-image" title={unitTitle} src={deckUnit.unit.images[deckUnit.artStyle - 1]} />
       <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>
         <StrengthCircle size={'100%'} unit={deckUnit.unit} />
       </div>
       <div
         className={`${HTML_CLASSES.UnitGameCardFullScreen} icon-container pointable`}
         title="Fullscreen"
-        onClick={() => setFullUnit(deckUnit)}
+        onClick={() => onFullscreen(deckUnit)}
       >
         <CgMaximizeAlt className="unit-game-card-fullscreen-icon" />
       </div>
@@ -73,6 +74,8 @@ interface UnitGameCardProps {
   deckUnit: DeckUnit
   iconSize?: string
   selected?: boolean
+  dotted?: boolean
   cursor?: string
-  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
+  title?: string
+  onFullscreen: (deckUnit: DeckUnit) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }

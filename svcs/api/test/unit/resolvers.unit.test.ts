@@ -1,12 +1,6 @@
 import AddDeckMutation from '../../src/graphql/resolvers/mutations/add-deck-mutation'
 import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game-mutation'
 import AddUserMutation from '../../src/graphql/resolvers/mutations/add-user-mutation'
-import LoginMutation from '../../src/graphql/resolvers/mutations/login-mutation'
-import LogoutMutation from '../../src/graphql/resolvers/mutations/logout-mutation'
-import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
-import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw-mutation'
-import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck-mutation'
-import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order-mutation'
 import ApplicationQuery from '../../src/graphql/resolvers/queries/application-query'
 import CurrentUserQuery from '../../src/graphql/resolvers/queries/current-user-query'
 import DecksQuery from '../../src/graphql/resolvers/queries/decks-query'
@@ -15,9 +9,17 @@ import GameDeckQuery from '../../src/graphql/resolvers/queries/game-deck-query'
 import GameQuery from '../../src/graphql/resolvers/queries/game-query'
 import GamesQuery from '../../src/graphql/resolvers/queries/games-query'
 import LeadersQuery from '../../src/graphql/resolvers/queries/leaders-query'
+import LoginMutation from '../../src/graphql/resolvers/mutations/login-mutation'
+import LogoutMutation from '../../src/graphql/resolvers/mutations/logout-mutation'
+import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass-mutation'
+import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit-mutation'
+import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
+import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw-mutation'
+import resolvers from '../../src/graphql/resolvers/resolvers'
+import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck-mutation'
+import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order-mutation'
 import SettingsQuery from '../../src/graphql/resolvers/queries/settings-query'
 import UnitsQuery from '../../src/graphql/resolvers/queries/units-query'
-import resolvers from '../../src/graphql/resolvers/resolvers'
 
 describe('resolvers', () => {
   it('calls queries and mutations', async () => {
@@ -26,6 +28,8 @@ describe('resolvers', () => {
     const addUserSpy = jest.spyOn(AddUserMutation, 'addUser').mockImplementation()
     const loginSpy = jest.spyOn(LoginMutation, 'login').mockImplementation()
     const logoutSpy = jest.spyOn(LogoutMutation, 'logout').mockImplementation()
+    const playPassSpy = jest.spyOn(PlayPassMutation, 'playPass').mockImplementation()
+    const playUnitSpy = jest.spyOn(PlayUnitMutation, 'playUnit').mockImplementation()
     const readySpy = jest.spyOn(ReadyMutation, 'ready').mockImplementation()
     const redrawSpy = jest.spyOn(RedrawMutation, 'redraw').mockImplementation()
     const setDeckSpy = jest.spyOn(SetDeckMutation, 'setDeck').mockImplementation()
@@ -46,6 +50,8 @@ describe('resolvers', () => {
     await verifyOperation(resolvers.Mutation?.addUser, addUserSpy)
     await verifyOperation(resolvers.Mutation?.login, loginSpy)
     await verifyOperation(resolvers.Mutation?.logout, logoutSpy)
+    await verifyOperation(resolvers.Mutation?.playPass, playPassSpy)
+    await verifyOperation(resolvers.Mutation?.playUnit, playUnitSpy)
     await verifyOperation(resolvers.Mutation?.ready, readySpy)
     await verifyOperation(resolvers.Mutation?.redraw, redrawSpy)
     await verifyOperation(resolvers.Mutation?.setDeck, setDeckSpy)

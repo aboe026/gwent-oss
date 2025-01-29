@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 import urljoin from 'url-join'
 
 import {
+  Combat,
   Deck,
   DeckUnit,
   Faction,
@@ -37,8 +38,7 @@ export default class ApiClient {
       gql`
         mutation AddUser($name: String!, $password: String!) {
           addUser(name: $name, password: $password) {
-            id
-            name
+            ${this.fieldsOnUser()}
           }
         }
       `,
@@ -55,30 +55,7 @@ export default class ApiClient {
       gql`
         query Factions {
           factions {
-            id
-            created
-            name
-            key
-            image
-            dlc {
-              id
-              name
-              key
-              image
-            }
-            ability
-            stats {
-              units
-              strengths
-              specials
-              heroes
-              close
-              ranged
-              siege
-              agile
-              strengthTotal
-              strengthAverage
-            }
+            ${this.fieldsOnFaction()}
           }
         }
       `
@@ -100,44 +77,7 @@ export default class ApiClient {
       gql`
         query Leaders($factions: [FactionKey!]) {
           leaders(factions: $factions) {
-            id
-            created
-            name
-            faction {
-              id
-              created
-              name
-              key
-              image
-              dlc {
-                id
-                name
-                key
-                image
-              }
-              ability
-              stats {
-                units
-                strengths
-                specials
-                heroes
-                close
-                ranged
-                siege
-                agile
-                strengthTotal
-                strengthAverage
-              }
-            }
-            ability
-            quote
-            image
-            dlc {
-              id
-              name
-              key
-              image
-            }
+            ${this.fieldsOnLeader()}
           }
         }
       `,
@@ -162,70 +102,7 @@ export default class ApiClient {
       gql`
         query Units($factions: [FactionKey!], $deckable: Boolean) {
           units(factions: $factions, deckable: $deckable) {
-            combats
-            created
-            deckable
-            dlc {
-              id
-              image
-              key
-              name
-            }
-            effectPrefix
-            effects {
-              ability
-              id
-              image
-              key
-              name
-            }
-            faction {
-              ability
-              created
-              dlc {
-                id
-                image
-                key
-                name
-              }
-              id
-              image
-              key
-              name
-              stats {
-                agile
-                avenger
-                berserker
-                bond
-                close
-                decoy
-                heroes
-                horn
-                mardroeme
-                medic
-                morale
-                muster
-                ranged
-                scorch
-                siege
-                specials
-                spy
-                strengthAverage
-                strengths
-                strengthTotal
-                units
-                weather
-              }
-            }
-            hero
-            id
-            images
-            name
-            quote
-            scorchMin
-            scorchScope
-            special
-            strength
+            ${this.fieldsOnUnit()}
           }
         }
       `,
@@ -277,133 +154,9 @@ export default class ApiClient {
     }
     const response: any = await this._client.request(
       gql`
-        fragment FactionFragment on Faction {
-          ability
-          created
-          dlc {
-            id
-            image
-            key
-            name
-          }
-          id
-          image
-          key
-          name
-          stats {
-            agile
-            avenger
-            berserker
-            bond
-            close
-            decoy
-            heroes
-            horn
-            mardroeme
-            medic
-            morale
-            muster
-            ranged
-            scorch
-            siege
-            specials
-            spy
-            strengthAverage
-            strengths
-            strengthTotal
-            units
-            weather
-          }
-        }
         mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckUnitInput!]!) {
           addDeck(name: $name, faction: $faction, leader: $leader, units: $units) {
-            created
-            faction {
-              ...FactionFragment
-            }
-            id
-            leader {
-              ability
-              created
-              dlc {
-                id
-                image
-                key
-                name
-              }
-              faction {
-                ...FactionFragment
-              }
-              id
-              image
-              name
-              quote
-            }
-            name
-            stats {
-              agile
-              avenger
-              berserker
-              bond
-              close
-              decoy
-              heroes
-              horn
-              mardroeme
-              medic
-              morale
-              muster
-              ranged
-              scorch
-              siege
-              specials
-              spy
-              strengthAverage
-              strengths
-              strengthTotal
-              units
-              weather
-            }
-            units {
-              artStyle
-              unit {
-                combats
-                created
-                deckable
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-                effectPrefix
-                effects {
-                  ability
-                  created
-                  id
-                  image
-                  key
-                  name
-                }
-                faction {
-                  ...FactionFragment
-                }
-                hero
-                id
-                images
-                name
-                quote
-                scorchMin
-                scorchScope
-                special
-                strength
-              }
-            }
-            user {
-              created
-              id
-              name
-            }
+            ${this.fieldsOnDeck()}
           }
         }
       `,
@@ -425,118 +178,9 @@ export default class ApiClient {
   async getDeck(name: string): Promise<Deck> {
     const response: any = await this._client.request(
       gql`
-        fragment UnitStatsFragment on UnitStats {
-          agile
-          avenger
-          berserker
-          bond
-          close
-          decoy
-          heroes
-          horn
-          mardroeme
-          medic
-          morale
-          muster
-          ranged
-          scorch
-          siege
-          specials
-          spy
-          strengthAverage
-          strengths
-          strengthTotal
-          units
-          weather
-        }
         query Decks {
           decks {
-            created
-            faction {
-              ability
-              created
-              dlc {
-                id
-                image
-                key
-                name
-              }
-              id
-              image
-              key
-              name
-              stats {
-                ...UnitStatsFragment
-              }
-            }
-            id
-            leader {
-              ability
-              created
-              dlc {
-                id
-                image
-                key
-                name
-              }
-              id
-              image
-              name
-              quote
-            }
-            name
-            stats {
-              ...UnitStatsFragment
-            }
-            units {
-              artStyle
-              unit {
-                combats
-                created
-                deckable
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-                effectPrefix
-                effects {
-                  ability
-                  created
-                  id
-                  image
-                  key
-                  name
-                }
-                faction {
-                  ability
-                  created
-                  dlc {
-                    id
-                    image
-                    key
-                    name
-                  }
-                  id
-                  image
-                  key
-                  name
-                  stats {
-                    ...UnitStatsFragment
-                  }
-                }
-                hero
-                id
-                images
-                name
-                quote
-                scorchMin
-                scorchScope
-                special
-                strength
-              }
-            }
+            ${this.fieldsOnDeck()}
           }
         }
       `
@@ -551,90 +195,9 @@ export default class ApiClient {
   async addGame(opponentNames: string[]): Promise<Game> {
     const response: any = await this._client.request(
       gql`
-        fragment UserFragment on User {
-          created
-          id
-          name
-        }
         mutation AddGame($opponentNames: [String!]!) {
           addGame(opponentNames: $opponentNames) {
-            created
-            creator {
-              ...UserFragment
-            }
-            id
-            players {
-              counts {
-                discard
-                hand
-                undrawn
-              }
-              faction {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-                id
-                image
-                key
-                name
-                stats {
-                  agile
-                  avenger
-                  berserker
-                  bond
-                  close
-                  decoy
-                  heroes
-                  horn
-                  mardroeme
-                  medic
-                  morale
-                  muster
-                  ranged
-                  scorch
-                  siege
-                  specials
-                  spy
-                  strengthAverage
-                  strengths
-                  strengthTotal
-                  units
-                  weather
-                }
-              }
-              leader {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-              }
-              ready
-              rounds {
-                score
-                won
-              }
-              user {
-                ...UserFragment
-              }
-            }
-            round {
-              current
-              maximum
-            }
-            status
-            updated
-            victors {
-              ...UserFragment
-            }
+            ${this.fieldsOnGame()}
           }
         }
       `,
@@ -650,95 +213,7 @@ export default class ApiClient {
       gql`
         query Games {
           games {
-            created
-            creator {
-              created
-              id
-              name
-            }
-            id
-            players {
-              counts {
-                discard
-                hand
-                undrawn
-              }
-              faction {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-                id
-                image
-                key
-                name
-                stats {
-                  agile
-                  avenger
-                  berserker
-                  bond
-                  close
-                  decoy
-                  heroes
-                  horn
-                  mardroeme
-                  medic
-                  morale
-                  muster
-                  ranged
-                  scorch
-                  siege
-                  specials
-                  spy
-                  strengthAverage
-                  strengths
-                  strengthTotal
-                  units
-                  weather
-                }
-              }
-              leader {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-              }
-              ready
-              rounds {
-                score
-                won
-              }
-              user {
-                created
-                id
-                name
-              }
-            }
-            round {
-              current
-              maximum
-            }
-            status
-            turn {
-              user {
-                id
-                name
-              }
-            }
-            updated
-            victors {
-              created
-              id
-              name
-            }
+            ${this.fieldsOnGame()}
           }
         }
       `
@@ -758,175 +233,9 @@ export default class ApiClient {
   async setDeck({ deckId, gameId }: { gameId: string | ObjectId; deckId: string | ObjectId }): Promise<GameDeck> {
     const response: any = await this._client.request(
       gql`
-        fragment DeckUnitFragment on DeckUnit {
-          artStyle
-          unit {
-            combats
-            created
-            deckable
-            dlc {
-              id
-              image
-              key
-              name
-            }
-            effectPrefix
-            effects {
-              ability
-              created
-              id
-              image
-              key
-              name
-            }
-            faction {
-              ability
-              created
-              dlc {
-                id
-                image
-                key
-                name
-              }
-              id
-              image
-              key
-              name
-              stats {
-                agile
-                avenger
-                berserker
-                bond
-                close
-                decoy
-                heroes
-                horn
-                mardroeme
-                medic
-                morale
-                muster
-                ranged
-                scorch
-                siege
-                specials
-                spy
-                strengthAverage
-                strengths
-                strengthTotal
-                units
-                weather
-              }
-            }
-            hero
-            id
-            images
-            name
-            quote
-            scorchMin
-            scorchScope
-            special
-            strength
-          }
-        }
         mutation SetDeck($game: ID!, $deck: ID!) {
           setDeck(game: $game, deck: $deck) {
-            discard {
-              ...DeckUnitFragment
-            }
-            from {
-              created
-              faction {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-                id
-                image
-                key
-                name
-                stats {
-                  agile
-                  avenger
-                  berserker
-                  bond
-                  close
-                  decoy
-                  heroes
-                  horn
-                  mardroeme
-                  medic
-                  morale
-                  muster
-                  ranged
-                  scorch
-                  siege
-                  specials
-                  spy
-                  strengthAverage
-                  strengths
-                  strengthTotal
-                  units
-                  weather
-                }
-              }
-              id
-              leader {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-              }
-              name
-              stats {
-                agile
-                avenger
-                berserker
-                bond
-                close
-                decoy
-                heroes
-                horn
-                mardroeme
-                medic
-                morale
-                muster
-                ranged
-                scorch
-                siege
-                specials
-                spy
-                strengthAverage
-                strengths
-                strengthTotal
-                units
-                weather
-              }
-              units {
-                ...DeckUnitFragment
-              }
-            }
-            hand {
-              ...DeckUnitFragment
-            }
-            redraws {
-              from {
-                ...DeckUnitFragment
-              }
-              to {
-                ...DeckUnitFragment
-              }
-            }
-            undrawn {
-              ...DeckUnitFragment
-            }
+            ${this.fieldsOnGameDeck()}
           }
         }
       `,
@@ -941,150 +250,9 @@ export default class ApiClient {
   async getGameDeck(gameId: string | ObjectId): Promise<GameDeck> {
     const response: any = await this._client.request(
       gql`
-        fragment FactionFragment on Faction {
-          ability
-          created
-          dlc {
-            id
-            image
-            key
-            name
-          }
-          id
-          image
-          key
-          name
-          stats {
-            agile
-            avenger
-            berserker
-            bond
-            close
-            decoy
-            heroes
-            horn
-            mardroeme
-            medic
-            morale
-            muster
-            ranged
-            scorch
-            siege
-            specials
-            spy
-            strengthAverage
-            strengths
-            strengthTotal
-            units
-            weather
-          }
-        }
-        fragment DeckUnitFragment on DeckUnit {
-          artStyle
-          unit {
-            combats
-            created
-            deckable
-            dlc {
-              id
-              image
-              key
-              name
-            }
-            effectPrefix
-            effects {
-              ability
-              created
-              id
-              image
-              key
-              name
-            }
-            faction {
-              ...FactionFragment
-            }
-            hero
-            id
-            images
-            name
-            quote
-            scorchMin
-            scorchScope
-            special
-            strength
-          }
-        }
         query GameDeck($game: ID!) {
           gameDeck(game: $game) {
-            discard {
-              ...DeckUnitFragment
-            }
-            from {
-              created
-              faction {
-                ...FactionFragment
-              }
-              id
-              leader {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-                faction {
-                  ...FactionFragment
-                }
-                id
-                image
-                name
-                quote
-              }
-              name
-              stats {
-                agile
-                avenger
-                berserker
-                bond
-                close
-                decoy
-                heroes
-                horn
-                mardroeme
-                medic
-                morale
-                muster
-                ranged
-                scorch
-                siege
-                specials
-                spy
-                strengthAverage
-                strengths
-                strengthTotal
-                units
-                weather
-              }
-              units {
-                ...DeckUnitFragment
-              }
-            }
-            hand {
-              ...DeckUnitFragment
-            }
-            redraws {
-              from {
-                ...DeckUnitFragment
-              }
-              to {
-                ...DeckUnitFragment
-              }
-            }
-            undrawn {
-              ...DeckUnitFragment
-            }
+            ${this.fieldsOnGameDeck()}
           }
         }
       `,
@@ -1095,99 +263,54 @@ export default class ApiClient {
     return response.gameDeck
   }
 
+  async playPass({ gameId }: { gameId: string | ObjectId }): Promise<Game> {
+    const response: any = await this._client.request(
+      gql`
+        mutation PlayPass($game: ID!) {
+          playPass(game: $game) {
+            ${this.fieldsOnGame()}
+          }
+        }
+      `,
+      {
+        game: gameId.toString(),
+      }
+    )
+    return response.playPass
+  }
+
+  async playUnit({
+    gameId,
+    unitId,
+    combat,
+  }: {
+    gameId: string | ObjectId
+    unitId: string | ObjectId
+    combat: Combat
+  }): Promise<Game> {
+    const response: any = await this._client.request(
+      gql`
+        mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat!) {
+          playUnit(game: $game, unit: $unit, combat: $combat) {
+            ${this.fieldsOnGame()}
+          }
+        }
+      `,
+      {
+        game: gameId.toString(),
+        unit: unitId.toString(),
+        combat,
+      }
+    )
+    return response.playUnit
+  }
+
   async setOrder({ gameId, userIds }: { gameId: string | ObjectId; userIds: (string | ObjectId)[] }): Promise<Game> {
     const response: any = await this._client.request(
       gql`
-        fragment UserFragment on User {
-          created
-          id
-          name
-        }
-        fragment GamePlayerFragment on GamePlayer {
-          counts {
-            discard
-            hand
-            undrawn
-          }
-          faction {
-            ability
-            created
-            dlc {
-              id
-              image
-              key
-              name
-            }
-            id
-            image
-            key
-            name
-            stats {
-              agile
-              avenger
-              berserker
-              bond
-              close
-              decoy
-              heroes
-              horn
-              mardroeme
-              medic
-              morale
-              muster
-              ranged
-              scorch
-              siege
-              specials
-              spy
-              strengthAverage
-              strengths
-              strengthTotal
-              units
-              weather
-            }
-          }
-          leader {
-            ability
-            created
-            dlc {
-              id
-              image
-              key
-              name
-            }
-          }
-          ready
-          rounds {
-            score
-            won
-          }
-          user {
-            ...UserFragment
-          }
-        }
         mutation SetOrder($game: ID!, $users: [ID!]) {
           setOrder(game: $game, users: $users) {
-            created
-            creator {
-              ...UserFragment
-            }
-            id
-            players {
-              ...GamePlayerFragment
-            }
-            round {
-              current
-              maximum
-            }
-            status
-            turn {
-              ...GamePlayerFragment
-            }
-            updated
-            victors {
-              ...UserFragment
-            }
+            ${this.fieldsOnGame()}
           }
         }
       `,
@@ -1202,53 +325,9 @@ export default class ApiClient {
   async redraw({ gameId, unitId }: { gameId: string | ObjectId; unitId: string | ObjectId }): Promise<DeckUnit> {
     const response: any = await this._client.request(
       gql`
-        fragment DlcFragment on Dlc {
-          created
-          id
-          image
-          key
-          name
-        }
         mutation Redraw($game: ID!, $unit: ID!) {
           redraw(game: $game, unit: $unit) {
-            artStyle
-            unit {
-              combats
-              created
-              deckable
-              dlc {
-                ...DlcFragment
-              }
-              effectPrefix
-              effects {
-                ability
-                created
-                id
-                image
-                key
-                name
-              }
-              faction {
-                ability
-                created
-                dlc {
-                  ...DlcFragment
-                }
-                id
-                image
-                key
-                name
-              }
-              hero
-              id
-              images
-              name
-              quote
-              scorchMin
-              scorchScope
-              special
-              strength
-            }
+            ${this.fieldsOnDeckUnit()}
           }
         }
       `,
@@ -1263,90 +342,9 @@ export default class ApiClient {
   async ready(gameId: string | ObjectId): Promise<Game> {
     const response: any = await this._client.request(
       gql`
-        fragment UserFragment on User {
-          created
-          id
-          name
-        }
         mutation Ready($game: ID!) {
           ready(game: $game) {
-            created
-            creator {
-              ...UserFragment
-            }
-            id
-            players {
-              counts {
-                discard
-                hand
-                undrawn
-              }
-              faction {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-                id
-                image
-                key
-                name
-                stats {
-                  agile
-                  avenger
-                  berserker
-                  bond
-                  close
-                  decoy
-                  heroes
-                  horn
-                  mardroeme
-                  medic
-                  morale
-                  muster
-                  ranged
-                  scorch
-                  siege
-                  specials
-                  spy
-                  strengthAverage
-                  strengths
-                  strengthTotal
-                  units
-                  weather
-                }
-              }
-              leader {
-                ability
-                created
-                dlc {
-                  id
-                  image
-                  key
-                  name
-                }
-              }
-              ready
-              rounds {
-                score
-                won
-              }
-              user {
-                ...UserFragment
-              }
-            }
-            round {
-              current
-              maximum
-            }
-            status
-            updated
-            victors {
-              ...UserFragment
-            }
+            ${this.fieldsOnGame()}
           }
         }
       `,
@@ -1362,10 +360,7 @@ export default class ApiClient {
       gql`
         query Settings {
           settings {
-            key
-            label
-            type
-            value
+            ${this.fieldsOnSetting()}
           }
         }
       `
@@ -1378,6 +373,299 @@ export default class ApiClient {
       return Number(setting.value) as T
     }
     return setting.value as T
+  }
+
+  private fieldsOnDeck(): string {
+    return gql`
+      created
+      faction {
+        ${this.fieldsOnFaction()}
+      }
+      id
+      leader {
+        ${this.fieldsOnLeader()}
+      }
+      name
+      stats {
+        ${this.fieldsOnStats()}
+      }
+      units {
+        ${this.fieldsOnDeckUnit()}
+      }
+      user {
+        ${this.fieldsOnUser()}
+      }
+    `
+  }
+
+  private fieldsOnDeckUnit(): string {
+    return gql`
+      artStyle
+      unit {
+        ${this.fieldsOnUnit()}
+      }
+    `
+  }
+
+  private fieldsOnDlc(): string {
+    return gql`
+      created
+      id
+      image
+      key
+      name
+    `
+  }
+
+  private fieldsOnEffect(): string {
+    return gql`
+      ability
+      created
+      id
+      image
+      key
+      name
+    `
+  }
+
+  private fieldsOnFaction(): string {
+    return gql`
+      ability
+      created
+      dlc {
+        ${this.fieldsOnDlc()}
+      }
+      id
+      image
+      key
+      name
+      stats {
+        ${this.fieldsOnStats()}
+      }
+    `
+  }
+
+  private fieldsOnGameDeck(): string {
+    return gql`
+      discard {
+        ${this.fieldsOnDeckUnit()}
+      }
+      from {
+        ${this.fieldsOnDeck()}
+      }
+      hand {
+        ${this.fieldsOnDeckUnit()}
+      }
+      redraws {
+        ${this.fieldsOnRedraw()}
+      }
+      undrawn {
+        ${this.fieldsOnDeckUnit()}
+      }
+    `
+  }
+
+  private fieldsOnGamePlayer(): string {
+    return gql`
+      counts {
+        discard
+        hand
+        undrawn
+      }
+      faction {
+        ${this.fieldsOnFaction()}
+      }
+      leader {
+        ${this.fieldsOnLeader()}
+      }
+      order
+      ready
+      rounds {
+        ${this.fieldsOnPlayerRound()}
+      }
+      user {
+        ${this.fieldsOnUser()}
+      }
+    `
+  }
+
+  private fieldsOnLeader(): string {
+    return gql`
+      ability
+      created
+      dlc {
+        ${this.fieldsOnDlc()}
+      }
+      faction {
+        ${this.fieldsOnFaction()}
+      }
+      id
+      image
+      name
+      quote
+    `
+  }
+
+  private fieldsOnMove(): string {
+    return gql`
+      ... on MoveLeader {
+        created
+        leader {
+          ${this.fieldsOnLeader()}
+        }
+      }
+      ... on MovePass {
+        created
+      }
+      ... on MoveUnit {
+        created
+        row
+        unit {
+          ${this.fieldsOnDeckUnit()}
+        }
+      }
+    `
+  }
+
+  private fieldsOnPlayerCombatRow(): string {
+    return gql`
+      score
+      units {
+        artStyle
+        effectiveStrength
+        unit {
+          ${this.fieldsOnUnit()}
+        }
+      }
+    `
+  }
+
+  private fieldsOnPlayerRound(): string {
+    return gql`
+      close {
+        ${this.fieldsOnPlayerCombatRow()}
+      }
+      moves {
+        ${this.fieldsOnMove()}
+      }
+      passed
+      ranged {
+        ${this.fieldsOnPlayerCombatRow()}
+      }
+      result
+      score
+      siege {
+        ${this.fieldsOnPlayerCombatRow()}
+      }
+    `
+  }
+
+  private fieldsOnRedraw(): string {
+    return gql`
+      from {
+        ${this.fieldsOnDeckUnit()}
+      }
+      to {
+        ${this.fieldsOnDeckUnit()}
+      }
+    `
+  }
+
+  private fieldsOnSetting(): string {
+    return gql`
+      key
+      label
+      type
+      value
+    `
+  }
+
+  private fieldsOnStats(): string {
+    return gql`
+      agile
+      avenger
+      berserker
+      bond
+      close
+      decoy
+      heroes
+      horn
+      mardroeme
+      medic
+      morale
+      muster
+      ranged
+      scorch
+      siege
+      specials
+      spy
+      strengthAverage
+      strengths
+      strengthTotal
+      units
+      weather
+    `
+  }
+
+  private fieldsOnUnit(): string {
+    return gql`
+      combats
+      created
+      deckable
+      dlc {
+        ${this.fieldsOnDlc()}
+      }
+      effectPrefix
+      effects {
+        ${this.fieldsOnEffect()}
+      }
+      faction {
+        ${this.fieldsOnFaction()}
+      }
+      hero
+      id
+      images
+      name
+      quote
+      scorchMin
+      scorchScope
+      special
+      strength
+    `
+  }
+
+  private fieldsOnUser(): string {
+    return gql`
+      created
+      id
+      name
+    `
+  }
+
+  private fieldsOnGame(): string {
+    return gql`
+      config {
+        lives
+      }
+      created
+      creator {
+        ${this.fieldsOnUser()}
+      }
+      id
+      players {
+        ${this.fieldsOnGamePlayer()}
+      }
+      round
+      status
+      turn {
+        ${this.fieldsOnGamePlayer()}
+      }
+      updated
+      victors {
+        ${this.fieldsOnUser()}
+      }
+      weather
+    `
   }
 }
 

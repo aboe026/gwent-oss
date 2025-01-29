@@ -2,6 +2,7 @@ import { getLogger } from 'log4js'
 
 import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../event-manager'
+import { GameAddedPayload } from '../subscription-resolver'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getDuplicateItems } from '@gwent/utils'
@@ -107,7 +108,7 @@ export default class AddGameMutation {
 
     EventManager.pubsub.publish(PubSubEvents.GameAdded, {
       gameAdded: resolvedGame,
-    })
+    } as GameAddedPayload)
 
     return resolvedGame
   }

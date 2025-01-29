@@ -10,9 +10,6 @@ describe('upgrade-3', () => {
   beforeEach(async () => {
     await DbUtil.deleteDatabase()
   })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   it('creates collection and indexes', async () => {
     jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue(allUpgrades.slice(0, upgradeNumber - 1))
     await DbUpgrader.run()

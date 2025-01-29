@@ -2,10 +2,9 @@ import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { GameDeck, QueryGameDeckArgs } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GameDeckQuery from '../../src/graphql/resolvers/queries/game-deck-query'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
-import GameStore from '../../src/database/stores/game-store'
+import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import TestUtil from '../test-util'
 
@@ -14,6 +13,14 @@ describe('game-deck-query', () => {
     const userId = new ObjectId()
     const gameId = new ObjectId().toString()
     const logPrefix = `gameDeck by "${userId}"`
+    const gamePlayer = TestUtil.getDbGamePlayer({
+      user: userId,
+    })
+    const game = TestUtil.getDbGame({
+      id: gameId,
+      creator: userId,
+      players: [gamePlayer],
+    })
     it('returns error if no user on context', async () => {
       await testGameDeck({
         gameId,
@@ -21,53 +28,27 @@ describe('game-deck-query', () => {
         errorCalls: [[`No user on context for gameDeck query: "${JSON.stringify({})}".`]],
       })
     })
-    it('returns error if invalid game ID', async () => {
-      const invalidId = 'invalid'
-      const error = `Game ID "${invalidId}" is not a valid MongoDB ObjectId.`
-      await testGameDeck({
-        userId,
-        gameId: invalidId,
-        gameResponse: undefined,
-        error: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns error if game does not exist', async () => {
-      const error = `Game with ID "${gameId}" does not exist.`
-      await testGameDeck({
-        userId,
-        gameId,
-        gameResponse: undefined,
-        error: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns error if user is not a player', async () => {
-      const error = `Not a player on game "${gameId}".`
-      const game = TestUtil.getDbGame({
-        id: gameId,
-      })
+    it('returns error if getGamePlayer returns error', async () => {
+      const error = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
       await testGameDeck({
         userId,
         gameId: gameId.toString(),
-        gameResponse: game,
+        getGamePlayerResponse: Error(error),
         error: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
+        logPrefix,
       })
     })
     it('returns undefined if player deck not set', async () => {
       await testGameDeck({
-        userId: userId,
+        userId,
         gameId: gameId.toString(),
-        gameResponse: TestUtil.getDbGame({
-          id: gameId,
-          players: [
-            TestUtil.getDbGamePlayer({
-              user: userId,
-            }),
-          ],
-        }),
+        getGamePlayerResponse: {
+          game,
+          player: gamePlayer,
+        },
         expected: null,
+        logPrefix,
+        traceCalls: [[`${logPrefix} does not have deck, nothing to resolve.`]],
       })
     })
     it('returns game deck if player deck is set', async () => {
@@ -83,53 +64,15 @@ describe('game-deck-query', () => {
         }),
       })
       await testGameDeck({
-        userId: userId,
+        userId,
         gameId: gameId.toString(),
-        gameResponse: TestUtil.getDbGame({
-          id: gameId,
-          creator: userId,
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: playerDeck,
-              user: userId,
-            }),
-          ],
-        }),
-        expected: gameDeck,
-        gameDeckResolverCalls: [
-          [
-            {
-              gameDeck: playerDeck,
-            },
-          ],
-        ],
-      })
-    })
-    it('logs to trace if enabled', async () => {
-      const deck = TestUtil.getDbDeck({
-        user: userId,
-      })
-      const playerDeck = TestUtil.getDbGameDeck({
-        from: deck,
-      })
-      const gameDeck = TestUtil.getGameDeck({
-        from: TestUtil.getDeckFromDbDeck({
-          deck,
-        }),
-      })
-      await testGameDeck({
-        userId: userId,
-        gameId: gameId.toString(),
-        gameResponse: TestUtil.getDbGame({
-          id: gameId,
-          creator: userId,
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: playerDeck,
-              user: userId,
-            }),
-          ],
-        }),
+        getGamePlayerResponse: {
+          game,
+          player: {
+            ...gamePlayer,
+            deck: playerDeck,
+          },
+        },
         expected: gameDeck,
         gameDeckResolverCalls: [
           [
@@ -139,7 +82,26 @@ describe('game-deck-query', () => {
           ],
         ],
         logPrefix,
+        traceCalls: [[`${logPrefix} has deck "${deck._id}", resolving.`]],
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      await testGameDeck({
+        userId,
+        gameId: gameId.toString(),
+        getGamePlayerResponse: {
+          game,
+          player: gamePlayer,
+        },
+        expected: null,
+        logPrefix,
         traceEnabled: true,
+        traceCalls: [
+          [`${logPrefix} args: "${JSON.stringify({ game: gameId })}"`],
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
+          [`${logPrefix} does not have deck, nothing to resolve.`],
+        ],
       })
     })
   })
@@ -148,7 +110,7 @@ describe('game-deck-query', () => {
 async function testGameDeck({
   userId,
   gameId,
-  gameResponse,
+  getGamePlayerResponse,
   error,
   expected,
   gameDeckResolverCalls = [],
@@ -156,10 +118,11 @@ async function testGameDeck({
   traceEnabled,
   errorCalls = [],
   warnCalls = [],
+  traceCalls = [],
 }: {
   userId?: ObjectId
   gameId: string
-  gameResponse?: GameDbObject
+  getGamePlayerResponse?: GamePlayerResponse | Error
   error?: Error
   expected?: GameDeck | null
   gameDeckResolverCalls?: any[][]
@@ -167,6 +130,7 @@ async function testGameDeck({
   traceEnabled?: boolean
   errorCalls?: any[][]
   warnCalls?: any[][]
+  traceCalls?: any[][]
 }) {
   const context: Context = {
     session: {},
@@ -179,7 +143,10 @@ async function testGameDeck({
   const args: QueryGameDeckArgs = {
     game: gameId,
   }
-  const getByIdSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(gameResponse)
+  const getGamePlayerSpy = jest.spyOn(MutationUtil, 'getGamePlayer')
+  if (getGamePlayerResponse) {
+    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+  }
   const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject').mockResolvedValue(expected as any as GameDeck)
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
@@ -193,12 +160,14 @@ async function testGameDeck({
 
   await expect(GameDeckQuery.gameDeck(args, context, null as any)).resolves.toEqual(error || expected)
 
-  expect(getByIdSpy.mock.calls).toEqual(
-    userId && ObjectId.isValid(gameId)
+  expect(getGamePlayerSpy.mock.calls).toEqual(
+    getGamePlayerResponse
       ? [
           [
             {
-              id: gameId,
+              gameId,
+              logPrefix,
+              userId,
             },
           ],
         ]
@@ -207,19 +176,5 @@ async function testGameDeck({
   expect(fromObjectSpy.mock.calls).toEqual(gameDeckResolverCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [`${logPrefix} args: "${JSON.stringify({ game: gameId })}"`],
-          [`${logPrefix} requested fields: "[]"`],
-          [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} game: "${JSON.stringify(gameResponse)}"`],
-          [
-            `${logPrefix} player: "${JSON.stringify(
-              gameResponse?.players.find((player) => player.user.toString() === userId?.toString())
-            )}"`,
-          ],
-        ]
-      : []
-  )
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

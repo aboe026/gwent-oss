@@ -7,6 +7,7 @@ export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: 
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
 export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = Omit<T, K> & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -146,16 +147,25 @@ export enum FactionKey {
 
 export type Game = {
   __typename?: 'Game';
+  config: GameConfig;
   created: Scalars['DateTime']['output'];
   creator: User;
   id: Scalars['ID']['output'];
   players: Array<GamePlayer>;
-  round: GameRound;
+  /** The current round the game is in. 1-based indexing. A value of zero indicates the game has not yet started. */
+  round: Scalars['Int']['output'];
   status: GameStatus;
   /** Whose turn it currently is to make a move. */
   turn?: Maybe<GamePlayer>;
   updated: Scalars['DateTime']['output'];
   victors: Array<User>;
+  weather: Array<Combat>;
+};
+
+export type GameConfig = {
+  __typename?: 'GameConfig';
+  /** The number of lives each player starts with at the beginning of the game. */
+  lives: Scalars['Int']['output'];
 };
 
 export type GameDeck = {
@@ -210,12 +220,6 @@ export type GamePlayerUnitCounts = {
   undrawn: Scalars['Int']['output'];
 };
 
-export type GameRound = {
-  __typename?: 'GameRound';
-  current: Scalars['Int']['output'];
-  maximum: Scalars['Int']['output'];
-};
-
 export enum GameStatus {
   /** Players are choosing their decks to use for the game. */
   Decking = 'DECKING',
@@ -229,8 +233,16 @@ export enum GameStatus {
   Redrawing = 'REDRAWING'
 }
 
+export type GameUnit = {
+  __typename?: 'GameUnit';
+  artStyle: Scalars['Int']['output'];
+  effectiveStrength?: Maybe<Scalars['Int']['output']>;
+  unit: Unit;
+};
+
 export type GameUnitRedrawn = {
   __typename?: 'GameUnitRedrawn';
+  deck: GameDeck;
   from: DeckUnit;
   game: Game;
   to: DeckUnit;
@@ -248,6 +260,26 @@ export type Leader = {
   quote: Scalars['String']['output'];
 };
 
+export type Move = MoveLeader | MovePass | MoveUnit;
+
+export type MoveLeader = {
+  __typename?: 'MoveLeader';
+  created: Scalars['DateTime']['output'];
+  leader: Leader;
+};
+
+export type MovePass = {
+  __typename?: 'MovePass';
+  created: Scalars['DateTime']['output'];
+};
+
+export type MoveUnit = {
+  __typename?: 'MoveUnit';
+  created: Scalars['DateTime']['output'];
+  row: Combat;
+  unit: DeckUnit;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   /** Create a user-defined deck. */
@@ -260,6 +292,10 @@ export type Mutation = {
   login: User;
   /** De-authenticate a user. */
   logout: Scalars['Boolean']['output'];
+  /** Pass for the rest of the round in a game. */
+  playPass: Game;
+  /** Play a Unit card in a game. If a unit is eligible for multiple different types of Combat, one must be specified. */
+  playUnit: Game;
   /** Mark player as ready to play the game, no more deck modifications allowed. */
   ready: Game;
   /** Replace a card in hand with a random one from the deck, before a game starts. */
@@ -296,6 +332,18 @@ export type MutationLoginArgs = {
 };
 
 
+export type MutationPlayPassArgs = {
+  game: Scalars['ID']['input'];
+};
+
+
+export type MutationPlayUnitArgs = {
+  combat?: InputMaybe<Combat>;
+  game: Scalars['ID']['input'];
+  unit: Scalars['ID']['input'];
+};
+
+
 export type MutationReadyArgs = {
   game: Scalars['ID']['input'];
 };
@@ -318,10 +366,21 @@ export type MutationSetOrderArgs = {
   users?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
 
+export type PlayerCombatRow = {
+  __typename?: 'PlayerCombatRow';
+  score: Scalars['Int']['output'];
+  units: Array<GameUnit>;
+};
+
 export type PlayerRound = {
   __typename?: 'PlayerRound';
+  close: PlayerCombatRow;
+  moves: Array<Move>;
+  passed: Scalars['Boolean']['output'];
+  ranged: PlayerCombatRow;
+  result?: Maybe<RoundResult>;
   score: Scalars['Int']['output'];
-  won: Scalars['Boolean']['output'];
+  siege: PlayerCombatRow;
 };
 
 export type Query = {
@@ -380,6 +439,21 @@ export type Redraw = {
   to: DeckUnit;
 };
 
+export type RoundEndedForDeck = {
+  __typename?: 'RoundEndedForDeck';
+  deck: GameDeck;
+  game: Game;
+};
+
+export enum RoundResult {
+  /** Tied for the win with another player in the round. */
+  Drew = 'DREW',
+  /** Beaten by another player in the round. */
+  Lost = 'LOST',
+  /** Beat all other players in the round. */
+  Won = 'WON'
+}
+
 export type Setting = {
   __typename?: 'Setting';
   key: SettingKey;
@@ -410,6 +484,14 @@ export type Subscription = {
   gameSet: Game;
   /** The order has been set for a game the user is a player on. */
   orderSet: Game;
+  /** A user has passed the rest of the round for a game. */
+  passPlayed: Game;
+  /** A round has finished which triggers updates to the GameDeck for each player on the game. */
+  roundEndedForDeck: RoundEndedForDeck;
+  /** The unit card played from a deck and the updated GameDeck. */
+  unitPlayedFromDeck: UnitPlayedFromDeck;
+  /** The unit card played on a game and the updated Game. */
+  unitPlayedOnGame: UnitPlayedOnGame;
   /** A unit was redrawn for a game deck the user owns. */
   unitRedrawn: GameUnitRedrawn;
 };
@@ -432,6 +514,19 @@ export type Unit = {
   scorchScope?: Maybe<Combat>;
   special?: Maybe<Scalars['Boolean']['output']>;
   strength?: Maybe<Scalars['Int']['output']>;
+};
+
+export type UnitPlayedFromDeck = {
+  __typename?: 'UnitPlayedFromDeck';
+  deck: GameDeck;
+  game: Game;
+  unit: DeckUnit;
+};
+
+export type UnitPlayedOnGame = {
+  __typename?: 'UnitPlayedOnGame';
+  game: Game;
+  unit: DeckUnit;
 };
 
 export type UnitStats = {
@@ -534,6 +629,10 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
   info: GraphQLResolveInfo
 ) => TResult | Promise<TResult>;
 
+/** Mapping of union types */
+export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
+  Move: ( MoveLeader ) | ( MovePass ) | ( MoveUnit );
+};
 
 
 /** Mapping between all available schema types and the resolvers types */
@@ -552,22 +651,30 @@ export type ResolversTypes = {
   Faction: ResolverTypeWrapper<Faction>;
   FactionKey: FactionKey;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
-  Game: ResolverTypeWrapper<Game>;
+  Game: ResolverTypeWrapper<Omit<Game, 'players' | 'turn'> & { players: Array<ResolversTypes['GamePlayer']>, turn?: Maybe<ResolversTypes['GamePlayer']> }>;
+  GameConfig: ResolverTypeWrapper<GameConfig>;
   GameDeck: ResolverTypeWrapper<GameDeck>;
-  GameDeckSet: ResolverTypeWrapper<GameDeckSet>;
+  GameDeckSet: ResolverTypeWrapper<Omit<GameDeckSet, 'game'> & { game: ResolversTypes['Game'] }>;
   GameDeckStatus: GameDeckStatus;
-  GamePlayer: ResolverTypeWrapper<GamePlayer>;
+  GamePlayer: ResolverTypeWrapper<Omit<GamePlayer, 'counts' | 'rounds'> & { counts?: Maybe<ResolversTypes['GamePlayerUnitCounts']>, rounds: Array<ResolversTypes['PlayerRound']> }>;
   GamePlayerUnitCounts: ResolverTypeWrapper<GamePlayerUnitCounts>;
-  GameRound: ResolverTypeWrapper<GameRound>;
   GameStatus: GameStatus;
-  GameUnitRedrawn: ResolverTypeWrapper<GameUnitRedrawn>;
+  GameUnit: ResolverTypeWrapper<GameUnit>;
+  GameUnitRedrawn: ResolverTypeWrapper<Omit<GameUnitRedrawn, 'game'> & { game: ResolversTypes['Game'] }>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Leader: ResolverTypeWrapper<Leader>;
+  Move: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['Move']>;
+  MoveLeader: ResolverTypeWrapper<MoveLeader>;
+  MovePass: ResolverTypeWrapper<MovePass>;
+  MoveUnit: ResolverTypeWrapper<MoveUnit>;
   Mutation: ResolverTypeWrapper<{}>;
-  PlayerRound: ResolverTypeWrapper<PlayerRound>;
+  PlayerCombatRow: ResolverTypeWrapper<PlayerCombatRow>;
+  PlayerRound: ResolverTypeWrapper<Omit<PlayerRound, 'moves'> & { moves: Array<ResolversTypes['Move']> }>;
   Query: ResolverTypeWrapper<{}>;
   Redraw: ResolverTypeWrapper<Redraw>;
+  RoundEndedForDeck: ResolverTypeWrapper<Omit<RoundEndedForDeck, 'game'> & { game: ResolversTypes['Game'] }>;
+  RoundResult: RoundResult;
   SemVer: ResolverTypeWrapper<Scalars['SemVer']['output']>;
   Setting: ResolverTypeWrapper<Setting>;
   SettingKey: SettingKey;
@@ -575,6 +682,8 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Subscription: ResolverTypeWrapper<{}>;
   Unit: ResolverTypeWrapper<Unit>;
+  UnitPlayedFromDeck: ResolverTypeWrapper<Omit<UnitPlayedFromDeck, 'game'> & { game: ResolversTypes['Game'] }>;
+  UnitPlayedOnGame: ResolverTypeWrapper<Omit<UnitPlayedOnGame, 'game'> & { game: ResolversTypes['Game'] }>;
   UnitStats: ResolverTypeWrapper<UnitStats>;
   User: ResolverTypeWrapper<User>;
 };
@@ -591,25 +700,34 @@ export type ResolversParentTypes = {
   Effect: Effect;
   Faction: Faction;
   Float: Scalars['Float']['output'];
-  Game: Game;
+  Game: Omit<Game, 'players' | 'turn'> & { players: Array<ResolversParentTypes['GamePlayer']>, turn?: Maybe<ResolversParentTypes['GamePlayer']> };
+  GameConfig: GameConfig;
   GameDeck: GameDeck;
-  GameDeckSet: GameDeckSet;
-  GamePlayer: GamePlayer;
+  GameDeckSet: Omit<GameDeckSet, 'game'> & { game: ResolversParentTypes['Game'] };
+  GamePlayer: Omit<GamePlayer, 'counts' | 'rounds'> & { counts?: Maybe<ResolversParentTypes['GamePlayerUnitCounts']>, rounds: Array<ResolversParentTypes['PlayerRound']> };
   GamePlayerUnitCounts: GamePlayerUnitCounts;
-  GameRound: GameRound;
-  GameUnitRedrawn: GameUnitRedrawn;
+  GameUnit: GameUnit;
+  GameUnitRedrawn: Omit<GameUnitRedrawn, 'game'> & { game: ResolversParentTypes['Game'] };
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   Leader: Leader;
+  Move: ResolversUnionTypes<ResolversParentTypes>['Move'];
+  MoveLeader: MoveLeader;
+  MovePass: MovePass;
+  MoveUnit: MoveUnit;
   Mutation: {};
-  PlayerRound: PlayerRound;
+  PlayerCombatRow: PlayerCombatRow;
+  PlayerRound: Omit<PlayerRound, 'moves'> & { moves: Array<ResolversParentTypes['Move']> };
   Query: {};
   Redraw: Redraw;
+  RoundEndedForDeck: Omit<RoundEndedForDeck, 'game'> & { game: ResolversParentTypes['Game'] };
   SemVer: Scalars['SemVer']['output'];
   Setting: Setting;
   String: Scalars['String']['output'];
   Subscription: {};
   Unit: Unit;
+  UnitPlayedFromDeck: Omit<UnitPlayedFromDeck, 'game'> & { game: ResolversParentTypes['Game'] };
+  UnitPlayedOnGame: Omit<UnitPlayedOnGame, 'game'> & { game: ResolversParentTypes['Game'] };
   UnitStats: UnitStats;
   User: User;
 };
@@ -674,15 +792,22 @@ export type FactionResolvers<ContextType = Context, ParentType extends Resolvers
 };
 
 export type GameResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Game'] = ResolversParentTypes['Game']> = {
+  config?: Resolver<ResolversTypes['GameConfig'], ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   players?: Resolver<Array<ResolversTypes['GamePlayer']>, ParentType, ContextType>;
-  round?: Resolver<ResolversTypes['GameRound'], ParentType, ContextType>;
+  round?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['GameStatus'], ParentType, ContextType>;
   turn?: Resolver<Maybe<ResolversTypes['GamePlayer']>, ParentType, ContextType>;
   updated?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   victors?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
+  weather?: Resolver<Array<ResolversTypes['Combat']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GameConfigResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameConfig'] = ResolversParentTypes['GameConfig']> = {
+  lives?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -719,13 +844,15 @@ export type GamePlayerUnitCountsResolvers<ContextType = Context, ParentType exte
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
-export type GameRoundResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameRound'] = ResolversParentTypes['GameRound']> = {
-  current?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  maximum?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+export type GameUnitResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameUnit'] = ResolversParentTypes['GameUnit']> = {
+  artStyle?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  effectiveStrength?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  unit?: Resolver<ResolversTypes['Unit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type GameUnitRedrawnResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameUnitRedrawn'] = ResolversParentTypes['GameUnitRedrawn']> = {
+  deck?: Resolver<ResolversTypes['GameDeck'], ParentType, ContextType>;
   from?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
   game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
   to?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
@@ -744,21 +871,56 @@ export type LeaderResolvers<ContextType = Context, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type MoveResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Move'] = ResolversParentTypes['Move']> = {
+  __resolveType: TypeResolveFn<'MoveLeader' | 'MovePass' | 'MoveUnit', ParentType, ContextType>;
+};
+
+export type MoveLeaderResolvers<ContextType = Context, ParentType extends ResolversParentTypes['MoveLeader'] = ResolversParentTypes['MoveLeader']> = {
+  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  leader?: Resolver<ResolversTypes['Leader'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MovePassResolvers<ContextType = Context, ParentType extends ResolversParentTypes['MovePass'] = ResolversParentTypes['MovePass']> = {
+  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MoveUnitResolvers<ContextType = Context, ParentType extends ResolversParentTypes['MoveUnit'] = ResolversParentTypes['MoveUnit']> = {
+  created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  row?: Resolver<ResolversTypes['Combat'], ParentType, ContextType>;
+  unit?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   addDeck?: Resolver<ResolversTypes['Deck'], ParentType, ContextType, RequireFields<MutationAddDeckArgs, 'faction' | 'leader' | 'name' | 'units'>>;
   addGame?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationAddGameArgs, 'opponentNames'>>;
   addUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationAddUserArgs, 'name' | 'password'>>;
   login?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationLoginArgs, 'name' | 'password'>>;
   logout?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  playPass?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationPlayPassArgs, 'game'>>;
+  playUnit?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationPlayUnitArgs, 'game' | 'unit'>>;
   ready?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationReadyArgs, 'game'>>;
   redraw?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType, RequireFields<MutationRedrawArgs, 'game' | 'unit'>>;
   setDeck?: Resolver<ResolversTypes['GameDeck'], ParentType, ContextType, RequireFields<MutationSetDeckArgs, 'deck' | 'game'>>;
   setOrder?: Resolver<ResolversTypes['Game'], ParentType, ContextType, RequireFields<MutationSetOrderArgs, 'game'>>;
 };
 
-export type PlayerRoundResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PlayerRound'] = ResolversParentTypes['PlayerRound']> = {
+export type PlayerCombatRowResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PlayerCombatRow'] = ResolversParentTypes['PlayerCombatRow']> = {
   score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  won?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  units?: Resolver<Array<ResolversTypes['GameUnit']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type PlayerRoundResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PlayerRound'] = ResolversParentTypes['PlayerRound']> = {
+  close?: Resolver<ResolversTypes['PlayerCombatRow'], ParentType, ContextType>;
+  moves?: Resolver<Array<ResolversTypes['Move']>, ParentType, ContextType>;
+  passed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  ranged?: Resolver<ResolversTypes['PlayerCombatRow'], ParentType, ContextType>;
+  result?: Resolver<Maybe<ResolversTypes['RoundResult']>, ParentType, ContextType>;
+  score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  siege?: Resolver<ResolversTypes['PlayerCombatRow'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -781,6 +943,12 @@ export type RedrawResolvers<ContextType = Context, ParentType extends ResolversP
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type RoundEndedForDeckResolvers<ContextType = Context, ParentType extends ResolversParentTypes['RoundEndedForDeck'] = ResolversParentTypes['RoundEndedForDeck']> = {
+  deck?: Resolver<ResolversTypes['GameDeck'], ParentType, ContextType>;
+  game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export interface SemVerScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['SemVer'], any> {
   name: 'SemVer';
 }
@@ -800,6 +968,10 @@ export type SubscriptionResolvers<ContextType = Context, ParentType extends Reso
   gameReady?: SubscriptionResolver<ResolversTypes['Game'], "gameReady", ParentType, ContextType>;
   gameSet?: SubscriptionResolver<ResolversTypes['Game'], "gameSet", ParentType, ContextType>;
   orderSet?: SubscriptionResolver<ResolversTypes['Game'], "orderSet", ParentType, ContextType>;
+  passPlayed?: SubscriptionResolver<ResolversTypes['Game'], "passPlayed", ParentType, ContextType>;
+  roundEndedForDeck?: SubscriptionResolver<ResolversTypes['RoundEndedForDeck'], "roundEndedForDeck", ParentType, ContextType>;
+  unitPlayedFromDeck?: SubscriptionResolver<ResolversTypes['UnitPlayedFromDeck'], "unitPlayedFromDeck", ParentType, ContextType>;
+  unitPlayedOnGame?: SubscriptionResolver<ResolversTypes['UnitPlayedOnGame'], "unitPlayedOnGame", ParentType, ContextType>;
   unitRedrawn?: SubscriptionResolver<ResolversTypes['GameUnitRedrawn'], "unitRedrawn", ParentType, ContextType>;
 };
 
@@ -820,6 +992,19 @@ export type UnitResolvers<ContextType = Context, ParentType extends ResolversPar
   scorchScope?: Resolver<Maybe<ResolversTypes['Combat']>, ParentType, ContextType>;
   special?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   strength?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UnitPlayedFromDeckResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UnitPlayedFromDeck'] = ResolversParentTypes['UnitPlayedFromDeck']> = {
+  deck?: Resolver<ResolversTypes['GameDeck'], ParentType, ContextType>;
+  game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
+  unit?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type UnitPlayedOnGameResolvers<ContextType = Context, ParentType extends ResolversParentTypes['UnitPlayedOnGame'] = ResolversParentTypes['UnitPlayedOnGame']> = {
+  game?: Resolver<ResolversTypes['Game'], ParentType, ContextType>;
+  unit?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -865,21 +1050,30 @@ export type Resolvers<ContextType = Context> = {
   Effect?: EffectResolvers<ContextType>;
   Faction?: FactionResolvers<ContextType>;
   Game?: GameResolvers<ContextType>;
+  GameConfig?: GameConfigResolvers<ContextType>;
   GameDeck?: GameDeckResolvers<ContextType>;
   GameDeckSet?: GameDeckSetResolvers<ContextType>;
   GamePlayer?: GamePlayerResolvers<ContextType>;
   GamePlayerUnitCounts?: GamePlayerUnitCountsResolvers<ContextType>;
-  GameRound?: GameRoundResolvers<ContextType>;
+  GameUnit?: GameUnitResolvers<ContextType>;
   GameUnitRedrawn?: GameUnitRedrawnResolvers<ContextType>;
   Leader?: LeaderResolvers<ContextType>;
+  Move?: MoveResolvers<ContextType>;
+  MoveLeader?: MoveLeaderResolvers<ContextType>;
+  MovePass?: MovePassResolvers<ContextType>;
+  MoveUnit?: MoveUnitResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  PlayerCombatRow?: PlayerCombatRowResolvers<ContextType>;
   PlayerRound?: PlayerRoundResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Redraw?: RedrawResolvers<ContextType>;
+  RoundEndedForDeck?: RoundEndedForDeckResolvers<ContextType>;
   SemVer?: GraphQLScalarType;
   Setting?: SettingResolvers<ContextType>;
   Subscription?: SubscriptionResolvers<ContextType>;
   Unit?: UnitResolvers<ContextType>;
+  UnitPlayedFromDeck?: UnitPlayedFromDeckResolvers<ContextType>;
+  UnitPlayedOnGame?: UnitPlayedOnGameResolvers<ContextType>;
   UnitStats?: UnitStatsResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 };

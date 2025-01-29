@@ -63,7 +63,7 @@ export function getStatsFragment(): string {
   `
 }
 
-export function getFactionFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+export function getFactionFragment(): string {
   return `
     ability
     created
@@ -74,13 +74,13 @@ export function getFactionFragment({ statsModifier = '' }: { statsModifier?: str
     image
     key
     name
-    stats${statsModifier ? ` ${statsModifier}` : ''} {
+    stats {
       ${getStatsFragment()}
     }
   `
 }
 
-export function getLeaderFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+export function getLeaderFragment(): string {
   return `
     ability
     created
@@ -88,7 +88,7 @@ export function getLeaderFragment({ statsModifier = '' }: { statsModifier?: stri
       ${getDlcFragment()}
     }
     faction {
-      ${getFactionFragment({ statsModifier })}
+      ${getFactionFragment()}
     }
     id
     image
@@ -97,7 +97,7 @@ export function getLeaderFragment({ statsModifier = '' }: { statsModifier?: stri
   `
 }
 
-export function getUnitFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+export function getUnitFragment(): string {
   return `
     combats
     created
@@ -110,7 +110,7 @@ export function getUnitFragment({ statsModifier = '' }: { statsModifier?: string
       ${getEffectFragment()}
     }
     faction {
-      ${getFactionFragment({ statsModifier })}
+      ${getFactionFragment()}
     }
     hero
     id
@@ -124,15 +124,15 @@ export function getUnitFragment({ statsModifier = '' }: { statsModifier?: string
   `
 }
 
-export function getDeckFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+export function getDeckFragment(): string {
   return `
     created
     faction {
-      ${getFactionFragment({ statsModifier })}
+      ${getFactionFragment()}
     }
     id
     leader {
-      ${getLeaderFragment({ statsModifier })}
+      ${getLeaderFragment()}
     }
     name
     stats {
@@ -141,7 +141,7 @@ export function getDeckFragment({ statsModifier = '' }: { statsModifier?: string
     units {
       artStyle
       unit {
-        ${getUnitFragment({ statsModifier })}
+        ${getUnitFragment()}
       }
     }
     user {
@@ -150,16 +150,37 @@ export function getDeckFragment({ statsModifier = '' }: { statsModifier?: string
   `
 }
 
-export function getDeckUnitFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+export function getDeckUnitFragment(): string {
   return `
     artStyle
     unit {
-      ${getUnitFragment({ statsModifier })}
+      ${getUnitFragment()}
     }
   `
 }
 
-export function getGamePlayerFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+export function getMoveFragment() {
+  return `
+    ... on MoveLeader {
+      created
+      leader {
+        ${getLeaderFragment()}
+      }
+    }
+    ... on MovePass {
+      created
+    }
+    ... on MoveUnit {
+      created
+      row
+      unit {
+        ${getDeckUnitFragment()}
+      }
+    }
+  `
+}
+
+export function getGamePlayerFragment(): string {
   return `
     counts {
       discard
@@ -167,16 +188,30 @@ export function getGamePlayerFragment({ statsModifier = '' }: { statsModifier?: 
       undrawn
     }
     faction {
-      ${getFactionFragment({ statsModifier })}
+      ${getFactionFragment()}
     }
     leader {
-      ${getLeaderFragment({ statsModifier })}
+      ${getLeaderFragment()}
     }
     order
     ready
     rounds {
+      close {
+        ${getPlayerCombatRowFragment()}
+      }
+      moves {
+        ${getMoveFragment()}
+      }
+      passed
+      ranged {
+        ${getPlayerCombatRowFragment()}
+      }
+      result
       score
-      won
+      siege {
+        ${getPlayerCombatRowFragment()}
+      }
+
     }
     user {
       ${getUserFragment()}
@@ -184,23 +219,23 @@ export function getGamePlayerFragment({ statsModifier = '' }: { statsModifier?: 
   `
 }
 
-export function getGameFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+export function getGameFragment(): string {
   return `
+    config {
+      lives
+    }
     created
     creator {
       ${getUserFragment()}
     }
     id
     players {
-      ${getGamePlayerFragment({ statsModifier })}
+      ${getGamePlayerFragment()}
     }
-    round {
-      current
-      maximum
-    }
+    round
     status
     turn {
-      ${getGamePlayerFragment({ statsModifier })}
+      ${getGamePlayerFragment()}
     }
     updated
     victors {
@@ -209,27 +244,46 @@ export function getGameFragment({ statsModifier = '' }: { statsModifier?: string
   `
 }
 
-export function getGameDeckFragment({ statsModifier = '' }: { statsModifier?: string }): string {
+export function getGameDeckFragment(): string {
   return `
     discard {
-      ${getDeckUnitFragment({ statsModifier })}
+      ${getDeckUnitFragment()}
     }
     from {
-      ${getDeckFragment({ statsModifier })}
+      ${getDeckFragment()}
     }
     hand {
-      ${getDeckUnitFragment({ statsModifier })}
+      ${getDeckUnitFragment()}
     }
     redraws {
       from {
-        ${getDeckUnitFragment({ statsModifier })}
+        ${getDeckUnitFragment()}
       }
       to {
-        ${getDeckUnitFragment({ statsModifier })}
+        ${getDeckUnitFragment()}
       }
     }
     undrawn {
-      ${getDeckUnitFragment({ statsModifier })}
+      ${getDeckUnitFragment()}
+    }
+  `
+}
+
+export function getGameUnitFragment() {
+  return `
+    artStyle
+    effectiveStrength
+    unit {
+      ${getUnitFragment()}
+    }
+  `
+}
+
+export function getPlayerCombatRowFragment() {
+  return `
+    score
+    units {
+      ${getGameUnitFragment()}
     }
   `
 }

@@ -3,6 +3,7 @@ import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { Deck, FactionKey, MutationAddDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import { DeckAddedPayload } from '../subscription-resolver'
 import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckResolver from '../types/deck-resolver'
 import DeckStore from '../../../database/stores/deck-store'
@@ -201,7 +202,7 @@ export default class AddDeckMutation {
 
     EventManager.pubsub.publish(PubSubEvents.DeckAdded, {
       deckAdded: resolvedDeck,
-    })
+    } as DeckAddedPayload)
 
     return resolvedDeck
   }

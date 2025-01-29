@@ -5,6 +5,7 @@ import FactionResolver from './faction-resolver'
 import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
 import { getUniqueItems } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
+import PlayerRoundResolver from './player-round-resolver'
 import UserResolver from './user-resolver'
 
 /**
@@ -53,13 +54,17 @@ export default class GamePlayerResolver {
         undrawn: player.deck.undrawn.length,
       }
     }
+
     return {
       counts,
       faction: allDecksChosen ? faction : undefined,
       leader: allDecksChosen ? leader : undefined,
       order: player.order,
       ready: player.ready,
-      rounds: player.rounds,
+      rounds: await PlayerRoundResolver.fromArray({
+        rounds: player.rounds,
+        leader,
+      }),
       user: user || (await UserResolver.fromId(player.user)),
     }
   }

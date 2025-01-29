@@ -2,9 +2,6 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, setDeck, setOrder } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
 import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
 import { FactionKey, Game, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
@@ -12,13 +9,6 @@ import { NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('set-order-mutation', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('setOrder', () => {
     describe('invalid', () => {
       it('throws error if invalid game ID', async () => {
@@ -59,7 +49,7 @@ describe('set-order-mutation', () => {
                 game: "${gameId}"
                 users: ["${user1.id}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -113,7 +103,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${userId}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -140,7 +130,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${id.toString()}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -174,7 +164,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -206,7 +196,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -248,7 +238,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -290,7 +280,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -347,7 +337,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -400,7 +390,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${user1.id}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -456,7 +446,7 @@ describe('set-order-mutation', () => {
               setOrder(
                 game: "${game.id}"
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -514,7 +504,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${id}", "${user2.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -568,7 +558,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${user1.id}", "${id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -623,7 +613,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${id1}", "${id2}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -678,7 +668,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${user1.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -735,7 +725,7 @@ describe('set-order-mutation', () => {
                 game: "${game.id}"
                 users: ["${user1.id}", "${user1.id}"]
               ) {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -793,7 +783,7 @@ describe('set-order-mutation', () => {
               game: "${game.id}"
               users: ["${user1.id}", "${user2.id}"]
             ) {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -863,7 +853,7 @@ describe('set-order-mutation', () => {
               game: "${game.id}"
               users: ["${user2.id}", "${user1.id}"]
             ) {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -932,7 +922,7 @@ describe('set-order-mutation', () => {
             setOrder(
               game: "${game.id}"
             ) {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {

@@ -1,0 +1,5 @@
+mutation PlayPass($game: ID!) {
+  playPass(game: $game) {
+    ...GameFragment
+  }
+}

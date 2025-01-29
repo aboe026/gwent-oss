@@ -1,6 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import {
+  Combat,
   Deck,
   DeckUnit,
   Dlc,
@@ -13,7 +14,6 @@ import {
   GamePlayer,
   GameStatus,
   Leader,
-  PlayerRound,
   Redraw,
   Unit,
   UnitStats,
@@ -30,11 +30,15 @@ import {
   GameDeckDbObject,
   GamePlayerDbObject,
   LeaderDbObject,
+  MoveDbObject,
+  PlayerCombatRowDbObject,
+  PlayerRoundDbObject,
   RedrawDbObject,
+  RoundResult,
   UnitDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import { MAX_ROUNDS, STARTING_HAND_SIZE } from '@gwent/constants'
+import { STARTING_HAND_SIZE, STARTING_LIVES } from '@gwent/constants'
 
 export default class TestUtil {
   static getDbUnit({
@@ -44,6 +48,7 @@ export default class TestUtil {
     effects,
     combats,
     effectPrefix,
+    strength,
   }: {
     id?: ObjectId | string
     dlc?: ObjectId | string
@@ -51,6 +56,7 @@ export default class TestUtil {
     effects?: (ObjectId | string)[]
     combats?: string[]
     effectPrefix?: string
+    strength?: number
   }): UnitDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
@@ -64,6 +70,7 @@ export default class TestUtil {
       effects: effects ? effects.map((effect) => new ObjectId(effect)) : undefined,
       combats,
       effectPrefix,
+      strength,
     }
   }
 
@@ -95,14 +102,19 @@ export default class TestUtil {
     created,
     factionId,
     faction,
+    combats,
+    strength,
   }: {
     id?: ObjectId | string
     created?: Date
     factionId?: ObjectId | string
     faction?: Faction
+    combats?: Combat[]
+    strength?: number
   }): Unit {
     return {
       created: created || new Date(),
+      combats,
       deckable: true,
       faction:
         faction ||
@@ -113,6 +125,7 @@ export default class TestUtil {
       images: ['unit-image'],
       name: 'unit-name',
       quote: 'unit-quote',
+      strength,
     }
   }
 
@@ -132,9 +145,9 @@ export default class TestUtil {
     }
   }
 
-  static getDeckUnit({ id }: { id?: ObjectId | string }): DeckUnit {
+  static getDeckUnit({ id, artStyle = 1 }: { id?: ObjectId | string; artStyle?: number }): DeckUnit {
     return {
-      artStyle: 1,
+      artStyle,
       unit: TestUtil.getUnit({
         id,
       }),
@@ -415,6 +428,9 @@ export default class TestUtil {
     players,
     turn,
     victors = [],
+    updated = new Date(),
+    round = 0,
+    weather = [],
   }: {
     id?: ObjectId | string
     created?: Date
@@ -422,8 +438,14 @@ export default class TestUtil {
     players?: GamePlayerDbObject[]
     turn?: ObjectId | string
     victors?: (ObjectId | string)[]
+    updated?: Date
+    round?: number
+    weather?: Combat[]
   }): GameDbObject {
     return {
+      config: {
+        lives: STARTING_LIVES,
+      },
       _id: id ? new ObjectId(id) : new ObjectId(),
       created: created || new Date(),
       creator: creator ? new ObjectId(creator) : new ObjectId(),
@@ -451,18 +473,17 @@ export default class TestUtil {
           user: new ObjectId(),
         },
       ],
-      round: {
-        current: 0,
-        maximum: MAX_ROUNDS,
-      },
+      round,
       turn: turn ? new ObjectId(turn) : undefined,
-      updated: new Date(),
+      updated,
       victors: victors.map((victor) => new ObjectId(victor)),
+      weather,
     }
   }
 
   static getGameFromDbGame({ game, creator }: { game: GameDbObject; creator?: User }): Game {
     return {
+      config: game.config,
       created: game.created,
       creator:
         creator ||
@@ -471,13 +492,20 @@ export default class TestUtil {
         }),
       id: game._id.toString(),
       players: game.players.map((player) => {
-        return {
+        const faction = TestUtil.getFaction({
+          id: player.deck.from?.faction,
+        })
+        return TestUtil.getGamePlayer({
+          faction,
+          leader: TestUtil.getLeader({
+            id: player.deck.from?.leader,
+            faction,
+          }),
           ready: player.ready,
-          rounds: player.rounds,
           user: TestUtil.getUser({
             id: player.user,
           }),
-        }
+        })
       }),
       round: game.round,
       status: GameStatus.Decking,
@@ -487,11 +515,25 @@ export default class TestUtil {
           id: victorId,
         })
       ),
+      weather: game.weather.map((weather) => weather as Combat),
     }
   }
 
-  static getGame({ id, creator, players }: { id?: ObjectId | string; creator?: User; players?: GamePlayer[] }): Game {
+  static getGame({
+    id,
+    creator,
+    players,
+    round = 0,
+  }: {
+    id?: ObjectId | string
+    creator?: User
+    players?: GamePlayer[]
+    round?: number
+  }): Game {
     return {
+      config: {
+        lives: 2,
+      },
       created: new Date(),
       creator: creator || TestUtil.getUser({}),
       id: (id || new ObjectId()).toString(),
@@ -502,13 +544,11 @@ export default class TestUtil {
           user: TestUtil.getUser({}),
         },
       ],
-      round: {
-        current: 0,
-        maximum: MAX_ROUNDS,
-      },
+      round,
       status: GameStatus.Decking,
       updated: new Date(),
       victors: [],
+      weather: [],
     }
   }
 
@@ -556,6 +596,65 @@ export default class TestUtil {
     }
   }
 
+  static getGameDeckFromDbGameDeck(gameDeck: GameDeckDbObject): GameDeck {
+    return {
+      discard: gameDeck.discard.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      hand: gameDeck.hand.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      redraws: gameDeck.redraws.map((redraw) => {
+        return {
+          from: TestUtil.getDeckUnitFromDbDeckUnit(redraw.from),
+          to: TestUtil.getDeckUnitFromDbDeckUnit(redraw.to),
+        }
+      }),
+      undrawn: gameDeck.undrawn.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      from: gameDeck.from
+        ? TestUtil.getDeckFromDbDeck({
+            deck: gameDeck.from,
+          })
+        : undefined,
+    }
+  }
+
+  static getDbPlayerRound({
+    close,
+    ranged,
+    siege,
+    moves = [],
+    score = 0,
+    passed = false,
+    result,
+  }: {
+    close?: PlayerCombatRowDbObject
+    ranged?: PlayerCombatRowDbObject
+    siege?: PlayerCombatRowDbObject
+    moves?: MoveDbObject[]
+    score?: number
+    passed?: boolean
+    result?: RoundResult
+  }): PlayerRoundDbObject {
+    const round: PlayerRoundDbObject = {
+      close: close || {
+        score: 0,
+        units: [],
+      },
+      moves,
+      ranged: ranged || {
+        score: 0,
+        units: [],
+      },
+      siege: siege || {
+        score: 0,
+        units: [],
+      },
+      score,
+      passed,
+    }
+    if (result) {
+      round.result = result
+    }
+    return round
+  }
+
   static getDbGamePlayer({
     deck = TestUtil.getDbGameDeck({}),
     ready = false,
@@ -565,7 +664,7 @@ export default class TestUtil {
   }: {
     deck?: GameDeckDbObject
     ready?: boolean
-    rounds?: PlayerRound[]
+    rounds?: PlayerRoundDbObject[]
     order?: number
     user?: ObjectId | string
   }): GamePlayerDbObject {

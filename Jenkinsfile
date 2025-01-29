@@ -35,7 +35,7 @@ node {
     def services = []
 
     try {
-        timeout(time: 30, unit: 'MINUTES') {
+        timeout(time: 45, unit: 'MINUTES') {
             ansiColor('xterm') {
                 dir(workDir) {
                     stage('Prep') {
@@ -207,7 +207,7 @@ node {
                             }
                             composeYaml.services.router.volumes[0] = "${mountDir}/compose/nginx/nginx.conf:/etc/nginx/nginx.conf"
                             composeYaml.services.api.environment.push("MONGO_DB=${projectName}-e2e")
-                            composeYaml.services.api.environment.push('SESSION_TIMEOUT_SECONDS=20')
+                            composeYaml.services.api.environment.push('SESSION_TIMEOUT_SECONDS=60')
                             composeYaml.networks = [
                                 default: [
                                     name: uniqueName

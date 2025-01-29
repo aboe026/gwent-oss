@@ -1,4 +1,7 @@
 fragment GameFragment on Game {
+  config {
+    lives
+  }
   created
   creator {
     id
@@ -8,10 +11,7 @@ fragment GameFragment on Game {
   players {
     ...GamePlayerFragment
   }
-  round {
-    current
-    maximum
-  }
+  round
   status
   turn {
     user {

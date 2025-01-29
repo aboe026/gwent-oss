@@ -2,6 +2,8 @@ import { ApolloError } from '@apollo/client'
 
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'
+import LoadingBar from './LoadingBar'
+import './Confirm.css'
 
 /**
  * A dialog asking a user if they really want to perform an action.
@@ -30,24 +32,39 @@ export default function Confirm({
   loading,
   message,
   open,
+  title,
 }: ConfirmProps) {
   const resolvedError = getApolloError(error)
   return open ? (
     <div className="whole-screen-overlay">
       <div className="whole-screen-dialog" id={id}>
+        {title && <span className="confirm-title">{title}</span>}
         <span className="confirm-message">{message}</span>
         {resolvedError && <span className={HTML_CLASSES.ErrorText}>{resolvedError}</span>}
-        <div className="actions">
-          <button className="secondary" type="button" disabled={loading} autoFocus onClick={() => onClose(false)}>
+        <div className={HTML_CLASSES.ActionsContainer}>
+          {loading && <LoadingBar height="25px" />}
+          <button
+            className={HTML_CLASSES.ActionsSecondary}
+            type="button"
+            disabled={loading}
+            autoFocus
+            onClick={() => onClose(false)}
+          >
             {cancelLabel}
           </button>
           <button
-            className="primary"
+            className={HTML_CLASSES.ActionsPrimary}
             type="button"
             disabled={loading}
             onClick={async () => {
               await onSubmit({ variables: submitVariables })
-              onClose(false)
+              // intentionally do not call onClose automatically here
+              // because this can cause some discrepancy in behavior for
+              // components that have an onSubmit with a retryCheckingAuth
+              // which would error out here (and not have the auto-onClose here called)
+              // and then need to manually close the dialog on its own in the
+              // retryCheckingAuth method (so it gets called properly after the second attempt if auth fails at first)
+              // so better just to have the onSubmit always close the confirm itself
             }}
           >
             {submitLabel}
@@ -69,4 +86,5 @@ interface ConfirmProps {
   loading: boolean
   message: string
   open: boolean
+  title?: string
 }

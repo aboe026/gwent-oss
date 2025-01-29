@@ -1,4 +1,5 @@
 import ApiClient from '../util/api-client'
+import { Combat, Faction, FactionKey, GameStatus, Leader, SettingKey } from '@gwent/graphql-schema/resolver-typings'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
@@ -6,14 +7,14 @@ import DecksPage from '../page-objects/decks-page'
 import { E2eHelper } from '../util/e2e-helper'
 import { E2eCtx, E2ETestController, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
-import { Faction, FactionKey, GameStatus, Leader, SettingKey } from '@gwent/graphql-schema/resolver-typings'
-import GamePage from '../page-objects/game-page'
+import GamePage, { HistoryMove, HistoryPass } from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
 import LoginForm from '../components/login-form'
 import LoginPage from '../page-objects/login-page'
 import { NOT_AUTHENTICATED_MESSAGE, STARTING_HAND_SIZE } from '@gwent/constants'
 import { PlayerTurn } from '../components/game-player-info'
+import { sortObjectArray } from '@gwent/utils'
 
 interface SessionExpiryFixtureCtx extends E2eCtx {
   sessionTimeoutSeconds: number
@@ -31,7 +32,7 @@ fixture('Session Expiry').before(async (ctx) => {
     name: username,
   })
   ctx.sessionTimeoutSeconds = await new ApiClient({ username }).getSetting<number>(SettingKey.SessionTimeoutSeconds)
-  const requiredTimeoutSeconds = 20
+  const requiredTimeoutSeconds = 60
   if (ctx.sessionTimeoutSeconds !== requiredTimeoutSeconds) {
     throw Error(
       `Sessions timeout of "${ctx.sessionTimeoutSeconds}" seconds does not equal required value of "${requiredTimeoutSeconds}" for E2E tests.`
@@ -887,6 +888,350 @@ test('Change user after session expires shows new users data', async (t) => {
   await HomePage.goTo(HomePage.elements.ViewDecks)
   await DecksPage.verify({
     decks: [],
+  })
+})
+
+test('Play unit after session expires', async (t) => {
+  const scenario = 'session-expiry-play-unit'
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponentName = `${scenario}-opponent-${t.ctx.start}`
+  const self = await new ApiClient({}).addUser({
+    name: username,
+  })
+  const opponent = await new ApiClient({}).addUser({
+    name: opponentName,
+  })
+  const clientSelf = new ApiClient({ username })
+  const clientOpponent = new ApiClient({ username: opponentName })
+  const game = await clientSelf.addGame([opponentName])
+  const deckSelf = await clientSelf.addDeck({
+    faction: t.fixtureCtx.faction.key,
+    leaderName: t.fixtureCtx.leader.name,
+    name: `${scenario}-deck-self-${t.ctx.start}`,
+    unitNames: t.fixtureCtx.units,
+  })
+  const deckOpponent = await clientOpponent.addDeck({
+    faction: t.fixtureCtx.faction.key,
+    leaderName: t.fixtureCtx.leader.name,
+    name: `${scenario}-deck-opponent-${t.ctx.start}`,
+    unitNames: t.fixtureCtx.units,
+  })
+  const gameDeckSelf = await clientSelf.setDeck({
+    deckId: deckSelf.id,
+    gameId: game.id,
+  })
+  const gameDeckOpponent = await clientOpponent.setDeck({
+    deckId: deckOpponent.id,
+    gameId: game.id,
+  })
+  await clientSelf.ready(game.id)
+  await clientOpponent.ready(game.id)
+  const updatedGame = await clientSelf.getGame(game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientSelf,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: self,
+    },
+    ready: true,
+    turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Current : undefined,
+    score: 0,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientOpponent,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: opponent,
+    },
+    ready: true,
+    turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Current : undefined,
+    score: 0,
+  })
+  const currentPlayer = updatedGame.turn?.user.id === self.id ? selfPlayer : opponentPlayer
+  const currentGameDeck = updatedGame.turn?.user.id === self.id ? gameDeckSelf : gameDeckOpponent
+  const otherPlayer = updatedGame.turn?.user.id === self.id ? opponentPlayer : selfPlayer
+  await E2eUtil.goTo(LoginPage.getUrl())
+  await LoginPage.login({
+    username: currentPlayer.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(game.id))
+  currentPlayer.passed = false
+  await GamePage.verify({
+    opponent: otherPlayer,
+    self: currentPlayer,
+    hand: currentGameDeck.hand,
+    moves: [[]],
+  })
+  await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
+  const sortedHand = sortObjectArray({
+    array: currentGameDeck.hand,
+    sortProperties: ['unit.strength', 'unit.id'],
+    reverse: true,
+  })
+  const unitToMove = sortedHand[0]
+  const combat = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unitToMove.unit.name,
+    row: combat,
+  })
+  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
+  await GamePage.verifyHistoryError(`Error playing unit "${unitToMove.unit.name}": ${NOT_AUTHENTICATED_MESSAGE}`)
+  await reAuthenticate(currentPlayer.name, t)
+  E2eHelper.playUnit({
+    player: currentPlayer,
+    gameDeck: currentGameDeck,
+    deckUnit: unitToMove,
+    row: combat,
+    switchTurnsWith: otherPlayer,
+  })
+  await GamePage.verify({
+    opponent: otherPlayer,
+    self: currentPlayer,
+    hand: currentGameDeck.hand,
+    moves: [
+      [
+        {
+          userName: currentPlayer.name,
+          unitName: unitToMove.unit.name,
+          combatRow: combat,
+        },
+      ],
+    ],
+  })
+})
+
+test('Play pass to start round after session expires', async (t) => {
+  const scenario = 'session-expiry-play-pass'
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponentName = `${scenario}-opponent-${t.ctx.start}`
+  const self = await new ApiClient({}).addUser({
+    name: username,
+  })
+  const opponent = await new ApiClient({}).addUser({
+    name: opponentName,
+  })
+  const clientSelf = new ApiClient({ username })
+  const clientOpponent = new ApiClient({ username: opponentName })
+  const game = await clientSelf.addGame([opponentName])
+  const deckSelf = await clientSelf.addDeck({
+    faction: t.fixtureCtx.faction.key,
+    leaderName: t.fixtureCtx.leader.name,
+    name: `${scenario}-deck-self-${t.ctx.start}`,
+    unitNames: t.fixtureCtx.units,
+  })
+  const deckOpponent = await clientOpponent.addDeck({
+    faction: t.fixtureCtx.faction.key,
+    leaderName: t.fixtureCtx.leader.name,
+    name: `${scenario}-deck-opponent-${t.ctx.start}`,
+    unitNames: t.fixtureCtx.units,
+  })
+  const gameDeckSelf = await clientSelf.setDeck({
+    deckId: deckSelf.id,
+    gameId: game.id,
+  })
+  const gameDeckOpponent = await clientOpponent.setDeck({
+    deckId: deckOpponent.id,
+    gameId: game.id,
+  })
+  await clientSelf.ready(game.id)
+  await clientOpponent.ready(game.id)
+  const updatedGame = await clientSelf.getGame(game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientSelf,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: self,
+    },
+    ready: true,
+    turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Current : undefined,
+    score: 0,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientOpponent,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: opponent,
+    },
+    ready: true,
+    turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Current : undefined,
+    score: 0,
+  })
+  const currentPlayer = updatedGame.turn?.user.id === self.id ? selfPlayer : opponentPlayer
+  const currentGameDeck = updatedGame.turn?.user.id === self.id ? gameDeckSelf : gameDeckOpponent
+  const otherPlayer = updatedGame.turn?.user.id === self.id ? opponentPlayer : selfPlayer
+  await E2eUtil.goTo(LoginPage.getUrl())
+  await LoginPage.login({
+    username: currentPlayer.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(game.id))
+  currentPlayer.passed = false
+  await GamePage.verify({
+    opponent: otherPlayer,
+    self: currentPlayer,
+    hand: currentGameDeck.hand,
+    moves: [[]],
+  })
+  await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
+  await GamePage.pass({})
+  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
+  await GamePage.verifyHistoryError(`Error attempting to pass: ${NOT_AUTHENTICATED_MESSAGE}`)
+  await reAuthenticate(currentPlayer.name, t)
+  E2eHelper.playPass({
+    player: currentPlayer,
+    round: 1,
+    switchTurnsWith: otherPlayer,
+  })
+  await GamePage.verify({
+    opponent: otherPlayer,
+    self: currentPlayer,
+    hand: currentGameDeck.hand,
+    moves: [
+      [
+        {
+          userName: currentPlayer.name,
+          round: 1,
+        },
+      ],
+    ],
+  })
+})
+
+test('Play pass at end of round after session expires', async (t) => {
+  const scenario = 'session-expiry-play-pass'
+  const username = `${scenario}-user-${t.ctx.start}`
+  const opponentName = `${scenario}-opponent-${t.ctx.start}`
+  const self = await new ApiClient({}).addUser({
+    name: username,
+  })
+  const opponent = await new ApiClient({}).addUser({
+    name: opponentName,
+  })
+  const clientSelf = new ApiClient({ username })
+  const clientOpponent = new ApiClient({ username: opponentName })
+  const game = await clientSelf.addGame([opponentName])
+  const deckSelf = await clientSelf.addDeck({
+    faction: t.fixtureCtx.faction.key,
+    leaderName: t.fixtureCtx.leader.name,
+    name: `${scenario}-deck-self-${t.ctx.start}`,
+    unitNames: t.fixtureCtx.units,
+  })
+  const deckOpponent = await clientOpponent.addDeck({
+    faction: t.fixtureCtx.faction.key,
+    leaderName: t.fixtureCtx.leader.name,
+    name: `${scenario}-deck-opponent-${t.ctx.start}`,
+    unitNames: t.fixtureCtx.units,
+  })
+  const gameDeckSelf = await clientSelf.setDeck({
+    deckId: deckSelf.id,
+    gameId: game.id,
+  })
+  const gameDeckOpponent = await clientOpponent.setDeck({
+    deckId: deckOpponent.id,
+    gameId: game.id,
+  })
+  await clientSelf.ready(game.id)
+  await clientOpponent.ready(game.id)
+  const updatedGame = await clientSelf.getGame(game.id)
+  const selfPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientSelf,
+      deck: deckSelf,
+      gameDeck: gameDeckSelf,
+      user: self,
+    },
+    ready: true,
+    passed: false,
+    turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Current : undefined,
+    score: 0,
+  })
+  const opponentPlayer = E2eHelper.getGamePlayer({
+    player: {
+      client: clientOpponent,
+      deck: deckOpponent,
+      gameDeck: gameDeckOpponent,
+      user: opponent,
+    },
+    ready: true,
+    passed: false,
+    turn: updatedGame.turn?.user.id === opponent.id ? PlayerTurn.Current : undefined,
+    score: 0,
+  })
+  const currentPlayer = updatedGame.turn?.user.id === self.id ? selfPlayer : opponentPlayer
+  const currentGameDeck = updatedGame.turn?.user.id === self.id ? gameDeckSelf : gameDeckOpponent
+  const otherPlayer = updatedGame.turn?.user.id === self.id ? opponentPlayer : selfPlayer
+  const round1Moves: (HistoryMove | HistoryPass)[] = []
+  let round = 1
+
+  // current play unit
+  const sortedHand = sortObjectArray({
+    array: currentGameDeck.hand,
+    sortProperties: ['unit.strength', 'unit.id'],
+    reverse: true,
+  })
+  const unitToMove = sortedHand[0]
+  const combat = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
+  const currentClient = updatedGame.turn?.user.id === self.id ? clientSelf : clientOpponent
+  await currentClient.playUnit({
+    gameId: game.id,
+    unitId: unitToMove.unit.id,
+    combat,
+  })
+  E2eHelper.playUnit({
+    player: currentPlayer,
+    gameDeck: currentGameDeck,
+    deckUnit: unitToMove,
+    row: combat,
+    moves: round1Moves,
+  })
+
+  // other pass
+  const otherClient = updatedGame.turn?.user.id === opponent.id ? clientSelf : clientOpponent
+  await otherClient.playPass({
+    gameId: game.id,
+  })
+  E2eHelper.playPass({
+    player: otherPlayer,
+    round,
+    moves: round1Moves,
+  })
+
+  await E2eUtil.goTo(LoginPage.getUrl())
+  await LoginPage.login({
+    username: currentPlayer.name,
+  })
+  await E2eUtil.goTo(GamePage.getUrl(game.id))
+  await GamePage.verify({
+    opponent: otherPlayer,
+    self: currentPlayer,
+    hand: currentGameDeck.hand,
+    moves: [round1Moves],
+  })
+  await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
+  await GamePage.pass({})
+  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
+  await GamePage.verifyHistoryError(`Error attempting to pass: ${NOT_AUTHENTICATED_MESSAGE}`)
+  await reAuthenticate(currentPlayer.name, t)
+  E2eHelper.playPass({
+    player: currentPlayer,
+    round,
+    moves: round1Moves,
+  })
+  E2eHelper.endRound({
+    self: currentPlayer,
+    opponent: otherPlayer,
+    losers: [otherPlayer],
+  })
+  round = 2
+  await GamePage.verify({
+    opponent: otherPlayer,
+    self: currentPlayer,
+    hand: currentGameDeck.hand,
+    round,
+    moves: [round1Moves, []],
   })
 })
 

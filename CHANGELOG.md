@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.0 - 2025-01-28
+
+### Added
+
+- Play Game ([#25](https://github.com/aboe026/gwent/pull/25)) (Adam Boe)
+
 ## 0.9.2 - 2024-12-10
 
 ### Fixed

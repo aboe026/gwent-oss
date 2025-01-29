@@ -2,23 +2,13 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addDeck, addGame, addUser, getGame, ready, setDeck } from './util/graphql-util'
-import DbConnector from '../../src/database/db-connector'
-import DbUpgrader from '../../src/database/db-upgrader'
-import DbUtil from './util/db-util'
-import { expectizeGame } from './util/expect-util'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { expectizeGame, expectizeGamePlayer } from './util/expect-util'
+import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
 import { getGameFragment } from './util/fragment-util'
 import { NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
 
 describe('ready-mutation', () => {
-  beforeAll(async () => {
-    await DbUtil.deleteDatabase()
-    await DbUpgrader.run()
-  })
-  afterAll(async () => {
-    await DbConnector.disconnect()
-  })
   describe('ready', () => {
     describe('invalid', () => {
       it('returns error if invalid game ID', async () => {
@@ -46,7 +36,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${gameId}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -70,7 +60,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${new ObjectId()}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -102,7 +92,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -132,7 +122,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -145,27 +135,41 @@ describe('ready-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Must set deck on game "${game.id}" first.`)],
+          errors: [
+            new GraphQLError(
+              `Invalid game status "${GameStatus.Decking}": Can only mark ready for game with status "${GameStatus.Redrawing}".`
+            ),
+          ],
         })
       })
       it('returns error if already marked as ready', async () => {
         const name1 = `ready-1-${Date.now()}`
         const name2 = `ready-2-${Date.now()}`
         const user1 = await addUser(name1)
-        await addUser(name2)
+        const user2 = await addUser(name2)
         const game = await addGame({
           opponentNames: [name2],
           creator: user1,
         })
-        const deck = await addDeck({
+        const deckSelf = await addDeck({
           faction: FactionKey.Monsters,
-          name: `ready-${Date.now()}`,
+          name: `ready-self-${Date.now()}`,
+          userId: user1.id,
+        })
+        const deckOpponent = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `ready-opponent-${Date.now()}`,
+          userId: user2.id,
+        })
+        await setDeck({
+          deckId: deckSelf.id,
+          gameId: game.id,
           userId: user1.id,
         })
         await setDeck({
-          deckId: deck.id,
+          deckId: deckOpponent.id,
           gameId: game.id,
-          userId: user1.id,
+          userId: user2.id,
         })
         await ready({
           gameId: game.id,
@@ -176,7 +180,7 @@ describe('ready-mutation', () => {
             schema,
             source: `mutation {
               ready(game: "${game.id}") {
-                ${getGameFragment({})}
+                ${getGameFragment()}
               }
             }`,
             contextValue: {
@@ -203,25 +207,46 @@ describe('ready-mutation', () => {
           opponentNames: [name2],
           creator: user1,
         })
-        const deck = await addDeck({
+        const deckSelf = await addDeck({
           faction: FactionKey.Monsters,
-          name: `ready-${Date.now()}`,
+          name: `ready-self-${Date.now()}`,
           userId: user1.id,
         })
-        await setDeck({
-          deckId: deck.id,
+        const deckOpponent = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `ready-opponent-${Date.now()}`,
+          userId: user2.id,
+        })
+        const gameDeckSelf = await setDeck({
+          deckId: deckSelf.id,
           gameId: game.id,
           userId: user1.id,
+        })
+        const gameDeckOpponent = await setDeck({
+          deckId: deckOpponent.id,
+          gameId: game.id,
+          userId: user2.id,
         })
         const updatedGame = await getGame({
           gameId: game.id,
           userId: user1.id,
         })
+        const gamePlayerSelf = expectizeGamePlayer({
+          gameDeck: gameDeckSelf,
+          user: user1,
+          order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+          ready: true,
+        })
+        const gamePlayerOpponent = expectizeGamePlayer({
+          gameDeck: gameDeckOpponent,
+          user: user2,
+          order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+        })
         const response = await graphql({
           schema,
           source: `mutation {
             ready(game: "${game.id}") {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -236,15 +261,9 @@ describe('ready-mutation', () => {
           data: {
             ready: expectizeGame({
               creator: user1,
-              players: [
-                {
-                  user: user1,
-                  ready: true,
-                },
-                {
-                  user: user2,
-                },
-              ],
+              players: [gamePlayerSelf, gamePlayerOpponent],
+              status: GameStatus.Redrawing,
+              turn: updatedGame.turn?.user.id === user1.id ? gamePlayerSelf : gamePlayerOpponent,
             }),
           },
         })
@@ -263,15 +282,25 @@ describe('ready-mutation', () => {
           opponentNames: [name1],
           creator: user2,
         })
-        const deck = await addDeck({
+        const deckSelf = await addDeck({
           faction: FactionKey.Monsters,
-          name: `ready-${Date.now()}`,
+          name: `ready-self-${Date.now()}`,
           userId: user1.id,
         })
-        await setDeck({
-          deckId: deck.id,
+        const deckOpponent = await addDeck({
+          faction: FactionKey.Monsters,
+          name: `ready-opponent-${Date.now()}`,
+          userId: user2.id,
+        })
+        const gameDeckOpponent = await setDeck({
+          deckId: deckSelf.id,
           gameId: game.id,
           userId: user1.id,
+        })
+        const gameDeckCreator = await setDeck({
+          deckId: deckOpponent.id,
+          gameId: game.id,
+          userId: user2.id,
         })
         const updatedGame = await getGame({
           gameId: game.id,
@@ -281,7 +310,7 @@ describe('ready-mutation', () => {
           schema,
           source: `mutation {
             ready(game: "${game.id}") {
-              ${getGameFragment({})}
+              ${getGameFragment()}
             }
           }`,
           contextValue: {
@@ -292,19 +321,24 @@ describe('ready-mutation', () => {
             },
           },
         })
+        const gamePlayerCreator = expectizeGamePlayer({
+          gameDeck: gameDeckCreator,
+          user: user2,
+          order: updatedGame.turn?.user.id === user2.id ? 0 : 1,
+        })
+        const gamePlayerOpponent = expectizeGamePlayer({
+          gameDeck: gameDeckOpponent,
+          user: user1,
+          order: updatedGame.turn?.user.id === user1.id ? 0 : 1,
+          ready: true,
+        })
         expect(response).toEqual({
           data: {
             ready: expectizeGame({
               creator: user2,
-              players: [
-                {
-                  user: user2,
-                },
-                {
-                  user: user1,
-                  ready: true,
-                },
-              ],
+              players: [gamePlayerCreator, gamePlayerOpponent],
+              status: GameStatus.Redrawing,
+              turn: updatedGame.turn?.user.id === user2.id ? gamePlayerCreator : gamePlayerOpponent,
             }),
           },
         })
