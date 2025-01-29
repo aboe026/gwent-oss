@@ -207,7 +207,7 @@ node {
                             }
                             composeYaml.services.router.volumes[0] = "${mountDir}/compose/nginx/nginx.conf:/etc/nginx/nginx.conf"
                             composeYaml.services.api.environment.push("MONGO_DB=${projectName}-e2e")
-                            composeYaml.services.api.environment.push('SESSION_TIMEOUT_SECONDS=20')
+                            composeYaml.services.api.environment.push('SESSION_TIMEOUT_SECONDS=60')
                             composeYaml.networks = [
                                 default: [
                                     name: uniqueName
