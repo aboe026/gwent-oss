@@ -12,7 +12,7 @@ import { json } from 'body-parser'
 import MongoStore from 'connect-mongo'
 import { printSchema } from 'graphql/utilities'
 import session, { CookieOptions } from 'express-session'
-import { useServer } from 'graphql-ws/lib/use/ws'
+import { useServer } from 'graphql-ws/use/ws'
 import { WebSocketServer } from 'ws'
 
 import AppInfo from './app-info'
