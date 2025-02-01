@@ -37,9 +37,9 @@ export default function ConnectionStatus({ children }: PropsWithChildren) {
   let timeoutForInterrupts: NodeJS.Timeout
   let timeoutForFailures: NodeJS.Timeout
 
-  const statusRef = useRef<CONNECTION_STATUS>()
+  const statusRef = useRef<CONNECTION_STATUS>(CONNECTION_STATUS.Failed)
   statusRef.current = connectionStatus // need to refer to this inside ".on" callbacks, otherwise will get a "stale" value that isn't accurate
-  const socketRef = useRef<WebSocket>()
+  const socketRef = useRef<WebSocket>(undefined)
   socketRef.current = socket // need to refer to this inside ".on" callbacks, otherwise will get a "stale" value that isn't accurate
 
   useEffect(() => {
