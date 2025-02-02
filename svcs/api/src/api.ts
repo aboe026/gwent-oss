@@ -130,10 +130,9 @@ export default class Api {
     return useServer(
       {
         schema,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        context: (ctx, msg, args) => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const user = (ctx.extra as any).user
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
+        context: (ctx: any, msg: any, args: any) => {
+          const user = ctx.extra.user
           if (Api.logger.isTraceEnabled()) {
             Api.logger.trace(`WebSocket context user: "${JSON.stringify(user)}"`)
           }
@@ -144,7 +143,8 @@ export default class Api {
             },
           }
         },
-        onConnect: async (ctx) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onConnect: async (ctx: any) => {
           const user = await WebSocketAuth.authenticate({
             req: ctx.extra.request,
             mongoStore: Api.sessionMongoStore,

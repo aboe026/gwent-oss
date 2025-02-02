@@ -3,6 +3,7 @@
     "composite": true,
     "outDir": "build",
     "module": "ESNext",
+    "moduleResolution": "node",
     "target": "es5",
     "resolveJsonModule": false
   },

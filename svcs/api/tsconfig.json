@@ -3,8 +3,7 @@
     "composite": true,
     "module": "Node16",
     "moduleResolution": "node16",
-    "outDir": "build",
-    "skipLibCheck": true
+    "outDir": "build"
   },
   "extends": "../../tsconfig",
   "include": ["package.json", "src/**/*", "src/database/upgrades/resources/*.json"],

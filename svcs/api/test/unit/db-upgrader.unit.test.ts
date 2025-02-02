@@ -455,7 +455,7 @@ describe('db-upgrader', () => {
         traceCalls: [['secondsSinceLastUpdate: "-28.999"'], ['aquired: "false"'], ['sleepBeforeNextTry: "true"']],
       })
     })
-    it('logs out if trace log enabled', async () => {
+    it('logs to trace if enabled', async () => {
       const start = Date.now()
       const error = new MongoError('duplicate key')
       const addLockResponse = {
@@ -500,7 +500,7 @@ describe('db-upgrader', () => {
         traceCalls: [
           [
             `err: "${JSON.stringify({
-              code: error.code,
+              errorLabelSet: {},
             })}"`,
           ],
           [`potentiallyExpiredLock: "${JSON.stringify(getLockResponse)}"`],
