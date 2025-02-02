@@ -254,7 +254,7 @@ export default function GamePage() {
   }, [currentGame])
 
   const historyRefs: {
-    [key: string]: RefObject<HTMLDivElement>
+    [key: string]: RefObject<HTMLDivElement | null>
   } = {}
   const movesByRounds: MoveForRound[] = []
   if (gameData?.game) {
@@ -2485,7 +2485,7 @@ interface UnitForPlayer {
 interface PlayerMove {
   move: Move
   playerIndex: number
-  ref: RefObject<HTMLDivElement>
+  ref: RefObject<HTMLDivElement | null>
 }
 
 interface MoveForRound {

@@ -7,7 +7,7 @@ import figlet from 'figlet'
 import http from 'http'
 import MongoStore from 'connect-mongo'
 import session, { CookieOptions } from 'express-session'
-import useWs from 'graphql-ws/lib/use/ws'
+import * as useWs from 'graphql-ws/use/ws'
 import ws from 'ws'
 
 import Api from '../../src/api'
@@ -77,7 +77,7 @@ jest.mock('ws', () => {
   }
 })
 
-jest.mock('graphql-ws/lib/use/ws', () => {
+jest.mock('graphql-ws/use/ws', () => {
   return {
     useServer: jest.fn().mockImplementation(() => {
       return {}
@@ -505,7 +505,7 @@ async function testConfigureWebsocketServer({
   const wsServer = {} as any
   ws.prototype = wsServer
   const useServerSpy = jest.fn().mockReturnValue(subscriptionCleanup)
-  useWs.useServer = useServerSpy
+  jest.spyOn(useWs, 'useServer').mockImplementation(useServerSpy)
 
   expect(Api['configureWebsocketServer']()).toEqual(subscriptionCleanup)
 
