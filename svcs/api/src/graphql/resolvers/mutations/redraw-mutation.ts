@@ -1,5 +1,4 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { DeckUnit, MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -11,9 +10,9 @@ import { GameStatus, RedrawDbObject } from '@gwent/graphql-schema/database-typin
 import GameStore from '../../../database/stores/game-store'
 import { getRandomSubset } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
-import { MAX_REDRAWS, NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
-import MutationUtil from './mutation-util'
-import { RequestedFields } from '@gwent/graphql-schema'
+import { MAX_REDRAWS, PubSubEvents } from '@gwent/constants'
+import PresentableError from '../../../util/presentable-error'
+import ResolverUtil from '../resolver-util'
 import { UnitRedrawnPayload } from '../subscription-resolver'
 
 /**
@@ -31,58 +30,59 @@ export default class RedrawMutation {
    * @returns The random DeckUnit that replaces their redrawn Unit in their hand.
    */
   static async redraw(args: MutationRedrawArgs, context: Context, info: GraphQLResolveInfo): Promise<DeckUnit> {
-    const userId = context.session?.user?._id
-    if (!userId) {
-      RedrawMutation.logger.error(`No user on context for redraw mutation: "${JSON.stringify(context.session)}".`)
-      return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    const resolverUtil = new ResolverUtil({
+      logger: RedrawMutation.logger,
+    })
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'redraw mutation',
+    })
+
     const logPrefix = `redraw by "${userId}"`
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
-      RedrawMutation.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      RedrawMutation.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.printArgsAndInfo({
+      args,
+      info,
+    })
+
     const gameId = args.game
     const unitId = args.unit
 
-    if (!ObjectId.isValid(unitId)) {
-      const message = `Unit ID "${unitId}" is not a valid MongoDB ObjectId.`
-      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    resolverUtil.verifyMongoIds({
+      ids: [unitId],
+      label: 'Unit ID',
+    })
 
-    const response = await MutationUtil.getGamePlayer({
+    const { player } = await resolverUtil.getGamePlayer({
       gameId,
-      logPrefix,
       userId,
       status: GameStatus.Redrawing,
       label: 'redraw',
     })
 
-    if (response instanceof Error) {
-      return response as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-
-    const { player } = response
-
     if (player.ready) {
       const message = `Cannot redraw after game "${gameId}" is marked as ready.`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1056,
+        message,
+      })
     }
     if (!player.deck.from) {
       const message = `Cannot redraw before deck is set for game "${gameId}".`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1057,
+        message,
+      })
     }
     if (player.deck.redraws.length >= MAX_REDRAWS) {
       const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${gameId}".`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1058,
+        message,
+      })
     }
     const redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
     const cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
@@ -92,7 +92,10 @@ export default class RedrawMutation {
     if (!cardToRedraw) {
       const message = `Unit with ID "${unitId}" does not exist in hand for game "${gameId}".`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1059,
+        message,
+      })
     }
     // make sure we don't redraw card that was previously chosen for redraw
     const redrawPool = player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
@@ -139,7 +142,10 @@ export default class RedrawMutation {
     if (!updatedGame) {
       const message = `Could not redraw unit "${unitId}" on game "${gameId}" in probable race condition collision.`
       RedrawMutation.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1060,
+        message,
+      })
     }
     const resolvedTo = await DeckUnitResolver.fromObject({
       deckUnit: newCard,
@@ -165,7 +171,10 @@ export default class RedrawMutation {
     if (!updatedGameDeck) {
       const message = `Could not get updated game deck when redrawing unit "${unitId}" on game "${gameId}".`
       RedrawMutation.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1061,
+        message,
+      })
     }
     const resolvedGameDeck = await GameDeckResolver.fromObject({
       gameDeck: updatedGameDeck,

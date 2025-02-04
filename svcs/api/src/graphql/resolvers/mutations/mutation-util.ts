@@ -7,7 +7,6 @@ import FactionStore from '../../../database/stores/faction-store'
 import {
   GameDbObject,
   GamePlayerDbObject,
-  GameStatus,
   PlayerCombatRowDbObject,
   RoundResult,
 } from '@gwent/graphql-schema/database-typings'
@@ -15,6 +14,7 @@ import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getDuplicateItems, randomizeOrder, sortObjectArray } from '@gwent/utils'
 import { OrderSetPayload } from '../subscription-resolver'
+import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 
 /**
@@ -22,87 +22,8 @@ import { PubSubEvents } from '@gwent/constants'
  */
 export default class MutationUtil {
   private static logger = getLogger('MutationUtil')
-
-  /**
-   * Get a game and player on it.
-   *
-   * @param config The configuration to get the Game and the player on it.
-   * @param config.gameId The ID of the game to get.
-   * @param config.userId The ID of the player to get on the game.
-   * @param config.logPrefix The prefix to add to the beginning of log statements.
-   * @param config.status An optional status to require the game to have, otherwise return an error.
-   * @param config.turn Whether or not to enforce that the given game player should be the player with the current turn, otherwise return an error.
-   * @param config.label The label to use when logging and returning errors.
-   * @returns The game and player if they exist, otherwise an Error.
-   */
-  static async getGamePlayer({
-    gameId,
-    logPrefix,
-    userId,
-    status,
-    turn,
-    label,
-  }: {
-    gameId: string
-    logPrefix: string
-    userId: ObjectId
-    status?: GameStatus
-    turn?: boolean
-    label?: string
-  }): Promise<GamePlayerResponse | Error> {
-    if (!ObjectId.isValid(gameId)) {
-      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    const game = await GameStore.getById({
-      id: gameId,
-    })
-    if (MutationUtil.logger.isTraceEnabled()) {
-      MutationUtil.logger.trace(`${logPrefix} getGamePlayer game: "${JSON.stringify(game)}"`)
-    }
-    if (!game) {
-      const message = `Game with ID "${gameId}" does not exist.`
-      MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    const players: GamePlayerDbObject[] = game.players.filter((player) => player.user.toString() === userId.toString())
-    if (MutationUtil.logger.isTraceEnabled()) {
-      MutationUtil.logger.trace(`${logPrefix} getGamePlayer game "${game._id}" players: "${JSON.stringify(players)}"`)
-    }
-    if (players.length === 0) {
-      const message = `Not a player on game "${gameId}".`
-      MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    if (players.length > 1) {
-      const message = `Found more than 1 player with ID "${userId}" on game "${gameId}"`
-      MutationUtil.logger.error(`${logPrefix} getGamePlayer failed: ${message}: "${JSON.stringify(players)}"`)
-      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-
-    if (status) {
-      const gameStatus = GameResolver.getStatus(game)
-      if (gameStatus !== status) {
-        const message = `Invalid game status "${gameStatus}": Can only ${label} for game with status "${status}".`
-        MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
-        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-      }
-    }
-
-    if (turn) {
-      if (game.turn?.toString() !== userId.toString()) {
-        const message = `Cannot ${label} when it is not your turn.`
-        MutationUtil.logger.warn(`${logPrefix} getGamePlayer failed: ${message}`)
-        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-      }
-    }
-
-    return {
-      game,
-      player: players[0],
-    }
-  }
+  // TODO: have this be instance method to pass in logger?
+  // or just move to ResolverUtil?
 
   /**
    * Gets the ID of the player whose turn it is next in the current round.
@@ -113,13 +34,7 @@ export default class MutationUtil {
    * @param config.logPrefix The prefix to add to the beginning of log statements.
    * @returns The ID of the player whose turn is next, otherwise an Error.
    */
-  static getNextPlayerIdForCurrentRound({
-    game,
-    logPrefix,
-  }: {
-    game: GameDbObject
-    logPrefix: string
-  }): ObjectId | Error {
+  static getNextPlayerIdForCurrentRound({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): ObjectId {
     const currentRound = game.round
     const usersByOrder: GamePlayerDbObject[] = sortObjectArray({
       array: game.players,
@@ -139,7 +54,10 @@ export default class MutationUtil {
     if (currentPlayerOrder === undefined || currentPlayerOrder === null) {
       const message = `Could not determine order of current player "${currentPlayer.user}": "${currentPlayerOrder}".`
       MutationUtil.logger.error(`${logPrefix} getNextPlayerIdForCurrentRound failed: ${message}`)
-      return Error(message)
+      throw new PresentableError({
+        code: 1036,
+        message,
+      })
     }
     for (let i = 0; i < game.players.length && nextPlayerId === undefined; i++) {
       MutationUtil.logger.trace(`${logPrefix} getNextPlayerIdForCurrentRound i: "${i}"`)
@@ -165,7 +83,10 @@ export default class MutationUtil {
     if (!nextPlayerId) {
       const message = `Could not determine next player for round "${currentRound}".`
       MutationUtil.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message)
+      throw new PresentableError({
+        code: 1037,
+        message,
+      })
     }
     return nextPlayerId
   }
@@ -358,7 +279,10 @@ export default class MutationUtil {
     if (!game) {
       const message = `Game with ID "${gameId}" does not exist.`
       MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1038,
+        message,
+      })
     }
 
     const player = game.players.find((player) => player.user.toString() === userId.toString())
@@ -368,7 +292,10 @@ export default class MutationUtil {
     if (!player) {
       const message = `Not a player on game "${gameId}".`
       MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1039,
+        message,
+      })
     }
 
     // cannot set order before all players choose deck
@@ -378,30 +305,46 @@ export default class MutationUtil {
     if (game.players.some((player) => !player.deck.from)) {
       const message = `Not all players have chosen decks yet for game "${gameId}".`
       MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1040,
+        message,
+      })
     }
 
     if (game.turn) {
       const message = `Game with ID "${gameId}" already has order set.`
       MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1041,
+        message,
+      })
     }
 
+    // TODO: extract into separate util method? (other resolvers do this?)
     const factions = await FactionStore.get({
       keys: [FactionKey.ScoiaTael],
     })
     if (!factions || factions.length === 0) {
       const message = `Could not find faction with key "${FactionKey.ScoiaTael}".`
       MutationUtil.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1042,
+        message,
+      })
     } else if (factions.length > 1) {
       const message = `Found more than 1 faction with key "${FactionKey.ScoiaTael}"`
       MutationUtil.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(factions)}"`)
-      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1043,
+        message: `${message}.`,
+      })
     } else if (factions[0].key !== FactionKey.ScoiaTael) {
       const message = `Faction key of "${factions[0].key}" does not match "${FactionKey.ScoiaTael}".`
       MutationUtil.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1044,
+        message,
+      })
     }
 
     const scoiaTaelId = factions[0]._id.toString()
@@ -409,22 +352,34 @@ export default class MutationUtil {
     if (scoiaTaelPlayers.length > 1 && userIds && userIds.length > 0) {
       const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${gameId}".`
       MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1045,
+        message,
+      })
     }
     if (scoiaTaelPlayers.length === 0 && userIds && userIds.length > 0) {
       const message = `Cannot set explicit order as deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
       MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1046,
+        message,
+      })
     }
     if (scoiaTaelPlayers.length === 1 && (!userIds || userIds.length === 0) && !allowImplicit) {
       const message = `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
       MutationUtil.logger.debug(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1047,
+        message,
+      })
     }
     if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
       const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
       MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1048,
+        message,
+      })
     }
 
     if (userIds && userIds.length > 0) {
@@ -440,12 +395,18 @@ export default class MutationUtil {
           playersIdsNotInGame
         )} are not players on game "${gameId}".`
         MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        throw new PresentableError({
+          code: 1049,
+          message,
+        })
       }
       if (userIds.length !== game.players.length) {
         const message = `Cannot set order as users count of "${userIds.length}" does not match player count of "${game.players.length}" for game "${gameId}".`
         MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        throw new PresentableError({
+          code: 1050,
+          message,
+        })
       }
       const duplicateUserIds = getDuplicateItems<string>(userIds)
       if (duplicateUserIds.length > 0) {
@@ -453,7 +414,10 @@ export default class MutationUtil {
           duplicateUserIds
         )} specified.`
         MutationUtil.logger.warn(`${logPrefix} failed: ${message}`)
-        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        throw new PresentableError({
+          code: 1051,
+          message,
+        })
       }
     }
 
@@ -467,7 +431,10 @@ export default class MutationUtil {
     if (!updatedGame) {
       const message = `Could not set order on game "${gameId}" in probable race condition collision.`
       MutationUtil.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1052,
+        message,
+      })
     }
 
     const resolvedGame = await GameResolver.fromObject({

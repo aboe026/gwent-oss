@@ -5,8 +5,7 @@ import { Game } from '@gwent/graphql-schema/resolver-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
-import { RequestedFields } from '@gwent/graphql-schema'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class for executing the games GraphQL Query.
@@ -22,20 +21,20 @@ export default class GamesQuery {
    * @returns The Games a user is apart of.
    */
   static async games(context: Context, info: GraphQLResolveInfo): Promise<Game[]> {
-    const userId = context.session?.user?._id
-    if (!userId) {
-      GamesQuery.logger.error(`No user on context for games query: "${JSON.stringify(context.session)}".`)
-      return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    const resolverUtil = new ResolverUtil({
+      logger: GamesQuery.logger,
+    })
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'games query',
+    })
+
     const logPrefix = `games by "${userId}"`
-    if (GamesQuery.logger.isTraceEnabled()) {
-      GamesQuery.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      GamesQuery.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.printArgsAndInfo({
+      info,
+    })
+
     const games = await GameStore.getByUserId(userId)
     if (GamesQuery.logger.isTraceEnabled()) {
       GamesQuery.logger.trace(`${logPrefix} games: "${JSON.stringify(games)}"`)

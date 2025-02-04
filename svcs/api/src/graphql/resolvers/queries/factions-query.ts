@@ -5,7 +5,7 @@ import { Faction, QueryFactionsArgs } from '@gwent/graphql-schema/resolver-typin
 import FactionResolver from '../types/faction-resolver'
 import FactionStore from '../../../database/stores/faction-store'
 import { GraphQLResolveInfo } from 'graphql'
-import { RequestedFields } from '@gwent/graphql-schema'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class for executing the factions GraphQL Query.
@@ -21,16 +21,21 @@ export default class FactionsQuery {
    * @returns The Factions available.
    */
   static async factions(args: QueryFactionsArgs, context: Context, info: GraphQLResolveInfo): Promise<Faction[]> {
-    const userId = context.session?.user?._id
+    const resolverUtil = new ResolverUtil({
+      logger: FactionsQuery.logger,
+    })
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'factions query',
+    })
+
     const logPrefix = `factions by "${userId}"`
-    if (FactionsQuery.logger.isTraceEnabled()) {
-      FactionsQuery.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      FactionsQuery.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.printArgsAndInfo({
+      args,
+      info,
+    })
+
     const keys = args.keys
 
     const factions = await FactionStore.get({

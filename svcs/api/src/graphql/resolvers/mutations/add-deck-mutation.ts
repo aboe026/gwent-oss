@@ -15,8 +15,9 @@ import { getDeckStats } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import LeaderResolver from '../types/leader-resolver'
 import LeaderStore from '../../../database/stores/leader-store'
-import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
-import { RequestedFields } from '@gwent/graphql-schema'
+import PresentableError from '../../../util/presentable-error'
+import { PubSubEvents } from '@gwent/constants'
+import ResolverUtil from '../resolver-util'
 import UnitStore from '../../../database/stores/unit-store'
 import { validateDeck } from '@gwent/validators'
 
@@ -35,45 +36,43 @@ export default class AddDeckMutation {
    * @returns The Deck that was added.
    */
   static async addDeck(args: MutationAddDeckArgs, context: Context, info: GraphQLResolveInfo): Promise<Deck> {
-    const userId = context.session?.user?._id
-    if (!userId) {
-      AddDeckMutation.logger.error(`No user on context for addDeck mutation: "${JSON.stringify(context.session)}".`)
-      return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    const resolverUtil = new ResolverUtil({
+      logger: AddDeckMutation.logger,
+    })
+
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'addDeck mutation',
+    })
 
     const logPrefix = `addDeck by "${userId}"`
-    if (AddDeckMutation.logger.isTraceEnabled()) {
-      AddDeckMutation.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
-      AddDeckMutation.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      AddDeckMutation.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.printArgsAndInfo({
+      args,
+      info,
+    })
 
     const name = args.name
     const factionKey = args.faction
     const leaderId = args.leader
     const unitsInput = args.units
 
-    if (!ObjectId.isValid(leaderId)) {
-      const message = `Leader ID "${leaderId}" is not a valid MongoDB ObjectId.`
-      AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-    for (const unitInput of unitsInput) {
-      if (!ObjectId.isValid(unitInput.id)) {
-        const message = `Unit ID "${unitInput.id}" is not a valid MongoDB ObjectId.`
-        AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-      }
-    }
+    resolverUtil.verifyMongoIds({
+      ids: [leaderId],
+      label: 'Leader ID',
+    })
+    resolverUtil.verifyMongoIds({
+      ids: unitsInput.map((unitInput) => unitInput.id),
+      label: 'Unit ID',
+    })
 
     if (factionKey === FactionKey.Neutral) {
       const message = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1002,
+        message,
+      })
     }
     const factions = await FactionStore.get({
       keys: [args.faction],
@@ -85,12 +84,18 @@ export default class AddDeckMutation {
     if (matchedFactions.length === 0) {
       const message = `Faction with key "${factionKey}" does not exist.`
       AddDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1003,
+        message,
+      })
     }
     if (matchedFactions.length > 1) {
       const message = `Found more than 1 Faction with key "${factionKey}"`
       AddDeckMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(matchedFactions)}"`)
-      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1004,
+        message: `${message}.`,
+      })
     }
     const deckFaction = matchedFactions[0]
 
@@ -103,18 +108,27 @@ export default class AddDeckMutation {
     if (!leaders || leaders.length === 0) {
       const message = `Leader with ID "${leaderId}" does not exist.`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1005,
+        message,
+      })
     }
     if (leaders.length > 1) {
       const message = `Found more than 1 Leader with ID "${leaderId}"`
       AddDeckMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(leaders)}"`)
-      return Error(`${message}.`) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1006,
+        message: `${message}.`,
+      })
     }
     const leader = leaders[0]
     if (leader.faction.toString() !== deckFaction._id.toString()) {
       const message = `Faction ID "${leader.faction}" for leader "${leaderId}" does not match deck faction ID "${deckFaction._id}".`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1007,
+        message,
+      })
     }
 
     const units = await UnitStore.get({
@@ -133,7 +147,10 @@ export default class AddDeckMutation {
     if (errors.length > 0) {
       const message = errors.join('\n')
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1008,
+        message,
+      })
     }
     const deckUnits = await DeckUnitResolver.fromArray({
       deckUnits: unitsInput.map((unit) => {
@@ -153,7 +170,10 @@ export default class AddDeckMutation {
     if (errors.length > 0) {
       const message = errors.join('\n')
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError({
+        code: 1009,
+        message,
+      })
     }
 
     let deck: DeckDbObject
@@ -175,8 +195,10 @@ export default class AddDeckMutation {
       if (err instanceof Error && err.message === `Deck with name "${name}" already exists for user "${userId}"`) {
         const message = `Deck with name "${name}" already exists.` // exclude user ID for security
         AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-        // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
-        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        throw new PresentableError({
+          code: 1010,
+          message,
+        })
       }
       AddDeckMutation.logger.error(Error(`${logPrefix} failed: ${err}`))
       throw err

@@ -5,9 +5,13 @@ A list of things to be done in the future.
 ## Fixes
 
 - change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
+
 - have resolves throw custom errors instead of returning general one
+
   - in shield file, filter out custom errors from general ones to determine which to show user
   - have shared method for "getContextUser" (and possibly other repeated checks across resolvers)
+  - lint code for repeated codes on PresentableError
+
 - save game status to database?
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)
 - collapse UI method props when they are long (like PlayUnitProps)

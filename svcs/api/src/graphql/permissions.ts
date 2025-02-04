@@ -5,17 +5,16 @@ import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import DeckStore from '../database/stores/deck-store'
-import env from '../env'
 import GameStore from '../database/stores/game-store'
-import { NODE_ENV } from '@gwent/env'
 import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
+import PresentableError from '../util/presentable-error'
 
 export const NO_RULE_DEFINED = 'No rule defined.'
 
 /**
  * A class to define the permissions required for performing GraphQL operations (Mutations/Queries).
  */
-export class Permissions {
+export default class Permissions {
   private static logger = getLogger('Permissions')
 
   /**
@@ -140,45 +139,54 @@ export class Permissions {
     }
     return true
   }
-}
 
-const fallbackRule = rule({ cache: false })(Permissions.fallback)
-const isAuthenticatedRule = rule({ cache: 'contextual' })(Permissions.isAuthenticated)
-const isPlayerRule = rule({ cache: 'contextual' })(Permissions.isPlayer)
-const ownsDeckRule = rule({ cache: 'contextual' })(Permissions.ownsDeck)
+  static shield() {
+    const fallbackRule = rule({ cache: false })(Permissions.fallback)
+    const isAuthenticatedRule = rule({ cache: 'contextual' })(Permissions.isAuthenticated)
+    const isPlayerRule = rule({ cache: 'contextual' })(Permissions.isPlayer)
+    const ownsDeckRule = rule({ cache: 'contextual' })(Permissions.ownsDeck)
 
-export default shield(
-  {
-    Mutation: {
-      addDeck: isAuthenticatedRule,
-      addGame: isAuthenticatedRule,
-      addUser: allow,
-      login: allow,
-      logout: allow,
-      playPass: chain(isAuthenticatedRule, isPlayerRule),
-      playUnit: chain(isAuthenticatedRule, isPlayerRule),
-      ready: chain(isAuthenticatedRule, isPlayerRule),
-      redraw: chain(isAuthenticatedRule, isPlayerRule),
-      setDeck: chain(isAuthenticatedRule, and(ownsDeckRule, isPlayerRule)),
-      setOrder: chain(isAuthenticatedRule, isPlayerRule),
-    },
-    Query: {
-      application: allow,
-      currentUser: isAuthenticatedRule,
-      decks: isAuthenticatedRule,
-      factions: isAuthenticatedRule,
-      game: chain(isAuthenticatedRule, isPlayerRule),
-      gameDeck: chain(isAuthenticatedRule, isPlayerRule),
-      games: isAuthenticatedRule,
-      leaders: isAuthenticatedRule,
-      settings: isAuthenticatedRule,
-      units: isAuthenticatedRule,
-    },
-  },
-  {
-    allowExternalErrors: env().NODE_ENV === NODE_ENV.Dev,
-    debug: env().NODE_ENV === NODE_ENV.Dev,
-    fallbackRule,
-    fallbackError: 'Internal Server Error.',
+    return shield(
+      {
+        Mutation: {
+          addDeck: isAuthenticatedRule,
+          addGame: isAuthenticatedRule,
+          addUser: allow,
+          login: allow,
+          logout: allow,
+          playPass: chain(isAuthenticatedRule, isPlayerRule),
+          playUnit: chain(isAuthenticatedRule, isPlayerRule),
+          ready: chain(isAuthenticatedRule, isPlayerRule),
+          redraw: chain(isAuthenticatedRule, isPlayerRule),
+          setDeck: chain(isAuthenticatedRule, and(ownsDeckRule, isPlayerRule)),
+          setOrder: chain(isAuthenticatedRule, isPlayerRule),
+        },
+        Query: {
+          application: allow,
+          currentUser: isAuthenticatedRule,
+          decks: isAuthenticatedRule,
+          factions: isAuthenticatedRule,
+          game: chain(isAuthenticatedRule, isPlayerRule),
+          gameDeck: chain(isAuthenticatedRule, isPlayerRule),
+          games: isAuthenticatedRule,
+          leaders: isAuthenticatedRule,
+          settings: isAuthenticatedRule,
+          units: isAuthenticatedRule,
+        },
+      },
+      {
+        allowExternalErrors: false,
+        debug: false,
+        fallbackRule,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
+        fallbackError: (err: unknown, parent: object, args: object, ctx: any, info: GraphQLResolveInfo) => {
+          if (err instanceof PresentableError) {
+            return Error(`e${err.code}: ${err.message}`)
+          }
+          Permissions.logger.error(err)
+          return Error('Internal Server Error.')
+        },
+      }
+    )
   }
-)
+}
