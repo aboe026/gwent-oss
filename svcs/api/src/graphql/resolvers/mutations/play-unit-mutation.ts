@@ -130,6 +130,11 @@ export default class PlayUnitMutation {
       })
     }
 
+    const mutationUtil = new MutationUtil({
+      logger: PlayUnitMutation.logger,
+      logPrefix,
+    })
+
     // play unit
     game.players = game.players.map((gamePlayer) => {
       if (gamePlayer.user.toString() === player.user.toString()) {
@@ -172,9 +177,8 @@ export default class PlayUnitMutation {
     })
 
     // set next player
-    game.turn = MutationUtil.getNextPlayerIdForCurrentRound({
+    game.turn = mutationUtil.getNextPlayerIdForCurrentRound({
       game,
-      logPrefix,
     })
 
     const updatedGame = await GameStore.makeMove({

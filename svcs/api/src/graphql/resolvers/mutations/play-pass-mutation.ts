@@ -76,6 +76,11 @@ export default class PlayPassMutation {
       })
     }
 
+    const mutationUtil = new MutationUtil({
+      logger: PlayPassMutation.logger,
+      logPrefix,
+    })
+
     // pass
     game.players = game.players.map((gamePlayer) => {
       if (gamePlayer.user.toString() === player.user.toString()) {
@@ -100,9 +105,8 @@ export default class PlayPassMutation {
     })
 
     let nextPlayerId: ObjectId | undefined = undefined
-    const roundOver = MutationUtil.isRoundOver({
+    const roundOver = mutationUtil.isRoundOver({
       game,
-      logPrefix,
     })
     if (roundOver) {
       // set round winner(s)
@@ -181,9 +185,8 @@ export default class PlayPassMutation {
         }
       })
 
-      const gameOver = MutationUtil.isGameOver({
+      const gameOver = mutationUtil.isGameOver({
         game,
-        logPrefix,
       })
       if (gameOver) {
         // set game victor(s)
@@ -210,22 +213,20 @@ export default class PlayPassMutation {
         game.victors = victorIds
       } else {
         // set next player
-        nextPlayerId = MutationUtil.getPlayerIdForNextRound({
+        nextPlayerId = mutationUtil.getPlayerIdForNextRound({
           game,
-          logPrefix,
         })
 
         // initialize next round
-        game.players = MutationUtil.initializeNewRound({
+        game.players = mutationUtil.initializeNewRound({
           players: game.players,
         })
 
         game.round = game.round + 1
       }
     } else {
-      nextPlayerId = MutationUtil.getNextPlayerIdForCurrentRound({
+      nextPlayerId = mutationUtil.getNextPlayerIdForCurrentRound({
         game,
-        logPrefix,
       })
     }
 

@@ -2,8 +2,7 @@ import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { GamePlayerDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import { GamePlayerResponse } from './mutations/mutation-util'
+import { GameDbObject, GamePlayerDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from './types/game-resolver'
 import GameStore from '../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
@@ -156,4 +155,9 @@ export default class ResolverUtil {
       player: players[0],
     }
   }
+}
+
+export interface GamePlayerResponse {
+  game: GameDbObject
+  player: GamePlayerDbObject
 }
