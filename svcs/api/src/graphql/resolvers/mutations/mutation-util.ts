@@ -7,6 +7,7 @@ import FactionStore from '../../../database/stores/faction-store'
 import {
   GameDbObject,
   GamePlayerDbObject,
+  GameStatus,
   PlayerCombatRowDbObject,
   RoundResult,
 } from '@gwent/graphql-schema/database-typings'
@@ -16,6 +17,7 @@ import { getDuplicateItems, randomizeOrder, sortObjectArray } from '@gwent/utils
 import { OrderSetPayload } from '../subscription-resolver'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class containing shared methods used by GraphQL mutations.
@@ -269,40 +271,27 @@ export default class MutationUtil {
     gameId,
     userIds,
     allowImplicit,
+    logPrefix,
   }: {
-    userId: string | ObjectId
+    userId: ObjectId
     gameId: string
     userIds?: string[] | null
     allowImplicit: boolean
+    logPrefix?: string
   }): Promise<Game> {
-    // TODO: have game (and player?) be passed in so don't need to re-query
-    const game = await GameStore.getById({
-      id: gameId,
-    })
-    if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${this.logPrefix} game: "${JSON.stringify(game)}"`)
-    }
-    if (!game) {
-      const message = `Game with ID "${gameId}" does not exist.`
-      this.logger.warn(`${this.logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1038,
-        message,
-      })
-    }
+    const resolvedLogPrefix = logPrefix || this.logPrefix
 
-    const player = game.players.find((player) => player.user.toString() === userId.toString())
-    if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${this.logPrefix} player: "${JSON.stringify(player)}"`)
-    }
-    if (!player) {
-      const message = `Not a player on game "${gameId}".`
-      this.logger.warn(`${this.logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1039,
-        message,
-      })
-    }
+    const resolverUtil = new ResolverUtil({
+      logger: this.logger,
+      logPrefix,
+    })
+
+    const { game, player } = await resolverUtil.getGamePlayer({
+      gameId,
+      userId,
+      label: 'set order',
+      status: GameStatus.Ordering,
+    })
 
     // cannot set order before all players choose deck
     // because cannot tell if there is only 1 user with ScoiaTael deck
@@ -310,7 +299,7 @@ export default class MutationUtil {
     // until all players have chosen decks
     if (game.players.some((player) => !player.deck.from)) {
       const message = `Not all players have chosen decks yet for game "${gameId}".`
-      this.logger.warn(`${this.logPrefix} failed: ${message}`)
+      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
       throw new PresentableError({
         code: 1040,
         message,
@@ -319,7 +308,7 @@ export default class MutationUtil {
 
     if (game.turn) {
       const message = `Game with ID "${gameId}" already has order set.`
-      this.logger.warn(`${this.logPrefix} failed: ${message}`)
+      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
       throw new PresentableError({
         code: 1041,
         message,
@@ -332,21 +321,21 @@ export default class MutationUtil {
     })
     if (!factions || factions.length === 0) {
       const message = `Could not find faction with key "${FactionKey.ScoiaTael}".`
-      this.logger.error(`${this.logPrefix} failed: ${message}`)
+      this.logger.error(`${resolvedLogPrefix} failed: ${message}`)
       throw new PresentableError({
         code: 1042,
         message,
       })
     } else if (factions.length > 1) {
       const message = `Found more than 1 faction with key "${FactionKey.ScoiaTael}"`
-      this.logger.error(`${this.logPrefix} failed: ${message}: "${JSON.stringify(factions)}"`)
+      this.logger.error(`${resolvedLogPrefix} failed: ${message}: "${JSON.stringify(factions)}"`)
       throw new PresentableError({
         code: 1043,
         message: `${message}.`,
       })
     } else if (factions[0].key !== FactionKey.ScoiaTael) {
       const message = `Faction key of "${factions[0].key}" does not match "${FactionKey.ScoiaTael}".`
-      this.logger.error(`${this.logPrefix} failed: ${message}`)
+      this.logger.error(`${resolvedLogPrefix} failed: ${message}`)
       throw new PresentableError({
         code: 1044,
         message,
@@ -357,7 +346,7 @@ export default class MutationUtil {
     const scoiaTaelPlayers = game.players.filter((player) => player.deck.from?.faction.toString() === scoiaTaelId)
     if (scoiaTaelPlayers.length > 1 && userIds && userIds.length > 0) {
       const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${gameId}".`
-      this.logger.warn(`${this.logPrefix} failed: ${message}`)
+      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
       throw new PresentableError({
         code: 1045,
         message,
@@ -365,7 +354,7 @@ export default class MutationUtil {
     }
     if (scoiaTaelPlayers.length === 0 && userIds && userIds.length > 0) {
       const message = `Cannot set explicit order as deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
-      this.logger.warn(`${this.logPrefix} failed: ${message}`)
+      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
       throw new PresentableError({
         code: 1046,
         message,
@@ -373,7 +362,7 @@ export default class MutationUtil {
     }
     if (scoiaTaelPlayers.length === 1 && (!userIds || userIds.length === 0) && !allowImplicit) {
       const message = `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
-      this.logger.debug(`${this.logPrefix} failed: ${message}`)
+      this.logger.debug(`${resolvedLogPrefix} failed: ${message}`)
       throw new PresentableError({
         code: 1047,
         message,
@@ -381,7 +370,7 @@ export default class MutationUtil {
     }
     if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
       const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
-      this.logger.warn(`${this.logPrefix} failed: ${message}`)
+      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
       throw new PresentableError({
         code: 1048,
         message,
@@ -400,7 +389,7 @@ export default class MutationUtil {
         const message = `Cannot set order as users(s) ${JSON.stringify(
           playersIdsNotInGame
         )} are not players on game "${gameId}".`
-        this.logger.warn(`${this.logPrefix} failed: ${message}`)
+        this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
         throw new PresentableError({
           code: 1049,
           message,
@@ -408,7 +397,7 @@ export default class MutationUtil {
       }
       if (userIds.length !== game.players.length) {
         const message = `Cannot set order as users count of "${userIds.length}" does not match player count of "${game.players.length}" for game "${gameId}".`
-        this.logger.warn(`${this.logPrefix} failed: ${message}`)
+        this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
         throw new PresentableError({
           code: 1050,
           message,
@@ -419,7 +408,7 @@ export default class MutationUtil {
         const message = `Cannot set order for game "${gameId}" due to duplicate user ID(s) ${JSON.stringify(
           duplicateUserIds
         )} specified.`
-        this.logger.warn(`${this.logPrefix} failed: ${message}`)
+        this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
         throw new PresentableError({
           code: 1051,
           message,
@@ -432,11 +421,11 @@ export default class MutationUtil {
       userIds: userIds && userIds.length > 0 ? userIds : randomizeOrder(game.players.map((player) => player.user)),
     })
     if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${this.logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
+      this.logger.trace(`${resolvedLogPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
     }
     if (!updatedGame) {
       const message = `Could not set order on game "${gameId}" in probable race condition collision.`
-      this.logger.error(`${this.logPrefix} failed: ${message}`)
+      this.logger.error(`${resolvedLogPrefix} failed: ${message}`)
       throw new PresentableError({
         code: 1052,
         message,

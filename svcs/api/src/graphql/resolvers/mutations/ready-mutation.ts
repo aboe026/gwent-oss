@@ -69,6 +69,11 @@ export default class ReadyMutation {
       })
     }
 
+    const mutationUtil = new MutationUtil({
+      logger: ReadyMutation.logger,
+      logPrefix,
+    })
+
     game.players = game.players.map((gamePlayer) => {
       let ready = gamePlayer.ready
       if (gamePlayer.user.toString() === userId.toString()) {
@@ -89,7 +94,7 @@ export default class ReadyMutation {
     }
     if (unreadyPlayers.length === 0) {
       ReadyMutation.logger.debug(`${logPrefix} game "${game._id}" has all players ready, starting first round.`)
-      game.players = MutationUtil.initializeNewRound({
+      game.players = mutationUtil.initializeNewRound({
         players: game.players,
       })
     }

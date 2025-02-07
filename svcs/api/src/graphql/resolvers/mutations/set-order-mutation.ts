@@ -50,10 +50,14 @@ export default class SetOrderMutation {
       })
     }
 
-    return MutationUtil.setGameTurnOrder({
+    const mutationUtil = new MutationUtil({
+      logger: SetOrderMutation.logger,
+      logPrefix,
+    })
+
+    return mutationUtil.setGameTurnOrder({
       userId,
       gameId,
-      logPrefix,
       userIds,
       allowImplicit: true,
     })

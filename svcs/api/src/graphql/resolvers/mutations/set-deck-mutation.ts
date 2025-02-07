@@ -85,6 +85,11 @@ export default class SetDeckMutation {
       })
     }
 
+    const mutationUtil = new MutationUtil({
+      logger: SetDeckMutation.logger,
+      logPrefix,
+    })
+
     const hand = getRandomSubset({
       items: deck.units,
       size: STARTING_HAND_SIZE,
@@ -151,7 +156,7 @@ export default class SetDeckMutation {
       EventManager.pubsub.publish(PubSubEvents.GameSet, {
         gameSet: resolvedGame,
       } as GameSetPayload)
-      await MutationUtil.setGameTurnOrder({
+      await mutationUtil.setGameTurnOrder({
         userId,
         gameId,
         logPrefix: `setOrder via ${logPrefix}`,
