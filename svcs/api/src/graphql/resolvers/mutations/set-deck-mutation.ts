@@ -7,7 +7,7 @@ import EventManager from '../../event-manager'
 import { GameDeck, MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckResolver from '../types/game-deck-resolver'
 import GameResolver from '../types/game-resolver'
-import { GameStatus } from '@gwent/graphql-schema/database-typings'
+import { FactionKey, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getRandomSubset } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
@@ -144,12 +144,24 @@ export default class SetDeckMutation {
       EventManager.pubsub.publish(PubSubEvents.GameSet, {
         gameSet: resolvedGame,
       } as GameSetPayload)
-      await mutationUtil.setGameTurnOrder({
-        userId,
-        gameId,
-        logPrefix: `setOrder via ${logPrefix}`,
-        allowImplicit: false,
-      })
+      try {
+        await mutationUtil.setGameTurnOrder({
+          userId,
+          gameId,
+          logPrefix: `setOrder via ${logPrefix}`,
+          allowImplicit: false, // TODO: is this param even necessary if we're just try/catching error anyways
+        })
+      } catch (err: unknown) {
+        if (
+          err instanceof PresentableError &&
+          err.message ===
+            `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+        ) {
+          // swallow
+        } else {
+          throw err
+        }
+      }
     }
 
     return resolvedDeck
