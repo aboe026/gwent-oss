@@ -37,10 +37,7 @@ export default class ResolverUtil {
       if (!ObjectId.isValid(id)) {
         const message = `${label} "${id}" is not a valid MongoDB ObjectId.`
         this.logger.warn(`${this.logPrefix} failed: ${message}`)
-        return new PresentableError({
-          code: 1001,
-          message,
-        })
+        throw new PresentableError(message)
       }
     }
   }
@@ -104,10 +101,7 @@ export default class ResolverUtil {
     if (!game) {
       const message = `Game with ID "${gameId}" does not exist.`
       this.logger.warn(`${this.logPrefix} getGamePlayer failed: ${message}`)
-      throw new PresentableError({
-        code: 1021,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const players: GamePlayerDbObject[] = game.players.filter((player) => player.user.toString() === userId.toString())
     if (this.logger.isTraceEnabled()) {
@@ -116,10 +110,7 @@ export default class ResolverUtil {
     if (players.length === 0) {
       const message = `Not a player on game "${gameId}".`
       this.logger.warn(`${this.logPrefix} getGamePlayer failed: ${message}`)
-      throw new PresentableError({
-        code: 1022,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (players.length > 1) {
       const message = `Found more than 1 player with ID "${userId}" on game "${gameId}"`
@@ -132,10 +123,7 @@ export default class ResolverUtil {
       if (gameStatus !== status) {
         const message = `Invalid game status "${gameStatus}": Can only ${label} for game with status "${status}".`
         this.logger.warn(`${this.logPrefix} getGamePlayer failed: ${message}`)
-        throw new PresentableError({
-          code: 1023,
-          message,
-        })
+        throw new PresentableError(message)
       }
     }
 
@@ -143,10 +131,7 @@ export default class ResolverUtil {
       if (game.turn?.toString() !== userId.toString()) {
         const message = `Cannot ${label} when it is not your turn.`
         this.logger.warn(`${this.logPrefix} getGamePlayer failed: ${message}`)
-        throw new PresentableError({
-          code: 1024,
-          message,
-        })
+        throw new PresentableError(message)
       }
     }
 

@@ -35,10 +35,7 @@ export default class CurrentUserQuery {
     if (!user) {
       const message = 'No user on session.'
       CurrentUserQuery.logger.warn(`${logPrefix} failed: "${message}"`)
-      throw new PresentableError({
-        code: 1062,
-        message,
-      })
+      throw new PresentableError(message)
     }
     return UserResolver.fromObject(user)
   }

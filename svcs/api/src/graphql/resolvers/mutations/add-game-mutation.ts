@@ -50,38 +50,26 @@ export default class AddGameMutation {
     if (duplicateNames.length > 0) {
       const message = `Invalid opponents: names ${JSON.stringify(duplicateNames)} are duplicates.`
       AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1011,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (opponentNames.includes(creatorName)) {
       const message = 'Invalid opponents: cannot include self.'
       AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1012,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (opponentNames.length < PLAYER_COUNTS.Min - 1) {
       const message = `Not enough opponents for game at "${opponentNames.length}", minimum is "${
         PLAYER_COUNTS.Min - 1
       }".`
       AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1013,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (opponentNames.length > PLAYER_COUNTS.Max - 1) {
       const message = `Excessive opponents for game at "${opponentNames.length}", maximum is "${
         PLAYER_COUNTS.Max - 1
       }".`
       AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1014,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const opponents = await UserStore.getByNames(opponentNames)
     if (AddGameMutation.logger.isTraceEnabled()) {
@@ -100,10 +88,7 @@ export default class AddGameMutation {
     if (errors.length > 0) {
       const message = `${errors.join(',')}.`
       AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1015,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     if (AddGameMutation.logger.isTraceEnabled()) {

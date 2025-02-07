@@ -181,7 +181,7 @@ export default class Permissions {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
         fallbackError: (err: unknown, parent: object, args: object, ctx: any, info: GraphQLResolveInfo) => {
           if (err instanceof PresentableError) {
-            return Error(`e${err.code}: ${err.message}`)
+            return Error(err.message)
           }
           Permissions.logger.error(err)
           return Error('Internal Server Error.')

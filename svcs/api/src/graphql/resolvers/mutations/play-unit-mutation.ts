@@ -71,17 +71,11 @@ export default class PlayUnitMutation {
     if (deckUnits.length === 0) {
       const message = 'Unit not in hand.'
       PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1029,
-        message,
-      })
+      throw new PresentableError(message)
     } else if (deckUnits.length > 1) {
       const message = `Found more than 1 unit with ID "${unitId}"`
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`)
-      throw new PresentableError({
-        code: 1030,
-        message: `${message}.`,
-      })
+      throw new PresentableError(`${message}.`)
     }
     const deckUnit = deckUnits[0]
 
@@ -95,28 +89,19 @@ export default class PlayUnitMutation {
     } else if (units.length > 1) {
       const message = `Found multiple units with ID "${unitId}"`
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(units)}"`)
-      throw new PresentableError({
-        code: 1031,
-        message: `${message}.`,
-      })
+      throw new PresentableError(`${message}.`)
     }
     const unit = units[0]
 
     if (unit.combats && unit.combats.length > 1 && !combat) {
       const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
       PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1032,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (unit.combats && unit.combats.length > 0 && combat && !unit.combats.includes(combat)) {
       const message = `Combat "${combat}" does match unit combats of "${JSON.stringify(unit.combats)}".`
       PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1033,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (unit.combats && unit.combats.length === 1 && !combat) {
       combat = unit.combats[0] as Combat
@@ -124,10 +109,7 @@ export default class PlayUnitMutation {
     if (!combat) {
       const message = 'Must specify combat.'
       PlayUnitMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1034,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     const mutationUtil = new MutationUtil({
@@ -189,10 +171,7 @@ export default class PlayUnitMutation {
     if (!updatedGame) {
       const message = `Could not play unit "${unitId}" for game "${gameId}" in probable race condition collision.`
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1035,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     const resolvedGame = await GameResolver.fromObject({

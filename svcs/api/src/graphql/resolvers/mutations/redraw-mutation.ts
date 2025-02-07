@@ -63,26 +63,17 @@ export default class RedrawMutation {
     if (player.ready) {
       const message = `Cannot redraw after game "${gameId}" is marked as ready.`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1056,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (!player.deck.from) {
       const message = `Cannot redraw before deck is set for game "${gameId}".`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1057,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (player.deck.redraws.length >= MAX_REDRAWS) {
       const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${gameId}".`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1058,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
     const cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
@@ -92,10 +83,7 @@ export default class RedrawMutation {
     if (!cardToRedraw) {
       const message = `Unit with ID "${unitId}" does not exist in hand for game "${gameId}".`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1059,
-        message,
-      })
+      throw new PresentableError(message)
     }
     // make sure we don't redraw card that was previously chosen for redraw
     const redrawPool = player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
@@ -142,10 +130,7 @@ export default class RedrawMutation {
     if (!updatedGame) {
       const message = `Could not redraw unit "${unitId}" on game "${gameId}" in probable race condition collision.`
       RedrawMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1060,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const resolvedTo = await DeckUnitResolver.fromObject({
       deckUnit: newCard,
@@ -171,10 +156,7 @@ export default class RedrawMutation {
     if (!updatedGameDeck) {
       const message = `Could not get updated game deck when redrawing unit "${unitId}" on game "${gameId}".`
       RedrawMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1061,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const resolvedGameDeck = await GameDeckResolver.fromObject({
       gameDeck: updatedGameDeck,

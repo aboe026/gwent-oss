@@ -69,10 +69,7 @@ export default class AddDeckMutation {
     if (factionKey === FactionKey.Neutral) {
       const message = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1002,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const factions = await FactionStore.get({
       keys: [args.faction],
@@ -84,18 +81,12 @@ export default class AddDeckMutation {
     if (matchedFactions.length === 0) {
       const message = `Faction with key "${factionKey}" does not exist.`
       AddDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1003,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (matchedFactions.length > 1) {
       const message = `Found more than 1 Faction with key "${factionKey}"`
       AddDeckMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(matchedFactions)}"`)
-      throw new PresentableError({
-        code: 1004,
-        message: `${message}.`,
-      })
+      throw new PresentableError(message)
     }
     const deckFaction = matchedFactions[0]
 
@@ -108,27 +99,18 @@ export default class AddDeckMutation {
     if (!leaders || leaders.length === 0) {
       const message = `Leader with ID "${leaderId}" does not exist.`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1005,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (leaders.length > 1) {
       const message = `Found more than 1 Leader with ID "${leaderId}"`
       AddDeckMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(leaders)}"`)
-      throw new PresentableError({
-        code: 1006,
-        message: `${message}.`,
-      })
+      throw new PresentableError(message)
     }
     const leader = leaders[0]
     if (leader.faction.toString() !== deckFaction._id.toString()) {
       const message = `Faction ID "${leader.faction}" for leader "${leaderId}" does not match deck faction ID "${deckFaction._id}".`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1007,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     const units = await UnitStore.get({
@@ -147,10 +129,7 @@ export default class AddDeckMutation {
     if (errors.length > 0) {
       const message = errors.join('\n')
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1008,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const deckUnits = await DeckUnitResolver.fromArray({
       deckUnits: unitsInput.map((unit) => {
@@ -170,10 +149,7 @@ export default class AddDeckMutation {
     if (errors.length > 0) {
       const message = errors.join('\n')
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1009,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     let deck: DeckDbObject
@@ -195,10 +171,7 @@ export default class AddDeckMutation {
       if (err instanceof Error && err.message === `Deck with name "${name}" already exists for user "${userId}"`) {
         const message = `Deck with name "${name}" already exists.` // exclude user ID for security
         AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-        throw new PresentableError({
-          code: 1010,
-          message,
-        })
+        throw new PresentableError(message)
       }
       AddDeckMutation.logger.error(Error(`${logPrefix} failed: ${err}`))
       throw err

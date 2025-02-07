@@ -48,10 +48,7 @@ export default class LoginMutation {
       if (err instanceof Error && err.message === `Invalid credentials for user "${name}"`) {
         const message = `Invalid credentials for user "${name}".`
         LoginMutation.logger.warn(`${logPrefix} failed: ${message}`)
-        throw new PresentableError({
-          code: 1016,
-          message,
-        })
+        throw new PresentableError(message)
       }
       LoginMutation.logger.error(Error(`${logPrefix} failed: ${err}`))
       throw err

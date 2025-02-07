@@ -62,18 +62,12 @@ export default class PlayPassMutation {
     if (!playerRound) {
       const message = `Could not get round "${game.round}" for player "${player.user}"`
       PlayPassMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(player.rounds)}"`)
-      throw new PresentableError({
-        code: 1026,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (playerRound.passed) {
       const message = `Already passed round "${game.round}"`
       PlayPassMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1027,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     const mutationUtil = new MutationUtil({
@@ -240,10 +234,7 @@ export default class PlayPassMutation {
     if (!updatedGame) {
       const message = `Could not play pass for game "${gameId}" in probable race condition collision.`
       PlayPassMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1028,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     const resolvedGame = await GameResolver.fromObject({

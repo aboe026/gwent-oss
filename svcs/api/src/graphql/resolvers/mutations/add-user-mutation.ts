@@ -45,10 +45,7 @@ export default class AddUserMutation {
       const alreadyExistsMessage = `User with name "${name}" already exists.`
       if (err instanceof Error && err.message === alreadyExistsMessage) {
         AddUserMutation.logger.warn(`${logPrefix} failed: ${alreadyExistsMessage}`)
-        throw new PresentableError({
-          message: alreadyExistsMessage,
-          code: 1000,
-        })
+        throw new PresentableError(alreadyExistsMessage)
       }
       AddUserMutation.logger.error(Error(`${logPrefix} failed: ${err}`))
       throw err

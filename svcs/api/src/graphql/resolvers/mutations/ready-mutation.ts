@@ -55,18 +55,12 @@ export default class ReadyMutation {
     if (!player.deck.from) {
       const message = `Must set deck on game "${gameId}" first.`
       ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1053,
-        message,
-      })
+      throw new PresentableError(message)
     }
     if (player.ready) {
       const message = `Game "${gameId}" already marked as ready.`
       ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1054,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     const mutationUtil = new MutationUtil({
@@ -116,10 +110,7 @@ export default class ReadyMutation {
     if (!updatedGame) {
       const message = `Could not set player as ready for game "${gameId}" in probable race condition collision.`
       ReadyMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1055,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const resolvedGame = await GameResolver.fromObject({
       game: updatedGame,

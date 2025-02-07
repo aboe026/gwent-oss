@@ -63,10 +63,7 @@ export default class SetDeckMutation {
     if (!deck) {
       const message = `Deck with ID "${deckId}" does not exist.`
       SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1017,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     const { player } = await resolverUtil.getGamePlayer({
@@ -79,10 +76,7 @@ export default class SetDeckMutation {
     if (player.deck.from !== null && player.deck.from !== undefined) {
       const message = `Deck already set for game "${gameId}".`
       SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1018,
-        message,
-      })
+      throw new PresentableError(message)
     }
 
     const mutationUtil = new MutationUtil({
@@ -117,10 +111,7 @@ export default class SetDeckMutation {
     if (!updatedGame) {
       const message = `Could not set deck "${deckId}" on game "${gameId}" in probable race condition collision.`
       SetDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1019,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const updatedPlayer = updatedGame.players.find((gamePlayer) => gamePlayer.user.toString() === userId.toString())
     if (SetDeckMutation.logger.isTraceEnabled()) {
@@ -129,10 +120,7 @@ export default class SetDeckMutation {
     if (!updatedPlayer) {
       const message = `Could not get player after setting deck "${deckId}" on game "${gameId}".`
       SetDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError({
-        code: 1020,
-        message,
-      })
+      throw new PresentableError(message)
     }
     const resolvedDeck = await GameDeckResolver.fromObject({
       gameDeck: updatedPlayer.deck,
