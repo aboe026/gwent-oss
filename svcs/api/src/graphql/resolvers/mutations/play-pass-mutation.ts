@@ -224,7 +224,7 @@ export default class PlayPassMutation {
       })
     }
 
-    game.turn = nextPlayerId
+    game.turn = nextPlayerId ? nextPlayerId : game.turn // TODO: make turn null when game over after change game status to be a database property
 
     const updatedGame = await GameStore.makeMove({
       game,

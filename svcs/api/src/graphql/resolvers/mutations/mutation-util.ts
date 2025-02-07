@@ -287,22 +287,6 @@ export default class MutationUtil {
       status: GameStatus.Ordering,
     })
 
-    // cannot set order before all players choose deck
-    // because cannot tell if there is only 1 user with ScoiaTael deck
-    // (and therefore can choose the order for the game)
-    // until all players have chosen decks
-    if (game.players.some((player) => !player.deck.from)) {
-      const message = `Not all players have chosen decks yet for game "${gameId}".`
-      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-
-    if (game.turn) {
-      const message = `Game with ID "${gameId}" already has order set.`
-      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-
     // TODO: extract into separate util method? (other resolvers do this?)
     const factions = await FactionStore.get({
       keys: [FactionKey.ScoiaTael],

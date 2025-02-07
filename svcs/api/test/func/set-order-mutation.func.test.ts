@@ -209,7 +209,11 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Not all players have chosen decks yet for game "${game.id}".`)],
+          errors: [
+            new GraphQLError(
+              `Invalid game status "${GameStatus.Decking}": Can only set order for game with status "${GameStatus.Ordering}".`
+            ),
+          ],
         })
       })
       it('throws error if only self deck set', async () => {
@@ -251,7 +255,11 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Not all players have chosen decks yet for game "${game.id}".`)],
+          errors: [
+            new GraphQLError(
+              `Invalid game status "${GameStatus.Decking}": Can only set order for game with status "${GameStatus.Ordering}".`
+            ),
+          ],
         })
       })
       it('throws error if only opponent deck set', async () => {
@@ -293,7 +301,11 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Not all players have chosen decks yet for game "${game.id}".`)],
+          errors: [
+            new GraphQLError(
+              `Invalid game status "${GameStatus.Decking}": Can only set order for game with status "${GameStatus.Ordering}".`
+            ),
+          ],
         })
       })
       it('throws error if order already set', async () => {
@@ -350,7 +362,11 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Game with ID "${game.id}" already has order set.`)],
+          errors: [
+            new GraphQLError(
+              `Invalid game status "${GameStatus.Redrawing}": Can only set order for game with status "${GameStatus.Ordering}".`
+            ),
+          ],
         })
       })
       it('throws error if setting explicit order with deck that is not scoitael', async () => {
