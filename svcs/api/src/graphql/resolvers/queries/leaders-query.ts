@@ -33,7 +33,7 @@ export default class LeadersQuery {
 
     const logPrefix = `leaders by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
     })

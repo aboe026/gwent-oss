@@ -1,14 +1,15 @@
 import AddUserMutation from '../../src/graphql/resolvers/mutations/add-user-mutation'
 import { MutationAddUserArgs, User } from '@gwent/graphql-schema/resolver-typings'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { REDACTED } from '@gwent/constants'
 import TestUtil from '../test-util'
+import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../src/database/stores/user-store'
 
 describe('add-user-mutation', () => {
   describe('addUser', () => {
     const name = 'james.bond@mi6.com'
     const logPrefix = `addUser for user "${name}"`
-    it('returns error if user already exists', async () => {
+    it('throws error if user already exists', async () => {
       const error = `User with name "${name}" already exists.`
       await testAddUser({
         name,
@@ -22,7 +23,7 @@ describe('add-user-mutation', () => {
       await testAddUser({
         name,
         userAddResponse: error,
-        error,
+        expected: error,
         errorCalls: [[Error(`${logPrefix} failed: ${error}`)]],
       })
     })
@@ -54,7 +55,6 @@ describe('add-user-mutation', () => {
 async function testAddUser({
   name = 'james.bond@mi6.com',
   userAddResponse,
-  error,
   expected,
   logPrefix,
   traceEnabled,
@@ -63,7 +63,6 @@ async function testAddUser({
 }: {
   name?: string
   userAddResponse: UserDbObject | Error
-  error?: Error
   expected?: User | Error
   logPrefix?: string
   traceEnabled?: boolean
@@ -91,8 +90,8 @@ async function testAddUser({
   } as any
 
   const promise = AddUserMutation.addUser(args, null as any)
-  if (error) {
-    await expect(promise).rejects.toThrow(error)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
   } else {
     await expect(promise).resolves.toEqual(expected)
   }
@@ -103,6 +102,12 @@ async function testAddUser({
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
+          [
+            `${logPrefix} args: "${JSON.stringify({
+              name: args.name,
+              password: REDACTED,
+            })}"`,
+          ],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} user: "${JSON.stringify(userAddResponse)}"`],

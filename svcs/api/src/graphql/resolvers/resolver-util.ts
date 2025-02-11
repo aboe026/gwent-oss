@@ -6,7 +6,7 @@ import { GameDbObject, GamePlayerDbObject, GameStatus, UserDbObject } from '@gwe
 import GameResolver from './types/game-resolver'
 import GameStore from '../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, REDACTED } from '@gwent/constants'
 import PresentableError from '../../util/presentable-error'
 import { RequestedFields } from '@gwent/graphql-schema'
 
@@ -24,12 +24,12 @@ export default class ResolverUtil {
   }
 
   getContextUser({ context, label }: { context: Context; label: string }): UserDbObject {
-    const userId = context.session?.user
-    if (!userId || !userId._id) {
+    const user = context.session?.user
+    if (!user) {
       this.logger.error(`No user on context for ${label}: "${JSON.stringify(context.session)}".`)
       throw Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    return userId
+    return user
   }
 
   verifyMongoIds({ ids, label }: { ids: string[]; label: string }) {
@@ -42,17 +42,23 @@ export default class ResolverUtil {
     }
   }
 
-  printArgsAndInfo({
+  logRequestInfo({
     args,
     info,
+    secureKeys = [],
   }: {
     args?: any // eslint-disable-line @typescript-eslint/no-explicit-any
     info: GraphQLResolveInfo
+    secureKeys?: string[]
   }) {
     if (this.logger.isTraceEnabled()) {
-      if (args) {
-        this.logger.trace(`${this.logPrefix} args: "${JSON.stringify(args)}"`)
+      const secureArgs = {
+        ...args,
       }
+      for (const secureKey of secureKeys) {
+        secureArgs[secureKey] = REDACTED
+      }
+      this.logger.trace(`${this.logPrefix} args: "${JSON.stringify(secureArgs)}"`)
       this.logger.trace(
         `${this.logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
       )

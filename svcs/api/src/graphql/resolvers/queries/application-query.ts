@@ -28,7 +28,7 @@ export default class ApplicationQuery {
 
     const logPrefix = `application by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       info,
     })
 

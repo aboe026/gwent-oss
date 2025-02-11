@@ -25,7 +25,8 @@ export default class LogoutMutation {
     const userId = context.session?.user?._id
 
     const logPrefix = `logout for user "${userId}"`
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.logRequestInfo({
       info,
     })
 

@@ -17,8 +17,8 @@ import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
 import { MAX_REDRAWS, NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
-import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
 import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw-mutation'
+import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
 
 describe('redraw-mutation', () => {
@@ -403,9 +403,16 @@ async function testRedraw({
     cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
     newCard = redrawPool[redrawPool.length - 1]
   }
-  const getGamePlayerSpy = jest.spyOn(MutationUtil, 'getGamePlayer')
+  const resolverUtil = new ResolverUtil({
+    logger: RedrawMutation['logger'],
+  })
+  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
   if (getGamePlayerResponse) {
-    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    if (getGamePlayerResponse instanceof Error) {
+      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
+    } else {
+      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    }
   }
   const getRandomSubsetSpy = jest.spyOn(gwentUtils, 'getRandomSubset').mockReturnValue([newCard])
   const gameRedrawSpy = jest.spyOn(GameStore, 'redraw').mockResolvedValue(gameRedrawResponse)

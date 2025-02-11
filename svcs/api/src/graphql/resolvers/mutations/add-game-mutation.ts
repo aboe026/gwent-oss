@@ -39,7 +39,7 @@ export default class AddGameMutation {
 
     const logPrefix = `addGame by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
     })

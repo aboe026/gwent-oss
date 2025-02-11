@@ -42,7 +42,7 @@ export default class PlayUnitMutation {
 
     let logPrefix = `playUnit by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
     })

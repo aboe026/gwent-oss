@@ -4,14 +4,13 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- change "returns error" to "throws error" everywhere
+- jsdocs
+- add "throws" to all relevant jsdocs
+- increment version
+- changelog
+
 - change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
-
-- have resolves throw custom errors instead of returning general one
-
-  - in shield file, filter out custom errors from general ones to determine which to show user
-  - have shared method for "getContextUser" (and possibly other repeated checks across resolvers)
-  - lint code for repeated codes on PresentableError
-
 - save game status to database?
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)
 - collapse UI method props when they are long (like PlayUnitProps)
@@ -97,6 +96,7 @@ A list of things to be done in the future.
   - question mark next to effects on bottom
   - pops up full screen dialog with each effect icon, name and description
 - ensure client and server are on same version
+- error codes
 - have game creation in UI have searcheable field for opponent
   - need query to get users
     - restrict to users "friends"?

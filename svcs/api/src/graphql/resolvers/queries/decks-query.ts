@@ -31,7 +31,7 @@ export default class DecksQuery {
 
     const logPrefix = `decks by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       info,
     })
 

@@ -30,7 +30,7 @@ export default class SettingsQuery {
 
     const logPrefix = `settings by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       info,
     })
 

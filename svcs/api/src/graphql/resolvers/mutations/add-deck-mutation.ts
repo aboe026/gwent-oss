@@ -10,11 +10,10 @@ import DeckStore from '../../../database/stores/deck-store'
 import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
 import FactionResolver from '../types/faction-resolver'
-import FactionStore from '../../../database/stores/faction-store'
 import { getDeckStats } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import LeaderResolver from '../types/leader-resolver'
-import LeaderStore from '../../../database/stores/leader-store'
+import MutationUtil from './mutation-util'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
@@ -47,7 +46,7 @@ export default class AddDeckMutation {
 
     const logPrefix = `addDeck by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
     })
@@ -71,44 +70,19 @@ export default class AddDeckMutation {
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
-    const factions = await FactionStore.get({
-      keys: [args.faction],
-    })
-    if (AddDeckMutation.logger.isTraceEnabled()) {
-      AddDeckMutation.logger.trace(`${logPrefix} factions: "${JSON.stringify(factions)}"`)
-    }
-    const matchedFactions = factions.filter((faction) => faction.key === factionKey)
-    if (matchedFactions.length === 0) {
-      const message = `Faction with key "${factionKey}" does not exist.`
-      AddDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-    if (matchedFactions.length > 1) {
-      const message = `Found more than 1 Faction with key "${factionKey}"`
-      AddDeckMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(matchedFactions)}"`)
-      throw new PresentableError(message)
-    }
-    const deckFaction = matchedFactions[0]
 
-    const leaders = await LeaderStore.get({
-      ids: [leaderId],
+    const mutationUtil = new MutationUtil({
+      logger: AddDeckMutation.logger,
+      logPrefix,
     })
-    if (AddDeckMutation.logger.isTraceEnabled()) {
-      AddDeckMutation.logger.trace(`${logPrefix} leaders: "${JSON.stringify(leaders)}"`)
-    }
-    if (!leaders || leaders.length === 0) {
-      const message = `Leader with ID "${leaderId}" does not exist.`
-      AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-    if (leaders.length > 1) {
-      const message = `Found more than 1 Leader with ID "${leaderId}"`
-      AddDeckMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(leaders)}"`)
-      throw new PresentableError(message)
-    }
-    const leader = leaders[0]
-    if (leader.faction.toString() !== deckFaction._id.toString()) {
-      const message = `Faction ID "${leader.faction}" for leader "${leaderId}" does not match deck faction ID "${deckFaction._id}".`
+
+    const faction = await mutationUtil.getFactionByKey({
+      key: factionKey,
+    })
+    const leader = await mutationUtil.getLeaderById(leaderId)
+
+    if (leader.faction.toString() !== faction._id.toString()) {
+      const message = `Faction ID "${leader.faction}" for leader "${leaderId}" does not match deck faction ID "${faction._id}".`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
@@ -155,7 +129,7 @@ export default class AddDeckMutation {
     let deck: DeckDbObject
     try {
       deck = await DeckStore.add({
-        factionId: deckFaction._id,
+        factionId: faction._id,
         leaderId: leaderId,
         name: name,
         stats: getDeckStats(deckUnits),
@@ -180,7 +154,7 @@ export default class AddDeckMutation {
       AddDeckMutation.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
     }
     const resolvedFaction = await FactionResolver.fromObject({
-      faction: deckFaction,
+      faction: faction,
     })
     if (AddDeckMutation.logger.isTraceEnabled()) {
       AddDeckMutation.logger.trace(`${logPrefix} resolvedFaction: "${JSON.stringify(resolvedFaction)}"`)

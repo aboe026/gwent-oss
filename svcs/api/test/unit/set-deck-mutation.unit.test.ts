@@ -15,8 +15,9 @@ import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolv
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
-import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
+import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
+import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck-mutation'
 import TestUtil from '../test-util'
 
@@ -437,9 +438,19 @@ async function testSetDeck({
     handIds = randomSubset.map((deckUnit) => deckUnit.unit.toString())
   }
   const getDeckSpy = jest.spyOn(DeckStore, 'getById').mockResolvedValue(getDeckResponse)
-  const getGamePlayerSpy = jest.spyOn(MutationUtil, 'getGamePlayer')
+  const resolverUtil = new ResolverUtil({
+    logger: SetDeckMutation['logger'],
+  })
+  const mutationUtil = new MutationUtil({
+    logger: SetDeckMutation['logger'],
+  })
+  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
   if (getGamePlayerResponse) {
-    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    if (getGamePlayerResponse instanceof Error) {
+      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
+    } else {
+      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    }
   }
   const getRandomSubsetSpy = jest.spyOn(gwentUtils, 'getRandomSubset').mockReturnValue(randomSubset)
   const setDeckSpy = jest.spyOn(GameStore, 'setDeck').mockResolvedValue(setDeckResponse)
@@ -452,7 +463,7 @@ async function testSetDeck({
     resolveGameSpy.mockResolvedValue(resolveGameResponse)
   }
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const setOrderSpy = jest.spyOn(MutationUtil, 'setGameTurnOrder').mockImplementation()
+  const setOrderSpy = jest.spyOn(mutationUtil, 'setGameTurnOrder').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()

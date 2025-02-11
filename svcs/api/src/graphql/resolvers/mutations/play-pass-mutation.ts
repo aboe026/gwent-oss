@@ -41,7 +41,7 @@ export default class PlayPassMutation {
 
     let logPrefix = `playPass by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
     })

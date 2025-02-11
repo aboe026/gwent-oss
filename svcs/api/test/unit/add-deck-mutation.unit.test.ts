@@ -9,11 +9,10 @@ import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolv
 import EventManager from '../../src/graphql/event-manager'
 import { FactionDbObject, LeaderDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
-import FactionStore from '../../src/database/stores/faction-store'
 import * as gwentUtils from '@gwent/utils'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
-import LeaderStore from '../../src/database/stores/leader-store'
-import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
+import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
+import { PubSubEvents } from '@gwent/constants'
 import TestUtil from '../test-util'
 import UnitStore from '../../src/database/stores/unit-store'
 import * as validateDeck from '@gwent/validators'
@@ -22,66 +21,12 @@ describe('add-deck-mutation', () => {
   describe('addDeck', () => {
     const userId = new ObjectId()
     const logPrefix = `addDeck by "${userId}"`
-    it('returns error if no user on context', async () => {
-      await testAddDeck({
-        factionKey: FactionKey.Skellige,
-        errorReturned: NOT_AUTHENTICATED_MESSAGE,
-        factionGetCalls: [],
-        leaderGetCalls: [],
-        unitGetCalls: [],
-        deckUnitCalls: [],
-        validateDeckCalls: [],
-        deckAddCalls: [],
-        getDeckStatsCalls: [],
-        postResolversCalled: false,
-        errorCalls: [[`No user on context for addDeck mutation: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if invalid leader ID', async () => {
-      const leaderId = 'invalid'
-      const error = `Leader ID "${leaderId}" is not a valid MongoDB ObjectId.`
-      await testAddDeck({
-        userId,
-        factionKey: FactionKey.Monsters,
-        leaderId,
-        errorReturned: error,
-        factionGetCalls: [],
-        leaderGetCalls: [],
-        unitGetCalls: [],
-        deckUnitCalls: [],
-        validateDeckCalls: [],
-        deckAddCalls: [],
-        getDeckStatsCalls: [],
-        postResolversCalled: false,
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns error if invalid unit ID', async () => {
-      const unitId = 'invalid'
-      const error = `Unit ID "${unitId}" is not a valid MongoDB ObjectId.`
-      await testAddDeck({
-        userId,
-        factionKey: FactionKey.Monsters,
-        leaderId: new ObjectId(),
-        unitIds: [unitId],
-        errorReturned: error,
-        factionGetCalls: [],
-        leaderGetCalls: [],
-        unitGetCalls: [],
-        deckUnitCalls: [],
-        validateDeckCalls: [],
-        deckAddCalls: [],
-        getDeckStatsCalls: [],
-        postResolversCalled: false,
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns error if faction is neutral', async () => {
+    it('throws error if faction is neutral', async () => {
       const error = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
       await testAddDeck({
         userId,
         factionKey: FactionKey.Neutral,
-        errorReturned: error,
+        exception: Error(error),
         factionGetCalls: [],
         leaderGetCalls: [],
         unitGetCalls: [],
@@ -93,85 +38,7 @@ describe('add-deck-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if faction with key does not exist', async () => {
-      const error = `Faction with key "${FactionKey.Monsters}" does not exist.`
-      await testAddDeck({
-        userId,
-        factionGetResponse: [],
-        errorReturned: error,
-        leaderGetCalls: [],
-        unitGetCalls: [],
-        deckUnitCalls: [],
-        validateDeckCalls: [],
-        deckAddCalls: [],
-        getDeckStatsCalls: [],
-        postResolversCalled: false,
-        errorCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns error if more than 1 faction with key exists', async () => {
-      const factionKey = FactionKey.Monsters
-      const factions = [
-        TestUtil.getDbFaction({
-          key: factionKey,
-        }),
-        TestUtil.getDbFaction({
-          key: factionKey,
-        }),
-      ]
-      await testAddDeck({
-        userId,
-        factionGetResponse: factions,
-        errorReturned: `Found more than 1 Faction with key "${factionKey}".`,
-        leaderGetCalls: [],
-        unitGetCalls: [],
-        deckUnitCalls: [],
-        validateDeckCalls: [],
-        deckAddCalls: [],
-        getDeckStatsCalls: [],
-        postResolversCalled: false,
-        errorCalls: [
-          [`${logPrefix} failed: Found more than 1 Faction with key "${factionKey}": "${JSON.stringify(factions)}"`],
-        ],
-      })
-    })
-    it('returns error if leader does not exist', async () => {
-      const leaderId = new ObjectId()
-      const error = `Leader with ID "${leaderId}" does not exist.`
-      await testAddDeck({
-        userId,
-        leaderId,
-        leaderGetResponse: [],
-        errorReturned: error,
-        unitGetCalls: [],
-        deckUnitCalls: [],
-        validateDeckCalls: [],
-        deckAddCalls: [],
-        getDeckStatsCalls: [],
-        postResolversCalled: false,
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns error if more than 1 leader exist', async () => {
-      const leaderId = new ObjectId()
-      const leaders = [TestUtil.getDbLeader({ id: leaderId }), TestUtil.getDbLeader({ id: leaderId })]
-      await testAddDeck({
-        userId,
-        leaderId,
-        leaderGetResponse: leaders,
-        errorReturned: `Found more than 1 Leader with ID "${leaderId}".`,
-        unitGetCalls: [],
-        deckUnitCalls: [],
-        validateDeckCalls: [],
-        deckAddCalls: [],
-        getDeckStatsCalls: [],
-        postResolversCalled: false,
-        errorCalls: [
-          [`${logPrefix} failed: Found more than 1 Leader with ID "${leaderId}": "${JSON.stringify(leaders)}"`],
-        ],
-      })
-    })
-    it('returns error if leader is of wrong faction', async () => {
+    it('throws error if leader is of wrong faction', async () => {
       const factionId = new ObjectId()
       const leaderId = new ObjectId()
       const leaderFactionId = new ObjectId()
@@ -179,24 +46,16 @@ describe('add-deck-mutation', () => {
       await testAddDeck({
         userId,
         factionKey: FactionKey.Monsters,
-        factionGetResponse: [
-          TestUtil.getDbFaction({
-            id: factionId,
-            key: FactionKey.Monsters,
-          }),
-          TestUtil.getDbFaction({
-            id: leaderFactionId,
-            key: FactionKey.NorthernRealms,
-          }),
-        ],
+        factionGetResponse: TestUtil.getDbFaction({
+          id: factionId,
+          key: FactionKey.Monsters,
+        }),
         leaderId,
-        leaderGetResponse: [
-          TestUtil.getDbLeader({
-            id: leaderId,
-            faction: leaderFactionId,
-          }),
-        ],
-        errorReturned: error,
+        leaderGetResponse: TestUtil.getDbLeader({
+          id: leaderId,
+          faction: leaderFactionId,
+        }),
+        exception: Error(error),
         unitGetCalls: [],
         deckUnitCalls: [],
         validateDeckCalls: [],
@@ -206,14 +65,14 @@ describe('add-deck-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if single unit does not exist', async () => {
+    it('throws error if single unit does not exist', async () => {
       const unitId = new ObjectId()
       const error = `Unit with ID "${unitId}" does not exist.`
       await testAddDeck({
         userId,
         unitIds: [unitId],
         unitGetResponse: [],
-        errorReturned: error,
+        exception: Error(error),
         deckUnitCalls: [],
         validateDeckCalls: [],
         deckAddCalls: [],
@@ -222,7 +81,7 @@ describe('add-deck-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns errors if multiple units do not exist', async () => {
+    it('throws errors if multiple units do not exist', async () => {
       const unitId1 = new ObjectId()
       const unitId2 = new ObjectId()
       const error = [`Unit with ID "${unitId1}" does not exist.`, `Unit with ID "${unitId2}" does not exist.`].join(
@@ -232,7 +91,7 @@ describe('add-deck-mutation', () => {
         userId,
         unitIds: [unitId1, unitId2],
         unitGetResponse: [],
-        errorReturned: error,
+        exception: Error(error),
         deckUnitCalls: [],
         validateDeckCalls: [],
         deckAddCalls: [],
@@ -241,39 +100,39 @@ describe('add-deck-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if validateDeck returns single error', async () => {
+    it('throws error if validateDeck returns single error', async () => {
       const error = 'too many specials'
       await testAddDeck({
         userId,
         validateDeckResponse: [error],
-        errorReturned: error,
+        exception: Error(error),
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns errors if validateDeck returns multiple errors', async () => {
+    it('throws errors if validateDeck returns multiple errors', async () => {
       const error1 = 'too many specials'
       const error2 = 'not enough units'
       await testAddDeck({
         userId,
         validateDeckResponse: [error1, error2],
-        errorReturned: `${error1}\n${error2}`,
+        exception: Error(`${error1}\n${error2}`),
         deckAddCalls: [],
         getDeckStatsCalls: [],
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: ${error1}\n${error2}`]],
       })
     })
-    it('returns error if deck with name already exists', async () => {
+    it('throws error if deck with name already exists', async () => {
       const name = 'deck-name'
       const error = `Deck with name "${name}" already exists for user "${userId}"`
       await testAddDeck({
         userId,
         name,
         deckAddError: error,
-        errorReturned: `Deck with name "${name}" already exists.`,
+        exception: Error(`Deck with name "${name}" already exists.`),
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: Deck with name "${name}" already exists.`]],
       })
@@ -283,7 +142,7 @@ describe('add-deck-mutation', () => {
       await testAddDeck({
         userId,
         deckAddError: error,
-        errorThrown: error,
+        exception: Error(error),
         postResolversCalled: false,
         errorCalls: [[Error(`${logPrefix} failed: ${Error(error)}`)]],
       })
@@ -340,8 +199,7 @@ async function testAddDeck({
   validateDeckResponse = [],
   deckAddResponse,
   deckAddError,
-  errorReturned,
-  errorThrown,
+  exception,
   traceEnabled,
   factionGetCalls,
   leaderGetCalls,
@@ -362,14 +220,13 @@ async function testAddDeck({
   unitIds?: (ObjectId | string)[]
   name?: string
   userId?: ObjectId
-  factionGetResponse?: FactionDbObject[]
-  leaderGetResponse?: LeaderDbObject[]
+  factionGetResponse?: FactionDbObject
+  leaderGetResponse?: LeaderDbObject
   unitGetResponse?: UnitDbObject[]
   validateDeckResponse?: string[]
   deckAddResponse?: Deck
   deckAddError?: string
-  errorReturned?: string
-  errorThrown?: string
+  exception?: Error
   traceEnabled?: boolean
   factionGetCalls?: any[][]
   leaderGetCalls?: any[][]
@@ -452,8 +309,12 @@ async function testAddDeck({
     deck,
     user: resolvedUser,
   })
-  const factionGetSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse || [faction])
-  const leaderGetSpy = jest.spyOn(LeaderStore, 'get').mockResolvedValue(leaderGetResponse || [leader])
+  const factionGetSpy = jest
+    .spyOn(MutationUtil.prototype, 'getFactionByKey')
+    .mockResolvedValue(factionGetResponse || faction)
+  const leaderGetSpy = jest
+    .spyOn(MutationUtil.prototype, 'getLeaderById')
+    .mockResolvedValue(leaderGetResponse || leader)
   const unitGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(unitGetResponse || [unit])
   const deckUnitResolverSpy = jest.spyOn(DeckUnitResolver, 'fromArray').mockResolvedValue(deckUnits)
   const validateDeckSpy = jest.spyOn(validateDeck, 'validateDeck').mockReturnValue(validateDeckResponse)
@@ -481,30 +342,22 @@ async function testAddDeck({
   } as any
 
   const promise = AddDeckMutation.addDeck(args, context, null as any)
-  if (errorThrown) {
-    await expect(promise).rejects.toEqual(Error(errorThrown))
+  if (exception) {
+    await expect(promise).rejects.toEqual(exception)
   } else {
-    await expect(promise).resolves.toEqual(errorReturned ? Error(errorReturned) : resolvedDeck)
+    await expect(promise).resolves.toEqual(resolvedDeck)
   }
 
   expect(factionGetSpy.mock.calls).toEqual(
     factionGetCalls || [
       [
         {
-          keys: [factionKey],
+          key: factionKey,
         },
       ],
     ]
   )
-  expect(leaderGetSpy.mock.calls).toEqual(
-    leaderGetCalls || [
-      [
-        {
-          ids: [args.leader],
-        },
-      ],
-    ]
-  )
+  expect(leaderGetSpy.mock.calls).toEqual(leaderGetCalls || [[args.leader]])
   expect(unitGetSpy.mock.calls).toEqual(
     unitGetCalls || [
       [
@@ -627,8 +480,6 @@ async function testAddDeck({
           ],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} factions: "${JSON.stringify([faction])}"`],
-          [`${logPrefix} leaders: "${JSON.stringify([leader])}"`],
           [`${logPrefix} units: "${JSON.stringify([unit])}"`],
           [`${logPrefix} deckUnits: "${JSON.stringify(deckUnits)}"`],
           [`${logPrefix} deck: "${JSON.stringify(deck)}"`],

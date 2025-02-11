@@ -31,7 +31,7 @@ export default class FactionsQuery {
 
     const logPrefix = `factions by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
     })

@@ -87,7 +87,10 @@ async function testSetOrder({
   const resolvedGame = TestUtil.getGame({
     id: gameId,
   })
-  const setOrderSpy = jest.spyOn(MutationUtil, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
+  const mutationUtil = new MutationUtil({
+    logger: SetOrderMutation['logger'],
+  })
+  const setOrderSpy = jest.spyOn(mutationUtil, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()

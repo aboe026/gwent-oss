@@ -4,8 +4,8 @@ import { Context } from '@gwent/graphql-schema/context'
 import { GameDeck, QueryGameDeckArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckQuery from '../../src/graphql/resolvers/queries/game-deck-query'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
-import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
 
 describe('game-deck-query', () => {
@@ -143,9 +143,16 @@ async function testGameDeck({
   const args: QueryGameDeckArgs = {
     game: gameId,
   }
-  const getGamePlayerSpy = jest.spyOn(MutationUtil, 'getGamePlayer')
+  const resolverUtil = new ResolverUtil({
+    logger: GameDeckQuery['logger'],
+  })
+  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
   if (getGamePlayerResponse) {
-    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    if (getGamePlayerResponse instanceof Error) {
+      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
+    } else {
+      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    }
   }
   const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject').mockResolvedValue(expected as any as GameDeck)
   const errorSpy = jest.fn().mockImplementation()

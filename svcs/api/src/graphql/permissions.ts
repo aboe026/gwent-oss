@@ -95,6 +95,7 @@ export default class Permissions {
     }
     return true
   }
+  // TODO: change these all to private
 
   /**
    * Check if a user is the creator of a Deck.
@@ -140,6 +141,15 @@ export default class Permissions {
     return true
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
+  private static fallbackError(err: unknown, parent: object, args: object, ctx: any, info: GraphQLResolveInfo) {
+    if (err instanceof PresentableError) {
+      return Error(err.message)
+    }
+    Permissions.logger.error(err)
+    return Error('Internal Server Error.')
+  }
+
   static shield() {
     const fallbackRule = rule({ cache: false })(Permissions.fallback)
     const isAuthenticatedRule = rule({ cache: 'contextual' })(Permissions.isAuthenticated)
@@ -179,13 +189,7 @@ export default class Permissions {
         debug: false,
         fallbackRule,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
-        fallbackError: (err: unknown, parent: object, args: object, ctx: any, info: GraphQLResolveInfo) => {
-          if (err instanceof PresentableError) {
-            return Error(err.message)
-          }
-          Permissions.logger.error(err)
-          return Error('Internal Server Error.')
-        },
+        fallbackError: Permissions.fallbackError,
       }
     )
   }

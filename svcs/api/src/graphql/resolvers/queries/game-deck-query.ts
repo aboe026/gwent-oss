@@ -30,7 +30,7 @@ export default class GameDeckQuery {
 
     const logPrefix = `gameDeck by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
     })

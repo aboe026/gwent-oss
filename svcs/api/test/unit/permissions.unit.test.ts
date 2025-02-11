@@ -5,9 +5,10 @@ import { DeckDbObject, GameDbObject } from '@gwent/graphql-schema/database-typin
 import DeckStore from '../../src/database/stores/deck-store'
 import GameStore from '../../src/database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
-import { NO_RULE_DEFINED, Permissions } from '../../src/graphql/permissions'
+import Permissions, { NO_RULE_DEFINED } from '../../src/graphql/permissions'
 import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import TestUtil from '../test-util'
+import PresentableError from '../../src/util/presentable-error'
 
 describe('permissions', () => {
   describe('fallback', () => {
@@ -297,7 +298,43 @@ describe('permissions', () => {
       })
     })
   })
+  describe('fallbackError', () => {
+    it('returns message if PresentableError', () => {
+      const error = new PresentableError('invalid')
+      testFallbackError({
+        error,
+        expected: Error('invalid'),
+      })
+    })
+    it('logs to error and returns generic Internal Server Error if not a PresentableError', () => {
+      const error = Error('i did not forsee this')
+      testFallbackError({
+        error,
+        expected: Error('Internal Server Error.'),
+        errorCalls: [[error]],
+      })
+    })
+  })
 })
+
+function testFallbackError({
+  error,
+  expected,
+  errorCalls = [],
+}: {
+  error: Error
+  expected: Error
+  errorCalls?: any[][]
+}) {
+  const errorSpy = jest.fn().mockImplementation()
+  Permissions['logger'] = {
+    error: errorSpy,
+  } as any
+
+  expect(Permissions['fallbackError'](error, {}, {}, null, {} as GraphQLResolveInfo)).toEqual(expected)
+
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
 
 function testFallback({
   info,

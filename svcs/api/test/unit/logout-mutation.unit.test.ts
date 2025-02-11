@@ -72,6 +72,12 @@ function testLogout({
   expect(context?.session?.user).toEqual(undefined)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} requested arguments: "[]"`]] : []
+    traceEnabled
+      ? [
+          [`${logPrefix} args: "{}"`],
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
+        ]
+      : []
   )
 }

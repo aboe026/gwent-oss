@@ -30,9 +30,10 @@ export default class AddUserMutation {
 
     const logPrefix = `addUser for user "${name}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
+      secureKeys: ['password'],
     })
 
     try {

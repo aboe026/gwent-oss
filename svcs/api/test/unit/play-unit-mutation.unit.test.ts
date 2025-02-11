@@ -1,10 +1,7 @@
+import { ObjectId } from 'mongodb'
+
 import { Context } from '@gwent/graphql-schema/context'
 import { Combat, DeckUnit, Game, GameDeck, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
-import { ObjectId } from 'mongodb'
-import TestUtil from '../test-util'
-import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit-mutation'
-import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
-import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
 import {
   DeckUnitDbObject,
   GameDbObject,
@@ -12,13 +9,17 @@ import {
   GameStatus,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import UnitStore from '../../src/database/stores/unit-store'
-import { MoveType } from '@gwent/graphql-schema'
-import GameStore from '../../src/database/stores/game-store'
-import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
-import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import EventManager from '../../src/graphql/event-manager'
+import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
+import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
+import GameStore from '../../src/database/stores/game-store'
+import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit-mutation'
+import { MoveType } from '@gwent/graphql-schema'
+import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
+import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
+import TestUtil from '../test-util'
+import UnitStore from '../../src/database/stores/unit-store'
 
 describe('play-unit-mutation', () => {
   describe('playUnit', () => {
@@ -886,9 +887,16 @@ async function testPlayUnit({
     combat,
   }
   const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
-  const getGamePlayerSpy = jest.spyOn(MutationUtil, 'getGamePlayer')
+  const resolverUtil = new ResolverUtil({
+    logger: PlayUnitMutation['logger'],
+  })
+  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
   if (resolvedGameResponse) {
-    getGamePlayerSpy.mockResolvedValue(resolvedGameResponse)
+    if (resolvedGameResponse instanceof Error) {
+      getGamePlayerSpy.mockRejectedValue(resolvedGameResponse)
+    } else {
+      getGamePlayerSpy.mockResolvedValue(resolvedGameResponse)
+    }
   }
   const getUnitsSpy = jest.spyOn(UnitStore, 'get')
   if (resolvedUnitsResponse) {
@@ -918,7 +926,9 @@ async function testPlayUnit({
       resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit(dbDeckUnit)
     }
     gameDeck = resolvedGameResponse.player.deck
-    resolvedGameDeck = TestUtil.getGameDeckFromDbGameDeck(gameDeck)
+    if (gameDeck) {
+      resolvedGameDeck = TestUtil.getGameDeckFromDbGameDeck(gameDeck)
+    }
   }
   const resolveUnitSpy = jest.spyOn(DeckUnitResolver, 'fromObject')
   if (resolvedDeckUnit) {

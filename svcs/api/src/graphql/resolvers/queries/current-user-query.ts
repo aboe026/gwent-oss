@@ -28,7 +28,7 @@ export default class CurrentUserQuery {
 
     const logPrefix = `currentUser by "${user?._id}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       info,
     })
 

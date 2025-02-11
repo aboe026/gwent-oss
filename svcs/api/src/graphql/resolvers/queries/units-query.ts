@@ -33,7 +33,7 @@ export default class UnitsQuery {
 
     const logPrefix = `units by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
     })

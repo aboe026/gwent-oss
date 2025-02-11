@@ -1,3 +1,4 @@
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
@@ -6,9 +7,10 @@ import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
+import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
 import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
+import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
 
 describe('ready-mutation', () => {
@@ -186,7 +188,9 @@ describe('ready-mutation', () => {
         ...game,
         players: [gamePlayerSelf, readyOpponentGamePlayer],
       }
-      const allPlayersReadyPlayers: GamePlayerDbObject[] = MutationUtil.initializeNewRound({
+      const allPlayersReadyPlayers: GamePlayerDbObject[] = new MutationUtil({
+        logger: getLogger('test'),
+      }).initializeNewRound({
         players: [
           {
             ...game.players[0],
@@ -315,9 +319,16 @@ async function testReady({
   const args: MutationReadyArgs = {
     game: gameId,
   }
-  const getGamePlayerSpy = jest.spyOn(MutationUtil, 'getGamePlayer')
+  const resolverUtil = new ResolverUtil({
+    logger: ReadyMutation['logger'],
+  })
+  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
   if (getGamePlayerResponse) {
-    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    if (getGamePlayerResponse instanceof Error) {
+      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
+    } else {
+      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    }
   }
   const setReadySpy = jest.spyOn(GameStore, 'setReady').mockResolvedValue(setReadyResponse)
   const gameResolveSpy = jest.spyOn(GameResolver, 'fromObject')

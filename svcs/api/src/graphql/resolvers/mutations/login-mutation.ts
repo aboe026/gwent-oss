@@ -33,9 +33,10 @@ export default class LoginMutation {
 
     const logPrefix = `login for user "${name}"`
     resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.printArgsAndInfo({
+    resolverUtil.logRequestInfo({
       args,
       info,
+      secureKeys: ['password'],
     })
 
     let user: UserDbObject
