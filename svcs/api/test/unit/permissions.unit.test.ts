@@ -338,7 +338,7 @@ function testIsAuthenticated({
     warn: warnSpy,
   } as any
 
-  expect(Permissions.isAuthenticated(undefined, undefined, context, info)).toEqual(expected)
+  expect(Permissions['isAuthenticated'](undefined, undefined, context, info)).toEqual(expected)
 
   expect(warnSpy.mock.calls).toEqual(warnCalls)
 }
@@ -394,7 +394,7 @@ async function testIsPlayer({
     warn: warnSpy,
   } as any
 
-  await expect(Permissions.isPlayer(undefined, args, context, info as any)).resolves.toEqual(
+  await expect(Permissions['isPlayer'](undefined, args, context, info as any)).resolves.toEqual(
     error ? Error(error) : true
   )
 
@@ -468,7 +468,7 @@ async function testOwnsDeck({
     warn: warnSpy,
   } as any
 
-  await expect(Permissions.ownsDeck(undefined, args, context, info as any)).resolves.toEqual(
+  await expect(Permissions['ownsDeck'](undefined, args, context, info as any)).resolves.toEqual(
     error ? Error(error) : true
   )
 
@@ -505,7 +505,7 @@ function testFallback({
     error: errorSpy,
   } as any
 
-  expect(Permissions.fallback(undefined, undefined, undefined, info)).toEqual(expected)
+  expect(Permissions['fallback'](undefined, undefined, undefined, info)).toEqual(expected)
 
   expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

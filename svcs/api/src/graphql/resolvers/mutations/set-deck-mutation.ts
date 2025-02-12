@@ -149,7 +149,7 @@ export default class SetDeckMutation {
           userId,
           gameId,
           logPrefix: `setOrder via ${logPrefix}`,
-          allowImplicit: false, // TODO: is this param even necessary if we're just try/catching error anyways
+          allowImplicit: false,
         })
       } catch (err: unknown) {
         if (

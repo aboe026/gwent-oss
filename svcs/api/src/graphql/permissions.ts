@@ -22,7 +22,7 @@ export default class Permissions {
    * to prevent someone for forgetting to explicitly set them.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  static fallback(parent: any, args: any, ctx: any, info: GraphQLResolveInfo) {
+  private static fallback(parent: any, args: any, ctx: any, info: GraphQLResolveInfo) {
     if (info.parentType.name === 'Query') {
       Permissions.logger.error(`fallback hit because no rule defined for Query "${info.fieldName}"`)
       return Error(NO_RULE_DEFINED)
@@ -37,7 +37,7 @@ export default class Permissions {
    * Check if a user is authenticated (has logged in).
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  static isAuthenticated(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
+  private static isAuthenticated(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
     if (!context.session?.user?._id) {
       Permissions.logger.warn(
         `isAuthenticated failed operation "${info.fieldName}": No user on session: "${JSON.stringify(
@@ -53,7 +53,7 @@ export default class Permissions {
    * Check if a user is apart of a Game.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  static async isPlayer(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
+  private static async isPlayer(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
     const userId = context.session?.user?._id
     const gameId = args.game || args.id
     const logPrefix = `isPlayer check failed operation "${info.fieldName}":`
@@ -95,13 +95,12 @@ export default class Permissions {
     }
     return true
   }
-  // TODO: change these all to private
 
   /**
    * Check if a user is the creator of a Deck.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  static async ownsDeck(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
+  private static async ownsDeck(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
     const userId = context.session?.user?._id
     const deckId = args.deck || args.id
     const logPrefix = `ownsDeck check failed operation "${info.fieldName}":`
@@ -188,7 +187,6 @@ export default class Permissions {
         allowExternalErrors: false,
         debug: false,
         fallbackRule,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
         fallbackError: Permissions.fallbackError,
       }
     )
