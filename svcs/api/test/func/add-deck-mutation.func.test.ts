@@ -132,7 +132,7 @@ describe('add-deck-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Leader with ID "${leaderId}" does not exist.`)],
+          errors: [new GraphQLError(`Could not find leader with ID "${leaderId}".`)],
         })
       })
       it('throws error if leader is of wrong faction', async () => {
