@@ -27,6 +27,7 @@ export default class AddGameMutation {
    * @param context The session containing the user adding the game.
    * @param info The information about the GraphQL request.
    * @returns The Game that was added.
+   * @throws PresentableError if problem adding game.
    */
   static async addGame(args: MutationAddGameArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const resolverUtil = new ResolverUtil({

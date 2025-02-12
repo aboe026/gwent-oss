@@ -22,6 +22,7 @@ export default class LoginMutation {
    * @param context The session to add the user to if valid.
    * @param info The information about the GraphQL request.
    * @returns The User that was successfully logged in.
+   * @throws PresentableError if problem authenticating user.
    */
   static async login(args: MutationLoginArgs, context: Context, info: GraphQLResolveInfo): Promise<User> {
     const resolverUtil = new ResolverUtil({

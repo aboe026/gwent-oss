@@ -26,6 +26,13 @@ export default class MutationUtil {
   private logger: Logger
   private logPrefix: string
 
+  /**
+   * Instantiate a MutationUtil object.
+   *
+   * @param config The configuration to instantiate the MutationUtil with.
+   * @param config.logger The logger to use in subsequent MutationUtil method calls.
+   * @param config.logPrefix The prefix to prepend to log statements.
+   */
   constructor({ logger, logPrefix = '' }: { logger: Logger; logPrefix?: string }) {
     this.logger = logger
     this.logPrefix = logPrefix
@@ -35,10 +42,11 @@ export default class MutationUtil {
    * Gets the ID of the player whose turn it is next in the current round.
    *
    * @param config The configuration of used to determine who the next eligible player is on the game.
-   * @param config.game The game to determine the next player of.
-   * @param config.currentPlayer The game player whose turn it currently is.
-   * @param config.logPrefix The prefix to add to the beginning of log statements.
+   * @param config.currentRound The current round the game is on.
+   * @param config.players The GamePlayers on the game.
+   * @param config.currentTurn The game player whose turn it currently is.
    * @returns The ID of the player whose turn is next, otherwise an Error.
+   * @throws PresentableError if there is a problem getting the next player.
    */
   getNextPlayerIdForCurrentRound({
     currentRound,
@@ -105,7 +113,6 @@ export default class MutationUtil {
    *
    * @param config The configuration of used to determine who should start the next round.
    * @param config.game The game to determine the started of the next round for.
-   * @param config.logPrefix The prefix to add to the beginning of log statements.
    * @returns The ID of the player who should start the next round.
    */
   getPlayerIdForNextRound({ game }: { game: GameDbObject }): ObjectId {
@@ -153,7 +160,6 @@ export default class MutationUtil {
    *
    * @param config The configuration to determine if the round is over or not.
    * @param config.game The game to check if the current round is over.
-   * @param config.logPrefix The prefix to add to the beginning of log statements.
    * @returns True if the current round is over, false otherwise.
    */
   isRoundOver({ game }: { game: GameDbObject }): boolean {
@@ -181,7 +187,6 @@ export default class MutationUtil {
    *
    * @param config The configuration to determine if the game is over or not.
    * @param config.game The game to check if is finished.
-   * @param config.logPrefix The prefix to add to the beginning of log statements.
    * @returns True if the game is over, false otherwise.
    */
   isGameOver({ game }: { game: GameDbObject }): boolean {
@@ -255,9 +260,10 @@ export default class MutationUtil {
    * @param config.userId The ObjectId of the User which is attempting to set the game turn order.
    * @param config.gameId The ObjectId of the Game to set the turn order for.
    * @param config.userIds The ObjectIds of the users to set the turn order for in the game, in order.
-   * @param config.logPrefix The prefix to put before logging statements.
+   * @param config.logPrefix The prefix to put before logging statements. Overrides class-level logPrefix.
    * @param config.allowImplicit Whether or not the User is allowed to implicitly set game turn order (without explicitly setting "userIds" input).
    * @returns The updated Game if the user is allowed to set the game turn order.
+   * @throws PresentableError if problem setting the turn order on the game.
    */
   async setGameTurnOrder({
     userId,

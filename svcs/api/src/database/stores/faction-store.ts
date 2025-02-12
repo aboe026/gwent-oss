@@ -96,6 +96,15 @@ export default class FactionStore extends Store {
     return FactionStore.read<FactionDbObject[]>({ filter })
   }
 
+  /**
+   * Gets a faction with the given key.
+   *
+   * @param config The configuration for getting the faction.
+   * @param config.key The key corresponding to the faction to get.
+   * @param config.logPrefix The prefix to prepend to log statements.
+   * @returns The Faction database object with the given key.
+   * @throws PresentableError if there is a problem getting the faction.
+   */
   static async getByKey({ key, logPrefix }: { key: FactionKey; logPrefix: string }): Promise<FactionDbObject> {
     const factions = await FactionStore.get({
       keys: [key],

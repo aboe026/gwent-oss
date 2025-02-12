@@ -29,6 +29,7 @@ export default class SetDeckMutation {
    * @param context The session containing the user setting the deck.
    * @param info The information about the GraphQL request.
    * @returns The GameDeck that was set for the game.
+   * @throws PresentableError if problem setting deck.
    */
   static async setDeck(args: MutationSetDeckArgs, context: Context, info: GraphQLResolveInfo): Promise<GameDeck> {
     const resolverUtil = new ResolverUtil({

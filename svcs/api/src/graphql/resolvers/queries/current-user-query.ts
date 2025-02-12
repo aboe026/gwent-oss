@@ -19,6 +19,7 @@ export default class CurrentUserQuery {
    * @param context The session containing the user to retrieve.
    * @param info The information about the GraphQL request.
    * @returns The authenticated User.
+   * @throws PresentableError if problem getting session user.
    */
   static currentUser(context: Context, info: GraphQLResolveInfo): User {
     const resolverUtil = new ResolverUtil({

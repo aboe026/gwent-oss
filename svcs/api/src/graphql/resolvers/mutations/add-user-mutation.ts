@@ -19,6 +19,7 @@ export default class AddUserMutation {
    * @param args The arguments for adding a user.
    * @param info The information about the GraphQL request.
    * @returns The User that was added.
+   * @throws PresentableError if problem adding user.
    */
   static async addUser(args: MutationAddUserArgs, info: GraphQLResolveInfo): Promise<User> {
     const resolverUtil = new ResolverUtil({

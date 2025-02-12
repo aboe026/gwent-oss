@@ -10,28 +10,60 @@ import { NOT_AUTHENTICATED_MESSAGE, REDACTED } from '@gwent/constants'
 import PresentableError from '../../util/presentable-error'
 import { RequestedFields } from '@gwent/graphql-schema'
 
+/**
+ * A class for common utilities used across resolvers.
+ */
 export default class ResolverUtil {
   private logger: Logger
   private logPrefix: string
 
+  /**
+   * Instantiate a ResolverUtil object.
+   *
+   * @param config The configuration to instantiate the ResolverUtil with.
+   * @param config.logger The logger to use in subsequent ResolverUtil method calls.
+   * @param config.logPrefix The prefix to prepend to log statements.
+   */
   constructor({ logger, logPrefix = '' }: { logger: Logger; logPrefix?: string }) {
     this.logger = logger
     this.logPrefix = logPrefix
   }
 
+  /**
+   * Sets the logPrefix that gets appended to log statements on subsequent ResolverUtil method calls.
+   *
+   * @param logPrefix The prefix to prepend to log statements.
+   */
   setLogPrefix(logPrefix: string) {
     this.logPrefix = logPrefix
   }
 
+  /**
+   * Gets the current user on the context if one exists, throws Error otherwise.
+   *
+   * @param config The configuration to get the context user.
+   * @param config.context The Context potentially containing the user.
+   * @param config.label The label to use on log calls to more easily know where the call was made.
+   * @returns The user on the context if they exist.
+   * @throws PresentableError if there is no user on the context.
+   */
   getContextUser({ context, label }: { context: Context; label: string }): UserDbObject {
     const user = context.session?.user
     if (!user) {
       this.logger.error(`No user on context for ${label}: "${JSON.stringify(context.session)}".`)
-      throw Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError(NOT_AUTHENTICATED_MESSAGE)
     }
     return user
   }
 
+  /**
+   * Ensures given IDs are valid MongoDB ObjectIds.
+   *
+   * @param config The configuration to verify the ObjectIds.
+   * @param config.ids The IDs to verify.
+   * @param config.label The label to use on log calls to more easily know where the call was made.
+   * @throws PresentableError if there are any invalid MongoDB ObjectIds.
+   */
   verifyMongoIds({ ids, label }: { ids: string[]; label: string }) {
     for (const id of ids) {
       if (!ObjectId.isValid(id)) {
@@ -42,6 +74,14 @@ export default class ResolverUtil {
     }
   }
 
+  /**
+   * Outputs to the logger the information about a GraphQL request.
+   *
+   * @param config The configuraiton used to print the GraphQL request information.
+   * @param config.args The potential arguments on the given GraphQL request.
+   * @param config.info The information on the GraphQL request.
+   * @param secureKeys Any keys on the args that contain sensitive information and whose value should be redacted.
+   */
   logRequestInfo({
     args,
     info,
@@ -78,7 +118,8 @@ export default class ResolverUtil {
    * @param config.status An optional status to require the game to have, otherwise return an error.
    * @param config.turn Whether or not to enforce that the given game player should be the player with the current turn, otherwise return an error.
    * @param config.label The label to use when logging and returning errors.
-   * @returns The game and player if they exist, otherwise an Error.
+   * @returns The game and player if they exist.
+   * @throws PresentableError if there is a problem getting the game or player.
    */
   async getGamePlayer({
     gameId,

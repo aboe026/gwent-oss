@@ -19,7 +19,7 @@ export default class Permissions {
 
   /**
    * Throws error if rule is not defined for Query/Mutation.
-   * to prevent someone for forgetting to explicitly set them.
+   * Prevents a Query/Mutation without an explicit rule.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
   private static fallback(parent: any, args: any, ctx: any, info: GraphQLResolveInfo) {
@@ -140,6 +140,9 @@ export default class Permissions {
     return true
   }
 
+  /**
+   * Ensure no unwanted Errors make it back to the client. Only allow known PresentableErrors to be returned.
+   */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
   private static fallbackError(err: unknown, parent: object, args: object, ctx: any, info: GraphQLResolveInfo) {
     if (err instanceof PresentableError) {
@@ -149,6 +152,9 @@ export default class Permissions {
     return Error('Internal Server Error.')
   }
 
+  /**
+   * The GraphQL Shield configuration to apply to the GraphQL server to enforce permissions.
+   */
   static shield() {
     const fallbackRule = rule({ cache: false })(Permissions.fallback)
     const isAuthenticatedRule = rule({ cache: 'contextual' })(Permissions.isAuthenticated)

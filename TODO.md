@@ -4,9 +4,6 @@ A list of things to be done in the future.
 
 ## Fixes
 
-- change "returns error" to "throws error" everywhere
-- jsdocs
-- add "throws" to all relevant jsdocs
 - increment version
 - changelog
 

@@ -26,6 +26,7 @@ export default class ReadyMutation {
    * @param context The session containing the user readying the game.
    * @param info The information about the GraphQL request.
    * @returns The Game that is now ready for the user.
+   * @throws PresentableError if problem marking game as ready.
    */
   static async ready(args: MutationReadyArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const resolverUtil = new ResolverUtil({

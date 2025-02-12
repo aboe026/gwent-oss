@@ -85,6 +85,15 @@ export default class LeaderStore extends Store {
     })
   }
 
+  /**
+   * Gets a leader with the given ID.
+   *
+   * @param config The configuration used to get the leader.
+   * @param config.id The MongoDB ObjectId of the leader to get.
+   * @param config.logPrefix The prefix to prepend to log statements.
+   * @returns The leader with the given ID.
+   * @throws PresentableError if there is a problem getting the leader.
+   */
   static async getById({ id, logPrefix }: { id: string | ObjectId; logPrefix: string }): Promise<LeaderDbObject> {
     const leaders = await LeaderStore.get({
       ids: [id],
