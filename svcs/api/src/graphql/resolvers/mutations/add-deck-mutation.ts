@@ -10,10 +10,11 @@ import DeckStore from '../../../database/stores/deck-store'
 import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
 import FactionResolver from '../types/faction-resolver'
+import FactionStore from '../../../database/stores/faction-store'
 import { getDeckStats } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import LeaderResolver from '../types/leader-resolver'
-import MutationUtil from './mutation-util'
+import LeaderStore from '../../../database/stores/leader-store'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
@@ -71,15 +72,14 @@ export default class AddDeckMutation {
       throw new PresentableError(message)
     }
 
-    const mutationUtil = new MutationUtil({
-      logger: AddDeckMutation.logger,
+    const faction = await FactionStore.getByKey({
+      key: factionKey,
       logPrefix,
     })
-
-    const faction = await mutationUtil.getFactionByKey({
-      key: factionKey,
+    const leader = await LeaderStore.getById({
+      id: leaderId,
+      logPrefix,
     })
-    const leader = await mutationUtil.getLeaderById(leaderId)
 
     if (leader.faction.toString() !== faction._id.toString()) {
       const message = `Faction ID "${leader.faction}" for leader "${leaderId}" does not match deck faction ID "${faction._id}".`

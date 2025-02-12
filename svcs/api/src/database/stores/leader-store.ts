@@ -2,6 +2,7 @@ import { Document, Filter, FindOptions, ObjectId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
+import PresentableError from '../../util/presentable-error'
 import Store from './store'
 
 /**
@@ -82,6 +83,32 @@ export default class LeaderStore extends Store {
       filter,
       options,
     })
+  }
+
+  static async getById({ id, logPrefix }: { id: string | ObjectId; logPrefix: string }): Promise<LeaderDbObject> {
+    const leaders = await LeaderStore.get({
+      ids: [id],
+    })
+    if (this.logger.isTraceEnabled()) {
+      this.logger.trace(`${logPrefix} leaders: "${JSON.stringify(leaders)}"`)
+    }
+    if (!leaders || leaders.length === 0) {
+      const message = `Could not find leader with ID "${id}".`
+      this.logger.error(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
+    if (leaders.length > 1) {
+      const message = `Found more than 1 leader with ID "${id}"`
+      this.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(leaders)}"`)
+      throw new PresentableError(message)
+    }
+    const leader = leaders[0]
+    if (leader._id.toString() !== id.toString()) {
+      const message = `Leader ID of "${leader._id}" does not match requestd ID of "${id}".`
+      this.logger.error(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
+    return leader
   }
 }
 

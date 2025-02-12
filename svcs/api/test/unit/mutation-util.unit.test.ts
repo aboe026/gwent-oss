@@ -10,6 +10,7 @@ import {
   RoundResult,
 } from '@gwent/graphql-schema/database-typings'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import FactionStore from '../../src/database/stores/faction-store'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
@@ -1999,9 +2000,7 @@ async function testSetGameTurnOrder({
     game: getGameResponse,
     player: getGameResponse.players.find((player) => player.user.toString() === userId) as GamePlayerDbObject,
   })
-  const getFactionByKeySpy = jest
-    .spyOn(MutationUtil.prototype, 'getFactionByKey')
-    .mockResolvedValue(factionByKeyResponse)
+  const getFactionByKeySpy = jest.spyOn(FactionStore, 'getByKey').mockResolvedValue(factionByKeyResponse)
   const randomizeOrderSpy = jest.spyOn(gwentUtils, 'randomizeOrder')
   const randomPlayers: ObjectId[] = []
   if (getGameResponse) {

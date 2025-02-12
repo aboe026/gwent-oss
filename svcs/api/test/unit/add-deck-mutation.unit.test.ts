@@ -9,9 +9,10 @@ import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolv
 import EventManager from '../../src/graphql/event-manager'
 import { FactionDbObject, LeaderDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
+import FactionStore from '../../src/database/stores/faction-store'
 import * as gwentUtils from '@gwent/utils'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
-import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
+import LeaderStore from '../../src/database/stores/leader-store'
 import { PubSubEvents } from '@gwent/constants'
 import TestUtil from '../test-util'
 import UnitStore from '../../src/database/stores/unit-store'
@@ -36,6 +37,7 @@ describe('add-deck-mutation', () => {
         getDeckStatsCalls: [],
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: ${error}`]],
+        logPrefix,
       })
     })
     it('throws error if leader is of wrong faction', async () => {
@@ -63,6 +65,7 @@ describe('add-deck-mutation', () => {
         getDeckStatsCalls: [],
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: ${error}`]],
+        logPrefix,
       })
     })
     it('throws error if single unit does not exist', async () => {
@@ -79,6 +82,7 @@ describe('add-deck-mutation', () => {
         getDeckStatsCalls: [],
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: ${error}`]],
+        logPrefix,
       })
     })
     it('throws errors if multiple units do not exist', async () => {
@@ -98,6 +102,7 @@ describe('add-deck-mutation', () => {
         getDeckStatsCalls: [],
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: ${error}`]],
+        logPrefix,
       })
     })
     it('throws error if validateDeck returns single error', async () => {
@@ -110,6 +115,7 @@ describe('add-deck-mutation', () => {
         getDeckStatsCalls: [],
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: ${error}`]],
+        logPrefix,
       })
     })
     it('throws errors if validateDeck returns multiple errors', async () => {
@@ -123,6 +129,7 @@ describe('add-deck-mutation', () => {
         getDeckStatsCalls: [],
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: ${error1}\n${error2}`]],
+        logPrefix,
       })
     })
     it('throws error if deck with name already exists', async () => {
@@ -135,6 +142,7 @@ describe('add-deck-mutation', () => {
         exception: Error(`Deck with name "${name}" already exists.`),
         postResolversCalled: false,
         warnCalls: [[`${logPrefix} failed: Deck with name "${name}" already exists.`]],
+        logPrefix,
       })
     })
     it('throws error if addDeck throws error that is not duplicate name', async () => {
@@ -145,6 +153,7 @@ describe('add-deck-mutation', () => {
         exception: Error(error),
         postResolversCalled: false,
         errorCalls: [[Error(`${logPrefix} failed: ${Error(error)}`)]],
+        logPrefix,
       })
     })
     it('undefined artstyle converted to 1', async () => {
@@ -152,6 +161,7 @@ describe('add-deck-mutation', () => {
         userId,
         inputArtStyle: undefined,
         expectedArtStyle: 1,
+        logPrefix,
       })
     })
     it('null artstyle converted to 1', async () => {
@@ -159,6 +169,7 @@ describe('add-deck-mutation', () => {
         userId,
         inputArtStyle: null,
         expectedArtStyle: 1,
+        logPrefix,
       })
     })
     it('explicit artStyle of 1', async () => {
@@ -166,6 +177,7 @@ describe('add-deck-mutation', () => {
         userId,
         inputArtStyle: 1,
         expectedArtStyle: 1,
+        logPrefix,
       })
     })
     it('explicit artStyle of 2', async () => {
@@ -173,6 +185,7 @@ describe('add-deck-mutation', () => {
         userId,
         inputArtStyle: 2,
         expectedArtStyle: 2,
+        logPrefix,
       })
     })
     it('logs to trace if enabled', async () => {
@@ -309,12 +322,8 @@ async function testAddDeck({
     deck,
     user: resolvedUser,
   })
-  const factionGetSpy = jest
-    .spyOn(MutationUtil.prototype, 'getFactionByKey')
-    .mockResolvedValue(factionGetResponse || faction)
-  const leaderGetSpy = jest
-    .spyOn(MutationUtil.prototype, 'getLeaderById')
-    .mockResolvedValue(leaderGetResponse || leader)
+  const factionGetSpy = jest.spyOn(FactionStore, 'getByKey').mockResolvedValue(factionGetResponse || faction)
+  const leaderGetSpy = jest.spyOn(LeaderStore, 'getById').mockResolvedValue(leaderGetResponse || leader)
   const unitGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(unitGetResponse || [unit])
   const deckUnitResolverSpy = jest.spyOn(DeckUnitResolver, 'fromArray').mockResolvedValue(deckUnits)
   const validateDeckSpy = jest.spyOn(validateDeck, 'validateDeck').mockReturnValue(validateDeckResponse)
@@ -353,11 +362,21 @@ async function testAddDeck({
       [
         {
           key: factionKey,
+          logPrefix,
         },
       ],
     ]
   )
-  expect(leaderGetSpy.mock.calls).toEqual(leaderGetCalls || [[args.leader]])
+  expect(leaderGetSpy.mock.calls).toEqual(
+    leaderGetCalls || [
+      [
+        {
+          id: args.leader,
+          logPrefix,
+        },
+      ],
+    ]
+  )
   expect(unitGetSpy.mock.calls).toEqual(
     unitGetCalls || [
       [

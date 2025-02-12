@@ -2,21 +2,18 @@ import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import EventManager from '../../event-manager'
-import {
-  FactionDbObject,
-  GameDbObject,
-  GamePlayerDbObject,
-  GameStatus,
-  LeaderDbObject,
-  PlayerCombatRowDbObject,
-  RoundResult,
-} from '@gwent/graphql-schema/database-typings'
 import { FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
 import FactionStore from '../../../database/stores/faction-store'
 import GameResolver from '../types/game-resolver'
+import {
+  GameDbObject,
+  GamePlayerDbObject,
+  GameStatus,
+  PlayerCombatRowDbObject,
+  RoundResult,
+} from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getDuplicateItems, randomizeOrder, sortObjectArray } from '@gwent/utils'
-import LeaderStore from '../../../database/stores/leader-store'
 import { OrderSetPayload } from '../subscription-resolver'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
@@ -32,49 +29,6 @@ export default class MutationUtil {
   constructor({ logger, logPrefix = '' }: { logger: Logger; logPrefix?: string }) {
     this.logger = logger
     this.logPrefix = logPrefix
-  }
-
-  // TODO: move to store
-  async getFactionByKey({ key, logPrefix }: { key: FactionKey; logPrefix?: string }): Promise<FactionDbObject> {
-    const resolvedLogPrefix = logPrefix || this.logPrefix
-    const factions = await FactionStore.get({
-      keys: [key],
-    })
-    if (!factions || factions.length === 0) {
-      const message = `Could not find faction with key "${key}".`
-      this.logger.error(`${resolvedLogPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    } else if (factions.length > 1) {
-      const message = `Found more than 1 faction with key "${FactionKey.ScoiaTael}"`
-      this.logger.error(`${resolvedLogPrefix} failed: ${message}: "${JSON.stringify(factions)}"`)
-      throw new PresentableError(message)
-    } else if (factions[0].key !== key) {
-      const message = `Faction key of "${factions[0].key}" does not match requestd key of "${key}".`
-      this.logger.error(`${resolvedLogPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-    return factions[0]
-  }
-
-  // TODO: move to store
-  async getLeaderById(id: string): Promise<LeaderDbObject> {
-    const leaders = await LeaderStore.get({
-      ids: [id],
-    })
-    if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${this.logPrefix} leaders: "${JSON.stringify(leaders)}"`)
-    }
-    if (!leaders || leaders.length === 0) {
-      const message = `Leader with ID "${id}" does not exist.`
-      this.logger.warn(`${this.logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-    if (leaders.length > 1) {
-      const message = `Found more than 1 Leader with ID "${id}"`
-      this.logger.error(`${this.logPrefix} failed: ${message}: "${JSON.stringify(leaders)}"`)
-      throw new PresentableError(message)
-    }
-    return leaders[0]
   }
 
   /**
@@ -332,7 +286,7 @@ export default class MutationUtil {
       status: GameStatus.Ordering,
     })
 
-    const scoiaTaelFaction = await this.getFactionByKey({
+    const scoiaTaelFaction = await FactionStore.getByKey({
       key: FactionKey.ScoiaTael,
       logPrefix: resolvedLogPrefix,
     })
