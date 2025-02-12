@@ -1,12 +1,12 @@
 # Changelog
 
-## 0.10.2 - 2024-02-12
+## 0.10.2 - 2025-02-12
 
 ### Fixed
 
 - Refactor resolvers to throw Errors instead of return them ([#27](https://github.com/aboe026/gwent/pull/27)) (Adam Boe)
 
-## 0.10.1 - 2024-02-01
+## 0.10.1 - 2025-02-01
 
 ### Fixed
 
