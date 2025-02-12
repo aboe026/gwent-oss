@@ -85,7 +85,7 @@ export default class PlayUnitMutation {
     if (units.length === 0) {
       const message = 'Unit does not exist.'
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError(message)
     } else if (units.length > 1) {
       const message = `Found multiple units with ID "${unitId}"`
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(units)}"`)
@@ -160,7 +160,9 @@ export default class PlayUnitMutation {
 
     // set next player
     game.turn = mutationUtil.getNextPlayerIdForCurrentRound({
-      game,
+      currentRound: game.round,
+      currentTurn: game.turn,
+      players: game.players,
     })
 
     const updatedGame = await GameStore.makeMove({

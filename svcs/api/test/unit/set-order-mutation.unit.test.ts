@@ -3,37 +3,12 @@ import { ObjectId } from 'mongodb'
 import { Context } from '@gwent/graphql-schema/context'
 import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
 import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order-mutation'
 import TestUtil from '../test-util'
 
 describe('set-order-mutation', () => {
   describe('setOrder', () => {
     const userId = new ObjectId()
-    it('returns error if no user on context', async () => {
-      await testSetOrder({
-        error: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for setOrder mutation: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if invalid game ID', async () => {
-      const gameId = 'invalid'
-      await testSetOrder({
-        userId,
-        gameId,
-        error: Error(`Game ID "${gameId}" is not a valid MongoDB ObjectId.`),
-        warnCalls: [[`setOrder by "${userId}" failed: Game ID "${gameId}" is not a valid MongoDB ObjectId.`]],
-      })
-    })
-    it('returns error if invalid user ID', async () => {
-      const playerId = 'invalid'
-      await testSetOrder({
-        userId,
-        userIds: [playerId],
-        error: Error(`User ID "${playerId}" is not a valid MongoDB ObjectId.`),
-        warnCalls: [[`setOrder by "${userId}" failed: User ID "${playerId}" is not a valid MongoDB ObjectId.`]],
-      })
-    })
     it('calls to private setOrder method when userIds not specified', async () => {
       await testSetOrder({
         userId,
@@ -87,10 +62,7 @@ async function testSetOrder({
   const resolvedGame = TestUtil.getGame({
     id: gameId,
   })
-  const mutationUtil = new MutationUtil({
-    logger: SetOrderMutation['logger'],
-  })
-  const setOrderSpy = jest.spyOn(mutationUtil, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
+  const setOrderSpy = jest.spyOn(MutationUtil.prototype, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -111,7 +83,6 @@ async function testSetOrder({
             {
               userId,
               gameId,
-              logPrefix,
               userIds,
               allowImplicit: true,
             },

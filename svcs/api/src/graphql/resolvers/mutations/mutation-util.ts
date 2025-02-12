@@ -34,6 +34,7 @@ export default class MutationUtil {
     this.logPrefix = logPrefix
   }
 
+  // TODO: move to store
   async getFactionByKey({ key, logPrefix }: { key: FactionKey; logPrefix?: string }): Promise<FactionDbObject> {
     const resolvedLogPrefix = logPrefix || this.logPrefix
     const factions = await FactionStore.get({
@@ -55,6 +56,7 @@ export default class MutationUtil {
     return factions[0]
   }
 
+  // TODO: move to store
   async getLeaderById(id: string): Promise<LeaderDbObject> {
     const leaders = await LeaderStore.get({
       ids: [id],
@@ -84,10 +86,17 @@ export default class MutationUtil {
    * @param config.logPrefix The prefix to add to the beginning of log statements.
    * @returns The ID of the player whose turn is next, otherwise an Error.
    */
-  getNextPlayerIdForCurrentRound({ game }: { game: GameDbObject }): ObjectId {
-    const currentRound = game.round
+  getNextPlayerIdForCurrentRound({
+    currentRound,
+    players,
+    currentTurn,
+  }: {
+    currentRound: number
+    players: GamePlayerDbObject[]
+    currentTurn: ObjectId | undefined
+  }): ObjectId {
     const usersByOrder: GamePlayerDbObject[] = sortObjectArray({
-      array: game.players,
+      array: players,
       sortProperties: ['order'],
     })
     if (this.logger.isTraceEnabled()) {
@@ -95,8 +104,8 @@ export default class MutationUtil {
         `${this.logPrefix} getNextPlayerIdForCurrentRound usersByOrder: "${JSON.stringify(usersByOrder)}"`
       )
     }
-    const currentPlayer = game.players.find(
-      (gamePlayer) => gamePlayer.user.toString() === game.turn?.toString()
+    const currentPlayer = players.find(
+      (gamePlayer) => gamePlayer.user.toString() === currentTurn?.toString()
     ) as GamePlayerDbObject
     let nextPlayerId: ObjectId | undefined = undefined
     const currentPlayerOrder = currentPlayer.order
@@ -106,10 +115,10 @@ export default class MutationUtil {
       this.logger.error(`${this.logPrefix} getNextPlayerIdForCurrentRound failed: ${message}`)
       throw new PresentableError(message)
     }
-    for (let i = 0; i < game.players.length && nextPlayerId === undefined; i++) {
+    for (let i = 0; i < players.length && nextPlayerId === undefined; i++) {
       this.logger.trace(`${this.logPrefix} getNextPlayerIdForCurrentRound i: "${i}"`)
       if (currentPlayer.order !== undefined) {
-        const potentialNextPlayer = usersByOrder[(currentPlayerOrder + i + 1) % game.players.length]
+        const potentialNextPlayer = usersByOrder[(currentPlayerOrder + i + 1) % players.length]
         if (this.logger.isTraceEnabled()) {
           this.logger.trace(
             `${this.logPrefix} getNextPlayerIdForCurrentRound potentialNextPlayer: "${JSON.stringify(
@@ -223,36 +232,28 @@ export default class MutationUtil {
    */
   isGameOver({ game }: { game: GameDbObject }): boolean {
     const currentRound = game.round
-    this.logger.trace(`${this.logPrefix} isGameOver game "${game._id}" currentRound: "${currentRound}"`)
-    this.logger.trace(`${this.logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`)
+    this.logger.trace(`${this.logPrefix} isGameOver currentRound: "${currentRound}"`)
+    this.logger.trace(`${this.logPrefix} isGameOver lives: "${game.config.lives}"`)
     const playersWithLivesLeft: ObjectId[] = []
     for (const player of game.players) {
       const playerLosses = player.rounds.filter(
         (round) => round.result === RoundResult.Lost || round.result === RoundResult.Drew
       ).length
-      this.logger.trace(
-        `${this.logPrefix} isGameOver game "${game._id}" player "${player.user}" losses: "${playerLosses}"`
-      )
+      this.logger.trace(`${this.logPrefix} isGameOver player "${player.user}" losses: "${playerLosses}"`)
       const livesLeft = game.config.lives - playerLosses
-      this.logger.trace(
-        `${this.logPrefix} isGameOver game "${game._id}" player "${player.user}" livesLeft: "${livesLeft}"`
-      )
+      this.logger.trace(`${this.logPrefix} isGameOver player "${player.user}" livesLeft: "${livesLeft}"`)
       if (livesLeft > 0) {
         playersWithLivesLeft.push(player.user)
       }
     }
     if (this.logger.isTraceEnabled()) {
-      this.logger.trace(
-        `${this.logPrefix} isGameOver game "${game._id}" playersWithLivesLeft: "${JSON.stringify(
-          playersWithLivesLeft
-        )}"`
-      )
+      this.logger.trace(`${this.logPrefix} isGameOver playersWithLivesLeft: "${JSON.stringify(playersWithLivesLeft)}"`)
     }
     const gameOver = playersWithLivesLeft.length <= 1
     this.logger.debug(
-      `${this.logPrefix} isGameOver game "${game._id}" ${
-        gameOver ? 'is now complete' : 'is not yet over'
-      } because there are "${playersWithLivesLeft.length}" player(s) with lives left.`
+      `${this.logPrefix} isGameOver game is ${gameOver ? 'now complete' : 'not yet over'} because there are "${
+        playersWithLivesLeft.length
+      }" player(s) with lives left.`
     )
     return gameOver
   }
@@ -340,22 +341,22 @@ export default class MutationUtil {
     const scoiaTaelPlayers = game.players.filter((player) => player.deck.from?.faction.toString() === scoiaTaelId)
     if (scoiaTaelPlayers.length > 1 && userIds && userIds.length > 0) {
       const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${gameId}".`
-      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
+      this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 0 && userIds && userIds.length > 0) {
       const message = `Cannot set explicit order as deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
-      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
+      this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 1 && (!userIds || userIds.length === 0) && !allowImplicit) {
       const message = `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
-      this.logger.debug(`${resolvedLogPrefix} failed: ${message}`)
+      this.logger.debug(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
       const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
-      this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
+      this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
 
@@ -371,12 +372,12 @@ export default class MutationUtil {
         const message = `Cannot set order as users(s) ${JSON.stringify(
           playersIdsNotInGame
         )} are not players on game "${gameId}".`
-        this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
+        this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
         throw new PresentableError(message)
       }
       if (userIds.length !== game.players.length) {
         const message = `Cannot set order as users count of "${userIds.length}" does not match player count of "${game.players.length}" for game "${gameId}".`
-        this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
+        this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
         throw new PresentableError(message)
       }
       const duplicateUserIds = getDuplicateItems<string>(userIds)
@@ -384,21 +385,32 @@ export default class MutationUtil {
         const message = `Cannot set order for game "${gameId}" due to duplicate user ID(s) ${JSON.stringify(
           duplicateUserIds
         )} specified.`
-        this.logger.warn(`${resolvedLogPrefix} failed: ${message}`)
+        this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
         throw new PresentableError(message)
       }
     }
 
+    let userIdsForOrder: (string | ObjectId)[] = []
+    if (userIds && userIds.length > 0) {
+      if (this.logger.isTraceEnabled()) {
+        this.logger.trace(`${resolvedLogPrefix} setGameTurnOrder userIds provided, not randomizing order`)
+      }
+      userIdsForOrder = userIds
+    } else {
+      this.logger.trace(`${resolvedLogPrefix} setGameTurnOrder no userIds provided, randomizing order`)
+      userIdsForOrder = randomizeOrder(game.players.map((player) => player.user))
+    }
+
     const updatedGame = await GameStore.setOrder({
       gameId,
-      userIds: userIds && userIds.length > 0 ? userIds : randomizeOrder(game.players.map((player) => player.user)),
+      userIds: userIdsForOrder,
     })
     if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${resolvedLogPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
+      this.logger.trace(`${resolvedLogPrefix} setGameTurnOrder updatedGame: "${JSON.stringify(updatedGame)}"`)
     }
     if (!updatedGame) {
       const message = `Could not set order on game "${gameId}" in probable race condition collision.`
-      this.logger.error(`${resolvedLogPrefix} failed: ${message}`)
+      this.logger.error(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
 

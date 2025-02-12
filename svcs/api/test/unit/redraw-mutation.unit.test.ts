@@ -16,7 +16,7 @@ import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolv
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
-import { MAX_REDRAWS, NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
+import { MAX_REDRAWS, PubSubEvents } from '@gwent/constants'
 import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
@@ -58,7 +58,6 @@ describe('redraw-mutation', () => {
       [
         {
           gameId,
-          logPrefix,
           userId,
           status: GameStatus.Redrawing,
           label: 'redraw',
@@ -133,37 +132,7 @@ describe('redraw-mutation', () => {
         },
       ],
     ]
-    it('returns error if no user on context', async () => {
-      await testRedraw({
-        gameId,
-        unitId: unit._id.toString(),
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for redraw mutation: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if invalid unit ID', async () => {
-      const invalidId = 'invalid'
-      const error = `Unit ID "${invalidId}" is not a valid MongoDB ObjectId.`
-      await testRedraw({
-        userId,
-        gameId,
-        unitId: invalidId,
-        expected: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns error if getGamePlayer returns error', async () => {
-      const error = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      await testRedraw({
-        userId,
-        gameId,
-        unitId: unit._id.toString(),
-        getGamePlayerResponse: Error(error),
-        expected: Error(error),
-        getGamePlayerCalls,
-      })
-    })
-    it('returns error if game marked as ready', async () => {
+    it('throws error if game marked as ready', async () => {
       const error = `Cannot redraw after game "${gameId}" is marked as ready.`
       await testRedraw({
         userId,
@@ -181,7 +150,7 @@ describe('redraw-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if deck not set', async () => {
+    it('throws error if deck not set', async () => {
       const error = `Cannot redraw before deck is set for game "${gameId}".`
       await testRedraw({
         userId,
@@ -199,7 +168,7 @@ describe('redraw-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if max redraws already taken', async () => {
+    it('throws error if max redraws already taken', async () => {
       const error = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${gameId}".`
       await testRedraw({
         userId,
@@ -229,7 +198,7 @@ describe('redraw-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if unit not in hand', async () => {
+    it('throws error if unit not in hand', async () => {
       const error = `Unit with ID "${unit._id}" does not exist in hand for game "${gameId}".`
       await testRedraw({
         userId,
@@ -249,7 +218,7 @@ describe('redraw-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if updated game undefined', async () => {
+    it('throws error if updated game undefined', async () => {
       const error = `Could not redraw unit "${unit._id}" on game "${gameId}" in probable race condition collision.`
       await testRedraw({
         userId,
@@ -267,7 +236,7 @@ describe('redraw-mutation', () => {
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if updated game does not include game player', async () => {
+    it('throws error if updated game does not include game player', async () => {
       const error = `Could not get updated game deck when redrawing unit "${unit._id}" on game "${gameId}".`
       await testRedraw({
         userId,
@@ -403,10 +372,7 @@ async function testRedraw({
     cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
     newCard = redrawPool[redrawPool.length - 1]
   }
-  const resolverUtil = new ResolverUtil({
-    logger: RedrawMutation['logger'],
-  })
-  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
   if (getGamePlayerResponse) {
     if (getGamePlayerResponse instanceof Error) {
       getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
@@ -450,7 +416,12 @@ async function testRedraw({
     trace: traceSpy,
   } as any
 
-  await expect(RedrawMutation.redraw(args, context, null as any)).resolves.toEqual(expected)
+  const promise = RedrawMutation.redraw(args, context, null as any)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
 
   expect(getGamePlayerSpy.mock.calls).toEqual(getGamePlayerCalls)
   expect(getRandomSubsetSpy.mock.calls).toEqual(

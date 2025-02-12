@@ -4,6 +4,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import {
   DeckDbObject,
   DeckUnitDbObject,
+  FactionKey,
   GameDbObject,
   GamePlayerDbObject,
   GameStatus,
@@ -16,7 +17,8 @@ import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
 import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
-import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
+import PresentableError from '../../src/util/presentable-error'
+import { PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck-mutation'
 import TestUtil from '../test-util'
@@ -56,7 +58,6 @@ describe('set-deck-mutation', () => {
       [
         {
           gameId: game._id.toString(),
-          logPrefix,
           userId,
           status: GameStatus.Decking,
           label: 'set deck',
@@ -74,26 +75,7 @@ describe('set-deck-mutation', () => {
         },
       ],
     ]
-    it('returns error if no user on context', async () => {
-      await testSetDeck({
-        gameId: game._id.toString(),
-        deckId: deck._id.toString(),
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for setDeck mutation: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if invalid deck ID', async () => {
-      const deckId = 'invalid'
-      const error = `Deck ID "${deckId}" is not a valid MongoDB ObjectId.`
-      await testSetDeck({
-        userId,
-        gameId: game._id.toString(),
-        deckId,
-        expected: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns error if deck does not exist', async () => {
+    it('throws error if deck does not exist', async () => {
       const error = `Deck with ID "${deck._id}" does not exist.`
       await testSetDeck({
         userId,
@@ -104,20 +86,7 @@ describe('set-deck-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if getGamePlayer returns error', async () => {
-      const error = `Game ID "${game._id}" is not a valid MongoDB ObjectId.`
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGamePlayerResponse: Error(error),
-        expected: Error(error),
-        getDeckCalls,
-        getGamePlayerCalls,
-      })
-    })
-    it('returns error if deck is already set', async () => {
+    it('throws error if deck is already set', async () => {
       const error = `Deck already set for game "${game._id}".`
       await testSetDeck({
         userId,
@@ -139,7 +108,7 @@ describe('set-deck-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if updated game is undefined', async () => {
+    it('throws error if updated game is undefined', async () => {
       const error = `Could not set deck "${deck._id}" on game "${game._id}" in probable race condition collision.`
       await testSetDeck({
         userId,
@@ -167,7 +136,7 @@ describe('set-deck-mutation', () => {
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if player not on updated game', async () => {
+    it('throws error if player not on updated game', async () => {
       const error = `Could not get player after setting deck "${deck._id}" on game "${game._id}".`
       await testSetDeck({
         userId,
@@ -193,6 +162,88 @@ describe('set-deck-mutation', () => {
         ],
         setDeckCalls,
         errorCalls: [[`${logPrefix} failed: ${error}`]],
+      })
+    })
+    it('throws error if setGameTurnOder throws unexpected error', async () => {
+      const gameAllDecksChosen: GameDbObject = {
+        ...game,
+        players: game.players.map((player) => {
+          return {
+            ...player,
+            deck: {
+              ...player.deck,
+              from: TestUtil.getDbDeck({}),
+            },
+          }
+        }),
+      }
+      const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
+        game: gameAllDecksChosen,
+      })
+      const error = Error('bad')
+      await testSetDeck({
+        userId,
+        deckId: deck._id.toString(),
+        gameId: game._id.toString(),
+        getDeckResponse: deck,
+        getGamePlayerResponse: {
+          game,
+          player: gamePlayer,
+        },
+        setDeckResponse: gameAllDecksChosen,
+        randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
+        resolveGameResponse: resolvedGameAllDecksChosen,
+        setGameTurnOderError: error,
+        expected: error,
+        getDeckCalls,
+        getGamePlayerCalls,
+        getRandomSubsetCalls: [
+          [
+            {
+              items: deck.units,
+              size: STARTING_HAND_SIZE,
+            },
+          ],
+        ],
+        setDeckCalls,
+        resolveGameDeckCalls: [
+          [
+            {
+              gameDeck: (
+                gameAllDecksChosen.players.find(
+                  (player) => player.user.toString() === userId?.toString()
+                ) as GamePlayerDbObject
+              ).deck,
+            },
+          ],
+        ],
+        publishCalls: [
+          [
+            PubSubEvents.DeckSet,
+            {
+              deckSet: {
+                deck: undefined,
+                game: resolvedGameAllDecksChosen,
+              },
+            },
+          ],
+          [
+            PubSubEvents.GameSet,
+            {
+              gameSet: resolvedGameAllDecksChosen,
+            },
+          ],
+        ],
+        setOrderCalls: [
+          [
+            {
+              userId,
+              gameId: game._id.toString(),
+              logPrefix: `setOrder via setDeck by "${userId}"`,
+              allowImplicit: false,
+            },
+          ],
+        ],
       })
     })
     it('returns resolved deck if no errors', async () => {
@@ -322,6 +373,89 @@ describe('set-deck-mutation', () => {
         ],
       })
     })
+    it('does not throw error if attempt to set turn order when another player has ScoiaTael', async () => {
+      const gameAllDecksChosen: GameDbObject = {
+        ...game,
+        players: game.players.map((player) => {
+          return {
+            ...player,
+            deck: {
+              ...player.deck,
+              from: TestUtil.getDbDeck({}),
+            },
+          }
+        }),
+      }
+      const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
+        game: gameAllDecksChosen,
+      })
+      await testSetDeck({
+        userId,
+        deckId: deck._id.toString(),
+        gameId: game._id.toString(),
+        getDeckResponse: deck,
+        getGamePlayerResponse: {
+          game,
+          player: gamePlayer,
+        },
+        setDeckResponse: gameAllDecksChosen,
+        randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
+        resolveGameResponse: resolvedGameAllDecksChosen,
+        setGameTurnOderError: new PresentableError(
+          `Cannot set order randomly as another player for game "${game._id}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+        ),
+        expected,
+        getDeckCalls,
+        getGamePlayerCalls,
+        getRandomSubsetCalls: [
+          [
+            {
+              items: deck.units,
+              size: STARTING_HAND_SIZE,
+            },
+          ],
+        ],
+        setDeckCalls,
+        resolveGameDeckCalls: [
+          [
+            {
+              gameDeck: (
+                gameAllDecksChosen.players.find(
+                  (player) => player.user.toString() === userId?.toString()
+                ) as GamePlayerDbObject
+              ).deck,
+            },
+          ],
+        ],
+        publishCalls: [
+          [
+            PubSubEvents.DeckSet,
+            {
+              deckSet: {
+                deck: expected,
+                game: resolvedGameAllDecksChosen,
+              },
+            },
+          ],
+          [
+            PubSubEvents.GameSet,
+            {
+              gameSet: resolvedGameAllDecksChosen,
+            },
+          ],
+        ],
+        setOrderCalls: [
+          [
+            {
+              userId,
+              gameId: game._id.toString(),
+              logPrefix: `setOrder via setDeck by "${userId}"`,
+              allowImplicit: false,
+            },
+          ],
+        ],
+      })
+    })
     it('logs to trace if enabled', async () => {
       await testSetDeck({
         userId,
@@ -383,6 +517,7 @@ async function testSetDeck({
   randomSubset = [],
   setDeckResponse,
   resolveGameResponse,
+  setGameTurnOderError,
   expected,
   getDeckCalls = [],
   getGamePlayerCalls = [],
@@ -404,6 +539,7 @@ async function testSetDeck({
   randomSubset?: DeckUnitDbObject[]
   setDeckResponse?: GameDbObject
   resolveGameResponse?: Game
+  setGameTurnOderError?: Error
   expected: Error | GameDeck
   getDeckCalls?: any[][]
   getGamePlayerCalls?: any[][]
@@ -438,13 +574,7 @@ async function testSetDeck({
     handIds = randomSubset.map((deckUnit) => deckUnit.unit.toString())
   }
   const getDeckSpy = jest.spyOn(DeckStore, 'getById').mockResolvedValue(getDeckResponse)
-  const resolverUtil = new ResolverUtil({
-    logger: SetDeckMutation['logger'],
-  })
-  const mutationUtil = new MutationUtil({
-    logger: SetDeckMutation['logger'],
-  })
-  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
   if (getGamePlayerResponse) {
     if (getGamePlayerResponse instanceof Error) {
       getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
@@ -457,13 +587,20 @@ async function testSetDeck({
   const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject')
   if (!(expected instanceof Error)) {
     fromObjectSpy.mockResolvedValue(expected)
+  } else if (setGameTurnOderError) {
+    fromObjectSpy.mockImplementation()
   }
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
   if (resolveGameResponse) {
     resolveGameSpy.mockResolvedValue(resolveGameResponse)
   }
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const setOrderSpy = jest.spyOn(mutationUtil, 'setGameTurnOrder').mockImplementation()
+  const setOrderSpy = jest.spyOn(MutationUtil.prototype, 'setGameTurnOrder')
+  if (setGameTurnOderError) {
+    setOrderSpy.mockRejectedValue(setGameTurnOderError)
+  } else {
+    setOrderSpy.mockImplementation()
+  }
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -474,7 +611,12 @@ async function testSetDeck({
     trace: traceSpy,
   } as any
 
-  await expect(SetDeckMutation.setDeck(args, context, null as any)).resolves.toEqual(expected)
+  const promise = SetDeckMutation.setDeck(args, context, null as any)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
 
   expect(getDeckSpy.mock.calls).toEqual(getDeckCalls)
   expect(getGamePlayerSpy.mock.calls).toEqual(getGamePlayerCalls)

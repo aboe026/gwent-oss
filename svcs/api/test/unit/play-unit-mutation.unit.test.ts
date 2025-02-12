@@ -16,7 +16,8 @@ import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit-mutation'
 import { MoveType } from '@gwent/graphql-schema'
-import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
+import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
+import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
 import UnitStore from '../../src/database/stores/unit-store'
@@ -27,34 +28,7 @@ describe('play-unit-mutation', () => {
     const gameId = new ObjectId().toString()
     const unitId = new ObjectId().toString()
     const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
-    it('returns error if no user on context', async () => {
-      await testPlayUnit({
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [['No user on context for playUnit mutation: "{}".']],
-      })
-    })
-    it('returns error if invalid unitId', async () => {
-      const invalidUnitId = 'invalid'
-      const message = `Unit ID "${invalidUnitId}" is not a valid MongoDB ObjectId.`
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId: invalidUnitId,
-        expected: Error(message),
-        warnCalls: [[`playUnit by "${userId}" for unit "${invalidUnitId}" on game "${gameId}" failed: ${message}`]],
-      })
-    })
-    it('returns error if error getting game player', async () => {
-      const message = `Game ID "invalid" is not a valid MongoDB ObjectId.`
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: Error(message),
-        expected: Error(message),
-      })
-    })
-    it('returns error if unit not in hand', async () => {
+    it('throws error if unit not in hand', async () => {
       const message = 'Unit not in hand.'
       const game = getTestGame(gameId, userId, unitId)
       game.players = [
@@ -76,7 +50,7 @@ describe('play-unit-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('returns error if more than 1 unit with ID in hand', async () => {
+    it('throws error if more than 1 unit with ID in hand', async () => {
       const message = `Found more than 1 unit with ID "${unitId}"`
       const deckUnits = [
         TestUtil.getDbDeckUnit({
@@ -109,7 +83,7 @@ describe('play-unit-mutation', () => {
         errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`]],
       })
     })
-    it('returns error if unit does not exist', async () => {
+    it('throws error if unit does not exist', async () => {
       const message = 'Unit does not exist.'
       const game = getTestGame(gameId, userId, unitId)
       await testPlayUnit({
@@ -125,7 +99,7 @@ describe('play-unit-mutation', () => {
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('returns error if more than 1 unit found', async () => {
+    it('throws error if more than 1 unit found', async () => {
       const message = `Found multiple units with ID "${unitId}"`
       const deckUnits = [
         TestUtil.getDbUnit({
@@ -149,7 +123,7 @@ describe('play-unit-mutation', () => {
         errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`]],
       })
     })
-    it('returns error if combat not specified for multi combat unit', async () => {
+    it('throws error if combat not specified for multi combat unit', async () => {
       const deckUnit = TestUtil.getDbUnit({
         id: unitId,
         combats: [Combat.Close, Combat.Ranged],
@@ -169,7 +143,7 @@ describe('play-unit-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('returns error if combat does not match unit combats', async () => {
+    it('throws error if combat does not match unit combats', async () => {
       const combat = Combat.Close
       const deckUnit = TestUtil.getDbUnit({
         id: unitId,
@@ -191,7 +165,7 @@ describe('play-unit-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('returns error if combat not specified on unit without combat', async () => {
+    it('throws error if combat not specified on unit without combat', async () => {
       const deckUnit = TestUtil.getDbUnit({
         id: unitId,
       })
@@ -210,81 +184,7 @@ describe('play-unit-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('returns error if getNextPlayerIdForCurrentRound returns error', async () => {
-      const message = 'Could not determine next player for round "1".'
-      const artStyle = 1
-      const strength = 2
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Close],
-        strength,
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      game.players = game.players.map((gamePlayer) => {
-        return {
-          ...gamePlayer,
-          rounds: gamePlayer.rounds.map((round) => {
-            round.passed = true
-            return round
-          }),
-        }
-      })
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            deck: {
-              ...game.players[0].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: strength,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                      effectiveStrength: strength,
-                    },
-                  ],
-                },
-                score: strength,
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Close,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-          game.players[1],
-        ],
-        turn: game.players[1].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        resolvedUnitsResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        expected: Error(message),
-      })
-    })
-    it('returns error if makeMove returns undefined', async () => {
+    it('throws error if makeMove returns undefined', async () => {
       const message = `Could not play unit "${unitId}" for game "${gameId}" in probable race condition collision.`
       const artStyle = 1
       const strength = 2
@@ -862,7 +762,7 @@ async function testPlayUnit({
   gameId?: string
   unitId?: string
   combat?: Combat
-  resolvedGameResponse?: GamePlayerResponse | Error
+  resolvedGameResponse?: GamePlayerResponse
   resolvedUnitsResponse?: UnitDbObject[]
   modifiedGame?: GameDbObject
   moveDate?: Date
@@ -886,24 +786,20 @@ async function testPlayUnit({
     unit: unitId,
     combat,
   }
-  const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
-  const resolverUtil = new ResolverUtil({
-    logger: PlayUnitMutation['logger'],
-  })
-  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
   if (resolvedGameResponse) {
-    if (resolvedGameResponse instanceof Error) {
-      getGamePlayerSpy.mockRejectedValue(resolvedGameResponse)
-    } else {
-      getGamePlayerSpy.mockResolvedValue(resolvedGameResponse)
-    }
+    getGamePlayerSpy.mockResolvedValue(resolvedGameResponse)
   }
   const getUnitsSpy = jest.spyOn(UnitStore, 'get')
   if (resolvedUnitsResponse) {
     getUnitsSpy.mockResolvedValue(resolvedUnitsResponse)
   }
-  const updated = new Date()
+  const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(MutationUtil.prototype, 'getNextPlayerIdForCurrentRound')
+  if (modifiedGame?.turn) {
+    getNextPlayerIdForCurrentRoundSpy.mockReturnValue(modifiedGame.turn)
+  }
 
+  const updated = new Date()
   const updatedGame: GameDbObject = {
     ...(modifiedGame as GameDbObject),
     updated,
@@ -953,7 +849,12 @@ async function testPlayUnit({
     trace: traceSpy,
   } as any
 
-  await expect(PlayUnitMutation.playUnit(args, context, null as any)).resolves.toEqual(expected)
+  const promise = PlayUnitMutation.playUnit(args, context, null as any)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
 
   expect(getGamePlayerSpy.mock.calls).toEqual(
     resolvedGameResponse
@@ -961,7 +862,6 @@ async function testPlayUnit({
           [
             {
               gameId,
-              logPrefix,
               userId,
               status: GameStatus.Playing,
               turn: true,

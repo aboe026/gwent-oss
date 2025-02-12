@@ -4,7 +4,6 @@ import { Context } from '@gwent/graphql-schema/context'
 import { GameDeck, QueryGameDeckArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckQuery from '../../src/graphql/resolvers/queries/game-deck-query'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
 
@@ -21,23 +20,6 @@ describe('game-deck-query', () => {
       creator: userId,
       players: [gamePlayer],
     })
-    it('returns error if no user on context', async () => {
-      await testGameDeck({
-        gameId,
-        error: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for gameDeck query: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if getGamePlayer returns error', async () => {
-      const error = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      await testGameDeck({
-        userId,
-        gameId: gameId.toString(),
-        getGamePlayerResponse: Error(error),
-        error: Error(error),
-        logPrefix,
-      })
-    })
     it('returns undefined if player deck not set', async () => {
       await testGameDeck({
         userId,
@@ -47,7 +29,6 @@ describe('game-deck-query', () => {
           player: gamePlayer,
         },
         expected: null,
-        logPrefix,
         traceCalls: [[`${logPrefix} does not have deck, nothing to resolve.`]],
       })
     })
@@ -81,7 +62,6 @@ describe('game-deck-query', () => {
             },
           ],
         ],
-        logPrefix,
         traceCalls: [[`${logPrefix} has deck "${deck._id}", resolving.`]],
       })
     })
@@ -94,7 +74,6 @@ describe('game-deck-query', () => {
           player: gamePlayer,
         },
         expected: null,
-        logPrefix,
         traceEnabled: true,
         traceCalls: [
           [`${logPrefix} args: "${JSON.stringify({ game: gameId })}"`],
@@ -111,10 +90,8 @@ async function testGameDeck({
   userId,
   gameId,
   getGamePlayerResponse,
-  error,
   expected,
   gameDeckResolverCalls = [],
-  logPrefix,
   traceEnabled,
   errorCalls = [],
   warnCalls = [],
@@ -122,11 +99,9 @@ async function testGameDeck({
 }: {
   userId?: ObjectId
   gameId: string
-  getGamePlayerResponse?: GamePlayerResponse | Error
-  error?: Error
+  getGamePlayerResponse: GamePlayerResponse
   expected?: GameDeck | null
   gameDeckResolverCalls?: any[][]
-  logPrefix?: string
   traceEnabled?: boolean
   errorCalls?: any[][]
   warnCalls?: any[][]
@@ -143,17 +118,7 @@ async function testGameDeck({
   const args: QueryGameDeckArgs = {
     game: gameId,
   }
-  const resolverUtil = new ResolverUtil({
-    logger: GameDeckQuery['logger'],
-  })
-  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
-  if (getGamePlayerResponse) {
-    if (getGamePlayerResponse instanceof Error) {
-      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
-    } else {
-      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
-    }
-  }
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer').mockResolvedValue(getGamePlayerResponse)
   const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject').mockResolvedValue(expected as any as GameDeck)
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
@@ -165,7 +130,7 @@ async function testGameDeck({
     trace: traceSpy,
   } as any
 
-  await expect(GameDeckQuery.gameDeck(args, context, null as any)).resolves.toEqual(error || expected)
+  await expect(GameDeckQuery.gameDeck(args, context, null as any)).resolves.toEqual(expected)
 
   expect(getGamePlayerSpy.mock.calls).toEqual(
     getGamePlayerResponse
@@ -173,7 +138,6 @@ async function testGameDeck({
           [
             {
               gameId,
-              logPrefix,
               userId,
             },
           ],

@@ -315,45 +315,12 @@ describe('permissions', () => {
       })
     })
   })
+  describe('shield', () => {
+    it('returns shield object', () => {
+      expect(Permissions.shield()).toEqual(expect.any(Object))
+    })
+  })
 })
-
-function testFallbackError({
-  error,
-  expected,
-  errorCalls = [],
-}: {
-  error: Error
-  expected: Error
-  errorCalls?: any[][]
-}) {
-  const errorSpy = jest.fn().mockImplementation()
-  Permissions['logger'] = {
-    error: errorSpy,
-  } as any
-
-  expect(Permissions['fallbackError'](error, {}, {}, null, {} as GraphQLResolveInfo)).toEqual(expected)
-
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-}
-
-function testFallback({
-  info,
-  expected,
-  errorCalls = [],
-}: {
-  info: GraphQLResolveInfo
-  expected: Error | boolean
-  errorCalls?: any[][]
-}) {
-  const errorSpy = jest.fn().mockImplementation()
-  Permissions['logger'] = {
-    error: errorSpy,
-  } as any
-
-  expect(Permissions.fallback(undefined, undefined, undefined, info)).toEqual(expected)
-
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-}
 
 function testIsAuthenticated({
   context,
@@ -522,4 +489,42 @@ async function testOwnsDeck({
   )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
+}
+
+function testFallback({
+  info,
+  expected,
+  errorCalls = [],
+}: {
+  info: GraphQLResolveInfo
+  expected: Error | boolean
+  errorCalls?: any[][]
+}) {
+  const errorSpy = jest.fn().mockImplementation()
+  Permissions['logger'] = {
+    error: errorSpy,
+  } as any
+
+  expect(Permissions.fallback(undefined, undefined, undefined, info)).toEqual(expected)
+
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
+function testFallbackError({
+  error,
+  expected,
+  errorCalls = [],
+}: {
+  error: Error
+  expected: Error
+  errorCalls?: any[][]
+}) {
+  const errorSpy = jest.fn().mockImplementation()
+  Permissions['logger'] = {
+    error: errorSpy,
+  } as any
+
+  expect(Permissions['fallbackError'](error, {}, {}, null, {} as GraphQLResolveInfo)).toEqual(expected)
+
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

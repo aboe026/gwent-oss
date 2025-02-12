@@ -220,7 +220,9 @@ export default class PlayPassMutation {
       }
     } else {
       nextPlayerId = mutationUtil.getNextPlayerIdForCurrentRound({
-        game,
+        currentRound: game.round,
+        currentTurn: game.turn,
+        players: game.players,
       })
     }
 

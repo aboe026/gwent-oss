@@ -41,6 +41,7 @@ async function testApplication({ traceEnabled }: { traceEnabled?: boolean }) {
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
+          [`${logPrefix} args: "{}"`],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} build: "${build}"`],

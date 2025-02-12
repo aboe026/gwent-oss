@@ -44,6 +44,12 @@ function testSettings({ traceEnabled }: { traceEnabled?: boolean }) {
   ])
 
   expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`${logPrefix} requested fields: "[]"`], [`${logPrefix} requested arguments: "[]"`]] : []
+    traceEnabled
+      ? [
+          [`${logPrefix} args: "{}"`],
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
+        ]
+      : []
   )
 }

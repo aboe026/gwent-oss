@@ -62,6 +62,7 @@ async function testFactions({ keys, traceEnabled }: { keys?: FactionKey[]; trace
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
+          [`${logPrefix} args: "{}"`],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} factions: "${JSON.stringify([faction])}"`],

@@ -37,7 +37,6 @@ describe('ready-mutation', () => {
       [
         {
           gameId,
-          logPrefix,
           userId,
           status: GameStatus.Redrawing,
           label: 'mark ready',
@@ -87,24 +86,7 @@ describe('ready-mutation', () => {
         },
       ],
     ]
-    it('returns error if no user on context', async () => {
-      await testReady({
-        gameId,
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for ready mutation: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if getGamePlayer returns error', async () => {
-      const error = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      await testReady({
-        userId,
-        gameId,
-        getGamePlayerResponse: Error(error),
-        expected: Error(error),
-        getGamePlayerCalls,
-      })
-    })
-    it('returns error if deck not yet set', async () => {
+    it('throws error if deck not yet set', async () => {
       const error = `Must set deck on game "${gameId}" first.`
       await testReady({
         userId,
@@ -124,7 +106,7 @@ describe('ready-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if already marked as ready', async () => {
+    it('throws error if already marked as ready', async () => {
       const error = `Game "${gameId}" already marked as ready.`
       await testReady({
         userId,
@@ -141,7 +123,7 @@ describe('ready-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if setReady response is undefined', async () => {
+    it('throws error if setReady response is undefined', async () => {
       const error = `Could not set player as ready for game "${gameId}" in probable race condition collision.`
       await testReady({
         userId,
@@ -319,10 +301,7 @@ async function testReady({
   const args: MutationReadyArgs = {
     game: gameId,
   }
-  const resolverUtil = new ResolverUtil({
-    logger: ReadyMutation['logger'],
-  })
-  const getGamePlayerSpy = jest.spyOn(resolverUtil, 'getGamePlayer')
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
   if (getGamePlayerResponse) {
     if (getGamePlayerResponse instanceof Error) {
       getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
@@ -348,7 +327,12 @@ async function testReady({
     trace: traceSpy,
   } as any
 
-  await expect(ReadyMutation.ready(args, context, null as any)).resolves.toEqual(expected)
+  const promise = ReadyMutation.ready(args, context, null as any)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
 
   expect(getGamePlayerSpy.mock.calls).toEqual(getGamePlayerCalls)
   expect(setReadySpy.mock.calls).toEqual(setReadyCalls)
