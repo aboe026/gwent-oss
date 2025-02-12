@@ -1,6 +1,6 @@
 {
   "name": "@gwent/api",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "author": "Adam Boe",
   "description": "GraphQL backend to play Gwent.",
   "main": "src/index.ts",

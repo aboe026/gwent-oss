@@ -4,9 +4,6 @@ A list of things to be done in the future.
 
 ## Fixes
 
-- increment version
-- changelog
-
 - change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
 - save game status to database?
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)
