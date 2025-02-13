@@ -583,7 +583,7 @@ async function testSetDeck({
     }
   }
   const getRandomSubsetSpy = jest.spyOn(gwentUtils, 'getRandomSubset').mockReturnValue(randomSubset)
-  const setDeckSpy = jest.spyOn(GameStore, 'setDeck').mockResolvedValue(setDeckResponse)
+  const setDeckSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(setDeckResponse)
   const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject')
   if (!(expected instanceof Error)) {
     fromObjectSpy.mockResolvedValue(expected)

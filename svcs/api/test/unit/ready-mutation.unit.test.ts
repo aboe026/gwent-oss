@@ -309,7 +309,7 @@ async function testReady({
       getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
     }
   }
-  const setReadySpy = jest.spyOn(GameStore, 'setReady').mockResolvedValue(setReadyResponse)
+  const setReadySpy = jest.spyOn(GameStore, 'save').mockResolvedValue(setReadyResponse)
   const gameResolveSpy = jest.spyOn(GameResolver, 'fromObject')
   if (resolvedGame) {
     gameResolveSpy.mockResolvedValue(resolvedGame)

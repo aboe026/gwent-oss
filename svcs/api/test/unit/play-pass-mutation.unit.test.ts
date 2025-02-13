@@ -594,9 +594,7 @@ async function testPlayPass({
     updated: new Date(),
     turn: nextPlayerId,
   }
-  const makeMoveSpy = jest
-    .spyOn(GameStore, 'makeMove')
-    .mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
+  const makeMoveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
   let resolvedGame: Game | undefined = undefined
   if (expected && !(expected instanceof Error)) {
     resolvedGame = expected

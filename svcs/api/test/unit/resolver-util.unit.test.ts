@@ -1,15 +1,14 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
-import TestUtil from '../test-util'
-import PresentableError from '../../src/util/presentable-error'
-import { GraphQLResolveInfo } from 'graphql'
 import GameStore from '../../src/database/stores/game-store'
-import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
+import { GraphQLResolveInfo } from 'graphql'
+import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import PresentableError from '../../src/util/presentable-error'
+import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
+import TestUtil from '../test-util'
 
 describe('resolver-util', () => {
   describe('setLogPrefix', () => {
@@ -406,9 +405,7 @@ async function testGetGamePlayer({
   label,
   turn,
   getGameResponse,
-  getStatusResponse,
   expected,
-  statusCalls = [],
   errorCalls = [],
   warnCalls = [],
   traceEnabled,
@@ -428,10 +425,6 @@ async function testGetGamePlayer({
   traceEnabled?: boolean
 }) {
   const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
-  const getStatusSpy = jest.spyOn(GameResolver, 'getStatus')
-  if (getStatusResponse) {
-    getStatusSpy.mockReturnValue(getStatusResponse)
-  }
   const logger = getLogger('test')
   const errorSpy = jest.spyOn(logger, 'error').mockImplementation()
   const warnSpy = jest.spyOn(logger, 'warn').mockImplementation()
@@ -466,7 +459,6 @@ async function testGetGamePlayer({
         ]
       : []
   )
-  expect(getStatusSpy.mock.calls).toEqual(statusCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(

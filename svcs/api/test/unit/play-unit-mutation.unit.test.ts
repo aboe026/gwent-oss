@@ -805,9 +805,7 @@ async function testPlayUnit({
     updated,
     turn: userId,
   }
-  const makeMoveSpy = jest
-    .spyOn(GameStore, 'makeMove')
-    .mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
+  const makeMoveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
   if (expected && !(expected instanceof Error)) {
     resolveGameSpy.mockResolvedValue(expected)

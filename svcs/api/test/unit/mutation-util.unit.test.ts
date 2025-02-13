@@ -1634,9 +1634,28 @@ describe('mutation-util', () => {
         logPrefix,
         getGameResponse: dbGame,
         factionByKeyResponse: dbFaction,
-        setOrderResponse: null,
-        randomizeOrderCalls: [[[new ObjectId(userId), new ObjectId(opponentId)]]],
+        saveResponse: null,
+        randomizeOrderCalls: [[[userId, opponentId]]],
         error: Error(message),
+        saveCalls: [
+          [
+            {
+              ...dbGame,
+              players: [
+                {
+                  ...dbGame.players[0],
+                  order: 0,
+                },
+                {
+                  ...dbGame.players[1],
+                  order: 1,
+                },
+              ],
+              turn: new ObjectId(userId),
+              status: GameStatus.Redrawing,
+            },
+          ],
+        ],
         errorCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
         traceCalls: [[`${logPrefix} setGameTurnOrder no userIds provided, randomizing order`]],
       })
@@ -1658,8 +1677,27 @@ describe('mutation-util', () => {
         logPrefix,
         getGameResponse: dbGame,
         factionByKeyResponse: dbFaction,
-        setOrderResponse: updatedGame,
-        randomizeOrderCalls: [[[new ObjectId(userId), new ObjectId(opponentId)]]],
+        saveResponse: updatedGame,
+        randomizeOrderCalls: [[[userId, opponentId]]],
+        saveCalls: [
+          [
+            {
+              ...dbGame,
+              players: [
+                {
+                  ...dbGame.players[0],
+                  order: 0,
+                },
+                {
+                  ...dbGame.players[1],
+                  order: 1,
+                },
+              ],
+              turn: new ObjectId(userId),
+              status: GameStatus.Redrawing,
+            },
+          ],
+        ],
         traceCalls: [[`${logPrefix} setGameTurnOrder no userIds provided, randomizing order`]],
       })
     })
@@ -1700,7 +1738,26 @@ describe('mutation-util', () => {
         userIds: [userId, opponentId],
         getGameResponse: dbGameScoiatael,
         factionByKeyResponse: dbFaction,
-        setOrderResponse: updatedGame,
+        saveResponse: updatedGame,
+        saveCalls: [
+          [
+            {
+              ...dbGame,
+              players: [
+                {
+                  ...dbGame.players[0],
+                  order: 0,
+                },
+                {
+                  ...dbGame.players[1],
+                  order: 1,
+                },
+              ],
+              turn: new ObjectId(userId),
+              status: GameStatus.Redrawing,
+            },
+          ],
+        ],
       })
     })
     it('returns resolved updated game if no errors and explicitly setting opponent first', async () => {
@@ -1740,7 +1797,26 @@ describe('mutation-util', () => {
         userIds: [opponentId, userId],
         getGameResponse: dbGameScoiatael,
         factionByKeyResponse: dbFaction,
-        setOrderResponse: updatedGame,
+        saveResponse: updatedGame,
+        saveCalls: [
+          [
+            {
+              ...dbGame,
+              players: [
+                {
+                  ...dbGame.players[0],
+                  order: 1,
+                },
+                {
+                  ...dbGame.players[1],
+                  order: 0,
+                },
+              ],
+              turn: new ObjectId(opponentId),
+              status: GameStatus.Redrawing,
+            },
+          ],
+        ],
       })
     })
     it('override class logPrefix if provided as parameter', async () => {
@@ -1762,8 +1838,27 @@ describe('mutation-util', () => {
         logPrefixOverride,
         getGameResponse: dbGame,
         factionByKeyResponse: dbFaction,
-        setOrderResponse: updatedGame,
-        randomizeOrderCalls: [[[new ObjectId(userId), new ObjectId(opponentId)]]],
+        saveResponse: updatedGame,
+        randomizeOrderCalls: [[[userId, opponentId]]],
+        saveCalls: [
+          [
+            {
+              ...dbGame,
+              players: [
+                {
+                  ...dbGame.players[0],
+                  order: 0,
+                },
+                {
+                  ...dbGame.players[1],
+                  order: 1,
+                },
+              ],
+              turn: new ObjectId(userId),
+              status: GameStatus.Redrawing,
+            },
+          ],
+        ],
         traceCalls: [[`${logPrefixOverride} setGameTurnOrder no userIds provided, randomizing order`]],
       })
     })
@@ -1796,6 +1891,7 @@ describe('mutation-util', () => {
           }
         }),
         turn: new ObjectId(userId),
+        status: GameStatus.Redrawing,
       }
       await testSetGameTurnOrder({
         gameId,
@@ -1804,7 +1900,15 @@ describe('mutation-util', () => {
         userIds: [userId, opponentId],
         getGameResponse: dbGameScoiatael,
         factionByKeyResponse: dbFaction,
-        setOrderResponse: updatedGame,
+        saveResponse: updatedGame,
+        saveCalls: [
+          [
+            {
+              ...updatedGame,
+              turn: new ObjectId(userId),
+            },
+          ],
+        ],
         traceEnabled: true,
         traceCalls: [
           [`${logPrefix} setGameTurnOrder userIds provided, not randomizing order`],
@@ -1970,9 +2074,10 @@ async function testSetGameTurnOrder({
   userIds,
   getGameResponse,
   factionByKeyResponse,
-  setOrderResponse,
+  saveResponse,
   error,
   randomizeOrderCalls = [],
+  saveCalls = [],
   errorCalls = [],
   warnCalls = [],
   debugCalls = [],
@@ -1987,9 +2092,10 @@ async function testSetGameTurnOrder({
   userIds?: string[]
   getGameResponse: GameDbObject
   factionByKeyResponse: FactionDbObject
-  setOrderResponse?: GameDbObject | null
+  saveResponse?: GameDbObject | null
   error?: Error
   randomizeOrderCalls?: any[][]
+  saveCalls?: any[][]
   errorCalls?: any[][]
   warnCalls?: any[][]
   debugCalls?: any[][]
@@ -2002,22 +2108,22 @@ async function testSetGameTurnOrder({
   })
   const getFactionByKeySpy = jest.spyOn(FactionStore, 'getByKey').mockResolvedValue(factionByKeyResponse)
   const randomizeOrderSpy = jest.spyOn(gwentUtils, 'randomizeOrder')
-  const randomPlayers: ObjectId[] = []
+  const randomPlayers: string[] = []
   if (getGameResponse) {
     for (const player of getGameResponse.players) {
-      randomPlayers.push(player.user)
+      randomPlayers.push(player.user.toString())
     }
     randomizeOrderSpy.mockReturnValue(randomPlayers)
   }
-  const setOrderSpy = jest.spyOn(GameStore, 'setOrder')
-  if (setOrderResponse !== undefined) {
-    setOrderSpy.mockResolvedValue(setOrderResponse || undefined)
+  const saveSpy = jest.spyOn(GameStore, 'save')
+  if (saveResponse) {
+    saveSpy.mockResolvedValue(saveResponse)
   }
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
   let resolvedGame
-  if (setOrderResponse) {
+  if (saveResponse) {
     resolvedGame = TestUtil.getGameFromDbGame({
-      game: setOrderResponse,
+      game: saveResponse,
     })
     resolveGameSpy.mockResolvedValue(resolvedGame)
   }
@@ -2064,18 +2170,7 @@ async function testSetGameTurnOrder({
     ],
   ])
   expect(randomizeOrderSpy.mock.calls).toEqual(randomizeOrderCalls)
-  expect(setOrderSpy.mock.calls).toEqual(
-    setOrderResponse !== undefined
-      ? [
-          [
-            {
-              gameId,
-              userIds: userIds || randomPlayers,
-            },
-          ],
-        ]
-      : []
-  )
+  expect(saveSpy.mock.calls).toEqual(saveCalls)
   expect(publishSpy.mock.calls).toEqual(
     error
       ? []

@@ -381,7 +381,7 @@ async function testRedraw({
     }
   }
   const getRandomSubsetSpy = jest.spyOn(gwentUtils, 'getRandomSubset').mockReturnValue([newCard])
-  const gameRedrawSpy = jest.spyOn(GameStore, 'redraw').mockResolvedValue(gameRedrawResponse)
+  const gameRedrawSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(gameRedrawResponse)
   const resolveDeckUnitSpy = jest.spyOn(DeckUnitResolver, 'fromObject')
   if (resolveDeckUnitResponses) {
     for (const resolveDeckUnitResponse of resolveDeckUnitResponses) {

@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import { Faction, GamePlayer, Leader, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
-import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
+import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import TestUtil from '../test-util'
@@ -236,7 +236,7 @@ async function testResolveFromObject({
   }
 
   const promise = GamePlayerResolver.fromObject({
-    allDecksChosen,
+    gameStatus: GameStatus.Decking, // TODO: parameterize
     player,
     faction,
     leader,
@@ -323,7 +323,7 @@ async function testResolveFromArray({
   }
 
   const promise = GamePlayerResolver.fromArray({
-    allDecksChosen,
+    gameStatus: GameStatus.Decking, // TODO: parameterize
     players,
     users,
   })
