@@ -3,7 +3,7 @@ import { getLogger } from 'log4js'
 import { Context } from '@gwent/graphql-schema/context'
 import env from '../../../env'
 import { GraphQLResolveInfo } from 'graphql'
-import { RequestedFields } from '@gwent/graphql-schema'
+import ResolverUtil from '../resolver-util'
 import { Setting, SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
 
 /**
@@ -20,16 +20,20 @@ export default class SettingsQuery {
    * @returns The settings configured for the application.
    */
   static settings(context: Context, info: GraphQLResolveInfo): Setting[] {
-    const userId = context.session?.user?._id
+    const resolverUtil = new ResolverUtil({
+      logger: SettingsQuery.logger,
+    })
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'settings query',
+    })
+
     const logPrefix = `settings by "${userId}"`
-    if (SettingsQuery.logger.isTraceEnabled()) {
-      SettingsQuery.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      SettingsQuery.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.logRequestInfo({
+      info,
+    })
+
     return [
       {
         key: SettingKey.SessionTimeoutSeconds,

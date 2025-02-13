@@ -1,12 +1,10 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { Game, MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import MutationUtil from './mutation-util'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
-import { RequestedFields } from '@gwent/graphql-schema'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class for executing the setOrder GraphQL Mutation.
@@ -23,43 +21,43 @@ export default class SetOrderMutation {
    * @returns The Game with player turn orders set.
    */
   static async setOrder(args: MutationSetOrderArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
-    const userId = context.session?.user?._id
-    if (!userId) {
-      SetOrderMutation.logger.error(`No user on context for setOrder mutation: "${JSON.stringify(context.session)}".`)
-      return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    const resolverUtil = new ResolverUtil({
+      logger: SetOrderMutation.logger,
+    })
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'setOrder mutation',
+    })
+
     const logPrefix = `setOrder by "${userId}"`
-    if (SetOrderMutation.logger.isTraceEnabled()) {
-      SetOrderMutation.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
-      SetOrderMutation.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      SetOrderMutation.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.logRequestInfo({
+      args,
+      info,
+    })
 
     const gameId = args.game
     const userIds = args.users
-    if (!ObjectId.isValid(gameId)) {
-      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      SetOrderMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+
+    resolverUtil.verifyMongoIds({
+      ids: [gameId],
+      label: 'Game ID',
+    })
     if (userIds) {
-      for (const playerId of userIds) {
-        if (!ObjectId.isValid(playerId)) {
-          const message = `User ID "${playerId}" is not a valid MongoDB ObjectId.`
-          SetOrderMutation.logger.warn(`${logPrefix} failed: ${message}`)
-          return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-        }
-      }
+      resolverUtil.verifyMongoIds({
+        ids: userIds,
+        label: 'User ID',
+      })
     }
 
-    return MutationUtil.setGameTurnOrder({
+    const mutationUtil = new MutationUtil({
+      logger: SetOrderMutation.logger,
+      logPrefix,
+    })
+
+    return mutationUtil.setGameTurnOrder({
       userId,
       gameId,
-      logPrefix,
       userIds,
       allowImplicit: true,
     })

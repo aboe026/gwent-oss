@@ -3,10 +3,10 @@ import { ObjectId } from 'mongodb'
 import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game-mutation'
 import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../src/graphql/event-manager'
-import { Game, MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
+import { MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS, PubSubEvents } from '@gwent/constants'
+import { PLAYER_COUNTS, PubSubEvents } from '@gwent/constants'
 import TestUtil from '../test-util'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../src/database/stores/user-store'
@@ -15,58 +15,51 @@ describe('add-game-mutation', () => {
   describe('addGame', () => {
     const userId = new ObjectId()
     const logPrefix = `addGame by "${userId}"`
-    it('returns error if no user on context', async () => {
-      await testAddGame({
-        opponentNames: ['test'],
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for addGame mutation: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if duplicate opponents', async () => {
+    it('throws error if duplicate opponents', async () => {
       const error = 'Invalid opponents: names ["test"] are duplicates.'
       await testAddGame({
         creatorId: userId,
         opponentNames: ['test', 'test'],
-        expected: Error(error),
+        exception: Error(error),
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if creator listed with opponents', async () => {
+    it('throws error if creator listed with opponents', async () => {
       const error = 'Invalid opponents: cannot include self.'
       const creatorName = 'creator-name'
       await testAddGame({
         creatorId: userId,
         creatorName,
         opponentNames: [creatorName, 'test'],
-        expected: Error(error),
+        exception: Error(error),
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if not enough opponents', async () => {
+    it('throws error if not enough opponents', async () => {
       const error = `Not enough opponents for game at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`
       await testAddGame({
         creatorId: userId,
         opponentNames: [],
-        expected: Error(error),
+        exception: Error(error),
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if too many opponents', async () => {
+    it('throws error if too many opponents', async () => {
       const error = `Excessive opponents for game at "2", maximum is "${PLAYER_COUNTS.Min - 1}".`
       await testAddGame({
         creatorId: userId,
         opponentNames: ['one', 'two'],
-        expected: Error(error),
+        exception: Error(error),
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if opponent does not exist', async () => {
+    it('throws error if opponent does not exist', async () => {
       const opponent = 'opponent'
       const error = `User with name "${opponent}" does not exist.`
       await testAddGame({
         creatorId: userId,
         opponentNames: [opponent],
-        expected: Error(error),
+        exception: Error(error),
         getByNamesCalls: [[[opponent]]],
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
@@ -124,7 +117,7 @@ async function testAddGame({
   creatorName,
   opponentNames,
   getUserByNamesResponse = [],
-  expected,
+  exception,
   addCalls = [],
   fromObjectCalled,
   getByNamesCalls = [],
@@ -137,7 +130,7 @@ async function testAddGame({
   creatorName?: string
   opponentNames: string[]
   getUserByNamesResponse?: UserDbObject[]
-  expected?: Game | Error
+  exception?: Error
   addCalls?: any[][]
   fromObjectCalled?: boolean
   getByNamesCalls?: any[][]
@@ -183,7 +176,12 @@ async function testAddGame({
     trace: traceSpy,
   } as any
 
-  await expect(AddGameMutation.addGame(args, context, null as any)).resolves.toEqual(expected || resolvedGame)
+  const promise = AddGameMutation.addGame(args, context, null as any)
+  if (exception) {
+    await expect(promise).rejects.toThrow(exception)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedGame)
+  }
 
   expect(getByNamesSpy.mock.calls).toEqual(getByNamesCalls)
   expect(addSpy.mock.calls).toEqual(addCalls)
@@ -223,7 +221,6 @@ async function testAddGame({
           ],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} creator: "${user.name}"`],
           [`${logPrefix} opponents: "${JSON.stringify(getUserByNamesResponse)}"`],
           [
             `${logPrefix} resolvedOpponents: "${JSON.stringify(

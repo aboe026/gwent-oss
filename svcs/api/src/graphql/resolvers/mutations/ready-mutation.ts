@@ -9,8 +9,9 @@ import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
 import MutationUtil from './mutation-util'
-import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
-import { RequestedFields } from '@gwent/graphql-schema'
+import PresentableError from '../../../util/presentable-error'
+import { PubSubEvents } from '@gwent/constants'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class for executing the ready GraphQL Mutation.
@@ -25,49 +26,48 @@ export default class ReadyMutation {
    * @param context The session containing the user readying the game.
    * @param info The information about the GraphQL request.
    * @returns The Game that is now ready for the user.
+   * @throws PresentableError if problem marking game as ready.
    */
   static async ready(args: MutationReadyArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
-    const userId = context.session?.user?._id
-    if (!userId) {
-      ReadyMutation.logger.error(`No user on context for ready mutation: "${JSON.stringify(context.session)}".`)
-      return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    const resolverUtil = new ResolverUtil({
+      logger: ReadyMutation.logger,
+    })
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'ready mutation',
+    })
+
     const logPrefix = `ready by "${userId}"`
-    if (ReadyMutation.logger.isTraceEnabled()) {
-      ReadyMutation.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
-      ReadyMutation.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      ReadyMutation.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.logRequestInfo({
+      args,
+      info,
+    })
+
     const gameId = args.game
 
-    const response = await MutationUtil.getGamePlayer({
+    const { game, player } = await resolverUtil.getGamePlayer({
       gameId,
-      logPrefix,
       userId,
       status: GameStatus.Redrawing,
       label: 'mark ready',
     })
 
-    if (response instanceof Error) {
-      return response as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-
-    const { game, player } = response
-
     if (!player.deck.from) {
       const message = `Must set deck on game "${gameId}" first.`
       ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError(message)
     }
     if (player.ready) {
       const message = `Game "${gameId}" already marked as ready.`
       ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError(message)
     }
+
+    const mutationUtil = new MutationUtil({
+      logger: ReadyMutation.logger,
+      logPrefix,
+    })
 
     game.players = game.players.map((gamePlayer) => {
       let ready = gamePlayer.ready
@@ -89,7 +89,7 @@ export default class ReadyMutation {
     }
     if (unreadyPlayers.length === 0) {
       ReadyMutation.logger.debug(`${logPrefix} game "${game._id}" has all players ready, starting first round.`)
-      game.players = MutationUtil.initializeNewRound({
+      game.players = mutationUtil.initializeNewRound({
         players: game.players,
       })
     }
@@ -111,7 +111,7 @@ export default class ReadyMutation {
     if (!updatedGame) {
       const message = `Could not set player as ready for game "${gameId}" in probable race condition collision.`
       ReadyMutation.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError(message)
     }
     const resolvedGame = await GameResolver.fromObject({
       game: updatedGame,

@@ -137,6 +137,74 @@ describe('faction-store', () => {
       })
     })
   })
+  describe('getByKey', () => {
+    const key = FactionKey.NorthernRealms
+    const logPrefix = 'test'
+    it('throws error if no faction returned', async () => {
+      const message = `Could not find faction with key "${key}".`
+      await testGetByKey({
+        key,
+        logPrefix,
+        factionGetResponse: [],
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if more than 1 faction returned', async () => {
+      const message = `Found more than 1 faction with key "${key}"`
+      const factions = [
+        TestUtil.getDbFaction({
+          key,
+        }),
+        TestUtil.getDbFaction({
+          key,
+        }),
+      ]
+      await testGetByKey({
+        key,
+        logPrefix,
+        factionGetResponse: factions,
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(factions)}"`]],
+      })
+    })
+    it('throws error if returned faction key does not match', async () => {
+      const faction = TestUtil.getDbFaction({
+        key: FactionKey.Monsters,
+      })
+      const message = `Faction key of "${faction.key}" does not match requestd key of "${key}".`
+      await testGetByKey({
+        key,
+        logPrefix,
+        factionGetResponse: [faction],
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('returns faction if only one found with correct key', async () => {
+      const faction = TestUtil.getDbFaction({
+        key,
+      })
+      await testGetByKey({
+        key,
+        logPrefix,
+        factionGetResponse: [faction],
+        expected: faction,
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const faction = TestUtil.getDbFaction({
+        key,
+      })
+      await testGetByKey({
+        key,
+        logPrefix,
+        factionGetResponse: [faction],
+        expected: faction,
+        traceEnabled: true,
+      })
+    })
+  })
 })
 
 async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
@@ -269,4 +337,52 @@ async function testGet({
       : []
   )
   expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`get filter: "${JSON.stringify(expectedFilter)}"`]] : [])
+}
+
+async function testGetByKey({
+  key,
+  logPrefix,
+  factionGetResponse,
+  expected,
+  errorCalls = [],
+  traceEnabled,
+}: {
+  key: FactionKey
+  logPrefix: string
+  factionGetResponse: FactionDbObject[]
+  expected: FactionDbObject | Error
+  errorCalls?: string[][]
+  traceEnabled?: boolean
+}) {
+  const getSpy = jest.spyOn(FactionStore, 'get').mockResolvedValue(factionGetResponse)
+
+  const errorSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  FactionStore['logger'] = {
+    error: errorSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
+
+  const promise = FactionStore.getByKey({
+    key,
+    logPrefix,
+  })
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
+
+  expect(getSpy.mock.calls).toEqual([
+    [
+      {
+        keys: [key],
+      },
+    ],
+  ])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled ? [[`${logPrefix} factions: "${JSON.stringify(factionGetResponse)}"`]] : []
+  )
 }

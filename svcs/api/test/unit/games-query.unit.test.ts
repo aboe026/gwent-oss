@@ -4,17 +4,10 @@ import { Context } from '@gwent/graphql-schema/context'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GamesQuery from '../../src/graphql/resolvers/queries/games-query'
 import GameStore from '../../src/database/stores/game-store'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import TestUtil from '../test-util'
 
 describe('games-query', () => {
   describe('games', () => {
-    it('returns error if no user on context', async () => {
-      await testGames({
-        error: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for games query: "${JSON.stringify({})}".`]],
-      })
-    })
     it('calls out to GameResolver fromArray', async () => {
       await testGames({
         userId: new ObjectId(),
@@ -73,6 +66,7 @@ async function testGames({
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
+          [`${logPrefix} args: "{}"`],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} games: "${JSON.stringify([game])}"`],

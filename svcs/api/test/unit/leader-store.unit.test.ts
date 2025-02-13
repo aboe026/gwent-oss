@@ -2,6 +2,7 @@ import { Document, FindOptions, ObjectId } from 'mongodb'
 
 import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
 import LeaderStore, { GetLeadersInput } from '../../src/database/stores/leader-store'
+import TestUtil from '../test-util'
 
 describe('leader-store', () => {
   describe('add', () => {
@@ -117,6 +118,72 @@ describe('leader-store', () => {
       })
     })
   })
+  describe('getByKey', () => {
+    const id = new ObjectId()
+    const logPrefix = 'test'
+    it('throws error if no leader returned', async () => {
+      const message = `Could not find leader with ID "${id}".`
+      await testGetById({
+        id: id,
+        logPrefix,
+        leaderGetResponse: [],
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('throws error if more than 1 leader returned', async () => {
+      const message = `Found more than 1 leader with ID "${id}"`
+      const leaders = [
+        TestUtil.getDbLeader({
+          id,
+        }),
+        TestUtil.getDbLeader({
+          id,
+        }),
+      ]
+      await testGetById({
+        id: id,
+        logPrefix,
+        leaderGetResponse: leaders,
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(leaders)}"`]],
+      })
+    })
+    it('throws error if returned leader id does not match', async () => {
+      const leader = TestUtil.getDbLeader({})
+      const message = `Leader ID of "${leader._id}" does not match requestd ID of "${id}".`
+      await testGetById({
+        id: id,
+        logPrefix,
+        leaderGetResponse: [leader],
+        expected: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('returns leader if only one found with correct key', async () => {
+      const leader = TestUtil.getDbLeader({
+        id,
+      })
+      await testGetById({
+        id: id,
+        logPrefix,
+        leaderGetResponse: [leader],
+        expected: leader,
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const leader = TestUtil.getDbLeader({
+        id,
+      })
+      await testGetById({
+        id: id,
+        logPrefix,
+        leaderGetResponse: [leader],
+        expected: leader,
+        traceEnabled: true,
+      })
+    })
+  })
 })
 
 async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
@@ -227,5 +294,53 @@ async function testGet({
     traceEnabled
       ? [[`get filter: "${JSON.stringify(expectedFilter)}"`], [`get options: "${JSON.stringify(options)}"`]]
       : []
+  )
+}
+
+async function testGetById({
+  id,
+  logPrefix,
+  leaderGetResponse,
+  expected,
+  errorCalls = [],
+  traceEnabled,
+}: {
+  id: string | ObjectId
+  logPrefix: string
+  leaderGetResponse: LeaderDbObject[]
+  expected: LeaderDbObject | Error
+  errorCalls?: string[][]
+  traceEnabled?: boolean
+}) {
+  const getSpy = jest.spyOn(LeaderStore, 'get').mockResolvedValue(leaderGetResponse)
+
+  const errorSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  LeaderStore['logger'] = {
+    error: errorSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
+
+  const promise = LeaderStore.getById({
+    id,
+    logPrefix,
+  })
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
+
+  expect(getSpy.mock.calls).toEqual([
+    [
+      {
+        ids: [id],
+      },
+    ],
+  ])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(traceSpy.mock.calls).toEqual(
+    traceEnabled ? [[`${logPrefix} leaders: "${JSON.stringify(leaderGetResponse)}"`]] : []
   )
 }

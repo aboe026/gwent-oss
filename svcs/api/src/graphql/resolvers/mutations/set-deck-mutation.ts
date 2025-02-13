@@ -1,5 +1,4 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { DeckSetPayload, GameSetPayload } from '../subscription-resolver'
@@ -8,13 +7,14 @@ import EventManager from '../../event-manager'
 import { GameDeck, MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckResolver from '../types/game-deck-resolver'
 import GameResolver from '../types/game-resolver'
-import { GameStatus } from '@gwent/graphql-schema/database-typings'
+import { FactionKey, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getRandomSubset } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import MutationUtil from './mutation-util'
-import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
-import { RequestedFields } from '@gwent/graphql-schema'
+import PresentableError from '../../../util/presentable-error'
+import { PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class for executing the setDeck GraphQL Mutation.
@@ -29,31 +29,31 @@ export default class SetDeckMutation {
    * @param context The session containing the user setting the deck.
    * @param info The information about the GraphQL request.
    * @returns The GameDeck that was set for the game.
+   * @throws PresentableError if problem setting deck.
    */
   static async setDeck(args: MutationSetDeckArgs, context: Context, info: GraphQLResolveInfo): Promise<GameDeck> {
-    const userId = context.session?.user?._id
-    if (!userId) {
-      SetDeckMutation.logger.error(`No user on context for setDeck mutation: "${JSON.stringify(context.session)}".`)
-      return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    const resolverUtil = new ResolverUtil({
+      logger: SetDeckMutation.logger,
+    })
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'setDeck mutation',
+    })
+
     const logPrefix = `setDeck by "${userId}"`
-    if (SetDeckMutation.logger.isTraceEnabled()) {
-      SetDeckMutation.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
-      SetDeckMutation.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      SetDeckMutation.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.logRequestInfo({
+      args,
+      info,
+    })
+
     const gameId = args.game
     const deckId = args.deck
 
-    if (!ObjectId.isValid(deckId)) {
-      const message = `Deck ID "${deckId}" is not a valid MongoDB ObjectId.`
-      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    resolverUtil.verifyMongoIds({
+      ids: [deckId],
+      label: 'Deck ID',
+    })
 
     const deck = await DeckStore.getById({
       id: deckId,
@@ -64,28 +64,26 @@ export default class SetDeckMutation {
     if (!deck) {
       const message = `Deck with ID "${deckId}" does not exist.`
       SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError(message)
     }
 
-    const response = await MutationUtil.getGamePlayer({
+    const { player } = await resolverUtil.getGamePlayer({
       gameId,
-      logPrefix,
       userId,
       status: GameStatus.Decking,
       label: 'set deck',
     })
 
-    if (response instanceof Error) {
-      return response as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
-
-    const { player } = response
-
     if (player.deck.from !== null && player.deck.from !== undefined) {
       const message = `Deck already set for game "${gameId}".`
       SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError(message)
     }
+
+    const mutationUtil = new MutationUtil({
+      logger: SetDeckMutation.logger,
+      logPrefix,
+    })
 
     const hand = getRandomSubset({
       items: deck.units,
@@ -114,7 +112,7 @@ export default class SetDeckMutation {
     if (!updatedGame) {
       const message = `Could not set deck "${deckId}" on game "${gameId}" in probable race condition collision.`
       SetDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError(message)
     }
     const updatedPlayer = updatedGame.players.find((gamePlayer) => gamePlayer.user.toString() === userId.toString())
     if (SetDeckMutation.logger.isTraceEnabled()) {
@@ -123,7 +121,7 @@ export default class SetDeckMutation {
     if (!updatedPlayer) {
       const message = `Could not get player after setting deck "${deckId}" on game "${gameId}".`
       SetDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
-      return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      throw new PresentableError(message)
     }
     const resolvedDeck = await GameDeckResolver.fromObject({
       gameDeck: updatedPlayer.deck,
@@ -147,12 +145,24 @@ export default class SetDeckMutation {
       EventManager.pubsub.publish(PubSubEvents.GameSet, {
         gameSet: resolvedGame,
       } as GameSetPayload)
-      await MutationUtil.setGameTurnOrder({
-        userId,
-        gameId,
-        logPrefix: `setOrder via ${logPrefix}`,
-        allowImplicit: false,
-      })
+      try {
+        await mutationUtil.setGameTurnOrder({
+          userId,
+          gameId,
+          logPrefix: `setOrder via ${logPrefix}`,
+          allowImplicit: false,
+        })
+      } catch (err: unknown) {
+        if (
+          err instanceof PresentableError &&
+          err.message ===
+            `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+        ) {
+          // swallow
+        } else {
+          throw err
+        }
+      }
     }
 
     return resolvedDeck

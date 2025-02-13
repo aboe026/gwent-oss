@@ -7,7 +7,7 @@ import { GraphQLResolveInfo } from 'graphql'
 import { Leader, QueryLeadersArgs } from '@gwent/graphql-schema/resolver-typings'
 import LeaderStore from '../../../database/stores/leader-store'
 import LeaderResolver from '../types/leader-resolver'
-import { RequestedFields } from '@gwent/graphql-schema'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class for executing the leaders GraphQL Query.
@@ -23,18 +23,23 @@ export default class LeadersQuery {
    * @returns The Leaders available to build Decks with.
    */
   static async leaders(args: QueryLeadersArgs, context: Context, info: GraphQLResolveInfo): Promise<Leader[]> {
-    const userId = context.session?.user?._id
+    const resolverUtil = new ResolverUtil({
+      logger: LeadersQuery.logger,
+    })
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'leaders query',
+    })
+
     const logPrefix = `leaders by "${userId}"`
-    if (LeadersQuery.logger.isTraceEnabled()) {
-      LeadersQuery.logger.trace(`${logPrefix} args: "${JSON.stringify(args)}"`)
-      LeadersQuery.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      LeadersQuery.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.logRequestInfo({
+      args,
+      info,
+    })
+
     const factionKeys = args.factions
+
     let factionIds: string[] | undefined = undefined
     let factions: FactionDbObject[] | undefined
     if (factionKeys) {

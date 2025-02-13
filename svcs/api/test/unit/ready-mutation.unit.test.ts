@@ -1,3 +1,4 @@
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
@@ -6,9 +7,10 @@ import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
-import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
+import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
+import { PubSubEvents } from '@gwent/constants'
 import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
+import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
 
 describe('ready-mutation', () => {
@@ -35,7 +37,6 @@ describe('ready-mutation', () => {
       [
         {
           gameId,
-          logPrefix,
           userId,
           status: GameStatus.Redrawing,
           label: 'mark ready',
@@ -85,24 +86,7 @@ describe('ready-mutation', () => {
         },
       ],
     ]
-    it('returns error if no user on context', async () => {
-      await testReady({
-        gameId,
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for ready mutation: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if getGamePlayer returns error', async () => {
-      const error = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      await testReady({
-        userId,
-        gameId,
-        getGamePlayerResponse: Error(error),
-        expected: Error(error),
-        getGamePlayerCalls,
-      })
-    })
-    it('returns error if deck not yet set', async () => {
+    it('throws error if deck not yet set', async () => {
       const error = `Must set deck on game "${gameId}" first.`
       await testReady({
         userId,
@@ -122,7 +106,7 @@ describe('ready-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if already marked as ready', async () => {
+    it('throws error if already marked as ready', async () => {
       const error = `Game "${gameId}" already marked as ready.`
       await testReady({
         userId,
@@ -139,7 +123,7 @@ describe('ready-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('returns error if setReady response is undefined', async () => {
+    it('throws error if setReady response is undefined', async () => {
       const error = `Could not set player as ready for game "${gameId}" in probable race condition collision.`
       await testReady({
         userId,
@@ -186,7 +170,9 @@ describe('ready-mutation', () => {
         ...game,
         players: [gamePlayerSelf, readyOpponentGamePlayer],
       }
-      const allPlayersReadyPlayers: GamePlayerDbObject[] = MutationUtil.initializeNewRound({
+      const allPlayersReadyPlayers: GamePlayerDbObject[] = new MutationUtil({
+        logger: getLogger('test'),
+      }).initializeNewRound({
         players: [
           {
             ...game.players[0],
@@ -315,9 +301,13 @@ async function testReady({
   const args: MutationReadyArgs = {
     game: gameId,
   }
-  const getGamePlayerSpy = jest.spyOn(MutationUtil, 'getGamePlayer')
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
   if (getGamePlayerResponse) {
-    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    if (getGamePlayerResponse instanceof Error) {
+      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
+    } else {
+      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    }
   }
   const setReadySpy = jest.spyOn(GameStore, 'setReady').mockResolvedValue(setReadyResponse)
   const gameResolveSpy = jest.spyOn(GameResolver, 'fromObject')
@@ -337,7 +327,12 @@ async function testReady({
     trace: traceSpy,
   } as any
 
-  await expect(ReadyMutation.ready(args, context, null as any)).resolves.toEqual(expected)
+  const promise = ReadyMutation.ready(args, context, null as any)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
 
   expect(getGamePlayerSpy.mock.calls).toEqual(getGamePlayerCalls)
   expect(setReadySpy.mock.calls).toEqual(setReadyCalls)

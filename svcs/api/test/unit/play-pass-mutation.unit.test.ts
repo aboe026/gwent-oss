@@ -8,9 +8,10 @@ import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolv
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import { MoveType } from '@gwent/graphql-schema'
-import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
-import { NOT_AUTHENTICATED_MESSAGE, PubSubEvents } from '@gwent/constants'
+import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
+import { PubSubEvents } from '@gwent/constants'
 import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass-mutation'
+import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
 
 describe('play-pass-mutation', () => {
@@ -18,21 +19,7 @@ describe('play-pass-mutation', () => {
     const userId = new ObjectId()
     const gameId = new ObjectId().toString()
     const logPrefix = `playPass by "${userId}" on game "${gameId}"`
-    it('returns error if no user on context', async () => {
-      await testPlayPass({
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [['No user on context for playPass mutation: "{}".']],
-      })
-    })
-    it('returns error if getGamePlayer returns error', async () => {
-      const message = `Game ID "invalid" is not a valid MongoDB ObjectId.`
-      await testPlayPass({
-        userId,
-        getGamePlayerResponse: Error(message),
-        expected: Error(message),
-      })
-    })
-    it('returns error if current round does not exist on player', async () => {
+    it('throws error if current round does not exist on player', async () => {
       const message = `Could not get round "1" for player "${userId}"`
       const player = TestUtil.getDbGamePlayer({
         user: userId,
@@ -52,7 +39,7 @@ describe('play-pass-mutation', () => {
         errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(player.rounds)}"`]],
       })
     })
-    it('returns error if user already passed the current round', async () => {
+    it('throws error if user already passed the current round', async () => {
       const message = 'Already passed round "1"'
       const player = TestUtil.getDbGamePlayer({
         user: userId,
@@ -77,59 +64,7 @@ describe('play-pass-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('returns error if getNextPlayerIdForCurrentRound returns error', async () => {
-      const message = `Could not determine order of current player "${userId}": "undefined".`
-      const firstPlayer = TestUtil.getDbGamePlayer({
-        user: userId,
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 0,
-      })
-      const secondPlayer = TestUtil.getDbGamePlayer({
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 1,
-      })
-      const moveDate = new Date()
-      const game = TestUtil.getDbGame({
-        players: [firstPlayer, secondPlayer],
-        round: 1,
-        turn: firstPlayer.user,
-      })
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...firstPlayer,
-            rounds: [
-              {
-                ...firstPlayer.rounds[0],
-                passed: true,
-                moves: [
-                  {
-                    created: moveDate,
-                    type: MoveType.Pass,
-                  },
-                ],
-              },
-            ],
-          },
-          secondPlayer,
-        ],
-        turn: firstPlayer.user,
-      }
-      await testPlayPass({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: firstPlayer,
-        },
-        modifiedGame,
-        moveDate: new Date(),
-        getNextPlayerIdForCurrentRoundError: Error(message),
-        expected: Error(message),
-      })
-    })
-    it('returns error if makeMove returns undefined', async () => {
+    it('throws error if makeMove returns undefined', async () => {
       const message = `Could not play pass for game "${gameId}" in probable race condition collision.`
       const firstPlayer = TestUtil.getDbGamePlayer({
         user: userId,
@@ -595,13 +530,12 @@ async function testPlayPass({
   userId,
   gameId = '',
   getGamePlayerResponse,
-  getNextPlayerIdForCurrentRoundError,
   nextPlayerId,
   modifiedGame,
   makeMoveResponseEmpty,
   moveDate,
-  roundOver,
-  gameOver,
+  roundOver = false,
+  gameOver = false,
   expected,
   traceEnabled,
   errorCalls = [],
@@ -612,7 +546,6 @@ async function testPlayPass({
   userId?: ObjectId
   gameId?: string
   getGamePlayerResponse?: GamePlayerResponse | Error
-  getNextPlayerIdForCurrentRoundError?: Error
   nextPlayerId?: ObjectId
   modifiedGame?: GameDbObject
   makeMoveResponseEmpty?: boolean
@@ -637,14 +570,23 @@ async function testPlayPass({
   const args: MutationPlayPassArgs = {
     game: gameId,
   }
-  const logPrefix = `playPass by "${userId}" on game "${gameId}"`
-  const getGamePlayerSpy = jest.spyOn(MutationUtil, 'getGamePlayer')
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
   if (getGamePlayerResponse) {
-    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    if (getGamePlayerResponse instanceof Error) {
+      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
+    } else {
+      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
+    }
   }
-  const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(MutationUtil, 'getNextPlayerIdForCurrentRound')
-  if (getNextPlayerIdForCurrentRoundError) {
-    getNextPlayerIdForCurrentRoundSpy.mockReturnValue(getNextPlayerIdForCurrentRoundError)
+  const isRoundOverSpy = jest.spyOn(MutationUtil.prototype, 'isRoundOver').mockReturnValue(roundOver)
+  const isGameOverSpy = jest.spyOn(MutationUtil.prototype, 'isGameOver').mockReturnValue(gameOver)
+  const getPlayerIdForNextRoundSpy = jest.spyOn(MutationUtil.prototype, 'getPlayerIdForNextRound')
+  if (nextPlayerId) {
+    getPlayerIdForNextRoundSpy.mockReturnValue(nextPlayerId)
+  }
+  const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(MutationUtil.prototype, 'getNextPlayerIdForCurrentRound')
+  if (nextPlayerId) {
+    getNextPlayerIdForCurrentRoundSpy.mockReturnValue(nextPlayerId)
   }
 
   const updatedGame: GameDbObject = {
@@ -694,7 +636,12 @@ async function testPlayPass({
     trace: traceSpy,
   } as any
 
-  await expect(PlayPassMutation.playPass(args, context, null as any)).resolves.toEqual(expected)
+  const promise = PlayPassMutation.playPass(args, context, null as any)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
 
   expect(getGamePlayerSpy.mock.calls).toEqual(
     getGamePlayerResponse
@@ -702,7 +649,6 @@ async function testPlayPass({
           [
             {
               gameId,
-              logPrefix,
               userId,
               status: GameStatus.Playing,
               turn: true,
@@ -712,24 +658,35 @@ async function testPlayPass({
         ]
       : []
   )
-  expect(getNextPlayerIdForCurrentRoundSpy.mock.calls).toEqual(
-    (nextPlayerId && !roundOver) || getNextPlayerIdForCurrentRoundError
+  expect(isRoundOverSpy).toHaveBeenCalledTimes(nextPlayerId || gameOver ? 1 : 0)
+  expect(isGameOverSpy).toHaveBeenCalledTimes(roundOver ? 1 : 0)
+  expect(getPlayerIdForNextRoundSpy.mock.calls).toEqual(
+    nextPlayerId && roundOver
       ? [
           [
             {
-              game: {
-                ...modifiedGame,
-                turn: userId,
-              },
-              logPrefix,
+              game: modifiedGame,
             },
           ],
         ]
       : []
   )
-  const gameReturned = (nextPlayerId || gameOver) && !getNextPlayerIdForCurrentRoundError && !makeMoveResponseEmpty
+  expect(getNextPlayerIdForCurrentRoundSpy.mock.calls).toEqual(
+    nextPlayerId && !roundOver
+      ? [
+          [
+            {
+              currentRound: modifiedGame?.round,
+              currentTurn: userId,
+              players: modifiedGame?.players,
+            },
+          ],
+        ]
+      : []
+  )
+  const gameReturned = (nextPlayerId || gameOver) && !makeMoveResponseEmpty
   expect(makeMoveSpy.mock.calls).toEqual(
-    (nextPlayerId || gameOver) && !getNextPlayerIdForCurrentRoundError
+    nextPlayerId || gameOver
       ? [
           [
             {

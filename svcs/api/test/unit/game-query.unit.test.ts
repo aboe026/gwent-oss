@@ -3,29 +3,12 @@ import { ObjectId } from 'mongodb'
 import { Context } from '@gwent/graphql-schema/context'
 import GameQuery from '../../src/graphql/resolvers/queries/game-query'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import { QueryGameArgs } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../test-util'
 
 describe('game-query', () => {
   describe('game', () => {
     const userId = new ObjectId()
-    it('returns error if no user on context', async () => {
-      await testGame({
-        error: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for game query: "${JSON.stringify({})}".`]],
-      })
-    })
-    it('returns error if invalid game ID', async () => {
-      const gameId = 'invalid'
-      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      await testGame({
-        userId,
-        gameId,
-        error: Error(message),
-        warnCalls: [[`game by "${userId}" failed: ${message}`]],
-      })
-    })
     it('returns resolved game if found', async () => {
       await testGame({
         userId,

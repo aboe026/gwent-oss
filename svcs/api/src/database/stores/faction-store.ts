@@ -2,6 +2,7 @@ import { Document, Filter, ObjectId, UpdateFilter } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { FactionDbObject, FactionKey, UnitStats } from '@gwent/graphql-schema/database-typings'
+import PresentableError from '../../util/presentable-error'
 import Store from './store'
 
 /**
@@ -93,6 +94,41 @@ export default class FactionStore extends Store {
       FactionStore.logger.trace(`get filter: "${JSON.stringify(filter)}"`)
     }
     return FactionStore.read<FactionDbObject[]>({ filter })
+  }
+
+  /**
+   * Gets a faction with the given key.
+   *
+   * @param config The configuration for getting the faction.
+   * @param config.key The key corresponding to the faction to get.
+   * @param config.logPrefix The prefix to prepend to log statements.
+   * @returns The Faction database object with the given key.
+   * @throws PresentableError if there is a problem getting the faction.
+   */
+  static async getByKey({ key, logPrefix }: { key: FactionKey; logPrefix: string }): Promise<FactionDbObject> {
+    const factions = await FactionStore.get({
+      keys: [key],
+    })
+    if (this.logger.isTraceEnabled()) {
+      this.logger.trace(`${logPrefix} factions: "${JSON.stringify(factions)}"`)
+    }
+    if (!factions || factions.length === 0) {
+      const message = `Could not find faction with key "${key}".`
+      this.logger.error(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
+    if (factions.length > 1) {
+      const message = `Found more than 1 faction with key "${key}"`
+      this.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(factions)}"`)
+      throw new PresentableError(message)
+    }
+    const faction = factions[0]
+    if (faction.key !== key) {
+      const message = `Faction key of "${factions[0].key}" does not match requestd key of "${key}".`
+      this.logger.error(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
+    return faction
   }
 }
 

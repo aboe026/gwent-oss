@@ -12,7 +12,7 @@ describe('current-user-query', () => {
       const error = 'No user on session.'
       testCurrentUser({
         context: {},
-        error: Error(error),
+        expected: Error(error),
         warnCalls: [[`currentUser by "undefined" failed: "${error}"`]],
       })
     })
@@ -22,7 +22,7 @@ describe('current-user-query', () => {
         context: {
           session: {},
         },
-        error: Error(error),
+        expected: Error(error),
         warnCalls: [[`currentUser by "undefined" failed: "${error}"`]],
       })
     })
@@ -41,7 +41,7 @@ describe('current-user-query', () => {
             user,
           },
         },
-        userResolverResponse: {
+        expected: {
           created,
           id: userId.toString(),
           name,
@@ -64,7 +64,7 @@ describe('current-user-query', () => {
             user,
           },
         },
-        userResolverResponse: {
+        expected: {
           created,
           id: userId.toString(),
           name,
@@ -78,23 +78,21 @@ describe('current-user-query', () => {
 
 function testCurrentUser({
   context,
-  error,
-  userResolverResponse,
+  expected,
   userResolverCalls = [],
   traceEnabled,
   warnCalls = [],
 }: {
   context: Context
-  error?: Error
-  userResolverResponse?: User
+  expected: User | Error
   userResolverCalls?: any[][]
   traceEnabled?: boolean
   warnCalls?: any[][]
 }) {
   const logPrefix = `currentUser by "${context?.session?.user?._id}"`
   const userResolverSpy = jest.spyOn(UserResolver, 'fromObject')
-  if (userResolverResponse) {
-    userResolverSpy.mockReturnValue(userResolverResponse)
+  if (!(expected instanceof Error)) {
+    userResolverSpy.mockReturnValue(expected)
   }
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -104,16 +102,20 @@ function testCurrentUser({
     trace: traceSpy,
   } as any
 
-  expect(CurrentUserQuery.currentUser(context, null as any)).toEqual(error || userResolverResponse)
+  if (expected instanceof Error) {
+    expect(() => CurrentUserQuery.currentUser(context, null as any)).toThrow(expected)
+  } else {
+    expect(CurrentUserQuery.currentUser(context, null as any)).toEqual(expected)
+  }
 
   expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
+          [`${logPrefix} args: "{}"`],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} user: "${JSON.stringify(context?.session?.user)}"`],
         ]
       : []
   )

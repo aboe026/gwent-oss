@@ -3,10 +3,9 @@ import { getLogger } from 'log4js'
 import { Context } from '@gwent/graphql-schema/context'
 import DeckResolver from '../types/deck-resolver'
 import DeckStore from '../../../database/stores/deck-store'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import { Deck } from '@gwent/graphql-schema/resolver-typings'
-import { RequestedFields } from '@gwent/graphql-schema'
 import { GraphQLResolveInfo } from 'graphql'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class for executing the decks GraphQL Query.
@@ -22,20 +21,20 @@ export default class DecksQuery {
    * @returns The Decks that a user has created.
    */
   static async decks(context: Context, info: GraphQLResolveInfo): Promise<Deck[]> {
-    const userId = context.session?.user?._id
-    if (!userId) {
-      DecksQuery.logger.error(`No user on context for decks query: "${JSON.stringify(context.session)}".`)
-      return Error(NOT_AUTHENTICATED_MESSAGE) as any // eslint-disable-line @typescript-eslint/no-explicit-any
-    }
+    const resolverUtil = new ResolverUtil({
+      logger: DecksQuery.logger,
+    })
+    const { _id: userId } = resolverUtil.getContextUser({
+      context,
+      label: 'decks query',
+    })
+
     const logPrefix = `decks by "${userId}"`
-    if (DecksQuery.logger.isTraceEnabled()) {
-      DecksQuery.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      DecksQuery.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.logRequestInfo({
+      info,
+    })
+
     const decks = await DeckStore.get(userId)
     if (DecksQuery.logger.isTraceEnabled()) {
       DecksQuery.logger.trace(`${logPrefix} decks: "${JSON.stringify(decks)}"`)

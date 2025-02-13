@@ -16,6 +16,8 @@ export const MAX_SPECIALS = 10
 export const NOT_AUTHENTICATED_MESSAGE = 'Not Authenticated. Login or provide credentials.'
 export const NOT_AUTHORIZED_MESSAGE = 'Not Authorized. You do not have access to this resource.'
 
+export const REDACTED = '****'
+
 export const GAME_ORDER_COIN_FLIP_DURATION_SECONDS = 5
 
 export { AppRoute, HTML_CLASSES, HTML_IDS, PubSubEvents, ROUTES }

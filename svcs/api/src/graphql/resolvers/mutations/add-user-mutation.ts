@@ -2,7 +2,8 @@ import { getLogger } from 'log4js'
 
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationAddUserArgs, User } from '@gwent/graphql-schema/resolver-typings'
-import { RequestedFields } from '@gwent/graphql-schema'
+import PresentableError from '../../../util/presentable-error'
+import ResolverUtil from '../resolver-util'
 import UserResolver from '../types/user-resolver'
 import UserStore from '../../../database/stores/user-store'
 
@@ -18,19 +19,24 @@ export default class AddUserMutation {
    * @param args The arguments for adding a user.
    * @param info The information about the GraphQL request.
    * @returns The User that was added.
+   * @throws PresentableError if problem adding user.
    */
   static async addUser(args: MutationAddUserArgs, info: GraphQLResolveInfo): Promise<User> {
+    const resolverUtil = new ResolverUtil({
+      logger: AddUserMutation.logger,
+    })
+
     const name = args.name
     const password = args.password
+
     const logPrefix = `addUser for user "${name}"`
-    if (AddUserMutation.logger.isTraceEnabled()) {
-      AddUserMutation.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      AddUserMutation.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.logRequestInfo({
+      args,
+      info,
+      secureKeys: ['password'],
+    })
+
     try {
       const user = await UserStore.add(name, password)
       if (AddUserMutation.logger.isTraceEnabled()) {
@@ -41,8 +47,7 @@ export default class AddUserMutation {
       const alreadyExistsMessage = `User with name "${name}" already exists.`
       if (err instanceof Error && err.message === alreadyExistsMessage) {
         AddUserMutation.logger.warn(`${logPrefix} failed: ${alreadyExistsMessage}`)
-        // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
-        return Error(alreadyExistsMessage) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        throw new PresentableError(alreadyExistsMessage)
       }
       AddUserMutation.logger.error(Error(`${logPrefix} failed: ${err}`))
       throw err

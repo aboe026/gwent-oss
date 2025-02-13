@@ -1,171 +1,54 @@
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import EventManager from '../../src/graphql/event-manager'
+import {
+  FactionDbObject,
+  GameDbObject,
+  GamePlayerDbObject,
+  GameStatus,
+  RoundResult,
+} from '@gwent/graphql-schema/database-typings'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import { FactionDbObject, GameDbObject, GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
-import MutationUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/mutations/mutation-util'
+import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import { PubSubEvents } from '@gwent/constants'
+import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
 
 describe('mutation-util', () => {
-  describe('getGamePlayer', () => {
-    const userId = new ObjectId()
-    const logPrefix = `playUnit by "${userId}"`
-    it('returns error if gameId invalid', async () => {
-      const gameId = 'invalid'
-      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
+  describe('constructor', () => {
+    const logger = getLogger('test')
+    it('sets logPrefix to empty string if none provided', () => {
+      expect(
+        new MutationUtil({
+          logger,
+        })
+      ).toEqual({
+        logger,
+        logPrefix: '',
       })
     })
-    it('returns error if no game found', async () => {
-      const gameId = new ObjectId().toString()
-      const message = `Game with ID "${gameId}" does not exist.`
-      await testGetGamePlayer({
-        gameId,
-        userId,
+    it('sets logPrefix if  provided', () => {
+      const logPrefix = 'prefix'
+      expect(
+        new MutationUtil({
+          logger,
+          logPrefix,
+        })
+      ).toEqual({
+        logger,
         logPrefix,
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
-      })
-    })
-    it('returns error if player not on game', async () => {
-      const gameId = new ObjectId().toString()
-      const message = `Not a player on game "${gameId}".`
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: TestUtil.getDbGame({
-          id: gameId,
-        }),
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
-      })
-    })
-    it('returns error if more than 1 player with userId found', async () => {
-      const gameId = new ObjectId().toString()
-      const message = `Found more than 1 player with ID "${userId}" on game "${gameId}"`
-      const game = TestUtil.getDbGame({
-        id: gameId,
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-        ],
-      })
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: game,
-        expected: Error(`${message}.`),
-        errorCalls: [[`${logPrefix} getGamePlayer failed: ${message}: "${JSON.stringify(game.players)}"`]],
-      })
-    })
-    it('returns error if game is wrong status', async () => {
-      const gameId = new ObjectId().toString()
-      const label = 'do something'
-      const requiredStatus = GameStatus.Playing
-      const actualStatus = GameStatus.Decking
-      const message = `Invalid game status "${actualStatus}": Can only ${label} for game with status "${requiredStatus}".`
-      const game = TestUtil.getDbGame({
-        id: gameId,
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-        ],
-      })
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        label,
-        status: requiredStatus,
-        getGameResponse: game,
-        expected: Error(message),
-        statusCalls: [[game]],
-        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
-      })
-    })
-    it('returns error if it is not users turn when required', async () => {
-      const gameId = new ObjectId().toString()
-      const label = 'do something'
-      const message = `Cannot ${label} when it is not your turn.`
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        label,
-        turn: true,
-        getGameResponse: TestUtil.getDbGame({
-          id: gameId,
-          players: [
-            TestUtil.getDbGamePlayer({
-              user: userId,
-            }),
-          ],
-        }),
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
-      })
-    })
-    it('returns game and player if no errors', async () => {
-      const game = TestUtil.getDbGame({
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-        ],
-      })
-      await testGetGamePlayer({
-        gameId: game._id.toString(),
-        userId,
-        logPrefix,
-        getGameResponse: game,
-        expected: {
-          game,
-          player: game.players[0],
-        },
-      })
-    })
-    it('logs to trace if enabled', async () => {
-      const game = TestUtil.getDbGame({
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-        ],
-      })
-      await testGetGamePlayer({
-        gameId: game._id.toString(),
-        userId,
-        logPrefix,
-        getGameResponse: game,
-        expected: {
-          game,
-          player: game.players[0],
-        },
-        traceEnabled: true,
       })
     })
   })
   describe('getNextPlayerIdForCurrentRound', () => {
     const userId = new ObjectId()
     const logPrefix = `playUnit by "${userId}"`
-    it('returns error if current player does not have order', () => {
+    it('throws error if current player does not have order', () => {
       const player = TestUtil.getDbGamePlayer({
         user: userId,
       })
@@ -181,7 +64,7 @@ describe('mutation-util', () => {
         traceCalls: [[`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "undefined"`]],
       })
     })
-    it('returns error if both players have passed in the current round', () => {
+    it('throws error if both players have passed in the current round', () => {
       const player1 = TestUtil.getDbGamePlayer({
         user: userId,
         order: 0,
@@ -1074,18 +957,14 @@ describe('mutation-util', () => {
         game,
         logPrefix,
         expected: false,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is not yet over because there are "2" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver currentRound: "0"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "2"`],
         ],
       })
     })
@@ -1108,18 +987,14 @@ describe('mutation-util', () => {
         },
         logPrefix,
         expected: false,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is not yet over because there are "2" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver currentRound: "1"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "2"`],
         ],
       })
     })
@@ -1142,18 +1017,14 @@ describe('mutation-util', () => {
         },
         logPrefix,
         expected: false,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is not yet over because there are "2" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver currentRound: "1"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "1"`],
         ],
       })
     })
@@ -1183,18 +1054,14 @@ describe('mutation-util', () => {
         },
         logPrefix,
         expected: false,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is not yet over because there are "2" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver currentRound: "1"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "1"`],
         ],
       })
     })
@@ -1220,18 +1087,14 @@ describe('mutation-util', () => {
         },
         logPrefix,
         expected: true,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "1" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is now complete because there are "1" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver currentRound: "2"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "2"`],
         ],
       })
     })
@@ -1257,18 +1120,14 @@ describe('mutation-util', () => {
         },
         logPrefix,
         expected: true,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "1" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is now complete because there are "1" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "0"`],
+          [`${logPrefix} isGameOver currentRound: "2"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "0"`],
         ],
       })
     })
@@ -1300,18 +1159,14 @@ describe('mutation-util', () => {
         },
         logPrefix,
         expected: false,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is not yet over because there are "2" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver currentRound: "2"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "1"`],
         ],
       })
     })
@@ -1346,18 +1201,14 @@ describe('mutation-util', () => {
         },
         logPrefix,
         expected: true,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "1" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is now complete because there are "1" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "3"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver currentRound: "3"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "1"`],
         ],
       })
     })
@@ -1392,18 +1243,14 @@ describe('mutation-util', () => {
         },
         logPrefix,
         expected: true,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "1" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is now complete because there are "1" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "3"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "1"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "0"`],
+          [`${logPrefix} isGameOver currentRound: "3"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "1"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "0"`],
         ],
       })
     })
@@ -1441,18 +1288,14 @@ describe('mutation-util', () => {
         },
         logPrefix,
         expected: true,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is now complete because there are "0" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is now complete because there are "0" player(s) with lives left.`]],
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "3"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "0"`],
+          [`${logPrefix} isGameOver currentRound: "3"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "0"`],
         ],
       })
     })
@@ -1461,26 +1304,57 @@ describe('mutation-util', () => {
         game,
         logPrefix,
         expected: false,
-        debugCalls: [
-          [
-            `${logPrefix} isGameOver game "${game._id}" is not yet over because there are "2" player(s) with lives left.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} isGameOver game is not yet over because there are "2" player(s) with lives left.`]],
         traceEnabled: true,
         traceCalls: [
-          [`${logPrefix} isGameOver game "${game._id}" currentRound: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" lives: "${game.config.lives}"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" losses: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[0].user}" livesLeft: "2"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" losses: "0"`],
-          [`${logPrefix} isGameOver game "${game._id}" player "${game.players[1].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver currentRound: "0"`],
+          [`${logPrefix} isGameOver lives: "${game.config.lives}"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" losses: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[0].user}" livesLeft: "2"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" losses: "0"`],
+          [`${logPrefix} isGameOver player "${game.players[1].user}" livesLeft: "2"`],
           [
-            `${logPrefix} isGameOver game "${game._id}" playersWithLivesLeft: "${JSON.stringify(
+            `${logPrefix} isGameOver playersWithLivesLeft: "${JSON.stringify(
               game.players.map((player) => player.user)
             )}"`,
           ],
         ],
       })
+    })
+  })
+  describe('initializeNewRound', () => {
+    it('returns player with round added in new state', () => {
+      const player: GamePlayerDbObject = TestUtil.getDbGamePlayer({})
+      expect(
+        new MutationUtil({
+          logger: getLogger('test'),
+        }).initializeNewRound({
+          players: [player],
+        })
+      ).toEqual([
+        {
+          ...player,
+          rounds: [
+            {
+              close: {
+                score: 0,
+                units: [],
+              },
+              moves: [],
+              passed: false,
+              ranged: {
+                score: 0,
+                units: [],
+              },
+              score: 0,
+              siege: {
+                score: 0,
+                units: [],
+              },
+            },
+          ],
+        },
+      ])
     })
   })
   describe('setGameTurnOrder', () => {
@@ -1507,106 +1381,7 @@ describe('mutation-util', () => {
     const dbFaction = TestUtil.getDbFaction({
       key: FactionKey.ScoiaTael,
     })
-    it('returns error if game not found', async () => {
-      const message = `Game with ID "${gameId}" does not exist.`
-      await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('returns error if not a player on game', async () => {
-      const message = `Not a player on game "${gameId}".`
-      await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: TestUtil.getDbGame({}),
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('returns error if not all decks set', async () => {
-      const message = `Not all players have chosen decks yet for game "${gameId}".`
-      await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: TestUtil.getDbGame({
-          players: [
-            TestUtil.getDbGamePlayer({
-              user: userId,
-            }),
-            TestUtil.getDbGamePlayer({}),
-          ],
-        }),
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('returns error if turn order already set', async () => {
-      const message = `Game with ID "${gameId}" already has order set.`
-      await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: {
-          ...dbGame,
-          turn: new ObjectId(userId),
-        },
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('returns error if no factions returned', async () => {
-      const message = `Could not find faction with key "${FactionKey.ScoiaTael}".`
-      await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: dbGame,
-        factionsGetResponse: [],
-        error: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('returns error if more than 1 faction returned', async () => {
-      await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: dbGame,
-        factionsGetResponse: [dbFaction, dbFaction],
-        error: Error(`Found more than 1 faction with key "${FactionKey.ScoiaTael}".`),
-        errorCalls: [
-          [
-            `${logPrefix} failed: Found more than 1 faction with key "${FactionKey.ScoiaTael}": "${JSON.stringify([
-              dbFaction,
-              dbFaction,
-            ])}"`,
-          ],
-        ],
-      })
-    })
-    it('returns error if faction with wrong key returned', async () => {
-      const message = `Faction key of "${FactionKey.Neutral}" does not match "${FactionKey.ScoiaTael}".`
-      await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: dbGame,
-        factionsGetResponse: [
-          TestUtil.getDbFaction({
-            key: FactionKey.Neutral,
-          }),
-        ],
-        error: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('returns error if more than 1 scoiatael deck', async () => {
+    it('throws error setting explicit order with more than 1 ScoiaTael player', async () => {
       const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${gameId}".`
       await testSetGameTurnOrder({
         gameId,
@@ -1615,24 +1390,30 @@ describe('mutation-util', () => {
         userIds: [userId, new ObjectId().toString()],
         getGameResponse: {
           ...dbGame,
-          players: dbGame.players.map((player) => {
-            return {
-              ...player,
-              deck: {
-                ...player.deck,
+          players: [
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({
                   faction: dbFaction._id,
                 }),
-              },
-            }
-          }),
+              }),
+              user: new ObjectId(userId),
+            }),
+            TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                from: TestUtil.getDbDeck({
+                  faction: dbFaction._id,
+                }),
+              }),
+            }),
+          ],
         },
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+        warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
-    it('returns error setting explicit order without scoiatael deck', async () => {
+    it('throws error setting explicit order without scoiatael deck', async () => {
       const factionId = new ObjectId()
       const message = `Cannot set explicit order as deck faction ID "${factionId}" does not match "${FactionKey.ScoiaTael}" faction ID of "${dbFaction._id}".`
       await testSetGameTurnOrder({
@@ -1658,12 +1439,12 @@ describe('mutation-util', () => {
             }),
           ],
         },
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+        warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
-    it('returns error setting implicit order when no userIds and opponent has scoiatael deck', async () => {
+    it('throws error setting implicit order when no userIds and opponent has scoiatael deck', async () => {
       const message = `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
       await testSetGameTurnOrder({
         gameId,
@@ -1687,12 +1468,12 @@ describe('mutation-util', () => {
             }),
           ],
         },
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         error: Error(message),
-        debugCalls: [[`${logPrefix} failed: ${message}`]],
+        debugCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
-    it('returns error setting implicit order when empty userIds and opponent has scoiatael deck', async () => {
+    it('throws error setting implicit order when empty userIds and opponent has scoiatael deck', async () => {
       const message = `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
       await testSetGameTurnOrder({
         gameId,
@@ -1717,12 +1498,12 @@ describe('mutation-util', () => {
             }),
           ],
         },
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         error: Error(message),
-        debugCalls: [[`${logPrefix} failed: ${message}`]],
+        debugCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
-    it('returns error setting explicit order when opponent has scoiatael deck', async () => {
+    it('throws error setting explicit order when opponent has scoiatael deck', async () => {
       const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
       await testSetGameTurnOrder({
         gameId,
@@ -1747,12 +1528,12 @@ describe('mutation-util', () => {
             }),
           ],
         },
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+        warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
-    it('returns error if users are not players on game', async () => {
+    it('throws error if users are not players on game', async () => {
       const nonPlayerId = new ObjectId().toString()
       const message = `Cannot set order as users(s) ${JSON.stringify([
         nonPlayerId,
@@ -1780,12 +1561,12 @@ describe('mutation-util', () => {
             }),
           ],
         },
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+        warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
-    it('returns error if too few users', async () => {
+    it('throws error if too few users', async () => {
       const message = `Cannot set order as users count of "1" does not match player count of "2" for game "${gameId}".`
       await testSetGameTurnOrder({
         gameId,
@@ -1810,12 +1591,12 @@ describe('mutation-util', () => {
             }),
           ],
         },
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+        warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
-    it('returns error if duplicate users', async () => {
+    it('throws error if duplicate users', async () => {
       const message = `Cannot set order for game "${gameId}" due to duplicate user ID(s) ["${userId}"] specified.`
       await testSetGameTurnOrder({
         gameId,
@@ -1840,23 +1621,24 @@ describe('mutation-util', () => {
             }),
           ],
         },
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+        warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
-    it('returns error if updated game empty', async () => {
+    it('throws error if updated game empty', async () => {
       const message = `Could not set order on game "${gameId}" in probable race condition collision.`
       await testSetGameTurnOrder({
         gameId,
         userId,
         logPrefix,
         getGameResponse: dbGame,
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         setOrderResponse: null,
         randomizeOrderCalls: [[[new ObjectId(userId), new ObjectId(opponentId)]]],
         error: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
+        errorCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
+        traceCalls: [[`${logPrefix} setGameTurnOrder no userIds provided, randomizing order`]],
       })
     })
     it('returns resolved updated game if no errors and implicitly setting users', async () => {
@@ -1875,9 +1657,10 @@ describe('mutation-util', () => {
         userId,
         logPrefix,
         getGameResponse: dbGame,
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         setOrderResponse: updatedGame,
         randomizeOrderCalls: [[[new ObjectId(userId), new ObjectId(opponentId)]]],
+        traceCalls: [[`${logPrefix} setGameTurnOrder no userIds provided, randomizing order`]],
       })
     })
     it('returns resolved updated game if no errors and explicitly setting self first', async () => {
@@ -1916,7 +1699,7 @@ describe('mutation-util', () => {
         logPrefix,
         userIds: [userId, opponentId],
         getGameResponse: dbGameScoiatael,
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         setOrderResponse: updatedGame,
       })
     })
@@ -1956,13 +1739,56 @@ describe('mutation-util', () => {
         logPrefix,
         userIds: [opponentId, userId],
         getGameResponse: dbGameScoiatael,
-        factionsGetResponse: [dbFaction],
+        factionByKeyResponse: dbFaction,
         setOrderResponse: updatedGame,
       })
     })
-    it('logs to trace if enabled', async () => {
+    it('override class logPrefix if provided as parameter', async () => {
       const updatedGame: GameDbObject = {
         ...dbGame,
+        players: dbGame.players.map((player, index) => {
+          return {
+            ...player,
+            order: index,
+          }
+        }),
+        turn: new ObjectId(userId),
+      }
+      const logPrefixOverride = 'overridden'
+      await testSetGameTurnOrder({
+        gameId,
+        userId,
+        logPrefix,
+        logPrefixOverride,
+        getGameResponse: dbGame,
+        factionByKeyResponse: dbFaction,
+        setOrderResponse: updatedGame,
+        randomizeOrderCalls: [[[new ObjectId(userId), new ObjectId(opponentId)]]],
+        traceCalls: [[`${logPrefixOverride} setGameTurnOrder no userIds provided, randomizing order`]],
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const dbGameScoiatael: GameDbObject = {
+        ...dbGame,
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({
+                faction: dbFaction._id,
+              }),
+            }),
+            user: userId,
+          }),
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({}),
+            }),
+            user: opponentId,
+          }),
+        ],
+      }
+      const updatedGame: GameDbObject = {
+        ...dbGameScoiatael,
         players: dbGame.players.map((player, index) => {
           return {
             ...player,
@@ -1975,96 +1801,19 @@ describe('mutation-util', () => {
         gameId,
         userId,
         logPrefix,
-        getGameResponse: dbGame,
-        factionsGetResponse: [dbFaction],
+        userIds: [userId, opponentId],
+        getGameResponse: dbGameScoiatael,
+        factionByKeyResponse: dbFaction,
         setOrderResponse: updatedGame,
-        randomizeOrderCalls: [[[new ObjectId(userId), new ObjectId(opponentId)]]],
         traceEnabled: true,
+        traceCalls: [
+          [`${logPrefix} setGameTurnOrder userIds provided, not randomizing order`],
+          [`${logPrefix} setGameTurnOrder updatedGame: "${JSON.stringify(updatedGame)}"`],
+        ],
       })
     })
   })
 })
-
-async function testGetGamePlayer({
-  gameId,
-  userId,
-  status,
-  logPrefix,
-  label,
-  turn,
-  getGameResponse,
-  getStatusResponse,
-  expected,
-  statusCalls = [],
-  errorCalls = [],
-  warnCalls = [],
-  traceEnabled,
-}: {
-  gameId: string
-  userId: ObjectId
-  logPrefix: string
-  status?: GameStatus
-  label?: string
-  turn?: boolean
-  getGameResponse?: GameDbObject | undefined
-  getStatusResponse?: GameStatus
-  expected: GamePlayerResponse | Error
-  statusCalls?: GameDbObject[][]
-  errorCalls?: string[][]
-  warnCalls?: string[][]
-  traceEnabled?: boolean
-}) {
-  const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
-  const getStatusSpy = jest.spyOn(GameResolver, 'getStatus')
-  if (getStatusResponse) {
-    getStatusSpy.mockReturnValue(getStatusResponse)
-  }
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  MutationUtil['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
-
-  await expect(
-    MutationUtil.getGamePlayer({
-      gameId,
-      userId,
-      logPrefix,
-      status,
-      label,
-      turn,
-    })
-  ).resolves.toEqual(expected)
-
-  expect(getGameSpy.mock.calls).toEqual(
-    ObjectId.isValid(gameId)
-      ? [
-          [
-            {
-              id: gameId,
-            },
-          ],
-        ]
-      : []
-  )
-  expect(getStatusSpy.mock.calls).toEqual(statusCalls)
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [`${logPrefix} getGamePlayer game: "${JSON.stringify(getGameResponse)}"`],
-          [`${logPrefix} getGamePlayer game "${gameId}" players: "${JSON.stringify(getGameResponse?.players)}"`],
-        ]
-      : []
-  )
-}
 
 function testGetNextPlayerIdForCurrentRound({
   game,
@@ -2072,7 +1821,7 @@ function testGetNextPlayerIdForCurrentRound({
   expected,
   errorCalls = [],
   debugCalls = [],
-  traceEnabled,
+  traceEnabled = false,
   traceCalls = [],
 }: {
   game: GameDbObject
@@ -2083,22 +1832,33 @@ function testGetNextPlayerIdForCurrentRound({
   traceEnabled?: boolean
   traceCalls?: string[][]
 }) {
-  const errorSpy = jest.fn().mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  MutationUtil['logger'] = {
-    error: errorSpy,
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
+  const logger = getLogger('test')
+  const errorSpy = jest.spyOn(logger, 'error').mockImplementation()
+  const debugSpy = jest.spyOn(logger, 'debug').mockImplementation()
+  const traceSpy = jest.spyOn(logger, 'trace').mockImplementation()
+  jest.spyOn(logger, 'isTraceEnabled').mockReturnValue(traceEnabled)
 
-  expect(
-    MutationUtil.getNextPlayerIdForCurrentRound({
-      game,
-      logPrefix,
-    })
-  ).toEqual(expected)
+  const mutationUtil = new MutationUtil({
+    logger,
+    logPrefix,
+  })
+  if (expected instanceof Error) {
+    expect(() =>
+      mutationUtil.getNextPlayerIdForCurrentRound({
+        currentRound: game.round,
+        currentTurn: game.turn,
+        players: game.players,
+      })
+    ).toThrow(expected)
+  } else {
+    expect(
+      mutationUtil.getNextPlayerIdForCurrentRound({
+        currentRound: game.round,
+        currentTurn: game.turn,
+        players: game.players,
+      })
+    ).toEqual(expected)
+  }
 
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
@@ -2110,7 +1870,7 @@ function testGetPlayerIdForNextRound({
   logPrefix,
   expected,
   debugCalls = [],
-  traceEnabled,
+  traceEnabled = false,
   traceCalls = [],
 }: {
   game: GameDbObject
@@ -2120,18 +1880,17 @@ function testGetPlayerIdForNextRound({
   traceEnabled?: boolean
   traceCalls?: string[][]
 }) {
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  MutationUtil['logger'] = {
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
+  const logger = getLogger('test')
+  const debugSpy = jest.spyOn(logger, 'debug').mockImplementation()
+  const traceSpy = jest.spyOn(logger, 'trace').mockImplementation()
+  jest.spyOn(logger, 'isTraceEnabled').mockReturnValue(traceEnabled)
 
   expect(
-    MutationUtil.getPlayerIdForNextRound({
-      game,
+    new MutationUtil({
+      logger,
       logPrefix,
+    }).getPlayerIdForNextRound({
+      game,
     })
   ).toEqual(expected)
 
@@ -2152,17 +1911,16 @@ function testIsRoundOver({
   debugCalls?: string[][]
   traceCalls?: string[][]
 }) {
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  MutationUtil['logger'] = {
-    debug: debugSpy,
-    trace: traceSpy,
-  } as any
+  const logger = getLogger('test')
+  const debugSpy = jest.spyOn(logger, 'debug').mockImplementation()
+  const traceSpy = jest.spyOn(logger, 'trace').mockImplementation()
 
   expect(
-    MutationUtil.isRoundOver({
-      game,
+    new MutationUtil({
+      logger,
       logPrefix,
+    }).isRoundOver({
+      game,
     })
   ).toEqual(expected)
 
@@ -2175,7 +1933,7 @@ function testIsGameOver({
   logPrefix,
   expected,
   debugCalls = [],
-  traceEnabled,
+  traceEnabled = false,
   traceCalls = [],
 }: {
   game: GameDbObject
@@ -2185,18 +1943,17 @@ function testIsGameOver({
   traceEnabled?: boolean
   traceCalls?: string[][]
 }) {
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  MutationUtil['logger'] = {
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
+  const logger = getLogger('test')
+  const debugSpy = jest.spyOn(logger, 'debug').mockImplementation()
+  const traceSpy = jest.spyOn(logger, 'trace').mockImplementation()
+  jest.spyOn(logger, 'isTraceEnabled').mockReturnValue(traceEnabled)
 
   expect(
-    MutationUtil.isGameOver({
-      game,
+    new MutationUtil({
+      logger,
       logPrefix,
+    }).isGameOver({
+      game,
     })
   ).toEqual(expected)
 
@@ -2208,38 +1965,42 @@ async function testSetGameTurnOrder({
   userId,
   gameId,
   logPrefix,
+  logPrefixOverride,
   allowImplicit = false,
   userIds,
   getGameResponse,
-  factionsGetResponse,
+  factionByKeyResponse,
   setOrderResponse,
   error,
   randomizeOrderCalls = [],
   errorCalls = [],
   warnCalls = [],
   debugCalls = [],
-  traceEnabled,
+  traceCalls = [],
+  traceEnabled = false,
 }: {
   userId: string
   gameId: string
   logPrefix: string
+  logPrefixOverride?: string
   allowImplicit?: boolean
   userIds?: string[]
-  getGameResponse?: GameDbObject
-  factionsGetResponse?: FactionDbObject[]
+  getGameResponse: GameDbObject
+  factionByKeyResponse: FactionDbObject
   setOrderResponse?: GameDbObject | null
   error?: Error
   randomizeOrderCalls?: any[][]
   errorCalls?: any[][]
   warnCalls?: any[][]
   debugCalls?: any[][]
+  traceCalls?: string[][]
   traceEnabled?: boolean
 }) {
-  const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
-  const getFactionsSpy = jest.spyOn(FactionStore, 'get')
-  if (factionsGetResponse) {
-    getFactionsSpy.mockResolvedValue(factionsGetResponse)
-  }
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer').mockResolvedValue({
+    game: getGameResponse,
+    player: getGameResponse.players.find((player) => player.user.toString() === userId) as GamePlayerDbObject,
+  })
+  const getFactionByKeySpy = jest.spyOn(FactionStore, 'getByKey').mockResolvedValue(factionByKeyResponse)
   const randomizeOrderSpy = jest.spyOn(gwentUtils, 'randomizeOrder')
   const randomPlayers: ObjectId[] = []
   if (getGameResponse) {
@@ -2261,46 +2022,47 @@ async function testSetGameTurnOrder({
     resolveGameSpy.mockResolvedValue(resolvedGame)
   }
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  MutationUtil['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
+  const logger = getLogger('test')
+  const errorSpy = jest.spyOn(logger, 'error').mockImplementation()
+  const warnSpy = jest.spyOn(logger, 'warn').mockImplementation()
+  const debugSpy = jest.spyOn(logger, 'debug').mockImplementation()
+  const traceSpy = jest.spyOn(logger, 'trace').mockImplementation()
+  jest.spyOn(logger, 'isTraceEnabled').mockReturnValue(traceEnabled)
 
-  await expect(
-    MutationUtil.setGameTurnOrder({
-      userId,
-      gameId,
-      userIds,
-      logPrefix,
-      allowImplicit,
-    })
-  ).resolves.toEqual(error || resolvedGame)
+  const promise = new MutationUtil({
+    logger,
+    logPrefix,
+  }).setGameTurnOrder({
+    userId: new ObjectId(userId),
+    gameId,
+    userIds,
+    logPrefix: logPrefixOverride,
+    allowImplicit,
+  })
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedGame)
+  }
 
-  expect(getGameSpy.mock.calls).toEqual([
+  expect(getGamePlayerSpy.mock.calls).toEqual([
     [
       {
-        id: gameId,
+        gameId,
+        userId: new ObjectId(userId),
+        label: 'set order',
+        status: GameStatus.Ordering,
       },
     ],
   ])
-  expect(getFactionsSpy.mock.calls).toEqual(
-    factionsGetResponse
-      ? [
-          [
-            {
-              keys: [FactionKey.ScoiaTael],
-            },
-          ],
-        ]
-      : []
-  )
+  expect(getFactionByKeySpy.mock.calls).toEqual([
+    [
+      {
+        key: FactionKey.ScoiaTael,
+        logPrefix: logPrefixOverride || logPrefix,
+      },
+    ],
+  ])
   expect(randomizeOrderSpy.mock.calls).toEqual(randomizeOrderCalls)
   expect(setOrderSpy.mock.calls).toEqual(
     setOrderResponse !== undefined
@@ -2329,17 +2091,5 @@ async function testSetGameTurnOrder({
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [`${logPrefix} game: "${JSON.stringify(getGameResponse)}"`],
-          [
-            `${logPrefix} player: "${JSON.stringify(
-              getGameResponse?.players.find((player) => player.user.toString() === userId)
-            )}"`,
-          ],
-          [`${logPrefix} updatedGame: "${JSON.stringify(setOrderResponse)}"`],
-        ]
-      : []
-  )
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

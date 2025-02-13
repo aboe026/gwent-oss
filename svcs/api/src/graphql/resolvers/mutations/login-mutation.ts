@@ -3,7 +3,8 @@ import { getLogger } from 'log4js'
 import { Context } from '@gwent/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationLoginArgs, User } from '@gwent/graphql-schema/resolver-typings'
-import { RequestedFields } from '@gwent/graphql-schema'
+import PresentableError from '../../../util/presentable-error'
+import ResolverUtil from '../resolver-util'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserResolver from '../types/user-resolver'
 import UserStore from '../../../database/stores/user-store'
@@ -21,19 +22,24 @@ export default class LoginMutation {
    * @param context The session to add the user to if valid.
    * @param info The information about the GraphQL request.
    * @returns The User that was successfully logged in.
+   * @throws PresentableError if problem authenticating user.
    */
   static async login(args: MutationLoginArgs, context: Context, info: GraphQLResolveInfo): Promise<User> {
+    const resolverUtil = new ResolverUtil({
+      logger: LoginMutation.logger,
+    })
+
     const name = args.name
     const password = args.password
+
     const logPrefix = `login for user "${name}"`
-    if (LoginMutation.logger.isTraceEnabled()) {
-      LoginMutation.logger.trace(
-        `${logPrefix} requested fields: "${JSON.stringify(RequestedFields.getFieldsRequested(info))}"`
-      )
-      LoginMutation.logger.trace(
-        `${logPrefix} requested arguments: "${JSON.stringify(RequestedFields.getArguments(info))}"`
-      )
-    }
+    resolverUtil.setLogPrefix(logPrefix)
+    resolverUtil.logRequestInfo({
+      args,
+      info,
+      secureKeys: ['password'],
+    })
+
     let user: UserDbObject
     try {
       user = await UserStore.validate(name, password)
@@ -44,8 +50,7 @@ export default class LoginMutation {
       if (err instanceof Error && err.message === `Invalid credentials for user "${name}"`) {
         const message = `Invalid credentials for user "${name}".`
         LoginMutation.logger.warn(`${logPrefix} failed: ${message}`)
-        // return error so it won't get obfuscated by generic "Error!" if it were thrown instead
-        return Error(message) as any // eslint-disable-line @typescript-eslint/no-explicit-any
+        throw new PresentableError(message)
       }
       LoginMutation.logger.error(Error(`${logPrefix} failed: ${err}`))
       throw err

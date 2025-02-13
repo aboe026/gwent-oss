@@ -5,9 +5,10 @@ import { DeckDbObject, GameDbObject } from '@gwent/graphql-schema/database-typin
 import DeckStore from '../../src/database/stores/deck-store'
 import GameStore from '../../src/database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
-import { NO_RULE_DEFINED, Permissions } from '../../src/graphql/permissions'
+import Permissions, { NO_RULE_DEFINED } from '../../src/graphql/permissions'
 import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import TestUtil from '../test-util'
+import PresentableError from '../../src/util/presentable-error'
 
 describe('permissions', () => {
   describe('fallback', () => {
@@ -297,26 +298,29 @@ describe('permissions', () => {
       })
     })
   })
+  describe('fallbackError', () => {
+    it('returns message if PresentableError', () => {
+      const error = new PresentableError('invalid')
+      testFallbackError({
+        error,
+        expected: Error('invalid'),
+      })
+    })
+    it('logs to error and returns generic Internal Server Error if not a PresentableError', () => {
+      const error = Error('i did not forsee this')
+      testFallbackError({
+        error,
+        expected: Error('Internal Server Error.'),
+        errorCalls: [[error]],
+      })
+    })
+  })
+  describe('shield', () => {
+    it('returns shield object', () => {
+      expect(Permissions.shield()).toEqual(expect.any(Object))
+    })
+  })
 })
-
-function testFallback({
-  info,
-  expected,
-  errorCalls = [],
-}: {
-  info: GraphQLResolveInfo
-  expected: Error | boolean
-  errorCalls?: any[][]
-}) {
-  const errorSpy = jest.fn().mockImplementation()
-  Permissions['logger'] = {
-    error: errorSpy,
-  } as any
-
-  expect(Permissions.fallback(undefined, undefined, undefined, info)).toEqual(expected)
-
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-}
 
 function testIsAuthenticated({
   context,
@@ -334,7 +338,7 @@ function testIsAuthenticated({
     warn: warnSpy,
   } as any
 
-  expect(Permissions.isAuthenticated(undefined, undefined, context, info)).toEqual(expected)
+  expect(Permissions['isAuthenticated'](undefined, undefined, context, info)).toEqual(expected)
 
   expect(warnSpy.mock.calls).toEqual(warnCalls)
 }
@@ -390,7 +394,7 @@ async function testIsPlayer({
     warn: warnSpy,
   } as any
 
-  await expect(Permissions.isPlayer(undefined, args, context, info as any)).resolves.toEqual(
+  await expect(Permissions['isPlayer'](undefined, args, context, info as any)).resolves.toEqual(
     error ? Error(error) : true
   )
 
@@ -464,7 +468,7 @@ async function testOwnsDeck({
     warn: warnSpy,
   } as any
 
-  await expect(Permissions.ownsDeck(undefined, args, context, info as any)).resolves.toEqual(
+  await expect(Permissions['ownsDeck'](undefined, args, context, info as any)).resolves.toEqual(
     error ? Error(error) : true
   )
 
@@ -485,4 +489,42 @@ async function testOwnsDeck({
   )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
+}
+
+function testFallback({
+  info,
+  expected,
+  errorCalls = [],
+}: {
+  info: GraphQLResolveInfo
+  expected: Error | boolean
+  errorCalls?: any[][]
+}) {
+  const errorSpy = jest.fn().mockImplementation()
+  Permissions['logger'] = {
+    error: errorSpy,
+  } as any
+
+  expect(Permissions['fallback'](undefined, undefined, undefined, info)).toEqual(expected)
+
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
+function testFallbackError({
+  error,
+  expected,
+  errorCalls = [],
+}: {
+  error: Error
+  expected: Error
+  errorCalls?: any[][]
+}) {
+  const errorSpy = jest.fn().mockImplementation()
+  Permissions['logger'] = {
+    error: errorSpy,
+  } as any
+
+  expect(Permissions['fallbackError'](error, {}, {}, null, {} as GraphQLResolveInfo)).toEqual(expected)
+
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
