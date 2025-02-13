@@ -33,6 +33,7 @@ export default class GameResolver {
     creator?: User
     users?: User[]
   }): Promise<Game> {
+    const status = game.status as GameStatus
     const resolvedUsers: User[] = []
     if (creator) {
       resolvedUsers.push(creator)
@@ -51,7 +52,7 @@ export default class GameResolver {
     const resolvedPlayers = await GamePlayerResolver.fromArray({
       players: game.players,
       users: resolvedUsers,
-      allDecksChosen: GameResolver.allDecksChosen(game),
+      gameStatus: status,
     })
 
     return {
@@ -61,7 +62,7 @@ export default class GameResolver {
       id: game._id.toString(),
       players: resolvedPlayers,
       round: game.round,
-      status: GameResolver.getStatus(game),
+      status,
       turn: game.turn && resolvedPlayers.find((player) => player.user.id.toString() === game.turn?.toString()),
       updated: game.updated,
       victors: game.victors.map((victor) => resolvedUsers.find((user) => user.id === victor.toString()) as User),
@@ -125,44 +126,5 @@ export default class GameResolver {
     return GameResolver.fromObject({
       game: game as GameDbObject,
     })
-  }
-
-  /**
-   * Whether or not every player in the game is marked as ready.
-   *
-   * @param game The Game database document to determine if all players are ready for.
-   * @returns True if all players are marked as ready on the game, false otherwise.
-   */
-  static isEveryoneReady(game: GameDbObject): boolean {
-    return game.players.length > 0 && game.players.filter((player) => player.ready).length === game.players.length
-  }
-
-  /**
-   * Whether or not every player in the game has chosen a deck for the game. Some information may provide a competetive advantage to players if revealed before all players ready.
-   *
-   * @param game The game database document to determine if all players have chosen a deck for.
-   * @returns True if all players have chosen a deck for the game, false otherwise.
-   */
-  static allDecksChosen(game: GameDbObject): boolean {
-    return game.players.length > 0 && game.players.filter((player) => player.deck.from).length === game.players.length
-  }
-
-  /**
-   * Calculate the Status that a Game is in.
-   *
-   * @param game The Game database object to calculate the Status for.
-   * @returns The Status the Game is currently in.
-   */
-  static getStatus(game: GameDbObject): GameStatus {
-    if (!GameResolver.allDecksChosen(game)) {
-      return GameStatus.Decking
-    } else if (!game.turn) {
-      return GameStatus.Ordering
-    } else if (!GameResolver.isEveryoneReady(game)) {
-      return GameStatus.Redrawing
-    } else if (game.victors.length === 0) {
-      return GameStatus.Playing
-    }
-    return GameStatus.Done
   }
 }

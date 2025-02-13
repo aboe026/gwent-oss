@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
-import { GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
+import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import { getUniqueItems } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
 import PlayerRoundResolver from './player-round-resolver'
@@ -24,20 +24,20 @@ export default class GamePlayerResolver {
    * @returns The resolved GamePlayer object matching its GraphQL schema definition.
    */
   static async fromObject({
-    allDecksChosen,
     faction,
     leader,
     player,
     user,
+    gameStatus,
   }: {
-    allDecksChosen: boolean
     faction?: Faction | undefined
     leader?: Leader | undefined
     player: GamePlayerDbObject
     user?: User
+    gameStatus: GameStatus
   }): Promise<GamePlayer> {
     let counts: GamePlayerUnitCounts | undefined = undefined
-    if (allDecksChosen) {
+    if (gameStatus !== GameStatus.Decking) {
       if (!faction && player.deck.from?.faction) {
         faction = await FactionResolver.fromId({
           id: player.deck.from.faction,
@@ -57,8 +57,8 @@ export default class GamePlayerResolver {
 
     return {
       counts,
-      faction: allDecksChosen ? faction : undefined,
-      leader: allDecksChosen ? leader : undefined,
+      faction: gameStatus === GameStatus.Decking ? undefined : faction,
+      leader: gameStatus === GameStatus.Decking ? undefined : leader,
       order: player.order,
       ready: player.ready,
       rounds: await PlayerRoundResolver.fromArray({
@@ -79,13 +79,13 @@ export default class GamePlayerResolver {
    * @returns The resolved Deck array matching the GraphQL schema definition.
    */
   static async fromArray({
-    allDecksChosen,
     players,
     users,
+    gameStatus,
   }: {
-    allDecksChosen: boolean
     players: GamePlayerDbObject[]
     users?: User[]
+    gameStatus: GameStatus
   }): Promise<GamePlayer[]> {
     let preResolvedUserIds: string[] = []
     if (users) {
@@ -125,7 +125,7 @@ export default class GamePlayerResolver {
           user: resolvedUsers.find((user) => user.id.toString() === player.user.toString()),
           faction,
           leader,
-          allDecksChosen,
+          gameStatus,
         })
       )
     }

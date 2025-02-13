@@ -4,6 +4,12 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- separate invalid checks on mutations into separate methods?
+- unit tests
+- jsdocs
+- increment version
+- changelog
+
 - change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
 - save game status to database?
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)

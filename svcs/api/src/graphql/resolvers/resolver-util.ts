@@ -166,9 +166,8 @@ export default class ResolverUtil {
     }
 
     if (status) {
-      const gameStatus = GameResolver.getStatus(game)
-      if (gameStatus !== status) {
-        const message = `Invalid game status "${gameStatus}": Can only ${label} for game with status "${status}".`
+      if (game.status !== status) {
+        const message = `Invalid game status "${game.status}": Can only ${label} for game with status "${status}".`
         this.logger.warn(`${this.logPrefix} getGamePlayer failed: ${message}`)
         throw new PresentableError(message)
       }

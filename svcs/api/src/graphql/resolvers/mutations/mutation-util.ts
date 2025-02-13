@@ -350,7 +350,7 @@ export default class MutationUtil {
       }
     }
 
-    let userIdsForOrder: (string | ObjectId)[] = []
+    let userIdsForOrder: string[] = []
     if (userIds && userIds.length > 0) {
       if (this.logger.isTraceEnabled()) {
         this.logger.trace(`${resolvedLogPrefix} setGameTurnOrder userIds provided, not randomizing order`)
@@ -358,13 +358,18 @@ export default class MutationUtil {
       userIdsForOrder = userIds
     } else {
       this.logger.trace(`${resolvedLogPrefix} setGameTurnOrder no userIds provided, randomizing order`)
-      userIdsForOrder = randomizeOrder(game.players.map((player) => player.user))
+      userIdsForOrder = randomizeOrder(game.players.map((player) => player.user.toString()))
     }
 
-    const updatedGame = await GameStore.setOrder({
-      gameId,
-      userIds: userIdsForOrder,
+    game.players = game.players.map((gamePlayer) => {
+      gamePlayer.order = userIdsForOrder.indexOf(gamePlayer.user.toString())
+      return gamePlayer
     })
+    game.turn = new ObjectId(userIdsForOrder[0])
+    game.status = GameStatus.Redrawing
+
+    const updatedGame = await GameStore.save(game)
+
     if (this.logger.isTraceEnabled()) {
       this.logger.trace(`${resolvedLogPrefix} setGameTurnOrder updatedGame: "${JSON.stringify(updatedGame)}"`)
     }

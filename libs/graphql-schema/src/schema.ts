@@ -165,7 +165,7 @@ export default gql`
     players: [GamePlayer!]! @column(overrideType: "Array<GamePlayerDbObject>")
     "The current round the game is in. 1-based indexing. A value of zero indicates the game has not yet started."
     round: Int! @column
-    status: GameStatus!
+    status: GameStatus! @column
     "Whose turn it currently is to make a move."
     turn: GamePlayer @column(overrideType: "ObjectId")
     updated: DateTime! @column

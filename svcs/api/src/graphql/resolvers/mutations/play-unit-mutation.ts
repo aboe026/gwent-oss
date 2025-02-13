@@ -166,10 +166,7 @@ export default class PlayUnitMutation {
       players: game.players,
     })
 
-    const updatedGame = await GameStore.makeMove({
-      game,
-      userId,
-    })
+    const updatedGame = await GameStore.save(game)
 
     if (!updatedGame) {
       const message = `Could not play unit "${unitId}" for game "${gameId}" in probable race condition collision.`
