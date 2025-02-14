@@ -92,7 +92,7 @@ describe('game-store', () => {
       })
     })
   })
-  describe('makeMove', () => {
+  describe('save', () => {
     it('calls out to update with incremented updated field', async () => {
       await testSave({})
     })
