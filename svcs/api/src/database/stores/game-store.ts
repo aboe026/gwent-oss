@@ -111,6 +111,12 @@ export default class GameStore extends Store {
     })
   }
 
+  /**
+   * Saves a game to the database, automatically incrementing the "updated" field.
+   *
+   * @param game The game to save to the database.
+   * @returns The updated saved game if it exists.
+   */
   static async save(game: GameDbObject): Promise<GameDbObject | undefined> {
     const filter: Filter<Document> = {
       _id: game._id,
