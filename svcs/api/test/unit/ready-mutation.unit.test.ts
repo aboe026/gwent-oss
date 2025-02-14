@@ -52,6 +52,7 @@ describe('ready-mutation', () => {
         },
         game.players[1],
       ],
+      updated: new Date(),
     }
     const resolvedGame = TestUtil.getGame({
       id: game._id,
@@ -69,23 +70,6 @@ describe('ready-mutation', () => {
         }),
       ],
     })
-    const setReadyCalls = [
-      [
-        {
-          gameId,
-          userId,
-          players: [
-            {
-              ...gamePlayerSelf,
-              ready: true,
-            },
-            gamePlayerOpponent,
-          ],
-          previousUpdate: game.updated,
-          currentRound: 0,
-        },
-      ],
-    ]
     it('throws error if deck not yet set', async () => {
       const error = `Must set deck on game "${gameId}" first.`
       await testReady({
@@ -123,7 +107,7 @@ describe('ready-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('throws error if setReady response is undefined', async () => {
+    it('throws error if save response is undefined', async () => {
       const error = `Could not set player as ready for game "${gameId}" in probable race condition collision.`
       await testReady({
         userId,
@@ -132,10 +116,17 @@ describe('ready-mutation', () => {
           game,
           player: gamePlayerSelf,
         },
-        setReadyResponse: undefined,
+        saveGameResponse: undefined,
         expected: Error(error),
         getGamePlayerCalls,
-        setReadyCalls,
+        saveGameCalls: [
+          [
+            {
+              ...updatedGame,
+              updated: game.updated,
+            },
+          ],
+        ],
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
@@ -147,11 +138,18 @@ describe('ready-mutation', () => {
           game,
           player: gamePlayerSelf,
         },
-        setReadyResponse: updatedGame,
+        saveGameResponse: updatedGame,
         resolvedGame: resolvedGame,
         expected: resolvedGame,
         getGamePlayerCalls,
-        setReadyCalls,
+        saveGameCalls: [
+          [
+            {
+              ...updatedGame,
+              updated: game.updated,
+            },
+          ],
+        ],
         gameResolveCalls: [
           [
             {
@@ -184,6 +182,8 @@ describe('ready-mutation', () => {
       const allPlayersReadyUpdatedGame: GameDbObject = {
         ...game,
         players: allPlayersReadyPlayers,
+        round: 1,
+        status: GameStatus.Playing,
       }
       const allPlayersReadyResolvedGame: Game = {
         ...resolvedGame,
@@ -204,18 +204,15 @@ describe('ready-mutation', () => {
           game: allPlayersReadyGame,
           player: gamePlayerSelf,
         },
-        setReadyResponse: allPlayersReadyUpdatedGame,
+        saveGameResponse: allPlayersReadyUpdatedGame,
         resolvedGame: allPlayersReadyResolvedGame,
         expected: allPlayersReadyResolvedGame,
         getGamePlayerCalls,
-        setReadyCalls: [
+        saveGameCalls: [
           [
             {
-              gameId,
-              userId,
-              players: allPlayersReadyPlayers,
-              previousUpdate: game.updated,
-              currentRound: 1,
+              ...allPlayersReadyUpdatedGame,
+              updated: game.updated,
             },
           ],
         ],
@@ -237,11 +234,18 @@ describe('ready-mutation', () => {
           game,
           player: gamePlayerSelf,
         },
-        setReadyResponse: updatedGame,
+        saveGameResponse: updatedGame,
         resolvedGame: resolvedGame,
         expected: resolvedGame,
         getGamePlayerCalls,
-        setReadyCalls,
+        saveGameCalls: [
+          [
+            {
+              ...updatedGame,
+              updated: game.updated,
+            },
+          ],
+        ],
         gameResolveCalls: [
           [
             {
@@ -261,12 +265,12 @@ async function testReady({
   userId,
   gameId = new ObjectId().toString(),
   getGamePlayerResponse,
-  setReadyResponse,
+  saveGameResponse,
   resolvedGame,
   expected,
   getGamePlayerCalls = [],
   gameResolveCalls = [],
-  setReadyCalls = [],
+  saveGameCalls = [],
   logPrefix,
   unreadyPlayerIds = [],
   traceEnabled,
@@ -276,12 +280,12 @@ async function testReady({
 }: {
   userId?: ObjectId
   gameId?: string
-  getGamePlayerResponse?: GamePlayerResponse | Error
-  setReadyResponse?: GameDbObject
+  getGamePlayerResponse?: GamePlayerResponse
+  saveGameResponse?: GameDbObject
   resolvedGame?: Game
   expected?: Error | Game
   getGamePlayerCalls?: any[][]
-  setReadyCalls?: any[][]
+  saveGameCalls?: any[][]
   gameResolveCalls?: any[][]
   logPrefix?: string
   unreadyPlayerIds?: string[]
@@ -303,13 +307,9 @@ async function testReady({
   }
   const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
   if (getGamePlayerResponse) {
-    if (getGamePlayerResponse instanceof Error) {
-      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
-    } else {
-      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
-    }
+    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
   }
-  const setReadySpy = jest.spyOn(GameStore, 'save').mockResolvedValue(setReadyResponse)
+  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveGameResponse)
   const gameResolveSpy = jest.spyOn(GameResolver, 'fromObject')
   if (resolvedGame) {
     gameResolveSpy.mockResolvedValue(resolvedGame)
@@ -335,7 +335,7 @@ async function testReady({
   }
 
   expect(getGamePlayerSpy.mock.calls).toEqual(getGamePlayerCalls)
-  expect(setReadySpy.mock.calls).toEqual(setReadyCalls)
+  expect(saveSpy.mock.calls).toEqual(saveGameCalls)
   expect(gameResolveSpy.mock.calls).toEqual(gameResolveCalls)
   expect(publishSpy.mock.calls).toEqual(
     expected instanceof Error
@@ -363,8 +363,7 @@ async function testReady({
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} game "${gameId}" unreadyPlayers: "${JSON.stringify(unreadyPlayerIds)}"`],
-          [`${logPrefix} game "${gameId}" currentRound: "${setReadyResponse?.round}"`],
-          [`${logPrefix} updatedGame: "${JSON.stringify(setReadyResponse)}"`],
+          [`${logPrefix} updatedGame: "${JSON.stringify(saveGameResponse)}"`],
         ]
       : []
   )

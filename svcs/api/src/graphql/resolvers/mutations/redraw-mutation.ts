@@ -118,15 +118,23 @@ export default class RedrawMutation {
     }
 
     game.players = game.players.map((gamePlayer) => {
+      let hand = gamePlayer.deck.hand
+      let undrawn = gamePlayer.deck.undrawn
+      let redraws = gamePlayer.deck.redraws
       if (gamePlayer.user.toString() === userId.toString()) {
-        gamePlayer.deck = {
-          ...gamePlayer.deck,
-          hand: newHand,
-          undrawn: newUndrawn,
-          redraws: newRedraws,
-        }
+        hand = newHand
+        undrawn = newUndrawn
+        redraws = newRedraws
       }
-      return gamePlayer
+      return {
+        ...gamePlayer,
+        deck: {
+          ...gamePlayer.deck,
+          hand,
+          undrawn,
+          redraws,
+        },
+      }
     })
 
     const updatedGame = await GameStore.save(game)

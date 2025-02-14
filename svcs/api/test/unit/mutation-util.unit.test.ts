@@ -1634,8 +1634,8 @@ describe('mutation-util', () => {
         logPrefix,
         getGameResponse: dbGame,
         factionByKeyResponse: dbFaction,
-        saveResponse: null,
         randomizeOrderCalls: [[[userId, opponentId]]],
+        saveResponse: null,
         error: Error(message),
         saveCalls: [
           [
@@ -1670,6 +1670,8 @@ describe('mutation-util', () => {
           }
         }),
         turn: new ObjectId(userId),
+        status: GameStatus.Redrawing,
+        updated: new Date(),
       }
       await testSetGameTurnOrder({
         gameId,
@@ -1682,19 +1684,8 @@ describe('mutation-util', () => {
         saveCalls: [
           [
             {
-              ...dbGame,
-              players: [
-                {
-                  ...dbGame.players[0],
-                  order: 0,
-                },
-                {
-                  ...dbGame.players[1],
-                  order: 1,
-                },
-              ],
-              turn: new ObjectId(userId),
-              status: GameStatus.Redrawing,
+              ...updatedGame,
+              updated: dbGame.updated,
             },
           ],
         ],
@@ -1723,13 +1714,15 @@ describe('mutation-util', () => {
       }
       const updatedGame: GameDbObject = {
         ...dbGameScoiatael,
-        players: dbGame.players.map((player, index) => {
+        players: dbGameScoiatael.players.map((player, index) => {
           return {
             ...player,
             order: index,
           }
         }),
         turn: new ObjectId(userId),
+        status: GameStatus.Redrawing,
+        updated: new Date(),
       }
       await testSetGameTurnOrder({
         gameId,
@@ -1742,19 +1735,8 @@ describe('mutation-util', () => {
         saveCalls: [
           [
             {
-              ...dbGame,
-              players: [
-                {
-                  ...dbGame.players[0],
-                  order: 0,
-                },
-                {
-                  ...dbGame.players[1],
-                  order: 1,
-                },
-              ],
-              turn: new ObjectId(userId),
-              status: GameStatus.Redrawing,
+              ...updatedGame,
+              updated: dbGame.updated,
             },
           ],
         ],
@@ -1782,13 +1764,15 @@ describe('mutation-util', () => {
       }
       const updatedGame: GameDbObject = {
         ...dbGameScoiatael,
-        players: dbGame.players.map((player, index) => {
+        players: dbGameScoiatael.players.map((player, index) => {
           return {
             ...player,
             order: dbGameScoiatael.players.length - index - 1,
           }
         }),
-        turn: new ObjectId(userId),
+        turn: new ObjectId(opponentId),
+        status: GameStatus.Redrawing,
+        updated: new Date(),
       }
       await testSetGameTurnOrder({
         gameId,
@@ -1801,19 +1785,8 @@ describe('mutation-util', () => {
         saveCalls: [
           [
             {
-              ...dbGame,
-              players: [
-                {
-                  ...dbGame.players[0],
-                  order: 1,
-                },
-                {
-                  ...dbGame.players[1],
-                  order: 0,
-                },
-              ],
-              turn: new ObjectId(opponentId),
-              status: GameStatus.Redrawing,
+              ...updatedGame,
+              updated: dbGame.updated,
             },
           ],
         ],
@@ -1829,6 +1802,8 @@ describe('mutation-util', () => {
           }
         }),
         turn: new ObjectId(userId),
+        status: GameStatus.Redrawing,
+        updated: new Date(),
       }
       const logPrefixOverride = 'overridden'
       await testSetGameTurnOrder({
@@ -1843,19 +1818,8 @@ describe('mutation-util', () => {
         saveCalls: [
           [
             {
-              ...dbGame,
-              players: [
-                {
-                  ...dbGame.players[0],
-                  order: 0,
-                },
-                {
-                  ...dbGame.players[1],
-                  order: 1,
-                },
-              ],
-              turn: new ObjectId(userId),
-              status: GameStatus.Redrawing,
+              ...updatedGame,
+              updated: dbGame.updated,
             },
           ],
         ],
@@ -1884,7 +1848,7 @@ describe('mutation-util', () => {
       }
       const updatedGame: GameDbObject = {
         ...dbGameScoiatael,
-        players: dbGame.players.map((player, index) => {
+        players: dbGameScoiatael.players.map((player, index) => {
           return {
             ...player,
             order: index,
@@ -1892,6 +1856,7 @@ describe('mutation-util', () => {
         }),
         turn: new ObjectId(userId),
         status: GameStatus.Redrawing,
+        updated: new Date(),
       }
       await testSetGameTurnOrder({
         gameId,
@@ -1905,7 +1870,7 @@ describe('mutation-util', () => {
           [
             {
               ...updatedGame,
-              turn: new ObjectId(userId),
+              updated: dbGame.updated,
             },
           ],
         ],
@@ -2115,10 +2080,7 @@ async function testSetGameTurnOrder({
     }
     randomizeOrderSpy.mockReturnValue(randomPlayers)
   }
-  const saveSpy = jest.spyOn(GameStore, 'save')
-  if (saveResponse) {
-    saveSpy.mockResolvedValue(saveResponse)
-  }
+  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse || undefined)
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
   let resolvedGame
   if (saveResponse) {

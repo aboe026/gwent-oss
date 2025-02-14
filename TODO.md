@@ -4,12 +4,12 @@ A list of things to be done in the future.
 
 ## Fixes
 
-- separate invalid checks on mutations into separate methods?
 - unit tests
 - jsdocs
 - increment version
 - changelog
 
+- separate invalid checks on mutations into separate methods?
 - change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
 - save game status to database?
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)
@@ -27,7 +27,7 @@ A list of things to be done in the future.
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status, gamesList doesn't need all details that game page does)
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
-- rename "redraw" mutation to "redrawUnit"?
+- rename "redraw" mutation to "redrawUnit"? and "ready" to "readyGame"? Have mutation name convention by "verbNoun"?
 - do not store yarn binary in source
 - do not store yarn sdks in source?
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond

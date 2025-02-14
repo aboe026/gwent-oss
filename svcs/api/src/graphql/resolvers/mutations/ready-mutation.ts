@@ -37,7 +37,7 @@ export default class ReadyMutation {
       label: 'ready mutation',
     })
 
-    let logPrefix = `ready by "${userId}"`
+    const logPrefix = `ready by "${userId}"`
     resolverUtil.setLogPrefix(logPrefix)
     resolverUtil.logRequestInfo({
       args,
@@ -45,8 +45,6 @@ export default class ReadyMutation {
     })
 
     const gameId = args.game
-    logPrefix += ` on game "${gameId}"`
-    resolverUtil.setLogPrefix(logPrefix)
 
     const { game, player } = await resolverUtil.getGamePlayer({
       gameId,
@@ -72,10 +70,14 @@ export default class ReadyMutation {
     })
 
     game.players = game.players.map((gamePlayer) => {
+      let ready = gamePlayer.ready
       if (gamePlayer.user.toString() === userId.toString()) {
-        gamePlayer.ready = true
+        ready = true
       }
-      return gamePlayer
+      return {
+        ...gamePlayer,
+        ready,
+      }
     })
     const unreadyPlayers = game.players.filter((gamePlayer) => gamePlayer.ready === false)
     if (ReadyMutation.logger.isTraceEnabled()) {
@@ -86,7 +88,7 @@ export default class ReadyMutation {
       )
     }
     if (unreadyPlayers.length === 0) {
-      ReadyMutation.logger.debug(`${logPrefix} has all players ready, starting first round.`)
+      ReadyMutation.logger.debug(`${logPrefix} game "${game._id}" has all players ready, starting first round.`)
       game.players = mutationUtil.initializeNewRound({
         players: game.players,
       })

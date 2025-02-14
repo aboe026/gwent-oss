@@ -113,7 +113,9 @@ export default class SetDeckMutation {
     const allDecksSet = !game.players.some((gamePlayer) => !gamePlayer.deck.from)
 
     if (allDecksSet) {
-      SetDeckMutation.logger.debug(`All decks set, changing game status to "${GameStatus.Ordering}"`)
+      SetDeckMutation.logger.debug(
+        `${logPrefix} on "${gameId}" all decks set, changing game status to "${GameStatus.Ordering}"`
+      )
       game.status = GameStatus.Ordering
     }
 

@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import { Combat, Game, GamePlayer, User } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
@@ -43,7 +43,7 @@ describe('game-resolver', () => {
             {
               players,
               users: [user, victor],
-              allDecksChosen: false,
+              gameStatus: GameStatus.Decking,
             },
           ],
         ],
@@ -82,7 +82,7 @@ describe('game-resolver', () => {
             {
               players: players,
               users: [user, victor],
-              allDecksChosen: false,
+              gameStatus: GameStatus.Decking,
             },
           ],
         ],

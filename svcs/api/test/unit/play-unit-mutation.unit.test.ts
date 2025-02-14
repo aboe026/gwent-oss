@@ -246,7 +246,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         makeMoveResponseEmpty: true,
         expected: Error(message),
         errorCalls: [[`${logPrefix} failed: ${message}`]],
@@ -313,7 +313,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -381,7 +381,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -449,7 +449,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -513,7 +513,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -590,7 +590,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -665,7 +665,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -732,7 +732,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -751,7 +751,7 @@ async function testPlayUnit({
   resolvedUnitsResponse,
   modifiedGame,
   moveDate,
-  makeMoveCalled,
+  saveGameCalled,
   makeMoveResponseEmpty,
   expected,
   errorCalls = [],
@@ -766,7 +766,7 @@ async function testPlayUnit({
   resolvedUnitsResponse?: UnitDbObject[]
   modifiedGame?: GameDbObject
   moveDate?: Date
-  makeMoveCalled?: boolean
+  saveGameCalled?: boolean
   makeMoveResponseEmpty?: boolean
   expected: Game | Error
   errorCalls?: string[][]
@@ -803,9 +803,8 @@ async function testPlayUnit({
   const updatedGame: GameDbObject = {
     ...(modifiedGame as GameDbObject),
     updated,
-    turn: userId,
   }
-  const makeMoveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
+  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
   if (expected && !(expected instanceof Error)) {
     resolveGameSpy.mockResolvedValue(expected)
@@ -881,14 +880,14 @@ async function testPlayUnit({
       : []
   )
   expect(dateSpy.mock.calls).toEqual(moveDate ? [[]] : [])
-  const gameReturned = makeMoveCalled && !makeMoveResponseEmpty
-  expect(makeMoveSpy.mock.calls).toEqual(
-    makeMoveCalled
+  const gameReturned = saveGameCalled && !makeMoveResponseEmpty
+  expect(saveSpy.mock.calls).toEqual(
+    saveGameCalled
       ? [
           [
             {
-              game: modifiedGame,
-              userId,
+              ...updatedGame,
+              updated: modifiedGame?.updated,
             },
           ],
         ]
