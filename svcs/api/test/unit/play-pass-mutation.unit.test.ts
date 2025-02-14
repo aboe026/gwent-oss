@@ -110,7 +110,7 @@ describe('play-pass-mutation', () => {
           game,
           player: firstPlayer,
         },
-        makeMoveResponseEmpty: true,
+        saveResponse: true,
         modifiedGame,
         moveDate,
         nextPlayerId: secondPlayer.user,
@@ -533,7 +533,7 @@ async function testPlayPass({
   getGamePlayerResponse,
   nextPlayerId,
   modifiedGame,
-  makeMoveResponseEmpty,
+  saveResponse,
   moveDate,
   roundOver = false,
   gameOver = false,
@@ -549,7 +549,7 @@ async function testPlayPass({
   getGamePlayerResponse: GamePlayerResponse
   nextPlayerId?: ObjectId
   modifiedGame?: GameDbObject
-  makeMoveResponseEmpty?: boolean
+  saveResponse?: boolean
   moveDate?: Date
   roundOver?: boolean
   gameOver?: boolean
@@ -588,7 +588,7 @@ async function testPlayPass({
     updated: new Date(),
     turn: nextPlayerId,
   }
-  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
+  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse ? undefined : updatedGame)
   let resolvedGame: Game | undefined = undefined
   if (expected && !(expected instanceof Error)) {
     resolvedGame = expected
@@ -676,7 +676,7 @@ async function testPlayPass({
         ]
       : []
   )
-  const gameReturned = (nextPlayerId || gameOver) && !makeMoveResponseEmpty
+  const gameReturned = (nextPlayerId || gameOver) && !saveResponse
   expect(saveSpy.mock.calls).toEqual(
     nextPlayerId || gameOver
       ? [

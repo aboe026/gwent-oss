@@ -119,7 +119,7 @@ describe('ready-mutation', () => {
         saveGameResponse: undefined,
         expected: Error(error),
         getGamePlayerCalls,
-        saveGameCalls: [
+        saveCalls: [
           [
             {
               ...updatedGame,
@@ -142,7 +142,7 @@ describe('ready-mutation', () => {
         resolvedGame: resolvedGame,
         expected: resolvedGame,
         getGamePlayerCalls,
-        saveGameCalls: [
+        saveCalls: [
           [
             {
               ...updatedGame,
@@ -208,7 +208,7 @@ describe('ready-mutation', () => {
         resolvedGame: allPlayersReadyResolvedGame,
         expected: allPlayersReadyResolvedGame,
         getGamePlayerCalls,
-        saveGameCalls: [
+        saveCalls: [
           [
             {
               ...allPlayersReadyUpdatedGame,
@@ -238,7 +238,7 @@ describe('ready-mutation', () => {
         resolvedGame: resolvedGame,
         expected: resolvedGame,
         getGamePlayerCalls,
-        saveGameCalls: [
+        saveCalls: [
           [
             {
               ...updatedGame,
@@ -270,7 +270,7 @@ async function testReady({
   expected,
   getGamePlayerCalls = [],
   gameResolveCalls = [],
-  saveGameCalls = [],
+  saveCalls = [],
   logPrefix,
   unreadyPlayerIds = [],
   traceEnabled,
@@ -285,7 +285,7 @@ async function testReady({
   resolvedGame?: Game
   expected?: Error | Game
   getGamePlayerCalls?: any[][]
-  saveGameCalls?: any[][]
+  saveCalls?: any[][]
   gameResolveCalls?: any[][]
   logPrefix?: string
   unreadyPlayerIds?: string[]
@@ -335,7 +335,7 @@ async function testReady({
   }
 
   expect(getGamePlayerSpy.mock.calls).toEqual(getGamePlayerCalls)
-  expect(saveSpy.mock.calls).toEqual(saveGameCalls)
+  expect(saveSpy.mock.calls).toEqual(saveCalls)
   expect(gameResolveSpy.mock.calls).toEqual(gameResolveCalls)
   expect(publishSpy.mock.calls).toEqual(
     expected instanceof Error

@@ -247,7 +247,7 @@ describe('play-unit-mutation', () => {
         modifiedGame,
         moveDate,
         saveGameCalled: true,
-        makeMoveResponseEmpty: true,
+        saveResponse: true,
         expected: Error(message),
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
@@ -752,7 +752,7 @@ async function testPlayUnit({
   modifiedGame,
   moveDate,
   saveGameCalled,
-  makeMoveResponseEmpty,
+  saveResponse,
   expected,
   errorCalls = [],
   warnCalls = [],
@@ -767,7 +767,7 @@ async function testPlayUnit({
   modifiedGame?: GameDbObject
   moveDate?: Date
   saveGameCalled?: boolean
-  makeMoveResponseEmpty?: boolean
+  saveResponse?: boolean
   expected: Game | Error
   errorCalls?: string[][]
   warnCalls?: string[][]
@@ -804,7 +804,7 @@ async function testPlayUnit({
     ...(modifiedGame as GameDbObject),
     updated,
   }
-  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
+  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse ? undefined : updatedGame)
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
   if (expected && !(expected instanceof Error)) {
     resolveGameSpy.mockResolvedValue(expected)
@@ -880,7 +880,7 @@ async function testPlayUnit({
       : []
   )
   expect(dateSpy.mock.calls).toEqual(moveDate ? [[]] : [])
-  const gameReturned = saveGameCalled && !makeMoveResponseEmpty
+  const gameReturned = saveGameCalled && !saveResponse
   expect(saveSpy.mock.calls).toEqual(
     saveGameCalled
       ? [
