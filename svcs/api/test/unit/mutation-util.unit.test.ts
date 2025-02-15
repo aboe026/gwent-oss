@@ -16,7 +16,6 @@ import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
 import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import { PubSubEvents } from '@gwent/constants'
-import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
 
 describe('mutation-util', () => {
@@ -1358,47 +1357,46 @@ describe('mutation-util', () => {
     })
   })
   describe('setGameTurnOrder', () => {
-    const gameId = new ObjectId().toString()
     const userId = new ObjectId().toString()
     const opponentId = new ObjectId().toString()
     const logPrefix = 'test-log-prefix'
-    const dbGame = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: userId,
-          deck: TestUtil.getDbGameDeck({
-            from: TestUtil.getDbDeck({}),
-          }),
-        }),
-        TestUtil.getDbGamePlayer({
-          user: opponentId,
-          deck: TestUtil.getDbGameDeck({
-            from: TestUtil.getDbDeck({}),
-          }),
-        }),
-      ],
-    })
     const dbFaction = TestUtil.getDbFaction({
       key: FactionKey.ScoiaTael,
     })
-    it('throws error setting explicit order with more than 1 ScoiaTael player', async () => {
-      const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${gameId}".`
-      await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        userIds: [userId, new ObjectId().toString()],
-        getGameResponse: {
-          ...dbGame,
-          players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({
-                  faction: dbFaction._id,
-                }),
-              }),
-              user: new ObjectId(userId),
+    let game: GameDbObject
+    beforeEach(() => {
+      game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: userId,
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({}),
             }),
+          }),
+          TestUtil.getDbGamePlayer({
+            user: opponentId,
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({}),
+            }),
+          }),
+        ],
+      })
+    })
+    it('throws error setting explicit order with more than 1 ScoiaTael player', async () => {
+      const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${game._id}".`
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({
+            faction: dbFaction._id,
+          }),
+        }),
+        user: new ObjectId(userId),
+      })
+      await testSetGameTurnOrder({
+        game: {
+          ...game,
+          players: [
+            player,
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({
@@ -1408,6 +1406,9 @@ describe('mutation-util', () => {
             }),
           ],
         },
+        player,
+        logPrefix,
+        userIds: [userId, new ObjectId().toString()],
         factionByKeyResponse: dbFaction,
         error: Error(message),
         warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
@@ -1416,22 +1417,19 @@ describe('mutation-util', () => {
     it('throws error setting explicit order without scoiatael deck', async () => {
       const factionId = new ObjectId()
       const message = `Cannot set explicit order as deck faction ID "${factionId}" does not match "${FactionKey.ScoiaTael}" faction ID of "${dbFaction._id}".`
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({
+            faction: factionId,
+          }),
+        }),
+        user: new ObjectId(userId),
+      })
       await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        userIds: [userId, new ObjectId().toString()],
-        getGameResponse: {
-          ...dbGame,
+        game: {
+          ...game,
           players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({
-                  faction: factionId,
-                }),
-              }),
-              user: new ObjectId(userId),
-            }),
+            player,
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({}),
@@ -1439,26 +1437,27 @@ describe('mutation-util', () => {
             }),
           ],
         },
+        player,
+        logPrefix,
+        userIds: [userId, new ObjectId().toString()],
         factionByKeyResponse: dbFaction,
         error: Error(message),
         warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
     it('throws error setting implicit order when no userIds and opponent has scoiatael deck', async () => {
-      const message = `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const message = `Cannot set order randomly as another player for game "${game._id}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({}),
+        }),
+        user: new ObjectId(userId),
+      })
       await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: {
-          ...dbGame,
+        game: {
+          ...game,
           players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({}),
-              }),
-              user: new ObjectId(userId),
-            }),
+            player,
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({
@@ -1468,27 +1467,26 @@ describe('mutation-util', () => {
             }),
           ],
         },
+        player,
+        logPrefix,
         factionByKeyResponse: dbFaction,
         error: Error(message),
         debugCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
     it('throws error setting implicit order when empty userIds and opponent has scoiatael deck', async () => {
-      const message = `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const message = `Cannot set order randomly as another player for game "${game._id}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({}),
+        }),
+        user: new ObjectId(userId),
+      })
       await testSetGameTurnOrder({
-        gameId,
-        userId,
-        logPrefix,
-        userIds: [],
-        getGameResponse: {
-          ...dbGame,
+        game: {
+          ...game,
           players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({}),
-              }),
-              user: new ObjectId(userId),
-            }),
+            player,
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({
@@ -1498,27 +1496,27 @@ describe('mutation-util', () => {
             }),
           ],
         },
+        player,
+        logPrefix,
+        userIds: [],
         factionByKeyResponse: dbFaction,
         error: Error(message),
         debugCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
     it('throws error setting explicit order when opponent has scoiatael deck', async () => {
-      const message = `Cannot set order as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const message = `Cannot set order as another player for game "${game._id}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({}),
+        }),
+        user: new ObjectId(userId),
+      })
       await testSetGameTurnOrder({
-        gameId,
-        userId,
-        userIds: [userId, new ObjectId().toString()],
-        logPrefix,
-        getGameResponse: {
-          ...dbGame,
+        game: {
+          ...game,
           players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({}),
-              }),
-              user: new ObjectId(userId),
-            }),
+            player,
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({
@@ -1528,6 +1526,9 @@ describe('mutation-util', () => {
             }),
           ],
         },
+        player,
+        userIds: [userId, new ObjectId().toString()],
+        logPrefix,
         factionByKeyResponse: dbFaction,
         error: Error(message),
         warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
@@ -1535,25 +1536,22 @@ describe('mutation-util', () => {
     })
     it('throws error if users are not players on game', async () => {
       const nonPlayerId = new ObjectId().toString()
-      const message = `Cannot set order as users(s) ${JSON.stringify([
-        nonPlayerId,
-      ])} are not players on game "${gameId}".`
+      const message = `Cannot set order as users(s) ${JSON.stringify([nonPlayerId])} are not players on game "${
+        game._id
+      }".`
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({
+            faction: dbFaction._id,
+          }),
+        }),
+        user: new ObjectId(userId),
+      })
       await testSetGameTurnOrder({
-        gameId,
-        userId,
-        userIds: [userId, nonPlayerId],
-        logPrefix,
-        getGameResponse: {
-          ...dbGame,
+        game: {
+          ...game,
           players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({
-                  faction: dbFaction._id,
-                }),
-              }),
-              user: new ObjectId(userId),
-            }),
+            player,
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({}),
@@ -1561,29 +1559,29 @@ describe('mutation-util', () => {
             }),
           ],
         },
+        player,
+        userIds: [userId, nonPlayerId],
+        logPrefix,
         factionByKeyResponse: dbFaction,
         error: Error(message),
         warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
     it('throws error if too few users', async () => {
-      const message = `Cannot set order as users count of "1" does not match player count of "2" for game "${gameId}".`
+      const message = `Cannot set order as users count of "1" does not match player count of "2" for game "${game._id}".`
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({
+            faction: dbFaction._id,
+          }),
+        }),
+        user: new ObjectId(userId),
+      })
       await testSetGameTurnOrder({
-        gameId,
-        userId,
-        userIds: [userId],
-        logPrefix,
-        getGameResponse: {
-          ...dbGame,
+        game: {
+          ...game,
           players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({
-                  faction: dbFaction._id,
-                }),
-              }),
-              user: new ObjectId(userId),
-            }),
+            player,
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({}),
@@ -1591,29 +1589,29 @@ describe('mutation-util', () => {
             }),
           ],
         },
+        player,
+        userIds: [userId],
+        logPrefix,
         factionByKeyResponse: dbFaction,
         error: Error(message),
         warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
     it('throws error if duplicate users', async () => {
-      const message = `Cannot set order for game "${gameId}" due to duplicate user ID(s) ["${userId}"] specified.`
+      const message = `Cannot set order for game "${game._id}" due to duplicate user ID(s) ["${userId}"] specified.`
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({
+            faction: dbFaction._id,
+          }),
+        }),
+        user: new ObjectId(userId),
+      })
       await testSetGameTurnOrder({
-        gameId,
-        userId,
-        userIds: [userId, userId],
-        logPrefix,
-        getGameResponse: {
-          ...dbGame,
+        game: {
+          ...game,
           players: [
-            TestUtil.getDbGamePlayer({
-              deck: TestUtil.getDbGameDeck({
-                from: TestUtil.getDbDeck({
-                  faction: dbFaction._id,
-                }),
-              }),
-              user: new ObjectId(userId),
-            }),
+            player,
             TestUtil.getDbGamePlayer({
               deck: TestUtil.getDbGameDeck({
                 from: TestUtil.getDbDeck({}),
@@ -1621,18 +1619,20 @@ describe('mutation-util', () => {
             }),
           ],
         },
+        player,
+        userIds: [userId, userId],
+        logPrefix,
         factionByKeyResponse: dbFaction,
         error: Error(message),
         warnCalls: [[`${logPrefix} setGameTurnOrder failed: ${message}`]],
       })
     })
     it('throws error if updated game empty', async () => {
-      const message = `Could not set order on game "${gameId}" in probable race condition collision.`
+      const message = `Could not set order on game "${game._id}" in probable race condition collision.`
       await testSetGameTurnOrder({
-        gameId,
-        userId,
+        game: game,
+        player: game.players[0],
         logPrefix,
-        getGameResponse: dbGame,
         factionByKeyResponse: dbFaction,
         randomizeOrderCalls: [[[userId, opponentId]]],
         saveResponse: null,
@@ -1640,14 +1640,14 @@ describe('mutation-util', () => {
         saveCalls: [
           [
             {
-              ...dbGame,
+              ...game,
               players: [
                 {
-                  ...dbGame.players[0],
+                  ...game.players[0],
                   order: 0,
                 },
                 {
-                  ...dbGame.players[1],
+                  ...game.players[1],
                   order: 1,
                 },
               ],
@@ -1662,8 +1662,8 @@ describe('mutation-util', () => {
     })
     it('returns resolved updated game if no errors and implicitly setting users', async () => {
       const updatedGame: GameDbObject = {
-        ...dbGame,
-        players: dbGame.players.map((player, index) => {
+        ...game,
+        players: game.players.map((player, index) => {
           return {
             ...player,
             order: index,
@@ -1674,10 +1674,9 @@ describe('mutation-util', () => {
         updated: new Date(),
       }
       await testSetGameTurnOrder({
-        gameId,
-        userId,
+        game: game,
+        player: game.players[0],
         logPrefix,
-        getGameResponse: dbGame,
         factionByKeyResponse: dbFaction,
         saveResponse: updatedGame,
         randomizeOrderCalls: [[[userId, opponentId]]],
@@ -1685,7 +1684,7 @@ describe('mutation-util', () => {
           [
             {
               ...updatedGame,
-              updated: dbGame.updated,
+              updated: game.updated,
             },
           ],
         ],
@@ -1694,7 +1693,7 @@ describe('mutation-util', () => {
     })
     it('returns resolved updated game if no errors and explicitly setting self first', async () => {
       const dbGameScoiatael: GameDbObject = {
-        ...dbGame,
+        ...game,
         players: [
           TestUtil.getDbGamePlayer({
             deck: TestUtil.getDbGameDeck({
@@ -1725,18 +1724,17 @@ describe('mutation-util', () => {
         updated: new Date(),
       }
       await testSetGameTurnOrder({
-        gameId,
-        userId,
+        game: dbGameScoiatael,
+        player: dbGameScoiatael.players[0],
         logPrefix,
         userIds: [userId, opponentId],
-        getGameResponse: dbGameScoiatael,
         factionByKeyResponse: dbFaction,
         saveResponse: updatedGame,
         saveCalls: [
           [
             {
               ...updatedGame,
-              updated: dbGame.updated,
+              updated: game.updated,
             },
           ],
         ],
@@ -1744,7 +1742,7 @@ describe('mutation-util', () => {
     })
     it('returns resolved updated game if no errors and explicitly setting opponent first', async () => {
       const dbGameScoiatael: GameDbObject = {
-        ...dbGame,
+        ...game,
         players: [
           TestUtil.getDbGamePlayer({
             deck: TestUtil.getDbGameDeck({
@@ -1775,18 +1773,17 @@ describe('mutation-util', () => {
         updated: new Date(),
       }
       await testSetGameTurnOrder({
-        gameId,
-        userId,
+        game: dbGameScoiatael,
+        player: dbGameScoiatael.players[0],
         logPrefix,
         userIds: [opponentId, userId],
-        getGameResponse: dbGameScoiatael,
         factionByKeyResponse: dbFaction,
         saveResponse: updatedGame,
         saveCalls: [
           [
             {
               ...updatedGame,
-              updated: dbGame.updated,
+              updated: game.updated,
             },
           ],
         ],
@@ -1794,8 +1791,8 @@ describe('mutation-util', () => {
     })
     it('override class logPrefix if provided as parameter', async () => {
       const updatedGame: GameDbObject = {
-        ...dbGame,
-        players: dbGame.players.map((player, index) => {
+        ...game,
+        players: game.players.map((player, index) => {
           return {
             ...player,
             order: index,
@@ -1807,11 +1804,10 @@ describe('mutation-util', () => {
       }
       const logPrefixOverride = 'overridden'
       await testSetGameTurnOrder({
-        gameId,
-        userId,
+        game: game,
+        player: game.players[0],
         logPrefix,
         logPrefixOverride,
-        getGameResponse: dbGame,
         factionByKeyResponse: dbFaction,
         saveResponse: updatedGame,
         randomizeOrderCalls: [[[userId, opponentId]]],
@@ -1819,7 +1815,7 @@ describe('mutation-util', () => {
           [
             {
               ...updatedGame,
-              updated: dbGame.updated,
+              updated: game.updated,
             },
           ],
         ],
@@ -1828,7 +1824,7 @@ describe('mutation-util', () => {
     })
     it('logs to trace if enabled', async () => {
       const dbGameScoiatael: GameDbObject = {
-        ...dbGame,
+        ...game,
         players: [
           TestUtil.getDbGamePlayer({
             deck: TestUtil.getDbGameDeck({
@@ -1859,18 +1855,17 @@ describe('mutation-util', () => {
         updated: new Date(),
       }
       await testSetGameTurnOrder({
-        gameId,
-        userId,
+        game: dbGameScoiatael,
+        player: dbGameScoiatael.players[0],
         logPrefix,
         userIds: [userId, opponentId],
-        getGameResponse: dbGameScoiatael,
         factionByKeyResponse: dbFaction,
         saveResponse: updatedGame,
         saveCalls: [
           [
             {
               ...updatedGame,
-              updated: dbGame.updated,
+              updated: game.updated,
             },
           ],
         ],
@@ -2031,13 +2026,12 @@ function testIsGameOver({
 }
 
 async function testSetGameTurnOrder({
-  userId,
-  gameId,
+  game,
+  player,
   logPrefix,
   logPrefixOverride,
   allowImplicit = false,
   userIds,
-  getGameResponse,
   factionByKeyResponse,
   saveResponse,
   error,
@@ -2049,13 +2043,12 @@ async function testSetGameTurnOrder({
   traceCalls = [],
   traceEnabled = false,
 }: {
-  userId: string
-  gameId: string
+  game: GameDbObject
+  player: GamePlayerDbObject
   logPrefix: string
   logPrefixOverride?: string
   allowImplicit?: boolean
   userIds?: string[]
-  getGameResponse: GameDbObject
   factionByKeyResponse: FactionDbObject
   saveResponse?: GameDbObject | null
   error?: Error
@@ -2067,19 +2060,13 @@ async function testSetGameTurnOrder({
   traceCalls?: string[][]
   traceEnabled?: boolean
 }) {
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer').mockResolvedValue({
-    game: getGameResponse,
-    player: getGameResponse.players.find((player) => player.user.toString() === userId) as GamePlayerDbObject,
-  })
   const getFactionByKeySpy = jest.spyOn(FactionStore, 'getByKey').mockResolvedValue(factionByKeyResponse)
   const randomizeOrderSpy = jest.spyOn(gwentUtils, 'randomizeOrder')
   const randomPlayers: string[] = []
-  if (getGameResponse) {
-    for (const player of getGameResponse.players) {
-      randomPlayers.push(player.user.toString())
-    }
-    randomizeOrderSpy.mockReturnValue(randomPlayers)
+  for (const player of game.players) {
+    randomPlayers.push(player.user.toString())
   }
+  randomizeOrderSpy.mockReturnValue(randomPlayers)
   const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse || undefined)
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
   let resolvedGame
@@ -2101,8 +2088,8 @@ async function testSetGameTurnOrder({
     logger,
     logPrefix,
   }).setGameTurnOrder({
-    userId: new ObjectId(userId),
-    gameId,
+    game,
+    player,
     userIds,
     logPrefix: logPrefixOverride,
     allowImplicit,
@@ -2113,16 +2100,6 @@ async function testSetGameTurnOrder({
     await expect(promise).resolves.toEqual(resolvedGame)
   }
 
-  expect(getGamePlayerSpy.mock.calls).toEqual([
-    [
-      {
-        gameId,
-        userId: new ObjectId(userId),
-        label: 'set order',
-        status: GameStatus.Ordering,
-      },
-    ],
-  ])
   expect(getFactionByKeySpy.mock.calls).toEqual([
     [
       {

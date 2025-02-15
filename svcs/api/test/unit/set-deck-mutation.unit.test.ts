@@ -272,8 +272,8 @@ describe('set-deck-mutation', () => {
         setOrderCalls: [
           [
             {
-              userId,
-              gameId: game._id.toString(),
+              game: gameAllDecksChosen,
+              player: gameAllDecksChosen.players[0],
               logPrefix: `setOrder via setDeck by "${userId}"`,
               allowImplicit: false,
             },
@@ -429,8 +429,8 @@ describe('set-deck-mutation', () => {
         setOrderCalls: [
           [
             {
-              userId,
-              gameId: game._id.toString(),
+              game: gameAllDecksChosen,
+              player: gameAllDecksChosen.players[0],
               logPrefix: `setOrder via setDeck by "${userId}"`,
               allowImplicit: false,
             },
@@ -542,8 +542,8 @@ describe('set-deck-mutation', () => {
         setOrderCalls: [
           [
             {
-              userId,
-              gameId: game._id.toString(),
+              game: gameAllDecksChosen,
+              player: gameAllDecksChosen.players[0],
               logPrefix: `setOrder via setDeck by "${userId}"`,
               allowImplicit: false,
             },

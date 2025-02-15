@@ -161,8 +161,8 @@ export default class SetDeckMutation {
       } as GameSetPayload)
       try {
         await mutationUtil.setGameTurnOrder({
-          userId,
-          gameId,
+          game: updatedGame,
+          player: updatedPlayer,
           logPrefix: `setOrder via ${logPrefix}`,
           allowImplicit: false,
         })
