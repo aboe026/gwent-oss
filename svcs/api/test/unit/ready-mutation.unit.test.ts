@@ -116,7 +116,7 @@ describe('ready-mutation', () => {
           game,
           player: gamePlayerSelf,
         },
-        saveGameResponse: undefined,
+        saveResponse: undefined,
         expected: Error(error),
         getGamePlayerCalls,
         saveCalls: [
@@ -138,7 +138,7 @@ describe('ready-mutation', () => {
           game,
           player: gamePlayerSelf,
         },
-        saveGameResponse: updatedGame,
+        saveResponse: updatedGame,
         resolvedGame: resolvedGame,
         expected: resolvedGame,
         getGamePlayerCalls,
@@ -204,7 +204,7 @@ describe('ready-mutation', () => {
           game: allPlayersReadyGame,
           player: gamePlayerSelf,
         },
-        saveGameResponse: allPlayersReadyUpdatedGame,
+        saveResponse: allPlayersReadyUpdatedGame,
         resolvedGame: allPlayersReadyResolvedGame,
         expected: allPlayersReadyResolvedGame,
         getGamePlayerCalls,
@@ -234,7 +234,7 @@ describe('ready-mutation', () => {
           game,
           player: gamePlayerSelf,
         },
-        saveGameResponse: updatedGame,
+        saveResponse: updatedGame,
         resolvedGame: resolvedGame,
         expected: resolvedGame,
         getGamePlayerCalls,
@@ -265,7 +265,7 @@ async function testReady({
   userId,
   gameId = new ObjectId().toString(),
   getGamePlayerResponse,
-  saveGameResponse,
+  saveResponse,
   resolvedGame,
   expected,
   getGamePlayerCalls = [],
@@ -281,7 +281,7 @@ async function testReady({
   userId?: ObjectId
   gameId?: string
   getGamePlayerResponse?: GamePlayerResponse
-  saveGameResponse?: GameDbObject
+  saveResponse?: GameDbObject
   resolvedGame?: Game
   expected?: Error | Game
   getGamePlayerCalls?: any[][]
@@ -309,7 +309,7 @@ async function testReady({
   if (getGamePlayerResponse) {
     getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
   }
-  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveGameResponse)
+  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse)
   const gameResolveSpy = jest.spyOn(GameResolver, 'fromObject')
   if (resolvedGame) {
     gameResolveSpy.mockResolvedValue(resolvedGame)
@@ -363,7 +363,7 @@ async function testReady({
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} game "${gameId}" unreadyPlayers: "${JSON.stringify(unreadyPlayerIds)}"`],
-          [`${logPrefix} updatedGame: "${JSON.stringify(saveGameResponse)}"`],
+          [`${logPrefix} updatedGame: "${JSON.stringify(saveResponse)}"`],
         ]
       : []
   )
