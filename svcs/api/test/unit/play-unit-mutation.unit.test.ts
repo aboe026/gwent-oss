@@ -246,8 +246,8 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
-        makeMoveResponseEmpty: true,
+        saveGameCalled: true,
+        saveResponse: true,
         expected: Error(message),
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
@@ -313,7 +313,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -381,7 +381,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -449,7 +449,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -513,7 +513,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -590,7 +590,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -665,7 +665,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -732,7 +732,7 @@ describe('play-unit-mutation', () => {
         resolvedUnitsResponse: [deckUnit],
         modifiedGame,
         moveDate,
-        makeMoveCalled: true,
+        saveGameCalled: true,
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
@@ -751,8 +751,8 @@ async function testPlayUnit({
   resolvedUnitsResponse,
   modifiedGame,
   moveDate,
-  makeMoveCalled,
-  makeMoveResponseEmpty,
+  saveGameCalled,
+  saveResponse,
   expected,
   errorCalls = [],
   warnCalls = [],
@@ -766,8 +766,8 @@ async function testPlayUnit({
   resolvedUnitsResponse?: UnitDbObject[]
   modifiedGame?: GameDbObject
   moveDate?: Date
-  makeMoveCalled?: boolean
-  makeMoveResponseEmpty?: boolean
+  saveGameCalled?: boolean
+  saveResponse?: boolean
   expected: Game | Error
   errorCalls?: string[][]
   warnCalls?: string[][]
@@ -803,11 +803,8 @@ async function testPlayUnit({
   const updatedGame: GameDbObject = {
     ...(modifiedGame as GameDbObject),
     updated,
-    turn: userId,
   }
-  const makeMoveSpy = jest
-    .spyOn(GameStore, 'makeMove')
-    .mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
+  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse ? undefined : updatedGame)
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
   if (expected && !(expected instanceof Error)) {
     resolveGameSpy.mockResolvedValue(expected)
@@ -883,14 +880,14 @@ async function testPlayUnit({
       : []
   )
   expect(dateSpy.mock.calls).toEqual(moveDate ? [[]] : [])
-  const gameReturned = makeMoveCalled && !makeMoveResponseEmpty
-  expect(makeMoveSpy.mock.calls).toEqual(
-    makeMoveCalled
+  const gameReturned = saveGameCalled && !saveResponse
+  expect(saveSpy.mock.calls).toEqual(
+    saveGameCalled
       ? [
           [
             {
-              game: modifiedGame,
-              userId,
+              ...updatedGame,
+              updated: modifiedGame?.updated,
             },
           ],
         ]

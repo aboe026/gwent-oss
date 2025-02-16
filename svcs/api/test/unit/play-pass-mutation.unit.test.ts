@@ -110,7 +110,7 @@ describe('play-pass-mutation', () => {
           game,
           player: firstPlayer,
         },
-        makeMoveResponseEmpty: true,
+        saveResponse: true,
         modifiedGame,
         moveDate,
         nextPlayerId: secondPlayer.user,
@@ -423,6 +423,7 @@ describe('play-pass-mutation', () => {
         turn: firstPlayer.user,
         round: 2,
         victors: [firstPlayer.user],
+        status: GameStatus.Done,
       }
       await testPlayPass({
         userId,
@@ -532,7 +533,7 @@ async function testPlayPass({
   getGamePlayerResponse,
   nextPlayerId,
   modifiedGame,
-  makeMoveResponseEmpty,
+  saveResponse,
   moveDate,
   roundOver = false,
   gameOver = false,
@@ -545,10 +546,10 @@ async function testPlayPass({
 }: {
   userId?: ObjectId
   gameId?: string
-  getGamePlayerResponse?: GamePlayerResponse | Error
+  getGamePlayerResponse: GamePlayerResponse
   nextPlayerId?: ObjectId
   modifiedGame?: GameDbObject
-  makeMoveResponseEmpty?: boolean
+  saveResponse?: boolean
   moveDate?: Date
   roundOver?: boolean
   gameOver?: boolean
@@ -570,14 +571,7 @@ async function testPlayPass({
   const args: MutationPlayPassArgs = {
     game: gameId,
   }
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (getGamePlayerResponse) {
-    if (getGamePlayerResponse instanceof Error) {
-      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
-    } else {
-      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
-    }
-  }
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer').mockResolvedValue(getGamePlayerResponse)
   const isRoundOverSpy = jest.spyOn(MutationUtil.prototype, 'isRoundOver').mockReturnValue(roundOver)
   const isGameOverSpy = jest.spyOn(MutationUtil.prototype, 'isGameOver').mockReturnValue(gameOver)
   const getPlayerIdForNextRoundSpy = jest.spyOn(MutationUtil.prototype, 'getPlayerIdForNextRound')
@@ -594,9 +588,7 @@ async function testPlayPass({
     updated: new Date(),
     turn: nextPlayerId,
   }
-  const makeMoveSpy = jest
-    .spyOn(GameStore, 'makeMove')
-    .mockResolvedValue(makeMoveResponseEmpty ? undefined : updatedGame)
+  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse ? undefined : updatedGame)
   let resolvedGame: Game | undefined = undefined
   if (expected && !(expected instanceof Error)) {
     resolvedGame = expected
@@ -684,14 +676,14 @@ async function testPlayPass({
         ]
       : []
   )
-  const gameReturned = (nextPlayerId || gameOver) && !makeMoveResponseEmpty
-  expect(makeMoveSpy.mock.calls).toEqual(
+  const gameReturned = (nextPlayerId || gameOver) && !saveResponse
+  expect(saveSpy.mock.calls).toEqual(
     nextPlayerId || gameOver
       ? [
           [
             {
-              game: modifiedGame,
-              userId,
+              ...updatedGame,
+              updated: modifiedGame?.updated,
             },
           ],
         ]

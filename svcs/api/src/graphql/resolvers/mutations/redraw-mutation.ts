@@ -54,7 +54,7 @@ export default class RedrawMutation {
       label: 'Unit ID',
     })
 
-    const { player } = await resolverUtil.getGamePlayer({
+    const { game, player } = await resolverUtil.getGamePlayer({
       gameId,
       userId,
       status: GameStatus.Redrawing,
@@ -76,6 +76,7 @@ export default class RedrawMutation {
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
+
     const redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
     const cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
     if (RedrawMutation.logger.isTraceEnabled()) {
@@ -116,14 +117,27 @@ export default class RedrawMutation {
       RedrawMutation.logger.trace(`${logPrefix} newUndrawn: "${JSON.stringify(newUndrawn)}"`)
     }
 
-    const updatedGame = await GameStore.redraw({
-      currentRedraws: player.deck.redraws,
-      gameId,
-      newHand,
-      newRedraws,
-      newUndrawn,
-      userId,
+    game.players = game.players.map((gamePlayer) => {
+      let hand = gamePlayer.deck.hand
+      let undrawn = gamePlayer.deck.undrawn
+      let redraws = gamePlayer.deck.redraws
+      if (gamePlayer.user.toString() === userId.toString()) {
+        hand = newHand
+        undrawn = newUndrawn
+        redraws = newRedraws
+      }
+      return {
+        ...gamePlayer,
+        deck: {
+          ...gamePlayer.deck,
+          hand,
+          undrawn,
+          redraws,
+        },
+      }
     })
+
+    const updatedGame = await GameStore.save(game)
 
     if (RedrawMutation.logger.isTraceEnabled()) {
       RedrawMutation.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)

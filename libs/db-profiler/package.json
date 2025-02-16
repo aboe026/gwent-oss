@@ -1,6 +1,6 @@
 {
   "name": "@gwent/db-profiler",
-  "version": "0.10.2",
+  "version": "0.10.3",
   "author": "Adam Boe",
   "description": "Database profiler to analyze operations",
   "main": "build/src/index.js",

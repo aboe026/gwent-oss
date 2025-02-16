@@ -3,7 +3,6 @@ import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject, GamePlayerDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import GameResolver from './types/game-resolver'
 import GameStore from '../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
 import { NOT_AUTHENTICATED_MESSAGE, REDACTED } from '@gwent/constants'
@@ -166,9 +165,8 @@ export default class ResolverUtil {
     }
 
     if (status) {
-      const gameStatus = GameResolver.getStatus(game)
-      if (gameStatus !== status) {
-        const message = `Invalid game status "${gameStatus}": Can only ${label} for game with status "${status}".`
+      if (game.status !== status) {
+        const message = `Invalid game status "${game.status}": Can only ${label} for game with status "${status}".`
         this.logger.warn(`${this.logPrefix} getGamePlayer failed: ${message}`)
         throw new PresentableError(message)
       }

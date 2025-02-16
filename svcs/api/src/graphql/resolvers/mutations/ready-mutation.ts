@@ -92,19 +92,12 @@ export default class ReadyMutation {
       game.players = mutationUtil.initializeNewRound({
         players: game.players,
       })
-    }
-    const currentRound = unreadyPlayers.length === 0 ? 1 : 0
-    if (ReadyMutation.logger.isTraceEnabled()) {
-      ReadyMutation.logger.trace(`${logPrefix} game "${game._id}" currentRound: "${currentRound}"`)
+      game.round = 1
+      game.status = GameStatus.Playing
     }
 
-    const updatedGame = await GameStore.setReady({
-      gameId,
-      userId,
-      players: game.players,
-      previousUpdate: game.updated,
-      currentRound,
-    })
+    const updatedGame = await GameStore.save(game)
+
     if (ReadyMutation.logger.isTraceEnabled()) {
       ReadyMutation.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
     }

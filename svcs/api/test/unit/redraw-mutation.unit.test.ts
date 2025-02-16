@@ -1,15 +1,8 @@
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { DeckUnit, Game, GameDeck, MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
-import {
-  DeckUnitDbObject,
-  GameDbObject,
-  GameDeckDbObject,
-  GamePlayerDbObject,
-  GameStatus,
-  RedrawDbObject,
-} from '@gwent/graphql-schema/database-typings'
+import { DeckUnit, GameDeck, MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnitDbObject, GameDbObject, GameStatus, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import EventManager from '../../src/graphql/event-manager'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
@@ -51,8 +44,46 @@ describe('redraw-mutation', () => {
       user: userId,
     })
     const game = TestUtil.getDbGame({
-      players: [gamePlayer],
+      players: [gamePlayer, TestUtil.getDbGamePlayer({})],
     })
+    const modifiedGame: GameDbObject = {
+      ...game,
+      players: [
+        {
+          ...game.players[0],
+          deck: {
+            ...game.players[0].deck,
+            hand: [
+              {
+                artStyle: 1,
+                unit: unit2._id,
+              },
+            ],
+            undrawn: [
+              {
+                artStyle: 1,
+                unit: unit._id,
+              },
+            ],
+            redraws: [
+              previousRedraw,
+              {
+                from: {
+                  artStyle: 1,
+                  unit: unit._id,
+                },
+                to: {
+                  artStyle: 1,
+                  unit: unit2._id,
+                },
+              },
+            ],
+          },
+        },
+        game.players[1],
+      ],
+      updated: new Date(),
+    }
     const logPrefix = `redraw by "${userId}"`
     const getGamePlayerCalls = [
       [
@@ -64,37 +95,11 @@ describe('redraw-mutation', () => {
         },
       ],
     ]
-    const gameRedrawCalls = [
+    const saveCalls = [
       [
         {
-          currentRedraws: [previousRedraw],
-          gameId,
-          newHand: [
-            {
-              artStyle: 1,
-              unit: unit2._id,
-            },
-          ],
-          newRedraws: [
-            previousRedraw,
-            {
-              from: {
-                artStyle: 1,
-                unit: unit._id,
-              },
-              to: {
-                artStyle: 1,
-                unit: unit2._id,
-              },
-            },
-          ],
-          newUndrawn: [
-            {
-              artStyle: 1,
-              unit: unit._id,
-            },
-          ],
-          userId,
+          ...modifiedGame,
+          updated: game.updated,
         },
       ],
     ]
@@ -228,11 +233,11 @@ describe('redraw-mutation', () => {
           game,
           player: gamePlayer,
         },
-        gameRedrawResponse: undefined,
+        saveResponse: undefined,
         expected: Error(error),
         getGamePlayerCalls,
         getRandomSubsetCalled: true,
-        gameRedrawCalls,
+        saveCalls,
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
@@ -246,7 +251,7 @@ describe('redraw-mutation', () => {
           game,
           player: gamePlayer,
         },
-        gameRedrawResponse: TestUtil.getDbGame({
+        saveResponse: TestUtil.getDbGame({
           created: game.created,
           id: game._id,
           players: [],
@@ -255,7 +260,7 @@ describe('redraw-mutation', () => {
         expected: Error(error),
         getGamePlayerCalls,
         getRandomSubsetCalled: true,
-        gameRedrawCalls,
+        saveCalls,
         resolveDeckUnitCalls,
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
@@ -269,16 +274,12 @@ describe('redraw-mutation', () => {
           game,
           player: gamePlayer,
         },
-        gameRedrawResponse: TestUtil.getDbGame({
-          created: game.created,
-          id: game._id,
-          players: [gamePlayer],
-        }),
+        saveResponse: modifiedGame,
         resolveDeckUnitResponses: [toDeckUnit, fromDeckUnit],
         expected: toDeckUnit,
         getGamePlayerCalls,
         getRandomSubsetCalled: true,
-        gameRedrawCalls,
+        saveCalls,
         resolveDeckUnitCalls,
         resolveGameDeckCalled: true,
       })
@@ -292,16 +293,12 @@ describe('redraw-mutation', () => {
           game,
           player: gamePlayer,
         },
-        gameRedrawResponse: TestUtil.getDbGame({
-          created: game.created,
-          id: game._id,
-          players: [gamePlayer],
-        }),
+        saveResponse: modifiedGame,
         resolveDeckUnitResponses: [toDeckUnit, fromDeckUnit],
         expected: toDeckUnit,
         getGamePlayerCalls,
         getRandomSubsetCalled: true,
-        gameRedrawCalls,
+        saveCalls,
         resolveDeckUnitCalls,
         resolveGameDeckCalled: true,
         logPrefix,
@@ -316,11 +313,11 @@ async function testRedraw({
   gameId,
   unitId,
   getGamePlayerResponse,
-  gameRedrawResponse,
+  saveResponse,
   resolveDeckUnitResponses,
   expected,
   getGamePlayerCalls = [],
-  gameRedrawCalls = [],
+  saveCalls = [],
   resolveDeckUnitCalls = [],
   resolveGameDeckCalled,
   getRandomSubsetCalled,
@@ -332,12 +329,12 @@ async function testRedraw({
   userId?: ObjectId
   gameId: string
   unitId: string
-  getGamePlayerResponse?: GamePlayerResponse | Error
-  gameRedrawResponse?: GameDbObject
+  getGamePlayerResponse: GamePlayerResponse
+  saveResponse?: GameDbObject
   resolveDeckUnitResponses?: DeckUnit[]
   expected?: Error | DeckUnit
   getGamePlayerCalls?: any[][]
-  gameRedrawCalls?: any[][]
+  saveCalls?: any[][]
   resolveDeckUnitCalls?: any[][]
   resolveGameDeckCalled?: boolean
   getRandomSubsetCalled?: boolean
@@ -358,46 +355,25 @@ async function testRedraw({
     game: gameId,
     unit: unitId,
   }
-  let player: GamePlayerDbObject | undefined = undefined
-  if (!(getGamePlayerResponse instanceof Error)) {
-    player = getGamePlayerResponse?.player
-  }
-  let newCard: DeckUnitDbObject | undefined = undefined
-  let cardToRedraw: DeckUnitDbObject | undefined = undefined
-  let redrawPool: DeckUnitDbObject[] = []
-  let redrawnIds: string[] = []
-  if (player) {
-    redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
-    redrawPool = player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
-    cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
-    newCard = redrawPool[redrawPool.length - 1]
-  }
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (getGamePlayerResponse) {
-    if (getGamePlayerResponse instanceof Error) {
-      getGamePlayerSpy.mockRejectedValue(getGamePlayerResponse)
-    } else {
-      getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
-    }
-  }
+  const player = getGamePlayerResponse.player
+  const redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
+  const cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
+  const redrawPool = player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
+  const newCard = redrawPool[redrawPool.length - 1]
+  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer').mockResolvedValue(getGamePlayerResponse)
   const getRandomSubsetSpy = jest.spyOn(gwentUtils, 'getRandomSubset').mockReturnValue([newCard])
-  const gameRedrawSpy = jest.spyOn(GameStore, 'redraw').mockResolvedValue(gameRedrawResponse)
+  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse)
   const resolveDeckUnitSpy = jest.spyOn(DeckUnitResolver, 'fromObject')
   if (resolveDeckUnitResponses) {
     for (const resolveDeckUnitResponse of resolveDeckUnitResponses) {
       resolveDeckUnitSpy.mockResolvedValueOnce(resolveDeckUnitResponse)
     }
   }
-  const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
-  let resolvedGame: Game | undefined = undefined
-  let updatedGameDeck: GameDeckDbObject | undefined = undefined
-  if (getGamePlayerResponse && !(getGamePlayerResponse instanceof Error)) {
-    resolvedGame = TestUtil.getGameFromDbGame({
-      game: getGamePlayerResponse.game,
-    })
-    updatedGameDeck = gameRedrawResponse?.players.find((player) => player.user.toString() === userId?.toString())?.deck
-    resolveGameSpy.mockResolvedValue(resolvedGame)
-  }
+  const resolvedGame = TestUtil.getGameFromDbGame({
+    game: getGamePlayerResponse.game,
+  })
+  const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
+  const updatedGameDeck = saveResponse?.players.find((player) => player.user.toString() === userId?.toString())?.deck
   const resolveGameDeckSpy = jest.spyOn(GameDeckResolver, 'fromObject')
 
   let resolvedGameDeck: GameDeck | undefined = undefined
@@ -436,7 +412,18 @@ async function testRedraw({
         ]
       : []
   )
-  expect(gameRedrawSpy.mock.calls).toEqual(gameRedrawCalls)
+  expect(saveSpy.mock.calls).toEqual(saveCalls)
+  expect(resolveGameSpy.mock.calls).toEqual(
+    saveResponse
+      ? [
+          [
+            {
+              game: saveResponse,
+            },
+          ],
+        ]
+      : []
+  )
   expect(resolveDeckUnitSpy.mock.calls).toEqual(resolveDeckUnitCalls)
   expect(resolveGameDeckSpy.mock.calls).toEqual(
     resolveGameDeckCalled
@@ -513,7 +500,7 @@ async function testRedraw({
               cardToRedraw,
             ])}"`,
           ],
-          [`${logPrefix} updatedGame: "${JSON.stringify(gameRedrawResponse)}"`],
+          [`${logPrefix} updatedGame: "${JSON.stringify(saveResponse)}"`],
           [`${logPrefix} resolvedTo: "${JSON.stringify(resolveDeckUnitResponses && resolveDeckUnitResponses[0])}"`],
           [`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`],
           [`${logPrefix} resolvedFrom: "${JSON.stringify(resolveDeckUnitResponses && resolveDeckUnitResponses[1])}"`],

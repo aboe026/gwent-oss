@@ -67,7 +67,7 @@ export default class SetDeckMutation {
       throw new PresentableError(message)
     }
 
-    const { player } = await resolverUtil.getGamePlayer({
+    const { game, player } = await resolverUtil.getGamePlayer({
       gameId,
       userId,
       status: GameStatus.Decking,
@@ -98,13 +98,28 @@ export default class SetDeckMutation {
       SetDeckMutation.logger.trace(`${logPrefix} undrawn: "${JSON.stringify(undrawn)}"`)
     }
 
-    const updatedGame = await GameStore.setDeck({
-      deck,
-      gameId,
-      hand,
-      undrawn,
-      userId,
+    game.players = game.players.map((gamePlayer) => {
+      if (gamePlayer.user.toString() === userId.toString()) {
+        gamePlayer.deck = {
+          ...gamePlayer.deck,
+          from: deck,
+          hand,
+          undrawn,
+        }
+      }
+      return gamePlayer
     })
+
+    const allDecksSet = !game.players.some((gamePlayer) => !gamePlayer.deck.from)
+
+    if (allDecksSet) {
+      SetDeckMutation.logger.debug(
+        `${logPrefix} on "${gameId}" all decks set, changing game status to "${GameStatus.Ordering}"`
+      )
+      game.status = GameStatus.Ordering
+    }
+
+    const updatedGame = await GameStore.save(game)
 
     if (SetDeckMutation.logger.isTraceEnabled()) {
       SetDeckMutation.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
@@ -140,15 +155,14 @@ export default class SetDeckMutation {
       },
     } as DeckSetPayload)
 
-    if (!updatedGame.players.find((player) => !player.deck.from)) {
-      // all players have chosen decks, notify clients
+    if (allDecksSet) {
       EventManager.pubsub.publish(PubSubEvents.GameSet, {
         gameSet: resolvedGame,
       } as GameSetPayload)
       try {
         await mutationUtil.setGameTurnOrder({
-          userId,
-          gameId,
+          game: updatedGame,
+          player: updatedPlayer,
           logPrefix: `setOrder via ${logPrefix}`,
           allowImplicit: false,
         })

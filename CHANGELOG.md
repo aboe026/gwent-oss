@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.3 - 2025-02-15
+
+### Fixed
+
+- Refactor game status to be persisted instead of calculated on demand ([#28](https://github.com/aboe026/gwent/pull/28)) (Adam Boe)
+
 ## 0.10.2 - 2025-02-12
 
 ### Fixed

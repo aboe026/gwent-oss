@@ -430,6 +430,7 @@ export default class TestUtil {
     victors = [],
     updated = new Date(),
     round = 0,
+    status = GameStatus.Decking,
     weather = [],
   }: {
     id?: ObjectId | string
@@ -440,6 +441,7 @@ export default class TestUtil {
     victors?: (ObjectId | string)[]
     updated?: Date
     round?: number
+    status?: GameStatus
     weather?: Combat[]
   }): GameDbObject {
     return {
@@ -474,6 +476,7 @@ export default class TestUtil {
         },
       ],
       round,
+      status,
       turn: turn ? new ObjectId(turn) : undefined,
       updated,
       victors: victors.map((victor) => new ObjectId(victor)),

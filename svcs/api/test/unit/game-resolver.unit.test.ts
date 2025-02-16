@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, Game, GamePlayer, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, Game, GamePlayer, User } from '@gwent/graphql-schema/resolver-typings'
+import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
@@ -43,7 +43,7 @@ describe('game-resolver', () => {
             {
               players,
               users: [user, victor],
-              allDecksChosen: false,
+              gameStatus: GameStatus.Decking,
             },
           ],
         ],
@@ -82,7 +82,7 @@ describe('game-resolver', () => {
             {
               players: players,
               users: [user, victor],
-              allDecksChosen: false,
+              gameStatus: GameStatus.Decking,
             },
           ],
         ],
@@ -140,202 +140,6 @@ describe('game-resolver', () => {
       })
     })
   })
-  describe('isEveryoneReady', () => {
-    const game = TestUtil.getDbGame({})
-    it('returns false if game players empty array', () => {
-      expect(GameResolver.isEveryoneReady(game)).toEqual(false)
-    })
-    it('returns false if single game player not ready', () => {
-      expect(
-        GameResolver.isEveryoneReady({
-          ...game,
-          players: [TestUtil.getDbGamePlayer({})],
-        })
-      ).toEqual(false)
-    })
-    it('returns false if single out of many game players not ready', () => {
-      expect(
-        GameResolver.isEveryoneReady({
-          ...game,
-          players: [
-            TestUtil.getDbGamePlayer({
-              ready: true,
-            }),
-            TestUtil.getDbGamePlayer({}),
-          ],
-        })
-      ).toEqual(false)
-    })
-    it('returns true if all out of many game players ready', () => {
-      expect(
-        GameResolver.isEveryoneReady({
-          ...game,
-          players: [
-            TestUtil.getDbGamePlayer({
-              ready: true,
-            }),
-            TestUtil.getDbGamePlayer({
-              ready: true,
-            }),
-          ],
-        })
-      ).toEqual(true)
-    })
-    it('returns true if single game player ready', () => {
-      expect(
-        GameResolver.isEveryoneReady({
-          ...game,
-          players: [
-            TestUtil.getDbGamePlayer({
-              ready: true,
-            }),
-          ],
-        })
-      ).toEqual(true)
-    })
-  })
-  describe('allDecksChosen', () => {
-    it('returns false if no players on game', () => {
-      expect(GameResolver.allDecksChosen(TestUtil.getDbGame({}))).toEqual(false)
-    })
-    it('returns false if all players have not chosen decks', () => {
-      expect(
-        GameResolver.allDecksChosen(
-          TestUtil.getDbGame({
-            players: [TestUtil.getDbGamePlayer({}), TestUtil.getDbGamePlayer({})],
-          })
-        )
-      ).toEqual(false)
-    })
-    it('returns false if first player has not chosen deck', () => {
-      expect(
-        GameResolver.allDecksChosen(
-          TestUtil.getDbGame({
-            players: [
-              TestUtil.getDbGamePlayer({}),
-              TestUtil.getDbGamePlayer({
-                deck: TestUtil.getDbGameDeck({
-                  from: TestUtil.getDbDeck({}),
-                }),
-              }),
-            ],
-          })
-        )
-      ).toEqual(false)
-    })
-    it('returns false if last player has not chosen deck', () => {
-      expect(
-        GameResolver.allDecksChosen(
-          TestUtil.getDbGame({
-            players: [
-              TestUtil.getDbGamePlayer({
-                deck: TestUtil.getDbGameDeck({
-                  from: TestUtil.getDbDeck({}),
-                }),
-              }),
-              TestUtil.getDbGamePlayer({}),
-            ],
-          })
-        )
-      ).toEqual(false)
-    })
-    it('returns true if all players have chosen decks', () => {
-      expect(
-        GameResolver.allDecksChosen(
-          TestUtil.getDbGame({
-            players: [
-              TestUtil.getDbGamePlayer({
-                deck: TestUtil.getDbGameDeck({
-                  from: TestUtil.getDbDeck({}),
-                }),
-              }),
-              TestUtil.getDbGamePlayer({
-                deck: TestUtil.getDbGameDeck({
-                  from: TestUtil.getDbDeck({}),
-                }),
-              }),
-            ],
-          })
-        )
-      ).toEqual(true)
-    })
-  })
-  describe('getStatus', () => {
-    it('returns DECKING if not all players have chosen a deck', () => {
-      const game = TestUtil.getDbGame({})
-      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(false)
-
-      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Decking)
-
-      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
-    })
-    it('returns ORDERING if all decks chosen but no turn set', () => {
-      const game = TestUtil.getDbGame({})
-      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
-
-      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Ordering)
-
-      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
-    })
-    it('returns REDRAWING if all decks chosen and turn set but not everybody ready', () => {
-      const game = TestUtil.getDbGame({
-        turn: new ObjectId(),
-        players: [TestUtil.getDbGamePlayer({})],
-      })
-      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
-
-      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Redrawing)
-
-      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
-    })
-    it('returns PLAYING if all decks chosen and turn and everybody ready but no victors', () => {
-      const game = TestUtil.getDbGame({
-        turn: new ObjectId(),
-        players: [
-          TestUtil.getDbGamePlayer({
-            ready: true,
-          }),
-        ],
-      })
-      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
-
-      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Playing)
-
-      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
-    })
-    it('returns DONE if all decks chosen and turn and everybody ready and single victor', () => {
-      const game = TestUtil.getDbGame({
-        turn: new ObjectId(),
-        players: [
-          TestUtil.getDbGamePlayer({
-            ready: true,
-          }),
-        ],
-        victors: [new ObjectId()],
-      })
-      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
-
-      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Done)
-
-      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
-    })
-    it('returns DONE if all decks chosen and turn and everybody ready and multiple victors', () => {
-      const game = TestUtil.getDbGame({
-        turn: new ObjectId(),
-        players: [
-          TestUtil.getDbGamePlayer({
-            ready: true,
-          }),
-        ],
-        victors: [new ObjectId(), new ObjectId()],
-      })
-      const allDecksChosenSpy = jest.spyOn(GameResolver, 'allDecksChosen').mockReturnValue(true)
-
-      expect(GameResolver.getStatus(game)).toEqual(GameStatus.Done)
-
-      expect(allDecksChosenSpy.mock.calls).toEqual([[game]])
-    })
-  })
 })
 
 async function testResolveFromObject({
@@ -383,7 +187,7 @@ async function testResolveFromObject({
     id: game._id.toString(),
     players: resolvedGamePlayers,
     round: game.round,
-    status: GameResolver.getStatus(game),
+    status: game.status,
     updated: game.updated,
     turn: game.turn
       ? resolvedGamePlayers.find((player) => player.user.id.toString() === game.turn?.toString())

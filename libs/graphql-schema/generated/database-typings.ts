@@ -616,6 +616,7 @@ export type GameDbObject = {
   _id: ObjectId,
   players: Array<GamePlayerDbObject>,
   round: number,
+  status: string,
   turn?: ObjectId,
   updated: any,
   victors: Array<ObjectId>,

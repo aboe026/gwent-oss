@@ -206,6 +206,7 @@ export default class PlayPassMutation {
         }
         PlayPassMutation.logger.debug(`${logPrefix} ends game in victory for "${JSON.stringify(victorIds)}"`)
         game.victors = victorIds
+        game.status = GameStatus.Done
       } else {
         // set next player
         nextPlayerId = mutationUtil.getPlayerIdForNextRound({
@@ -227,12 +228,9 @@ export default class PlayPassMutation {
       })
     }
 
-    game.turn = nextPlayerId ? nextPlayerId : game.turn // TODO: make turn null when game over after change game status to be a database property
+    game.turn = nextPlayerId
 
-    const updatedGame = await GameStore.makeMove({
-      game,
-      userId,
-    })
+    const updatedGame = await GameStore.save(game)
 
     if (!updatedGame) {
       const message = `Could not play pass for game "${gameId}" in probable race condition collision.`
