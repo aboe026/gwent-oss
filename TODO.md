@@ -2,13 +2,6 @@
 
 A list of things to be done in the future.
 
-## Fixes
-
-- unit tests
-- jsdocs
-- increment version
-- changelog
-
 - separate invalid checks on mutations into separate methods?
 - change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
 - save game status to database?
