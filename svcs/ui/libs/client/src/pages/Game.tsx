@@ -54,14 +54,13 @@ import {
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
+import { CheckAuth, getApolloError, retryCheckingAuth } from '../util/error-util'
 import CoinToss from '../components/CoinToss'
 import Confirm from '../components/Confirm'
 import DeckEditor from '../components/DeckEditor'
 import DeckList from '../components/DeckList'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import Form from '../components/Form'
-import { formatDay, formatTime, sortObjectArray, toTitleCase } from '@gwent/utils'
-import { getApolloError, retryCheckingAuth } from '../util/error-util'
 import {
   GAME_ORDER_COIN_FLIP_DURATION_SECONDS,
   HTML_CLASSES,
@@ -71,6 +70,7 @@ import {
   PLAYER_COUNTS,
   ROUTES,
 } from '@gwent/constants'
+import { humanizeDay, humanizeTime, sortObjectArray, toTitleCase } from '@gwent/utils'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import UnitFullCard from '../components/UnitFullCard'
@@ -308,7 +308,7 @@ export default function GamePage() {
 
   return isNew
     ? renderNewGame({
-        addGame: {
+        addGameProps: {
           addGame,
           error: addGameError,
           loading: addGameLoading,
@@ -319,76 +319,79 @@ export default function GamePage() {
       })
     : renderExistingGame({
         checkAuth,
-        deckListOpen,
-        setDeckListOpen,
+        coinTossVisible,
         deckEditorOpen,
+        deckListOpen,
+        fullUnit,
+        gameDeckProps: {
+          deck: gameDeckData?.gameDeck as GameDeck | undefined,
+          error: gameDeckError,
+          loading: gameDeckLoading,
+          refetch: gameDeckRefetch,
+        },
+        gameProps: {
+          game: currentGame,
+          error: gameError,
+          loading: gameLoading,
+          refetch: gameRefetch,
+        },
+        handCardSelected,
+        historyCardSelected,
+        movesByRounds,
+        navigate,
+        passConfirmationOpen,
+        playerOrder,
+        playPassProps: {
+          playPass,
+          error: playPassError,
+          loading: playPassLoading,
+        },
+        playUnitProps: {
+          playUnit,
+          error: playUnitError,
+          loading: playUnitLoading,
+        },
+        readyProps: {
+          ready,
+          error: readyError,
+          loading: readyLoading,
+        },
+        redrawProps: {
+          redraw,
+          error: redrawError,
+          loading: redrawLoading,
+        },
+        scrollHistoryIntoView,
+        setCoinTossVisible,
         setDeckEditorOpen,
-        gameError,
-        game: currentGame,
-        gameLoading,
-        setDeck: {
+        setDeckListOpen,
+        setDeckProps: {
           setDeck,
           error: setDeckError,
           loading: setDeckLoading,
         },
-        user,
-        handCardSelected,
+        setFullUnit,
         setHandCardSelected,
-        setOrder: {
+        setHistoryCardSelected,
+        setOrderProps: {
           setOrder,
           loading: setOrderLoading,
           error: setOrderError,
         },
-        redraw: {
-          redraw,
-          redrawError,
-          redrawLoading,
-        },
-        gameDeck: gameDeckData?.gameDeck as GameDeck | undefined,
-        gameDeckError,
-        gameDeckLoading,
-        ready: {
-          ready,
-          readyError,
-          readyLoading,
-        },
-        fullUnit,
-        setFullUnit,
-        gameRefetch,
-        gameDeckRefetch,
-        playerOrder,
-        setPlayerOrder,
-        coinTossVisible,
-        setCoinTossVisible,
-        playUnit: {
-          playUnit,
-          playUnitError,
-          playUnitLoading,
-        },
-        playPass: {
-          playPass,
-          playPassError,
-          playPassLoading,
-        },
         setPassConfirmationOpen,
-        passConfirmationOpen,
-        navigate,
-        historyCardSelected,
-        setHistoryCardSelected,
-        movesByRounds,
-        scrollHistoryIntoView,
+        setPlayerOrder,
+        user,
       })
 }
 
 function renderNewGame({
-  addGame: { addGame, error: addGameError, loading: addGameLoading },
+  addGameProps,
   checkAuth,
   navigate,
   user,
 }: {
-  addGame: AddGameProps
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  addGameProps: AddGameProps
+  checkAuth: CheckAuth
   navigate: NavigateFunction
   user: User | null | undefined
 }) {
@@ -420,14 +423,14 @@ function renderNewGame({
           }),
         ]}
         errorPrefix="Error adding game"
-        error={addGameError}
+        error={addGameProps.error}
         errorId={HTML_IDS.GameNewError}
-        loading={addGameLoading}
+        loading={addGameProps.loading}
         onSubmit={async ({ variables }) => {
           await retryCheckingAuth({
             checkAuth,
             method: async () => {
-              const game = await addGame({
+              const game = await addGameProps.addGame({
                 variables: {
                   opponentNames: [...Array(PLAYER_COUNTS.Max - 1)].map((_, index) => {
                     return variables[`player${index + 2}`]
@@ -449,36 +452,31 @@ function renderNewGame({
   )
 }
 
+// TODO: sort method params
 function renderExistingGame({
   checkAuth,
   deckListOpen,
   setDeckListOpen,
   deckEditorOpen,
   setDeckEditorOpen,
-  gameError,
-  game,
-  gameLoading,
-  setDeck: { setDeck, error: setDeckError, loading: setDeckLoading },
+  gameProps,
+  setDeckProps,
   user,
   handCardSelected,
   setHandCardSelected,
-  setOrder,
-  redraw,
-  gameDeck,
-  gameDeckError,
-  gameDeckLoading,
-  ready,
+  setOrderProps,
+  redrawProps,
+  gameDeckProps,
+  readyProps,
   fullUnit,
   setFullUnit,
-  gameRefetch,
-  gameDeckRefetch,
   playerOrder,
   setPlayerOrder,
   coinTossVisible,
   setCoinTossVisible,
   setPassConfirmationOpen,
-  playUnit,
-  playPass: { playPass, playPassError, playPassLoading },
+  playUnitProps,
+  playPassProps,
   passConfirmationOpen,
   navigate,
   historyCardSelected,
@@ -486,52 +484,29 @@ function renderExistingGame({
   movesByRounds,
   scrollHistoryIntoView,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  checkAuth: CheckAuth
   deckListOpen: boolean
   setDeckListOpen: Dispatch<SetStateAction<boolean>>
   deckEditorOpen: boolean
   setDeckEditorOpen: Dispatch<SetStateAction<boolean>>
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
-  game: Game | undefined
-  gameError: ApolloError | undefined
-  gameLoading: boolean
-  setDeck: SetDeckProps
+  gameProps: GameProps
+  setDeckProps: SetDeckProps
   user: User | null | undefined
   handCardSelected: DeckUnit | undefined
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
-  setOrder: SetOrderProps
-  redraw: RedrawProps
-  gameDeck: GameDeck | undefined
-  gameDeckError: ApolloError | undefined
-  gameDeckLoading: boolean
-  ready: ReadyProps
+  setOrderProps: SetOrderProps
+  redrawProps: RedrawProps
+  gameDeckProps: GameDeckProps
+  readyProps: ReadyProps
   fullUnit: UnitForPlayer | undefined
   setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
-  gameRefetch: (
-    variables?:
-      | Partial<
-          Exact<{
-            id: Scalars['ID']['input']
-          }>
-        >
-      | undefined
-  ) => Promise<ApolloQueryResult<GameQuery>>
-  gameDeckRefetch: (
-    variables?:
-      | Partial<
-          Exact<{
-            game: Scalars['ID']['input']
-          }>
-        >
-      | undefined
-  ) => Promise<ApolloQueryResult<GameDeckQuery>>
   playerOrder: GamePlayer[]
   setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
   coinTossVisible: boolean
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
-  playUnit: PlayUnitProps
-  playPass: PlayPassProps
+  playUnitProps: PlayUnitProps
+  playPassProps: PlayPassProps
   passConfirmationOpen: boolean
   navigate: NavigateFunction
   historyCardSelected: UnitForPlayer | undefined
@@ -539,8 +514,9 @@ function renderExistingGame({
   movesByRounds: MoveForRound[]
   scrollHistoryIntoView: (args: UnitForPlayer) => void
 }) {
-  const resolvedGameError = getApolloError(gameError)
-  const resolvedGameDeckError = getApolloError(gameDeckError)
+  const { game } = gameProps
+  const resolvedGameError = getApolloError(gameProps.error)
+  const resolvedGameDeckError = getApolloError(gameDeckProps.error)
   let opponent: GamePlayer | undefined = undefined
   let self: GamePlayer | undefined = undefined
   if (game?.players && user?.name) {
@@ -551,7 +527,7 @@ function renderExistingGame({
     self = game.players.find((player) => player.user.name === user.name)
   }
 
-  const potentialUnitArrays: (DeckUnit[] | GameUnit[] | undefined)[] = [gameDeck?.hand]
+  const potentialUnitArrays: (DeckUnit[] | GameUnit[] | undefined)[] = [gameDeckProps.deck?.hand]
   if (game?.players && game.round > 0) {
     for (const gamePlayer of game.players) {
       if (!fullUnit?.playerId || fullUnit.playerId === gamePlayer.user.id) {
@@ -567,7 +543,7 @@ function renderExistingGame({
     arrays: potentialUnitArrays,
   })
 
-  return gameLoading || gameDeckLoading ? (
+  return gameProps.loading || gameDeckProps.loading ? (
     <Centered>
       <LoadingSpinner size="50px" />
     </Centered>
@@ -634,15 +610,15 @@ function renderExistingGame({
         title="Pass Round"
         id={HTML_IDS.GamePassConfirmContainer}
         message="Are you sure you wish to pass? You will not be able to play any more units the rest of this round."
-        error={playPassError}
-        loading={playPassLoading}
+        error={playPassProps.error}
+        loading={playPassProps.loading}
         onClose={() => setPassConfirmationOpen(false)}
         open={passConfirmationOpen}
         onSubmit={async () => {
           await retryCheckingAuth({
             checkAuth,
             method: async () => {
-              await playPass({
+              await playPassProps.playPass({
                 variables: {
                   game: game.id,
                 },
@@ -658,42 +634,34 @@ function renderExistingGame({
       <div id="gameContainerUpper">
         {renderGameInfo({
           handCardSelected,
-          game,
+          gameProps,
           opponent,
           self,
-          gameDeck,
-          gameLoading,
-          gameDeckLoading,
-          gameRefetch,
-          gameDeckRefetch,
+          gameDeckProps: gameDeckProps,
           coinTossVisible,
           setPassConfirmationOpen,
-          playUnitLoading: playUnit.playUnitLoading,
-          playPassLoading,
+          playUnitLoading: playUnitProps.loading,
+          playPassLoading: playPassProps.loading,
         })}
         {renderCenter({
           handCardSelected,
           checkAuth,
           game,
-          gameDeck,
+          gameDeck: gameDeckProps.deck,
           self,
           opponent,
-          ready,
-          redraw,
+          readyProps: readyProps,
+          redrawProps: redrawProps,
           setDeckListOpen,
-          setDeck: {
-            setDeck,
-            error: setDeckError,
-            loading: setDeckLoading,
-          },
+          setDeckProps,
           setFullUnit,
           setHandCardSelected,
-          setOrder,
+          setOrderProps: setOrderProps,
           playerOrder,
           setPlayerOrder,
           coinTossVisible,
           setCoinTossVisible,
-          playUnit,
+          playUnitProps,
           navigate,
           historyCardSelected,
           setHistoryCardSelected,
@@ -701,10 +669,8 @@ function renderExistingGame({
         })}
         {renderHistory({
           handCardSelected,
-          playPassLoading,
-          playPassError,
-          playUnitLoading: playUnit.playUnitLoading,
-          playUnitError: playUnit.playUnitError,
+          playPassProps,
+          playUnitProps,
           game,
           self,
           setHandCardSelected,
@@ -715,12 +681,12 @@ function renderExistingGame({
       </div>
       <div id="gameContainerLower">
         {renderHand({
-          hand: gameDeck?.hand,
+          hand: gameDeckProps.deck?.hand,
           handCardSelected,
           setHandCardSelected,
           setFullUnit,
           isTurn: game.turn?.user.name === self.user.name,
-          playUnitLoading: playUnit.playUnitLoading,
+          playUnitLoading: playUnitProps.loading,
           gameStatus: game.status,
           setHistoryCardSelected,
         })}
@@ -738,7 +704,7 @@ function renderExistingGame({
           <div id="gameDeckOverlay">
             {deckListOpen ? (
               <DeckList
-                actionsDisabled={setDeckLoading}
+                actionsDisabled={setDeckProps.loading}
                 onCreate={() => {
                   setDeckListOpen(false)
                   setDeckEditorOpen(true)
@@ -752,7 +718,7 @@ function renderExistingGame({
                       await retryCheckingAuth({
                         checkAuth,
                         method: async () => {
-                          await setDeck({
+                          await setDeckProps.setDeck({
                             variables: {
                               deck: deck.id,
                               game: game.id,
@@ -774,7 +740,7 @@ function renderExistingGame({
                     checkAuth,
                     method: async () => {
                       setDeckEditorOpen(false)
-                      await setDeck({
+                      await setDeckProps.setDeck({
                         variables: {
                           deck: deck.id,
                           game: game.id,
@@ -827,21 +793,12 @@ function getNeighboringUnits({
   }
 }
 
-interface NeighborUnits {
-  previous: DeckUnit | undefined
-  next: DeckUnit | undefined
-}
-
 function renderGameInfo({
   handCardSelected,
   self,
   opponent,
-  game,
-  gameDeck,
-  gameLoading,
-  gameDeckLoading,
-  gameRefetch,
-  gameDeckRefetch,
+  gameProps,
+  gameDeckProps,
   coinTossVisible,
   setPassConfirmationOpen,
   playUnitLoading,
@@ -850,38 +807,25 @@ function renderGameInfo({
   handCardSelected: DeckUnit | undefined
   self: GamePlayer
   opponent: GamePlayer
-  game: Game
-  gameDeck: GameDeck | undefined
-  gameLoading: boolean
-  gameDeckLoading: boolean
-  gameRefetch: (
-    variables?:
-      | Partial<
-          Exact<{
-            id: Scalars['ID']['input']
-          }>
-        >
-      | undefined
-  ) => Promise<ApolloQueryResult<GameQuery>>
-  gameDeckRefetch: (
-    variables?:
-      | Partial<
-          Exact<{
-            game: Scalars['ID']['input']
-          }>
-        >
-      | undefined
-  ) => Promise<ApolloQueryResult<GameDeckQuery>>
+  gameProps: GameProps
+  gameDeckProps: GameDeckProps
   coinTossVisible: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
   playUnitLoading: boolean
   playPassLoading: boolean
 }) {
+  const sharedProps = {
+    handCardSelected,
+    game: gameProps.game as Game,
+    coinTossVisible,
+    setPassConfirmationOpen,
+    playUnitLoading,
+    playPassLoading,
+  }
   return (
     <div id="gameInfoContainer" className="game-edge-container">
       {renderPlayerInfo({
-        handCardSelected,
-        game,
+        ...sharedProps,
         id: HTML_IDS.GameInfoOpponentContainer,
         player: opponent,
         isSelf: false,
@@ -890,97 +834,61 @@ function renderGameInfo({
         hand: opponent.counts?.hand,
         undrawn: opponent.counts?.undrawn,
         leader: opponent.leader,
-        coinTossVisible,
-        setPassConfirmationOpen,
-        playUnitLoading,
-        playPassLoading,
       })}
       {renderSharedInfo({
-        game,
-        gameLoading,
-        gameDeckLoading,
-        gameRefetch,
-        gameDeckRefetch,
+        gameProps,
+        gameDeckProps: gameDeckProps,
       })}
       {renderPlayerInfo({
-        handCardSelected,
-        game,
+        ...sharedProps,
         id: HTML_IDS.GameInfoSelfContainer,
         player: self,
         isSelf: true,
-        faction: gameDeck?.from?.faction,
-        leader: gameDeck?.from?.leader,
-        discard: gameDeck?.discard.length,
-        hand: gameDeck?.hand.length,
-        undrawn: gameDeck?.undrawn.length,
-        deckName: gameDeck?.from?.name,
-        deckUpdated: gameDeck?.from?.created,
-        coinTossVisible,
-        setPassConfirmationOpen,
-        playUnitLoading,
-        playPassLoading,
+        faction: gameDeckProps.deck?.from?.faction,
+        leader: gameDeckProps.deck?.from?.leader,
+        discard: gameDeckProps.deck?.discard.length,
+        hand: gameDeckProps.deck?.hand.length,
+        undrawn: gameDeckProps.deck?.undrawn.length,
+        deckName: gameDeckProps.deck?.from?.name,
+        deckUpdated: gameDeckProps.deck?.from?.created,
       })}
     </div>
   )
 }
 
-function renderSharedInfo({
-  game,
-  gameDeckLoading,
-  gameLoading,
-  gameRefetch,
-  gameDeckRefetch,
-}: {
-  game: Game
-  gameLoading: boolean
-  gameDeckLoading: boolean
-  gameRefetch: (
-    variables?:
-      | Partial<
-          Exact<{
-            id: Scalars['ID']['input']
-          }>
-        >
-      | undefined
-  ) => Promise<ApolloQueryResult<GameQuery>>
-  gameDeckRefetch: (
-    variables?:
-      | Partial<
-          Exact<{
-            game: Scalars['ID']['input']
-          }>
-        >
-      | undefined
-  ) => Promise<ApolloQueryResult<GameDeckQuery>>
-}) {
-  return (
-    <div id="gameInfoSharedContainer">
-      <div id="gameInfoSharedDetails" className="game-section">
+function renderSharedInfo({ gameProps, gameDeckProps }: { gameProps: GameProps; gameDeckProps: GameDeckProps }) {
+  const game = gameProps.game
+  if (game)
+    return (
+      <div id="gameInfoSharedContainer">
+        <div id="gameInfoSharedDetails" className="game-section">
+          {game.status === GameStatus.Playing && (
+            <div>
+              <span id={HTML_IDS.GameRound}>Round: {game.round}</span>
+            </div>
+          )}
+          <div
+            id={HTML_IDS.GameRefresh}
+            className={game.status === GameStatus.Playing ? 'playing' : 'decking'}
+            style={{ cursor: gameProps.loading || gameDeckProps.loading ? 'not-allowed' : 'pointer' }}
+            title="Refresh"
+            onClick={async () =>
+              !gameProps.loading &&
+              !gameDeckProps.loading &&
+              (await Promise.all([gameProps.refetch(), gameDeckProps.refetch()]))
+            }
+          >
+            <CgSync color={false ? 'gray' : 'black'} />
+          </div>
+        </div>
         {game.status === GameStatus.Playing && (
-          <div>
-            <span id={HTML_IDS.GameRound}>Round: {game.round}</span>
+          <div id="gameWeatherContainer" className="game-section">
+            <img id="gameWeatherIcon" src="images/effects/weather.png" title="Weather" />
+            <div id="gameWeatherCardSpot" className="game-sub-section"></div>
           </div>
         )}
-        <div
-          id={HTML_IDS.GameRefresh}
-          className={game.status === GameStatus.Playing ? 'playing' : 'decking'}
-          style={{ cursor: gameLoading || gameDeckLoading ? 'not-allowed' : 'pointer' }}
-          title="Refresh"
-          onClick={async () =>
-            !gameLoading && !gameDeckLoading && (await Promise.all([gameRefetch(), gameDeckRefetch()]))
-          }
-        >
-          <CgSync color={false ? 'gray' : 'black'} />
-        </div>
       </div>
-      {game.status === GameStatus.Playing && (
-        <div id="gameWeatherContainer" className="game-section">
-          <img id="gameWeatherIcon" src="images/effects/weather.png" title="Weather" />
-          <div id="gameWeatherCardSpot" className="game-sub-section"></div>
-        </div>
-      )}
-    </div>
-  )
+    )
 }
 
 function renderPlayerInfo({
@@ -1291,7 +1199,7 @@ function renderDeckInfo({ undrawn, hand, discard }: { undrawn?: number; hand?: n
     <>
       <div className="game-player-deck-section" title="Cards remaining in deck to draw">
         <span className={HTML_CLASSES.GamePlayerUndrawnCount}>{undrawn}</span>
-        <span>Deck</span>
+        <span>Draw</span>
       </div>
       <div className="game-player-deck-section" title="Cards currently in hand">
         <span className={HTML_CLASSES.GamePlayerHandCount}>{hand}</span>
@@ -1312,9 +1220,10 @@ function renderDeckFrom({ name, updated }: { name: string; updated: Date }) {
       <div className={HTML_CLASSES.GamePlayerDeckName} title="Name of deck chosen">
         {name}
       </div>
-      <div className={HTML_CLASSES.GamePlayerDeckDate} title="When deck was last updated before choosing">{`${formatDay(
-        isoString
-      )} @ ${formatTime(isoString)}`}</div>
+      <div
+        className={HTML_CLASSES.GamePlayerDeckDate}
+        title="When deck was last updated before choosing"
+      >{`${humanizeDay(isoString)} @ ${humanizeTime(isoString)}`}</div>
     </div>
   )
 }
@@ -1326,18 +1235,18 @@ function renderCenter({
   gameDeck,
   self,
   opponent,
-  ready,
-  redraw,
+  readyProps,
+  redrawProps,
   setDeckListOpen,
-  setDeck,
+  setDeckProps,
   setFullUnit,
   setHandCardSelected,
-  setOrder,
+  setOrderProps,
   playerOrder,
   setPlayerOrder,
   coinTossVisible,
   setCoinTossVisible,
-  playUnit,
+  playUnitProps,
   navigate,
   historyCardSelected,
   setHistoryCardSelected,
@@ -1348,20 +1257,19 @@ function renderCenter({
   self: GamePlayer
   opponent: GamePlayer
   handCardSelected: DeckUnit | undefined
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
-  redraw: RedrawProps
-  ready: ReadyProps
+  checkAuth: CheckAuth
+  redrawProps: RedrawProps
+  readyProps: ReadyProps
   setDeckListOpen: Dispatch<SetStateAction<boolean>>
-  setDeck: SetDeckProps
+  setDeckProps: SetDeckProps
   setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
-  setOrder: SetOrderProps
+  setOrderProps: SetOrderProps
   playerOrder: GamePlayer[]
   setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
   coinTossVisible: boolean
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
-  playUnit: PlayUnitProps
+  playUnitProps: PlayUnitProps
   navigate: NavigateFunction
   historyCardSelected: UnitForPlayer | undefined
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
@@ -1373,7 +1281,7 @@ function renderCenter({
         ? renderSetDeck({
             alreadySet: !!gameDeck?.from,
             game,
-            setDeck,
+            setDeckProps,
             setDeckListOpen,
           })
         : game.status === GameStatus.Ordering
@@ -1381,7 +1289,7 @@ function renderCenter({
             checkAuth,
             game,
             self,
-            setOrder,
+            setOrderProps: setOrderProps,
             playerOrder,
             setPlayerOrder,
           })
@@ -1391,8 +1299,8 @@ function renderCenter({
             checkAuth,
             game,
             gameDeck,
-            ready,
-            redraw,
+            readyProps,
+            redrawProps,
             setFullUnit,
             setHandCardSelected,
             self,
@@ -1402,7 +1310,7 @@ function renderCenter({
         : game.status === GameStatus.Playing
         ? renderBattlefield({
             handCardSelected,
-            playUnit,
+            playUnitProps: playUnitProps,
             checkAuth,
             game,
             self,
@@ -1423,7 +1331,7 @@ function renderCenter({
 
 function renderBattlefield({
   handCardSelected,
-  playUnit,
+  playUnitProps,
   checkAuth,
   game,
   self,
@@ -1436,9 +1344,8 @@ function renderBattlefield({
 }: {
   game: Game
   handCardSelected: DeckUnit | undefined
-  playUnit: PlayUnitProps
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  playUnitProps: PlayUnitProps
+  checkAuth: CheckAuth
   self: GamePlayer
   opponent: GamePlayer
   setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
@@ -1463,9 +1370,9 @@ function renderBattlefield({
   const isTurn = game.turn?.user.name === self.user.name
   const selfPassed = self.rounds[game.round - 1].passed
   const opponentPassed = opponent.rounds[game.round - 1].passed
-  const props = {
+  const sharedProps = {
     handCardSelected,
-    playUnit,
+    playUnitProps,
     checkAuth,
     game,
     isTurn,
@@ -1484,17 +1391,17 @@ function renderBattlefield({
         title={opponentPassed ? 'Your oppponent has passed the rest of this round' : ''}
       >
         {renderCombatRow({
-          ...props,
+          ...sharedProps,
           player: opponent,
           combat: Combat.Siege,
         })}
         {renderCombatRow({
-          ...props,
+          ...sharedProps,
           player: opponent,
           combat: Combat.Ranged,
         })}
         {renderCombatRow({
-          ...props,
+          ...sharedProps,
           player: opponent,
           combat: Combat.Close,
         })}
@@ -1506,19 +1413,19 @@ function renderBattlefield({
         title={selfPassed ? 'You have passed the rest of this round' : ''}
       >
         {renderCombatRow({
-          ...props,
+          ...sharedProps,
           player: self,
           isSelf: true,
           combat: Combat.Close,
         })}
         {renderCombatRow({
-          ...props,
+          ...sharedProps,
           isSelf: true,
           player: self,
           combat: Combat.Ranged,
         })}
         {renderCombatRow({
-          ...props,
+          ...sharedProps,
           player: self,
           isSelf: true,
           combat: Combat.Siege,
@@ -1532,7 +1439,7 @@ function renderCombatRow({
   game,
   handCardSelected,
   combat,
-  playUnit: { playUnit },
+  playUnitProps,
   checkAuth,
   player,
   isTurn,
@@ -1546,9 +1453,8 @@ function renderCombatRow({
   game: Game
   handCardSelected: DeckUnit | undefined
   combat: Combat
-  playUnit: PlayUnitProps
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  playUnitProps: PlayUnitProps
+  checkAuth: CheckAuth
   player: GamePlayer
   isTurn?: boolean
   isSelf?: boolean
@@ -1619,7 +1525,7 @@ function renderCombatRow({
             await retryCheckingAuth({
               checkAuth,
               method: async () => {
-                await playUnit({
+                await playUnitProps.playUnit({
                   variables: {
                     game: game.id,
                     combat: combat,
@@ -1687,15 +1593,15 @@ function renderCombatRow({
 function renderSetDeck({
   alreadySet,
   game,
-  setDeck: { error: setDeckError, loading: setDeckLoading },
+  setDeckProps,
   setDeckListOpen,
 }: {
   alreadySet: boolean
   game: Game
-  setDeck: SetDeckProps
+  setDeckProps: SetDeckProps
   setDeckListOpen: Dispatch<SetStateAction<boolean>>
 }) {
-  const resolvedSetDeckError = getApolloError(setDeckError)
+  const resolvedSetDeckError = getApolloError(setDeckProps.error)
   return (
     <div id="gameSetDeckContainer" className="game-section">
       <Centered>
@@ -1704,7 +1610,7 @@ function renderSetDeck({
             <div>{`Waiting for opponent${game.players.length > 2 ? 's' : ''} to choose deck...`}</div>
             <LoadingBar height="25px" />
           </div>
-        ) : setDeckLoading ? (
+        ) : setDeckProps.loading ? (
           <LoadingSpinner size="100px" title="Choosing Deck..." />
         ) : (
           <div className="game-set-deck">
@@ -1728,19 +1634,18 @@ function renderSetOrder({
   checkAuth,
   game,
   self,
-  setOrder: { setOrder, error: setOrderError, loading: setOrderLoading },
+  setOrderProps,
   playerOrder,
   setPlayerOrder,
 }: {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  checkAuth: CheckAuth
   game: Game
   self: GamePlayer
-  setOrder: SetOrderProps
+  setOrderProps: SetOrderProps
   playerOrder: GamePlayer[]
   setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
 }) {
-  const resolvedSetOrderError = getApolloError(setOrderError)
+  const resolvedSetOrderError = getApolloError(setOrderProps.error)
   const scoiaTaelDecks = game.players.filter((player) => player.faction?.key === FactionKey.ScoiaTael).length
   const canSetOrder = scoiaTaelDecks !== 1 || self.faction?.key === FactionKey.ScoiaTael
   const canChooseOrder =
@@ -1750,7 +1655,7 @@ function renderSetOrder({
   return (
     <div id={HTML_IDS.GameOrderContainer} className="game-section">
       <Centered>
-        {setOrderLoading ? (
+        {setOrderProps.loading ? (
           <LoadingSpinner size="50px" />
         ) : canSetOrder ? (
           <div id="gameSetOrderContainer">
@@ -1813,7 +1718,7 @@ function renderSetOrder({
                 await retryCheckingAuth({
                   checkAuth,
                   method: async () => {
-                    await setOrder({
+                    await setOrderProps.setOrder({
                       variables: {
                         game: game.id,
                         users: canChooseOrder ? playerOrder.map((player) => player.user.id) : [],
@@ -1871,10 +1776,10 @@ function renderCoinToss({
 function renderRedraw({
   handCardSelected,
   checkAuth,
-  redraw: { redraw, redrawError, redrawLoading },
+  redrawProps,
   game,
   gameDeck,
-  ready: { ready, readyError, readyLoading },
+  readyProps,
   setFullUnit,
   setHandCardSelected,
   self,
@@ -1884,10 +1789,9 @@ function renderRedraw({
   game: Game
   gameDeck: GameDeck | undefined
   handCardSelected: DeckUnit | undefined
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
-  redraw: RedrawProps
-  ready: ReadyProps
+  checkAuth: CheckAuth
+  redrawProps: RedrawProps
+  readyProps: ReadyProps
   setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   self: GamePlayer
@@ -1901,8 +1805,8 @@ function renderRedraw({
           redrawsLeft > 1 ? 's' : ''
         } from your hand to redraw. When satisfied with deck:`
       : 'All allowed redraws made. To begin the game:'
-  const resolvedRedrawError = getApolloError(redrawError)
-  const resolvedReadyError = getApolloError(readyError)
+  const resolvedRedrawError = getApolloError(redrawProps.error)
+  const resolvedReadyError = getApolloError(readyProps.error)
   return coinTossVisible ? (
     renderCoinToss({
       setCoinTossVisible,
@@ -1928,7 +1832,7 @@ function renderRedraw({
               const handIds = gameDeck.hand.map((deckUnit) => deckUnit.unit.id)
               return (
                 <div className="game-deck-redraw-card-container" key={index}>
-                  {index < gameDeck.redraws.length || (index === gameDeck.redraws.length && redrawLoading) ? (
+                  {index < gameDeck.redraws.length || (index === gameDeck.redraws.length && redrawProps.loading) ? (
                     <div className={HTML_CLASSES.GameDeckRedrawPair}>
                       <UnitGameCard
                         deckUnit={fromCard}
@@ -1985,7 +1889,7 @@ function renderRedraw({
                           await retryCheckingAuth({
                             checkAuth,
                             method: async () => {
-                              await redraw({
+                              await redrawProps.redraw({
                                 variables: {
                                   unit: handCardSelected.unit.id,
                                   game: game.id,
@@ -2009,7 +1913,7 @@ function renderRedraw({
             >{`Error redrawing card: ${resolvedRedrawError}`}</div>
           )}
           <div className="game-deck-redraw-lower">
-            {readyLoading ? (
+            {readyProps.loading ? (
               <LoadingBar height="25px" />
             ) : (
               <span id={HTML_IDS.GameDeckRedrawInstructions}>{instructions}</span>
@@ -2017,12 +1921,12 @@ function renderRedraw({
             <button
               id={HTML_IDS.GameReady}
               type="button"
-              disabled={readyLoading}
+              disabled={readyProps.loading}
               onClick={async () => {
                 await retryCheckingAuth({
                   checkAuth,
                   method: async () => {
-                    await ready({
+                    await readyProps.ready({
                       variables: {
                         game: game.id,
                       },
@@ -2191,10 +2095,8 @@ function renderHistory({
   movesByRounds,
   handCardSelected,
   game,
-  playPassLoading,
-  playPassError,
-  playUnitLoading,
-  playUnitError,
+  playPassProps,
+  playUnitProps,
   self,
   setHandCardSelected,
   historyCardSelected,
@@ -2203,10 +2105,8 @@ function renderHistory({
   movesByRounds: MoveForRound[]
   handCardSelected: DeckUnit | undefined
   game: Game
-  playPassLoading: boolean
-  playPassError: ApolloError | undefined
-  playUnitLoading: boolean
-  playUnitError: ApolloError | undefined
+  playPassProps: PlayPassProps
+  playUnitProps: PlayUnitProps
   self: GamePlayer
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   historyCardSelected: UnitForPlayer | undefined
@@ -2214,15 +2114,15 @@ function renderHistory({
 }) {
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
-    playUnitLoading ||
-    playPassLoading
-  const loadingTitle = playUnitLoading
+    playUnitProps.loading ||
+    playPassProps.loading
+  const loadingTitle = playUnitProps.loading
     ? `Waiting for ${handCardSelected?.unit.name || 'unit'} to be deployed to the battlefield`
-    : playPassLoading
+    : playPassProps.loading
     ? 'Waiting for Pass to be recognized on the battlefield'
     : 'Waiting for opponent to make their move'
-  const resolvedPlayPassError = getApolloError(playPassError)
-  const resolvedPlayUnitError = getApolloError(playUnitError)
+  const resolvedPlayPassError = getApolloError(playPassProps.error)
+  const resolvedPlayUnitError = getApolloError(playUnitProps.error)
   return (
     <div id={HTML_IDS.GameHistoryContainer} className="game-edge-container game-section">
       {game.round === 0 ? (
@@ -2353,6 +2253,11 @@ function renderHistory({
   )
 }
 
+interface NeighborUnits {
+  previous: DeckUnit | undefined
+  next: DeckUnit | undefined
+}
+
 interface AddGameProps {
   addGame: (
     options?:
@@ -2368,6 +2273,36 @@ interface AddGameProps {
   ) => Promise<FetchResult<AddGameMutation>>
   loading: boolean
   error: ApolloError | undefined
+}
+
+interface GameProps {
+  game: Game | undefined
+  error: ApolloError | undefined
+  loading: boolean
+  refetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            id: Scalars['ID']['input']
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<GameQuery>>
+}
+
+interface GameDeckProps {
+  deck: GameDeck | undefined
+  error: ApolloError | undefined
+  loading: boolean
+  refetch: (
+    variables?:
+      | Partial<
+          Exact<{
+            game: Scalars['ID']['input']
+          }>
+        >
+      | undefined
+  ) => Promise<ApolloQueryResult<GameDeckQuery>>
 }
 
 interface SetDeckProps {
@@ -2420,8 +2355,8 @@ interface RedrawProps {
         >
       | undefined
   ) => Promise<FetchResult<RedrawMutation>>
-  redrawError: ApolloError | undefined
-  redrawLoading: boolean
+  error: ApolloError | undefined
+  loading: boolean
 }
 
 interface ReadyProps {
@@ -2437,8 +2372,8 @@ interface ReadyProps {
         >
       | undefined
   ) => Promise<FetchResult<ReadyMutation>>
-  readyError: ApolloError | undefined
-  readyLoading: boolean
+  error: ApolloError | undefined
+  loading: boolean
 }
 
 interface PlayUnitProps {
@@ -2456,8 +2391,8 @@ interface PlayUnitProps {
         >
       | undefined
   ) => Promise<FetchResult<PlayUnitMutation>>
-  playUnitError: ApolloError | undefined
-  playUnitLoading: boolean
+  error: ApolloError | undefined
+  loading: boolean
 }
 
 interface PlayPassProps {
@@ -2473,8 +2408,8 @@ interface PlayPassProps {
         >
       | undefined
   ) => Promise<FetchResult<PlayPassMutation>>
-  playPassError: ApolloError | undefined
-  playPassLoading: boolean
+  error: ApolloError | undefined
+  loading: boolean
 }
 
 interface UnitForPlayer {

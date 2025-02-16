@@ -1,8 +1,8 @@
 import { t } from 'testcafe'
 
 import { Deck, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
-import { formatDay, formatTime } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import { humanizeDay, humanizeTime } from '@gwent/utils'
 
 export default class GamePlayerInfo {
   private elements
@@ -104,7 +104,7 @@ export default class GamePlayerInfo {
       if (from !== undefined && from !== null) {
         const isoString = new Date(from.created).toISOString()
         await t.expect(this.elements.DeckName.innerText).eql(from.name)
-        await t.expect(this.elements.DeckDate.innerText).eql(`${formatDay(isoString)} @ ${formatTime(isoString)}`)
+        await t.expect(this.elements.DeckDate.innerText).eql(`${humanizeDay(isoString)} @ ${humanizeTime(isoString)}`)
       } else {
         await t.expect(this.elements.DeckName.exists).notOk()
         await t.expect(this.elements.DeckDate.exists).notOk()

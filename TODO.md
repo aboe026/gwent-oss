@@ -3,12 +3,9 @@
 A list of things to be done in the future.
 
 - separate invalid checks on mutations into separate methods?
-- change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
-- save game status to database?
 - combine repeated props into single object (like renderCombatRow in renderBattlefield)
 - collapse UI method props when they are long (like PlayUnitProps)
 - alphabetize UI props/method inputs
-- remove ids from errors and put them in logPrefix
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)

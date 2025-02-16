@@ -1,13 +1,13 @@
-import { formatDay, formatTime } from '../../src/format-date'
+import { humanizeDay, humanizeTime } from '../../src/format-date'
 
 describe('format-date', () => {
-  describe('formatDay', () => {
+  describe('humanizeDay', () => {
     it('returns human readable day from iso string', () => {
       const iso = '2024-09-03T21:25:02.835Z'
-      expect(formatDay(iso)).toEqual('September 3, 2024')
+      expect(humanizeDay(iso)).toEqual('September 3, 2024')
     })
   })
-  describe('formatTime', () => {
+  describe('humanizeTime', () => {
     it('returns human readable time from iso string', () => {
       const iso = '2024-09-03T21:25:02.835Z'
       // needed to stub/spy out this method because otherwise
@@ -15,7 +15,7 @@ describe('format-date', () => {
       // (i.e. it fails with "9:25 PM" instead of "2:25 PM")
       const toLocaleTimeStringSpy = jest.spyOn(Date.prototype, 'toLocaleTimeString').mockReturnValue('2:25 PM')
 
-      expect(formatTime(iso)).toEqual('2:25 PM')
+      expect(humanizeTime(iso)).toEqual('2:25 PM')
 
       expect(toLocaleTimeStringSpy.mock.calls).toEqual([
         [

@@ -36,15 +36,14 @@ export default class ReadyMutation {
       context,
       label: 'ready mutation',
     })
+    const gameId = args.game
 
-    const logPrefix = `ready by "${userId}"`
+    const logPrefix = `ready by "${userId}" on game "${gameId}"`
     resolverUtil.setLogPrefix(logPrefix)
     resolverUtil.logRequestInfo({
       args,
       info,
     })
-
-    const gameId = args.game
 
     const { game, player } = await resolverUtil.getGamePlayer({
       gameId,
@@ -53,13 +52,8 @@ export default class ReadyMutation {
       label: 'mark ready',
     })
 
-    if (!player.deck.from) {
-      const message = `Must set deck on game "${gameId}" first.`
-      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
     if (player.ready) {
-      const message = `Game "${gameId}" already marked as ready.`
+      const message = 'Already marked as ready.'
       ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
@@ -82,13 +76,11 @@ export default class ReadyMutation {
     const unreadyPlayers = game.players.filter((gamePlayer) => gamePlayer.ready === false)
     if (ReadyMutation.logger.isTraceEnabled()) {
       ReadyMutation.logger.trace(
-        `${logPrefix} game "${game._id}" unreadyPlayers: "${JSON.stringify(
-          unreadyPlayers.map((unreadyPlayer) => unreadyPlayer.user)
-        )}"`
+        `${logPrefix} unreadyPlayers: "${JSON.stringify(unreadyPlayers.map((unreadyPlayer) => unreadyPlayer.user))}"`
       )
     }
     if (unreadyPlayers.length === 0) {
-      ReadyMutation.logger.debug(`${logPrefix} game "${game._id}" has all players ready, starting first round.`)
+      ReadyMutation.logger.debug(`${logPrefix} has all players ready, starting first round.`)
       game.players = mutationUtil.initializeNewRound({
         players: game.players,
       })
@@ -102,7 +94,7 @@ export default class ReadyMutation {
       ReadyMutation.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
     }
     if (!updatedGame) {
-      const message = `Could not set player as ready for game "${gameId}" in probable race condition collision.`
+      const message = 'Could not set player as ready in probable race condition collision.'
       ReadyMutation.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

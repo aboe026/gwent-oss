@@ -29,16 +29,15 @@ export default class SetOrderMutation {
       context,
       label: 'setOrder mutation',
     })
+    const gameId = args.game
+    const userIds = args.users
 
-    const logPrefix = `setOrder by "${userId}"`
+    const logPrefix = `setOrder by "${userId}" to users "${JSON.stringify(userIds)}" on game "${gameId}"`
     resolverUtil.setLogPrefix(logPrefix)
     resolverUtil.logRequestInfo({
       args,
       info,
     })
-
-    const gameId = args.game
-    const userIds = args.users
 
     resolverUtil.verifyMongoIds({
       ids: [gameId],

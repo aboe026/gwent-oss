@@ -5,8 +5,8 @@ import { Outlet, useLocation, Navigate } from 'react-router'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
+import { CheckAuth, getApolloError } from './util/error-util'
 import { CurrentUserDocument, CurrentUserQuery, useCurrentUserQuery, User } from '@gwent/graphql-schema/apollo-typings'
-import { getApolloError } from './util/error-util'
 import { getRouteFromPath } from './util/route-util'
 import LoadingSpinner from './components/LoadingSpinner'
 import LoginDialog from './components/LoginDialog'
@@ -149,6 +149,5 @@ export default function App() {
 
 type UserContextType = {
   user: User | undefined | null
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  checkAuth: (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+  checkAuth: CheckAuth
 }

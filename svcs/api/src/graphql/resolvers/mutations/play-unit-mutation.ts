@@ -40,20 +40,16 @@ export default class PlayUnitMutation {
       context,
       label: 'playUnit mutation',
     })
+    const gameId = args.game
+    const unitId = args.unit
+    let combat = args.combat
 
-    let logPrefix = `playUnit by "${userId}"`
+    const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
     resolverUtil.setLogPrefix(logPrefix)
     resolverUtil.logRequestInfo({
       args,
       info,
     })
-
-    const gameId = args.game
-    const unitId = args.unit
-    let combat = args.combat
-
-    logPrefix += ` for unit "${unitId}" on game "${gameId}"`
-    resolverUtil.setLogPrefix(logPrefix)
 
     resolverUtil.verifyMongoIds({
       ids: [unitId],
@@ -169,7 +165,7 @@ export default class PlayUnitMutation {
     const updatedGame = await GameStore.save(game)
 
     if (!updatedGame) {
-      const message = `Could not play unit "${unitId}" for game "${gameId}" in probable race condition collision.`
+      const message = 'Could not play unit in probable race condition collision.'
       PlayUnitMutation.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

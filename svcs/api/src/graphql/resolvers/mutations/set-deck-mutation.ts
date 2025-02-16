@@ -39,16 +39,15 @@ export default class SetDeckMutation {
       context,
       label: 'setDeck mutation',
     })
+    const gameId = args.game
+    const deckId = args.deck
 
-    const logPrefix = `setDeck by "${userId}"`
+    const logPrefix = `setDeck by "${userId}" for deck "${deckId}" on game "${gameId}"`
     resolverUtil.setLogPrefix(logPrefix)
     resolverUtil.logRequestInfo({
       args,
       info,
     })
-
-    const gameId = args.game
-    const deckId = args.deck
 
     resolverUtil.verifyMongoIds({
       ids: [deckId],
@@ -62,23 +61,17 @@ export default class SetDeckMutation {
       SetDeckMutation.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
     }
     if (!deck) {
-      const message = `Deck with ID "${deckId}" does not exist.`
+      const message = 'Deck does not exist.'
       SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
 
-    const { game, player } = await resolverUtil.getGamePlayer({
+    const { game } = await resolverUtil.getGamePlayer({
       gameId,
       userId,
       status: GameStatus.Decking,
       label: 'set deck',
     })
-
-    if (player.deck.from !== null && player.deck.from !== undefined) {
-      const message = `Deck already set for game "${gameId}".`
-      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
 
     const mutationUtil = new MutationUtil({
       logger: SetDeckMutation.logger,
@@ -113,9 +106,7 @@ export default class SetDeckMutation {
     const allDecksSet = !game.players.some((gamePlayer) => !gamePlayer.deck.from)
 
     if (allDecksSet) {
-      SetDeckMutation.logger.debug(
-        `${logPrefix} on "${gameId}" all decks set, changing game status to "${GameStatus.Ordering}"`
-      )
+      SetDeckMutation.logger.debug(`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`)
       game.status = GameStatus.Ordering
     }
 
@@ -125,7 +116,7 @@ export default class SetDeckMutation {
       SetDeckMutation.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
     }
     if (!updatedGame) {
-      const message = `Could not set deck "${deckId}" on game "${gameId}" in probable race condition collision.`
+      const message = 'Could not set deck in probable race condition collision.'
       SetDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
@@ -134,7 +125,7 @@ export default class SetDeckMutation {
       SetDeckMutation.logger.trace(`${logPrefix} updatedPlayer: "${JSON.stringify(updatedPlayer)}"`)
     }
     if (!updatedPlayer) {
-      const message = `Could not get player after setting deck "${deckId}" on game "${gameId}".`
+      const message = 'Could not get player after setting deck.'
       SetDeckMutation.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
