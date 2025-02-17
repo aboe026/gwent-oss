@@ -47,7 +47,7 @@ describe('set-deck-mutation', () => {
     const resolvedGame = TestUtil.getGameFromDbGame({
       game: game,
     })
-    const logPrefix = `setDeck by "${userId}"`
+    const logPrefix = `setDeck by "${userId}" for deck "${deck._id}" on game "${game._id}"`
     const getDeckCalls = [
       [
         {
@@ -82,7 +82,7 @@ describe('set-deck-mutation', () => {
     }
     const saveCalls = [[modifiedGame]]
     it('throws error if deck does not exist', async () => {
-      const error = `Deck with ID "${deck._id}" does not exist.`
+      const error = 'Deck does not exist.'
       await testSetDeck({
         userId,
         gameId: game._id.toString(),
@@ -93,7 +93,7 @@ describe('set-deck-mutation', () => {
       })
     })
     it('throws error if deck is already set', async () => {
-      const error = `Deck already set for game "${game._id}".`
+      const error = 'Deck already set.'
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -115,7 +115,7 @@ describe('set-deck-mutation', () => {
       })
     })
     it('throws error if updated game is undefined', async () => {
-      const error = `Could not set deck "${deck._id}" on game "${game._id}" in probable race condition collision.`
+      const error = 'Could not set deck in probable race condition collision.'
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -139,11 +139,12 @@ describe('set-deck-mutation', () => {
           ],
         ],
         saveCalls,
+        // TODO: redefined logPrefix with extra stuff?
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('throws error if player not on updated game', async () => {
-      const error = `Could not get player after setting deck "${deck._id}" on game "${game._id}".`
+      const error = 'Could not get player after setting deck.'
       await testSetDeck({
         userId,
         deckId: deck._id.toString(),
@@ -274,12 +275,12 @@ describe('set-deck-mutation', () => {
             {
               game: gameAllDecksChosen,
               player: gameAllDecksChosen.players[0],
-              logPrefix: `setOrder via setDeck by "${userId}"`,
+              logPrefix: `setOrder via ${logPrefix}`,
               allowImplicit: false,
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} on "${game._id}" all decks set, changing game status to "${GameStatus.Ordering}"`]],
+        debugCalls: [[`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`]],
       })
     })
     it('returns resolved deck if no errors', async () => {
@@ -431,12 +432,12 @@ describe('set-deck-mutation', () => {
             {
               game: gameAllDecksChosen,
               player: gameAllDecksChosen.players[0],
-              logPrefix: `setOrder via setDeck by "${userId}"`,
+              logPrefix: `setOrder via ${logPrefix}`,
               allowImplicit: false,
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} on "${game._id}" all decks set, changing game status to "${GameStatus.Ordering}"`]],
+        debugCalls: [[`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`]],
       })
     })
     it('does not throw error if attempt to set turn order when another player has ScoiaTael', async () => {
@@ -480,7 +481,7 @@ describe('set-deck-mutation', () => {
         randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
         resolveGameResponse: resolvedGameAllDecksChosen,
         setGameTurnOderError: new PresentableError(
-          `Cannot set order randomly as another player for game "${game._id}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+          `Random order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
         ),
         expected,
         getDeckCalls,
@@ -544,12 +545,12 @@ describe('set-deck-mutation', () => {
             {
               game: gameAllDecksChosen,
               player: gameAllDecksChosen.players[0],
-              logPrefix: `setOrder via setDeck by "${userId}"`,
+              logPrefix: `setOrder via ${logPrefix}`,
               allowImplicit: false,
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} on "${game._id}" all decks set, changing game status to "${GameStatus.Ordering}"`]],
+        debugCalls: [[`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`]],
       })
     })
     it('logs to trace if enabled', async () => {

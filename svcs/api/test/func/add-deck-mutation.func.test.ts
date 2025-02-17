@@ -101,7 +101,7 @@ describe('add-deck-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot create Deck with "${FactionKey.Neutral}" faction.`)],
+          errors: [new GraphQLError(`Faction "${FactionKey.Neutral}" not allowed.`)],
         })
       })
       it('throws error if leader does not exist', async () => {

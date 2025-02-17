@@ -16,7 +16,7 @@ describe('add-game-mutation', () => {
     const userId = new ObjectId()
     const logPrefix = `addGame by "${userId}"`
     it('throws error if duplicate opponents', async () => {
-      const error = 'Invalid opponents: names ["test"] are duplicates.'
+      const error = 'Opponent(s) ["test"] are duplicates.'
       await testAddGame({
         creatorId: userId,
         opponentNames: ['test', 'test'],
@@ -25,7 +25,7 @@ describe('add-game-mutation', () => {
       })
     })
     it('throws error if creator listed with opponents', async () => {
-      const error = 'Invalid opponents: cannot include self.'
+      const error = 'Opponents cannot include self.'
       const creatorName = 'creator-name'
       await testAddGame({
         creatorId: userId,
@@ -36,7 +36,7 @@ describe('add-game-mutation', () => {
       })
     })
     it('throws error if not enough opponents', async () => {
-      const error = `Not enough opponents for game at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`
+      const error = `Not enough opponents at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`
       await testAddGame({
         creatorId: userId,
         opponentNames: [],
@@ -45,7 +45,7 @@ describe('add-game-mutation', () => {
       })
     })
     it('throws error if too many opponents', async () => {
-      const error = `Excessive opponents for game at "2", maximum is "${PLAYER_COUNTS.Min - 1}".`
+      const error = `Excessive opponent count of "2", maximum is "${PLAYER_COUNTS.Min - 1}".`
       await testAddGame({
         creatorId: userId,
         opponentNames: ['one', 'two'],

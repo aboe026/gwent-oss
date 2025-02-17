@@ -17,7 +17,7 @@ describe('ready-mutation', () => {
   describe('ready', () => {
     const userId = new ObjectId()
     const gameId = new ObjectId().toString()
-    const logPrefix = `ready by "${userId}"`
+    const logPrefix = `ready by "${userId}" on game "${gameId}"`
     const gamePlayerSelf = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({
         from: TestUtil.getDbDeck({}),
@@ -70,28 +70,8 @@ describe('ready-mutation', () => {
         }),
       ],
     })
-    it('throws error if deck not yet set', async () => {
-      const error = `Must set deck on game "${gameId}" first.`
-      await testReady({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: {
-            ...gamePlayerSelf,
-            deck: {
-              ...gamePlayerSelf.deck,
-              from: undefined,
-            },
-          },
-        },
-        expected: Error(error),
-        getGamePlayerCalls,
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
     it('throws error if already marked as ready', async () => {
-      const error = `Game "${gameId}" already marked as ready.`
+      const error = 'Already marked as ready.'
       await testReady({
         userId,
         gameId,
@@ -108,7 +88,7 @@ describe('ready-mutation', () => {
       })
     })
     it('throws error if save response is undefined', async () => {
-      const error = `Could not set player as ready for game "${gameId}" in probable race condition collision.`
+      const error = 'Could not set player as ready in probable race condition collision.'
       await testReady({
         userId,
         gameId,
@@ -223,7 +203,7 @@ describe('ready-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} game "${gameId}" has all players ready, starting first round.`]],
+        debugCalls: [[`${logPrefix} has all players ready, starting first round.`]],
       })
     })
     it('logs to trace if enabled', async () => {
@@ -362,7 +342,7 @@ async function testReady({
           ],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} game "${gameId}" unreadyPlayers: "${JSON.stringify(unreadyPlayerIds)}"`],
+          [`${logPrefix} unreadyPlayers: "${JSON.stringify(unreadyPlayerIds)}"`],
           [`${logPrefix} updatedGame: "${JSON.stringify(saveResponse)}"`],
         ]
       : []

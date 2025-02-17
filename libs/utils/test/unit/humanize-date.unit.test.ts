@@ -1,4 +1,4 @@
-import { humanizeDay, humanizeTime } from '../../src/format-date'
+import { humanizeDay, humanizeTime } from '../../src/humanize-date'
 
 describe('format-date', () => {
   describe('humanizeDay', () => {

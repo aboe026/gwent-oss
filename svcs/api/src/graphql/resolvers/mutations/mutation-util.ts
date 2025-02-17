@@ -289,22 +289,22 @@ export default class MutationUtil {
       (gamePlayer) => gamePlayer.deck.from?.faction.toString() === scoiaTaelId
     )
     if (scoiaTaelPlayers.length > 1 && userIds && userIds.length > 0) {
-      const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}".`
+      const message = `Explicit order not allowed when more than 1 player has deck of faction "${FactionKey.ScoiaTael}".`
       this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 0 && userIds && userIds.length > 0) {
-      const message = `Cannot set explicit order as deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
+      const message = `Explicit order not allowed when deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
       this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 1 && (!userIds || userIds.length === 0) && !allowImplicit) {
-      const message = `Cannot set order randomly as another player has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const message = `Random order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
       this.logger.debug(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
-      const message = `Cannot set order as another player has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const message = `Setting order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
       this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
@@ -318,18 +318,18 @@ export default class MutationUtil {
         }
       }
       if (playersIdsNotInGame.length > 0) {
-        const message = `Cannot set order as users(s) ${JSON.stringify(playersIdsNotInGame)} are not players on game.`
+        const message = `User(s) ${JSON.stringify(playersIdsNotInGame)} are not players on game.`
         this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
         throw new PresentableError(message)
       }
       if (userIds.length !== game.players.length) {
-        const message = `Cannot set order as users count of "${userIds.length}" does not match player count of "${game.players.length}".`
+        const message = `Users count of "${userIds.length}" does not match required count of "${game.players.length}".`
         this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
         throw new PresentableError(message)
       }
       const duplicateUserIds = getDuplicateItems<string>(userIds)
       if (duplicateUserIds.length > 0) {
-        const message = `Cannot set order due to duplicate user ID(s) ${JSON.stringify(duplicateUserIds)} specified.`
+        const message = `Duplicate user(s) ${JSON.stringify(duplicateUserIds)} not allowed.`
         this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
         throw new PresentableError(message)
       }

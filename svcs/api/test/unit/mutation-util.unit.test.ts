@@ -1383,7 +1383,7 @@ describe('mutation-util', () => {
       })
     })
     it('throws error setting explicit order with more than 1 ScoiaTael player', async () => {
-      const message = `Cannot set explicit order as more than 1 player has chosen a deck of faction "${FactionKey.ScoiaTael}" for game "${game._id}".`
+      const message = `Explicit order not allowed when more than 1 player has deck of faction "${FactionKey.ScoiaTael}".`
       const player = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({
@@ -1416,7 +1416,7 @@ describe('mutation-util', () => {
     })
     it('throws error setting explicit order without scoiatael deck', async () => {
       const factionId = new ObjectId()
-      const message = `Cannot set explicit order as deck faction ID "${factionId}" does not match "${FactionKey.ScoiaTael}" faction ID of "${dbFaction._id}".`
+      const message = `Explicit order not allowed when deck faction ID "${factionId}" does not match "${FactionKey.ScoiaTael}" faction ID of "${dbFaction._id}".`
       const player = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({
@@ -1446,7 +1446,7 @@ describe('mutation-util', () => {
       })
     })
     it('throws error setting implicit order when no userIds and opponent has scoiatael deck', async () => {
-      const message = `Cannot set order randomly as another player for game "${game._id}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const message = `Random order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
       const player = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({}),
@@ -1475,7 +1475,7 @@ describe('mutation-util', () => {
       })
     })
     it('throws error setting implicit order when empty userIds and opponent has scoiatael deck', async () => {
-      const message = `Cannot set order randomly as another player for game "${game._id}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const message = `Random order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
       const player = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({}),
@@ -1505,7 +1505,7 @@ describe('mutation-util', () => {
       })
     })
     it('throws error setting explicit order when opponent has scoiatael deck', async () => {
-      const message = `Cannot set order as another player for game "${game._id}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+      const message = `Setting order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
       const player = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({}),
@@ -1536,9 +1536,7 @@ describe('mutation-util', () => {
     })
     it('throws error if users are not players on game', async () => {
       const nonPlayerId = new ObjectId().toString()
-      const message = `Cannot set order as users(s) ${JSON.stringify([nonPlayerId])} are not players on game "${
-        game._id
-      }".`
+      const message = `User(s) ${JSON.stringify([nonPlayerId])} are not players on game.`
       const player = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({
@@ -1568,7 +1566,7 @@ describe('mutation-util', () => {
       })
     })
     it('throws error if too few users', async () => {
-      const message = `Cannot set order as users count of "1" does not match player count of "2" for game "${game._id}".`
+      const message = `Users count of "1" does not match required count of "2".`
       const player = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({
@@ -1598,7 +1596,7 @@ describe('mutation-util', () => {
       })
     })
     it('throws error if duplicate users', async () => {
-      const message = `Cannot set order for game "${game._id}" due to duplicate user ID(s) ["${userId}"] specified.`
+      const message = `Duplicate user(s) ["${userId}"] not allowed.`
       const player = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({
@@ -1628,7 +1626,7 @@ describe('mutation-util', () => {
       })
     })
     it('throws error if updated game empty', async () => {
-      const message = `Could not set order on game "${game._id}" in probable race condition collision.`
+      const message = 'Could not set order in probable race condition collision.'
       await testSetGameTurnOrder({
         game: game,
         player: game.players[0],

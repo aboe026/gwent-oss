@@ -3,9 +3,6 @@
 A list of things to be done in the future.
 
 - separate invalid checks on mutations into separate methods?
-- combine repeated props into single object (like renderCombatRow in renderBattlefield)
-- collapse UI method props when they are long (like PlayUnitProps)
-- alphabetize UI props/method inputs
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)
@@ -23,7 +20,6 @@ A list of things to be done in the future.
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
 - stop subscription reconnect attempts if auth times out
   - show login dialog?
-- Change "ready" mutation to "readyGame"?
 - Remove @map directive for ID types?
 - Switch DeckUnit to be same as Unit but single image instead of array
   - Have Unit interface with following implementations:

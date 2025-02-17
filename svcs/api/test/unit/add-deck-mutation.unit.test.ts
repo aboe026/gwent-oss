@@ -23,7 +23,7 @@ describe('add-deck-mutation', () => {
     const userId = new ObjectId()
     const logPrefix = `addDeck by "${userId}"`
     it('throws error if faction is neutral', async () => {
-      const error = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
+      const error = `Faction "${FactionKey.Neutral}" not allowed.`
       await testAddDeck({
         userId,
         factionKey: FactionKey.Neutral,

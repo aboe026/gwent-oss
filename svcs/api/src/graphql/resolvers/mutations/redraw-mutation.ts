@@ -61,7 +61,7 @@ export default class RedrawMutation {
     })
 
     if (player.ready) {
-      const message = 'Cannot redraw after game is marked as ready.'
+      const message = 'Redraw not allowed after game marked as ready.'
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
@@ -77,7 +77,7 @@ export default class RedrawMutation {
       RedrawMutation.logger.trace(`${logPrefix} cardToRedraw: "${JSON.stringify(cardToRedraw)}"`)
     }
     if (!cardToRedraw) {
-      const message = 'Unit does not exist in hand.'
+      const message = 'Unit not in hand.'
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

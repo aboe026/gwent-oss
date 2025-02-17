@@ -421,7 +421,7 @@ describe('set-order-mutation', () => {
           data: null,
           errors: [
             new GraphQLError(
-              `Cannot set order as another player has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+              `Setting order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
             ),
           ],
         })
@@ -477,7 +477,7 @@ describe('set-order-mutation', () => {
           data: null,
           errors: [
             new GraphQLError(
-              `Cannot set order as another player has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+              `Setting order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
             ),
           ],
         })
@@ -533,7 +533,7 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot set order as users(s) ["${id}"] are not players on game.`)],
+          errors: [new GraphQLError(`User(s) ["${id}"] are not players on game.`)],
         })
       })
       it('throws error if second user not a player on game', async () => {
@@ -587,7 +587,7 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot set order as users(s) ["${id}"] are not players on game.`)],
+          errors: [new GraphQLError(`User(s) ["${id}"] are not players on game.`)],
         })
       })
       it('throws error if all users not a player on game', async () => {
@@ -642,7 +642,7 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot set order as users(s) ["${id1}","${id2}"] are not players on game.`)],
+          errors: [new GraphQLError(`User(s) ["${id1}","${id2}"] are not players on game.`)],
         })
       })
       it('throws error if not all players specified', async () => {
@@ -695,7 +695,7 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot set order as users count of "1" does not match player count of "2".`)],
+          errors: [new GraphQLError(`Users count of "1" does not match required count of "2".`)],
         })
       })
       it('throws error if duplicate players specified', async () => {
@@ -748,7 +748,7 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot set order due to duplicate user ID(s) ["${user1.id}"] specified.`)],
+          errors: [new GraphQLError(`Duplicate user(s) ["${user1.id}"] not allowed.`)],
         })
       })
     })

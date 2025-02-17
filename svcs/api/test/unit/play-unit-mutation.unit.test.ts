@@ -184,8 +184,8 @@ describe('play-unit-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('throws error if makeMove returns undefined', async () => {
-      const message = `Could not play unit "${unitId}" for game "${gameId}" in probable race condition collision.`
+    it('throws error if save returns undefined', async () => {
+      const message = 'Could not play unit in probable race condition collision.'
       const artStyle = 1
       const strength = 2
       const deckUnit = TestUtil.getDbUnit({
@@ -953,18 +953,19 @@ async function testPlayUnit({
   )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
+  const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
           [
-            `playUnit by "${userId}" args: "${JSON.stringify({
+            `${logPrefix} args: "${JSON.stringify({
               game: gameId,
               unit: unitId,
               combat,
             })}"`,
           ],
-          [`playUnit by "${userId}" requested fields: "[]"`],
-          [`playUnit by "${userId}" requested arguments: "[]"`],
+          [`${logPrefix} requested fields: "[]"`],
+          [`${logPrefix} requested arguments: "[]"`],
         ]
       : []
   )
