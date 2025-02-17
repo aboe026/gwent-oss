@@ -22,16 +22,16 @@ import './Confirm.css'
  * @returns A confirmation dialog for the user to accept or reject.
  */
 export default function Confirm({
-  id,
   cancelLabel = 'No',
-  onClose,
-  onSubmit,
-  submitLabel = 'Yes',
-  submitVariables,
   error,
+  id,
   loading,
   message,
+  onClose,
+  onSubmit,
   open,
+  submitLabel = 'Yes',
+  submitVariables,
   title,
 }: ConfirmProps) {
   const resolvedError = getApolloError(error)
@@ -76,15 +76,15 @@ export default function Confirm({
 }
 
 interface ConfirmProps {
-  id?: string
   cancelLabel?: string
-  submitLabel?: string
-  onClose: (item: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
-  onSubmit: (variables: any) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  submitVariables: any // eslint-disable-line @typescript-eslint/no-explicit-any
   error: ApolloError | undefined
+  id?: string
   loading: boolean
   message: string
+  onClose: (item: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSubmit: (variables: any) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   open: boolean
+  submitLabel?: string
+  submitVariables: any // eslint-disable-line @typescript-eslint/no-explicit-any
   title?: string
 }

@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, ReactNode } from 'react'
 
 /**
  * A container which centers content
@@ -14,6 +14,7 @@ export default function Centered({ children, classname, id }: CenteredProps) {
 }
 
 interface CenteredProps extends PropsWithChildren {
-  id?: string
   classname?: string
+  children: ReactNode
+  id?: string
 }

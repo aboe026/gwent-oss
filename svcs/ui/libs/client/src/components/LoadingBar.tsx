@@ -5,7 +5,7 @@ import './LoadingBar.css'
  *
  * @returns The loading bar
  */
-export default function LoadingBar({ height = '100%', width = '100%', style }: LoadingBarProps) {
+export default function LoadingBar({ height = '100%', style, width = '100%' }: LoadingBarProps) {
   return (
     <div className="loading-bar" style={{ ...{ height, width }, ...style }}>
       <div className="card card-1 northern-realms-color"></div>
@@ -19,6 +19,6 @@ export default function LoadingBar({ height = '100%', width = '100%', style }: L
 
 interface LoadingBarProps {
   height?: string
-  width?: string
   style?: React.CSSProperties
+  width?: string
 }

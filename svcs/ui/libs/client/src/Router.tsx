@@ -1,18 +1,18 @@
 import { createBrowserRouter, RouterProvider } from 'react-router'
 
-import AboutPage from './pages/About'
+import AboutPage from './pages/about/About'
 import App from './App'
-import DeckPage from './pages/Deck'
-import DecksPage from './pages/Decks'
-import Game from './pages/Game'
-import Games from './pages/Games'
-import HomePage from './pages/Home'
-import LoginPage from './pages/Login'
-import LogoutPage from './pages/Logout'
+import DeckPage from './pages/deck/Deck'
+import DecksPage from './pages/decks/Decks'
+import Game from './pages/game/Game'
+import Games from './pages/games/Games'
+import HomePage from './pages/home/Home'
+import LoginPage from './pages/login/Login'
+import LogoutPage from './pages/logout/Logout'
 import NotFoundPage from './pages/NotFound'
-import ProfilePage from './pages/Profile'
+import ProfilePage from './pages/profile/Profile'
 import { ROUTES } from '@gwent/constants'
-import SignupPage from './pages/Signup'
+import SignupPage from './pages/signup/Signup'
 
 /**
  * The URL paths the application supports and their corresponding React components.

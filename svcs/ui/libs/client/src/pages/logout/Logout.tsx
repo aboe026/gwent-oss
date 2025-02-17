@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router'
 
-import Centered from '../components/Centered'
+import Centered from '../../components/Centered'
 import { CurrentUserDocument, CurrentUserQuery, useLogoutMutation, User } from '@gwent/graphql-schema/apollo-typings'
-import { getApolloError } from '../util/error-util'
+import { getApolloError } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import LoadingSpinner from '../components/LoadingSpinner'
+import LoadingSpinner from '../../components/LoadingSpinner'
 import { ROUTES } from '@gwent/constants'
 import './Logout.css'
 

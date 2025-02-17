@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react'
+import { PropsWithChildren, ReactNode } from 'react'
 
 import Centered from './Centered'
 
@@ -26,6 +26,7 @@ export default function WholeScreenDialog({ children, onClose, style }: WholeScr
 }
 
 interface WholeScreenDialogProps extends PropsWithChildren {
+  children: ReactNode
   onClose?: Function // eslint-disable-line @typescript-eslint/no-unsafe-function-type
   style?: React.CSSProperties
 }

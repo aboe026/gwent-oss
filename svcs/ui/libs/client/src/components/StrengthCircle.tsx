@@ -7,7 +7,7 @@ import './StrengthCircle.css'
  *
  * @returns The strength circle
  */
-export default function StrengthCircle({ size, unit, style, ignoreHero }: StrengthCircleProps) {
+export default function StrengthCircle({ ignoreHero, size, style, unit }: StrengthCircleProps) {
   const weatherEffect = unit.effects?.find((effect) => effect.key === EffectKey.Weather)
   const weatherTitle = weatherEffect?.ability || ''
   const weatherSymbol = getWeatherImage(unit)
@@ -38,9 +38,9 @@ export default function StrengthCircle({ size, unit, style, ignoreHero }: Streng
 }
 
 interface StrengthCircleProps {
-  unit: Unit
-  size: string
-  textColor?: string
-  style?: React.CSSProperties
   ignoreHero?: boolean
+  size: string
+  style?: React.CSSProperties
+  textColor?: string
+  unit: Unit
 }

@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router'
 
-import DeckEditor from '../components/DeckEditor'
+import DeckEditor from '../../components/DeckEditor'
 import { ROUTES } from '@gwent/constants'
-import { useTitle } from '../components/TabTitle'
+import { useTitle } from '../../components/TabTitle'
 
 /**
  * The page to configure a user created Deck.

@@ -161,7 +161,7 @@ export default class SetDeckMutation {
         if (
           err instanceof PresentableError &&
           err.message ===
-            `Cannot set order randomly as another player for game "${gameId}" has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
+            `Cannot set order randomly as another player has a deck faction of "${FactionKey.ScoiaTael}" which allows them to set game order.`
         ) {
           // swallow
         } else {

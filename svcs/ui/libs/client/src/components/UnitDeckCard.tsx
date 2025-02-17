@@ -14,10 +14,10 @@ import './UnitDeckCard.css'
  */
 export default function UnitDeckCard({
   deckUnit,
+  disabled,
+  setFullUnit,
   setSelectedUnits,
   setUnits,
-  setFullUnit,
-  disabled,
 }: UnitDeckCardProps) {
   function selectUnit(event: React.MouseEvent<HTMLImageElement>) {
     event.preventDefault()
@@ -143,9 +143,8 @@ export default function UnitDeckCard({
 
 interface UnitDeckCardProps {
   deckUnit: DeckUnit
-  key: string
+  disabled: boolean
+  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
   setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
   setUnits: Dispatch<SetStateAction<DeckUnit[]>>
-  setFullUnit: Dispatch<SetStateAction<DeckUnit | undefined>>
-  disabled: boolean
 }

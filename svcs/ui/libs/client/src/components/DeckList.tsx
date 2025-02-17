@@ -585,11 +585,11 @@ function renderDeckStat({
 }
 
 interface DeckListProps {
-  paddingBottom?: string
   actions?: Action[]
   actionsDisabled?: boolean
-  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
   onClose?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  paddingBottom?: string
 }
 
 interface Action {

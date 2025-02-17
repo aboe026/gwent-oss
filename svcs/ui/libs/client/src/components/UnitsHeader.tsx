@@ -18,30 +18,30 @@ import './UnitsHeader.css'
  * @returns The deck Units header
  */
 export default function UnitsHeader({
-  isAvailable,
-  faction,
-  availableNameFilter,
-  setAvailableNameFilter,
-  selectedNameFilter,
-  setSelectedNameFilter,
   availableFilterFields,
-  selectedFilterFields,
-  setAvailableFilterFields,
-  setSelectedFilterFields,
-  setAvailableFiltersExpanded,
-  setSelectedFiltersExpanded,
   availableFiltersExpanded,
-  selectedFiltersExpanded,
+  availableNameFilter,
   availableSortField,
-  selectedSortField,
-  setAvailableSortField,
-  setSelectedSortField,
   availableSortOrder,
+  disabled,
+  faction,
+  isAvailable,
+  selectedFilterFields,
+  selectedFiltersExpanded,
+  selectedNameFilter,
+  selectedSortField,
   selectedSortOrder,
+  setAvailableFilterFields,
+  setAvailableFiltersExpanded,
+  setAvailableNameFilter,
+  setAvailableSortField,
   setAvailableSortOrder,
+  setSelectedFilterFields,
+  setSelectedFiltersExpanded,
+  setSelectedNameFilter,
+  setSelectedSortField,
   setSelectedSortOrder,
   sortFilterLocked,
-  disabled,
 }: UnitsHeaderProps) {
   const type = isAvailable ? 'available' : 'selected'
   const filterFields = isAvailable ? availableFilterFields : selectedFilterFields
@@ -282,28 +282,28 @@ function renderFilterCheckboxes({
 }
 
 interface UnitsHeaderProps {
-  isAvailable: boolean
-  faction: Faction | undefined
-  availableNameFilter: string
-  setAvailableNameFilter: Dispatch<SetStateAction<string>>
-  selectedNameFilter: string
-  setSelectedNameFilter: Dispatch<SetStateAction<string>>
   availableFilterFields: FILTER_FIELD[]
-  selectedFilterFields: FILTER_FIELD[]
-  setAvailableFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
-  setSelectedFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   availableFiltersExpanded: boolean
-  selectedFiltersExpanded: boolean
-  setAvailableFiltersExpanded: Dispatch<SetStateAction<boolean>>
-  setSelectedFiltersExpanded: Dispatch<SetStateAction<boolean>>
+  availableNameFilter: string
   availableSortField: SORT_FIELD
-  selectedSortField: SORT_FIELD
-  setAvailableSortField: Dispatch<SetStateAction<SORT_FIELD>>
-  setSelectedSortField: Dispatch<SetStateAction<SORT_FIELD>>
   availableSortOrder: SORT_ORDER
+  disabled: boolean
+  faction: Faction | undefined
+  isAvailable: boolean
+  selectedFilterFields: FILTER_FIELD[]
+  selectedFiltersExpanded: boolean
+  selectedNameFilter: string
+  selectedSortField: SORT_FIELD
   selectedSortOrder: SORT_ORDER
+  setAvailableFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
+  setAvailableFiltersExpanded: Dispatch<SetStateAction<boolean>>
+  setAvailableNameFilter: Dispatch<SetStateAction<string>>
+  setAvailableSortField: Dispatch<SetStateAction<SORT_FIELD>>
   setAvailableSortOrder: Dispatch<SetStateAction<SORT_ORDER>>
+  setSelectedNameFilter: Dispatch<SetStateAction<string>>
+  setSelectedFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
+  setSelectedFiltersExpanded: Dispatch<SetStateAction<boolean>>
+  setSelectedSortField: Dispatch<SetStateAction<SORT_FIELD>>
   setSelectedSortOrder: Dispatch<SetStateAction<SORT_ORDER>>
   sortFilterLocked: boolean
-  disabled: boolean
 }
