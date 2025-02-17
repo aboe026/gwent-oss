@@ -66,12 +66,18 @@ export default class SetDeckMutation {
       throw new PresentableError(message)
     }
 
-    const { game } = await resolverUtil.getGamePlayer({
+    const { game, player } = await resolverUtil.getGamePlayer({
       gameId,
       userId,
       status: GameStatus.Decking,
       label: 'set deck',
     })
+
+    if (player.deck.from !== null && player.deck.from !== undefined) {
+      const message = 'Deck already set.'
+      SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
 
     const mutationUtil = new MutationUtil({
       logger: SetDeckMutation.logger,

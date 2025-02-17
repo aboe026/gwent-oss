@@ -276,7 +276,7 @@ describe('redraw-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot redraw after game "${game.id}" is marked as ready.`)],
+          errors: [new GraphQLError(`Cannot redraw after game is marked as ready.`)],
         })
       })
       it('throws error if maximum redraws exceeded', async () => {
@@ -339,7 +339,7 @@ describe('redraw-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${game.id}".`)],
+          errors: [new GraphQLError(`Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`)],
         })
       })
       it('throws error if unit does not exist in hand', async () => {
@@ -393,7 +393,7 @@ describe('redraw-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Unit with ID "${unitId}" does not exist in hand for game "${game.id}".`)],
+          errors: [new GraphQLError('Unit does not exist in hand.')],
         })
       })
       it('throws error if try to redraw same card twice', async () => {
@@ -452,7 +452,7 @@ describe('redraw-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Unit with ID "${unitToRedraw}" does not exist in hand for game "${game.id}".`)],
+          errors: [new GraphQLError('Unit does not exist in hand.')],
         })
       })
     })

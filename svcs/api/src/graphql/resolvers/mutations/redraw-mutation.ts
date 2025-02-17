@@ -60,6 +60,11 @@ export default class RedrawMutation {
       label: 'redraw',
     })
 
+    if (player.ready) {
+      const message = 'Cannot redraw after game is marked as ready.'
+      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
     if (player.deck.redraws.length >= MAX_REDRAWS) {
       const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
