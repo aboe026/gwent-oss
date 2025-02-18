@@ -3,8 +3,8 @@ import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router'
 
-import { Button } from '../util/keyboard-listener'
-import Centered from '../components/Centered'
+import { Button } from '../../util/keyboard-listener'
+import Centered from '../../components/Centered'
 import { Exact, FactionKey, Game, GamesQuery, GameStatus, useGamesQuery } from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
@@ -14,12 +14,12 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/games-filter'
-import { formatDay, formatGameStatus, formatTime, sortObjectArray } from '@gwent/utils'
-import { getApolloError } from '../util/error-util'
+import { humanizeDay, formatGameStatus, humanizeTime, sortObjectArray } from '@gwent/utils'
+import { getApolloError } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
-import LoadingSpinner from '../components/LoadingSpinner'
-import { useTitle } from '../components/TabTitle'
-import { useUserContext } from '../App'
+import LoadingSpinner from '../../components/LoadingSpinner'
+import { useTitle } from '../../components/TabTitle'
+import { useUserContext } from '../../App'
 import './Games.css'
 
 /**
@@ -117,12 +117,12 @@ export default function GamesPage() {
             return (
               <div key={game.id} className="game-list-row" onClick={() => navigate(rowUrl)}>
                 <div title={game.created} className="multi-row-cell">
-                  <span className={HTML_CLASSES.GameRowCreatedDay}>{formatDay(game.created)}</span>
-                  <span className={HTML_CLASSES.GameRowCreatedTime}>{formatTime(game.created)}</span>
+                  <span className={HTML_CLASSES.GameRowCreatedDay}>{humanizeDay(game.created)}</span>
+                  <span className={HTML_CLASSES.GameRowCreatedTime}>{humanizeTime(game.created)}</span>
                 </div>
                 <div title={game.updated} className="multi-row-cell">
-                  <span className={HTML_CLASSES.GameRowUpdatedDay}>{formatDay(game.updated)}</span>
-                  <span className={HTML_CLASSES.GameRowUpdatedTime}>{formatTime(game.updated)}</span>
+                  <span className={HTML_CLASSES.GameRowUpdatedDay}>{humanizeDay(game.updated)}</span>
+                  <span className={HTML_CLASSES.GameRowUpdatedTime}>{humanizeTime(game.updated)}</span>
                 </div>
                 <div className={HTML_CLASSES.GameRowCreator}>{game.creator.name}</div>
                 <div className="multi-row-cell">

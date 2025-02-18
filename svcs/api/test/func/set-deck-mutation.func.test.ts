@@ -260,7 +260,7 @@ describe('set-deck-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Deck already set for game "${game.id}".`)],
+          errors: [new GraphQLError('Deck already set.')],
         })
         const gameDeckAfterSet = await getGameDeck({
           gameId: game.id,

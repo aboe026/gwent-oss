@@ -2,8 +2,8 @@ import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
 import { FILTER_FIELD, SORT_FIELD } from '@gwent/graphql-schema/games-filter'
-import { formatDay, formatGameStatus, formatTime } from '@gwent/utils'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { formatGameStatus, humanizeDay, humanizeTime } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 
 const container = Selector(`#${HTML_IDS.GamesContainer}`)
@@ -67,8 +67,8 @@ export default class GamesPage {
       for (let i = 0; i < games.length; i++) {
         const game = games[i]
         const gameRow = GamesPage.elements.List.child().nth(i)
-        await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowCreatedDay}`).innerText).eql(formatDay(game.created))
-        await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowCreatedTime}`).innerText).eql(formatTime(game.created))
+        await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowCreatedDay}`).innerText).eql(humanizeDay(game.created))
+        await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowCreatedTime}`).innerText).eql(humanizeTime(game.created))
         await t.expect(gameRow.find(`.${HTML_CLASSES.GameRowCreator}`).innerText).eql(game.owner)
         const playersCount = await gameRow.find(`.${HTML_CLASSES.GameRowPlayer}`).count
         const actualPlayers: string[] = []

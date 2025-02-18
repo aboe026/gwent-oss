@@ -9,17 +9,17 @@ import './ProgressRing.css'
  */
 export default function ProgressRing({
   completed,
-  total,
   completedColor,
-  remainingColor,
-  label,
-  width = '100%',
+  countMargin = '-5px',
   height,
+  id,
+  label,
   lineWidth = 4,
   onClick,
-  countMargin = '-5px',
+  remainingColor,
   title,
-  id,
+  total,
+  width = '100%',
 }: ProgressRingProps) {
   const shape = 'M21 21 m-11.254 11.254 a 15.91549430918954 15.91549430918954 135 1 1 22.508 0'
   const percentage = (completed / total) * 100
@@ -48,16 +48,16 @@ export default function ProgressRing({
 
 interface ProgressRingProps {
   completed: number
-  total: number
   completedColor: string
-  remainingColor: string
-  label: string | ReactElement
-  width?: string
-  height?: string
-  lineWidth?: number
-  onClick?: MouseEventHandler<HTMLDivElement>
-  lowBottomText?: boolean
+  total: number
   countMargin?: string
-  title?: string
+  height?: string
   id?: string
+  label: string | ReactElement
+  lineWidth?: number
+  lowBottomText?: boolean
+  remainingColor: string
+  onClick?: MouseEventHandler<HTMLDivElement>
+  title?: string
+  width?: string
 }

@@ -3,12 +3,6 @@
 A list of things to be done in the future.
 
 - separate invalid checks on mutations into separate methods?
-- change "formatDay" and "formatTime" to "humanizeDay" and "humanizeTime"
-- save game status to database?
-- combine repeated props into single object (like renderCombatRow in renderBattlefield)
-- collapse UI method props when they are long (like PlayUnitProps)
-- alphabetize UI props/method inputs
-- remove ids from errors and put them in logPrefix
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)
@@ -26,7 +20,6 @@ A list of things to be done in the future.
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
 - stop subscription reconnect attempts if auth times out
   - show login dialog?
-- Change "ready" mutation to "readyGame"?
 - Remove @map directive for ID types?
 - Switch DeckUnit to be same as Unit but single image instead of array
   - Have Unit interface with following implementations:
@@ -39,12 +32,12 @@ A list of things to be done in the future.
       - effectiveStrength (for strength after all active effects applied)
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
 - carry over username (and password?) when switching between log-in and sign-up
+  - show sign up by default, unless they have visited page (or signed up?) before, then show login by default
 - more accurately type front-end results based on their return fragments
   - type Game = GameQuery['game']
   - this seems to mess up nested objects though :/
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
 - Have "DateTime" on resolver object map to javascript Date object?
-- add Error to returns types for all queries/mutations?
 - Make Combat a type (because of image)
 - If ever want to increase MAX_REDRAWS to greater than 2, need to have different unique constraint than just from/to id. Probably need an id for the redraw object itself.
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")

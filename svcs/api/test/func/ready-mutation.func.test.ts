@@ -193,7 +193,7 @@ describe('ready-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Game "${game.id}" already marked as ready.`)],
+          errors: [new GraphQLError('Already marked as ready.')],
         })
       })
     })

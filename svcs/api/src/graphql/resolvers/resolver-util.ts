@@ -145,21 +145,21 @@ export default class ResolverUtil {
       this.logger.trace(`${this.logPrefix} getGamePlayer game: "${JSON.stringify(game)}"`)
     }
     if (!game) {
-      const message = `Game with ID "${gameId}" does not exist.`
+      const message = 'Game does not exist.'
       this.logger.warn(`${this.logPrefix} getGamePlayer failed: ${message}`)
       throw new PresentableError(message)
     }
     const players: GamePlayerDbObject[] = game.players.filter((player) => player.user.toString() === userId.toString())
     if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${this.logPrefix} getGamePlayer game "${game._id}" players: "${JSON.stringify(players)}"`)
+      this.logger.trace(`${this.logPrefix} getGamePlayer players: "${JSON.stringify(players)}"`)
     }
     if (players.length === 0) {
-      const message = `Not a player on game "${gameId}".`
+      const message = 'Not a player on game.'
       this.logger.warn(`${this.logPrefix} getGamePlayer failed: ${message}`)
       throw new PresentableError(message)
     }
     if (players.length > 1) {
-      const message = `Found more than 1 player with ID "${userId}" on game "${gameId}"`
+      const message = `Found more than 1 player with ID "${userId}".`
       this.logger.error(`${this.logPrefix} getGamePlayer failed: ${message}: "${JSON.stringify(players)}"`)
       throw Error(`${message}.`)
     }

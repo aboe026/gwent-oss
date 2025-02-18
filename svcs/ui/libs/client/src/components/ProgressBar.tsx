@@ -6,9 +6,9 @@ import './ProgressBar.css'
  * @returns The progress bar
  */
 export default function ProgressBar({
-  percent,
-  height = '100%',
   completeColor = 'darkgray',
+  height = '100%',
+  percent,
   remainingColor = 'lightgray',
 }: ProgressBarProps) {
   return (
@@ -19,8 +19,8 @@ export default function ProgressBar({
 }
 
 interface ProgressBarProps {
-  percent: number
-  height?: string
   completeColor?: string
+  height?: string
+  percent: number
   remainingColor?: string
 }

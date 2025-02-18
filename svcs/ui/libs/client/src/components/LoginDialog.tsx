@@ -127,11 +127,11 @@ export default function LoginDialog({
 }
 
 interface LoginDialogProps {
-  title: string
   initialUsername?: string
-  usernameDisabled?: boolean
-  submitLabel?: string
-  secondaryText?: string
   secondaryLinkLabel?: string
   secondaryLinkPath?: string
+  secondaryText?: string
+  submitLabel?: string
+  title: string
+  usernameDisabled?: boolean
 }

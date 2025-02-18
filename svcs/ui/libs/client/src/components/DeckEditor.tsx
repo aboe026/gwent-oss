@@ -177,27 +177,27 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
 }
 
 function renderNameAndFaction({
-  name,
-  setName,
-  faction,
-  setFaction,
-  setLeaderId,
-  setDeckUnits,
-  setSelectedUnits,
-  factionStats,
-  setFactionStats,
   disabledOverride,
+  faction,
+  factionStats,
+  name,
+  setDeckUnits,
+  setFaction,
+  setFactionStats,
+  setLeaderId,
+  setName,
+  setSelectedUnits,
 }: {
-  name: string
-  setName: Dispatch<SetStateAction<string>>
-  faction: Faction | undefined
-  setFaction: Dispatch<SetStateAction<Faction | undefined>>
-  setLeaderId: Dispatch<SetStateAction<string | undefined>>
-  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
-  factionStats: UnitStats | undefined
-  setFactionStats: Dispatch<SetStateAction<UnitStats | undefined>>
   disabledOverride: boolean
+  faction: Faction | undefined
+  factionStats: UnitStats | undefined
+  name: string
+  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setFaction: Dispatch<SetStateAction<Faction | undefined>>
+  setFactionStats: Dispatch<SetStateAction<UnitStats | undefined>>
+  setLeaderId: Dispatch<SetStateAction<string | undefined>>
+  setName: Dispatch<SetStateAction<string>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
 }) {
   const [factionPickerOpen, setFactionPickerOpen] = useState(false)
   const { checkAuth } = useUserContext()
@@ -372,21 +372,21 @@ function renderNameAndFaction({
 }
 
 function changeFaction({
-  newFactionKey,
   factionsData,
+  newFactionKey,
   setDeckUnits,
   setFaction,
+  setFactionPickerOpen,
   setLeaderId,
   setSelectedUnits,
-  setFactionPickerOpen,
 }: {
+  factionsData: FactionsQuery | undefined
   newFactionKey: FactionKey
   setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
   setFaction: Dispatch<SetStateAction<Faction | undefined>>
-  setLeaderId: Dispatch<SetStateAction<string | undefined>>
-  factionsData: FactionsQuery | undefined
   setFactionPickerOpen: Dispatch<SetStateAction<boolean>>
+  setLeaderId: Dispatch<SetStateAction<string | undefined>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
 }) {
   setDeckUnits((previous: DeckUnit[]) =>
     previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
@@ -400,15 +400,15 @@ function changeFaction({
 }
 
 function renderLeader({
+  disabledOverride,
   faction,
   leaderId,
   setLeaderId,
-  disabledOverride,
 }: {
+  disabledOverride: boolean
   faction: Faction | undefined
   leaderId: string | undefined
   setLeaderId: Dispatch<SetStateAction<string | undefined>>
-  disabledOverride: boolean
 }) {
   const [leaderPickerOpen, setLeaderPickerOpen] = useState(false)
   const { checkAuth } = useUserContext()
@@ -544,21 +544,21 @@ function renderLeader({
 }
 
 function renderUnits({
-  faction,
   deckUnits,
-  setDeckUnits,
-  selectedUnits,
-  setSelectedUnits,
-  factionStats,
   disabledOverride,
+  faction,
+  factionStats,
+  selectedUnits,
+  setDeckUnits,
+  setSelectedUnits,
 }: {
-  faction: Faction | undefined
   deckUnits: DeckUnit[]
-  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
-  selectedUnits: DeckUnit[]
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
-  factionStats: UnitStats | undefined
   disabledOverride: boolean
+  faction: Faction | undefined
+  factionStats: UnitStats | undefined
+  selectedUnits: DeckUnit[]
+  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
 }) {
   const [availableFiltersExpanded, setAvailableFiltersExpanded] = useState(false)
   const [selectedFiltersExpanded, setSelectedFiltersExpanded] = useState(false)
@@ -692,6 +692,32 @@ function renderUnits({
       })
     )
   }
+  const sharedProps = {
+    availableFilterFields,
+    availableFiltersExpanded,
+    availableNameFilter,
+    availableSortField,
+    availableSortOrder,
+    disabled,
+    faction,
+    selectedFilterFields,
+    selectedFiltersExpanded,
+    selectedNameFilter,
+    selectedSortField,
+    selectedSortOrder,
+    setAvailableFilterFields,
+    setAvailableFiltersExpanded,
+    setAvailableNameFilter,
+    setAvailableSortField,
+    setAvailableSortOrder,
+    setSelectedFilterFields,
+    setSelectedFiltersExpanded,
+    setSelectedNameFilter,
+    setSelectedSortField,
+    setSelectedSortOrder,
+    sortFilterLocked,
+  }
+
   return (
     <>
       <UnitFullCard
@@ -753,32 +779,7 @@ function renderUnits({
       ) : (
         <div id={HTML_IDS.DeckEditorUnitsContainer}>
           <div id="unitsContainerLeft" className="deck-editor-unit-container">
-            <UnitsHeader
-              availableFilterFields={availableFilterFields}
-              availableFiltersExpanded={availableFiltersExpanded}
-              availableNameFilter={availableNameFilter}
-              availableSortField={availableSortField}
-              availableSortOrder={availableSortOrder}
-              disabled={disabled}
-              faction={faction}
-              isAvailable={true}
-              selectedFilterFields={selectedFilterFields}
-              selectedFiltersExpanded={selectedFiltersExpanded}
-              selectedNameFilter={selectedNameFilter}
-              selectedSortField={selectedSortField}
-              selectedSortOrder={selectedSortOrder}
-              setAvailableFilterFields={setAvailableFilterFields}
-              setAvailableFiltersExpanded={setAvailableFiltersExpanded}
-              setAvailableNameFilter={setAvailableNameFilter}
-              setAvailableSortField={setAvailableSortField}
-              setAvailableSortOrder={setAvailableSortOrder}
-              setSelectedFilterFields={setSelectedFilterFields}
-              setSelectedFiltersExpanded={setSelectedFiltersExpanded}
-              setSelectedNameFilter={setSelectedNameFilter}
-              setSelectedSortField={setSelectedSortField}
-              setSelectedSortOrder={setSelectedSortOrder}
-              sortFilterLocked={sortFilterLocked}
-            />
+            <UnitsHeader {...sharedProps} isAvailable={true} />
             {factionUnitsLoading || neutralUnitsLoading ? (
               renderUnitsLoading()
             ) : (
@@ -826,32 +827,7 @@ function renderUnits({
             />
           </div>
           <div id="unitsContainerRight" className="deck-editor-unit-container">
-            <UnitsHeader
-              availableFilterFields={availableFilterFields}
-              availableFiltersExpanded={availableFiltersExpanded}
-              availableNameFilter={availableNameFilter}
-              availableSortField={availableSortField}
-              availableSortOrder={availableSortOrder}
-              disabled={disabled}
-              faction={faction}
-              isAvailable={false}
-              selectedFilterFields={selectedFilterFields}
-              selectedFiltersExpanded={selectedFiltersExpanded}
-              selectedNameFilter={selectedNameFilter}
-              selectedSortField={selectedSortField}
-              selectedSortOrder={selectedSortOrder}
-              setAvailableFilterFields={setAvailableFilterFields}
-              setAvailableFiltersExpanded={setAvailableFiltersExpanded}
-              setAvailableNameFilter={setAvailableNameFilter}
-              setAvailableSortField={setAvailableSortField}
-              setAvailableSortOrder={setAvailableSortOrder}
-              setSelectedFilterFields={setSelectedFilterFields}
-              setSelectedFiltersExpanded={setSelectedFiltersExpanded}
-              setSelectedNameFilter={setSelectedNameFilter}
-              setSelectedSortField={setSelectedSortField}
-              setSelectedSortOrder={setSelectedSortOrder}
-              sortFilterLocked={sortFilterLocked}
-            />
+            <UnitsHeader {...sharedProps} isAvailable={false} />
             {factionUnitsLoading || neutralUnitsLoading ? (
               renderUnitsLoading()
             ) : (
@@ -934,6 +910,6 @@ function isFilteredIn(deckUnit: DeckUnit, fields: FILTER_FIELD[], name: string):
 
 interface DeckEditorProps extends PropsWithChildren {
   deck?: Deck | undefined
-  onSave: (deck: Deck) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   onCancel: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSave: (deck: Deck) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }

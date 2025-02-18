@@ -68,7 +68,7 @@ export default class AddDeckMutation {
     })
 
     if (factionKey === FactionKey.Neutral) {
-      const message = `Cannot create Deck with "${FactionKey.Neutral}" faction.`
+      const message = `Faction "${FactionKey.Neutral}" not allowed.`
       AddDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router'
 
-import Centered from '../components/Centered'
+import Centered from '../../components/Centered'
 import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'
-import { useTitle } from '../components/TabTitle'
-import { useUserContext } from '../App'
+import { useTitle } from '../../components/TabTitle'
+import { useUserContext } from '../../App'
 import './Profile.css'
 
 /**

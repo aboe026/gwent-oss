@@ -154,7 +154,7 @@ describe('resolver-util', () => {
     })
     it('returns error if no game found', async () => {
       const gameId = new ObjectId().toString()
-      const message = `Game with ID "${gameId}" does not exist.`
+      const message = 'Game does not exist.'
       await testGetGamePlayer({
         gameId,
         userId,
@@ -165,7 +165,7 @@ describe('resolver-util', () => {
     })
     it('returns error if player not on game', async () => {
       const gameId = new ObjectId().toString()
-      const message = `Not a player on game "${gameId}".`
+      const message = 'Not a player on game.'
       await testGetGamePlayer({
         gameId,
         userId,
@@ -179,7 +179,7 @@ describe('resolver-util', () => {
     })
     it('returns error if more than 1 player with userId found', async () => {
       const gameId = new ObjectId().toString()
-      const message = `Found more than 1 player with ID "${userId}" on game "${gameId}"`
+      const message = `Found more than 1 player with ID "${userId}".`
       const game = TestUtil.getDbGame({
         id: gameId,
         players: [
@@ -465,7 +465,7 @@ async function testGetGamePlayer({
     traceEnabled
       ? [
           [`${logPrefix} getGamePlayer game: "${JSON.stringify(getGameResponse)}"`],
-          [`${logPrefix} getGamePlayer game "${gameId}" players: "${JSON.stringify(getGameResponse?.players)}"`],
+          [`${logPrefix} getGamePlayer players: "${JSON.stringify(getGameResponse?.players)}"`],
         ]
       : []
   )

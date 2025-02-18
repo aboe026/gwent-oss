@@ -39,17 +39,14 @@ export default class PlayPassMutation {
       context,
       label: 'playPass mutation',
     })
+    const gameId = args.game
 
-    let logPrefix = `playPass by "${userId}"`
+    const logPrefix = `playPass by "${userId}" on game "${gameId}"`
     resolverUtil.setLogPrefix(logPrefix)
     resolverUtil.logRequestInfo({
       args,
       info,
     })
-
-    const gameId = args.game
-    logPrefix += ` on game "${gameId}"`
-    resolverUtil.setLogPrefix(logPrefix)
 
     const { game, player } = await resolverUtil.getGamePlayer({
       gameId,
@@ -233,7 +230,7 @@ export default class PlayPassMutation {
     const updatedGame = await GameStore.save(game)
 
     if (!updatedGame) {
-      const message = `Could not play pass for game "${gameId}" in probable race condition collision.`
+      const message = 'Could not play pass in probable race condition collision.'
       PlayPassMutation.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

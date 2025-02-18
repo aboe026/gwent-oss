@@ -38,16 +38,15 @@ export default class RedrawMutation {
       context,
       label: 'redraw mutation',
     })
+    const gameId = args.game
+    const unitId = args.unit
 
-    const logPrefix = `redraw by "${userId}"`
+    const logPrefix = `redraw by "${userId}" for unit "${unitId}" on game "${gameId}"`
     resolverUtil.setLogPrefix(logPrefix)
     resolverUtil.logRequestInfo({
       args,
       info,
     })
-
-    const gameId = args.game
-    const unitId = args.unit
 
     resolverUtil.verifyMongoIds({
       ids: [unitId],
@@ -62,17 +61,12 @@ export default class RedrawMutation {
     })
 
     if (player.ready) {
-      const message = `Cannot redraw after game "${gameId}" is marked as ready.`
-      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-    if (!player.deck.from) {
-      const message = `Cannot redraw before deck is set for game "${gameId}".`
+      const message = 'Redraw not allowed after game marked as ready.'
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
     if (player.deck.redraws.length >= MAX_REDRAWS) {
-      const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${gameId}".`
+      const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
@@ -83,10 +77,11 @@ export default class RedrawMutation {
       RedrawMutation.logger.trace(`${logPrefix} cardToRedraw: "${JSON.stringify(cardToRedraw)}"`)
     }
     if (!cardToRedraw) {
-      const message = `Unit with ID "${unitId}" does not exist in hand for game "${gameId}".`
+      const message = 'Unit not in hand.'
       RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
+
     // make sure we don't redraw card that was previously chosen for redraw
     const redrawPool = player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
     if (RedrawMutation.logger.isTraceEnabled()) {
@@ -143,7 +138,7 @@ export default class RedrawMutation {
       RedrawMutation.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
     }
     if (!updatedGame) {
-      const message = `Could not redraw unit "${unitId}" on game "${gameId}" in probable race condition collision.`
+      const message = 'Could not redraw unit in probable race condition collision.'
       RedrawMutation.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
@@ -169,7 +164,7 @@ export default class RedrawMutation {
 
     const updatedGameDeck = updatedGame.players.find((player) => player.user.toString() === userId.toString())?.deck
     if (!updatedGameDeck) {
-      const message = `Could not get updated game deck when redrawing unit "${unitId}" on game "${gameId}".`
+      const message = 'Could not get updated game deck when redrawing unit.'
       RedrawMutation.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

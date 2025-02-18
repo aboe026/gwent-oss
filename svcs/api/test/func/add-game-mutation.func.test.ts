@@ -52,7 +52,7 @@ describe('add-game-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Not enough opponents for game at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`)],
+          errors: [new GraphQLError(`Not enough opponents at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`)],
         })
       })
       it('throws error if self included as opponent', async () => {
@@ -81,7 +81,7 @@ describe('add-game-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError('Invalid opponents: cannot include self.')],
+          errors: [new GraphQLError('Opponents cannot include self.')],
         })
       })
       it('throws error if duplicate opponents', async () => {
@@ -110,7 +110,7 @@ describe('add-game-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Invalid opponents: names ["${name2}"] are duplicates.`)],
+          errors: [new GraphQLError(`Opponent(s) ["${name2}"] are duplicates.`)],
         })
       })
       it('throws error if 2 opponents', async () => {
@@ -141,7 +141,7 @@ describe('add-game-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Excessive opponents for game at "2", maximum is "${PLAYER_COUNTS.Max - 1}".`)],
+          errors: [new GraphQLError(`Excessive opponent count of "2", maximum is "${PLAYER_COUNTS.Max - 1}".`)],
         })
       })
       it('throws error if opponent does not exist', async () => {

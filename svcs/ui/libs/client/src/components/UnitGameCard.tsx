@@ -11,13 +11,13 @@ import './UnitGameCard.css'
  * @returns The card for a Game.
  */
 export default function UnitGameCard({
-  deckUnit,
-  iconSize = '34px',
-  selected,
   cursor = 'pointer',
-  onFullscreen,
-  title,
+  deckUnit,
   dotted,
+  iconSize = '34px',
+  onFullscreen,
+  selected,
+  title,
 }: UnitGameCardProps) {
   const combatSymbol = getCombatImage(deckUnit)
   const combatTitle = deckUnit.unit.combats
@@ -71,11 +71,11 @@ export default function UnitGameCard({
 }
 
 interface UnitGameCardProps {
-  deckUnit: DeckUnit
-  iconSize?: string
-  selected?: boolean
-  dotted?: boolean
   cursor?: string
-  title?: string
+  deckUnit: DeckUnit
+  dotted?: boolean
+  iconSize?: string
   onFullscreen: (deckUnit: DeckUnit) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  selected?: boolean
+  title?: string
 }

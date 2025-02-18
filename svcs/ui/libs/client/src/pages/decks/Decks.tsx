@@ -1,6 +1,6 @@
-import DeckList from '../components/DeckList'
+import DeckList from '../../components/DeckList'
 import { HTML_IDS } from '@gwent/constants'
-import { useTitle } from '../components/TabTitle'
+import { useTitle } from '../../components/TabTitle'
 import './Decks.css'
 
 /**

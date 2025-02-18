@@ -8,12 +8,12 @@ import './CoinToss.css'
  */
 export default function CoinToss({
   bounce,
-  heads = true,
   delay = '0.5s',
   duration = '4s',
+  heads = true,
+  resultText,
   size = '100%',
   style,
-  resultText,
 }: CoinTossProps) {
   const headsColor = '#e9a018'
   const tailsColor = 'silver'
@@ -66,11 +66,11 @@ export default function CoinToss({
 }
 
 interface CoinTossProps {
-  heads?: boolean
   bounce?: boolean
   delay?: string
   duration?: string
+  heads?: boolean
+  resultText?: string
   size?: string
   style?: React.CSSProperties
-  resultText?: string
 }

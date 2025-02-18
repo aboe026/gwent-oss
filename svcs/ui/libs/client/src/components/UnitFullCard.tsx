@@ -18,12 +18,12 @@ export default function UnitFullCard({
   fullUnit,
   hasNext,
   hasPrevious,
-  onSelect,
-  onPrevious,
-  onNext,
-  onClose,
   onArtDecrement,
   onArtIncrement,
+  onClose,
+  onNext,
+  onPrevious,
+  onSelect,
 }: UnitFullCardProps) {
   useKeyDown([
     {
@@ -240,10 +240,10 @@ interface UnitFullCardProps {
   fullUnit: DeckUnit | undefined
   hasNext: boolean
   hasPrevious: boolean
-  onSelect: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onPrevious: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onNext: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClose: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onArtIncrement?: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   onArtDecrement?: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onArtIncrement?: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onNext: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onPrevious: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSelect: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }

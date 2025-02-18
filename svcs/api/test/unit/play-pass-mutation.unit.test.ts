@@ -64,8 +64,8 @@ describe('play-pass-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('throws error if makeMove returns undefined', async () => {
-      const message = `Could not play pass for game "${gameId}" in probable race condition collision.`
+    it('throws error if save returns undefined', async () => {
+      const message = 'Could not play pass in probable race condition collision.'
       const firstPlayer = TestUtil.getDbGamePlayer({
         user: userId,
         rounds: [TestUtil.getDbPlayerRound({})],
@@ -518,9 +518,9 @@ describe('play-pass-mutation', () => {
         }),
         traceEnabled: true,
         traceCalls: [
-          [`playPass by "${userId}" args: "${JSON.stringify({ game: gameId })}"`],
-          [`playPass by "${userId}" requested fields: "[]"`],
-          [`playPass by "${userId}" requested arguments: "[]"`],
+          [`playPass by "${userId}" on game "${gameId}" args: "${JSON.stringify({ game: gameId })}"`],
+          [`playPass by "${userId}" on game "${gameId}" requested fields: "[]"`],
+          [`playPass by "${userId}" on game "${gameId}" requested arguments: "[]"`],
         ],
       })
     })

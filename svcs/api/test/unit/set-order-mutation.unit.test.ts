@@ -60,7 +60,7 @@ async function testSetOrder({
     game: gameId,
     users: userIds,
   }
-  const logPrefix = `setOrder by "${userId}"`
+  const logPrefix = `setOrder by "${userId}" to users "${JSON.stringify(userIds)}" on game "${gameId}"`
   const game = TestUtil.getDbGame({
     id: gameId,
     players: [

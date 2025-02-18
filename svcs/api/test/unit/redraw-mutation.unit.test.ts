@@ -44,6 +44,7 @@ describe('redraw-mutation', () => {
       user: userId,
     })
     const game = TestUtil.getDbGame({
+      id: gameId,
       players: [gamePlayer, TestUtil.getDbGamePlayer({})],
     })
     const modifiedGame: GameDbObject = {
@@ -84,7 +85,7 @@ describe('redraw-mutation', () => {
       ],
       updated: new Date(),
     }
-    const logPrefix = `redraw by "${userId}"`
+    const logPrefix = `redraw by "${userId}" for unit "${unit._id}" on game "${game._id}"`
     const getGamePlayerCalls = [
       [
         {
@@ -138,7 +139,7 @@ describe('redraw-mutation', () => {
       ],
     ]
     it('throws error if game marked as ready', async () => {
-      const error = `Cannot redraw after game "${gameId}" is marked as ready.`
+      const error = 'Redraw not allowed after game marked as ready.'
       await testRedraw({
         userId,
         gameId,
@@ -155,26 +156,8 @@ describe('redraw-mutation', () => {
         warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('throws error if deck not set', async () => {
-      const error = `Cannot redraw before deck is set for game "${gameId}".`
-      await testRedraw({
-        userId,
-        gameId,
-        unitId: unit._id.toString(),
-        getGamePlayerResponse: {
-          game,
-          player: {
-            ...gamePlayer,
-            deck: TestUtil.getDbGameDeck({}),
-          },
-        },
-        expected: Error(error),
-        getGamePlayerCalls,
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
     it('throws error if max redraws already taken', async () => {
-      const error = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}" for game "${gameId}".`
+      const error = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`
       await testRedraw({
         userId,
         gameId,
@@ -204,7 +187,7 @@ describe('redraw-mutation', () => {
       })
     })
     it('throws error if unit not in hand', async () => {
-      const error = `Unit with ID "${unit._id}" does not exist in hand for game "${gameId}".`
+      const error = 'Unit not in hand.'
       await testRedraw({
         userId,
         gameId,
@@ -224,7 +207,7 @@ describe('redraw-mutation', () => {
       })
     })
     it('throws error if updated game undefined', async () => {
-      const error = `Could not redraw unit "${unit._id}" on game "${gameId}" in probable race condition collision.`
+      const error = `Could not redraw unit in probable race condition collision.`
       await testRedraw({
         userId,
         gameId,
@@ -242,7 +225,7 @@ describe('redraw-mutation', () => {
       })
     })
     it('throws error if updated game does not include game player', async () => {
-      const error = `Could not get updated game deck when redrawing unit "${unit._id}" on game "${gameId}".`
+      const error = 'Could not get updated game deck when redrawing unit.'
       await testRedraw({
         userId,
         gameId,
