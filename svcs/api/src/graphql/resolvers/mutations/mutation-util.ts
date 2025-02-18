@@ -294,7 +294,7 @@ export default class MutationUtil {
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 0 && userIds && userIds.length > 0) {
-      const message = `Explicit order not allowed when deck faction ID "${player.deck.from?.faction}" does not match "${FactionKey.ScoiaTael}" faction ID of "${scoiaTaelId}".`
+      const message = `Explicit order not allowed when deck faction not "${FactionKey.ScoiaTael}".`
       this.logger.warn(`${resolvedLogPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }

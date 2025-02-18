@@ -1416,7 +1416,7 @@ describe('mutation-util', () => {
     })
     it('throws error setting explicit order without scoiatael deck', async () => {
       const factionId = new ObjectId()
-      const message = `Explicit order not allowed when deck faction ID "${factionId}" does not match "${FactionKey.ScoiaTael}" faction ID of "${dbFaction._id}".`
+      const message = `Explicit order not allowed when deck faction not "${FactionKey.ScoiaTael}".`
       const player = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({

@@ -32,12 +32,12 @@ A list of things to be done in the future.
       - effectiveStrength (for strength after all active effects applied)
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
 - carry over username (and password?) when switching between log-in and sign-up
+  - show sign up by default, unless they have visited page (or signed up?) before, then show login by default
 - more accurately type front-end results based on their return fragments
   - type Game = GameQuery['game']
   - this seems to mess up nested objects though :/
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
 - Have "DateTime" on resolver object map to javascript Date object?
-- add Error to returns types for all queries/mutations?
 - Make Combat a type (because of image)
 - If ever want to increase MAX_REDRAWS to greater than 2, need to have different unique constraint than just from/to id. Probably need an id for the redraw object itself.
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
