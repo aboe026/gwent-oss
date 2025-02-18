@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.10.4 - 2025-02-17
+
+### Fixed
+
+- Refactor errors messages and UI codebase ([#29](https://github.com/aboe026/gwent/pull/29)) (Adam Boe)
+
 ## 0.10.3 - 2025-02-15
 
 ### Fixed
