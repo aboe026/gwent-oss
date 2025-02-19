@@ -1,9 +1,17 @@
 import { Combat, Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
+import {
+  DeckUnitDbObject,
+  GameDbObject,
+  GamePlayerDbObject,
+  GameStatus,
+  MoveUnitDbObject,
+  PlayerCombatRowDbObject,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
 import GameDeckResolver from '../types/game-deck-resolver'
-import { GameStatus, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
@@ -114,45 +122,32 @@ export default class PlayUnitMutation {
       logPrefix,
     })
 
-    // play unit
-    game.players = game.players.map((gamePlayer) => {
-      if (gamePlayer.user.toString() === player.user.toString()) {
-        const playerRound = gamePlayer.rounds[game.round - 1]
-        const { close, ranged, siege } = playerRound
-        const combatRow = combat === Combat.Close ? close : combat === Combat.Ranged ? ranged : siege
-        combatRow.score = combatRow.score + (unit.strength || 0)
-        combatRow.units.push({
-          ...deckUnit,
-          effectiveStrength: unit.strength,
-        })
-        return {
-          ...gamePlayer,
-          rounds: gamePlayer.rounds.map((round, index) => {
-            if (index === game.round - 1) {
-              const move: MoveUnitDbObject = {
-                created: new Date(),
-                row: combat,
-                unit: deckUnit,
-                type: MoveType.Unit,
-              }
-              return {
-                ...round,
-                close,
-                moves: [...round.moves, move],
-                ranged,
-                score: playerRound.score + (unit.strength || 0),
-                siege,
-              }
-            }
-            return round
-          }),
-          deck: {
-            ...gamePlayer.deck,
-            hand: gamePlayer.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== unitId),
-          },
-        }
-      }
-      return gamePlayer
+    // add/remove from hand
+    game.players = PlayUnitMutation.addOrRemoveUnits({
+      game,
+      combat,
+      deckUnit,
+    })
+
+    // calculate strengths
+    const roundUnits = await PlayUnitMutation.getRoundUnits({
+      game,
+      deckUnit,
+    })
+    game.players = PlayUnitMutation.calculateEffectiveStrengths({
+      game,
+      units: [unit, ...roundUnits],
+    })
+
+    // calculate scores
+    game.players = PlayUnitMutation.calculateScores({
+      game,
+    })
+
+    game.players = PlayUnitMutation.addMoveToPlayer({
+      game,
+      combat,
+      deckUnit,
     })
 
     // set next player
@@ -196,5 +191,207 @@ export default class PlayUnitMutation {
     } as UnitPlayedFromDeckPayload)
 
     return resolvedGame
+  }
+
+  private static async getRoundUnits({
+    game,
+    deckUnit,
+  }: {
+    game: GameDbObject
+    deckUnit: DeckUnitDbObject
+  }): Promise<UnitDbObject[]> {
+    const unitIds: string[] = [deckUnit.unit.toString()] // to be removed at end, used just for now to ignore potential duplicates
+    for (const player of game.players) {
+      const round = player.rounds[game.round - 1]
+      for (let i = 0; i < player.rounds.length; i++) {
+        if (i === game.round - 1) {
+          for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
+            if (!unitIds.includes(rowUnit.unit.toString())) {
+              unitIds.push(rowUnit.unit.toString())
+            }
+          }
+        }
+      }
+    }
+
+    return UnitStore.get({
+      ids: unitIds.slice(1), // remove the deckUnit we have already retrieved
+    })
+  }
+
+  private static addMoveToPlayer({
+    game,
+    deckUnit,
+    combat,
+  }: {
+    game: GameDbObject
+    deckUnit: DeckUnitDbObject
+    combat: Combat
+  }) {
+    const move: MoveUnitDbObject = {
+      created: new Date(),
+      row: combat,
+      unit: deckUnit,
+      type: MoveType.Unit,
+    }
+    return game.players.map((player) => {
+      return {
+        ...player,
+        rounds: player.rounds.map((round, index) => {
+          if (index === game.round - 1) {
+            if (player.user.toString() === game.turn?.toString()) {
+              round.moves = [...round.moves, move]
+            }
+          }
+          return round
+        }),
+      }
+    })
+  }
+
+  private static addOrRemoveUnits({
+    game,
+    deckUnit,
+    combat,
+  }: {
+    game: GameDbObject
+    deckUnit: DeckUnitDbObject
+    combat: Combat
+  }): GamePlayerDbObject[] {
+    return game.players.map((player) => {
+      return {
+        ...player,
+        deck: {
+          ...player.deck,
+          hand:
+            player.user.toString() === game.turn?.toString()
+              ? player.deck.hand.filter((handUnit) => handUnit.unit.toString() !== deckUnit.unit.toString())
+              : player.deck.hand,
+        },
+        rounds: player.rounds.map((round, index) => {
+          if (index === game.round - 1) {
+            if (player.user.toString() === game.turn?.toString()) {
+              round.close = PlayUnitMutation.addUnitToCombatRow({
+                deckUnit,
+                row: round.close,
+                rowCombat: Combat.Close,
+                unitCombat: combat,
+              })
+              round.ranged = PlayUnitMutation.addUnitToCombatRow({
+                deckUnit,
+                row: round.ranged,
+                rowCombat: Combat.Ranged,
+                unitCombat: combat,
+              })
+              round.siege = PlayUnitMutation.addUnitToCombatRow({
+                deckUnit,
+                row: round.siege,
+                rowCombat: Combat.Siege,
+                unitCombat: combat,
+              })
+            }
+          }
+          return round
+        }),
+      }
+    })
+  }
+
+  private static addUnitToCombatRow({
+    deckUnit,
+    unitCombat,
+    rowCombat,
+    row,
+  }: {
+    deckUnit: DeckUnitDbObject
+    unitCombat: Combat
+    rowCombat: Combat
+    row: PlayerCombatRowDbObject
+  }): PlayerCombatRowDbObject {
+    if (unitCombat === rowCombat) {
+      row.units.push({
+        ...deckUnit,
+      })
+    }
+    return row
+  }
+
+  private static calculateEffectiveStrengths({
+    game,
+    units,
+  }: {
+    game: GameDbObject
+    units: UnitDbObject[]
+  }): GamePlayerDbObject[] {
+    return game.players.map((player) => {
+      return {
+        ...player,
+        rounds: player.rounds.map((round, index) => {
+          if (index === game.round - 1) {
+            round.close = PlayUnitMutation.calculateEffectiveStrengthsForRow({
+              row: round.close,
+              units,
+            })
+            round.ranged = PlayUnitMutation.calculateEffectiveStrengthsForRow({
+              row: round.ranged,
+              units,
+            })
+            round.siege = PlayUnitMutation.calculateEffectiveStrengthsForRow({
+              row: round.siege,
+              units,
+            })
+          }
+          return round
+        }),
+      }
+    })
+  }
+
+  private static calculateEffectiveStrengthsForRow({
+    row,
+    units,
+  }: {
+    row: PlayerCombatRowDbObject
+    units: UnitDbObject[]
+  }): PlayerCombatRowDbObject {
+    return {
+      ...row,
+      units: row.units.map((rowUnit) => {
+        const dbUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
+        rowUnit.effectiveStrength = dbUnit?.strength || 0
+        return rowUnit
+      }),
+    }
+  }
+
+  private static calculateScores({ game }: { game: GameDbObject }): GamePlayerDbObject[] {
+    return game.players.map((player) => {
+      return {
+        ...player,
+        rounds: player.rounds.map((round, index) => {
+          if (index === game.round - 1) {
+            round.close.score = PlayUnitMutation.calculateScoreForRow({
+              row: round.close,
+            })
+            round.ranged.score = PlayUnitMutation.calculateScoreForRow({
+              row: round.ranged,
+            })
+            round.siege.score = PlayUnitMutation.calculateScoreForRow({
+              row: round.siege,
+            })
+            round.score = round.close.score + round.ranged.score + round.siege.score
+          }
+          return round
+        }),
+      }
+    })
+  }
+
+  private static calculateScoreForRow({ row }: { row: PlayerCombatRowDbObject }): number {
+    let score = 0
+    for (const unit of row.units) {
+      score += unit.effectiveStrength || 0
+    }
+    return score
   }
 }
