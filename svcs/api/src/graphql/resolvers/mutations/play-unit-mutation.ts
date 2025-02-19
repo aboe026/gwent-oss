@@ -2,6 +2,8 @@ import { Combat, Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolv
 import { Context } from '@gwent/graphql-schema/context'
 import {
   DeckUnitDbObject,
+  EffectDbObject,
+  EffectKey,
   GameDbObject,
   GamePlayerDbObject,
   GameStatus,
@@ -23,6 +25,7 @@ import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
 import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../subscription-resolver'
 import UnitStore from '../../../database/stores/unit-store'
+import EffectStore from '../../../database/stores/effect-store'
 
 /**
  * A class for executing the playUnit GraphQL Mutation.
@@ -122,21 +125,27 @@ export default class PlayUnitMutation {
       logPrefix,
     })
 
-    // add/remove from hand
+    // get unit details
+    const roundUnits = await PlayUnitMutation.getRoundUnits({
+      game,
+      deckUnit,
+    })
+    const unitEffects = await PlayUnitMutation.getUnitEffects({
+      units,
+    })
+
+    // adjust unit positions
     game.players = PlayUnitMutation.addOrRemoveUnits({
       game,
       combat,
       deckUnit,
     })
 
-    // calculate strengths
-    const roundUnits = await PlayUnitMutation.getRoundUnits({
-      game,
-      deckUnit,
-    })
+    // calculate effective strengths
     game.players = PlayUnitMutation.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits],
+      effects: unitEffects,
     })
 
     // calculate scores
@@ -216,6 +225,23 @@ export default class PlayUnitMutation {
 
     return UnitStore.get({
       ids: unitIds.slice(1), // remove the deckUnit we have already retrieved
+    })
+  }
+
+  private static async getUnitEffects({ units }: { units: UnitDbObject[] }): Promise<EffectDbObject[]> {
+    const effectIds: string[] = []
+    for (const unit of units) {
+      if (unit.effects) {
+        for (const effect of unit.effects) {
+          if (!effectIds.includes(effect.toString())) {
+            effectIds.push(effect.toString())
+          }
+        }
+      }
+    }
+
+    return EffectStore.get({
+      ids: effectIds,
     })
   }
 
@@ -319,9 +345,11 @@ export default class PlayUnitMutation {
   private static calculateEffectiveStrengths({
     game,
     units,
+    effects,
   }: {
     game: GameDbObject
     units: UnitDbObject[]
+    effects: EffectDbObject[]
   }): GamePlayerDbObject[] {
     return game.players.map((player) => {
       return {
@@ -331,14 +359,17 @@ export default class PlayUnitMutation {
             round.close = PlayUnitMutation.calculateEffectiveStrengthsForRow({
               row: round.close,
               units,
+              effects,
             })
             round.ranged = PlayUnitMutation.calculateEffectiveStrengthsForRow({
               row: round.ranged,
               units,
+              effects,
             })
             round.siege = PlayUnitMutation.calculateEffectiveStrengthsForRow({
               row: round.siege,
               units,
+              effects,
             })
           }
           return round
@@ -350,15 +381,57 @@ export default class PlayUnitMutation {
   private static calculateEffectiveStrengthsForRow({
     row,
     units,
+    effects,
   }: {
     row: PlayerCombatRowDbObject
     units: UnitDbObject[]
+    effects: EffectDbObject[]
   }): PlayerCombatRowDbObject {
+    const rowDbUnits: UnitDbObject[] = []
+    for (const rowUnit of row.units) {
+      const matchingUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
+      if (matchingUnit) {
+        rowDbUnits.push(matchingUnit)
+      } else {
+        throw new PresentableError(`Could not find Unit with ID "${rowUnit.unit}"`)
+      }
+    }
+    let moraleEffectId
+    const moraleEffect = effects.find((effect) => effect.key === EffectKey.Morale)
+    if (moraleEffect) {
+      moraleEffectId = moraleEffect._id.toString()
+    }
+
+    // TODO: make into method
+    // TODO: have separate file for these helper methods around game logic?
+    let moralesInRow = 0
+    if (moraleEffectId) {
+      for (const rowDbUnit of rowDbUnits) {
+        if (rowDbUnit.effects) {
+          let unitHasMorale = false
+          for (const effect of rowDbUnit.effects) {
+            if (effect.toString() === moraleEffectId) {
+              unitHasMorale = true
+            }
+          }
+          if (unitHasMorale) {
+            moralesInRow++
+          }
+        }
+      }
+    }
+
     return {
       ...row,
       units: row.units.map((rowUnit) => {
         const dbUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
         rowUnit.effectiveStrength = dbUnit?.strength || 0
+
+        if (!dbUnit?.hero) {
+          // TODO: debug why this isn't working
+          rowUnit.effectiveStrength += moralesInRow
+        }
+
         return rowUnit
       }),
     }
