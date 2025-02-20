@@ -131,7 +131,7 @@ export default class PlayUnitMutation {
       deckUnit,
     })
     const unitEffects = await PlayUnitMutation.getUnitEffects({
-      units,
+      units: roundUnits,
     })
 
     // adjust unit positions
@@ -232,9 +232,10 @@ export default class PlayUnitMutation {
     const effectIds: string[] = []
     for (const unit of units) {
       if (unit.effects) {
-        for (const effect of unit.effects) {
-          if (!effectIds.includes(effect.toString())) {
-            effectIds.push(effect.toString())
+        for (const unitEffect of unit.effects) {
+          const effect = unitEffect.toString()
+          if (!effectIds.includes(effect)) {
+            effectIds.push(effect)
           }
         }
       }
@@ -404,18 +405,19 @@ export default class PlayUnitMutation {
 
     // TODO: make into method
     // TODO: have separate file for these helper methods around game logic?
-    let moralesInRow = 0
+    const moraleIdsInRow: string[] = []
     if (moraleEffectId) {
       for (const rowDbUnit of rowDbUnits) {
         if (rowDbUnit.effects) {
           let unitHasMorale = false
-          for (const effect of rowDbUnit.effects) {
+          for (let i = 0; i < rowDbUnit.effects.length && !unitHasMorale; i++) {
+            const effect = rowDbUnit.effects[i]
             if (effect.toString() === moraleEffectId) {
               unitHasMorale = true
             }
           }
           if (unitHasMorale) {
-            moralesInRow++
+            moraleIdsInRow.push(rowDbUnit._id.toString())
           }
         }
       }
@@ -428,8 +430,9 @@ export default class PlayUnitMutation {
         rowUnit.effectiveStrength = dbUnit?.strength || 0
 
         if (!dbUnit?.hero) {
-          // TODO: debug why this isn't working
-          rowUnit.effectiveStrength += moralesInRow
+          const moralesToApply =
+            moraleIdsInRow.length - moraleIdsInRow.filter((id) => id === rowUnit.unit.toString()).length
+          rowUnit.effectiveStrength += moralesToApply
         }
 
         return rowUnit
