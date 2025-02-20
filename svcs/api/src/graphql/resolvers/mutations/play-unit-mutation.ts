@@ -437,8 +437,8 @@ export default class PlayUnitMutation {
 
           if (!dbUnit?.hero) {
             const moralesToApply = moraleIdsInRow.filter((id) => id !== rowUnit.unit.toString())
-            rowUnit.effectiveStrength += moralesToApply.length
             for (const moraleId of moralesToApply) {
+              rowUnit.effectiveStrength += 1
               const moraleDbUnit = units.find((unit) => unit._id.toString() === moraleId)
               if (moraleDbUnit) {
                 const reason: EffectFromUnitDbObject = {
