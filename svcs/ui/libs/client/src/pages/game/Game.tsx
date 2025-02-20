@@ -495,6 +495,8 @@ function renderExistingGame({
     <div id={HTML_IDS.GameContainer}>
       <UnitFullCard
         fullUnit={fullUnit?.unit as DeckUnit}
+        effectiveStrength={(fullUnit?.unit as GameUnit)?.effectiveStrength}
+        effects={(fullUnit?.unit as GameUnit)?.effects}
         hasNext={nextUnit !== undefined}
         hasPrevious={previousUnit !== undefined}
         onSelect={() => {}}

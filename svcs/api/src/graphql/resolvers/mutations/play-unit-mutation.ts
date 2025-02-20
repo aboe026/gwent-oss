@@ -1,8 +1,11 @@
+import { ObjectId } from 'mongodb'
+
 import { Combat, Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
 import {
   DeckUnitDbObject,
   EffectDbObject,
+  EffectFromUnitDbObject,
   EffectKey,
   GameDbObject,
   GamePlayerDbObject,
@@ -12,6 +15,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import DeckUnitResolver from '../types/deck-unit-resolver'
+import { EffectReasonType } from '@gwent/graphql-schema'
 import EventManager from '../../event-manager'
 import GameDeckResolver from '../types/game-deck-resolver'
 import GameResolver from '../types/game-resolver'
@@ -397,7 +401,7 @@ export default class PlayUnitMutation {
         throw new PresentableError(`Could not find Unit with ID "${rowUnit.unit}"`)
       }
     }
-    let moraleEffectId
+    let moraleEffectId = ''
     const moraleEffect = effects.find((effect) => effect.key === EffectKey.Morale)
     if (moraleEffect) {
       moraleEffectId = moraleEffect._id.toString()
@@ -427,12 +431,29 @@ export default class PlayUnitMutation {
       ...row,
       units: row.units.map((rowUnit) => {
         const dbUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
-        rowUnit.effectiveStrength = dbUnit?.strength || 0
+        if (dbUnit?.strength) {
+          rowUnit.effectiveStrength = dbUnit.strength
+          rowUnit.effects = []
 
-        if (!dbUnit?.hero) {
-          const moralesToApply =
-            moraleIdsInRow.length - moraleIdsInRow.filter((id) => id === rowUnit.unit.toString()).length
-          rowUnit.effectiveStrength += moralesToApply
+          if (!dbUnit?.hero) {
+            const moralesToApply = moraleIdsInRow.filter((id) => id !== rowUnit.unit.toString())
+            rowUnit.effectiveStrength += moralesToApply.length
+            for (const moraleId of moralesToApply) {
+              const moraleDbUnit = units.find((unit) => unit._id.toString() === moraleId)
+              if (moraleDbUnit) {
+                const reason: EffectFromUnitDbObject = {
+                  effect: new ObjectId(moraleEffectId),
+                  type: EffectReasonType.Unit,
+                  unit: moraleDbUnit._id,
+                }
+                rowUnit.effects.push({
+                  operator: '+1',
+                  reason,
+                  total: rowUnit.effectiveStrength,
+                })
+              }
+            }
+          }
         }
 
         return rowUnit

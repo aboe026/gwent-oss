@@ -215,8 +215,26 @@ export default gql`
   type GameUnit @entity {
     artStyle: Int! @column
     effectiveStrength: Int @column
+    effects: [GameUnitEffect!] @column(overrideType: "Array<GameUnitEffectDbObject>")
     unit: Unit! @column(overrideType: "ObjectId")
   }
+
+  type GameUnitEffect @entity {
+    operator: String! @column
+    total: Int! @column
+    reason: EffectReason! @column(overrideType: "EffectReasonDbObject")
+  }
+
+  type EffectFromUnit @entity(additionalFields: [{ path: "type", type: "EffectReasonType" }]) {
+    effect: Effect! @column(overrideType: "ObjectId")
+    unit: Unit! @column(overrideType: "ObjectId")
+  }
+
+  type EffectFromLeader @entity(additionalFields: [{ path: "type", type: "EffectReasonType" }]) {
+    leader: Leader! @column(overrideType: "ObjectId")
+  }
+
+  union EffectReason @union(discriminatorField: "type") = EffectFromUnit | EffectFromLeader
 
   type Leader @entity {
     ability: String! @column

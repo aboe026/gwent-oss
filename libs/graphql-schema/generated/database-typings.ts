@@ -1,4 +1,5 @@
 import { MoveType } from '../src/move-type'
+import { EffectReasonType } from '../src/effect-reason-type'
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -86,6 +87,17 @@ export type Effect = {
   name: Scalars['String']['output'];
 };
 
+export type EffectFromLeader = {
+  __typename?: 'EffectFromLeader';
+  leader: Leader;
+};
+
+export type EffectFromUnit = {
+  __typename?: 'EffectFromUnit';
+  effect: Effect;
+  unit: Unit;
+};
+
 export enum EffectKey {
   /** Agile */
   Agile = 'AGILE',
@@ -114,6 +126,8 @@ export enum EffectKey {
   /** Weather */
   Weather = 'WEATHER'
 }
+
+export type EffectReason = EffectFromLeader | EffectFromUnit;
 
 export type Faction = {
   __typename?: 'Faction';
@@ -234,7 +248,15 @@ export type GameUnit = {
   __typename?: 'GameUnit';
   artStyle: Scalars['Int']['output'];
   effectiveStrength?: Maybe<Scalars['Int']['output']>;
+  effects?: Maybe<Array<GameUnitEffect>>;
   unit: Unit;
+};
+
+export type GameUnitEffect = {
+  __typename?: 'GameUnitEffect';
+  operator: Scalars['String']['output'];
+  reason: EffectReason;
+  total: Scalars['Int']['output'];
 };
 
 export type GameUnitRedrawn = {
@@ -598,6 +620,21 @@ export type EffectDbObject = {
   name: string,
 };
 
+export type EffectFromLeaderDbObject = {
+  leader: ObjectId,
+  type: EffectReasonType,
+};
+
+export type EffectFromUnitDbObject = {
+  effect: ObjectId,
+  unit: ObjectId,
+  type: EffectReasonType,
+};
+
+export type EffectReasonDbObject = (EffectFromLeaderDbObject | EffectFromUnitDbObject) & {
+  type: string,
+};
+
 export type FactionDbObject = {
   ability?: Maybe<string>,
   created: any,
@@ -642,7 +679,14 @@ export type GamePlayerDbObject = {
 export type GameUnitDbObject = {
   artStyle: number,
   effectiveStrength?: Maybe<number>,
+  effects?: Array<GameUnitEffectDbObject>,
   unit: ObjectId,
+};
+
+export type GameUnitEffectDbObject = {
+  operator: string,
+  reason: EffectReasonDbObject,
+  total: number,
 };
 
 export type LeaderDbObject = {

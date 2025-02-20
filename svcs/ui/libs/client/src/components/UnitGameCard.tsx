@@ -36,7 +36,12 @@ export default function UnitGameCard({
     >
       <img className="unit-game-card-image" title={unitTitle} src={deckUnit.unit.images[deckUnit.artStyle - 1]} />
       <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>
-        <StrengthCircle size={'100%'} unit={deckUnit.unit} effectiveStrength={effectiveStrength} />
+        <StrengthCircle
+          size={'100%'}
+          unit={deckUnit.unit}
+          effectiveStrength={effectiveStrength}
+          effectHighlight={true}
+        />
       </div>
       <div
         className={`${HTML_CLASSES.UnitGameCardFullScreen} icon-container pointable`}
