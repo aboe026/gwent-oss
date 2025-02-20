@@ -145,6 +145,7 @@ export default function GameCombatRow({
                   artStyle: gameUnit.artStyle,
                   unit: gameUnit.unit,
                 }}
+                effectiveStrength={gameUnit.effectiveStrength}
                 selected={gameUnit.unit.id === handCardSelected?.unit.id || selectedInHistory}
                 dotted={!isTurn && !selectedInHistory}
                 onFullscreen={() =>

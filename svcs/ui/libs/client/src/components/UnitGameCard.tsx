@@ -14,6 +14,7 @@ export default function UnitGameCard({
   cursor = 'pointer',
   deckUnit,
   dotted,
+  effectiveStrength,
   iconSize = '34px',
   onFullscreen,
   selected,
@@ -35,7 +36,7 @@ export default function UnitGameCard({
     >
       <img className="unit-game-card-image" title={unitTitle} src={deckUnit.unit.images[deckUnit.artStyle - 1]} />
       <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>
-        <StrengthCircle size={'100%'} unit={deckUnit.unit} />
+        <StrengthCircle size={'100%'} unit={deckUnit.unit} effectiveStrength={effectiveStrength} />
       </div>
       <div
         className={`${HTML_CLASSES.UnitGameCardFullScreen} icon-container pointable`}
@@ -73,6 +74,7 @@ export default function UnitGameCard({
 interface UnitGameCardProps {
   cursor?: string
   deckUnit: DeckUnit
+  effectiveStrength?: number | null
   dotted?: boolean
   iconSize?: string
   onFullscreen: (deckUnit: DeckUnit) => any // eslint-disable-line @typescript-eslint/no-explicit-any
