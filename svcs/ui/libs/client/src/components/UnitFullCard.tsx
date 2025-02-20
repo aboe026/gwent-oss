@@ -128,17 +128,17 @@ export default function UnitFullCard({
                             <table>
                               <thead>
                                 <tr>
-                                  <th>Strength</th>
                                   <th>Operator</th>
+                                  <th>Strength</th>
                                   <th>Reason</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 <tr>
+                                  <td className="unit-full-card-info-strength-reason-number"></td>
                                   <td className="unit-full-card-info-strength-reason-number">
                                     {fullUnit.unit.strength}
                                   </td>
-                                  <td className="unit-full-card-info-strength-reason-number"></td>
                                   <td>Base strength</td>
                                 </tr>
                                 {effects.map((effect, index) => {
@@ -150,8 +150,8 @@ export default function UnitFullCard({
                                   }
                                   return (
                                     <tr key={index}>
-                                      <td className="unit-full-card-info-strength-reason-number">{effect.total}</td>
                                       <td className="unit-full-card-info-strength-reason-number">{effect.operator}</td>
+                                      <td className="unit-full-card-info-strength-reason-number">{effect.total}</td>
                                       <td>{reason}</td>
                                     </tr>
                                   )
