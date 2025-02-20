@@ -55,4 +55,9 @@ export default class EffectResolver {
 
     return effects.map((effect) => EffectResolver.fromObject(effect))
   }
+
+  static async fromId(id: string | ObjectId): Promise<Effect> {
+    const effects = await EffectResolver.fromIds([id])
+    return effects[0]
+  }
 }

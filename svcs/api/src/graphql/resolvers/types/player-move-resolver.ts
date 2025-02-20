@@ -21,6 +21,7 @@ export default class PlayerMoveResolver {
    * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
    * @param config.deckUnit An optional pre-resolved DeckUnit. If not specified, will retreive the DeckUnit from the databae to resolve.
    * @returns The resolved PlayerMove object matching its GraphQL schema definition.
+   * @throws Error if the move type is invalid.
    */
   static async fromObject({
     move,
