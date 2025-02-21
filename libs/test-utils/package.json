@@ -1,0 +1,25 @@
+{
+  "name": "@gwent/test-utils",
+  "version": "0.10.4",
+  "author": "Adam Boe",
+  "description": "Utility functions for tests",
+  "main": "build/src/index.js",
+  "types": "build/src/index.d.ts",
+  "scripts": {
+    "build": "yarn g:tsc --build",
+    "clean": "yarn g:rimraf build",
+    "lint": "yarn g:lint",
+    "lint:fix": "yarn g:lint-fix",
+    "watch": "yarn g:tsc --watch"
+  },
+  "dependencies": {
+    "@gwent/graphql-schema": "workspace:*",
+    "mongodb": "6.13.0"
+  },
+  "devDependencies": {
+    "@types/jest": "29.5.14",
+    "@types/node": "22.12.0",
+    "jest-junit": "16.0.0",
+    "ts-jest": "29.2.5"
+  }
+}
