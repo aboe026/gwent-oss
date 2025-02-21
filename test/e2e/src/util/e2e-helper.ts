@@ -83,6 +83,69 @@ export class E2eHelper {
     }
   }
 
+  static setEffectiveStrength({
+    player,
+    effectiveStrength,
+    row,
+    unitName,
+  }: {
+    player: GamePlayerExpected
+    unitName: string
+    effectiveStrength: number
+    row: Combat
+  }) {
+    let currenStrength = 0
+    if (row === Combat.Close) {
+      const rowUnit = player.close?.units.find((unit) => unit.name === unitName)
+      if (!rowUnit) {
+        throw Error(`Could not find unit "${unitName}" in "${Combat.Close}" for "${player.name}"`)
+      }
+      currenStrength = rowUnit.strength || 0
+      if (player.close) {
+        player.close.units = player.close.units.map((unit) => {
+          if (unit.name === unitName) {
+            unit.effectiveStrength = effectiveStrength
+          }
+          return unit
+        })
+        player.close.score = player.close.score + (effectiveStrength - currenStrength)
+      }
+    } else if (row === Combat.Ranged) {
+      const rowUnit = player.ranged?.units.find((unit) => unit.name === unitName)
+      if (!rowUnit) {
+        throw Error(`Could not find unit "${unitName}" in "${Combat.Ranged}" for "${player.name}"`)
+      }
+      currenStrength = rowUnit.strength || 0
+      if (player.ranged) {
+        player.ranged.units = player.ranged.units.map((unit) => {
+          if (unit.name === unitName) {
+            unit.effectiveStrength = effectiveStrength
+          }
+          return unit
+        })
+        player.ranged.score = player.ranged.score + (effectiveStrength - currenStrength)
+      }
+    } else if (row === Combat.Siege) {
+      const rowUnit = player.siege?.units.find((unit) => unit.name === unitName)
+      if (!rowUnit) {
+        throw Error(`Could not find unit "${unitName}" in "${Combat.Siege}" for "${player.name}"`)
+      }
+      currenStrength = rowUnit.strength || 0
+      if (player.siege) {
+        player.siege.units = player.siege.units.map((unit) => {
+          if (unit.name === unitName) {
+            unit.effectiveStrength = effectiveStrength
+          }
+          return unit
+        })
+        player.siege.score = player.siege.score + (effectiveStrength - currenStrength)
+      }
+    }
+    if (player.score) {
+      player.score = player.score + (effectiveStrength - currenStrength)
+    }
+  }
+
   static resetPlayerCombatRow({ player, row }: { player: GamePlayerExpected; row: Combat }): number {
     let discardsForRow = 0
     if (row === Combat.Close) {
@@ -110,6 +173,7 @@ export class E2eHelper {
   static playUnit({
     player,
     deckUnit,
+    effectiveStrength,
     row,
     gameDeck,
     moves,
@@ -117,22 +181,24 @@ export class E2eHelper {
   }: {
     player: GamePlayerExpected
     deckUnit: DeckUnit
+    effectiveStrength?: number
     row?: Combat
     gameDeck: GameDeck
     moves?: (HistoryMove | HistoryPass)[]
     switchTurnsWith?: GamePlayerExpected
   }) {
+    const strength = effectiveStrength || deckUnit.unit.strength || 0
     if (!row) {
       row = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
     }
-    player.score = (player.score || 0) + (deckUnit.unit.strength || 0)
+    player.score = (player.score || 0) + strength
     player.hand = (player.hand || STARTING_HAND_SIZE) - 1
     gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
     E2eHelper.addUnitToGamePlayer({
       player,
       unitName: deckUnit.unit.name,
       row,
-      strength: deckUnit.unit.strength || 0,
+      strength: strength,
     })
     if (moves) {
       moves.push({

@@ -1084,6 +1084,7 @@ interface HighlightedHistory {
 export interface CombatUnit {
   name: string
   strength?: number
+  effectiveStrength?: number
 }
 
 interface CombatRow {

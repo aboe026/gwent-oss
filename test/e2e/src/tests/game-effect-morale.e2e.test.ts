@@ -226,7 +226,7 @@ test('Morale unit does not effect itself', async (t) => {
   })
 })
 
-test.only('Morale effects normal unit after played normal unit played', async (t) => {
+test('Morale effects normal unit after played normal unit played', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Milva'
   await ensureUnitsInHand({
@@ -341,25 +341,27 @@ test.only('Morale effects normal unit after played normal unit played', async (t
     moves,
     switchTurnsWith: opponentPlayer,
   })
+  E2eHelper.setEffectiveStrength({
+    player: selfPlayer,
+    effectiveStrength: 3,
+    unitName: unitName1,
+    row: combatRowSelf1,
+  })
 
-  // TODO: figure out why morale not taking effect
   await GamePage.verify({
     opponent: opponentPlayer,
-    self: {
-      ...selfPlayer,
-      score: 13,
-    },
+    self: selfPlayer,
     hand: t.ctx.self.gameDeck.hand,
     moves: [moves],
   })
 
   await GamePage.fullscreenCombatCard({
-    unitName: unitName2,
-    row: combatRowSelf2,
+    unitName: unitName1,
+    row: combatRowSelf1,
     self: true,
   })
   await FullCard.verify({
-    unit: unitToMoveSelf2.unit,
+    unit: unitToMoveSelf1.unit,
     effectiveStrength: 3,
     effects: [
       {
@@ -368,5 +370,9 @@ test.only('Morale effects normal unit after played normal unit played', async (t
         reason: `Morale from ${unitName2}`,
       },
     ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: unitToMoveSelf2.unit,
   })
 })
