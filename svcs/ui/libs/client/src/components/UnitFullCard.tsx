@@ -124,7 +124,7 @@ export default function UnitFullCard({
                           } to the row placed in.`}</span>
                         </div>
                         {effects && effects.length > 0 && (
-                          <div className="unit-full-card-info-strength-reason-container">
+                          <div className={HTML_CLASSES.UnitFullCardStrengthReasonContainer}>
                             <table>
                               <thead>
                                 <tr>
@@ -134,12 +134,16 @@ export default function UnitFullCard({
                                 </tr>
                               </thead>
                               <tbody>
-                                <tr>
-                                  <td className="unit-full-card-info-strength-reason-number"></td>
-                                  <td className="unit-full-card-info-strength-reason-number">
+                                <tr className={HTML_CLASSES.UnitFullCardStrengthReasonRow}>
+                                  <td
+                                    className={`${HTML_CLASSES.UnitFullCardStrengthReasonOperator} unit-full-card-info-strength-reason-number`}
+                                  ></td>
+                                  <td
+                                    className={`${HTML_CLASSES.UnitFullCardStrengthReasonStrength} unit-full-card-info-strength-reason-number`}
+                                  >
                                     {fullUnit.unit.strength}
                                   </td>
-                                  <td>Base strength</td>
+                                  <td className={HTML_CLASSES.UnitFullCardStrengthReasonExplanation}>Base strength</td>
                                 </tr>
                                 {effects.map((effect, index) => {
                                   let reason = ''
@@ -149,10 +153,18 @@ export default function UnitFullCard({
                                     reason = `Ability from ${effect.reason.leader.name}`
                                   }
                                   return (
-                                    <tr key={index}>
-                                      <td className="unit-full-card-info-strength-reason-number">{effect.operator}</td>
-                                      <td className="unit-full-card-info-strength-reason-number">{effect.total}</td>
-                                      <td>{reason}</td>
+                                    <tr key={index} className={HTML_CLASSES.UnitFullCardStrengthReasonRow}>
+                                      <td
+                                        className={`${HTML_CLASSES.UnitFullCardStrengthReasonOperator} unit-full-card-info-strength-reason-number`}
+                                      >
+                                        {effect.operator}
+                                      </td>
+                                      <td
+                                        className={`${HTML_CLASSES.UnitFullCardStrengthReasonStrength} unit-full-card-info-strength-reason-number`}
+                                      >
+                                        {effect.total}
+                                      </td>
+                                      <td className={HTML_CLASSES.UnitFullCardStrengthReasonExplanation}>{reason}</td>
                                     </tr>
                                   )
                                 })}

@@ -1,5 +1,6 @@
 import { EffectKey, Unit } from '@gwent/graphql-schema/resolver-typings'
 import { getWeatherImage } from '@gwent/utils'
+import { HTML_CLASSES } from '@gwent/constants'
 import './StrengthCircle.css'
 
 /**
@@ -47,7 +48,7 @@ export default function StrengthCircle({
                 />
               )}
               <img src="images/card/strength.png" style={{ height: size, width: size }} />
-              <span className="strength-circle-value" title="Strength">
+              <span className={HTML_CLASSES.StrengthCircleValue} title="Strength">
                 {effectiveStrength || unit.strength}
               </span>
             </>
