@@ -63,26 +63,26 @@ export async function ensureUnitsInHand({
       })
 
       const unitNamesToAddToHand = [...unitNames]
-      const otherUnitNamesInHand = handUnits.map((unit) => unit.name)
+      const otherUnitNamesInHand = handUnits.map((unit) => unit.name).filter((name) => !unitNames.includes(name))
 
       for (const handUnit of handUnits) {
         const index = unitNamesToAddToHand.indexOf(handUnit.name)
         if (index >= 0) {
           unitNamesToAddToHand.splice(index, 1)
-          otherUnitNamesInHand.splice(index, 1)
         }
       }
 
       for (let i = 0; i < unitNamesToAddToHand.length; i++) {
         const unitNameToAddToHand = unitNamesToAddToHand[i]
+        const unitNameToRemoveFromHand = otherUnitNamesInHand[i]
         const positionInUndrawn = undrawnUnits.map((unit) => unit.name).indexOf(unitNameToAddToHand)
-        const positionInHand = handUnits.map((unit) => unit.name).indexOf(unitNameToAddToHand)
+        const positionInHand = handUnits.map((unit) => unit.name).indexOf(unitNameToRemoveFromHand)
 
-        if (positionInHand < 0) {
-          throw Error(`Could not find position in hand for unit "${unitNameToAddToHand}"`)
-        }
         if (positionInUndrawn < 0) {
           throw Error(`Could not find position in undrawn for unit "${unitNameToAddToHand}"`)
+        }
+        if (positionInHand < 0) {
+          throw Error(`Could not find position in hand for unit "${unitNameToRemoveFromHand}"`)
         }
 
         const undrawnUnitToMoveToHand = player.deck.undrawn[positionInUndrawn]
