@@ -132,7 +132,7 @@ export default class PlayUnitMutation {
     // get unit details
     const roundUnits = await PlayUnitMutation.getRoundUnits({
       game,
-      deckUnit,
+      unitBeingPlayed: unit,
     })
     const unitEffects = await PlayUnitMutation.getUnitEffects({
       units: roundUnits,
@@ -208,12 +208,12 @@ export default class PlayUnitMutation {
 
   private static async getRoundUnits({
     game,
-    deckUnit,
+    unitBeingPlayed,
   }: {
     game: GameDbObject
-    deckUnit: DeckUnitDbObject
+    unitBeingPlayed: UnitDbObject
   }): Promise<UnitDbObject[]> {
-    const unitIds: string[] = [deckUnit.unit.toString()] // to be removed at end, used just for now to ignore potential duplicates
+    const unitIds: string[] = [unitBeingPlayed.toString()] // to be removed at end, used just for now to ignore potential duplicates
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
       for (let i = 0; i < player.rounds.length; i++) {
@@ -227,9 +227,11 @@ export default class PlayUnitMutation {
       }
     }
 
-    return UnitStore.get({
+    const units = await UnitStore.get({
       ids: unitIds.slice(1), // remove the deckUnit we have already retrieved
     })
+
+    return [...units, unitBeingPlayed]
   }
 
   private static async getUnitEffects({ units }: { units: UnitDbObject[] }): Promise<EffectDbObject[]> {
