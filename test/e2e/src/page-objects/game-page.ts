@@ -381,7 +381,7 @@ export default class GamePage {
     }
     const expectedUnitNames = sortObjectArray({
       array: units,
-      sortProperties: ['effectiveStrength', 'strength', 'name'],
+      sortProperties: [['effectiveStrength', 'strength'], 'name'],
     }).map((unit) => {
       let expectedUnitName = unit.name
       if (

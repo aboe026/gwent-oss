@@ -1,7 +1,10 @@
 import ApiClient from './api-client'
+import Banner from '../components/banner'
 import { Combat, Deck, DeckUnit, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import GamePage, { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
+import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
+import ProfilePage from '../page-objects/profile-page'
 import { sortObjectArray } from '@gwent/utils'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 
@@ -13,6 +16,15 @@ export interface ContextGamePlayer {
 }
 
 export class E2eHelper {
+  static async switchToUser({ username, password = 'password' }: { username: string; password?: string }) {
+    await Banner.goTo(Banner.elements.MenuProfile)
+    await ProfilePage.logout()
+    await LoginPage.verifyNotLoggedIn({})
+    await LoginPage.login({
+      username,
+      password,
+    })
+  }
   static getGamePlayer({
     player,
     turn,
