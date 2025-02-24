@@ -714,6 +714,10 @@ function getNeighboringUnits({
     for (let i = 0; i < unitArrays.length && !found; i++) {
       const unitArray = unitArrays[i]
       if (unitArray) {
+        // TODO: account for effectiveStrength
+        // will this break units without an effectiveStrength?
+        // have this method take array of arrays, so can do effectiveStrength
+        // with a fallback for the first property to just strength if effectiveStrength not defined
         const sortedArray = sortObjectArray({
           sortProperties: ['unit.strength', 'unit.id'],
           array: unitArray,
