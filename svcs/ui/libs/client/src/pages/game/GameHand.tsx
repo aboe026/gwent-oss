@@ -29,7 +29,7 @@ export default function GameHand({
   const sortedUnits = !hand
     ? []
     : sortObjectArray({
-        sortProperties: ['unit.strength', 'unit.id'],
+        sortProperties: ['unit.strength', 'unit.name', 'unit.id'],
         array: hand,
       })
   return (

@@ -1146,7 +1146,7 @@ test('Multiple morales effect each other', async (t) => {
   })
 })
 
-test.only('Multiple morales effect themselves and multiple standard units', async (t) => {
+test('Multiple morales effect themselves and multiple standard units', async (t) => {
   const unitName1 = 'Milva'
   const unitName2 = 'Ida Emean aep Sivney'
   const unitName3 = 'Olgierd Von Everec'

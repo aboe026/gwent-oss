@@ -62,7 +62,7 @@ export default function GameCombatRow({
     combat === Combat.Close ? playerRound.close : combat === Combat.Ranged ? playerRound.ranged : playerRound.siege
   const sortedUnits = sortObjectArray({
     array: playerRow.units,
-    sortProperties: ['unit.strength', 'unit.name', 'unit.id'],
+    sortProperties: [['effectiveStrength', 'unit.strength'], 'unit.name', 'unit.id'],
   })
   let id = ''
   if (combat === Combat.Close) {
