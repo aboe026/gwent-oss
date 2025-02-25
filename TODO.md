@@ -2,6 +2,9 @@
 
 A list of things to be done in the future.
 
+## Fixes
+
+- "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - separate invalid checks on mutations into separate methods?
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
@@ -57,7 +60,6 @@ A list of things to be done in the future.
 
 ## Features
 
-- "combats" and "effects" disappear from middle of deck editor after switching factions
 - func tests
 - unit tests
 - jsdocs
