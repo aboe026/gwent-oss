@@ -221,8 +221,8 @@ export default gql`
 
   type GameUnitEffect @entity {
     operator: String! @column
-    total: Int! @column
     reason: EffectReason! @column(overrideType: "EffectReasonDbObject")
+    total: Int! @column
   }
 
   type EffectFromUnit @entity(additionalFields: [{ path: "type", type: "EffectReasonType" }]) {

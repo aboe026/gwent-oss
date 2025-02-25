@@ -14,6 +14,7 @@ import {
 import {
   Combat,
   Deck,
+  EffectKey,
   FactionKey,
   Game,
   GamePlayer,
@@ -108,6 +109,7 @@ describe('effect-morale', () => {
         {
           ...unitSelf1,
           effectiveStrength: unitSelf1.unit.strength || 0,
+          effects: [],
         } as GameUnit,
       ],
     }
@@ -195,6 +197,10 @@ describe('effect-morale', () => {
       throw Error(`Could not find unit "${unitName1}" in hand`)
     }
     const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
+    const effectMorale = unitSelf1.unit.effects?.find((effect) => effect.key === EffectKey.Morale)
+    if (!effectMorale) {
+      throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName1}" unit`)
+    }
     await playUnit({
       gameId: game.id,
       unitId: unitSelf1.unit.id,
@@ -225,6 +231,7 @@ describe('effect-morale', () => {
         {
           ...unitOpponent1,
           effectiveStrength: unitOpponent1.unit.strength || 0,
+          effects: [],
         } as GameUnit,
       ],
     }
@@ -303,10 +310,21 @@ describe('effect-morale', () => {
                       {
                         ...unitSelf1,
                         effectiveStrength: 10,
+                        effects: [],
                       } as GameUnit,
                       {
                         ...unitSelf2,
                         effectiveStrength: 3,
+                        effects: [
+                          {
+                            operator: '+1',
+                            total: 3,
+                            reason: {
+                              effect: effectMorale,
+                              unit: unitSelf1.unit,
+                            },
+                          },
+                        ],
                       } as GameUnit,
                     ],
                   },
@@ -372,6 +390,10 @@ describe('effect-morale', () => {
       throw Error(`Could not find unit "${unitName2}" in hand`)
     }
     const combatUnit2 = unitSelf2.unit.combats ? unitSelf2.unit.combats[0] : Combat.Close
+    const effectMorale = unitSelf2.unit.effects?.find((effect) => effect.key === EffectKey.Morale)
+    if (!effectMorale) {
+      throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName2}" unit`)
+    }
 
     const expectedCombatRowOpponent: PlayerCombatRow = {
       score: unitOpponent1.unit.strength || 0,
@@ -379,6 +401,7 @@ describe('effect-morale', () => {
         {
           ...unitOpponent1,
           effectiveStrength: unitOpponent1.unit.strength || 0,
+          effects: [],
         } as GameUnit,
       ],
     }
@@ -457,10 +480,21 @@ describe('effect-morale', () => {
                       {
                         ...unitSelf1,
                         effectiveStrength: 3,
+                        effects: [
+                          {
+                            operator: '+1',
+                            total: 3,
+                            reason: {
+                              effect: effectMorale,
+                              unit: unitSelf2.unit,
+                            },
+                          },
+                        ],
                       } as GameUnit,
                       {
                         ...unitSelf2,
                         effectiveStrength: 10,
+                        effects: [],
                       } as GameUnit,
                     ],
                   },
