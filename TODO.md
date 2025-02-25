@@ -57,6 +57,13 @@ A list of things to be done in the future.
 
 ## Features
 
+- "combats" and "effects" disappear from middle of deck editor after switching factions
+- func tests
+- unit tests
+- jsdocs
+- minor version increment
+- changelog
+
 - Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
