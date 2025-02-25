@@ -3815,6 +3815,7 @@ __metadata:
     "@gwent/constants": "workspace:*"
     "@gwent/env": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
+    "@gwent/test-utils": "workspace:*"
     "@gwent/utils": "workspace:*"
     "@gwent/validators": "workspace:*"
     "@types/basic-auth": "npm:1.1.8"

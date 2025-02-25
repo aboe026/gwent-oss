@@ -482,6 +482,9 @@ describe('play-unit-mutation', () => {
             }
           }
         }
+        // TODO: use "ensureUnitsInHand" to avoid this
+        // TODO: also check if we do something similar in other func tests
+        // TODO: also check if we do something similar in E2E tests
         if (!singleCombatDeckUnit || !game2 || !gameDeck || !combat) {
           throw Error('Could not find unit with single eligible combat in hand')
         }
