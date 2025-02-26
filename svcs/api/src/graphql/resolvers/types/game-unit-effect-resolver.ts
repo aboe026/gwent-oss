@@ -31,7 +31,7 @@ export default class GameUnitEffectResolver {
    * @throws Error if the effect reason type is invalid.
    */
   static async fromObject({
-    gameUnitEffect: gameUnitEffect,
+    gameUnitEffect,
     unit,
     effect,
     leader,
@@ -67,9 +67,6 @@ export default class GameUnitEffectResolver {
       reason = leaderReason
     } else {
       throw Error(`Invalid EffectReasonType "${gameUnitEffect.reason.type}".`)
-    }
-    if (!reason) {
-      throw Error(`Could not get reason for GameUnitEffect "${JSON.stringify(gameUnitEffect)}"`)
     }
     return {
       operator: gameUnitEffect.operator,
@@ -119,7 +116,7 @@ export default class GameUnitEffectResolver {
           leaderIds.push(reasonLeaderId)
         }
       } else {
-        throw Error(`Invalid Effect Reason type "${gameUnitEffect.reason.type}".`)
+        throw Error(`Invalid EffectReasonType "${gameUnitEffect.reason.type}".`)
       }
     }
 

@@ -93,6 +93,16 @@ describe('effect-resolver', () => {
       })
     })
   })
+  describe('fromId', () => {
+    it('calls to fromIds and returns first result', async () => {
+      const effect = TestUtil.getEffect({})
+      const fromIdsSpy = jest.spyOn(EffectResolver, 'fromIds').mockResolvedValue([effect])
+
+      await expect(EffectResolver.fromId(effect.id)).resolves.toEqual(effect)
+
+      expect(fromIdsSpy.mock.calls).toEqual([[[effect.id]]])
+    })
+  })
 })
 
 async function testResolveFromIds({
