@@ -37,585 +37,1173 @@ describe('sort', () => {
     })
     describe('non-reversed', () => {
       describe('numbers', () => {
-        it('sorts when already in order', () => {
-          const array = [
-            {
-              foo: 1,
-            },
-            {
-              foo: 2,
-            },
-          ]
+        describe('single property', () => {
+          it('sorts when already in order', () => {
+            const array = [
+              {
+                foo: 1,
+              },
+              {
+                foo: 2,
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-            })
-          ).toEqual([
-            {
-              foo: 1,
-            },
-            {
-              foo: 2,
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 1,
+              },
+              {
+                foo: 2,
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 1,
-            },
-            {
-              foo: 2,
-            },
-          ])
+            expect(array).toEqual([
+              {
+                foo: 1,
+              },
+              {
+                foo: 2,
+              },
+            ])
+          })
+          it('sorts when out of order', () => {
+            const array = [
+              {
+                foo: 2,
+              },
+              {
+                foo: 1,
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 1,
+              },
+              {
+                foo: 2,
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 2,
+              },
+              {
+                foo: 1,
+              },
+            ])
+          })
+          it('sorts when same with tie break on secondary property', () => {
+            const array = [
+              {
+                foo: 2,
+                bar: 2,
+              },
+              {
+                foo: 2,
+                bar: 1,
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', 'bar'],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 2,
+                bar: 1,
+              },
+              {
+                foo: 2,
+                bar: 2,
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 2,
+                bar: 2,
+              },
+              {
+                foo: 2,
+                bar: 1,
+              },
+            ])
+          })
         })
-        it('sorts when out of order', () => {
-          const array = [
-            {
-              foo: 2,
-            },
-            {
-              foo: 1,
-            },
-          ]
+        describe('multi property', () => {
+          it('sorts when already in order', () => {
+            const array = [
+              {
+                bar: 1,
+              },
+              {
+                foo: 2,
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-            })
-          ).toEqual([
-            {
-              foo: 1,
-            },
-            {
-              foo: 2,
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: [['foo', 'bar']],
+                array,
+              })
+            ).toEqual([
+              {
+                bar: 1,
+              },
+              {
+                foo: 2,
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 2,
-            },
-            {
-              foo: 1,
-            },
-          ])
-        })
-        it('sorts when same with tie break on secondary property', () => {
-          const array = [
-            {
-              foo: 2,
-              bar: 2,
-            },
-            {
-              foo: 2,
-              bar: 1,
-            },
-          ]
+            expect(array).toEqual([
+              {
+                bar: 1,
+              },
+              {
+                foo: 2,
+              },
+            ])
+          })
+          it('sorts when out of order', () => {
+            const array = [
+              {
+                foo: 2,
+              },
+              {
+                bar: 1,
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo', 'bar'],
-              array,
-            })
-          ).toEqual([
-            {
-              foo: 2,
-              bar: 1,
-            },
-            {
-              foo: 2,
-              bar: 2,
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', 'bar'],
+                array,
+              })
+            ).toEqual([
+              {
+                bar: 1,
+              },
+              {
+                foo: 2,
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 2,
-              bar: 2,
-            },
-            {
-              foo: 2,
-              bar: 1,
-            },
-          ])
+            expect(array).toEqual([
+              {
+                foo: 2,
+              },
+              {
+                bar: 1,
+              },
+            ])
+          })
+          it('sorts when same with tie break on secondary property', () => {
+            const array = [
+              {
+                foo: 2,
+                bizz: 2,
+              },
+              {
+                foo: 2,
+                bar: 1,
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', ['bar', 'bizz']],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 2,
+                bar: 1,
+              },
+              {
+                foo: 2,
+                bizz: 2,
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 2,
+                bizz: 2,
+              },
+              {
+                foo: 2,
+                bar: 1,
+              },
+            ])
+          })
         })
       })
       describe('string', () => {
-        it('sorts when already in order', () => {
-          const array = [
-            {
-              foo: 'a',
-            },
-            {
-              foo: 'b',
-            },
-          ]
+        describe('single property', () => {
+          it('sorts when already in order', () => {
+            const array = [
+              {
+                foo: 'a',
+              },
+              {
+                foo: 'b',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-            })
-          ).toEqual([
-            {
-              foo: 'a',
-            },
-            {
-              foo: 'b',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 'a',
+              },
+              {
+                foo: 'b',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'a',
-            },
-            {
-              foo: 'b',
-            },
-          ])
+            expect(array).toEqual([
+              {
+                foo: 'a',
+              },
+              {
+                foo: 'b',
+              },
+            ])
+          })
+          it('sorts when out of order', () => {
+            const array = [
+              {
+                foo: 'b',
+              },
+              {
+                foo: 'a',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 'a',
+              },
+              {
+                foo: 'b',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'b',
+              },
+              {
+                foo: 'a',
+              },
+            ])
+          })
+          it('sorts when same with tie break on secondary property', () => {
+            const array = [
+              {
+                foo: 'b',
+                bar: 'b',
+              },
+              {
+                foo: 'b',
+                bar: 'a',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', 'bar'],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 'b',
+                bar: 'a',
+              },
+              {
+                foo: 'b',
+                bar: 'b',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'b',
+                bar: 'b',
+              },
+              {
+                foo: 'b',
+                bar: 'a',
+              },
+            ])
+          })
+          it('sorts case insensitively', () => {
+            const array = [
+              {
+                foo: 'B',
+              },
+              {
+                foo: 'a',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 'a',
+              },
+              {
+                foo: 'B',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'B',
+              },
+              {
+                foo: 'a',
+              },
+            ])
+          })
+          it('sorts case insensitively on tie', () => {
+            const array = [
+              {
+                foo: 'a',
+                bar: 'B',
+              },
+              {
+                foo: 'a',
+                bar: 'a',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', 'bar'],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 'a',
+                bar: 'a',
+              },
+              {
+                foo: 'a',
+                bar: 'B',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'a',
+                bar: 'B',
+              },
+              {
+                foo: 'a',
+                bar: 'a',
+              },
+            ])
+          })
         })
-        it('sorts when out of order', () => {
-          const array = [
-            {
-              foo: 'b',
-            },
-            {
-              foo: 'a',
-            },
-          ]
+        describe('multi property', () => {
+          it('sorts when already in order', () => {
+            const array = [
+              {
+                bar: 'a',
+              },
+              {
+                foo: 'b',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-            })
-          ).toEqual([
-            {
-              foo: 'a',
-            },
-            {
-              foo: 'b',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: [['foo', 'bar']],
+                array,
+              })
+            ).toEqual([
+              {
+                bar: 'a',
+              },
+              {
+                foo: 'b',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'b',
-            },
-            {
-              foo: 'a',
-            },
-          ])
-        })
-        it('sorts when same with tie break on secondary property', () => {
-          const array = [
-            {
-              foo: 'b',
-              bar: 'b',
-            },
-            {
-              foo: 'b',
-              bar: 'a',
-            },
-          ]
+            expect(array).toEqual([
+              {
+                bar: 'a',
+              },
+              {
+                foo: 'b',
+              },
+            ])
+          })
+          it('sorts when out of order', () => {
+            const array = [
+              {
+                bar: 'b',
+              },
+              {
+                foo: 'a',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo', 'bar'],
-              array,
-            })
-          ).toEqual([
-            {
-              foo: 'b',
-              bar: 'a',
-            },
-            {
-              foo: 'b',
-              bar: 'b',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: [['foo', 'bar']],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 'a',
+              },
+              {
+                bar: 'b',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'b',
-              bar: 'b',
-            },
-            {
-              foo: 'b',
-              bar: 'a',
-            },
-          ])
-        })
-        it('sorts case insensitively', () => {
-          const array = [
-            {
-              foo: 'B',
-            },
-            {
-              foo: 'a',
-            },
-          ]
+            expect(array).toEqual([
+              {
+                bar: 'b',
+              },
+              {
+                foo: 'a',
+              },
+            ])
+          })
+          it('sorts when same with tie break on secondary property', () => {
+            const array = [
+              {
+                foo: 'b',
+                bar: 'b',
+              },
+              {
+                foo: 'b',
+                bizz: 'a',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-            })
-          ).toEqual([
-            {
-              foo: 'a',
-            },
-            {
-              foo: 'B',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', ['bar', 'bizz']],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 'b',
+                bizz: 'a',
+              },
+              {
+                foo: 'b',
+                bar: 'b',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'B',
-            },
-            {
-              foo: 'a',
-            },
-          ])
-        })
-        it('sorts case insensitively on tie', () => {
-          const array = [
-            {
-              foo: 'a',
-              bar: 'B',
-            },
-            {
-              foo: 'a',
-              bar: 'a',
-            },
-          ]
+            expect(array).toEqual([
+              {
+                foo: 'b',
+                bar: 'b',
+              },
+              {
+                foo: 'b',
+                bizz: 'a',
+              },
+            ])
+          })
+          it('sorts case insensitively', () => {
+            const array = [
+              {
+                foo: 'B',
+              },
+              {
+                bar: 'a',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo', 'bar'],
-              array,
-            })
-          ).toEqual([
-            {
-              foo: 'a',
-              bar: 'a',
-            },
-            {
-              foo: 'a',
-              bar: 'B',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: [['foo', 'bar']],
+                array,
+              })
+            ).toEqual([
+              {
+                bar: 'a',
+              },
+              {
+                foo: 'B',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'a',
-              bar: 'B',
-            },
-            {
-              foo: 'a',
-              bar: 'a',
-            },
-          ])
+            expect(array).toEqual([
+              {
+                foo: 'B',
+              },
+              {
+                bar: 'a',
+              },
+            ])
+          })
+          it('sorts case insensitively on tie', () => {
+            const array = [
+              {
+                foo: 'a',
+                bar: 'B',
+              },
+              {
+                foo: 'a',
+                bizz: 'a',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', ['bar', 'bizz']],
+                array,
+              })
+            ).toEqual([
+              {
+                foo: 'a',
+                bizz: 'a',
+              },
+              {
+                foo: 'a',
+                bar: 'B',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'a',
+                bar: 'B',
+              },
+              {
+                foo: 'a',
+                bizz: 'a',
+              },
+            ])
+          })
         })
       })
     })
     describe('reversed', () => {
       describe('numbers', () => {
-        it('sorts when already in order', () => {
-          const array = [
-            {
-              foo: 2,
-            },
-            {
-              foo: 1,
-            },
-          ]
+        describe('single property', () => {
+          it('sorts when already in order', () => {
+            const array = [
+              {
+                foo: 2,
+              },
+              {
+                foo: 1,
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-              reverse: true,
-            })
-          ).toEqual([
-            {
-              foo: 2,
-            },
-            {
-              foo: 1,
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 2,
+              },
+              {
+                foo: 1,
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 2,
-            },
-            {
-              foo: 1,
-            },
-          ])
+            expect(array).toEqual([
+              {
+                foo: 2,
+              },
+              {
+                foo: 1,
+              },
+            ])
+          })
+          it('sorts when out of order', () => {
+            const array = [
+              {
+                foo: 1,
+              },
+              {
+                foo: 2,
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 2,
+              },
+              {
+                foo: 1,
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 1,
+              },
+              {
+                foo: 2,
+              },
+            ])
+          })
+          it('sorts when same with tie break on secondary property', () => {
+            const array = [
+              {
+                foo: 2,
+                bar: 1,
+              },
+              {
+                foo: 2,
+                bar: 2,
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', 'bar'],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 2,
+                bar: 2,
+              },
+              {
+                foo: 2,
+                bar: 1,
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 2,
+                bar: 1,
+              },
+              {
+                foo: 2,
+                bar: 2,
+              },
+            ])
+          })
         })
-        it('sorts when out of order', () => {
-          const array = [
-            {
-              foo: 1,
-            },
-            {
-              foo: 2,
-            },
-          ]
+        describe('multi property', () => {
+          it('sorts when already in order', () => {
+            const array = [
+              {
+                foo: 2,
+              },
+              {
+                bar: 1,
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-              reverse: true,
-            })
-          ).toEqual([
-            {
-              foo: 2,
-            },
-            {
-              foo: 1,
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: [['foo', 'bar']],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 2,
+              },
+              {
+                bar: 1,
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 1,
-            },
-            {
-              foo: 2,
-            },
-          ])
-        })
-        it('sorts when same with tie break on secondary property', () => {
-          const array = [
-            {
-              foo: 2,
-              bar: 1,
-            },
-            {
-              foo: 2,
-              bar: 2,
-            },
-          ]
+            expect(array).toEqual([
+              {
+                foo: 2,
+              },
+              {
+                bar: 1,
+              },
+            ])
+          })
+          it('sorts when out of order', () => {
+            const array = [
+              {
+                bar: 1,
+              },
+              {
+                foo: 2,
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo', 'bar'],
-              array,
-              reverse: true,
-            })
-          ).toEqual([
-            {
-              foo: 2,
-              bar: 2,
-            },
-            {
-              foo: 2,
-              bar: 1,
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', 'bar'],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 2,
+              },
+              {
+                bar: 1,
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 2,
-              bar: 1,
-            },
-            {
-              foo: 2,
-              bar: 2,
-            },
-          ])
+            expect(array).toEqual([
+              {
+                bar: 1,
+              },
+              {
+                foo: 2,
+              },
+            ])
+          })
+          it('sorts when same with tie break on secondary property', () => {
+            const array = [
+              {
+                foo: 2,
+                bar: 1,
+              },
+              {
+                foo: 2,
+                bizz: 2,
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', ['bar', 'bizz']],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 2,
+                bizz: 2,
+              },
+              {
+                foo: 2,
+                bar: 1,
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 2,
+                bar: 1,
+              },
+              {
+                foo: 2,
+                bizz: 2,
+              },
+            ])
+          })
         })
       })
       describe('string', () => {
-        it('sorts when already in order', () => {
-          const array = [
-            {
-              foo: 'b',
-            },
-            {
-              foo: 'a',
-            },
-          ]
+        describe('single property', () => {
+          it('sorts when already in order', () => {
+            const array = [
+              {
+                foo: 'b',
+              },
+              {
+                foo: 'a',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-              reverse: true,
-            })
-          ).toEqual([
-            {
-              foo: 'b',
-            },
-            {
-              foo: 'a',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 'b',
+              },
+              {
+                foo: 'a',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'b',
-            },
-            {
-              foo: 'a',
-            },
-          ])
+            expect(array).toEqual([
+              {
+                foo: 'b',
+              },
+              {
+                foo: 'a',
+              },
+            ])
+          })
+          it('sorts when out of order', () => {
+            const array = [
+              {
+                foo: 'a',
+              },
+              {
+                foo: 'b',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 'b',
+              },
+              {
+                foo: 'a',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'a',
+              },
+              {
+                foo: 'b',
+              },
+            ])
+          })
+          it('sorts when same with tie break on secondary property', () => {
+            const array = [
+              {
+                foo: 'b',
+                bar: 'a',
+              },
+              {
+                foo: 'b',
+                bar: 'b',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', 'bar'],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 'b',
+                bar: 'b',
+              },
+              {
+                foo: 'b',
+                bar: 'a',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'b',
+                bar: 'a',
+              },
+              {
+                foo: 'b',
+                bar: 'b',
+              },
+            ])
+          })
+          it('sorts case insensitively', () => {
+            const array = [
+              {
+                foo: 'a',
+              },
+              {
+                foo: 'B',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo'],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 'B',
+              },
+              {
+                foo: 'a',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'a',
+              },
+              {
+                foo: 'B',
+              },
+            ])
+          })
+          it('sorts case insensitively on tie', () => {
+            const array = [
+              {
+                foo: 'a',
+                bar: 'a',
+              },
+              {
+                foo: 'a',
+                bar: 'B',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', 'bar'],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 'a',
+                bar: 'B',
+              },
+              {
+                foo: 'a',
+                bar: 'a',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'a',
+                bar: 'a',
+              },
+              {
+                foo: 'a',
+                bar: 'B',
+              },
+            ])
+          })
         })
-        it('sorts when out of order', () => {
-          const array = [
-            {
-              foo: 'a',
-            },
-            {
-              foo: 'b',
-            },
-          ]
+        describe('multi property', () => {
+          it('sorts when already in order', () => {
+            const array = [
+              {
+                foo: 'b',
+              },
+              {
+                bar: 'a',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-              reverse: true,
-            })
-          ).toEqual([
-            {
-              foo: 'b',
-            },
-            {
-              foo: 'a',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: [['foo', 'bar']],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 'b',
+              },
+              {
+                bar: 'a',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'a',
-            },
-            {
-              foo: 'b',
-            },
-          ])
-        })
-        it('sorts when same with tie break on secondary property', () => {
-          const array = [
-            {
-              foo: 'b',
-              bar: 'a',
-            },
-            {
-              foo: 'b',
-              bar: 'b',
-            },
-          ]
+            expect(array).toEqual([
+              {
+                foo: 'b',
+              },
+              {
+                bar: 'a',
+              },
+            ])
+          })
+          it('sorts when out of order', () => {
+            const array = [
+              {
+                foo: 'a',
+              },
+              {
+                bar: 'b',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo', 'bar'],
-              array,
-              reverse: true,
-            })
-          ).toEqual([
-            {
-              foo: 'b',
-              bar: 'b',
-            },
-            {
-              foo: 'b',
-              bar: 'a',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: [['foo', 'bar']],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                bar: 'b',
+              },
+              {
+                foo: 'a',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'b',
-              bar: 'a',
-            },
-            {
-              foo: 'b',
-              bar: 'b',
-            },
-          ])
-        })
-        it('sorts case insensitively', () => {
-          const array = [
-            {
-              foo: 'a',
-            },
-            {
-              foo: 'B',
-            },
-          ]
+            expect(array).toEqual([
+              {
+                foo: 'a',
+              },
+              {
+                bar: 'b',
+              },
+            ])
+          })
+          it('sorts when same with tie break on secondary property', () => {
+            const array = [
+              {
+                foo: 'b',
+                bar: 'a',
+              },
+              {
+                foo: 'b',
+                bizz: 'b',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo'],
-              array,
-              reverse: true,
-            })
-          ).toEqual([
-            {
-              foo: 'B',
-            },
-            {
-              foo: 'a',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', ['bar', 'bizz']],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 'b',
+                bizz: 'b',
+              },
+              {
+                foo: 'b',
+                bar: 'a',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'a',
-            },
-            {
-              foo: 'B',
-            },
-          ])
-        })
-        it('sorts case insensitively on tie', () => {
-          const array = [
-            {
-              foo: 'a',
-              bar: 'a',
-            },
-            {
-              foo: 'a',
-              bar: 'B',
-            },
-          ]
+            expect(array).toEqual([
+              {
+                foo: 'b',
+                bar: 'a',
+              },
+              {
+                foo: 'b',
+                bizz: 'b',
+              },
+            ])
+          })
+          it('sorts case insensitively', () => {
+            const array = [
+              {
+                foo: 'a',
+              },
+              {
+                bar: 'B',
+              },
+            ]
 
-          expect(
-            sortObjectArray({
-              sortProperties: ['foo', 'bar'],
-              array,
-              reverse: true,
-            })
-          ).toEqual([
-            {
-              foo: 'a',
-              bar: 'B',
-            },
-            {
-              foo: 'a',
-              bar: 'a',
-            },
-          ])
+            expect(
+              sortObjectArray({
+                sortProperties: [['foo', 'bar']],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                bar: 'B',
+              },
+              {
+                foo: 'a',
+              },
+            ])
 
-          expect(array).toEqual([
-            {
-              foo: 'a',
-              bar: 'a',
-            },
-            {
-              foo: 'a',
-              bar: 'B',
-            },
-          ])
+            expect(array).toEqual([
+              {
+                foo: 'a',
+              },
+              {
+                bar: 'B',
+              },
+            ])
+          })
+          it('sorts case insensitively on tie', () => {
+            const array = [
+              {
+                foo: 'a',
+                bar: 'a',
+              },
+              {
+                foo: 'a',
+                bizz: 'B',
+              },
+            ]
+
+            expect(
+              sortObjectArray({
+                sortProperties: ['foo', ['bar', 'bizz']],
+                array,
+                reverse: true,
+              })
+            ).toEqual([
+              {
+                foo: 'a',
+                bizz: 'B',
+              },
+              {
+                foo: 'a',
+                bar: 'a',
+              },
+            ])
+
+            expect(array).toEqual([
+              {
+                foo: 'a',
+                bar: 'a',
+              },
+              {
+                foo: 'a',
+                bizz: 'B',
+              },
+            ])
+          })
         })
       })
     })
