@@ -13,6 +13,8 @@ import {
   GameDeck,
   GamePlayer,
   GameStatus,
+  GameUnit,
+  GameUnitEffect,
   Leader,
   Redraw,
   Unit,
@@ -768,6 +770,25 @@ export default class TestUtil {
       created: new Date(),
       id: (id || new ObjectId()).toString(),
       name,
+    }
+  }
+
+  static getGameUnit({
+    unit,
+    artStyle = 1,
+    effectiveStrength,
+    effects = [],
+  }: {
+    unit: Unit
+    artStyle?: number
+    effectiveStrength?: number
+    effects?: GameUnitEffect[]
+  }): GameUnit {
+    return {
+      artStyle,
+      unit,
+      effectiveStrength: effectiveStrength || (unit.strength === undefined ? null : unit.strength),
+      effects,
     }
   }
 }

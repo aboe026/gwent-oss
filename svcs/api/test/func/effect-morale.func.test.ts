@@ -19,7 +19,6 @@ import {
   Game,
   GamePlayer,
   GameStatus,
-  GameUnit,
   MoveUnit,
   PlayerCombatRow,
   User,
@@ -106,11 +105,9 @@ describe('effect-morale', () => {
     const expectedCombatRow: PlayerCombatRow = {
       score: unitSelf1.unit.strength || 0,
       units: [
-        {
-          ...unitSelf1,
-          effectiveStrength: unitSelf1.unit.strength || 0,
-          effects: [],
-        } as GameUnit,
+        TestUtil.getGameUnit({
+          unit: unitSelf1.unit,
+        }),
       ],
     }
 
@@ -228,11 +225,9 @@ describe('effect-morale', () => {
     const expectedCombatRowOpponent: PlayerCombatRow = {
       score: unitOpponent1.unit.strength || 0,
       units: [
-        {
-          ...unitOpponent1,
-          effectiveStrength: unitOpponent1.unit.strength || 0,
-          effects: [],
-        } as GameUnit,
+        TestUtil.getGameUnit({
+          unit: unitOpponent1.unit,
+        }),
       ],
     }
     const emptyCombatRow: PlayerCombatRow = {
@@ -307,13 +302,11 @@ describe('effect-morale', () => {
                   ranged: {
                     score: 13,
                     units: [
-                      {
-                        ...unitSelf1,
-                        effectiveStrength: 10,
-                        effects: [],
-                      } as GameUnit,
-                      {
-                        ...unitSelf2,
+                      TestUtil.getGameUnit({
+                        unit: unitSelf1.unit,
+                      }),
+                      TestUtil.getGameUnit({
+                        unit: unitSelf2.unit,
                         effectiveStrength: 3,
                         effects: [
                           {
@@ -325,7 +318,7 @@ describe('effect-morale', () => {
                             },
                           },
                         ],
-                      } as GameUnit,
+                      }),
                     ],
                   },
                   siege: emptyCombatRow,
@@ -398,11 +391,9 @@ describe('effect-morale', () => {
     const expectedCombatRowOpponent: PlayerCombatRow = {
       score: unitOpponent1.unit.strength || 0,
       units: [
-        {
-          ...unitOpponent1,
-          effectiveStrength: unitOpponent1.unit.strength || 0,
-          effects: [],
-        } as GameUnit,
+        TestUtil.getGameUnit({
+          unit: unitOpponent1.unit,
+        }),
       ],
     }
     const emptyCombatRow: PlayerCombatRow = {
@@ -477,8 +468,8 @@ describe('effect-morale', () => {
                   ranged: {
                     score: 13,
                     units: [
-                      {
-                        ...unitSelf1,
+                      TestUtil.getGameUnit({
+                        unit: unitSelf1.unit,
                         effectiveStrength: 3,
                         effects: [
                           {
@@ -490,12 +481,10 @@ describe('effect-morale', () => {
                             },
                           },
                         ],
-                      } as GameUnit,
-                      {
-                        ...unitSelf2,
-                        effectiveStrength: 10,
-                        effects: [],
-                      } as GameUnit,
+                      }),
+                      TestUtil.getGameUnit({
+                        unit: unitSelf2.unit,
+                      }),
                     ],
                   },
                   siege: emptyCombatRow,

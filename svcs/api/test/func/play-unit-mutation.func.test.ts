@@ -21,7 +21,6 @@ import {
   GameDeck,
   GamePlayer,
   GameStatus,
-  GameUnit,
   MoveUnit,
   PlayerCombatRow,
   User,
@@ -514,10 +513,9 @@ describe('play-unit-mutation', () => {
         const expectedCombatRow: PlayerCombatRow = {
           score: singleCombatDeckUnit.unit.strength || 0,
           units: [
-            {
-              ...singleCombatDeckUnit,
-              effectiveStrength: singleCombatDeckUnit.unit.strength || 0,
-            } as GameUnit,
+            TestUtil.getGameUnit({
+              unit: singleCombatDeckUnit.unit,
+            }),
           ],
         }
 
@@ -630,10 +628,9 @@ describe('play-unit-mutation', () => {
         const expectedCombatRow: PlayerCombatRow = {
           score: singleCombatDeckUnit.unit.strength || 0,
           units: [
-            {
-              ...singleCombatDeckUnit,
-              effectiveStrength: singleCombatDeckUnit.unit.strength || 0,
-            } as GameUnit,
+            TestUtil.getGameUnit({
+              unit: singleCombatDeckUnit.unit,
+            }),
           ],
         }
 
@@ -748,10 +745,9 @@ describe('play-unit-mutation', () => {
         const expectedCombatRow: PlayerCombatRow = {
           score: multiCombatDeckUnit.unit.strength || 0,
           units: [
-            {
-              ...multiCombatDeckUnit,
-              effectiveStrength: multiCombatDeckUnit.unit.strength || 0,
-            } as GameUnit,
+            TestUtil.getGameUnit({
+              unit: multiCombatDeckUnit.unit,
+            }),
           ],
         }
 
