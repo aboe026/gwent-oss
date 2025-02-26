@@ -15,17 +15,17 @@ import {
 import {
   Combat,
   Deck,
-  DeckUnit,
   FactionKey,
   Game,
-  GameDeck,
   GamePlayer,
   GameStatus,
   MoveUnit,
   PlayerCombatRow,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
+import { ensureUnitsInHand } from '@gwent/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
+import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
 import TestUtil from '../test-util'
@@ -349,52 +349,29 @@ describe('play-unit-mutation', () => {
         })
       })
       it('returns error if no combat specified on multi combat unit', async () => {
-        let multiCombatDeckUnit: DeckUnit | undefined = undefined
-        let game2: Game | undefined = undefined
-        for (let i = 0; i < 10 && !multiCombatDeckUnit; i++) {
-          game2 = await addGame({
-            creator: self,
-            opponentNames: [opponent.name],
-          })
-          const gameDeck = await setDeck({
-            deckId: deckSelf.id,
-            gameId: game2.id,
-            userId: self.id,
-          })
-          for (let j = 0; j < gameDeck.hand.length && !multiCombatDeckUnit; j++) {
-            const deckUnit = gameDeck.hand[j]
-            if (deckUnit.unit.combats && deckUnit.unit.combats.length > 1) {
-              multiCombatDeckUnit = deckUnit
-            }
-          }
-        }
-        if (!multiCombatDeckUnit || !game2) {
-          throw Error('Could not find unit with multiple eligible combats in hand')
-        }
-        await setDeck({
-          deckId: deckOpponent.id,
-          gameId: game2.id,
-          userId: opponent.id,
-        })
-        await setOrder({
-          gameId: game2.id,
+        const unitName = 'Filavandrel aen Fidhail'
+        await ensureUnitsInHand({
+          gameId: game.id,
           userId: self.id,
-          users: [self.id, opponent.id],
+          unitNames: [unitName],
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
         })
-        await ready({
-          gameId: game2.id,
+        const gameDeck = await getGameDeck({
+          gameId: game.id,
           userId: self.id,
         })
-        await ready({
-          gameId: game2.id,
-          userId: opponent.id,
-        })
+        const multiCombatDeckUnit = gameDeck.hand.find((handUnit) => handUnit.unit.name === unitName)
+        if (!multiCombatDeckUnit) {
+          throw Error(`Could not find unit "${unitName}" in hand`)
+        }
+
         await expect(
           graphql({
             schema,
             source: `mutation {
               playUnit(
-                game: "${game2.id}"
+                game: "${game.id}"
                 unit: "${multiCombatDeckUnit.unit.id}"
               ) {
                 ${getGameFragment()}
@@ -459,57 +436,27 @@ describe('play-unit-mutation', () => {
     })
     describe('valid', () => {
       it('play single combat unit without specifying combat', async () => {
-        let singleCombatDeckUnit: DeckUnit | undefined = undefined
-        let combat: Combat | undefined = undefined
-        let game2: Game | undefined = undefined
-        let gameDeck: GameDeck | undefined = undefined
-        for (let i = 0; i < 10 && !singleCombatDeckUnit; i++) {
-          game2 = await addGame({
-            creator: self,
-            opponentNames: [opponent.name],
-          })
-          gameDeck = await setDeck({
-            deckId: deckSelf.id,
-            gameId: game2.id,
-            userId: self.id,
-          })
-          for (let j = 0; j < gameDeck.hand.length && !singleCombatDeckUnit; j++) {
-            const deckUnit = gameDeck.hand[j]
-            if (deckUnit.unit.combats && deckUnit.unit.combats.length === 1) {
-              singleCombatDeckUnit = deckUnit
-              combat = deckUnit.unit.combats[0]
-            }
-          }
+        const unitName = 'Dennis Cranmer'
+        await ensureUnitsInHand({
+          gameId: game.id,
+          userId: self.id,
+          unitNames: [unitName],
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+        })
+
+        const gameDeck = await getGameDeck({
+          gameId: game.id,
+          userId: self.id,
+        })
+        const singleCombatDeckUnit = gameDeck.hand.find((handUnit) => handUnit.unit.name === unitName)
+        if (!singleCombatDeckUnit) {
+          throw Error(`Could not find unit "${unitName}" in hand`)
         }
+        const combat = singleCombatDeckUnit.unit.combats ? singleCombatDeckUnit.unit.combats[0] : Combat.Close
         // TODO: use "ensureUnitsInHand" to avoid this
         // TODO: also check if we do something similar in other func tests
         // TODO: also check if we do something similar in E2E tests
-        if (!singleCombatDeckUnit || !game2 || !gameDeck || !combat) {
-          throw Error('Could not find unit with single eligible combat in hand')
-        }
-        await setDeck({
-          deckId: deckOpponent.id,
-          gameId: game2.id,
-          userId: opponent.id,
-        })
-        await setOrder({
-          gameId: game2.id,
-          userId: self.id,
-          users: [self.id, opponent.id],
-        })
-        await ready({
-          gameId: game2.id,
-          userId: self.id,
-        })
-        await ready({
-          gameId: game2.id,
-          userId: opponent.id,
-        })
-        game2 = await getGame({
-          gameId: game2.id,
-          userId: self.id,
-        })
-
         const expectedCombatRow: PlayerCombatRow = {
           score: singleCombatDeckUnit.unit.strength || 0,
           units: [
@@ -524,13 +471,13 @@ describe('play-unit-mutation', () => {
           units: [],
         }
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== singleCombatDeckUnit.unit.id)
-        const opponentGamePlayer = game2.players.find((player) => player.user.id === opponent.id) as GamePlayer
+        const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
         await expect(
           graphql({
             schema,
             source: `mutation {
               playUnit(
-                game: "${game2.id}"
+                game: "${game.id}"
                 unit: "${singleCombatDeckUnit.unit.id}"
               ) {
                 ${getGameFragment()}
@@ -545,7 +492,7 @@ describe('play-unit-mutation', () => {
         ).resolves.toEqual({
           data: {
             playUnit: expectizeGame({
-              creator: game2.creator,
+              creator: game.creator,
               players: [
                 expectizeGamePlayer({
                   user: self,
@@ -578,53 +525,25 @@ describe('play-unit-mutation', () => {
         })
       })
       it('play single combat unit specifying combat', async () => {
-        let singleCombatDeckUnit: DeckUnit | undefined = undefined
-        let combat: Combat | undefined = undefined
-        let game2: Game | undefined = undefined
-        let gameDeck: GameDeck | undefined = undefined
-        for (let i = 0; i < 10 && !singleCombatDeckUnit; i++) {
-          game2 = await addGame({
-            creator: self,
-            opponentNames: [opponent.name],
-          })
-          gameDeck = await setDeck({
-            deckId: deckSelf.id,
-            gameId: game2.id,
-            userId: self.id,
-          })
-          for (let j = 0; j < gameDeck.hand.length && !singleCombatDeckUnit; j++) {
-            const deckUnit = gameDeck.hand[j]
-            if (deckUnit.unit.combats && deckUnit.unit.combats.length === 1) {
-              singleCombatDeckUnit = deckUnit
-              combat = deckUnit.unit.combats[0]
-            }
-          }
+        const unitName = 'Dennis Cranmer'
+        await ensureUnitsInHand({
+          gameId: game.id,
+          userId: self.id,
+          unitNames: [unitName],
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+        })
+
+        const gameDeck = await getGameDeck({
+          gameId: game.id,
+          userId: self.id,
+        })
+        const singleCombatDeckUnit = gameDeck.hand.find((handUnit) => handUnit.unit.name === unitName)
+        if (!singleCombatDeckUnit) {
+          throw Error(`Could not find unit "${unitName}" in hand`)
         }
-        if (!singleCombatDeckUnit || !game2 || !gameDeck || !combat) {
-          throw Error('Could not find unit with single eligible combat in hand')
-        }
-        await setDeck({
-          deckId: deckOpponent.id,
-          gameId: game2.id,
-          userId: opponent.id,
-        })
-        await setOrder({
-          gameId: game2.id,
-          userId: self.id,
-          users: [self.id, opponent.id],
-        })
-        await ready({
-          gameId: game2.id,
-          userId: self.id,
-        })
-        await ready({
-          gameId: game2.id,
-          userId: opponent.id,
-        })
-        game2 = await getGame({
-          gameId: game2.id,
-          userId: self.id,
-        })
+        const combat = singleCombatDeckUnit.unit.combats ? singleCombatDeckUnit.unit.combats[0] : Combat.Close
+
         const expectedCombatRow: PlayerCombatRow = {
           score: singleCombatDeckUnit.unit.strength || 0,
           units: [
@@ -639,13 +558,13 @@ describe('play-unit-mutation', () => {
           units: [],
         }
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== singleCombatDeckUnit.unit.id)
-        const opponentGamePlayer = game2.players.find((player) => player.user.id === opponent.id) as GamePlayer
+        const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
         await expect(
           graphql({
             schema,
             source: `mutation {
               playUnit(
-                game: "${game2.id}"
+                game: "${game.id}"
                 combat: ${combat}
                 unit: "${singleCombatDeckUnit.unit.id}"
               ) {
@@ -661,7 +580,7 @@ describe('play-unit-mutation', () => {
         ).resolves.toEqual({
           data: {
             playUnit: expectizeGame({
-              creator: game2.creator,
+              creator: game.creator,
               players: [
                 expectizeGamePlayer({
                   user: self,
@@ -694,53 +613,23 @@ describe('play-unit-mutation', () => {
         })
       })
       it('play multi combat unit specifying combat', async () => {
-        let multiCombatDeckUnit: DeckUnit | undefined = undefined
-        let combat: Combat | undefined = undefined
-        let game2: Game | undefined = undefined
-        let gameDeck: GameDeck | undefined = undefined
-        for (let i = 0; i < 10 && !multiCombatDeckUnit; i++) {
-          game2 = await addGame({
-            creator: self,
-            opponentNames: [opponent.name],
-          })
-          gameDeck = await setDeck({
-            deckId: deckSelf.id,
-            gameId: game2.id,
-            userId: self.id,
-          })
-          for (let j = 0; j < gameDeck.hand.length && !multiCombatDeckUnit; j++) {
-            const deckUnit = gameDeck.hand[j]
-            if (deckUnit.unit.combats && deckUnit.unit.combats.length > 1) {
-              multiCombatDeckUnit = deckUnit
-              combat = deckUnit.unit.combats[0]
-            }
-          }
+        const unitName = 'Filavandrel aen Fidhail'
+        await ensureUnitsInHand({
+          gameId: game.id,
+          userId: self.id,
+          unitNames: [unitName],
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+        })
+        const gameDeck = await getGameDeck({
+          gameId: game.id,
+          userId: self.id,
+        })
+        const multiCombatDeckUnit = gameDeck.hand.find((handUnit) => handUnit.unit.name === unitName)
+        if (!multiCombatDeckUnit) {
+          throw Error(`Could not find unit "${unitName}" in hand`)
         }
-        if (!multiCombatDeckUnit || !game2 || !gameDeck) {
-          throw Error('Could not find unit with multiple eligible combats in hand')
-        }
-        await setDeck({
-          deckId: deckOpponent.id,
-          gameId: game2.id,
-          userId: opponent.id,
-        })
-        await setOrder({
-          gameId: game2.id,
-          userId: self.id,
-          users: [self.id, opponent.id],
-        })
-        await ready({
-          gameId: game2.id,
-          userId: self.id,
-        })
-        await ready({
-          gameId: game2.id,
-          userId: opponent.id,
-        })
-        game2 = await getGame({
-          gameId: game2.id,
-          userId: self.id,
-        })
+        const combat = multiCombatDeckUnit.unit.combats ? multiCombatDeckUnit.unit.combats[0] : Combat.Close
 
         const expectedCombatRow: PlayerCombatRow = {
           score: multiCombatDeckUnit.unit.strength || 0,
@@ -756,13 +645,13 @@ describe('play-unit-mutation', () => {
           units: [],
         }
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== multiCombatDeckUnit.unit.id)
-        const opponentGamePlayer = game2.players.find((player) => player.user.id === opponent.id) as GamePlayer
+        const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
         await expect(
           graphql({
             schema,
             source: `mutation {
               playUnit(
-                game: "${game2.id}"
+                game: "${game.id}"
                 unit: "${multiCombatDeckUnit.unit.id}"
                 combat: ${combat}
               ) {
@@ -778,7 +667,7 @@ describe('play-unit-mutation', () => {
         ).resolves.toEqual({
           data: {
             playUnit: expectizeGame({
-              creator: game2.creator,
+              creator: game.creator,
               players: [
                 expectizeGamePlayer({
                   user: self,
