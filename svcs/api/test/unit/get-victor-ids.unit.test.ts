@@ -1,0 +1,435 @@
+import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
+import GetVictorIds from '../../src/graphql/resolvers/mutations/util/get-victor-ids'
+import TestUtil from '../test-util'
+import { ObjectId } from 'mongodb'
+
+describe('get-victor-ids', () => {
+  const logPrefix = 'test prefix'
+  it('returns both if both drew twice', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [self.user, opponent.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "0"`],
+        [`${logPrefix} player "${opponent.user}" playerWins: "0"`],
+        [`${logPrefix} highestWins: "0"`],
+      ],
+    })
+  })
+  it('returns both if self won lost then drew', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [self.user, opponent.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "1"`],
+        [
+          `${logPrefix} player "${self.user}" wins "1" is greater than previous highestWins of "0", setting high wins to theirs`,
+        ],
+        [`${logPrefix} player "${opponent.user}" playerWins: "1"`],
+        [`${logPrefix} highestWins: "1"`],
+      ],
+    })
+  })
+  it('returns self if self won twice', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [self.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "2"`],
+        [
+          `${logPrefix} player "${self.user}" wins "2" is greater than previous highestWins of "0", setting high wins to theirs`,
+        ],
+        [`${logPrefix} player "${opponent.user}" playerWins: "0"`],
+        [`${logPrefix} highestWins: "2"`],
+      ],
+    })
+  })
+  it('returns self if self won once and drew once', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [self.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "1"`],
+        [
+          `${logPrefix} player "${self.user}" wins "1" is greater than previous highestWins of "0", setting high wins to theirs`,
+        ],
+        [`${logPrefix} player "${opponent.user}" playerWins: "0"`],
+        [`${logPrefix} highestWins: "1"`],
+      ],
+    })
+  })
+  it('returns self if self drew once and won once', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [self.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "1"`],
+        [
+          `${logPrefix} player "${self.user}" wins "1" is greater than previous highestWins of "0", setting high wins to theirs`,
+        ],
+        [`${logPrefix} player "${opponent.user}" playerWins: "0"`],
+        [`${logPrefix} highestWins: "1"`],
+      ],
+    })
+  })
+  it('returns self if self won once lost once then won last', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [self.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "2"`],
+        [
+          `${logPrefix} player "${self.user}" wins "2" is greater than previous highestWins of "0", setting high wins to theirs`,
+        ],
+        [`${logPrefix} player "${opponent.user}" playerWins: "1"`],
+        [`${logPrefix} highestWins: "2"`],
+      ],
+    })
+  })
+  it('returns opponent if opponent won twice', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [opponent.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "0"`],
+        [`${logPrefix} player "${opponent.user}" playerWins: "2"`],
+        [
+          `${logPrefix} player "${opponent.user}" wins "2" is greater than previous highestWins of "0", setting high wins to theirs`,
+        ],
+        [`${logPrefix} highestWins: "2"`],
+      ],
+    })
+  })
+  it('returns opponent if opponent won once and drew once', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [opponent.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "0"`],
+        [`${logPrefix} player "${opponent.user}" playerWins: "1"`],
+        [
+          `${logPrefix} player "${opponent.user}" wins "1" is greater than previous highestWins of "0", setting high wins to theirs`,
+        ],
+        [`${logPrefix} highestWins: "1"`],
+      ],
+    })
+  })
+  it('returns opponent if opponent drew once and won once', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Drew,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [opponent.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "0"`],
+        [`${logPrefix} player "${opponent.user}" playerWins: "1"`],
+        [
+          `${logPrefix} player "${opponent.user}" wins "1" is greater than previous highestWins of "0", setting high wins to theirs`,
+        ],
+        [`${logPrefix} highestWins: "1"`],
+      ],
+    })
+  })
+  it('returns opponent if opponent won once lost once then won last', () => {
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+      ],
+    })
+    const opponent = TestUtil.getDbGamePlayer({
+      rounds: [
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Lost,
+        }),
+        TestUtil.getDbPlayerRound({
+          result: RoundResult.Won,
+        }),
+      ],
+    })
+    const game = TestUtil.getDbGame({
+      players: [self, opponent],
+    })
+    testGetVictorIds({
+      game,
+      logPrefix,
+      expected: [opponent.user],
+      traceCalls: [
+        [`${logPrefix} player "${self.user}" playerWins: "1"`],
+        [
+          `${logPrefix} player "${self.user}" wins "1" is greater than previous highestWins of "0", setting high wins to theirs`,
+        ],
+        [`${logPrefix} player "${opponent.user}" playerWins: "2"`],
+        [
+          `${logPrefix} player "${opponent.user}" wins "2" is greater than previous highestWins of "1", setting high wins to theirs`,
+        ],
+        [`${logPrefix} highestWins: "2"`],
+      ],
+    })
+  })
+})
+
+function testGetVictorIds({
+  game,
+  logPrefix,
+  expected,
+  traceCalls,
+}: {
+  game: GameDbObject
+  logPrefix: string
+  expected: ObjectId[]
+  traceCalls: string[][]
+}) {
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  GetVictorIds['logger'] = {
+    debug: debugSpy,
+    trace: traceSpy,
+  } as any
+
+  expect(
+    GetVictorIds.getVictorIds({
+      game,
+      logPrefix,
+    })
+  ).toEqual(expected)
+
+  expect(debugSpy.mock.calls).toEqual([[`${logPrefix} ends game in victory for "${JSON.stringify(expected)}"`]])
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
+}

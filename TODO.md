@@ -5,6 +5,7 @@ A list of things to be done in the future.
 ## Fixes
 
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
+- have logic methods directly mutate game object instead of returning new game object? How to handle unit tests to make sure only expected things mutated?
 - separate invalid checks on mutations into separate methods?
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
