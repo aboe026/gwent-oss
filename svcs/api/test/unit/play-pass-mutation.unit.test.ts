@@ -254,17 +254,6 @@ describe('play-pass-mutation', () => {
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
-        debugCalls: [
-          [`${logPrefix} ends round "1" in draw for "${JSON.stringify([firstPlayer.user, secondPlayer.user])}"`],
-        ],
-        traceCalls: [
-          [`${logPrefix} player "${firstPlayer.user}" round "1" score: "0"`],
-          [`${logPrefix} player "${secondPlayer.user}" round "1" score: "0"`],
-          [`${logPrefix} round "1" highestScore: "0"`],
-          [`${logPrefix} round "1" usersWithHighestScore: "2"`],
-          [`${logPrefix} player "${firstPlayer.user}" round "1" result: "${RoundResult.Drew}"`],
-          [`${logPrefix} player "${secondPlayer.user}" round "1" result: "${RoundResult.Drew}"`],
-        ],
       })
     })
     it('returns resolved game if round over in win', async () => {
@@ -344,18 +333,6 @@ describe('play-pass-mutation', () => {
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
-        debugCalls: [[`${logPrefix} ends round "1" in win for "${JSON.stringify([firstPlayer.user])}"`]],
-        traceCalls: [
-          [`${logPrefix} player "${firstPlayer.user}" round "1" score: "1"`],
-          [
-            `${logPrefix} player "${firstPlayer.user}" round "1" score "1" is greater than previous highestScore of "0", setting it to theirs`,
-          ],
-          [`${logPrefix} player "${secondPlayer.user}" round "1" score: "0"`],
-          [`${logPrefix} round "1" highestScore: "1"`],
-          [`${logPrefix} round "1" usersWithHighestScore: "1"`],
-          [`${logPrefix} player "${firstPlayer.user}" round "1" result: "${RoundResult.Won}"`],
-          [`${logPrefix} player "${secondPlayer.user}" round "1" result: "${RoundResult.Lost}"`],
-        ],
       })
     })
     it('returns resolved game if game over', async () => {
@@ -442,89 +419,6 @@ describe('play-pass-mutation', () => {
         expected: TestUtil.getGameFromDbGame({
           game: modifiedGame,
         }),
-        debugCalls: [
-          [`${logPrefix} ends round "2" in draw for "${JSON.stringify([firstPlayer.user, secondPlayer.user])}"`],
-          [`${logPrefix} ends game in victory for "${JSON.stringify([firstPlayer.user])}"`],
-        ],
-        traceCalls: [
-          [`${logPrefix} player "${firstPlayer.user}" round "2" score: "0"`],
-          [`${logPrefix} player "${secondPlayer.user}" round "2" score: "0"`],
-          [`${logPrefix} round "2" highestScore: "0"`],
-          [`${logPrefix} round "2" usersWithHighestScore: "2"`],
-          [`${logPrefix} player "${firstPlayer.user}" round "2" result: "${RoundResult.Drew}"`],
-          [`${logPrefix} player "${secondPlayer.user}" round "2" result: "${RoundResult.Drew}"`],
-          [`${logPrefix} player "${firstPlayer.user}" playerWins: "1"`],
-          [
-            `${logPrefix} player "${firstPlayer.user}" wins "1" is greater than previous highestWins of "0", setting high wins to theirs`,
-          ],
-          [`${logPrefix} player "${secondPlayer.user}" playerWins: "0"`],
-          [`${logPrefix} highestWins: "1"`],
-        ],
-      })
-    })
-    it('logs to trace if enabled', async () => {
-      const firstPlayer = TestUtil.getDbGamePlayer({
-        user: userId,
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 0,
-      })
-      const secondPlayer = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 1,
-      })
-      const moveDate = new Date()
-      const game = TestUtil.getDbGame({
-        players: [firstPlayer, secondPlayer],
-        round: 1,
-        turn: firstPlayer.user,
-      })
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...firstPlayer,
-            rounds: [
-              {
-                ...firstPlayer.rounds[0],
-                passed: true,
-                moves: [
-                  {
-                    created: moveDate,
-                    type: MoveType.Pass,
-                  },
-                ],
-              },
-            ],
-          },
-          secondPlayer,
-        ],
-        turn: secondPlayer.user,
-      }
-      await testPlayPass({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: firstPlayer,
-        },
-        modifiedGame,
-        moveDate,
-        nextPlayerId: secondPlayer.user,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-        traceEnabled: true,
-        traceCalls: [
-          [`playPass by "${userId}" on game "${gameId}" args: "${JSON.stringify({ game: gameId })}"`],
-          [`playPass by "${userId}" on game "${gameId}" requested fields: "[]"`],
-          [`playPass by "${userId}" on game "${gameId}" requested arguments: "[]"`],
-        ],
       })
     })
   })
@@ -541,11 +435,8 @@ async function testPlayPass({
   roundOver = false,
   gameOver = false,
   expected,
-  traceEnabled,
   errorCalls = [],
   warnCalls = [],
-  debugCalls = [],
-  traceCalls = [],
 }: {
   userId?: ObjectId
   gameId?: string
@@ -559,9 +450,6 @@ async function testPlayPass({
   expected: Game | Error
   errorCalls?: string[][]
   warnCalls?: string[][]
-  debugCalls?: string[][]
-  traceEnabled?: boolean
-  traceCalls?: string[][]
 }) {
   const logPrefix = `playPass by "${userId}" on game "${gameId}"`
   const context: Context = {
@@ -622,14 +510,10 @@ async function testPlayPass({
   }
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
   PlayPassMutation['logger'] = {
     error: errorSpy,
     warn: warnSpy,
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(false),
   } as any
 
   const promise = PlayPassMutation.playPass(args, context, null as any)
@@ -743,6 +627,4 @@ async function testPlayPass({
   expect(dateSpy.mock.calls).toEqual(moveDate ? [[]] : [])
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

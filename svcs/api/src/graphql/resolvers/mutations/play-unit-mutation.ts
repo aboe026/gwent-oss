@@ -148,7 +148,6 @@ export default class PlayUnitMutation {
       } as MoveUnitDbObject,
     })
 
-    // set next player
     game.turn = GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({
       currentRound: game.round,
       currentTurn: game.turn,

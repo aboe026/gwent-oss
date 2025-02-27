@@ -6,8 +6,7 @@ import { GameDbObject, GamePlayerDbObject, RoundResult } from '@gwent/graphql-sc
 export default class SetRoundWinners {
   private static logger = getLogger('SetRoundWinners')
 
-  static finishRound({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): GamePlayerDbObject[] {
-    // set round winner(s)
+  static setRoundWinners({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): GamePlayerDbObject[] {
     let highestScore = 0
     let usersWithHighestScore = 0
     for (const gamePlayer of game.players) {
