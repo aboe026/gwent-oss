@@ -4,17 +4,23 @@ import { Game, MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typin
 import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../event-manager'
 import GameDeckResolver from '../types/game-deck-resolver'
-import { GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
+import { GameStatus, MovePassDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
 import { MoveType } from '@gwent/graphql-schema'
-import MutationUtil from './mutation-util'
 import { PassPlayedPayload, RoundEndedForDeckPayload } from '../subscription-resolver'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
+import PassCurrentPlayer from './util/pass-current-player'
+import GetPlayerIdForNextRound from './util/get-player-id-for-next-round'
+import IsRoundOver from './util/is-round-over'
+import IsGameOver from './util/is-game-over'
+import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-current-round'
+import InitializeNewRound from './util/initialize-new-round'
+import AddMoveToPlayer from './util/add-move-to-player'
 
 /**
  * A class for executing the playPass GraphQL Mutation.
@@ -68,37 +74,23 @@ export default class PlayPassMutation {
       throw new PresentableError(message)
     }
 
-    const mutationUtil = new MutationUtil({
-      logger: PlayPassMutation.logger,
-      logPrefix,
+    // pass
+    game.players = PassCurrentPlayer.markPassed({
+      game,
     })
 
-    // pass
-    game.players = game.players.map((gamePlayer) => {
-      if (gamePlayer.user.toString() === player.user.toString()) {
-        return {
-          ...gamePlayer,
-          rounds: gamePlayer.rounds.map((round, index) => {
-            if (index === game.round - 1) {
-              round.moves = [
-                ...round.moves,
-                {
-                  created: new Date(),
-                  type: MoveType.Pass,
-                },
-              ]
-              round.passed = true
-            }
-            return round
-          }),
-        }
-      }
-      return gamePlayer
+    game.players = AddMoveToPlayer.addMoveToPlayer({
+      game,
+      move: {
+        created: new Date(),
+        type: MoveType.Pass,
+      } as MovePassDbObject,
     })
 
     let nextPlayerId: ObjectId | undefined = undefined
-    const roundOver = mutationUtil.isRoundOver({
+    const roundOver = IsRoundOver.isRoundOver({
       game,
+      logPrefix,
     })
     if (roundOver) {
       // set round winner(s)
@@ -177,8 +169,9 @@ export default class PlayPassMutation {
         }
       })
 
-      const gameOver = mutationUtil.isGameOver({
+      const gameOver = IsGameOver.isGameOver({
         game,
+        logPrefix,
       })
       if (gameOver) {
         // set game victor(s)
@@ -206,22 +199,24 @@ export default class PlayPassMutation {
         game.status = GameStatus.Done
       } else {
         // set next player
-        nextPlayerId = mutationUtil.getPlayerIdForNextRound({
+        nextPlayerId = GetPlayerIdForNextRound.getPlayerIdForNextRound({
           game,
+          logPrefix,
         })
 
         // initialize next round
-        game.players = mutationUtil.initializeNewRound({
+        game.players = InitializeNewRound.initializeNewRound({
           players: game.players,
         })
 
         game.round = game.round + 1
       }
     } else {
-      nextPlayerId = mutationUtil.getNextPlayerIdForCurrentRound({
+      nextPlayerId = GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({
         currentRound: game.round,
         currentTurn: game.turn,
         players: game.players,
+        logPrefix,
       })
     }
 

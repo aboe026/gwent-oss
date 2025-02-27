@@ -68,6 +68,7 @@ async function testFromObject({ gameUnit, unit }: { gameUnit: GameUnitDbObject; 
   const expected: GameUnit = {
     artStyle: gameUnit.artStyle,
     effectiveStrength: gameUnit.effectiveStrength,
+    effects: [],
     unit: resolvedUnit,
   }
   await expect(

@@ -11,10 +11,10 @@ import { FactionKey, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getRandomSubset } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
-import MutationUtil from './mutation-util'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
+import SetGameTurnOrder from './util/set-game-turn-order'
 
 /**
  * A class for executing the setDeck GraphQL Mutation.
@@ -78,11 +78,6 @@ export default class SetDeckMutation {
       SetDeckMutation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
-
-    const mutationUtil = new MutationUtil({
-      logger: SetDeckMutation.logger,
-      logPrefix,
-    })
 
     const hand = getRandomSubset({
       items: deck.units,
@@ -157,7 +152,7 @@ export default class SetDeckMutation {
         gameSet: resolvedGame,
       } as GameSetPayload)
       try {
-        await mutationUtil.setGameTurnOrder({
+        await SetGameTurnOrder.setGameTurnOrder({
           game: updatedGame,
           player: updatedPlayer,
           logPrefix: `setOrder via ${logPrefix}`,

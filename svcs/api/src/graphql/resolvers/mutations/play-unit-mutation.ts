@@ -1,35 +1,25 @@
-import { ObjectId } from 'mongodb'
-
+import CalculateGameEffectiveStrengths from './util/calculate-game-effective-strengths'
+import CalculateGameScores from './util/calculate-game-scores'
 import { Combat, Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
-import {
-  DeckUnitDbObject,
-  EffectDbObject,
-  EffectFromUnitDbObject,
-  EffectKey,
-  GameDbObject,
-  GamePlayerDbObject,
-  GameStatus,
-  MoveUnitDbObject,
-  PlayerCombatRowDbObject,
-  UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
 import DeckUnitResolver from '../types/deck-unit-resolver'
-import { EffectReasonType } from '@gwent/graphql-schema'
 import EventManager from '../../event-manager'
 import GameDeckResolver from '../types/game-deck-resolver'
 import GameResolver from '../types/game-resolver'
+import { GameStatus, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
+import ModifyGameUnitPositions from './util/modify-game-unit-positions'
 import { MoveType } from '@gwent/graphql-schema'
-import MutationUtil from './mutation-util'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
 import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../subscription-resolver'
 import UnitStore from '../../../database/stores/unit-store'
-import EffectStore from '../../../database/stores/effect-store'
+import UnitUtil from './util/unit-util'
+import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-current-round'
+import AddMoveToPlayer from './util/add-move-to-player'
 
 /**
  * A class for executing the playUnit GraphQL Mutation.
@@ -124,50 +114,46 @@ export default class PlayUnitMutation {
       throw new PresentableError(message)
     }
 
-    const mutationUtil = new MutationUtil({
-      logger: PlayUnitMutation.logger,
-      logPrefix,
-    })
-
-    // get unit details
-    const roundUnits = await PlayUnitMutation.getRoundUnits({
+    const roundUnits = await UnitUtil.getRoundUnits({
       game,
       unitBeingPlayed: unit,
     })
-    const unitEffects = await PlayUnitMutation.getUnitEffects({
+    const unitEffects = await UnitUtil.getUnitEffects({
       units: roundUnits,
     })
 
-    // adjust unit positions
-    game.players = PlayUnitMutation.addOrRemoveUnits({
+    game.players = ModifyGameUnitPositions.modifyGameUnitPositions({
       game,
       combat,
       deckUnit,
     })
 
-    // calculate effective strengths
-    game.players = PlayUnitMutation.calculateEffectiveStrengths({
+    game.players = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits],
       effects: unitEffects,
     })
 
-    // calculate scores
-    game.players = PlayUnitMutation.calculateScores({
+    game.players = CalculateGameScores.calculateScores({
       game,
     })
 
-    game.players = PlayUnitMutation.addMoveToPlayer({
+    game.players = AddMoveToPlayer.addMoveToPlayer({
       game,
-      combat,
-      deckUnit,
+      move: {
+        created: new Date(),
+        row: combat,
+        unit: deckUnit,
+        type: MoveType.Unit,
+      } as MoveUnitDbObject,
     })
 
     // set next player
-    game.turn = mutationUtil.getNextPlayerIdForCurrentRound({
+    game.turn = GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({
       currentRound: game.round,
       currentTurn: game.turn,
       players: game.players,
+      logPrefix,
     })
 
     const updatedGame = await GameStore.save(game)
@@ -204,293 +190,5 @@ export default class PlayUnitMutation {
     } as UnitPlayedFromDeckPayload)
 
     return resolvedGame
-  }
-
-  private static async getRoundUnits({
-    game,
-    unitBeingPlayed,
-  }: {
-    game: GameDbObject
-    unitBeingPlayed: UnitDbObject
-  }): Promise<UnitDbObject[]> {
-    const unitIds: string[] = [unitBeingPlayed.toString()] // to be removed at end, used just for now to ignore potential duplicates
-    for (const player of game.players) {
-      const round = player.rounds[game.round - 1]
-      for (let i = 0; i < player.rounds.length; i++) {
-        if (i === game.round - 1) {
-          for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
-            if (!unitIds.includes(rowUnit.unit.toString())) {
-              unitIds.push(rowUnit.unit.toString())
-            }
-          }
-        }
-      }
-    }
-
-    const units = await UnitStore.get({
-      ids: unitIds.slice(1), // remove the deckUnit we have already retrieved
-    })
-
-    return [...units, unitBeingPlayed]
-  }
-
-  private static async getUnitEffects({ units }: { units: UnitDbObject[] }): Promise<EffectDbObject[]> {
-    const effectIds: string[] = []
-    for (const unit of units) {
-      if (unit.effects) {
-        for (const unitEffect of unit.effects) {
-          const effect = unitEffect.toString()
-          if (!effectIds.includes(effect)) {
-            effectIds.push(effect)
-          }
-        }
-      }
-    }
-
-    return EffectStore.get({
-      ids: effectIds,
-    })
-  }
-
-  private static addMoveToPlayer({
-    game,
-    deckUnit,
-    combat,
-  }: {
-    game: GameDbObject
-    deckUnit: DeckUnitDbObject
-    combat: Combat
-  }) {
-    const move: MoveUnitDbObject = {
-      created: new Date(),
-      row: combat,
-      unit: deckUnit,
-      type: MoveType.Unit,
-    }
-    return game.players.map((player) => {
-      return {
-        ...player,
-        rounds: player.rounds.map((round, index) => {
-          if (index === game.round - 1) {
-            if (player.user.toString() === game.turn?.toString()) {
-              round.moves = [...round.moves, move]
-            }
-          }
-          return round
-        }),
-      }
-    })
-  }
-
-  private static addOrRemoveUnits({
-    game,
-    deckUnit,
-    combat,
-  }: {
-    game: GameDbObject
-    deckUnit: DeckUnitDbObject
-    combat: Combat
-  }): GamePlayerDbObject[] {
-    return game.players.map((player) => {
-      return {
-        ...player,
-        deck: {
-          ...player.deck,
-          hand:
-            player.user.toString() === game.turn?.toString()
-              ? player.deck.hand.filter((handUnit) => handUnit.unit.toString() !== deckUnit.unit.toString())
-              : player.deck.hand,
-        },
-        rounds: player.rounds.map((round, index) => {
-          if (index === game.round - 1) {
-            if (player.user.toString() === game.turn?.toString()) {
-              round.close = PlayUnitMutation.addUnitToCombatRow({
-                deckUnit,
-                row: round.close,
-                rowCombat: Combat.Close,
-                unitCombat: combat,
-              })
-              round.ranged = PlayUnitMutation.addUnitToCombatRow({
-                deckUnit,
-                row: round.ranged,
-                rowCombat: Combat.Ranged,
-                unitCombat: combat,
-              })
-              round.siege = PlayUnitMutation.addUnitToCombatRow({
-                deckUnit,
-                row: round.siege,
-                rowCombat: Combat.Siege,
-                unitCombat: combat,
-              })
-            }
-          }
-          return round
-        }),
-      }
-    })
-  }
-
-  private static addUnitToCombatRow({
-    deckUnit,
-    unitCombat,
-    rowCombat,
-    row,
-  }: {
-    deckUnit: DeckUnitDbObject
-    unitCombat: Combat
-    rowCombat: Combat
-    row: PlayerCombatRowDbObject
-  }): PlayerCombatRowDbObject {
-    if (unitCombat === rowCombat) {
-      row.units.push({
-        ...deckUnit,
-      })
-    }
-    return row
-  }
-
-  private static calculateEffectiveStrengths({
-    game,
-    units,
-    effects,
-  }: {
-    game: GameDbObject
-    units: UnitDbObject[]
-    effects: EffectDbObject[]
-  }): GamePlayerDbObject[] {
-    return game.players.map((player) => {
-      return {
-        ...player,
-        rounds: player.rounds.map((round, index) => {
-          if (index === game.round - 1) {
-            round.close = PlayUnitMutation.calculateEffectiveStrengthsForRow({
-              row: round.close,
-              units,
-              effects,
-            })
-            round.ranged = PlayUnitMutation.calculateEffectiveStrengthsForRow({
-              row: round.ranged,
-              units,
-              effects,
-            })
-            round.siege = PlayUnitMutation.calculateEffectiveStrengthsForRow({
-              row: round.siege,
-              units,
-              effects,
-            })
-          }
-          return round
-        }),
-      }
-    })
-  }
-
-  private static calculateEffectiveStrengthsForRow({
-    row,
-    units,
-    effects,
-  }: {
-    row: PlayerCombatRowDbObject
-    units: UnitDbObject[]
-    effects: EffectDbObject[]
-  }): PlayerCombatRowDbObject {
-    const rowDbUnits: UnitDbObject[] = []
-    for (const rowUnit of row.units) {
-      const matchingUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
-      if (matchingUnit) {
-        rowDbUnits.push(matchingUnit)
-      } else {
-        throw new PresentableError(`Could not find Unit with ID "${rowUnit.unit}"`)
-      }
-    }
-    let moraleEffectId = ''
-    const moraleEffect = effects.find((effect) => effect.key === EffectKey.Morale)
-    if (moraleEffect) {
-      moraleEffectId = moraleEffect._id.toString()
-    }
-
-    // TODO: make into method
-    // TODO: have separate file for these helper methods around game logic?
-    const moraleIdsInRow: string[] = []
-    if (moraleEffectId) {
-      for (const rowDbUnit of rowDbUnits) {
-        if (rowDbUnit.effects) {
-          let unitHasMorale = false
-          for (let i = 0; i < rowDbUnit.effects.length && !unitHasMorale; i++) {
-            const effect = rowDbUnit.effects[i]
-            if (effect.toString() === moraleEffectId) {
-              unitHasMorale = true
-            }
-          }
-          if (unitHasMorale) {
-            moraleIdsInRow.push(rowDbUnit._id.toString())
-          }
-        }
-      }
-    }
-
-    return {
-      ...row,
-      units: row.units.map((rowUnit) => {
-        const dbUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
-        if (dbUnit?.strength) {
-          rowUnit.effectiveStrength = dbUnit.strength
-          rowUnit.effects = []
-
-          if (!dbUnit?.hero) {
-            const moralesToApply = moraleIdsInRow.filter((id) => id !== rowUnit.unit.toString())
-            for (const moraleId of moralesToApply) {
-              rowUnit.effectiveStrength += 1
-              const moraleDbUnit = units.find((unit) => unit._id.toString() === moraleId)
-              if (moraleDbUnit) {
-                const reason: EffectFromUnitDbObject = {
-                  effect: new ObjectId(moraleEffectId),
-                  type: EffectReasonType.Unit,
-                  unit: moraleDbUnit._id,
-                }
-                rowUnit.effects.push({
-                  operator: '+1',
-                  reason,
-                  total: rowUnit.effectiveStrength,
-                })
-              }
-            }
-          }
-        }
-
-        return rowUnit
-      }),
-    }
-  }
-
-  private static calculateScores({ game }: { game: GameDbObject }): GamePlayerDbObject[] {
-    return game.players.map((player) => {
-      return {
-        ...player,
-        rounds: player.rounds.map((round, index) => {
-          if (index === game.round - 1) {
-            round.close.score = PlayUnitMutation.calculateScoreForRow({
-              row: round.close,
-            })
-            round.ranged.score = PlayUnitMutation.calculateScoreForRow({
-              row: round.ranged,
-            })
-            round.siege.score = PlayUnitMutation.calculateScoreForRow({
-              row: round.siege,
-            })
-            round.score = round.close.score + round.ranged.score + round.siege.score
-          }
-          return round
-        }),
-      }
-    })
-  }
-
-  private static calculateScoreForRow({ row }: { row: PlayerCombatRowDbObject }): number {
-    let score = 0
-    for (const unit of row.units) {
-      score += unit.effectiveStrength || 0
-    }
-    return score
   }
 }

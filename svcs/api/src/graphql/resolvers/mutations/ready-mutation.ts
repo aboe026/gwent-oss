@@ -8,7 +8,7 @@ import { GameReadyPayload } from '../subscription-resolver'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
-import MutationUtil from './mutation-util'
+import InitializeNewRound from './util/initialize-new-round'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
@@ -58,11 +58,6 @@ export default class ReadyMutation {
       throw new PresentableError(message)
     }
 
-    const mutationUtil = new MutationUtil({
-      logger: ReadyMutation.logger,
-      logPrefix,
-    })
-
     game.players = game.players.map((gamePlayer) => {
       let ready = gamePlayer.ready
       if (gamePlayer.user.toString() === userId.toString()) {
@@ -81,7 +76,7 @@ export default class ReadyMutation {
     }
     if (unreadyPlayers.length === 0) {
       ReadyMutation.logger.debug(`${logPrefix} has all players ready, starting first round.`)
-      game.players = mutationUtil.initializeNewRound({
+      game.players = InitializeNewRound.initializeNewRound({
         players: game.players,
       })
       game.round = 1

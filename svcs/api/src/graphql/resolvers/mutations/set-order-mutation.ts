@@ -4,8 +4,8 @@ import { Context } from '@gwent/graphql-schema/context'
 import { Game, MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
-import MutationUtil from './mutation-util'
 import ResolverUtil from '../resolver-util'
+import SetGameTurnOrder from './util/set-game-turn-order'
 
 /**
  * A class for executing the setOrder GraphQL Mutation.
@@ -57,16 +57,12 @@ export default class SetOrderMutation {
       status: GameStatus.Ordering,
     })
 
-    const mutationUtil = new MutationUtil({
-      logger: SetOrderMutation.logger,
-      logPrefix,
-    })
-
-    return mutationUtil.setGameTurnOrder({
+    return SetGameTurnOrder.setGameTurnOrder({
       game,
       player,
       userIds,
       allowImplicit: true,
+      logPrefix,
     })
   }
 }

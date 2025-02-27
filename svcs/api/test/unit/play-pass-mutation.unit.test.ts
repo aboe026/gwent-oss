@@ -7,8 +7,11 @@ import { GameDbObject, GameDeckDbObject, GameStatus } from '@gwent/graphql-schem
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
+import GetNextPlayerIdForCurrentRound from '../../src/graphql/resolvers/mutations/util/get-next-player-id-for-current-round'
+import GetPlayerIdForNextRound from '../../src/graphql/resolvers/mutations/util/get-player-id-for-next-round'
+import IsGameOver from '../../src/graphql/resolvers/mutations/util/is-game-over'
+import IsRoundOver from '../../src/graphql/resolvers/mutations/util/is-round-over'
 import { MoveType } from '@gwent/graphql-schema'
-import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import { PubSubEvents } from '@gwent/constants'
 import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
@@ -560,6 +563,7 @@ async function testPlayPass({
   traceEnabled?: boolean
   traceCalls?: string[][]
 }) {
+  const logPrefix = `playPass by "${userId}" on game "${gameId}"`
   const context: Context = {
     session: {},
   }
@@ -572,13 +576,13 @@ async function testPlayPass({
     game: gameId,
   }
   const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer').mockResolvedValue(getGamePlayerResponse)
-  const isRoundOverSpy = jest.spyOn(MutationUtil.prototype, 'isRoundOver').mockReturnValue(roundOver)
-  const isGameOverSpy = jest.spyOn(MutationUtil.prototype, 'isGameOver').mockReturnValue(gameOver)
-  const getPlayerIdForNextRoundSpy = jest.spyOn(MutationUtil.prototype, 'getPlayerIdForNextRound')
+  const isRoundOverSpy = jest.spyOn(IsRoundOver, 'isRoundOver').mockReturnValue(roundOver)
+  const isGameOverSpy = jest.spyOn(IsGameOver, 'isGameOver').mockReturnValue(gameOver)
+  const getPlayerIdForNextRoundSpy = jest.spyOn(GetPlayerIdForNextRound, 'getPlayerIdForNextRound')
   if (nextPlayerId) {
     getPlayerIdForNextRoundSpy.mockReturnValue(nextPlayerId)
   }
-  const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(MutationUtil.prototype, 'getNextPlayerIdForCurrentRound')
+  const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(GetNextPlayerIdForCurrentRound, 'getNextPlayerIdForCurrentRound')
   if (nextPlayerId) {
     getNextPlayerIdForCurrentRoundSpy.mockReturnValue(nextPlayerId)
   }
@@ -658,6 +662,7 @@ async function testPlayPass({
           [
             {
               game: modifiedGame,
+              logPrefix,
             },
           ],
         ]
@@ -671,6 +676,7 @@ async function testPlayPass({
               currentRound: modifiedGame?.round,
               currentTurn: userId,
               players: modifiedGame?.players,
+              logPrefix,
             },
           ],
         ]

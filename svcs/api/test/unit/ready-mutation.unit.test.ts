@@ -1,4 +1,3 @@
-import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
@@ -7,11 +6,11 @@ import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import { PubSubEvents } from '@gwent/constants'
 import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../test-util'
+import InitializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 
 describe('ready-mutation', () => {
   describe('ready', () => {
@@ -148,9 +147,7 @@ describe('ready-mutation', () => {
         ...game,
         players: [gamePlayerSelf, readyOpponentGamePlayer],
       }
-      const allPlayersReadyPlayers: GamePlayerDbObject[] = new MutationUtil({
-        logger: getLogger('test'),
-      }).initializeNewRound({
+      const allPlayersReadyPlayers: GamePlayerDbObject[] = InitializeNewRound.initializeNewRound({
         players: [
           {
             ...game.players[0],
