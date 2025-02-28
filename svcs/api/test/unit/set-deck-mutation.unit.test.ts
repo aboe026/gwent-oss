@@ -21,7 +21,7 @@ import { PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck-mutation'
 import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('set-deck-mutation', () => {
   describe('setDeck', () => {

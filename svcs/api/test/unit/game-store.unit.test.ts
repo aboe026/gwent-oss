@@ -2,7 +2,7 @@ import { Document, Filter, FindOptions, ObjectId, UpdateFilter } from 'mongodb'
 
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('game-store', () => {
   describe('add', () => {

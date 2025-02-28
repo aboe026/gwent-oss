@@ -15,7 +15,7 @@ import { MoveType } from '@gwent/graphql-schema'
 import { PubSubEvents } from '@gwent/constants'
 import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('play-pass-mutation', () => {
   describe('playPass', () => {

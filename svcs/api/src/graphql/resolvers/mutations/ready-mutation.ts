@@ -76,10 +76,9 @@ export default class ReadyMutation {
     }
     if (unreadyPlayers.length === 0) {
       ReadyMutation.logger.debug(`${logPrefix} has all players ready, starting first round.`)
-      game.players = InitializeNewRound.initializeNewRound({
-        players: game.players,
+      InitializeNewRound.initializeNewRound({
+        game,
       })
-      game.round = 1
       game.status = GameStatus.Playing
     }
 

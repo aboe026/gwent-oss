@@ -6,7 +6,7 @@ import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import FactionStore from '../../src/database/stores/faction-store'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import { getUniqueItems } from '@gwent/utils'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 

@@ -28,7 +28,7 @@ import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('play-unit-mutation', () => {
   let self: User

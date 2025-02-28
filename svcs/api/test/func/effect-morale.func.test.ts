@@ -27,7 +27,7 @@ import { ensureUnitsInHand } from '@gwent/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import schema from '../../src/graphql/executable-schema'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import { getGameFragment } from './util/fragment-util'
 
 describe('effect-morale', () => {

@@ -18,7 +18,7 @@ import SubscriptionResolver, {
   UnitPlayedOnGamePayload,
   UnitRedrawnPayload,
 } from '../../src/graphql/resolvers/subscription-resolver'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import * as utils from '@gwent/utils'
 
 describe('subscription-resolver', () => {

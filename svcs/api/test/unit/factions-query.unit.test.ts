@@ -3,7 +3,7 @@ import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import FactionsQuery from '../../src/graphql/resolvers/queries/factions-query'
 import FactionStore from '../../src/database/stores/faction-store'
 import { FactionKey, QueryFactionsArgs } from '@gwent/graphql-schema/resolver-typings'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('factions-query', () => {
   describe('factions', () => {

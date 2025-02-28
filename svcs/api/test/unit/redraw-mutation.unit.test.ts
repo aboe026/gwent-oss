@@ -12,7 +12,7 @@ import * as gwentUtils from '@gwent/utils'
 import { MAX_REDRAWS, PubSubEvents } from '@gwent/constants'
 import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('redraw-mutation', () => {
   describe('redraw', () => {

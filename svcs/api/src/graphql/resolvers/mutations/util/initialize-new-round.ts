@@ -1,4 +1,4 @@
-import { GamePlayerDbObject, PlayerCombatRowDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, PlayerCombatRowDbObject } from '@gwent/graphql-schema/database-typings'
 
 export default class InitializeNewRound {
   /**
@@ -8,12 +8,13 @@ export default class InitializeNewRound {
    * @param config.players The game players to initialize the new round for.
    * @returns New game players who have a new round added for them.
    */
-  static initializeNewRound({ players }: { players: GamePlayerDbObject[] }): GamePlayerDbObject[] {
+  static initializeNewRound({ game }: { game: GameDbObject }) {
     const startingCombatRow: PlayerCombatRowDbObject = {
       score: 0,
       units: [],
     }
-    return players.map((gamePlayer) => {
+    // TODO: is re-mapping even necessary? Can it just be a for loop?
+    game.players = game.players.map((gamePlayer) => {
       return {
         ...gamePlayer,
         rounds: [
@@ -35,5 +36,6 @@ export default class InitializeNewRound {
         ],
       }
     })
+    game.round = game.round + 1
   }
 }

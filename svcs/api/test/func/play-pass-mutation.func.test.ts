@@ -28,7 +28,7 @@ import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
 import { sortObjectArray } from '@gwent/utils'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('play-pass-mutation', () => {
   let self: User

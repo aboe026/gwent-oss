@@ -9,7 +9,7 @@ import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
 import { PubSubEvents } from '@gwent/constants'
 import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('set-game-turn-order', () => {
   const userId = new ObjectId().toString()

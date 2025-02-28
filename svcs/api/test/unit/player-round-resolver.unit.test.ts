@@ -6,7 +6,7 @@ import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolv
 import { MoveType } from '@gwent/graphql-schema'
 import PlayerMoveResolver from '../../src/graphql/resolvers/types/player-move-resolver'
 import PlayerRoundResolver from '../../src/graphql/resolvers/types/player-round-resolver'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('player-round-resolver', () => {
   describe('fromObject', () => {

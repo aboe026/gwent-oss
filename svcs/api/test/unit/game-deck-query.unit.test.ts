@@ -5,7 +5,7 @@ import { GameDeck, QueryGameDeckArgs } from '@gwent/graphql-schema/resolver-typi
 import GameDeckQuery from '../../src/graphql/resolvers/queries/game-deck-query'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('game-deck-query', () => {
   describe('gameDeck', () => {

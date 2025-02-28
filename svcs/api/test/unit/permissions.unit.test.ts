@@ -7,7 +7,7 @@ import GameStore from '../../src/database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
 import Permissions, { NO_RULE_DEFINED } from '../../src/graphql/permissions'
 import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import PresentableError from '../../src/util/presentable-error'
 
 describe('permissions', () => {

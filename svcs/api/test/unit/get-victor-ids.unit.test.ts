@@ -1,6 +1,6 @@
 import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
 import GetVictorIds from '../../src/graphql/resolvers/mutations/util/get-victor-ids'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import { ObjectId } from 'mongodb'
 
 describe('get-victor-ids', () => {

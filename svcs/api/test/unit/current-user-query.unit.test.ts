@@ -4,7 +4,7 @@ import CurrentUserQuery from '../../src/graphql/resolvers/queries/current-user-q
 import { User } from '@gwent/graphql-schema/resolver-typings'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 import { Context } from '@gwent/graphql-schema/context'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('current-user-query', () => {
   describe('currentUser', () => {

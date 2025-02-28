@@ -1,7 +1,7 @@
 import { Document, Filter, FindOptions, ObjectId } from 'mongodb'
 
 import PasswordHasher from '../../src/util/password-hasher'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../src/database/stores/user-store'
 

@@ -5,7 +5,7 @@ import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 import Verifier from '../../src/util/verifier'
 

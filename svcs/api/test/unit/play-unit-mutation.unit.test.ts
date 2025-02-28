@@ -19,7 +19,7 @@ import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit-mu
 import { MoveType } from '@gwent/graphql-schema'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
 import UnitUtil from '../../src/graphql/resolvers/mutations/util/unit-util'
 

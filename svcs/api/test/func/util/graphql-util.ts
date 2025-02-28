@@ -23,7 +23,7 @@ import {
   getUnitFragment,
 } from './fragment-util'
 import schema from '../../../src/graphql/executable-schema'
-import TestUtil from '../../test-util'
+import TestUtil from '../../util/test-util'
 
 export async function addUser(name: string, password = 'password'): Promise<User> {
   const response = await graphql({

@@ -5,7 +5,7 @@ import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('game-player-resolver', () => {

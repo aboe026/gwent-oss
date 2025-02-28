@@ -9,7 +9,7 @@ import GameStore from '../../src/database/stores/game-store'
 import { PubSubEvents } from '@gwent/constants'
 import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import InitializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 
 describe('ready-mutation', () => {
@@ -147,7 +147,8 @@ describe('ready-mutation', () => {
         ...game,
         players: [gamePlayerSelf, readyOpponentGamePlayer],
       }
-      const allPlayersReadyPlayers: GamePlayerDbObject[] = InitializeNewRound.initializeNewRound({
+      const allPlayersReadyUpdatedGame: GameDbObject = {
+        ...game,
         players: [
           {
             ...game.players[0],
@@ -155,17 +156,16 @@ describe('ready-mutation', () => {
           },
           readyOpponentGamePlayer,
         ],
-      })
-      const allPlayersReadyUpdatedGame: GameDbObject = {
-        ...game,
-        players: allPlayersReadyPlayers,
         round: 1,
         status: GameStatus.Playing,
       }
+      InitializeNewRound.initializeNewRound({
+        game: allPlayersReadyUpdatedGame,
+      })
       const allPlayersReadyResolvedGame: Game = {
         ...resolvedGame,
         round: 1,
-        players: allPlayersReadyPlayers.map((dbGamePlayer) =>
+        players: allPlayersReadyUpdatedGame.players.map((dbGamePlayer) =>
           TestUtil.getGamePlayer({
             ready: true,
             user: TestUtil.getUser({

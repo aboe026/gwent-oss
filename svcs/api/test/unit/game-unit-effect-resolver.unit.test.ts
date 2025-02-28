@@ -17,7 +17,7 @@ import { EffectReasonType } from '@gwent/graphql-schema'
 import EffectResolver from '../../src/graphql/resolvers/types/effect-resolver'
 import GameUnitEffectResolver from '../../src/graphql/resolvers/types/game-unit-effect-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
 
 describe('game-unit-effect-resolver', () => {

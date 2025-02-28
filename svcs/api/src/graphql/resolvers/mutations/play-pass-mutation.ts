@@ -119,11 +119,9 @@ export default class PlayPassMutation {
           logPrefix,
         })
 
-        game.players = InitializeNewRound.initializeNewRound({
-          players: game.players,
+        InitializeNewRound.initializeNewRound({
+          game,
         })
-
-        game.round = game.round + 1
       }
     } else {
       nextPlayerId = GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({

@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('game-deck-resolver', () => {
   describe('fromObject', () => {

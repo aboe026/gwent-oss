@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import AddMoveToPlayer from '../../src/graphql/resolvers/mutations/util/add-move-to-player'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import { Combat, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { MoveType } from '@gwent/graphql-schema'
 

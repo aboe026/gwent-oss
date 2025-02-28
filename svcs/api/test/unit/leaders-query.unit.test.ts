@@ -7,7 +7,7 @@ import FactionStore from '../../src/database/stores/faction-store'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import LeadersQuery from '../../src/graphql/resolvers/queries/leaders-query'
 import LeaderStore from '../../src/database/stores/leader-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('leaders-query', () => {
   describe('leaders', () => {

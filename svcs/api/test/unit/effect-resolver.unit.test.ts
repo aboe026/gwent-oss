@@ -4,7 +4,7 @@ import { Effect } from '@gwent/graphql-schema/resolver-typings'
 import { EffectDbObject } from '@gwent/graphql-schema/database-typings'
 import EffectResolver from '../../src/graphql/resolvers/types/effect-resolver'
 import EffectStore from '../../src/database/stores/effect-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import Verifier from '../../src/util/verifier'
 
 describe('effect-resolver', () => {

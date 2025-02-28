@@ -2,7 +2,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import * as env from '../../src/env'
 import { SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
 import SettingsQuery from '../../src/graphql/resolvers/queries/settings-query'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('settings-query', () => {
   describe('settings', () => {

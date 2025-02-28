@@ -3,7 +3,7 @@ import { FindOptions, ObjectId } from 'mongodb'
 import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckStore, { AddDeckUnitInput } from '../../src/database/stores/deck-store'
 import Store from '../../src/database/stores/store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('deck-store', () => {
   describe('add', () => {

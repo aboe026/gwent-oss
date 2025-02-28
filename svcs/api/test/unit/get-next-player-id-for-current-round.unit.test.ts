@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import GetNextPlayerIdForCurrentRound from '../../src/graphql/resolvers/mutations/util/get-next-player-id-for-current-round'
 
 describe('get-next-player-id-for-current-round', () => {

@@ -33,7 +33,7 @@ import Upgrade2, {
 } from '../../src/database/upgrades/upgrade-2'
 import * as utils from '@gwent/utils'
 import * as validators from '@gwent/validators'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('upgrade-2', () => {
   const unitRequired: UnitJson = {

@@ -5,7 +5,7 @@ import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order-mutation'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
 
 describe('set-order-mutation', () => {

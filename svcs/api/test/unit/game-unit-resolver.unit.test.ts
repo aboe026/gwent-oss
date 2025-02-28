@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 import { GameUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
 import { GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
 
 describe('game-unit-resolver', () => {

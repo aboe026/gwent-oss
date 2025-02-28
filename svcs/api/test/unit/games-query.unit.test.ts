@@ -4,7 +4,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GamesQuery from '../../src/graphql/resolvers/queries/games-query'
 import GameStore from '../../src/database/stores/game-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('games-query', () => {
   describe('games', () => {

@@ -1,7 +1,7 @@
 import AppInfo from '../../src/app-info'
 import ApplicationQuery from '../../src/graphql/resolvers/queries/application-query'
 import { Context } from '@gwent/graphql-schema/context'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import { version } from '../../package.json'
 
 describe('application-query', () => {
