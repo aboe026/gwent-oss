@@ -13,29 +13,23 @@ export default class InitializeNewRound {
       score: 0,
       units: [],
     }
-    // TODO: is re-mapping even necessary? Can it just be a for loop?
-    game.players = game.players.map((gamePlayer) => {
-      return {
-        ...gamePlayer,
-        rounds: [
-          ...gamePlayer.rounds,
-          {
-            close: {
-              ...startingCombatRow,
-            },
-            moves: [],
-            passed: false,
-            ranged: {
-              ...startingCombatRow,
-            },
-            score: 0,
-            siege: {
-              ...startingCombatRow,
-            },
-          },
-        ],
-      }
-    })
+    // TODO: switch other methods from re-mapping to directly modifying objects
+    for (const player of game.players) {
+      player.rounds.push({
+        close: {
+          ...startingCombatRow,
+        },
+        moves: [],
+        passed: false,
+        ranged: {
+          ...startingCombatRow,
+        },
+        score: 0,
+        siege: {
+          ...startingCombatRow,
+        },
+      })
+    }
     game.round = game.round + 1
   }
 }

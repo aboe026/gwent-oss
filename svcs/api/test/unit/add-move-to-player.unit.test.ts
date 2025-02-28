@@ -1,8 +1,10 @@
 import { ObjectId } from 'mongodb'
+
 import AddMoveToPlayer from '../../src/graphql/resolvers/mutations/util/add-move-to-player'
-import TestUtil from '../util/test-util'
 import { Combat, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import deepClone from '../util/deep-clone'
 import { MoveType } from '@gwent/graphql-schema'
+import TestUtil from '../util/test-util'
 
 describe('add-move-to-player', () => {
   describe('self', () => {
@@ -30,6 +32,7 @@ describe('add-move-to-player', () => {
         round: 1,
         turn: self.user,
       })
+      const origGame = deepClone(game)
       const move: MoveUnitDbObject = {
         created: new Date(),
         row: Combat.Close,
@@ -37,23 +40,25 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      expect(
-        AddMoveToPlayer.addMoveToPlayer({
-          game,
-          move,
-        })
-      ).toEqual([
-        {
-          ...self,
-          rounds: [
-            {
-              ...self.rounds[0],
-              moves: [move],
-            },
-          ],
-        },
-        opponent,
-      ])
+      AddMoveToPlayer.addMoveToPlayer({
+        game,
+        move,
+      })
+      expect(game).toEqual({
+        ...origGame,
+        players: [
+          {
+            ...self,
+            rounds: [
+              {
+                ...self.rounds[0],
+                moves: [move],
+              },
+            ],
+          },
+          opponent,
+        ],
+      })
     })
     it('appends move after other moves in first round', () => {
       const oldMove: MoveUnitDbObject = {
@@ -89,6 +94,7 @@ describe('add-move-to-player', () => {
         round: 1,
         turn: self.user,
       })
+      const origGame = deepClone(game)
       const move: MoveUnitDbObject = {
         created: new Date(),
         row: Combat.Close,
@@ -96,23 +102,26 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      expect(
-        AddMoveToPlayer.addMoveToPlayer({
-          game,
-          move,
-        })
-      ).toEqual([
-        {
-          ...self,
-          rounds: [
-            {
-              ...self.rounds[0],
-              moves: [oldMove, move],
-            },
-          ],
-        },
-        opponent,
-      ])
+      AddMoveToPlayer.addMoveToPlayer({
+        game,
+        move,
+      })
+
+      expect(game).toEqual({
+        ...origGame,
+        players: [
+          {
+            ...self,
+            rounds: [
+              {
+                ...self.rounds[0],
+                moves: [oldMove, move],
+              },
+            ],
+          },
+          opponent,
+        ],
+      })
     })
     it('appends move without other moves in second round', () => {
       const self = TestUtil.getDbGamePlayer({
@@ -138,6 +147,7 @@ describe('add-move-to-player', () => {
         round: 2,
         turn: self.user,
       })
+      const origGame = deepClone(game)
       const move: MoveUnitDbObject = {
         created: new Date(),
         row: Combat.Close,
@@ -145,24 +155,26 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      expect(
-        AddMoveToPlayer.addMoveToPlayer({
-          game,
-          move,
-        })
-      ).toEqual([
-        {
-          ...self,
-          rounds: [
-            self.rounds[0],
-            {
-              ...self.rounds[1],
-              moves: [move],
-            },
-          ],
-        },
-        opponent,
-      ])
+      AddMoveToPlayer.addMoveToPlayer({
+        game,
+        move,
+      })
+      expect(game).toEqual({
+        ...origGame,
+        players: [
+          {
+            ...self,
+            rounds: [
+              self.rounds[0],
+              {
+                ...self.rounds[1],
+                moves: [move],
+              },
+            ],
+          },
+          opponent,
+        ],
+      })
     })
     it('appends move after other moves in second round', () => {
       const oldMove: MoveUnitDbObject = {
@@ -199,6 +211,7 @@ describe('add-move-to-player', () => {
         round: 2,
         turn: self.user,
       })
+      const origGame = deepClone(game)
       const move: MoveUnitDbObject = {
         created: new Date(),
         row: Combat.Close,
@@ -206,24 +219,26 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      expect(
-        AddMoveToPlayer.addMoveToPlayer({
-          game,
-          move,
-        })
-      ).toEqual([
-        {
-          ...self,
-          rounds: [
-            self.rounds[0],
-            {
-              ...self.rounds[1],
-              moves: [oldMove, move],
-            },
-          ],
-        },
-        opponent,
-      ])
+      AddMoveToPlayer.addMoveToPlayer({
+        game,
+        move,
+      })
+      expect(game).toEqual({
+        ...origGame,
+        players: [
+          {
+            ...self,
+            rounds: [
+              self.rounds[0],
+              {
+                ...self.rounds[1],
+                moves: [oldMove, move],
+              },
+            ],
+          },
+          opponent,
+        ],
+      })
     })
   })
   describe('opponent', () => {
@@ -251,6 +266,7 @@ describe('add-move-to-player', () => {
         round: 1,
         turn: opponent.user,
       })
+      const origGame = deepClone(game)
       const move: MoveUnitDbObject = {
         created: new Date(),
         row: Combat.Close,
@@ -258,23 +274,26 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      expect(
-        AddMoveToPlayer.addMoveToPlayer({
-          game,
-          move,
-        })
-      ).toEqual([
-        self,
-        {
-          ...opponent,
-          rounds: [
-            {
-              ...opponent.rounds[0],
-              moves: [move],
-            },
-          ],
-        },
-      ])
+      AddMoveToPlayer.addMoveToPlayer({
+        game,
+        move,
+      })
+
+      expect(game).toEqual({
+        ...origGame,
+        players: [
+          self,
+          {
+            ...opponent,
+            rounds: [
+              {
+                ...opponent.rounds[0],
+                moves: [move],
+              },
+            ],
+          },
+        ],
+      })
     })
     it('appends move after other moves in first round', () => {
       const oldMove: MoveUnitDbObject = {
@@ -310,6 +329,7 @@ describe('add-move-to-player', () => {
         round: 1,
         turn: opponent.user,
       })
+      const origGame = deepClone(game)
       const move: MoveUnitDbObject = {
         created: new Date(),
         row: Combat.Close,
@@ -317,23 +337,26 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      expect(
-        AddMoveToPlayer.addMoveToPlayer({
-          game,
-          move,
-        })
-      ).toEqual([
-        self,
-        {
-          ...opponent,
-          rounds: [
-            {
-              ...opponent.rounds[0],
-              moves: [oldMove, move],
-            },
-          ],
-        },
-      ])
+      AddMoveToPlayer.addMoveToPlayer({
+        game,
+        move,
+      })
+
+      expect(game).toEqual({
+        ...origGame,
+        players: [
+          self,
+          {
+            ...opponent,
+            rounds: [
+              {
+                ...opponent.rounds[0],
+                moves: [oldMove, move],
+              },
+            ],
+          },
+        ],
+      })
     })
     it('appends move without other moves in second round', () => {
       const self = TestUtil.getDbGamePlayer({
@@ -359,6 +382,7 @@ describe('add-move-to-player', () => {
         round: 2,
         turn: opponent.user,
       })
+      const origGame = deepClone(game)
       const move: MoveUnitDbObject = {
         created: new Date(),
         row: Combat.Close,
@@ -366,24 +390,27 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      expect(
-        AddMoveToPlayer.addMoveToPlayer({
-          game,
-          move,
-        })
-      ).toEqual([
-        self,
-        {
-          ...opponent,
-          rounds: [
-            opponent.rounds[0],
-            {
-              ...opponent.rounds[1],
-              moves: [move],
-            },
-          ],
-        },
-      ])
+      AddMoveToPlayer.addMoveToPlayer({
+        game,
+        move,
+      })
+
+      expect(game).toEqual({
+        ...origGame,
+        players: [
+          self,
+          {
+            ...opponent,
+            rounds: [
+              opponent.rounds[0],
+              {
+                ...opponent.rounds[1],
+                moves: [move],
+              },
+            ],
+          },
+        ],
+      })
     })
     it('appends move after other moves in second round', () => {
       const oldMove: MoveUnitDbObject = {
@@ -420,6 +447,7 @@ describe('add-move-to-player', () => {
         round: 2,
         turn: opponent.user,
       })
+      const origGame = deepClone(game)
       const move: MoveUnitDbObject = {
         created: new Date(),
         row: Combat.Close,
@@ -427,24 +455,27 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      expect(
-        AddMoveToPlayer.addMoveToPlayer({
-          game,
-          move,
-        })
-      ).toEqual([
-        self,
-        {
-          ...opponent,
-          rounds: [
-            opponent.rounds[0],
-            {
-              ...opponent.rounds[1],
-              moves: [oldMove, move],
-            },
-          ],
-        },
-      ])
+      AddMoveToPlayer.addMoveToPlayer({
+        game,
+        move,
+      })
+
+      expect(game).toEqual({
+        ...origGame,
+        players: [
+          self,
+          {
+            ...opponent,
+            rounds: [
+              opponent.rounds[0],
+              {
+                ...opponent.rounds[1],
+                moves: [oldMove, move],
+              },
+            ],
+          },
+        ],
+      })
     })
   })
 })

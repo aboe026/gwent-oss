@@ -138,7 +138,7 @@ export default class PlayUnitMutation {
       game,
     })
 
-    game.players = AddMoveToPlayer.addMoveToPlayer({
+    AddMoveToPlayer.addMoveToPlayer({
       game,
       move: {
         created: new Date(),

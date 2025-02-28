@@ -81,7 +81,7 @@ export default class PlayPassMutation {
       game,
     })
 
-    game.players = AddMoveToPlayer.addMoveToPlayer({
+    AddMoveToPlayer.addMoveToPlayer({
       game,
       move: {
         created: new Date(),
