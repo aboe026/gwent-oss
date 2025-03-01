@@ -274,20 +274,22 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
+      // TODO: expect output to be undefined
       AddMoveToPlayer.addMoveToPlayer({
         game,
         move,
       })
 
+      // TODO: reference origGame
       expect(game).toEqual({
         ...origGame,
         players: [
-          self,
+          origGame.players[0],
           {
-            ...opponent,
+            ...origGame.players[1],
             rounds: [
               {
-                ...opponent.rounds[0],
+                ...origGame.players[1].rounds[0],
                 moves: [move],
               },
             ],

@@ -1,20 +1,13 @@
-import { GameDbObject, GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import PresentableError from '../../../../util/presentable-error'
 
 export default class PassCurrentPlayer {
-  static passCurrentPlayer({ game }: { game: GameDbObject }): GamePlayerDbObject[] {
-    return game.players.map((gamePlayer) => {
-      if (gamePlayer.user.toString() === game.turn?.toString()) {
-        return {
-          ...gamePlayer,
-          rounds: gamePlayer.rounds.map((round, index) => {
-            if (index === game.round - 1) {
-              round.passed = true
-            }
-            return round
-          }),
-        }
-      }
-      return gamePlayer
-    })
+  static passCurrentPlayer({ game }: { game: GameDbObject }) {
+    const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
+    if (player) {
+      player.rounds[game.round - 1].passed = true
+    } else {
+      throw new PresentableError(`Could not find player "${game.turn}" on game "${game._id}"`)
+    }
   }
 }

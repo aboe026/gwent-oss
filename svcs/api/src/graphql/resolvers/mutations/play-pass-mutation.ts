@@ -77,7 +77,7 @@ export default class PlayPassMutation {
       throw new PresentableError(message)
     }
 
-    game.players = PassCurrentPlayer.passCurrentPlayer({
+    PassCurrentPlayer.passCurrentPlayer({
       game,
     })
 
