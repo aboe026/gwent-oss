@@ -67,6 +67,10 @@ A list of things to be done in the future.
 - minor version increment
 - changelog
 
+- Limit user creation
+  - activation code?
+  - manual review?
+- rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability

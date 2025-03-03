@@ -1,21 +1,12 @@
-import { GameDbObject, GamePlayerDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 
 export default class ClearBattlefieldCards {
-  static clearBattlefieldCards({ game }: { game: GameDbObject }): GamePlayerDbObject[] {
-    return game.players.map((gamePlayer) => {
-      const playerRound = gamePlayer.rounds[game.round - 1]
-      return {
-        ...gamePlayer,
-        deck: {
-          ...gamePlayer.deck,
-          discard: [
-            ...gamePlayer.deck.discard,
-            ...playerRound.close.units,
-            ...playerRound.ranged.units,
-            ...playerRound.siege.units,
-          ],
-        },
-      }
-    })
+  static clearBattlefieldCards({ game }: { game: GameDbObject }) {
+    for (const player of game.players) {
+      const round = player.rounds[game.round - 1]
+      player.deck.discard.push(...round.close.units)
+      player.deck.discard.push(...round.ranged.units)
+      player.deck.discard.push(...round.siege.units)
+    }
   }
 }

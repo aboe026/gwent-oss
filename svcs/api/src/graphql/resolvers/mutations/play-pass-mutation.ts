@@ -99,7 +99,7 @@ export default class PlayPassMutation {
         game,
         logPrefix,
       })
-      game.players = ClearBattlefieldCards.clearBattlefieldCards({
+      ClearBattlefieldCards.clearBattlefieldCards({
         game,
       })
 

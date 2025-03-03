@@ -31,6 +31,8 @@ import {
   GameDbObject,
   GameDeckDbObject,
   GamePlayerDbObject,
+  GameUnitDbObject,
+  GameUnitEffectDbObject,
   LeaderDbObject,
   MoveDbObject,
   PlayerCombatRowDbObject,
@@ -135,6 +137,25 @@ export default class TestUtil {
     return {
       artStyle,
       unit: id ? new ObjectId(id) : new ObjectId(),
+    }
+  }
+
+  static getDbGameUnit({
+    artStyle = 1,
+    id,
+    effectiveStrength,
+    effects = [],
+  }: {
+    artStyle?: number
+    id?: ObjectId
+    effectiveStrength?: number
+    effects?: GameUnitEffectDbObject[]
+  }): GameUnitDbObject {
+    return {
+      artStyle,
+      unit: id ? new ObjectId(id) : new ObjectId(),
+      effectiveStrength,
+      effects,
     }
   }
 

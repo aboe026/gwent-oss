@@ -40,23 +40,26 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      AddMoveToPlayer.addMoveToPlayer({
-        game,
-        move,
-      })
+      expect(
+        AddMoveToPlayer.addMoveToPlayer({
+          game,
+          move,
+        })
+      ).toEqual(undefined)
+
       expect(game).toEqual({
         ...origGame,
         players: [
           {
-            ...self,
+            ...origGame.players[0],
             rounds: [
               {
-                ...self.rounds[0],
+                ...origGame.players[0].rounds[0],
                 moves: [move],
               },
             ],
           },
-          opponent,
+          origGame.players[1],
         ],
       })
     })
@@ -102,24 +105,26 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      AddMoveToPlayer.addMoveToPlayer({
-        game,
-        move,
-      })
+      expect(
+        AddMoveToPlayer.addMoveToPlayer({
+          game,
+          move,
+        })
+      ).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
         players: [
           {
-            ...self,
+            ...origGame.players[0],
             rounds: [
               {
-                ...self.rounds[0],
+                ...origGame.players[0].rounds[0],
                 moves: [oldMove, move],
               },
             ],
           },
-          opponent,
+          origGame.players[1],
         ],
       })
     })
@@ -155,24 +160,27 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      AddMoveToPlayer.addMoveToPlayer({
-        game,
-        move,
-      })
+      expect(
+        AddMoveToPlayer.addMoveToPlayer({
+          game,
+          move,
+        })
+      ).toEqual(undefined)
+
       expect(game).toEqual({
         ...origGame,
         players: [
           {
-            ...self,
+            ...origGame.players[0],
             rounds: [
-              self.rounds[0],
+              origGame.players[0].rounds[0],
               {
-                ...self.rounds[1],
+                ...origGame.players[0].rounds[1],
                 moves: [move],
               },
             ],
           },
-          opponent,
+          origGame.players[1],
         ],
       })
     })
@@ -223,20 +231,21 @@ describe('add-move-to-player', () => {
         game,
         move,
       })
+
       expect(game).toEqual({
         ...origGame,
         players: [
           {
-            ...self,
+            ...origGame.players[0],
             rounds: [
-              self.rounds[0],
+              origGame.players[0].rounds[0],
               {
-                ...self.rounds[1],
+                ...origGame.players[0].rounds[1],
                 moves: [oldMove, move],
               },
             ],
           },
-          opponent,
+          origGame.players[1],
         ],
       })
     })
@@ -274,13 +283,13 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      // TODO: expect output to be undefined
-      AddMoveToPlayer.addMoveToPlayer({
-        game,
-        move,
-      })
+      expect(
+        AddMoveToPlayer.addMoveToPlayer({
+          game,
+          move,
+        })
+      ).toEqual(undefined)
 
-      // TODO: reference origGame
       expect(game).toEqual({
         ...origGame,
         players: [
@@ -339,20 +348,22 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      AddMoveToPlayer.addMoveToPlayer({
-        game,
-        move,
-      })
+      expect(
+        AddMoveToPlayer.addMoveToPlayer({
+          game,
+          move,
+        })
+      ).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
         players: [
-          self,
+          origGame.players[0],
           {
-            ...opponent,
+            ...origGame.players[1],
             rounds: [
               {
-                ...opponent.rounds[0],
+                ...origGame.players[1].rounds[0],
                 moves: [oldMove, move],
               },
             ],
@@ -392,21 +403,23 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      AddMoveToPlayer.addMoveToPlayer({
-        game,
-        move,
-      })
+      expect(
+        AddMoveToPlayer.addMoveToPlayer({
+          game,
+          move,
+        })
+      ).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
         players: [
-          self,
+          origGame.players[0],
           {
-            ...opponent,
+            ...origGame.players[1],
             rounds: [
-              opponent.rounds[0],
+              origGame.players[1].rounds[0],
               {
-                ...opponent.rounds[1],
+                ...origGame.players[1].rounds[1],
                 moves: [move],
               },
             ],
@@ -457,21 +470,23 @@ describe('add-move-to-player', () => {
         unit: TestUtil.getDbDeckUnit({}),
       }
 
-      AddMoveToPlayer.addMoveToPlayer({
-        game,
-        move,
-      })
+      expect(
+        AddMoveToPlayer.addMoveToPlayer({
+          game,
+          move,
+        })
+      ).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
         players: [
-          self,
+          origGame.players[0],
           {
-            ...opponent,
+            ...origGame.players[1],
             rounds: [
-              opponent.rounds[0],
+              origGame.players[1].rounds[0],
               {
-                ...opponent.rounds[1],
+                ...origGame.players[1].rounds[1],
                 moves: [oldMove, move],
               },
             ],
