@@ -134,7 +134,7 @@ export default class PlayUnitMutation {
       effects: unitEffects,
     })
 
-    game.players = CalculateGameScores.calculateScores({
+    CalculateGameScores.calculateScores({
       game,
     })
 

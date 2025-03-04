@@ -8,6 +8,46 @@ import TestUtil from '../util/test-util'
 
 describe('add-move-to-player', () => {
   describe('self', () => {
+    it('throws error if player not found', () => {
+      const userId = new ObjectId()
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({}),
+            }),
+            order: 0,
+            ready: true,
+            rounds: [TestUtil.getDbPlayerRound({})],
+            user: new ObjectId(),
+          }),
+          TestUtil.getDbGamePlayer({
+            deck: TestUtil.getDbGameDeck({
+              from: TestUtil.getDbDeck({}),
+            }),
+            order: 1,
+            ready: true,
+            rounds: [TestUtil.getDbPlayerRound({})],
+            user: new ObjectId(),
+          }),
+        ],
+        round: 1,
+        turn: userId,
+      })
+      const move: MoveUnitDbObject = {
+        created: new Date(),
+        row: Combat.Close,
+        type: MoveType.Unit,
+        unit: TestUtil.getDbDeckUnit({}),
+      }
+
+      expect(() =>
+        AddMoveToPlayer.addMoveToPlayer({
+          game,
+          move,
+        })
+      ).toThrow(`Could not find player "${game.turn}" on game "${game._id}" to add move to.`)
+    })
     it('appends move without other moves in first round', () => {
       const self = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({

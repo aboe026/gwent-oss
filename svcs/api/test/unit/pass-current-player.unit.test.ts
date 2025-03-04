@@ -24,7 +24,7 @@ describe('pass-current-player', () => {
       PassCurrentPlayer.passCurrentPlayer({
         game,
       })
-    ).toThrow(`Could not find player "${userId}" on game "${game._id}"`)
+    ).toThrow(`Could not find player "${userId}" on game "${game._id}" to pass for round "${game.round}".`)
   })
   it('sets passed to true for self in first round', () => {
     const self = TestUtil.getDbGamePlayer({

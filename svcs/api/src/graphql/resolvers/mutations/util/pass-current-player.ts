@@ -7,7 +7,9 @@ export default class PassCurrentPlayer {
     if (player) {
       player.rounds[game.round - 1].passed = true
     } else {
-      throw new PresentableError(`Could not find player "${game.turn}" on game "${game._id}"`)
+      throw new PresentableError(
+        `Could not find player "${game.turn}" on game "${game._id}" to pass for round "${game.round}".`
+      )
     }
   }
 }
