@@ -52,6 +52,7 @@ export default class TestUtil {
     effects,
     combats,
     effectPrefix,
+    hero = false,
     strength,
   }: {
     id?: ObjectId | string
@@ -60,6 +61,7 @@ export default class TestUtil {
     effects?: (ObjectId | string)[]
     combats?: string[]
     effectPrefix?: string
+    hero?: boolean
     strength?: number
   }): UnitDbObject {
     return {
@@ -67,6 +69,7 @@ export default class TestUtil {
       created: new Date(),
       deckable: true,
       faction: faction ? new ObjectId(faction) : new ObjectId(),
+      hero,
       images: ['unit-image'],
       name: 'unit-name',
       quote: 'unit-quote',
@@ -177,13 +180,13 @@ export default class TestUtil {
     }
   }
 
-  static getDbEffect({ id }: { id?: ObjectId | string }): EffectDbObject {
+  static getDbEffect({ id, key = EffectKey.Agile }: { id?: ObjectId | string; key?: EffectKey }): EffectDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
       ability: 'effect-ability',
       created: new Date(),
       image: 'effect-image',
-      key: EffectKey.Agile,
+      key,
       name: 'effect-name',
     }
   }

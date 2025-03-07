@@ -128,7 +128,7 @@ export default class PlayUnitMutation {
       deckUnit,
     })
 
-    game.players = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+    CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits],
       effects: unitEffects,
