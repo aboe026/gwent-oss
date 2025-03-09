@@ -122,7 +122,7 @@ export default class PlayUnitMutation {
       units: roundUnits,
     })
 
-    game.players = ModifyGameUnitPositions.modifyGameUnitPositions({
+    ModifyGameUnitPositions.modifyGameUnitPositions({
       game,
       combat,
       deckUnit,
