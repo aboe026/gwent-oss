@@ -95,7 +95,7 @@ export default class PlayPassMutation {
       logPrefix,
     })
     if (roundOver) {
-      game.players = SetRoundWinners.setRoundWinners({
+      SetRoundWinners.setRoundWinners({
         game,
         logPrefix,
       })
