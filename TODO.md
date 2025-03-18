@@ -4,6 +4,7 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- convert for other `game.players =` instances (or elsewhere object mapping is done)
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - have logic methods directly mutate game object instead of returning new game object? How to handle unit tests to make sure only expected things mutated?
 - separate invalid checks on mutations into separate methods?
