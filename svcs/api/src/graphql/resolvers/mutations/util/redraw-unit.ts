@@ -1,0 +1,72 @@
+import { GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
+import PresentableError from '../../../../util/presentable-error'
+import { getLogger } from 'log4js'
+import { getRandomSubset } from '@gwent/utils'
+
+export default class RedrawUnit {
+  private static logger = getLogger('redraw-unit')
+
+  static redrawUnit({
+    game,
+    logPrefix,
+    unitId,
+  }: {
+    game: GameDbObject
+    logPrefix: string
+    unitId: string
+  }): RedrawDbObject {
+    const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
+    if (player) {
+      const redrawFrom = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
+      if (RedrawUnit.logger.isTraceEnabled()) {
+        RedrawUnit.logger.trace(`${logPrefix} redrawFrom: "${JSON.stringify(redrawFrom)}"`)
+      }
+      if (!redrawFrom) {
+        const message = 'Unit not in hand.'
+        RedrawUnit.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+
+      // make sure we don't redraw card that was previously chosen for redraw
+      const previouslyRedrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
+      const redrawPool = player.deck.undrawn.filter(
+        (deckUnit) => !previouslyRedrawnIds.includes(deckUnit.unit.toString())
+      )
+      if (RedrawUnit.logger.isTraceEnabled()) {
+        RedrawUnit.logger.trace(`${logPrefix} redrawPool: "${JSON.stringify(redrawPool)}"`)
+      }
+      const redrawTo = getRandomSubset({
+        items: redrawPool,
+        size: 1,
+      })[0]
+      if (RedrawUnit.logger.isTraceEnabled()) {
+        RedrawUnit.logger.trace(`${logPrefix} redrawTo: "${JSON.stringify(redrawTo)}"`)
+      }
+
+      player.deck.undrawn = [
+        ...player.deck.undrawn.filter((deckUnit) => deckUnit.unit.toString() !== redrawTo.unit.toString()),
+        redrawFrom,
+      ]
+      player.deck.hand = [
+        ...player.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== unitId), // to break line for nicer formatting
+        redrawTo,
+      ]
+      player.deck.redraws = [
+        ...player.deck.redraws,
+        {
+          from: redrawFrom,
+          to: redrawTo,
+        },
+      ]
+
+      return {
+        from: redrawFrom,
+        to: redrawTo,
+      }
+    } else {
+      const message = `Could not find player "${game.turn}" on game "${game._id}" to redraw unit "${game.round}" for.`
+      RedrawUnit.logger.error(`${logPrefix} failed: ${message}`)
+      throw new PresentableError(message)
+    }
+  }
+}

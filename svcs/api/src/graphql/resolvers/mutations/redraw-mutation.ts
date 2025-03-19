@@ -6,12 +6,12 @@ import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
 import GameDeckResolver from '../types/game-deck-resolver'
 import GameResolver from '../types/game-resolver'
-import { GameStatus, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
-import { getRandomSubset } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import { MAX_REDRAWS, PubSubEvents } from '@gwent/constants'
 import PresentableError from '../../../util/presentable-error'
+import RedrawUnit from './util/redraw-unit'
 import ResolverUtil from '../resolver-util'
 import { UnitRedrawnPayload } from '../subscription-resolver'
 
@@ -71,65 +71,10 @@ export default class RedrawMutation {
       throw new PresentableError(message)
     }
 
-    const redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
-    const cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} cardToRedraw: "${JSON.stringify(cardToRedraw)}"`)
-    }
-    if (!cardToRedraw) {
-      const message = 'Unit not in hand.'
-      RedrawMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-
-    // make sure we don't redraw card that was previously chosen for redraw
-    const redrawPool = player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} redrawPool: "${JSON.stringify(redrawPool)}"`)
-    }
-    const newCard = getRandomSubset({
-      items: redrawPool,
-      size: 1,
-    })[0]
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} newCard: "${JSON.stringify(newCard)}"`)
-    }
-    const newUndrawn = player.deck.undrawn.filter((deckUnit) => deckUnit.unit.toString() !== newCard.unit.toString())
-    newUndrawn.push(cardToRedraw)
-    const newHand = player.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== unitId)
-    newHand.push(newCard)
-    const newRedraws: RedrawDbObject[] = [
-      ...player.deck.redraws,
-      {
-        from: cardToRedraw,
-        to: newCard,
-      },
-    ]
-
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} newHand: "${JSON.stringify(newHand)}"`)
-      RedrawMutation.logger.trace(`${logPrefix} newRedraws: "${JSON.stringify(newRedraws)}"`)
-      RedrawMutation.logger.trace(`${logPrefix} newUndrawn: "${JSON.stringify(newUndrawn)}"`)
-    }
-
-    game.players = game.players.map((gamePlayer) => {
-      let hand = gamePlayer.deck.hand
-      let undrawn = gamePlayer.deck.undrawn
-      let redraws = gamePlayer.deck.redraws
-      if (gamePlayer.user.toString() === userId.toString()) {
-        hand = newHand
-        undrawn = newUndrawn
-        redraws = newRedraws
-      }
-      return {
-        ...gamePlayer,
-        deck: {
-          ...gamePlayer.deck,
-          hand,
-          undrawn,
-          redraws,
-        },
-      }
+    const { from, to } = RedrawUnit.redrawUnit({
+      game,
+      logPrefix,
+      unitId,
     })
 
     const updatedGame = await GameStore.save(game)
@@ -143,7 +88,7 @@ export default class RedrawMutation {
       throw new PresentableError(message)
     }
     const resolvedTo = await DeckUnitResolver.fromObject({
-      deckUnit: newCard,
+      deckUnit: to,
     })
     if (RedrawMutation.logger.isTraceEnabled()) {
       RedrawMutation.logger.trace(`${logPrefix} resolvedTo: "${JSON.stringify(resolvedTo)}"`)
@@ -156,7 +101,7 @@ export default class RedrawMutation {
       RedrawMutation.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)
     }
     const resolvedFrom = await DeckUnitResolver.fromObject({
-      deckUnit: cardToRedraw,
+      deckUnit: from,
     })
     if (RedrawMutation.logger.isTraceEnabled()) {
       RedrawMutation.logger.trace(`${logPrefix} resolvedFrom: "${JSON.stringify(resolvedFrom)}"`)
