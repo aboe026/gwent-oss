@@ -1,9 +1,11 @@
-import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
-import GetVictorIds from '../../src/graphql/resolvers/mutations/util/get-victor-ids'
-import TestUtil from '../util/test-util'
 import { ObjectId } from 'mongodb'
 
-describe('get-victor-ids', () => {
+import deepClone from '../util/deep-clone'
+import { GameDbObject, GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
+import SetGameVictors from '../../src/graphql/resolvers/mutations/util/set-game-victors'
+import TestUtil from '../util/test-util'
+
+describe('set-game-victors', () => {
   const logPrefix = 'test prefix'
   it('returns both if both drew twice', () => {
     const self = TestUtil.getDbGamePlayer({
@@ -29,7 +31,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [self.user, opponent.user],
@@ -70,7 +72,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [self.user, opponent.user],
@@ -108,7 +110,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [self.user],
@@ -146,7 +148,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [self.user],
@@ -184,7 +186,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [self.user],
@@ -228,7 +230,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [self.user],
@@ -266,7 +268,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [opponent.user],
@@ -304,7 +306,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [opponent.user],
@@ -342,7 +344,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [opponent.user],
@@ -386,7 +388,7 @@ describe('get-victor-ids', () => {
     const game = TestUtil.getDbGame({
       players: [self, opponent],
     })
-    testGetVictorIds({
+    testSetGameVictors({
       game,
       logPrefix,
       expected: [opponent.user],
@@ -405,7 +407,7 @@ describe('get-victor-ids', () => {
   })
 })
 
-function testGetVictorIds({
+function testSetGameVictors({
   game,
   logPrefix,
   expected,
@@ -418,18 +420,24 @@ function testGetVictorIds({
 }) {
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
-  GetVictorIds['logger'] = {
+  SetGameVictors['logger'] = {
     debug: debugSpy,
     trace: traceSpy,
   } as any
+  const origGame = deepClone(game)
 
   expect(
-    GetVictorIds.getVictorIds({
+    SetGameVictors.setGameVictors({
       game,
       logPrefix,
     })
-  ).toEqual(expected)
+  ).toEqual(undefined)
 
+  expect(game).toEqual({
+    ...origGame,
+    victors: expected,
+    status: GameStatus.Done,
+  })
   expect(debugSpy.mock.calls).toEqual([[`${logPrefix} ends game in victory for "${JSON.stringify(expected)}"`]])
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

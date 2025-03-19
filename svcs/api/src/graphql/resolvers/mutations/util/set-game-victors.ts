@@ -1,24 +1,25 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
 
-export default class GetVictorIds {
-  private static logger = getLogger('GetVictorIds')
+export default class SetGameVictors {
+  private static logger = getLogger('SetGameVictors')
 
-  static getVictorIds({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): ObjectId[] {
+  static setGameVictors({ game, logPrefix }: { game: GameDbObject; logPrefix: string }) {
     let highestWins = 0
     for (const gamePlayer of game.players) {
       const playerWins = gamePlayer.rounds.filter((round) => round.result === RoundResult.Won).length
-      GetVictorIds.logger.trace(`${logPrefix} player "${gamePlayer.user}" playerWins: "${playerWins}"`)
+      SetGameVictors.logger.trace(`${logPrefix} player "${gamePlayer.user}" playerWins: "${playerWins}"`)
       if (playerWins > highestWins) {
-        GetVictorIds.logger.trace(
+        SetGameVictors.logger.trace(
           `${logPrefix} player "${gamePlayer.user}" wins "${playerWins}" is greater than previous highestWins of "${highestWins}", setting high wins to theirs`
         )
         highestWins = playerWins
       }
     }
-    GetVictorIds.logger.trace(`${logPrefix} highestWins: "${highestWins}"`)
+    SetGameVictors.logger.trace(`${logPrefix} highestWins: "${highestWins}"`)
+
     const victorIds: ObjectId[] = []
     for (const gamePlayer of game.players) {
       const playerWins = gamePlayer.rounds.filter((round) => round.result === RoundResult.Won).length
@@ -26,7 +27,9 @@ export default class GetVictorIds {
         victorIds.push(gamePlayer.user)
       }
     }
-    GetVictorIds.logger.debug(`${logPrefix} ends game in victory for "${JSON.stringify(victorIds)}"`)
-    return victorIds
+    SetGameVictors.logger.debug(`${logPrefix} ends game in victory for "${JSON.stringify(victorIds)}"`)
+
+    game.victors = victorIds
+    game.status = GameStatus.Done
   }
 }

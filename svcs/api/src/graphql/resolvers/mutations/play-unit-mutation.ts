@@ -1,3 +1,4 @@
+import AddMoveToPlayer from './util/add-move-to-player'
 import CalculateGameEffectiveStrengths from './util/calculate-game-effective-strengths'
 import CalculateGameScores from './util/calculate-game-scores'
 import { Combat, Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -9,6 +10,7 @@ import GameResolver from '../types/game-resolver'
 import { GameStatus, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
+import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-current-round'
 import { GraphQLResolveInfo } from 'graphql'
 import ModifyGameUnitPositions from './util/modify-game-unit-positions'
 import { MoveType } from '@gwent/graphql-schema'
@@ -18,8 +20,6 @@ import ResolverUtil from '../resolver-util'
 import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../subscription-resolver'
 import UnitStore from '../../../database/stores/unit-store'
 import UnitUtil from './util/unit-util'
-import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-current-round'
-import AddMoveToPlayer from './util/add-move-to-player'
 
 /**
  * A class for executing the playUnit GraphQL Mutation.

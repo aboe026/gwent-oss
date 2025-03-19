@@ -12,7 +12,7 @@ import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-current-round'
 import GetPlayerIdForNextRound from './util/get-player-id-for-next-round'
-import GetVictorIds from './util/get-victor-ids'
+import SetGameVictors from './util/set-game-victors'
 import { GraphQLResolveInfo } from 'graphql'
 import InitializeNewRound from './util/initialize-new-round'
 import IsGameOver from './util/is-game-over'
@@ -108,11 +108,10 @@ export default class PlayPassMutation {
         logPrefix,
       })
       if (gameOver) {
-        game.victors = GetVictorIds.getVictorIds({
+        SetGameVictors.setGameVictors({
           game,
           logPrefix,
         })
-        game.status = GameStatus.Done
       } else {
         nextPlayerId = GetPlayerIdForNextRound.getPlayerIdForNextRound({
           game,
