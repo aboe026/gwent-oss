@@ -1,10 +1,10 @@
 import { ObjectId } from 'mongodb'
 
+import deepClone from '../util/deep-clone'
+import { DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import RedrawUnit from '../../src/graphql/resolvers/mutations/util/redraw-unit'
 import TestUtil from '../util/test-util'
 import * as utils from '@gwent/utils'
-import deepClone from '../util/deep-clone'
-import { DeckUnitDbObject, GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 
 describe('redraw-unit', () => {
   describe('redrawUnit', () => {

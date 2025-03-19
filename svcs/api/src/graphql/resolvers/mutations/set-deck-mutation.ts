@@ -9,12 +9,12 @@ import GameDeckResolver from '../types/game-deck-resolver'
 import GameResolver from '../types/game-resolver'
 import { FactionKey, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
-import { getRandomSubset } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import PresentableError from '../../../util/presentable-error'
-import { PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
+import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
 import SetGameTurnOrder from './util/set-game-turn-order'
+import SetGameDeck from './util/set-game-deck'
 
 /**
  * A class for executing the setDeck GraphQL Mutation.
@@ -79,37 +79,12 @@ export default class SetDeckMutation {
       throw new PresentableError(message)
     }
 
-    const hand = getRandomSubset({
-      items: deck.units,
-      size: STARTING_HAND_SIZE,
+    SetGameDeck.setGameDeck({
+      game,
+      deck,
+      userId,
+      logPrefix,
     })
-    if (SetDeckMutation.logger.isTraceEnabled()) {
-      SetDeckMutation.logger.trace(`${logPrefix} hand: "${JSON.stringify(hand)}"`)
-    }
-    const handIds = hand.map((deckUnit) => deckUnit.unit.toString())
-    const undrawn = deck.units.filter((deckUnit) => !handIds.includes(deckUnit.unit.toString()))
-    if (SetDeckMutation.logger.isTraceEnabled()) {
-      SetDeckMutation.logger.trace(`${logPrefix} undrawn: "${JSON.stringify(undrawn)}"`)
-    }
-
-    game.players = game.players.map((gamePlayer) => {
-      if (gamePlayer.user.toString() === userId.toString()) {
-        gamePlayer.deck = {
-          ...gamePlayer.deck,
-          from: deck,
-          hand,
-          undrawn,
-        }
-      }
-      return gamePlayer
-    })
-
-    const allDecksSet = !game.players.some((gamePlayer) => !gamePlayer.deck.from)
-
-    if (allDecksSet) {
-      SetDeckMutation.logger.debug(`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`)
-      game.status = GameStatus.Ordering
-    }
 
     const updatedGame = await GameStore.save(game)
 
@@ -147,7 +122,7 @@ export default class SetDeckMutation {
       },
     } as DeckSetPayload)
 
-    if (allDecksSet) {
+    if (updatedGame.status === GameStatus.Ordering) {
       EventManager.pubsub.publish(PubSubEvents.GameSet, {
         gameSet: resolvedGame,
       } as GameSetPayload)

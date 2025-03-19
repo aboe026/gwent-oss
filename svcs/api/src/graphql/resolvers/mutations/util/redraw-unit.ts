@@ -1,7 +1,8 @@
-import { GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
-import PresentableError from '../../../../util/presentable-error'
 import { getLogger } from 'log4js'
+
+import { GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import { getRandomSubset } from '@gwent/utils'
+import PresentableError from '../../../../util/presentable-error'
 
 export default class RedrawUnit {
   private static logger = getLogger('redraw-unit')
