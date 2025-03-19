@@ -14,7 +14,6 @@ describe('redraw-unit', () => {
       const invalidUser = new ObjectId()
       const game = TestUtil.getDbGame({
         players: [self, TestUtil.getDbGamePlayer({})],
-        turn: invalidUser,
       })
       const message = `Could not find player "${invalidUser}" on game "${game._id}" to redraw unit "${game.round}" for.`
 
@@ -22,111 +21,219 @@ describe('redraw-unit', () => {
         game,
         logPrefix,
         unitId: new ObjectId().toString(),
+        userId: invalidUser,
         expected: Error(message),
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('throws error if unit not in hand', () => {
-      const self = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          hand: [TestUtil.getDbDeckUnit({})],
-        }),
-      })
-      const game = TestUtil.getDbGame({
-        players: [self, TestUtil.getDbGamePlayer({})],
-        turn: self.user,
-      })
-      const message = 'Unit not in hand.'
+    describe('first player', () => {
+      it('throws error if unit not in hand', () => {
+        const self = TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [TestUtil.getDbDeckUnit({})],
+          }),
+        })
+        const game = TestUtil.getDbGame({
+          players: [self, TestUtil.getDbGamePlayer({})],
+        })
+        const message = 'Unit not in hand.'
 
-      testRedrawUnit({
-        game,
-        logPrefix,
-        unitId: new ObjectId().toString(),
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+        testRedrawUnit({
+          game,
+          logPrefix,
+          userId: self.user,
+          unitId: new ObjectId().toString(),
+          expected: Error(message),
+          warnCalls: [[`${logPrefix} failed: ${message}`]],
+        })
+      })
+      it('replaces unit from hand with random unit in undrawn, adding transaction to deck redraws', () => {
+        const unitId = new ObjectId()
+        const previousRedraw = TestUtil.getDbDeckUnit({})
+        const from = TestUtil.getDbDeckUnit({
+          id: unitId,
+        })
+        const to = TestUtil.getDbDeckUnit({})
+        const self = TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [from],
+            undrawn: [to],
+            redraws: [
+              {
+                from: previousRedraw,
+                to: TestUtil.getDbDeckUnit({}),
+              },
+            ],
+          }),
+        })
+        const game = TestUtil.getDbGame({
+          players: [self, TestUtil.getDbGamePlayer({})],
+        })
+
+        testRedrawUnit({
+          game,
+          logPrefix,
+          unitId: unitId.toString(),
+          userId: self.user,
+          getRandomSubsetResponse: [to],
+          redrawPool: [to],
+          expected: {
+            from: deepClone(from),
+            to: deepClone(to),
+          },
+          expectedHand: [deepClone(to)],
+          expectedUndrawn: [deepClone(from)],
+        })
+      })
+      it('logs to trace if enabled', () => {
+        const unitId = new ObjectId()
+        const previousRedraw = TestUtil.getDbDeckUnit({})
+        const from = TestUtil.getDbDeckUnit({
+          id: unitId,
+        })
+        const to = TestUtil.getDbDeckUnit({})
+        const self = TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [from],
+            undrawn: [to],
+            redraws: [
+              {
+                from: previousRedraw,
+                to: TestUtil.getDbDeckUnit({}),
+              },
+            ],
+          }),
+        })
+        const game = TestUtil.getDbGame({
+          players: [self, TestUtil.getDbGamePlayer({})],
+        })
+        const redrawPool = [deepClone(to)]
+
+        testRedrawUnit({
+          game,
+          logPrefix,
+          unitId: unitId.toString(),
+          userId: self.user,
+          getRandomSubsetResponse: [deepClone(to)],
+          redrawPool,
+          expected: {
+            from: deepClone(from),
+            to: deepClone(to),
+          },
+          expectedHand: [deepClone(to)],
+          expectedUndrawn: [deepClone(from)],
+          traceEnabled: true,
+          traceCalls: [
+            [`${logPrefix} redrawFrom: "${JSON.stringify(deepClone(from))}"`],
+            [`${logPrefix} redrawPool: "${JSON.stringify(redrawPool)}"`],
+            [`${logPrefix} redrawTo: "${JSON.stringify(deepClone(to))}"`],
+          ],
+        })
       })
     })
-    it('replaces unit from hand with random unit in undrawn, adding transaction to deck redraws', () => {
-      const unitId = new ObjectId()
-      const previousRedraw = TestUtil.getDbDeckUnit({})
-      const from = TestUtil.getDbDeckUnit({
-        id: unitId,
-      })
-      const to = TestUtil.getDbDeckUnit({})
-      const self = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          hand: [from],
-          undrawn: [to],
-          redraws: [
-            {
-              from: previousRedraw,
-              to: TestUtil.getDbDeckUnit({}),
-            },
-          ],
-        }),
-      })
-      const game = TestUtil.getDbGame({
-        players: [self, TestUtil.getDbGamePlayer({})],
-        turn: self.user,
-      })
+    describe('second player', () => {
+      it('throws error if unit not in hand', () => {
+        const self = TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [TestUtil.getDbDeckUnit({})],
+          }),
+        })
+        const game = TestUtil.getDbGame({
+          players: [TestUtil.getDbGamePlayer({}), self],
+        })
+        const message = 'Unit not in hand.'
 
-      testRedrawUnit({
-        game,
-        logPrefix,
-        unitId: unitId.toString(),
-        getRandomSubsetResponse: [to],
-        redrawPool: [to],
-        expected: {
-          from: deepClone(from),
-          to: deepClone(to),
-        },
-        expectedHand: [deepClone(to)],
-        expectedUndrawn: [deepClone(from)],
+        testRedrawUnit({
+          game,
+          logPrefix,
+          userId: self.user,
+          unitId: new ObjectId().toString(),
+          expected: Error(message),
+          warnCalls: [[`${logPrefix} failed: ${message}`]],
+        })
       })
-    })
-    it('logs to trace if enabled', () => {
-      const unitId = new ObjectId()
-      const previousRedraw = TestUtil.getDbDeckUnit({})
-      const from = TestUtil.getDbDeckUnit({
-        id: unitId,
-      })
-      const to = TestUtil.getDbDeckUnit({})
-      const self = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          hand: [from],
-          undrawn: [to],
-          redraws: [
-            {
-              from: previousRedraw,
-              to: TestUtil.getDbDeckUnit({}),
-            },
-          ],
-        }),
-      })
-      const game = TestUtil.getDbGame({
-        players: [self, TestUtil.getDbGamePlayer({})],
-        turn: self.user,
-      })
-      const redrawPool = [deepClone(to)]
+      it('replaces unit from hand with random unit in undrawn, adding transaction to deck redraws', () => {
+        const unitId = new ObjectId()
+        const previousRedraw = TestUtil.getDbDeckUnit({})
+        const from = TestUtil.getDbDeckUnit({
+          id: unitId,
+        })
+        const to = TestUtil.getDbDeckUnit({})
+        const self = TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [from],
+            undrawn: [to],
+            redraws: [
+              {
+                from: previousRedraw,
+                to: TestUtil.getDbDeckUnit({}),
+              },
+            ],
+          }),
+        })
+        const game = TestUtil.getDbGame({
+          players: [TestUtil.getDbGamePlayer({}), self],
+        })
 
-      testRedrawUnit({
-        game,
-        logPrefix,
-        unitId: unitId.toString(),
-        getRandomSubsetResponse: [deepClone(to)],
-        redrawPool,
-        expected: {
-          from: deepClone(from),
-          to: deepClone(to),
-        },
-        expectedHand: [deepClone(to)],
-        expectedUndrawn: [deepClone(from)],
-        traceEnabled: true,
-        traceCalls: [
-          [`${logPrefix} redrawFrom: "${JSON.stringify(deepClone(from))}"`],
-          [`${logPrefix} redrawPool: "${JSON.stringify(redrawPool)}"`],
-          [`${logPrefix} redrawTo: "${JSON.stringify(deepClone(to))}"`],
-        ],
+        testRedrawUnit({
+          game,
+          logPrefix,
+          unitId: unitId.toString(),
+          userId: self.user,
+          getRandomSubsetResponse: [to],
+          redrawPool: [to],
+          expected: {
+            from: deepClone(from),
+            to: deepClone(to),
+          },
+          expectedHand: [deepClone(to)],
+          expectedUndrawn: [deepClone(from)],
+        })
+      })
+      it('logs to trace if enabled', () => {
+        const unitId = new ObjectId()
+        const previousRedraw = TestUtil.getDbDeckUnit({})
+        const from = TestUtil.getDbDeckUnit({
+          id: unitId,
+        })
+        const to = TestUtil.getDbDeckUnit({})
+        const self = TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [from],
+            undrawn: [to],
+            redraws: [
+              {
+                from: previousRedraw,
+                to: TestUtil.getDbDeckUnit({}),
+              },
+            ],
+          }),
+        })
+        const game = TestUtil.getDbGame({
+          players: [TestUtil.getDbGamePlayer({}), self],
+        })
+        const redrawPool = [deepClone(to)]
+
+        testRedrawUnit({
+          game,
+          logPrefix,
+          unitId: unitId.toString(),
+          userId: self.user,
+          getRandomSubsetResponse: [deepClone(to)],
+          redrawPool,
+          expected: {
+            from: deepClone(from),
+            to: deepClone(to),
+          },
+          expectedHand: [deepClone(to)],
+          expectedUndrawn: [deepClone(from)],
+          traceEnabled: true,
+          traceCalls: [
+            [`${logPrefix} redrawFrom: "${JSON.stringify(deepClone(from))}"`],
+            [`${logPrefix} redrawPool: "${JSON.stringify(redrawPool)}"`],
+            [`${logPrefix} redrawTo: "${JSON.stringify(deepClone(to))}"`],
+          ],
+        })
       })
     })
   })
@@ -136,6 +243,7 @@ function testRedrawUnit({
   game,
   logPrefix,
   unitId,
+  userId,
   getRandomSubsetResponse,
   redrawPool,
   expectedHand,
@@ -149,6 +257,7 @@ function testRedrawUnit({
   game: GameDbObject
   logPrefix: string
   unitId: string
+  userId: ObjectId
   getRandomSubsetResponse?: DeckUnitDbObject[]
   redrawPool?: DeckUnitDbObject[]
   expectedUndrawn?: DeckUnitDbObject[]
@@ -180,6 +289,7 @@ function testRedrawUnit({
         game,
         logPrefix,
         unitId,
+        userId,
       })
     }).toThrow(expected)
   } else {
@@ -188,26 +298,32 @@ function testRedrawUnit({
         game,
         logPrefix,
         unitId,
+        userId,
       })
     ).toEqual(expected)
   }
 
+  const selfIndex = origGame.players.findIndex((player) => player.user.toString() === userId.toString())
+  const updatedSelf =
+    selfIndex >= 0
+      ? {
+          ...origGame.players[selfIndex],
+          deck: {
+            ...origGame.players[selfIndex].deck,
+            undrawn: expectedUndrawn,
+            hand: expectedHand,
+            redraws: [...origGame.players[selfIndex].deck.redraws, expected],
+          },
+        }
+      : origGame.players[0]
   expect(game).toEqual(
     expected instanceof Error
       ? origGame
       : {
           ...origGame,
           players: [
-            {
-              ...origGame.players[0],
-              deck: {
-                ...origGame.players[0].deck,
-                undrawn: expectedUndrawn,
-                hand: expectedHand,
-                redraws: [...origGame.players[0].deck.redraws, expected],
-              },
-            },
-            origGame.players[1],
+            selfIndex === 0 ? updatedSelf : origGame.players[0],
+            selfIndex === 1 ? updatedSelf : origGame.players[1],
           ],
         }
   )

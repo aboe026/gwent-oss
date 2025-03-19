@@ -102,19 +102,6 @@ describe('effect-morale', () => {
     }
     const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
 
-    const expectedCombatRow: PlayerCombatRow = {
-      score: unitSelf1.unit.strength || 0,
-      units: [
-        TestUtil.getGameUnit({
-          unit: unitSelf1.unit,
-        }),
-      ],
-    }
-
-    const emptyCombatRow: PlayerCombatRow = {
-      score: 0,
-      units: [],
-    }
     gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
     const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
     await expect(
@@ -146,7 +133,7 @@ describe('effect-morale', () => {
               ready: true,
               rounds: [
                 expectizePlayerRound({
-                  close: combatUnit1 === Combat.Close ? expectedCombatRow : emptyCombatRow,
+                  close: TestUtil.getPlayerCombatRow({}),
                   moves: [
                     {
                       created: expect.any(Date),
@@ -154,8 +141,15 @@ describe('effect-morale', () => {
                       unit: unitSelf1,
                     } as MoveUnit,
                   ],
-                  ranged: combatUnit1 === Combat.Ranged ? expectedCombatRow : emptyCombatRow,
-                  siege: combatUnit1 === Combat.Siege ? expectedCombatRow : emptyCombatRow,
+                  ranged: {
+                    score: unitSelf1.unit.strength || 0,
+                    units: [
+                      TestUtil.getGameUnit({
+                        unit: unitSelf1.unit,
+                      }),
+                    ],
+                  },
+                  siege: TestUtil.getPlayerCombatRow({}),
                   score: unitSelf1.unit.strength || 0,
                 }),
               ],
@@ -230,10 +224,6 @@ describe('effect-morale', () => {
         }),
       ],
     }
-    const emptyCombatRow: PlayerCombatRow = {
-      score: 0,
-      units: [],
-    }
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
     const expectedGamePlayer = expectizeGamePlayer({
       user: opponent,
@@ -242,7 +232,7 @@ describe('effect-morale', () => {
       ready: true,
       rounds: [
         expectizePlayerRound({
-          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : emptyCombatRow,
+          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           moves: [
             {
               created: expect.any(Date),
@@ -250,8 +240,8 @@ describe('effect-morale', () => {
               unit: unitOpponent1,
             } as MoveUnit,
           ],
-          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : emptyCombatRow,
-          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : emptyCombatRow,
+          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           score: unitOpponent1.unit.strength || 0,
         }),
       ],
@@ -286,7 +276,7 @@ describe('effect-morale', () => {
               ready: true,
               rounds: [
                 expectizePlayerRound({
-                  close: emptyCombatRow,
+                  close: TestUtil.getPlayerCombatRow({}),
                   moves: [
                     {
                       created: expect.any(Date),
@@ -321,7 +311,7 @@ describe('effect-morale', () => {
                       }),
                     ],
                   },
-                  siege: emptyCombatRow,
+                  siege: TestUtil.getPlayerCombatRow({}),
                   score: 13,
                 }),
               ],
@@ -396,10 +386,6 @@ describe('effect-morale', () => {
         }),
       ],
     }
-    const emptyCombatRow: PlayerCombatRow = {
-      score: 0,
-      units: [],
-    }
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
     const expectedGamePlayer = expectizeGamePlayer({
       user: opponent,
@@ -408,7 +394,7 @@ describe('effect-morale', () => {
       ready: true,
       rounds: [
         expectizePlayerRound({
-          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : emptyCombatRow,
+          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           moves: [
             {
               created: expect.any(Date),
@@ -416,8 +402,8 @@ describe('effect-morale', () => {
               unit: unitOpponent1,
             } as MoveUnit,
           ],
-          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : emptyCombatRow,
-          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : emptyCombatRow,
+          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           score: unitOpponent1.unit.strength || 0,
         }),
       ],
@@ -452,7 +438,7 @@ describe('effect-morale', () => {
               ready: true,
               rounds: [
                 expectizePlayerRound({
-                  close: emptyCombatRow,
+                  close: TestUtil.getPlayerCombatRow({}),
                   moves: [
                     {
                       created: expect.any(Date),
@@ -487,7 +473,7 @@ describe('effect-morale', () => {
                       }),
                     ],
                   },
-                  siege: emptyCombatRow,
+                  siege: TestUtil.getPlayerCombatRow({}),
                   score: 13,
                 }),
               ],
@@ -562,10 +548,6 @@ describe('effect-morale', () => {
         }),
       ],
     }
-    const emptyCombatRow: PlayerCombatRow = {
-      score: 0,
-      units: [],
-    }
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf2.unit.id)
     const expectedGamePlayer = expectizeGamePlayer({
       user: opponent,
@@ -574,7 +556,7 @@ describe('effect-morale', () => {
       ready: true,
       rounds: [
         expectizePlayerRound({
-          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : emptyCombatRow,
+          close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           moves: [
             {
               created: expect.any(Date),
@@ -582,8 +564,8 @@ describe('effect-morale', () => {
               unit: unitOpponent1,
             } as MoveUnit,
           ],
-          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : emptyCombatRow,
-          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : emptyCombatRow,
+          ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
+          siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           score: unitOpponent1.unit.strength || 0,
         }),
       ],
@@ -618,7 +600,7 @@ describe('effect-morale', () => {
               ready: true,
               rounds: [
                 expectizePlayerRound({
-                  close: emptyCombatRow,
+                  close: TestUtil.getPlayerCombatRow({}),
                   moves: [
                     {
                       created: expect.any(Date),
@@ -642,7 +624,7 @@ describe('effect-morale', () => {
                       }),
                     ],
                   },
-                  siege: emptyCombatRow,
+                  siege: TestUtil.getPlayerCombatRow({}),
                   score: 20,
                 }),
               ],

@@ -190,7 +190,6 @@ describe('ready-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} has all players ready, starting first round.`]],
       })
     })
     it('logs to trace if enabled', async () => {
@@ -239,11 +238,9 @@ async function testReady({
   gameResolveCalls = [],
   saveCalls = [],
   logPrefix,
-  unreadyPlayerIds = [],
   traceEnabled,
   warnCalls = [],
   errorCalls = [],
-  debugCalls = [],
 }: {
   userId?: ObjectId
   gameId?: string
@@ -259,7 +256,6 @@ async function testReady({
   traceEnabled?: boolean
   warnCalls?: any[][]
   errorCalls?: any[][]
-  debugCalls?: any[][]
 }) {
   const context: Context = {
     session: {},
@@ -284,12 +280,10 @@ async function testReady({
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
-  const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   ReadyMutation['logger'] = {
     error: errorSpy,
     warn: warnSpy,
-    debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
@@ -318,7 +312,6 @@ async function testReady({
   )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
@@ -329,7 +322,6 @@ async function testReady({
           ],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} unreadyPlayers: "${JSON.stringify(unreadyPlayerIds)}"`],
           [`${logPrefix} updatedGame: "${JSON.stringify(saveResponse)}"`],
         ]
       : []

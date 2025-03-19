@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import { getRandomSubset } from '@gwent/utils'
@@ -11,12 +12,14 @@ export default class RedrawUnit {
     game,
     logPrefix,
     unitId,
+    userId,
   }: {
     game: GameDbObject
     logPrefix: string
     unitId: string
+    userId: ObjectId
   }): RedrawDbObject {
-    const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
+    const player = game.players.find((player) => player.user.toString() === userId.toString())
     if (player) {
       const redrawFrom = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
       if (RedrawUnit.logger.isTraceEnabled()) {
@@ -65,7 +68,7 @@ export default class RedrawUnit {
         to: redrawTo,
       }
     } else {
-      const message = `Could not find player "${game.turn}" on game "${game._id}" to redraw unit "${game.round}" for.`
+      const message = `Could not find player "${userId}" on game "${game._id}" to redraw unit "${game.round}" for.`
       RedrawUnit.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }

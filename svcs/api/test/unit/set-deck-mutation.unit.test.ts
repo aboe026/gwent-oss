@@ -139,7 +139,6 @@ describe('set-deck-mutation', () => {
           ],
         ],
         saveCalls,
-        // TODO: redefined logPrefix with extra stuff?
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })

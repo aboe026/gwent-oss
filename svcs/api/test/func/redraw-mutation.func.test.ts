@@ -324,7 +324,7 @@ describe('redraw-mutation', () => {
             source: `mutation {
               redraw(
                 game: "${game.id}"
-                unit: "${gameDeckSelf.hand[3].unit.id}"
+                unit: "${gameDeckSelf.hand[2].unit.id}"
               ) {
                 ${getDeckUnitFragment()}
               }

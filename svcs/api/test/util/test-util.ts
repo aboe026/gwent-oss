@@ -16,6 +16,7 @@ import {
   GameUnit,
   GameUnitEffect,
   Leader,
+  PlayerCombatRow,
   Redraw,
   Unit,
   UnitStats,
@@ -641,6 +642,13 @@ export default class TestUtil {
             deck: gameDeck.from,
           })
         : undefined,
+    }
+  }
+
+  static getPlayerCombatRow({ score = 0, units = [] }: { score?: number; units?: GameUnit[] }): PlayerCombatRow {
+    return {
+      score,
+      units,
     }
   }
 

@@ -451,7 +451,6 @@ function testSetRoundWinners({
   } as any
   const origGame = deepClone(game)
 
-  // TODO: verify game/round results
   expect(
     SetRoundWinners.setRoundWinners({
       game,

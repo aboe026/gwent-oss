@@ -20,7 +20,6 @@ import {
   GamePlayer,
   GameStatus,
   MoveUnit,
-  PlayerCombatRow,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
 import { ensureUnitsInHand } from '@gwent/test-utils'
@@ -454,22 +453,7 @@ describe('play-unit-mutation', () => {
           throw Error(`Could not find unit "${unitName}" in hand`)
         }
         const combat = singleCombatDeckUnit.unit.combats ? singleCombatDeckUnit.unit.combats[0] : Combat.Close
-        // TODO: use "ensureUnitsInHand" to avoid this
-        // TODO: also check if we do something similar in other func tests
-        // TODO: also check if we do something similar in E2E tests
-        const expectedCombatRow: PlayerCombatRow = {
-          score: singleCombatDeckUnit.unit.strength || 0,
-          units: [
-            TestUtil.getGameUnit({
-              unit: singleCombatDeckUnit.unit,
-            }),
-          ],
-        }
 
-        const emptyCombatRow: PlayerCombatRow = {
-          score: 0,
-          units: [],
-        }
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== singleCombatDeckUnit.unit.id)
         const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
         await expect(
@@ -501,7 +485,14 @@ describe('play-unit-mutation', () => {
                   ready: true,
                   rounds: [
                     expectizePlayerRound({
-                      close: combat === Combat.Close ? expectedCombatRow : emptyCombatRow,
+                      close: {
+                        score: singleCombatDeckUnit.unit.strength || 0,
+                        units: [
+                          TestUtil.getGameUnit({
+                            unit: singleCombatDeckUnit.unit,
+                          }),
+                        ],
+                      },
                       moves: [
                         {
                           created: expect.any(Date),
@@ -509,8 +500,8 @@ describe('play-unit-mutation', () => {
                           unit: singleCombatDeckUnit,
                         } as MoveUnit,
                       ],
-                      ranged: combat === Combat.Ranged ? expectedCombatRow : emptyCombatRow,
-                      siege: combat === Combat.Siege ? expectedCombatRow : emptyCombatRow,
+                      ranged: TestUtil.getPlayerCombatRow({}),
+                      siege: TestUtil.getPlayerCombatRow({}),
                       score: singleCombatDeckUnit.unit.strength || 0,
                     }),
                   ],
@@ -544,19 +535,6 @@ describe('play-unit-mutation', () => {
         }
         const combat = singleCombatDeckUnit.unit.combats ? singleCombatDeckUnit.unit.combats[0] : Combat.Close
 
-        const expectedCombatRow: PlayerCombatRow = {
-          score: singleCombatDeckUnit.unit.strength || 0,
-          units: [
-            TestUtil.getGameUnit({
-              unit: singleCombatDeckUnit.unit,
-            }),
-          ],
-        }
-
-        const emptyCombatRow: PlayerCombatRow = {
-          score: 0,
-          units: [],
-        }
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== singleCombatDeckUnit.unit.id)
         const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
         await expect(
@@ -589,7 +567,14 @@ describe('play-unit-mutation', () => {
                   ready: true,
                   rounds: [
                     expectizePlayerRound({
-                      close: combat === Combat.Close ? expectedCombatRow : emptyCombatRow,
+                      close: {
+                        score: singleCombatDeckUnit.unit.strength || 0,
+                        units: [
+                          TestUtil.getGameUnit({
+                            unit: singleCombatDeckUnit.unit,
+                          }),
+                        ],
+                      },
                       moves: [
                         {
                           created: expect.any(Date),
@@ -597,8 +582,8 @@ describe('play-unit-mutation', () => {
                           unit: singleCombatDeckUnit,
                         } as MoveUnit,
                       ],
-                      ranged: combat === Combat.Ranged ? expectedCombatRow : emptyCombatRow,
-                      siege: combat === Combat.Siege ? expectedCombatRow : emptyCombatRow,
+                      ranged: TestUtil.getPlayerCombatRow({}),
+                      siege: TestUtil.getPlayerCombatRow({}),
                       score: singleCombatDeckUnit.unit.strength || 0,
                     }),
                   ],
@@ -631,19 +616,6 @@ describe('play-unit-mutation', () => {
         }
         const combat = multiCombatDeckUnit.unit.combats ? multiCombatDeckUnit.unit.combats[0] : Combat.Close
 
-        const expectedCombatRow: PlayerCombatRow = {
-          score: multiCombatDeckUnit.unit.strength || 0,
-          units: [
-            TestUtil.getGameUnit({
-              unit: multiCombatDeckUnit.unit,
-            }),
-          ],
-        }
-
-        const emptyCombatRow: PlayerCombatRow = {
-          score: 0,
-          units: [],
-        }
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== multiCombatDeckUnit.unit.id)
         const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
         await expect(
@@ -676,7 +648,14 @@ describe('play-unit-mutation', () => {
                   ready: true,
                   rounds: [
                     expectizePlayerRound({
-                      close: combat === Combat.Close ? expectedCombatRow : emptyCombatRow,
+                      close: {
+                        score: multiCombatDeckUnit.unit.strength || 0,
+                        units: [
+                          TestUtil.getGameUnit({
+                            unit: multiCombatDeckUnit.unit,
+                          }),
+                        ],
+                      },
                       moves: [
                         {
                           created: expect.any(Date),
@@ -684,8 +663,8 @@ describe('play-unit-mutation', () => {
                           unit: multiCombatDeckUnit,
                         } as MoveUnit,
                       ],
-                      ranged: combat === Combat.Ranged ? expectedCombatRow : emptyCombatRow,
-                      siege: combat === Combat.Siege ? expectedCombatRow : emptyCombatRow,
+                      ranged: TestUtil.getPlayerCombatRow({}),
+                      siege: TestUtil.getPlayerCombatRow({}),
                       score: multiCombatDeckUnit.unit.strength || 0,
                     }),
                   ],

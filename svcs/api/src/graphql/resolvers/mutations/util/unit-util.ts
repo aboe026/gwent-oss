@@ -13,13 +13,9 @@ export default class UnitUtil {
     const unitIds: string[] = [unitBeingPlayed.toString()] // to be removed at end, used just for now to ignore potential duplicates
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
-      for (let i = 0; i < player.rounds.length; i++) {
-        if (i === game.round - 1) {
-          for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
-            if (!unitIds.includes(rowUnit.unit.toString())) {
-              unitIds.push(rowUnit.unit.toString())
-            }
-          }
+      for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
+        if (!unitIds.includes(rowUnit.unit.toString())) {
+          unitIds.push(rowUnit.unit.toString())
         }
       }
     }
@@ -44,8 +40,12 @@ export default class UnitUtil {
       }
     }
 
-    return EffectStore.get({
-      ids: effectIds,
-    })
+    if (effectIds.length === 0) {
+      return []
+    } else {
+      return EffectStore.get({
+        ids: effectIds,
+      })
+    }
   }
 }

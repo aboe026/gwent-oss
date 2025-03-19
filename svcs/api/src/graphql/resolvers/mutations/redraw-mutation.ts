@@ -75,6 +75,7 @@ export default class RedrawMutation {
       game,
       logPrefix,
       unitId,
+      userId,
     })
 
     const updatedGame = await GameStore.save(game)

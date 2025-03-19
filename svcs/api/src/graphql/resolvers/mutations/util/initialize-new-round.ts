@@ -13,7 +13,6 @@ export default class InitializeNewRound {
       score: 0,
       units: [],
     }
-    // TODO: switch other methods from re-mapping to directly modifying objects
     for (const player of game.players) {
       player.rounds.push({
         close: {

@@ -8,7 +8,6 @@ import { GameReadyPayload } from '../subscription-resolver'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
-import InitializeNewRound from './util/initialize-new-round'
 import MarkPlayerReady from './util/mark-player-ready'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
@@ -58,20 +57,6 @@ export default class ReadyMutation {
       userId,
       logPrefix,
     })
-
-    const unreadyPlayers = game.players.filter((gamePlayer) => gamePlayer.ready === false)
-    if (ReadyMutation.logger.isTraceEnabled()) {
-      ReadyMutation.logger.trace(
-        `${logPrefix} unreadyPlayers: "${JSON.stringify(unreadyPlayers.map((unreadyPlayer) => unreadyPlayer.user))}"`
-      )
-    }
-    if (unreadyPlayers.length === 0) {
-      ReadyMutation.logger.debug(`${logPrefix} has all players ready, starting first round.`)
-      InitializeNewRound.initializeNewRound({
-        game,
-      })
-      game.status = GameStatus.Playing
-    }
 
     const updatedGame = await GameStore.save(game)
 

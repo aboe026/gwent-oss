@@ -8,10 +8,7 @@ A list of things to be done in the future.
   - "main" resolver file
   - "bad" resolver file (checks for invalids)
   - "good" resolver file (actually performs logic)
-- convert for other `game.players =` instances (or elsewhere object mapping is done)
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
-- have logic methods directly mutate game object instead of returning new game object? How to handle unit tests to make sure only expected things mutated?
-- separate invalid checks on mutations into separate methods?
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)
@@ -72,6 +69,9 @@ A list of things to be done in the future.
 - minor version increment
 - changelog
 
+- for "Move" type, have "impact" field
+  - cards removed/added
+  - effects applied to other cards
 - Limit user creation
   - activation code?
   - manual review?
