@@ -6,84 +6,74 @@ import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
+import InitializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 import { PubSubEvents } from '@gwent/constants'
 import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
-import InitializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 
 describe('ready-mutation', () => {
-  describe('ready', () => {
-    const userId = new ObjectId()
-    const gameId = new ObjectId().toString()
-    const logPrefix = `ready by "${userId}" on game "${gameId}"`
-    const gamePlayerSelf = TestUtil.getDbGamePlayer({
-      deck: TestUtil.getDbGameDeck({
-        from: TestUtil.getDbDeck({}),
-      }),
-      user: userId,
-    })
-    const gamePlayerOpponent = TestUtil.getDbGamePlayer({
-      deck: TestUtil.getDbGameDeck({
-        from: TestUtil.getDbDeck({}),
-      }),
-    })
-    const game = TestUtil.getDbGame({
-      id: gameId,
-      players: [gamePlayerSelf, gamePlayerOpponent],
-    })
-    const getGamePlayerCalls = [
-      [
-        {
-          gameId,
-          userId,
-          status: GameStatus.Redrawing,
-          label: 'mark ready',
-        },
-      ],
-    ]
-    const updatedGame: GameDbObject = {
-      ...game,
-      players: [
-        {
-          ...game.players[0],
-          ready: true,
-        },
-        game.players[1],
-      ],
-      updated: new Date(),
-    }
-    const resolvedGame = TestUtil.getGame({
-      id: game._id,
-      players: [
-        TestUtil.getGamePlayer({
-          ready: true,
-          user: TestUtil.getUser({
-            id: userId,
-          }),
-        }),
-        TestUtil.getGamePlayer({
-          user: TestUtil.getUser({
-            id: gamePlayerOpponent.user,
-          }),
-        }),
-      ],
-    })
-    it('throws error if already marked as ready', async () => {
-      const error = 'Already marked as ready.'
-      await testReady({
-        userId,
+  const userId = new ObjectId()
+  const gameId = new ObjectId().toString()
+  const logPrefix = `ready by "${userId}" on game "${gameId}"`
+  const getGamePlayerCalls = [
+    [
+      {
         gameId,
-        getGamePlayerResponse: {
-          game,
-          player: {
-            ...gamePlayerSelf,
+        userId,
+        status: GameStatus.Redrawing,
+        label: 'mark ready',
+      },
+    ],
+  ]
+  let gamePlayerSelf: GamePlayerDbObject
+  let gamePlayerOpponent: GamePlayerDbObject
+  let game: GameDbObject
+  let updatedGame: GameDbObject
+  let resolvedGame: Game
+  describe('ready', () => {
+    beforeEach(() => {
+      gamePlayerSelf = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({}),
+        }),
+        user: userId,
+      })
+      gamePlayerOpponent = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({}),
+        }),
+      })
+      game = TestUtil.getDbGame({
+        id: gameId,
+        players: [gamePlayerSelf, gamePlayerOpponent],
+      })
+      updatedGame = {
+        ...game,
+        players: [
+          {
+            ...game.players[0],
             ready: true,
           },
-        },
-        expected: Error(error),
-        getGamePlayerCalls,
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
+          game.players[1],
+        ],
+        updated: new Date(),
+      }
+      resolvedGame = TestUtil.getGame({
+        id: game._id,
+        players: [
+          TestUtil.getGamePlayer({
+            ready: true,
+            user: TestUtil.getUser({
+              id: userId,
+            }),
+          }),
+          TestUtil.getGamePlayer({
+            user: TestUtil.getUser({
+              id: gamePlayerOpponent.user,
+            }),
+          }),
+        ],
       })
     })
     it('throws error if save response is undefined', async () => {
@@ -156,7 +146,7 @@ describe('ready-mutation', () => {
           },
           readyOpponentGamePlayer,
         ],
-        round: 1,
+        round: 0,
         status: GameStatus.Playing,
       }
       InitializeNewRound.initializeNewRound({

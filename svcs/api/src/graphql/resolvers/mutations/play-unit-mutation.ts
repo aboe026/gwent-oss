@@ -143,7 +143,10 @@ export default class PlayUnitMutation {
       move: {
         created: new Date(),
         row: combat,
-        unit: deckUnit,
+        unit: {
+          artStyle: deckUnit.artStyle,
+          unit: deckUnit.unit,
+        },
         type: MoveType.Unit,
       } as MoveUnitDbObject,
     })

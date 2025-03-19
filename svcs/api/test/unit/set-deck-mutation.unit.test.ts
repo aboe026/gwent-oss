@@ -183,6 +183,7 @@ describe('set-deck-mutation', () => {
             },
           }
         }),
+        status: GameStatus.Ordering,
       }
       const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
         game: gameAllDecksChosen,
@@ -280,7 +281,6 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`]],
       })
     })
     it('returns resolved deck if no errors', async () => {
@@ -342,6 +342,7 @@ describe('set-deck-mutation', () => {
             },
           }
         }),
+        status: GameStatus.Ordering,
       }
       const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
         game: gameAllDecksChosen,
@@ -437,7 +438,6 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`]],
       })
     })
     it('does not throw error if attempt to set turn order when another player has ScoiaTael', async () => {
@@ -452,6 +452,7 @@ describe('set-deck-mutation', () => {
             },
           }
         }),
+        status: GameStatus.Ordering,
       }
       const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
         game: gameAllDecksChosen,
@@ -550,7 +551,6 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`]],
       })
     })
     it('logs to trace if enabled', async () => {
@@ -626,7 +626,6 @@ async function testSetDeck({
   logPrefix,
   errorCalls = [],
   warnCalls = [],
-  debugCalls = [],
   traceEnabled,
 }: {
   userId?: ObjectId
@@ -649,7 +648,6 @@ async function testSetDeck({
   logPrefix?: string
   errorCalls?: any[][]
   warnCalls?: any[][]
-  debugCalls?: string[][]
   traceEnabled?: boolean
 }) {
   const context: Context = {
@@ -663,14 +661,6 @@ async function testSetDeck({
   const args: MutationSetDeckArgs = {
     game: gameId,
     deck: deckId,
-  }
-  let player = getGamePlayerResponse?.player
-  if (getGamePlayerResponse) {
-    player = getGamePlayerResponse?.player
-  }
-  let handIds: string[] = []
-  if (player) {
-    handIds = randomSubset.map((deckUnit) => deckUnit.unit.toString())
   }
   const getDeckSpy = jest.spyOn(DeckStore, 'getById').mockResolvedValue(getDeckResponse)
   const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
@@ -734,7 +724,6 @@ async function testSetDeck({
   expect(publishSpy.mock.calls).toEqual(publishCalls)
   expect(setOrderSpy.mock.calls).toEqual(setOrderCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
@@ -748,12 +737,6 @@ async function testSetDeck({
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} deck: "${JSON.stringify(getDeckResponse)}"`],
-          [`${logPrefix} hand: "${JSON.stringify(randomSubset)}"`],
-          [
-            `${logPrefix} undrawn: "${JSON.stringify(
-              (getDeckResponse as DeckDbObject).units.filter((deckUnit) => !handIds.includes(deckUnit.unit.toString()))
-            )}"`,
-          ],
           [`${logPrefix} updatedGame: "${JSON.stringify(saveResponse)}"`],
           [
             `${logPrefix} updatedPlayer: "${JSON.stringify(

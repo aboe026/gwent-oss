@@ -21,7 +21,6 @@ export default class SetGameDeck {
     logPrefix: string
   }) {
     const player = game.players.find((player) => player.user.toString() === userId.toString())
-    console.log(`TEST player: "${JSON.stringify(player)}"`)
     if (player) {
       player.deck.from = deck
       player.deck.hand = getRandomSubset({

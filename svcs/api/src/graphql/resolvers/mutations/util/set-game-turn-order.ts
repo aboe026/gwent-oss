@@ -107,10 +107,9 @@ export default class SetGameTurnOrder {
       userIdsForOrder = randomizeOrder(game.players.map((gamePlayer) => gamePlayer.user.toString()))
     }
 
-    game.players = game.players.map((gamePlayer) => {
+    for (const gamePlayer of game.players) {
       gamePlayer.order = userIdsForOrder.indexOf(gamePlayer.user.toString())
-      return gamePlayer
-    })
+    }
     game.turn = new ObjectId(userIdsForOrder[0])
     game.status = GameStatus.Redrawing
 
