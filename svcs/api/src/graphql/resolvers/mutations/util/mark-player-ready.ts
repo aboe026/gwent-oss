@@ -5,7 +5,7 @@ import PresentableError from '../../../../util/presentable-error'
 import { getLogger } from 'log4js'
 
 export default class MarkPlayerReady {
-  private static logger = getLogger('mark-player-ready')
+  private static logger = getLogger('MarkPlayerReady')
 
   static markPlayerReady({ game, userId, logPrefix }: { game: GameDbObject; userId: ObjectId; logPrefix: string }) {
     const player = game.players.find((player) => player.user.toString() === userId.toString())

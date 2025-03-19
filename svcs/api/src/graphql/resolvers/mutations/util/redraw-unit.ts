@@ -5,7 +5,7 @@ import { getRandomSubset } from '@gwent/utils'
 import PresentableError from '../../../../util/presentable-error'
 
 export default class RedrawUnit {
-  private static logger = getLogger('redraw-unit')
+  private static logger = getLogger('RedrawUnit')
 
   static redrawUnit({
     game,

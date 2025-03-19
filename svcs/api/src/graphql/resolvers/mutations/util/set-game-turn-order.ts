@@ -51,22 +51,22 @@ export default class SetGameTurnOrder {
     )
     if (scoiaTaelPlayers.length > 1 && userIds && userIds.length > 0) {
       const message = `Explicit order not allowed when more than 1 player has deck of faction "${FactionKey.ScoiaTael}".`
-      this.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
+      SetGameTurnOrder.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 0 && userIds && userIds.length > 0) {
       const message = `Explicit order not allowed when deck faction not "${FactionKey.ScoiaTael}".`
-      this.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
+      SetGameTurnOrder.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 1 && (!userIds || userIds.length === 0) && !allowImplicit) {
       const message = `Random order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
-      this.logger.debug(`${logPrefix} setGameTurnOrder failed: ${message}`)
+      SetGameTurnOrder.logger.debug(`${logPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
     if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
       const message = `Setting order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
-      this.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
+      SetGameTurnOrder.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
 
@@ -80,30 +80,30 @@ export default class SetGameTurnOrder {
       }
       if (playersIdsNotInGame.length > 0) {
         const message = `User(s) ${JSON.stringify(playersIdsNotInGame)} are not players on game.`
-        this.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
+        SetGameTurnOrder.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
         throw new PresentableError(message)
       }
       if (userIds.length !== game.players.length) {
         const message = `Users count of "${userIds.length}" does not match required count of "${game.players.length}".`
-        this.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
+        SetGameTurnOrder.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
         throw new PresentableError(message)
       }
       const duplicateUserIds = getDuplicateItems<string>(userIds)
       if (duplicateUserIds.length > 0) {
         const message = `Duplicate user(s) ${JSON.stringify(duplicateUserIds)} not allowed.`
-        this.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
+        SetGameTurnOrder.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
         throw new PresentableError(message)
       }
     }
 
     let userIdsForOrder: string[] = []
     if (userIds && userIds.length > 0) {
-      if (this.logger.isTraceEnabled()) {
-        this.logger.trace(`${logPrefix} setGameTurnOrder userIds provided, not randomizing order`)
+      if (SetGameTurnOrder.logger.isTraceEnabled()) {
+        SetGameTurnOrder.logger.trace(`${logPrefix} setGameTurnOrder userIds provided, not randomizing order`)
       }
       userIdsForOrder = userIds
     } else {
-      this.logger.trace(`${logPrefix} setGameTurnOrder no userIds provided, randomizing order`)
+      SetGameTurnOrder.logger.trace(`${logPrefix} setGameTurnOrder no userIds provided, randomizing order`)
       userIdsForOrder = randomizeOrder(game.players.map((gamePlayer) => gamePlayer.user.toString()))
     }
 
@@ -116,12 +116,12 @@ export default class SetGameTurnOrder {
 
     const updatedGame = await GameStore.save(game)
 
-    if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${logPrefix} setGameTurnOrder updatedGame: "${JSON.stringify(updatedGame)}"`)
+    if (SetGameTurnOrder.logger.isTraceEnabled()) {
+      SetGameTurnOrder.logger.trace(`${logPrefix} setGameTurnOrder updatedGame: "${JSON.stringify(updatedGame)}"`)
     }
     if (!updatedGame) {
       const message = 'Could not set order in probable race condition collision.'
-      this.logger.error(`${logPrefix} setGameTurnOrder failed: ${message}`)
+      SetGameTurnOrder.logger.error(`${logPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
 

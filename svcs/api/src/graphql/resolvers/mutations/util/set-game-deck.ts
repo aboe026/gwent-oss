@@ -7,7 +7,7 @@ import PresentableError from '../../../../util/presentable-error'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 
 export default class SetGameDeck {
-  private static logger = getLogger('set-game-deck')
+  private static logger = getLogger('SetGameDeck')
 
   static setGameDeck({
     game,
