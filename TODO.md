@@ -4,6 +4,11 @@ A list of things to be done in the future.
 
 ## Fixes
 
+- remove need for classes just for log4js spying
+  - have "getLogger" method
+    - keeps loggers in memory by name
+    - when called, returns already instantiated log4js instance if it exists, otherwise creates ones
+    - new "getLogger" needs to be called within individual methods
 - break up mutations into own folders? for each:
   - "main" resolver file
   - "bad" resolver file (checks for invalids)

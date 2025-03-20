@@ -11,7 +11,20 @@ import {
 import { EffectReasonType } from '@gwent/graphql-schema'
 import PresentableError from '../../../../util/presentable-error'
 
+/**
+ * A class for calculating the effective strength for units in the current round of a game.
+ * This is a class instead of methods because Jest was not properly spying on the named export calculateEffectiveStrengthsForRow
+ * function calls from the default exported function calculateEffectiveStrengths
+ */
 export default class CalculateGameEffectiveStrengths {
+  /**
+   * Set the effective strengths for all units played in the current round of a game, taking into account unit effects and leader abilities present.
+   *
+   * @param config The configuration used to calculate effective strengths for units.
+   * @param config.game The Game to calculate effective strengths on for the active round.
+   * @param config.units All the database Unit objects present in the round for the game.
+   * @param config.effects All the database Effect objects for any unit effect present in the round for the game.
+   */
   static calculateEffectiveStrengths({
     game,
     units,
@@ -40,6 +53,14 @@ export default class CalculateGameEffectiveStrengths {
     }
   }
 
+  /**
+   * Calculates the effective strength for all units in a combat row.
+   *
+   * @param config The configuration used to determine effective strengths for the units in the combat row.
+   * @param config.row The combat row contianing the units to calculate effective strengths for.
+   * @param config.units All the database Unit objects present in the round for the game.
+   * @param config.effects All the database Effect objects for any unit effect present in the round for the game.
+   */
   private static calculateEffectiveStrengthsForRow({
     row,
     units,

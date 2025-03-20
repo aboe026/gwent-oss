@@ -2,12 +2,23 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import InitializeNewRound from './initialize-new-round'
+import initializeNewRound from './initialize-new-round'
 import PresentableError from '../../../../util/presentable-error'
 
+/**
+ * A class to mark a player as ready for a game.
+ */
 export default class MarkPlayerReady {
   private static logger = getLogger('MarkPlayerReady')
 
+  /**
+   * Mark a player as ready for a game, so a battle can commence.
+   *
+   * @param config The configuration used to mark the game as ready.
+   * @param config.game The game to mark as ready for the player.
+   * @param config.userId The ID of the player to mark as ready on the game.
+   * @param config.logPrefix What to prefix log statements with to help identify log output.
+   */
   static markPlayerReady({ game, userId, logPrefix }: { game: GameDbObject; userId: ObjectId; logPrefix: string }) {
     const player = game.players.find((player) => player.user.toString() === userId.toString())
     if (player) {
@@ -28,7 +39,7 @@ export default class MarkPlayerReady {
         }
         if (unreadyPlayers.length === 0) {
           MarkPlayerReady.logger.debug(`${logPrefix} has all players ready, starting first round.`)
-          InitializeNewRound.initializeNewRound({
+          initializeNewRound({
             game,
           })
           game.status = GameStatus.Playing

@@ -1,11 +1,12 @@
-import TestUtil from '../util/test-util'
-import ModifyGameUnitPositions from '../../src/graphql/resolvers/mutations/util/modify-game-unit-positions'
 import { ObjectId } from 'mongodb'
-import deepClone from '../util/deep-clone'
-import { Combat } from '@gwent/graphql-schema/resolver-typings'
 
-describe('modify-game-unit-positions', () => {
-  describe('modifyGameUnitPositions', () => {
+import { Combat } from '@gwent/graphql-schema/resolver-typings'
+import deepClone from '../util/deep-clone'
+import modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/util/modify-battlefield-with-new-unit'
+import TestUtil from '../util/test-util'
+
+describe('modify-battlefield-with-new-unit', () => {
+  describe('modifyBattlefieldWithNewUnit', () => {
     describe('close combat', () => {
       describe('only unit', () => {
         it('removes from hand and adds it to row for round for first player', () => {
@@ -34,7 +35,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Close,
@@ -90,7 +91,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Close,
@@ -156,7 +157,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Close,
@@ -220,7 +221,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Close,
@@ -278,7 +279,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Close,
@@ -335,7 +336,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Close,
@@ -396,7 +397,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Ranged,
@@ -452,7 +453,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Ranged,
@@ -518,7 +519,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Ranged,
@@ -582,7 +583,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Ranged,
@@ -640,7 +641,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Ranged,
@@ -697,7 +698,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Ranged,
@@ -758,7 +759,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Siege,
@@ -814,7 +815,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Siege,
@@ -880,7 +881,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Siege,
@@ -944,7 +945,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Siege,
@@ -1002,7 +1003,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Siege,
@@ -1059,7 +1060,7 @@ describe('modify-game-unit-positions', () => {
           const origGame = deepClone(game)
 
           expect(
-            ModifyGameUnitPositions.modifyGameUnitPositions({
+            modifyBattlefieldWithNewUnit({
               game,
               deckUnit,
               combat: Combat.Siege,

@@ -1,9 +1,9 @@
-import CalculateGameScores from '../../src/graphql/resolvers/mutations/util/calculate-game-scores'
-import TestUtil from '../util/test-util'
 import deepClone from '../util/deep-clone'
+import setGameScores, { getUnitsScore } from '../../src/graphql/resolvers/mutations/util/set-game-scores'
+import TestUtil from '../util/test-util'
 
-describe('calculate-game-scores', () => {
-  describe('calculateScores', () => {
+describe('set-game-scores', () => {
+  describe('setGameScores', () => {
     it('sets scores to zero if no units in of any combat', () => {
       const game = TestUtil.getDbGame({
         players: [
@@ -18,11 +18,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual(origGame)
     })
@@ -47,11 +43,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -94,11 +86,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -141,11 +129,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -188,11 +172,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -235,11 +215,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -282,11 +258,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -333,11 +305,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -384,11 +352,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -435,11 +399,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -486,11 +446,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -537,11 +493,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -588,11 +540,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -650,11 +598,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -724,11 +668,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -798,11 +738,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -872,11 +808,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -946,11 +878,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1020,11 +948,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1100,11 +1024,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1199,11 +1119,7 @@ describe('calculate-game-scores', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        CalculateGameScores.calculateScores({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(setGameScores(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1246,92 +1162,70 @@ describe('calculate-game-scores', () => {
       })
     })
   })
-  describe('calculateScoreForRow', () => {
+  describe('getUnitsScore', () => {
     it('returns zero if no units in row', () => {
-      expect(
-        CalculateGameScores['calculateScoreForRow']({
-          units: [],
-        })
-      ).toEqual(0)
+      expect(getUnitsScore([])).toEqual(0)
     })
     it('returns zero if single unit without effective strength', () => {
-      expect(
-        CalculateGameScores['calculateScoreForRow']({
-          units: [TestUtil.getDbGameUnit({})],
-        })
-      ).toEqual(0)
+      expect(getUnitsScore([TestUtil.getDbGameUnit({})])).toEqual(0)
     })
     it('returns zero if multiple units without effective strength', () => {
-      expect(
-        CalculateGameScores['calculateScoreForRow']({
-          units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-        })
-      ).toEqual(0)
+      expect(getUnitsScore([TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})])).toEqual(0)
     })
     it('returns effective strength if single unit with effective strength', () => {
       expect(
-        CalculateGameScores['calculateScoreForRow']({
-          units: [
-            TestUtil.getDbGameUnit({
-              effectiveStrength: 1,
-            }),
-          ],
-        })
+        getUnitsScore([
+          TestUtil.getDbGameUnit({
+            effectiveStrength: 1,
+          }),
+        ])
       ).toEqual(1)
     })
     it('returns effective strength if single unit with effective strength and unit without effective strength', () => {
       expect(
-        CalculateGameScores['calculateScoreForRow']({
-          units: [
-            TestUtil.getDbGameUnit({
-              effectiveStrength: 1,
-            }),
-            TestUtil.getDbGameUnit({}),
-          ],
-        })
+        getUnitsScore([
+          TestUtil.getDbGameUnit({
+            effectiveStrength: 1,
+          }),
+          TestUtil.getDbGameUnit({}),
+        ])
       ).toEqual(1)
     })
     it('returns effective strength if unit without effective strength and single unit with effective strength', () => {
       expect(
-        CalculateGameScores['calculateScoreForRow']({
-          units: [
-            TestUtil.getDbGameUnit({}),
-            TestUtil.getDbGameUnit({
-              effectiveStrength: 1,
-            }),
-          ],
-        })
+        getUnitsScore([
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({
+            effectiveStrength: 1,
+          }),
+        ])
       ).toEqual(1)
     })
     it('returns sum of effective strengths if multiple units with effective strength', () => {
       expect(
-        CalculateGameScores['calculateScoreForRow']({
-          units: [
-            TestUtil.getDbGameUnit({
-              effectiveStrength: 1,
-            }),
-            TestUtil.getDbGameUnit({
-              effectiveStrength: 1,
-            }),
-          ],
-        })
+        getUnitsScore([
+          TestUtil.getDbGameUnit({
+            effectiveStrength: 1,
+          }),
+          TestUtil.getDbGameUnit({
+            effectiveStrength: 1,
+          }),
+        ])
       ).toEqual(2)
     })
     it('returns sum of effective strengths if multiple units with effective strength and multiple units without effective strength', () => {
       expect(
-        CalculateGameScores['calculateScoreForRow']({
-          units: [
-            TestUtil.getDbGameUnit({}),
-            TestUtil.getDbGameUnit({
-              effectiveStrength: 1,
-            }),
-            TestUtil.getDbGameUnit({}),
-            TestUtil.getDbGameUnit({
-              effectiveStrength: 1,
-            }),
-            TestUtil.getDbGameUnit({}),
-          ],
-        })
+        getUnitsScore([
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({
+            effectiveStrength: 1,
+          }),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({
+            effectiveStrength: 1,
+          }),
+          TestUtil.getDbGameUnit({}),
+        ])
       ).toEqual(2)
     })
   })

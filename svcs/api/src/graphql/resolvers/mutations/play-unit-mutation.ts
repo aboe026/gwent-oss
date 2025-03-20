@@ -1,6 +1,5 @@
-import AddMoveToPlayer from './util/add-move-to-player'
+import addMoveToCurrentPlayer from './util/add-move-to-current-player'
 import CalculateGameEffectiveStrengths from './util/calculate-game-effective-strengths'
-import CalculateGameScores from './util/calculate-game-scores'
 import { Combat, Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
 import DeckUnitResolver from '../types/deck-unit-resolver'
@@ -12,11 +11,12 @@ import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-current-round'
 import { GraphQLResolveInfo } from 'graphql'
-import ModifyGameUnitPositions from './util/modify-game-unit-positions'
+import modifyBattlefieldWithNewUnit from './util/modify-battlefield-with-new-unit'
 import { MoveType } from '@gwent/graphql-schema'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
+import setGameScores from './util/set-game-scores'
 import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../subscription-resolver'
 import UnitStore from '../../../database/stores/unit-store'
 import UnitUtil from './util/unit-util'
@@ -118,11 +118,9 @@ export default class PlayUnitMutation {
       game,
       unitBeingPlayed: unit,
     })
-    const unitEffects = await UnitUtil.getUnitEffects({
-      units: roundUnits,
-    })
+    const unitEffects = await UnitUtil.getUnitEffects(roundUnits)
 
-    ModifyGameUnitPositions.modifyGameUnitPositions({
+    modifyBattlefieldWithNewUnit({
       game,
       combat,
       deckUnit,
@@ -134,11 +132,9 @@ export default class PlayUnitMutation {
       effects: unitEffects,
     })
 
-    CalculateGameScores.calculateScores({
-      game,
-    })
+    setGameScores(game)
 
-    AddMoveToPlayer.addMoveToPlayer({
+    addMoveToCurrentPlayer({
       game,
       move: {
         created: new Date(),

@@ -1,10 +1,10 @@
-import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
-import SetRoundWinners from '../../src/graphql/resolvers/mutations/util/set-round-winners'
-import TestUtil from '../util/test-util'
 import deepClone from '../util/deep-clone'
+import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
+import SetRoundResults from '../../src/graphql/resolvers/mutations/util/set-round-results'
+import TestUtil from '../util/test-util'
 
-describe('set-round-winners', () => {
-  describe('setRoundWinners', () => {
+describe('set-round-results', () => {
+  describe('setRoundResults', () => {
     const logPrefix = 'unit-test-log-prefix'
     describe('first round', () => {
       const round = 1
@@ -445,14 +445,14 @@ function testSetRoundWinners({
 }) {
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
-  SetRoundWinners['logger'] = {
+  SetRoundResults['logger'] = {
     debug: debugSpy,
     trace: traceSpy,
   } as any
   const origGame = deepClone(game)
 
   expect(
-    SetRoundWinners.setRoundWinners({
+    SetRoundResults.setRoundResults({
       game,
       logPrefix,
     })

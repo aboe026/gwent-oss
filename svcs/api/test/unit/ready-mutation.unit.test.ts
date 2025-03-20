@@ -6,7 +6,7 @@ import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
-import InitializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
+import initializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 import { PubSubEvents } from '@gwent/constants'
 import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
@@ -149,7 +149,7 @@ describe('ready-mutation', () => {
         round: 0,
         status: GameStatus.Playing,
       }
-      InitializeNewRound.initializeNewRound({
+      initializeNewRound({
         game: allPlayersReadyUpdatedGame,
       })
       const allPlayersReadyResolvedGame: Game = {

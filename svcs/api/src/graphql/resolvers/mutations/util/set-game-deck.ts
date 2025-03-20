@@ -6,9 +6,21 @@ import { getRandomSubset } from '@gwent/utils'
 import PresentableError from '../../../../util/presentable-error'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 
+/**
+ * The class for setting the deck on a game.
+ */
 export default class SetGameDeck {
   private static logger = getLogger('SetGameDeck')
 
+  /**
+   * Sets the deck on a game, randomizing the starting hand for the user.
+   *
+   * @param config The configuration used to set the deck on the game.
+   * @param config.game The game to set the deck on.
+   * @param config.userId The ID of the player on the game to set the deck for.
+   * @param config.deck The Deck that should be set for the player on the game.
+   * @param logPrefix What to prefix log statements with to help identify log output.
+   */
   static setGameDeck({
     game,
     userId,

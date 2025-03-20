@@ -2,6 +2,9 @@ import { getLogger } from 'log4js'
 
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 
+/**
+ * A class to determine if the current round of a game is over or not.
+ */
 export default class IsRoundOver {
   private static logger = getLogger('IsRoundOver')
   /**

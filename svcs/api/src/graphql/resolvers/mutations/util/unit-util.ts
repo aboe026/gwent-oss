@@ -2,7 +2,18 @@ import { EffectDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schem
 import EffectStore from '../../../../database/stores/effect-store'
 import UnitStore from '../../../../database/stores/unit-store'
 
+/**
+ * A class containing utility methods for interacting with Units.
+ */
 export default class UnitUtil {
+  /**
+   * Gets all Units on the battlefield in the current round of the game from the database.
+   *
+   * @param config The configuration used to get the Units.
+   * @param config.game The game whose currently deployed battlefield units on the current round should be retreived.
+   * @param confing.unitBeingPlayed The current unit being played and for which the database object has already been retreived, making it unnecessary to retreive it again.
+   * @returns An array of all database Units on the battlefield in the current round of the game, including the unitBeingPlayed.
+   */
   static async getRoundUnits({
     game,
     unitBeingPlayed,
@@ -27,7 +38,13 @@ export default class UnitUtil {
     return [...units, unitBeingPlayed]
   }
 
-  static async getUnitEffects({ units }: { units: UnitDbObject[] }): Promise<EffectDbObject[]> {
+  /**
+   * Gets the Effect database documents for all effects present on a list of Unit database objects.
+   *
+   * @param units The units containing potential effect IDs that the full Effect database documents should be grabbed for.
+   * @returns The database documents of any Effects present in the Unit objects.
+   */
+  static async getUnitEffects(units: UnitDbObject[]): Promise<EffectDbObject[]> {
     const effectIds: string[] = []
     for (const unit of units) {
       if (unit.effects) {

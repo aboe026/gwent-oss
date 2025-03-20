@@ -12,6 +12,9 @@ import { OrderSetPayload } from '../../subscription-resolver'
 import PresentableError from '../../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 
+/**
+ * A class used to set the turn order on a game.
+ */
 export default class SetGameTurnOrder {
   private static logger = getLogger('SetGameTurnOrder')
 

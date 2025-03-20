@@ -3,6 +3,9 @@ import { ObjectId } from 'mongodb'
 
 import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
 
+/**
+ * A class to determine if a game is over or not.
+ */
 export default class IsGameOver {
   private static logger = getLogger('IsGameOver')
 

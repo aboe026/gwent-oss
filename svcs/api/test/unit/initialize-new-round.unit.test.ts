@@ -1,5 +1,5 @@
-import InitializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 import deepClone from '../util/deep-clone'
+import initializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 import TestUtil from '../util/test-util'
 
 describe('initialize-new-round', () => {
@@ -7,7 +7,7 @@ describe('initialize-new-round', () => {
     const game = TestUtil.getDbGame({})
     const origGame = deepClone(game)
 
-    InitializeNewRound.initializeNewRound({
+    initializeNewRound({
       game,
     })
 
@@ -36,7 +36,7 @@ describe('initialize-new-round', () => {
     })
     const origGame = deepClone(game)
 
-    InitializeNewRound.initializeNewRound({
+    initializeNewRound({
       game,
     })
 
@@ -65,7 +65,7 @@ describe('initialize-new-round', () => {
     })
     const origGame = deepClone(game)
 
-    InitializeNewRound.initializeNewRound({
+    initializeNewRound({
       game,
     })
 

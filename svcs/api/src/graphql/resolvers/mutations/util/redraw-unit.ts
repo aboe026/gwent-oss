@@ -5,9 +5,22 @@ import { GameDbObject, RedrawDbObject } from '@gwent/graphql-schema/database-typ
 import { getRandomSubset } from '@gwent/utils'
 import PresentableError from '../../../../util/presentable-error'
 
+/**
+ * A class to redraw a unit for a game Deck.
+ */
 export default class RedrawUnit {
   private static logger = getLogger('RedrawUnit')
 
+  /**
+   * Redraw a unit in a game deck with a random one from the discard pile.
+   *
+   * @param config The configuration used to redraw the unit.
+   * @param config.game The game to redraw the unit on.
+   * @param config.logPrefix What each log statement should be prefixed with to help identify output.
+   * @param config.unitId The ID of the Unit to redraw, replacing it with a random unit from the discard pile.
+   * @param config.userId The ID of the player on the game to redraw the unit for.
+   * @returns
+   */
   static redrawUnit({
     game,
     logPrefix,

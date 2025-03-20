@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
-import AddMoveToPlayer from './util/add-move-to-player'
-import ClearBattlefieldCards from './util/clear-battlefield-cards'
+import addMoveToCurrentPlayer from './util/add-move-to-current-player'
+import clearBattlefieldUnits from './util/clear-battlefield-units'
 import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../event-manager'
 import { Game, MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -14,7 +14,7 @@ import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-curren
 import GetPlayerIdForNextRound from './util/get-player-id-for-next-round'
 import SetGameVictors from './util/set-game-victors'
 import { GraphQLResolveInfo } from 'graphql'
-import InitializeNewRound from './util/initialize-new-round'
+import initializeNewRound from './util/initialize-new-round'
 import IsGameOver from './util/is-game-over'
 import IsRoundOver from './util/is-round-over'
 import { MoveType } from '@gwent/graphql-schema'
@@ -23,7 +23,7 @@ import { PassPlayedPayload, RoundEndedForDeckPayload } from '../subscription-res
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
-import SetRoundWinners from './util/set-round-winners'
+import SetRoundResults from './util/set-round-results'
 
 /**
  * A class for executing the playPass GraphQL Mutation.
@@ -81,7 +81,7 @@ export default class PlayPassMutation {
       game,
     })
 
-    AddMoveToPlayer.addMoveToPlayer({
+    addMoveToCurrentPlayer({
       game,
       move: {
         created: new Date(),
@@ -95,13 +95,11 @@ export default class PlayPassMutation {
       logPrefix,
     })
     if (roundOver) {
-      SetRoundWinners.setRoundWinners({
+      SetRoundResults.setRoundResults({
         game,
         logPrefix,
       })
-      ClearBattlefieldCards.clearBattlefieldCards({
-        game,
-      })
+      clearBattlefieldUnits(game)
 
       const gameOver = IsGameOver.isGameOver({
         game,
@@ -118,7 +116,7 @@ export default class PlayPassMutation {
           logPrefix,
         })
 
-        InitializeNewRound.initializeNewRound({
+        initializeNewRound({
           game,
         })
       }

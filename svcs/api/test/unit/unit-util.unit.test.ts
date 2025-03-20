@@ -814,11 +814,7 @@ async function testGetRoundUnits({
 async function testGetUnitEffects({ units, expected }: { units: UnitDbObject[]; expected: EffectDbObject[] }) {
   const effectStoreGetSpy = jest.spyOn(EffectStore, 'get').mockResolvedValue(expected)
 
-  await expect(
-    UnitUtil.getUnitEffects({
-      units,
-    })
-  ).resolves.toEqual(expected)
+  await expect(UnitUtil.getUnitEffects(units)).resolves.toEqual(expected)
 
   expect(effectStoreGetSpy.mock.calls).toEqual(
     expected.length === 0

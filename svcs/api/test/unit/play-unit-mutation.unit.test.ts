@@ -902,17 +902,7 @@ async function testPlayUnit({
         ]
       : []
   )
-  expect(getUnitEffectsSpy.mock.calls).toEqual(
-    saveGameCalled
-      ? [
-          [
-            {
-              units: roundUnits,
-            },
-          ],
-        ]
-      : []
-  )
+  expect(getUnitEffectsSpy.mock.calls).toEqual(saveGameCalled ? [[roundUnits]] : [])
   expect(dateSpy.mock.calls).toEqual(moveDate ? [[]] : [])
   const gameReturned = saveGameCalled && !saveResponse
   expect(saveSpy.mock.calls).toEqual(

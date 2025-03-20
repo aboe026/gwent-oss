@@ -1,8 +1,8 @@
 import deepClone from '../util/deep-clone'
 import TestUtil from '../util/test-util'
-import ClearBattlefieldCards from '../../src/graphql/resolvers/mutations/util/clear-battlefield-cards'
+import clearBattlefieldUnits from '../../src/graphql/resolvers/mutations/util/clear-battlefield-units'
 
-describe('clear-battlefield-cards', () => {
+describe('clear-battlefield-units', () => {
   describe('first round', () => {
     it('moves nothing to discard if no discard and no units deployed ', () => {
       const self = TestUtil.getDbGamePlayer({
@@ -18,11 +18,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -64,11 +60,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -118,11 +110,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -172,11 +160,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -226,11 +210,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -288,11 +268,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -350,11 +326,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -412,11 +384,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -482,11 +450,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -566,11 +530,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -626,11 +586,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -672,11 +628,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -728,11 +680,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -784,11 +732,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -840,11 +784,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -904,11 +844,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -968,11 +904,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1032,11 +964,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1104,11 +1032,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1190,11 +1114,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1250,11 +1170,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1296,11 +1212,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1354,11 +1266,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1412,11 +1320,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1470,11 +1374,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1536,11 +1436,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1602,11 +1498,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1668,11 +1560,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1742,11 +1630,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
@@ -1830,11 +1714,7 @@ describe('clear-battlefield-cards', () => {
       })
       const origGame = deepClone(game)
 
-      expect(
-        ClearBattlefieldCards.clearBattlefieldCards({
-          game,
-        })
-      ).toEqual(undefined)
+      expect(clearBattlefieldUnits(game)).toEqual(undefined)
 
       expect(game).toEqual({
         ...origGame,
