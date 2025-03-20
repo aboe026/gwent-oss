@@ -68,9 +68,6 @@ A list of things to be done in the future.
 
 ## Features
 
-- func tests
-- unit tests
-- jsdocs
 - minor version increment
 - changelog
 
