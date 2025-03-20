@@ -68,9 +68,6 @@ A list of things to be done in the future.
 
 ## Features
 
-- minor version increment
-- changelog
-
 - for "Move" type, have "impact" field
   - cards removed/added
   - effects applied to other cards
