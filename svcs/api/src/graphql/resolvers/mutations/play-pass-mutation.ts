@@ -12,17 +12,17 @@ import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-current-round'
 import GetPlayerIdForNextRound from './util/get-player-id-for-next-round'
-import SetGameVictors from './util/set-game-victors'
 import { GraphQLResolveInfo } from 'graphql'
 import initializeNewRound from './util/initialize-new-round'
 import IsGameOver from './util/is-game-over'
 import IsRoundOver from './util/is-round-over'
 import { MoveType } from '@gwent/graphql-schema'
-import PassCurrentPlayer from './util/pass-current-player'
+import passCurrentPlayer from './util/pass-current-player'
 import { PassPlayedPayload, RoundEndedForDeckPayload } from '../subscription-resolver'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
+import SetGameVictors from './util/set-game-victors'
 import SetRoundResults from './util/set-round-results'
 
 /**
@@ -77,9 +77,7 @@ export default class PlayPassMutation {
       throw new PresentableError(message)
     }
 
-    PassCurrentPlayer.passCurrentPlayer({
-      game,
-    })
+    passCurrentPlayer(game)
 
     addMoveToCurrentPlayer({
       game,

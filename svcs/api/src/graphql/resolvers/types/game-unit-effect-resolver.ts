@@ -12,10 +12,10 @@ import {
   EffectFromUnitDbObject,
   GameUnitEffectDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import UnitResolver from './unit-resolver'
 import { EffectReasonType } from '@gwent/graphql-schema'
 import EffectResolver from './effect-resolver'
 import LeaderResolver from './leader-resolver'
+import UnitResolver from './unit-resolver'
 
 /**
  * A class to convert GameUnitEffect database objects to their GraphQL equivalent.

@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import deepClone from '../util/deep-clone'
-import PassCurrentPlayer from '../../src/graphql/resolvers/mutations/util/pass-current-player'
+import passCurrentPlayer from '../../src/graphql/resolvers/mutations/util/pass-current-player'
 import TestUtil from '../util/test-util'
 
 describe('pass-current-player', () => {
@@ -20,11 +20,9 @@ describe('pass-current-player', () => {
       turn: userId,
     })
 
-    expect(() =>
-      PassCurrentPlayer.passCurrentPlayer({
-        game,
-      })
-    ).toThrow(`Could not find player "${userId}" on game "${game._id}" to pass for round "${game.round}".`)
+    expect(() => passCurrentPlayer(game)).toThrow(
+      `Could not find player "${userId}" on game "${game._id}" to pass for round "${game.round}".`
+    )
   })
   it('sets passed to true for self in first round', () => {
     const self = TestUtil.getDbGamePlayer({
@@ -40,11 +38,7 @@ describe('pass-current-player', () => {
     })
     const origGame = deepClone(game)
 
-    expect(
-      PassCurrentPlayer.passCurrentPlayer({
-        game,
-      })
-    ).toEqual(undefined)
+    expect(passCurrentPlayer(game)).toEqual(undefined)
 
     expect(game).toEqual({
       ...origGame,
@@ -86,11 +80,7 @@ describe('pass-current-player', () => {
     })
     const origGame = deepClone(game)
 
-    expect(
-      PassCurrentPlayer.passCurrentPlayer({
-        game,
-      })
-    ).toEqual(undefined)
+    expect(passCurrentPlayer(game)).toEqual(undefined)
 
     expect(game).toEqual({
       ...origGame,
@@ -139,11 +129,7 @@ describe('pass-current-player', () => {
     })
     const origGame = deepClone(game)
 
-    expect(
-      PassCurrentPlayer.passCurrentPlayer({
-        game,
-      })
-    ).toEqual(undefined)
+    expect(passCurrentPlayer(game)).toEqual(undefined)
 
     expect(game).toEqual({
       ...origGame,
@@ -177,11 +163,7 @@ describe('pass-current-player', () => {
     })
     const origGame = deepClone(game)
 
-    expect(
-      PassCurrentPlayer.passCurrentPlayer({
-        game,
-      })
-    ).toEqual(undefined)
+    expect(passCurrentPlayer(game)).toEqual(undefined)
 
     expect(game).toEqual({
       ...origGame,
@@ -223,11 +205,7 @@ describe('pass-current-player', () => {
     })
     const origGame = deepClone(game)
 
-    expect(
-      PassCurrentPlayer.passCurrentPlayer({
-        game,
-      })
-    ).toEqual(undefined)
+    expect(passCurrentPlayer(game)).toEqual(undefined)
 
     expect(game).toEqual({
       ...origGame,
@@ -276,11 +254,7 @@ describe('pass-current-player', () => {
     })
     const origGame = deepClone(game)
 
-    expect(
-      PassCurrentPlayer.passCurrentPlayer({
-        game,
-      })
-    ).toEqual(undefined)
+    expect(passCurrentPlayer(game)).toEqual(undefined)
 
     expect(game).toEqual({
       ...origGame,
