@@ -1,6 +1,6 @@
 {
   "name": "@gwent/constants",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "author": "Adam Boe",
   "description": "Defined constants to share between microservices",
   "main": "build/src/constants.js",
@@ -17,6 +17,6 @@
   "devDependencies": {
     "@types/jest": "29.5.14",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.2.5"
+    "ts-jest": "29.2.6"
   }
 }

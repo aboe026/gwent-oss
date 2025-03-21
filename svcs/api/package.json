@@ -1,6 +1,6 @@
 {
   "name": "@gwent/api",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "author": "Adam Boe",
   "description": "GraphQL backend to play Gwent.",
   "main": "src/index.ts",
@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@apollo/server": "4.11.3",
-    "@graphql-tools/schema": "10.0.16",
+    "@graphql-tools/schema": "10.0.23",
     "@gwent/constants": "workspace:*",
     "@gwent/env": "workspace:*",
     "@gwent/graphql-schema": "workspace:*",
@@ -42,10 +42,10 @@
     "graphql-middleware": "6.1.35",
     "graphql-shield": "7.6.5",
     "graphql-subscriptions": "3.0.0",
-    "graphql-ws": "6.0.3",
+    "graphql-ws": "6.0.4",
     "log4js": "6.9.1",
-    "mongodb": "6.13.0",
-    "ws": "8.18.0"
+    "mongodb": "6.15.0",
+    "ws": "8.18.1"
   },
   "devDependencies": {
     "@gwent/test-utils": "workspace:*",
@@ -59,8 +59,8 @@
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.14",
     "@types/semver": "7.5.8",
-    "@types/ws": "8.5.14",
+    "@types/ws": "8.18.0",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.2.5"
+    "ts-jest": "29.2.6"
   }
 }
