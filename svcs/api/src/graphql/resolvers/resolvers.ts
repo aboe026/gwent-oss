@@ -1,4 +1,4 @@
-import AddDeckMutation from './mutations/add-deck-mutation'
+import AddDeckMutation from './mutations/add-deck/add-deck-mutation'
 import AddGameMutation from './mutations/add-game-mutation'
 import AddUserMutation from './mutations/add-user-mutation'
 import ApplicationQuery from './queries/application-query'
@@ -28,7 +28,7 @@ import UnitsQuery from './queries/units-query'
  */
 export const resolvers: Resolvers = {
   Mutation: {
-    addDeck: async (parent, args, context, info) => AddDeckMutation.addDeck(args, context, info),
+    addDeck: async (parent, args, context, info) => AddDeckMutation.addDeckMutation(args, context, info),
     addGame: async (parent, args, context, info) => AddGameMutation.addGame(args, context, info),
     addUser: async (parent, args, context, info) => AddUserMutation.addUser(args, info),
     login: async (parent, args, context, info) => LoginMutation.login(args, context, info),

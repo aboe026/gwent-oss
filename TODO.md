@@ -9,10 +9,6 @@ A list of things to be done in the future.
     - keeps loggers in memory by name
     - when called, returns already instantiated log4js instance if it exists, otherwise creates ones
     - new "getLogger" needs to be called within individual methods
-- break up mutations into own folders? for each:
-  - "main" resolver file
-  - "bad" resolver file (checks for invalids)
-  - "good" resolver file (actually performs logic)
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
@@ -25,6 +21,9 @@ A list of things to be done in the future.
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status, gamesList doesn't need all details that game page does)
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
+- rename svcs directory to msvs
+  - more easily distinguish that it is microservices instead of just services
+  - easier autocomplete as it doesn't conflict with the scripts directory
 - rename "redraw" mutation to "redrawUnit"? and "ready" to "readyGame"? Have mutation name convention by "verbNoun"?
 - do not store yarn binary in source
 - do not store yarn sdks in source?

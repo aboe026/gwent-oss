@@ -1,4 +1,4 @@
-import AddDeckMutation from '../../src/graphql/resolvers/mutations/add-deck-mutation'
+import AddDeckMutation from '../../src/graphql/resolvers/mutations/add-deck/add-deck-mutation'
 import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game-mutation'
 import AddUserMutation from '../../src/graphql/resolvers/mutations/add-user-mutation'
 import ApplicationQuery from '../../src/graphql/resolvers/queries/application-query'
@@ -23,7 +23,7 @@ import UnitsQuery from '../../src/graphql/resolvers/queries/units-query'
 
 describe('resolvers', () => {
   it('calls queries and mutations', async () => {
-    const addDeckSpy = jest.spyOn(AddDeckMutation, 'addDeck').mockImplementation()
+    const addDeckSpy = jest.spyOn(AddDeckMutation, 'addDeckMutation').mockImplementation()
     const addGameSpy = jest.spyOn(AddGameMutation, 'addGame').mockImplementation()
     const addUserSpy = jest.spyOn(AddUserMutation, 'addUser').mockImplementation()
     const loginSpy = jest.spyOn(LoginMutation, 'login').mockImplementation()

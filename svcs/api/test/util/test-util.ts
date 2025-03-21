@@ -271,13 +271,15 @@ export default class TestUtil {
   }
 
   static getDbLeader({
-    id,
-    faction,
     dlc = undefined,
+    faction,
+    id,
+    name = 'leader-name',
   }: {
-    id?: ObjectId | string
-    faction?: ObjectId | string
     dlc?: ObjectId | string
+    faction?: ObjectId | string
+    id?: ObjectId | string
+    name?: string
   }): LeaderDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
@@ -285,7 +287,7 @@ export default class TestUtil {
       created: new Date(),
       faction: faction ? new ObjectId(faction) : new ObjectId(),
       image: 'leader-image',
-      name: 'leader-name',
+      name,
       quote: 'leader-quote',
       dlc: dlc ? new ObjectId(dlc) : undefined,
     }
