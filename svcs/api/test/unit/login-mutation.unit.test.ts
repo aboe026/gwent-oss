@@ -1,7 +1,7 @@
 import LoginMutation from '../../src/graphql/resolvers/mutations/login-mutation'
 import { MutationLoginArgs, User } from '@gwent/graphql-schema/resolver-typings'
 import { REDACTED } from '@gwent/constants'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../src/database/stores/user-store'
 

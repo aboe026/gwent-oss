@@ -1,7 +1,7 @@
 import { CgChevronLeft, CgChevronRight } from 'react-icons/cg'
 
 import CloseButton from './CloseButton'
-import { DeckUnit, EffectKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, EffectKey, FactionKey, GameUnitEffect } from '@gwent/graphql-schema/resolver-typings'
 import { getCombatImage, getWeatherImage, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
 import { Key, useKeyDown } from '../util/keyboard-listener'
@@ -15,6 +15,8 @@ import './UnitFullCard.css'
  * @returns The full page Unit
  */
 export default function UnitFullCard({
+  effectiveStrength,
+  effects,
   fullUnit,
   hasNext,
   hasPrevious,
@@ -109,11 +111,67 @@ export default function UnitFullCard({
                       }`}</span>
                     </div>
                     {fullUnit.unit.strength !== undefined && fullUnit.unit.strength !== null && (
-                      <div className={HTML_CLASSES.UnitFullCardInfoRow}>
-                        <StrengthCircle unit={fullUnit.unit} size="50px" ignoreHero={true} />
-                        <span
-                          id={HTML_IDS.UnitFullCardStrength}
-                        >{`Provides a strength of ${fullUnit.unit.strength} to the row placed in.`}</span>
+                      <div className={`${HTML_CLASSES.UnitFullCardInfoRow} unit-full-card-info-row-strength`}>
+                        <div className={HTML_CLASSES.UnitFullCardInfoRow}>
+                          <StrengthCircle
+                            unit={fullUnit.unit}
+                            effectiveStrength={effectiveStrength}
+                            size="50px"
+                            ignoreHero={true}
+                          />
+                          <span id={HTML_IDS.UnitFullCardStrength}>{`Provides a strength of ${
+                            effectiveStrength || fullUnit.unit.strength
+                          } to the row placed in.`}</span>
+                        </div>
+                        {effects && effects.length > 0 && (
+                          <div className={HTML_CLASSES.UnitFullCardStrengthReasonContainer}>
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>Operator</th>
+                                  <th>Strength</th>
+                                  <th>Reason</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr className={HTML_CLASSES.UnitFullCardStrengthReasonRow}>
+                                  <td
+                                    className={`${HTML_CLASSES.UnitFullCardStrengthReasonOperator} unit-full-card-info-strength-reason-number`}
+                                  ></td>
+                                  <td
+                                    className={`${HTML_CLASSES.UnitFullCardStrengthReasonStrength} unit-full-card-info-strength-reason-number`}
+                                  >
+                                    {fullUnit.unit.strength}
+                                  </td>
+                                  <td className={HTML_CLASSES.UnitFullCardStrengthReasonExplanation}>Base strength</td>
+                                </tr>
+                                {effects.map((effect, index) => {
+                                  let reason = ''
+                                  if (effect.reason.__typename === 'EffectFromUnit') {
+                                    reason = `${effect.reason.effect.name} from ${effect.reason.unit.name}`
+                                  } else if (effect.reason.__typename === 'EffectFromLeader') {
+                                    reason = `Ability from ${effect.reason.leader.name}`
+                                  }
+                                  return (
+                                    <tr key={index} className={HTML_CLASSES.UnitFullCardStrengthReasonRow}>
+                                      <td
+                                        className={`${HTML_CLASSES.UnitFullCardStrengthReasonOperator} unit-full-card-info-strength-reason-number`}
+                                      >
+                                        {effect.operator}
+                                      </td>
+                                      <td
+                                        className={`${HTML_CLASSES.UnitFullCardStrengthReasonStrength} unit-full-card-info-strength-reason-number`}
+                                      >
+                                        {effect.total}
+                                      </td>
+                                      <td className={HTML_CLASSES.UnitFullCardStrengthReasonExplanation}>{reason}</td>
+                                    </tr>
+                                  )
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
                       </div>
                     )}
                     {combatSymbol && (
@@ -237,6 +295,8 @@ export default function UnitFullCard({
 }
 
 interface UnitFullCardProps {
+  effectiveStrength?: number | null
+  effects?: GameUnitEffect[] | null
   fullUnit: DeckUnit | undefined
   hasNext: boolean
   hasPrevious: boolean

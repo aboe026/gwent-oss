@@ -3,10 +3,10 @@ import { ObjectId } from 'mongodb'
 import { Context } from '@gwent/graphql-schema/context'
 import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
-import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order-mutation'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
+import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
 
 describe('set-order-mutation', () => {
   describe('setOrder', () => {
@@ -77,7 +77,7 @@ async function testSetOrder({
     game,
     player: game.players[0],
   })
-  const setOrderSpy = jest.spyOn(MutationUtil.prototype, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
+  const setOrderSpy = jest.spyOn(SetGameTurnOrder, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -110,6 +110,7 @@ async function testSetOrder({
               player: game.players[0],
               userIds,
               allowImplicit: true,
+              logPrefix,
             },
           ],
         ]

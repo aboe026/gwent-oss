@@ -8,7 +8,7 @@ import { GraphQLResolveInfo } from 'graphql'
 import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
 import PresentableError from '../../src/util/presentable-error'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('resolver-util', () => {
   describe('setLogPrefix', () => {

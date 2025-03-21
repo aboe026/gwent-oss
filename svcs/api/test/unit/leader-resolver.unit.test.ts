@@ -6,7 +6,7 @@ import { FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import LeaderStore from '../../src/database/stores/leader-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import Verifier from '../../src/util/verifier'
 
 describe('leader-resolver', () => {

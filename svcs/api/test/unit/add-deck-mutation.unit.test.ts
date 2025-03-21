@@ -14,7 +14,7 @@ import * as gwentUtils from '@gwent/utils'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import LeaderStore from '../../src/database/stores/leader-store'
 import { PubSubEvents } from '@gwent/constants'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
 import * as validateDeck from '@gwent/validators'
 

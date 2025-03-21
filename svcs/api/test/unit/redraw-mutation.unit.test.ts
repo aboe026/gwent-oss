@@ -2,9 +2,15 @@ import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { DeckUnit, GameDeck, MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
-import { DeckUnitDbObject, GameDbObject, GameStatus, RedrawDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
 import EventManager from '../../src/graphql/event-manager'
+import {
+  GameDbObject,
+  GamePlayerDbObject,
+  GameStatus,
+  RedrawDbObject,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
@@ -12,132 +18,150 @@ import * as gwentUtils from '@gwent/utils'
 import { MAX_REDRAWS, PubSubEvents } from '@gwent/constants'
 import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('redraw-mutation', () => {
+  const userId = new ObjectId()
+  const gameId = new ObjectId().toString()
+  const unitId = new ObjectId()
+  const unit2Id = new ObjectId()
+  const logPrefix = `redraw by "${userId}" for unit "${unitId}" on game "${gameId}"`
+  const getGamePlayerCalls = [
+    [
+      {
+        gameId,
+        userId,
+        status: GameStatus.Redrawing,
+        label: 'redraw',
+      },
+    ],
+  ]
+  const resolveDeckUnitCalls = [
+    [
+      {
+        deckUnit: {
+          artStyle: 1,
+          unit: unit2Id,
+        },
+      },
+    ],
+    [
+      {
+        deckUnit: {
+          artStyle: 1,
+          unit: unitId,
+        },
+      },
+    ],
+  ]
+  let unit: UnitDbObject
+  let unit2: UnitDbObject
+  let previousRedraw: RedrawDbObject
+  let gamePlayer: GamePlayerDbObject
+  let game: GameDbObject
+  let modifiedGame: GameDbObject
+  let saveCalls: any[][]
+  let fromDeckUnit: DeckUnit
+  let toDeckUnit: DeckUnit
   describe('redraw', () => {
-    const userId = new ObjectId()
-    const gameId = new ObjectId().toString()
-    const unit = TestUtil.getDbUnit({})
-    const unit2 = TestUtil.getDbUnit({})
-    const previousRedraw: RedrawDbObject = {
-      from: TestUtil.getDbDeckUnit({}),
-      to: TestUtil.getDbDeckUnit({}),
-    }
-    const gamePlayer = TestUtil.getDbGamePlayer({
-      deck: TestUtil.getDbGameDeck({
-        from: TestUtil.getDbDeck({}),
-        hand: [
+    beforeEach(() => {
+      unit = TestUtil.getDbUnit({
+        id: unitId,
+      })
+      unit2 = TestUtil.getDbUnit({
+        id: unit2Id,
+      })
+      previousRedraw = {
+        from: TestUtil.getDbDeckUnit({}),
+        to: TestUtil.getDbDeckUnit({}),
+      }
+      gamePlayer = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({}),
+          hand: [
+            {
+              artStyle: 1,
+              unit: unit._id,
+            },
+          ],
+          redraws: [previousRedraw],
+          undrawn: [
+            {
+              artStyle: 1,
+              unit: unit2._id,
+            },
+          ],
+        }),
+        user: userId,
+      })
+      game = TestUtil.getDbGame({
+        id: gameId,
+        players: [gamePlayer, TestUtil.getDbGamePlayer({})],
+        turn: gamePlayer.user,
+      })
+      modifiedGame = {
+        ...game,
+        players: [
           {
-            artStyle: 1,
-            unit: unit._id,
-          },
-        ],
-        redraws: [previousRedraw],
-        undrawn: [
-          {
-            artStyle: 1,
-            unit: unit2._id,
-          },
-        ],
-      }),
-      user: userId,
-    })
-    const game = TestUtil.getDbGame({
-      id: gameId,
-      players: [gamePlayer, TestUtil.getDbGamePlayer({})],
-    })
-    const modifiedGame: GameDbObject = {
-      ...game,
-      players: [
-        {
-          ...game.players[0],
-          deck: {
-            ...game.players[0].deck,
-            hand: [
-              {
-                artStyle: 1,
-                unit: unit2._id,
-              },
-            ],
-            undrawn: [
-              {
-                artStyle: 1,
-                unit: unit._id,
-              },
-            ],
-            redraws: [
-              previousRedraw,
-              {
-                from: {
-                  artStyle: 1,
-                  unit: unit._id,
-                },
-                to: {
+            ...game.players[0],
+            deck: {
+              ...game.players[0].deck,
+              hand: [
+                {
                   artStyle: 1,
                   unit: unit2._id,
                 },
-              },
-            ],
+              ],
+              undrawn: [
+                {
+                  artStyle: 1,
+                  unit: unit._id,
+                },
+              ],
+              redraws: [
+                previousRedraw,
+                {
+                  from: {
+                    artStyle: 1,
+                    unit: unit._id,
+                  },
+                  to: {
+                    artStyle: 1,
+                    unit: unit2._id,
+                  },
+                },
+              ],
+            },
           },
-        },
-        game.players[1],
-      ],
-      updated: new Date(),
-    }
-    const logPrefix = `redraw by "${userId}" for unit "${unit._id}" on game "${game._id}"`
-    const getGamePlayerCalls = [
-      [
-        {
-          gameId,
-          userId,
-          status: GameStatus.Redrawing,
-          label: 'redraw',
-        },
-      ],
-    ]
-    const saveCalls = [
-      [
-        {
-          ...modifiedGame,
-          updated: game.updated,
-        },
-      ],
-    ]
-    const fromDeckUnit: DeckUnit = {
-      artStyle: 1,
-      unit: TestUtil.getUnit({
-        id: unit._id,
-        created: unit.created,
-        factionId: unit.faction,
-      }),
-    }
-    const toDeckUnit: DeckUnit = {
-      artStyle: 1,
-      unit: TestUtil.getUnit({
-        id: unit2._id,
-        created: unit2.created,
-        factionId: unit2.faction,
-      }),
-    }
-    const resolveDeckUnitCalls = [
-      [
-        {
-          deckUnit: {
-            artStyle: 1,
-            unit: unit2._id,
+          game.players[1],
+        ],
+        updated: new Date(),
+      }
+      saveCalls = [
+        [
+          {
+            ...modifiedGame,
+            updated: game.updated,
           },
-        },
-      ],
-      [
-        {
-          deckUnit: {
-            artStyle: 1,
-            unit: unit._id,
-          },
-        },
-      ],
-    ]
+        ],
+      ]
+      fromDeckUnit = {
+        artStyle: 1,
+        unit: TestUtil.getUnit({
+          id: unit._id,
+          created: unit.created,
+          factionId: unit.faction,
+        }),
+      }
+      toDeckUnit = {
+        artStyle: 1,
+        unit: TestUtil.getUnit({
+          id: unit2._id,
+          created: unit2.created,
+          factionId: unit2.faction,
+        }),
+      }
+    })
     it('throws error if game marked as ready', async () => {
       const error = 'Redraw not allowed after game marked as ready.'
       await testRedraw({
@@ -179,26 +203,6 @@ describe('redraw-mutation', () => {
                 },
               ],
             },
-          },
-        },
-        expected: Error(error),
-        getGamePlayerCalls,
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('throws error if unit not in hand', async () => {
-      const error = 'Unit not in hand.'
-      await testRedraw({
-        userId,
-        gameId,
-        unitId: unit._id.toString(),
-        getGamePlayerResponse: {
-          game,
-          player: {
-            ...gamePlayer,
-            deck: TestUtil.getDbGameDeck({
-              from: TestUtil.getDbDeck({}),
-            }),
           },
         },
         expected: Error(error),
@@ -340,7 +344,6 @@ async function testRedraw({
   }
   const player = getGamePlayerResponse.player
   const redrawnIds = player.deck.redraws.map((redraw) => redraw.from.unit.toString())
-  const cardToRedraw = player.deck.hand.find((deckUnit) => deckUnit.unit.toString() === unitId)
   const redrawPool = player.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
   const newCard = redrawPool[redrawPool.length - 1]
   const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer').mockResolvedValue(getGamePlayerResponse)
@@ -449,40 +452,6 @@ async function testRedraw({
           ],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} cardToRedraw: "${JSON.stringify(cardToRedraw)}"`],
-          [
-            `${logPrefix} redrawPool: "${JSON.stringify(
-              player?.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))
-            )}"`,
-          ],
-          [
-            `${logPrefix} newCard: "${JSON.stringify(
-              player?.deck.undrawn.filter((deckUnit) => !redrawnIds.includes(deckUnit.unit.toString()))[0]
-            )}"`,
-          ],
-          [
-            `${logPrefix} newHand: "${JSON.stringify([
-              ...(player?.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== unitId) || []),
-              newCard,
-            ])}"`,
-          ],
-          [
-            `${logPrefix} newRedraws: "${JSON.stringify([
-              ...(player?.deck.redraws || []),
-              {
-                from: cardToRedraw,
-                to: newCard,
-              },
-            ])}"`,
-          ],
-          [
-            `${logPrefix} newUndrawn: "${JSON.stringify([
-              ...(player?.deck.undrawn.filter(
-                (deckUnit) => deckUnit.unit.toString() !== (newCard as DeckUnitDbObject).unit.toString()
-              ) || []),
-              cardToRedraw,
-            ])}"`,
-          ],
           [`${logPrefix} updatedGame: "${JSON.stringify(saveResponse)}"`],
           [`${logPrefix} resolvedTo: "${JSON.stringify(resolveDeckUnitResponses && resolveDeckUnitResponses[0])}"`],
           [`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`],

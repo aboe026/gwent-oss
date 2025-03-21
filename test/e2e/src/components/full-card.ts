@@ -62,15 +62,51 @@ export default class FullCard {
       )
   }
 
-  static async verifyStrength(unit: Unit) {
+  static async verifyStrength({
+    unit,
+    effectiveStrength,
+    effects,
+  }: {
+    unit: Unit
+    effectiveStrength?: number
+    effects?: ExpectedEffect[]
+  }) {
     if (unit.strength === undefined || unit.strength === null) {
       await t.expect(FullCard.elements.Strength.exists).notOk()
     } else {
+      const resolvedStrength = effectiveStrength || unit.strength
       await t.expect(FullCard.elements.Strength.exists).ok()
       await t.expect(FullCard.elements.Strength.visible).ok()
       await t
+        .expect(FullCard.elements.Container.find(`.${HTML_CLASSES.StrengthCircleValue}`).innerText)
+        .eql(resolvedStrength.toString())
+      await t
         .expect(FullCard.elements.Strength.innerText)
-        .eql(`Provides a strength of ${unit.strength} to the row placed in.`)
+        .eql(`Provides a strength of ${resolvedStrength} to the row placed in.`)
+
+      const strengthReasonContainer = FullCard.elements.Container.find(
+        `.${HTML_CLASSES.UnitFullCardStrengthReasonContainer}`
+      )
+      await t.expect(strengthReasonContainer.exists).eql(effects !== undefined)
+      if (effects !== undefined) {
+        await t.expect(strengthReasonContainer.visible).ok()
+        const expectedEffects: string[] = [` | ${unit.strength} | Base strength`]
+        for (let i = 0; i < effects.length; i++) {
+          const effect = effects[i]
+          expectedEffects.push(`${effect.operator} | ${effect.strength} | ${effect.reason}`)
+        }
+        const actualEffects: string[] = []
+        const effectRows = strengthReasonContainer.find(`.${HTML_CLASSES.UnitFullCardStrengthReasonRow}`)
+        const effectRowsCount = await effectRows.count
+        for (let i = 0; i < effectRowsCount; i++) {
+          const effectRow = effectRows.nth(i)
+          const operator = await effectRow.find(`.${HTML_CLASSES.UnitFullCardStrengthReasonOperator}`).innerText
+          const strength = await effectRow.find(`.${HTML_CLASSES.UnitFullCardStrengthReasonStrength}`).innerText
+          const reason = await effectRow.find(`.${HTML_CLASSES.UnitFullCardStrengthReasonExplanation}`).innerText
+          actualEffects.push(`${operator} | ${strength} | ${reason}`)
+        }
+        await t.expect(actualEffects).eql(expectedEffects)
+      }
     }
   }
 
@@ -160,7 +196,17 @@ export default class FullCard {
     }
   }
 
-  static async verify({ artStyle = 1, unit }: { unit?: Unit | undefined; artStyle?: number }) {
+  static async verify({
+    artStyle = 1,
+    unit,
+    effectiveStrength,
+    effects,
+  }: {
+    unit?: Unit | undefined
+    artStyle?: number
+    effectiveStrength?: number
+    effects?: ExpectedEffect[]
+  }) {
     if (unit) {
       await t.expect(FullCard.elements.Container.exists).ok()
       await t.expect(FullCard.elements.Container.visible).ok()
@@ -170,7 +216,11 @@ export default class FullCard {
       })
       await FullCard.verifyQuote(unit)
       await FullCard.verifyFaction(unit)
-      await FullCard.verifyStrength(unit)
+      await FullCard.verifyStrength({
+        unit,
+        effectiveStrength,
+        effects,
+      })
       await FullCard.verifyCombat(unit)
       await FullCard.verifyHero(unit)
       await FullCard.verifyEffects(unit)
@@ -208,4 +258,10 @@ export default class FullCard {
   static async select() {
     await t.click(FullCard.elements.Image)
   }
+}
+
+interface ExpectedEffect {
+  operator: string
+  strength: number
+  reason: string
 }

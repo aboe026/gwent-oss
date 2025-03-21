@@ -3,6 +3,8 @@ import { Combat, FactionKey, Game } from '@gwent/graphql-schema/resolver-typings
 import { ContextGamePlayer, E2eHelper } from '../util/e2e-helper'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
+import { ensureUnitsInHand } from '@gwent/test-utils'
+import env from '../util/env'
 import GamePage, { GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
@@ -156,16 +158,27 @@ fixture('Game Hand')
   })
 
 test('Selecting hand unit while turn highlights appropriate single combat row', async (t) => {
-  const sortedHand = sortObjectArray({
-    array: t.ctx.self.gameDeck.hand,
-    sortProperties: ['unit.strength', 'unit.id'],
-    reverse: true,
+  const unitName = 'Dennis Cranmer'
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    userId: t.ctx.self.user.id,
+    unitNames: [unitName],
+    mongoConnectionString: env.MONGO_URL,
+    mongoDatabaseName: env.MONGO_DB,
   })
-  const unitToSelect = sortedHand.find((card) => card.unit.combats && card.unit.combats.length === 1)
-  if (!unitToSelect) {
-    throw Error('Could not find unit in hand with only single eligible combat')
-  }
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.reload()
+  await GamePage.verify({
+    opponent: t.ctx.opponentPlayer,
+    self: t.ctx.selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [t.ctx.round1Moves],
+  })
 
+  const unitToSelect = t.ctx.self.gameDeck.hand.find((card) => card.unit.name === unitName)
+  if (!unitToSelect) {
+    throw Error(`Could not find unit "${unitName}" in hand`)
+  }
   await GamePage.selectHandUnit({
     unitName: unitToSelect.unit.name,
   })
@@ -192,14 +205,26 @@ test('Selecting hand unit while turn highlights appropriate single combat row', 
 })
 
 test('Selecting hand unit while turn highlights appropriate multi combat row', async (t) => {
-  const sortedHand = sortObjectArray({
-    array: t.ctx.self.gameDeck.hand,
-    sortProperties: ['unit.strength', 'unit.id'],
-    reverse: true,
+  const unitName = 'Filavandrel aen Fidhail'
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    userId: t.ctx.self.user.id,
+    unitNames: [unitName],
+    mongoConnectionString: env.MONGO_URL,
+    mongoDatabaseName: env.MONGO_DB,
   })
-  const unitToSelect = sortedHand.find((card) => card.unit.combats && card.unit.combats.length > 1)
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.reload()
+  await GamePage.verify({
+    opponent: t.ctx.opponentPlayer,
+    self: t.ctx.selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [t.ctx.round1Moves],
+  })
+
+  const unitToSelect = t.ctx.self.gameDeck.hand.find((card) => card.unit.name === unitName)
   if (!unitToSelect) {
-    throw Error('Could not find unit in hand with multiple eligible combats')
+    throw Error(`Could not find unit "${unitName}" in hand`)
   }
 
   await GamePage.selectHandUnit({
@@ -228,14 +253,31 @@ test('Selecting hand unit while turn highlights appropriate multi combat row', a
 })
 
 test('Selecting hand unit while not turn dotted highlights appropriate single combat row', async (t) => {
+  const unitName = 'Dennis Cranmer'
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    userId: t.ctx.self.user.id,
+    unitNames: [unitName],
+    mongoConnectionString: env.MONGO_URL,
+    mongoDatabaseName: env.MONGO_DB,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.reload()
+  await GamePage.verify({
+    opponent: t.ctx.opponentPlayer,
+    self: t.ctx.selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [t.ctx.round1Moves],
+  })
+
   const sortedHand = sortObjectArray({
     array: t.ctx.self.gameDeck.hand,
     sortProperties: ['unit.strength', 'unit.id'],
     reverse: true,
   })
-  const unitToSelect = sortedHand.find((card) => card.unit.combats && card.unit.combats.length === 1)
+  const unitToSelect = sortedHand.find((card) => card.unit.name === unitName)
   if (!unitToSelect) {
-    throw Error('Could not find unit in hand with only single eligible combat')
+    throw Error(`Could not find unit "${unitName}" in hand`)
   }
   const unitToMove = sortedHand.find((card) => card.unit.id !== unitToSelect.unit.id)
   if (!unitToMove) {
@@ -289,14 +331,31 @@ test('Selecting hand unit while not turn dotted highlights appropriate single co
 })
 
 test('Selecting hand unit while not turn dotted highlights appropriate multi combat rows', async (t) => {
+  const unitName = 'Filavandrel aen Fidhail'
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    userId: t.ctx.self.user.id,
+    unitNames: [unitName],
+    mongoConnectionString: env.MONGO_URL,
+    mongoDatabaseName: env.MONGO_DB,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  await E2eUtil.reload()
+  await GamePage.verify({
+    opponent: t.ctx.opponentPlayer,
+    self: t.ctx.selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [t.ctx.round1Moves],
+  })
+
   const sortedHand = sortObjectArray({
     array: t.ctx.self.gameDeck.hand,
     sortProperties: ['unit.strength', 'unit.id'],
     reverse: true,
   })
-  const unitToSelect = sortedHand.find((card) => card.unit.combats && card.unit.combats.length > 1)
+  const unitToSelect = sortedHand.find((card) => card.unit.name === unitName)
   if (!unitToSelect) {
-    throw Error('Could not find unit in hand with multiple eligible combats')
+    throw Error(`Could not find unit "${unitName}" in hand`)
   }
   const unitToMove = sortedHand.find((card) => card.unit.id !== unitToSelect.unit.id)
   if (!unitToMove) {

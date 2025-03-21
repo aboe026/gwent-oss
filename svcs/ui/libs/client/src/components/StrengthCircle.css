@@ -1,8 +1,27 @@
-.strength-circle-container {
+.strength-circle-container-background {
   position: relative;
-  background-color: #e6e6e6;
+  background: #e6e6e6;
   border-radius: 50%;
   aspect-ratio: 1;
+}
+
+.strength-circle-container {
+  position: relative;
+  background: #e6e6e6;
+  border-radius: 50%;
+  aspect-ratio: 1;
+}
+
+.strength-circle-container-greater {
+  background: radial-gradient(transparent 0%, transparent 35%, #267402 50%);
+}
+
+.strength-circle-container-less {
+  background: radial-gradient(transparent 0%, transparent 35%, #970014 50%);
+}
+
+.strength-circle-container-hero {
+  background: radial-gradient(transparent 0%, transparent 35%, #e9a018 50%);
 }
 
 .strength-circle-outer {

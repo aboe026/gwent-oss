@@ -1,6 +1,6 @@
 {
   "name": "@gwent/e2e-tests",
-  "version": "0.10.4",
+  "version": "0.11.0",
   "author": "Adam Boe",
   "description": "E2E browser testing for Gwent website",
   "scripts": {
@@ -15,7 +15,7 @@
     "start": "yarn g:npm-run-all --sequential build start-testcafe",
     "start-testcafe": "cross-env START_APP=true testcafe --config-file=build/.testcaferc.js",
     "start-gwent": "cd $PROJECT_CWD && cross-env SESSION_TIMEOUT_SECONDS=60 MONGO_DB=gwent-e2e yarn start",
-    "test": "testcafe --config-file=build/.testcaferc.js --debug-on-fail",
+    "test": "cross-env MONGO_DB=gwent testcafe --config-file=build/.testcaferc.js --debug-on-fail",
     "start-docker": "yarn remove-context-overrides && docker run --rm -v $PROJECT_CWD:/gwent -w /gwent/test/e2e -it testcafe/testcafe:yarn-pnp chromium build/tests --config-file=build/.testcaferc.js",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-built",
     "watch-built": "yarn g:ts-node scripts/wait-for-initial-build.ts && yarn g:nodemon --watch build --exec 'yarn remove-context-overrides'",
@@ -26,6 +26,7 @@
     "@gwent/db-profiler": "workspace:*",
     "@gwent/env": "workspace:*",
     "@gwent/graphql-schema": "workspace:*",
+    "@gwent/test-utils": "workspace:*",
     "@gwent/utils": "workspace:*",
     "cookie": "1.0.2",
     "cross-env": "7.0.3",

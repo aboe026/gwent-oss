@@ -14,13 +14,14 @@ import EventManager from '../../src/graphql/event-manager'
 import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
+import GetNextPlayerIdForCurrentRound from '../../src/graphql/resolvers/mutations/util/get-next-player-id-for-current-round'
 import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit-mutation'
 import { MoveType } from '@gwent/graphql-schema'
-import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
+import UnitUtil from '../../src/graphql/resolvers/mutations/util/unit-util'
 
 describe('play-unit-mutation', () => {
   describe('playUnit', () => {
@@ -94,7 +95,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [],
+        unitsGetResponse: [],
         expected: Error(message),
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
@@ -118,7 +119,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: deckUnits,
+        unitsGetResponse: deckUnits,
         expected: Error(`${message}.`),
         errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`]],
       })
@@ -138,7 +139,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         expected: Error(message),
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
@@ -160,7 +161,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         expected: Error(message),
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
@@ -179,7 +180,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         expected: Error(message),
         warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
@@ -213,6 +214,7 @@ describe('play-unit-mutation', () => {
                       artStyle,
                       unit: deckUnit._id,
                       effectiveStrength: strength,
+                      effects: [],
                     },
                   ],
                 },
@@ -243,7 +245,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         modifiedGame,
         moveDate,
         saveGameCalled: true,
@@ -280,6 +282,7 @@ describe('play-unit-mutation', () => {
                       artStyle,
                       unit: deckUnit._id,
                       effectiveStrength: strength,
+                      effects: [],
                     },
                   ],
                 },
@@ -310,7 +313,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         modifiedGame,
         moveDate,
         saveGameCalled: true,
@@ -347,6 +350,7 @@ describe('play-unit-mutation', () => {
                       artStyle,
                       unit: deckUnit._id,
                       effectiveStrength: strength,
+                      effects: [],
                     },
                   ],
                 },
@@ -378,7 +382,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         modifiedGame,
         moveDate,
         saveGameCalled: true,
@@ -415,6 +419,7 @@ describe('play-unit-mutation', () => {
                       artStyle,
                       unit: deckUnit._id,
                       effectiveStrength: strength,
+                      effects: [],
                     },
                   ],
                 },
@@ -446,7 +451,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         modifiedGame,
         moveDate,
         saveGameCalled: true,
@@ -480,7 +485,6 @@ describe('play-unit-mutation', () => {
                     {
                       artStyle,
                       unit: deckUnit._id,
-                      effectiveStrength: undefined,
                     },
                   ],
                 },
@@ -510,7 +514,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         modifiedGame,
         moveDate,
         saveGameCalled: true,
@@ -558,6 +562,7 @@ describe('play-unit-mutation', () => {
                       artStyle,
                       unit: deckUnit._id,
                       effectiveStrength: strength,
+                      effects: [],
                     },
                   ],
                 },
@@ -587,7 +592,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[1],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         modifiedGame,
         moveDate,
         saveGameCalled: true,
@@ -632,6 +637,7 @@ describe('play-unit-mutation', () => {
                       artStyle,
                       unit: deckUnit._id,
                       effectiveStrength: strength,
+                      effects: [],
                     },
                   ],
                 },
@@ -662,7 +668,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         modifiedGame,
         moveDate,
         saveGameCalled: true,
@@ -699,6 +705,7 @@ describe('play-unit-mutation', () => {
                       artStyle,
                       unit: deckUnit._id,
                       effectiveStrength: strength,
+                      effects: [],
                     },
                   ],
                 },
@@ -729,7 +736,7 @@ describe('play-unit-mutation', () => {
           game,
           player: game.players[0],
         },
-        resolvedUnitsResponse: [deckUnit],
+        unitsGetResponse: [deckUnit],
         modifiedGame,
         moveDate,
         saveGameCalled: true,
@@ -748,7 +755,7 @@ async function testPlayUnit({
   unitId = '',
   combat,
   resolvedGameResponse,
-  resolvedUnitsResponse,
+  unitsGetResponse,
   modifiedGame,
   moveDate,
   saveGameCalled,
@@ -763,7 +770,7 @@ async function testPlayUnit({
   unitId?: string
   combat?: Combat
   resolvedGameResponse?: GamePlayerResponse
-  resolvedUnitsResponse?: UnitDbObject[]
+  unitsGetResponse?: UnitDbObject[]
   modifiedGame?: GameDbObject
   moveDate?: Date
   saveGameCalled?: boolean
@@ -791,10 +798,14 @@ async function testPlayUnit({
     getGamePlayerSpy.mockResolvedValue(resolvedGameResponse)
   }
   const getUnitsSpy = jest.spyOn(UnitStore, 'get')
-  if (resolvedUnitsResponse) {
-    getUnitsSpy.mockResolvedValue(resolvedUnitsResponse)
+  if (unitsGetResponse) {
+    getUnitsSpy.mockResolvedValue(unitsGetResponse)
   }
-  const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(MutationUtil.prototype, 'getNextPlayerIdForCurrentRound')
+  const roundUnits = [TestUtil.getDbUnit({}), TestUtil.getDbUnit({})]
+  const effects = [TestUtil.getDbEffect({})]
+  const getRoundUnitsSpy = jest.spyOn(UnitUtil, 'getRoundUnits').mockResolvedValue(roundUnits)
+  const getUnitEffectsSpy = jest.spyOn(UnitUtil, 'getUnitEffects').mockResolvedValue(effects)
+  const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(GetNextPlayerIdForCurrentRound, 'getNextPlayerIdForCurrentRound')
   if (modifiedGame?.turn) {
     getNextPlayerIdForCurrentRoundSpy.mockReturnValue(modifiedGame.turn)
   }
@@ -869,7 +880,7 @@ async function testPlayUnit({
       : []
   )
   expect(getUnitsSpy.mock.calls).toEqual(
-    resolvedUnitsResponse
+    unitsGetResponse
       ? [
           [
             {
@@ -879,6 +890,19 @@ async function testPlayUnit({
         ]
       : []
   )
+  expect(getRoundUnitsSpy.mock.calls).toEqual(
+    saveGameCalled
+      ? [
+          [
+            {
+              game: resolvedGameResponse ? resolvedGameResponse.game : undefined,
+              unitBeingPlayed: unitsGetResponse ? unitsGetResponse[0] : undefined,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(getUnitEffectsSpy.mock.calls).toEqual(saveGameCalled ? [[roundUnits]] : [])
   expect(dateSpy.mock.calls).toEqual(moveDate ? [[]] : [])
   const gameReturned = saveGameCalled && !saveResponse
   expect(saveSpy.mock.calls).toEqual(

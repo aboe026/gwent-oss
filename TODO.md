@@ -2,7 +2,18 @@
 
 A list of things to be done in the future.
 
-- separate invalid checks on mutations into separate methods?
+## Fixes
+
+- remove need for classes just for log4js spying
+  - have "getLogger" method
+    - keeps loggers in memory by name
+    - when called, returns already instantiated log4js instance if it exists, otherwise creates ones
+    - new "getLogger" needs to be called within individual methods
+- break up mutations into own folders? for each:
+  - "main" resolver file
+  - "bad" resolver file (checks for invalids)
+  - "good" resolver file (actually performs logic)
+- "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)
@@ -57,6 +68,13 @@ A list of things to be done in the future.
 
 ## Features
 
+- for "Move" type, have "impact" field
+  - cards removed/added
+  - effects applied to other cards
+- Limit user creation
+  - activation code?
+  - manual review?
+- rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability

@@ -381,7 +381,7 @@ export default class GamePage {
     }
     const expectedUnitNames = sortObjectArray({
       array: units,
-      sortProperties: ['strength', 'name'],
+      sortProperties: [['effectiveStrength', 'strength'], 'name'],
     }).map((unit) => {
       let expectedUnitName = unit.name
       if (
@@ -653,7 +653,7 @@ export default class GamePage {
       handUnitNames = hand as string[]
     } else if (hand) {
       handUnitNames = sortObjectArray({
-        sortProperties: ['unit.strength', 'unit.id'],
+        sortProperties: [['effectiveStrength', 'unit.strength'], 'unit.name', 'unit.id'],
         array: hand,
       }).map((deckUnit) => (deckUnit as DeckUnit).unit.name) as string[]
     }
@@ -1084,6 +1084,7 @@ interface HighlightedHistory {
 export interface CombatUnit {
   name: string
   strength?: number
+  effectiveStrength?: number
 }
 
 interface CombatRow {

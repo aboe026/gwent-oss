@@ -148,6 +148,20 @@
   gap: 10px;
 }
 
+.unit-full-card-info-row-strength {
+  flex-direction: column;
+}
+
+.unit-full-card-info-strength-reason-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.unit-full-card-info-strength-reason-number {
+  text-align: center;
+}
+
 .unit-full-card-info-image-container {
   display: flex;
   height: 50px;

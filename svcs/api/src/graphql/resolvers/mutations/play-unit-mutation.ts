@@ -1,20 +1,25 @@
+import addMoveToCurrentPlayer from './util/add-move-to-current-player'
+import CalculateGameEffectiveStrengths from './util/calculate-game-effective-strengths'
 import { Combat, Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
 import DeckUnitResolver from '../types/deck-unit-resolver'
 import EventManager from '../../event-manager'
 import GameDeckResolver from '../types/game-deck-resolver'
-import { GameStatus, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
+import { GameStatus, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
+import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-current-round'
 import { GraphQLResolveInfo } from 'graphql'
+import modifyBattlefieldWithNewUnit from './util/modify-battlefield-with-new-unit'
 import { MoveType } from '@gwent/graphql-schema'
-import MutationUtil from './mutation-util'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
+import setGameScores from './util/set-game-scores'
 import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../subscription-resolver'
 import UnitStore from '../../../database/stores/unit-store'
+import UnitUtil from './util/unit-util'
 
 /**
  * A class for executing the playUnit GraphQL Mutation.
@@ -109,57 +114,44 @@ export default class PlayUnitMutation {
       throw new PresentableError(message)
     }
 
-    const mutationUtil = new MutationUtil({
-      logger: PlayUnitMutation.logger,
-      logPrefix,
+    const roundUnits = await UnitUtil.getRoundUnits({
+      game,
+      unitBeingPlayed: unit,
+    })
+    const unitEffects = await UnitUtil.getUnitEffects(roundUnits)
+
+    modifyBattlefieldWithNewUnit({
+      game,
+      combat,
+      deckUnit,
     })
 
-    // play unit
-    game.players = game.players.map((gamePlayer) => {
-      if (gamePlayer.user.toString() === player.user.toString()) {
-        const playerRound = gamePlayer.rounds[game.round - 1]
-        const { close, ranged, siege } = playerRound
-        const combatRow = combat === Combat.Close ? close : combat === Combat.Ranged ? ranged : siege
-        combatRow.score = combatRow.score + (unit.strength || 0)
-        combatRow.units.push({
-          ...deckUnit,
-          effectiveStrength: unit.strength,
-        })
-        return {
-          ...gamePlayer,
-          rounds: gamePlayer.rounds.map((round, index) => {
-            if (index === game.round - 1) {
-              const move: MoveUnitDbObject = {
-                created: new Date(),
-                row: combat,
-                unit: deckUnit,
-                type: MoveType.Unit,
-              }
-              return {
-                ...round,
-                close,
-                moves: [...round.moves, move],
-                ranged,
-                score: playerRound.score + (unit.strength || 0),
-                siege,
-              }
-            }
-            return round
-          }),
-          deck: {
-            ...gamePlayer.deck,
-            hand: gamePlayer.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== unitId),
-          },
-        }
-      }
-      return gamePlayer
+    CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+      game,
+      units: [unit, ...roundUnits],
+      effects: unitEffects,
     })
 
-    // set next player
-    game.turn = mutationUtil.getNextPlayerIdForCurrentRound({
+    setGameScores(game)
+
+    addMoveToCurrentPlayer({
+      game,
+      move: {
+        created: new Date(),
+        row: combat,
+        unit: {
+          artStyle: deckUnit.artStyle,
+          unit: deckUnit.unit,
+        },
+        type: MoveType.Unit,
+      } as MoveUnitDbObject,
+    })
+
+    game.turn = GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({
       currentRound: game.round,
       currentTurn: game.turn,
       players: game.players,
+      logPrefix,
     })
 
     const updatedGame = await GameStore.save(game)

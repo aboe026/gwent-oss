@@ -1,5 +1,6 @@
 import { GameUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
 import { GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import GameUnitEffectResolver from './game-unit-effect-resolver'
 import UnitResolver from './unit-resolver'
 
 /**
@@ -18,6 +19,9 @@ export default class GameUnitResolver {
     return {
       artStyle: gameUnit.artStyle,
       effectiveStrength: gameUnit.effectiveStrength,
+      effects: await GameUnitEffectResolver.fromArray({
+        gameUnitEffects: gameUnit.effects,
+      }),
       unit:
         unit ||
         (await UnitResolver.fromId({

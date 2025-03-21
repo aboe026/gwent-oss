@@ -13,7 +13,10 @@ import {
   GameDeck,
   GamePlayer,
   GameStatus,
+  GameUnit,
+  GameUnitEffect,
   Leader,
+  PlayerCombatRow,
   Redraw,
   Unit,
   UnitStats,
@@ -29,6 +32,8 @@ import {
   GameDbObject,
   GameDeckDbObject,
   GamePlayerDbObject,
+  GameUnitDbObject,
+  GameUnitEffectDbObject,
   LeaderDbObject,
   MoveDbObject,
   PlayerCombatRowDbObject,
@@ -48,6 +53,7 @@ export default class TestUtil {
     effects,
     combats,
     effectPrefix,
+    hero = false,
     strength,
   }: {
     id?: ObjectId | string
@@ -56,6 +62,7 @@ export default class TestUtil {
     effects?: (ObjectId | string)[]
     combats?: string[]
     effectPrefix?: string
+    hero?: boolean
     strength?: number
   }): UnitDbObject {
     return {
@@ -63,6 +70,7 @@ export default class TestUtil {
       created: new Date(),
       deckable: true,
       faction: faction ? new ObjectId(faction) : new ObjectId(),
+      hero,
       images: ['unit-image'],
       name: 'unit-name',
       quote: 'unit-quote',
@@ -136,6 +144,25 @@ export default class TestUtil {
     }
   }
 
+  static getDbGameUnit({
+    artStyle = 1,
+    id,
+    effectiveStrength,
+    effects = [],
+  }: {
+    artStyle?: number
+    id?: ObjectId
+    effectiveStrength?: number
+    effects?: GameUnitEffectDbObject[]
+  }): GameUnitDbObject {
+    return {
+      artStyle,
+      unit: id ? new ObjectId(id) : new ObjectId(),
+      effectiveStrength,
+      effects,
+    }
+  }
+
   static getDeckUnitFromDbDeckUnit(deckUnit: DeckUnitDbObject): DeckUnit {
     return {
       artStyle: deckUnit.artStyle,
@@ -154,13 +181,13 @@ export default class TestUtil {
     }
   }
 
-  static getDbEffect({ id }: { id?: ObjectId | string }): EffectDbObject {
+  static getDbEffect({ id, key = EffectKey.Agile }: { id?: ObjectId | string; key?: EffectKey }): EffectDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
       ability: 'effect-ability',
       created: new Date(),
       image: 'effect-image',
-      key: EffectKey.Agile,
+      key,
       name: 'effect-name',
     }
   }
@@ -618,6 +645,13 @@ export default class TestUtil {
     }
   }
 
+  static getPlayerCombatRow({ score = 0, units = [] }: { score?: number; units?: GameUnit[] }): PlayerCombatRow {
+    return {
+      score,
+      units,
+    }
+  }
+
   static getDbPlayerRound({
     close,
     ranged,
@@ -768,6 +802,25 @@ export default class TestUtil {
       created: new Date(),
       id: (id || new ObjectId()).toString(),
       name,
+    }
+  }
+
+  static getGameUnit({
+    unit,
+    artStyle = 1,
+    effectiveStrength,
+    effects = [],
+  }: {
+    unit: Unit
+    artStyle?: number
+    effectiveStrength?: number
+    effects?: GameUnitEffect[]
+  }): GameUnit {
+    return {
+      artStyle,
+      unit,
+      effectiveStrength: effectiveStrength || (unit.strength === undefined ? null : unit.strength),
+      effects,
     }
   }
 }

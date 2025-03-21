@@ -5,7 +5,7 @@ import { expectizeGame } from './util/expect-util'
 import { getGameFragment } from './util/fragment-util'
 import { NOT_AUTHENTICATED_MESSAGE, PLAYER_COUNTS } from '@gwent/constants'
 import schema from '../../src/graphql/executable-schema'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('add-game-mutation', () => {
   describe('addGame', () => {

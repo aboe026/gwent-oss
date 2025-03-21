@@ -14,7 +14,7 @@ export default function sortObjectArray<T extends any[]>({
   reverse = false,
 }: {
   array?: T | null
-  sortProperties: string[]
+  sortProperties: (string | string[])[]
   reverse?: boolean
 }): T {
   if (!array) {
@@ -73,7 +73,7 @@ export function getSortOrder({
   secondComparator,
   sortProperties,
 }: {
-  sortProperties: string[]
+  sortProperties: (string | string[])[]
   propertyIndex: number
   reverse?: boolean
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -82,14 +82,21 @@ export function getSortOrder({
   secondComparator: any
 }): number {
   const sortProperty = sortProperties[propertyIndex]
-  let firstValue = getNestedProperty({
-    nestedProperty: sortProperty,
-    obj: firstComparator,
-  })
-  let secondValue = getNestedProperty({
-    nestedProperty: sortProperty,
-    obj: secondComparator,
-  })
+  const keys = Array.isArray(sortProperty) ? sortProperty : [sortProperty]
+  let firstValue
+  let secondValue
+  for (let i = 0; i < keys.length && firstValue === undefined; i++) {
+    firstValue = getNestedProperty({
+      nestedProperty: keys[i],
+      obj: firstComparator,
+    })
+  }
+  for (let i = 0; i < keys.length && secondValue === undefined; i++) {
+    secondValue = getNestedProperty({
+      nestedProperty: keys[i],
+      obj: secondComparator,
+    })
+  }
   if (typeof firstValue === 'string') {
     firstValue = firstValue.toLowerCase()
   }

@@ -9,7 +9,10 @@ const config: CodegenConfig = {
         'typescript-mongodb',
         {
           add: {
-            content: `import { MoveType } from '../src/move-type'`,
+            content: [
+              `import { MoveType } from '../src/move-type'`,
+              `import { EffectReasonType } from '../src/effect-reason-type'`,
+            ].join('\n'),
           },
         },
       ],

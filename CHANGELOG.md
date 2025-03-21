@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.0 - 2025-03-20
+
+### Added
+
+- Morale effect ([#30](https://github.com/aboe026/gwent/pull/30)) (Adam Boe)
+
 ## 0.10.4 - 2025-02-18
 
 ### Fixed

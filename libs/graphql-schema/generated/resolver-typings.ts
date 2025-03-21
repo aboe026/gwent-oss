@@ -89,6 +89,17 @@ export type Effect = {
   name: Scalars['String']['output'];
 };
 
+export type EffectFromLeader = {
+  __typename?: 'EffectFromLeader';
+  leader: Leader;
+};
+
+export type EffectFromUnit = {
+  __typename?: 'EffectFromUnit';
+  effect: Effect;
+  unit: Unit;
+};
+
 export enum EffectKey {
   /** Agile */
   Agile = 'AGILE',
@@ -117,6 +128,8 @@ export enum EffectKey {
   /** Weather */
   Weather = 'WEATHER'
 }
+
+export type EffectReason = EffectFromLeader | EffectFromUnit;
 
 export type Faction = {
   __typename?: 'Faction';
@@ -237,7 +250,15 @@ export type GameUnit = {
   __typename?: 'GameUnit';
   artStyle: Scalars['Int']['output'];
   effectiveStrength?: Maybe<Scalars['Int']['output']>;
+  effects?: Maybe<Array<GameUnitEffect>>;
   unit: Unit;
+};
+
+export type GameUnitEffect = {
+  __typename?: 'GameUnitEffect';
+  operator: Scalars['String']['output'];
+  reason: EffectReason;
+  total: Scalars['Int']['output'];
 };
 
 export type GameUnitRedrawn = {
@@ -631,6 +652,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping of union types */
 export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
+  EffectReason: ( EffectFromLeader ) | ( EffectFromUnit );
   Move: ( MoveLeader ) | ( MovePass ) | ( MoveUnit );
 };
 
@@ -647,7 +669,10 @@ export type ResolversTypes = {
   Dlc: ResolverTypeWrapper<Dlc>;
   DlcKey: DlcKey;
   Effect: ResolverTypeWrapper<Effect>;
+  EffectFromLeader: ResolverTypeWrapper<EffectFromLeader>;
+  EffectFromUnit: ResolverTypeWrapper<EffectFromUnit>;
   EffectKey: EffectKey;
+  EffectReason: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['EffectReason']>;
   Faction: ResolverTypeWrapper<Faction>;
   FactionKey: FactionKey;
   Float: ResolverTypeWrapper<Scalars['Float']['output']>;
@@ -659,7 +684,8 @@ export type ResolversTypes = {
   GamePlayer: ResolverTypeWrapper<Omit<GamePlayer, 'counts' | 'rounds'> & { counts?: Maybe<ResolversTypes['GamePlayerUnitCounts']>, rounds: Array<ResolversTypes['PlayerRound']> }>;
   GamePlayerUnitCounts: ResolverTypeWrapper<GamePlayerUnitCounts>;
   GameStatus: GameStatus;
-  GameUnit: ResolverTypeWrapper<GameUnit>;
+  GameUnit: ResolverTypeWrapper<Omit<GameUnit, 'effects'> & { effects?: Maybe<Array<ResolversTypes['GameUnitEffect']>> }>;
+  GameUnitEffect: ResolverTypeWrapper<Omit<GameUnitEffect, 'reason'> & { reason: ResolversTypes['EffectReason'] }>;
   GameUnitRedrawn: ResolverTypeWrapper<Omit<GameUnitRedrawn, 'game'> & { game: ResolversTypes['Game'] }>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -669,8 +695,8 @@ export type ResolversTypes = {
   MovePass: ResolverTypeWrapper<MovePass>;
   MoveUnit: ResolverTypeWrapper<MoveUnit>;
   Mutation: ResolverTypeWrapper<{}>;
-  PlayerCombatRow: ResolverTypeWrapper<PlayerCombatRow>;
-  PlayerRound: ResolverTypeWrapper<Omit<PlayerRound, 'moves'> & { moves: Array<ResolversTypes['Move']> }>;
+  PlayerCombatRow: ResolverTypeWrapper<Omit<PlayerCombatRow, 'units'> & { units: Array<ResolversTypes['GameUnit']> }>;
+  PlayerRound: ResolverTypeWrapper<Omit<PlayerRound, 'close' | 'moves' | 'ranged' | 'siege'> & { close: ResolversTypes['PlayerCombatRow'], moves: Array<ResolversTypes['Move']>, ranged: ResolversTypes['PlayerCombatRow'], siege: ResolversTypes['PlayerCombatRow'] }>;
   Query: ResolverTypeWrapper<{}>;
   Redraw: ResolverTypeWrapper<Redraw>;
   RoundEndedForDeck: ResolverTypeWrapper<Omit<RoundEndedForDeck, 'game'> & { game: ResolversTypes['Game'] }>;
@@ -698,6 +724,9 @@ export type ResolversParentTypes = {
   DeckUnitInput: DeckUnitInput;
   Dlc: Dlc;
   Effect: Effect;
+  EffectFromLeader: EffectFromLeader;
+  EffectFromUnit: EffectFromUnit;
+  EffectReason: ResolversUnionTypes<ResolversParentTypes>['EffectReason'];
   Faction: Faction;
   Float: Scalars['Float']['output'];
   Game: Omit<Game, 'players' | 'turn'> & { players: Array<ResolversParentTypes['GamePlayer']>, turn?: Maybe<ResolversParentTypes['GamePlayer']> };
@@ -706,7 +735,8 @@ export type ResolversParentTypes = {
   GameDeckSet: Omit<GameDeckSet, 'game'> & { game: ResolversParentTypes['Game'] };
   GamePlayer: Omit<GamePlayer, 'counts' | 'rounds'> & { counts?: Maybe<ResolversParentTypes['GamePlayerUnitCounts']>, rounds: Array<ResolversParentTypes['PlayerRound']> };
   GamePlayerUnitCounts: GamePlayerUnitCounts;
-  GameUnit: GameUnit;
+  GameUnit: Omit<GameUnit, 'effects'> & { effects?: Maybe<Array<ResolversParentTypes['GameUnitEffect']>> };
+  GameUnitEffect: Omit<GameUnitEffect, 'reason'> & { reason: ResolversParentTypes['EffectReason'] };
   GameUnitRedrawn: Omit<GameUnitRedrawn, 'game'> & { game: ResolversParentTypes['Game'] };
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
@@ -716,8 +746,8 @@ export type ResolversParentTypes = {
   MovePass: MovePass;
   MoveUnit: MoveUnit;
   Mutation: {};
-  PlayerCombatRow: PlayerCombatRow;
-  PlayerRound: Omit<PlayerRound, 'moves'> & { moves: Array<ResolversParentTypes['Move']> };
+  PlayerCombatRow: Omit<PlayerCombatRow, 'units'> & { units: Array<ResolversParentTypes['GameUnit']> };
+  PlayerRound: Omit<PlayerRound, 'close' | 'moves' | 'ranged' | 'siege'> & { close: ResolversParentTypes['PlayerCombatRow'], moves: Array<ResolversParentTypes['Move']>, ranged: ResolversParentTypes['PlayerCombatRow'], siege: ResolversParentTypes['PlayerCombatRow'] };
   Query: {};
   Redraw: Redraw;
   RoundEndedForDeck: Omit<RoundEndedForDeck, 'game'> & { game: ResolversParentTypes['Game'] };
@@ -777,6 +807,21 @@ export type EffectResolvers<ContextType = Context, ParentType extends ResolversP
   key?: Resolver<ResolversTypes['EffectKey'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EffectFromLeaderResolvers<ContextType = Context, ParentType extends ResolversParentTypes['EffectFromLeader'] = ResolversParentTypes['EffectFromLeader']> = {
+  leader?: Resolver<ResolversTypes['Leader'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EffectFromUnitResolvers<ContextType = Context, ParentType extends ResolversParentTypes['EffectFromUnit'] = ResolversParentTypes['EffectFromUnit']> = {
+  effect?: Resolver<ResolversTypes['Effect'], ParentType, ContextType>;
+  unit?: Resolver<ResolversTypes['Unit'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type EffectReasonResolvers<ContextType = Context, ParentType extends ResolversParentTypes['EffectReason'] = ResolversParentTypes['EffectReason']> = {
+  __resolveType: TypeResolveFn<'EffectFromLeader' | 'EffectFromUnit', ParentType, ContextType>;
 };
 
 export type FactionResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Faction'] = ResolversParentTypes['Faction']> = {
@@ -847,7 +892,15 @@ export type GamePlayerUnitCountsResolvers<ContextType = Context, ParentType exte
 export type GameUnitResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameUnit'] = ResolversParentTypes['GameUnit']> = {
   artStyle?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   effectiveStrength?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  effects?: Resolver<Maybe<Array<ResolversTypes['GameUnitEffect']>>, ParentType, ContextType>;
   unit?: Resolver<ResolversTypes['Unit'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GameUnitEffectResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameUnitEffect'] = ResolversParentTypes['GameUnitEffect']> = {
+  operator?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  reason?: Resolver<ResolversTypes['EffectReason'], ParentType, ContextType>;
+  total?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1048,6 +1101,9 @@ export type Resolvers<ContextType = Context> = {
   DeckUnit?: DeckUnitResolvers<ContextType>;
   Dlc?: DlcResolvers<ContextType>;
   Effect?: EffectResolvers<ContextType>;
+  EffectFromLeader?: EffectFromLeaderResolvers<ContextType>;
+  EffectFromUnit?: EffectFromUnitResolvers<ContextType>;
+  EffectReason?: EffectReasonResolvers<ContextType>;
   Faction?: FactionResolvers<ContextType>;
   Game?: GameResolvers<ContextType>;
   GameConfig?: GameConfigResolvers<ContextType>;
@@ -1056,6 +1112,7 @@ export type Resolvers<ContextType = Context> = {
   GamePlayer?: GamePlayerResolvers<ContextType>;
   GamePlayerUnitCounts?: GamePlayerUnitCountsResolvers<ContextType>;
   GameUnit?: GameUnitResolvers<ContextType>;
+  GameUnitEffect?: GameUnitEffectResolvers<ContextType>;
   GameUnitRedrawn?: GameUnitRedrawnResolvers<ContextType>;
   Leader?: LeaderResolvers<ContextType>;
   Move?: MoveResolvers<ContextType>;

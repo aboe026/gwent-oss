@@ -1,5 +1,5 @@
 import LogoutMutation from '../../src/graphql/resolvers/mutations/logout-mutation'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('logout-mutation', () => {
   describe('logout', () => {

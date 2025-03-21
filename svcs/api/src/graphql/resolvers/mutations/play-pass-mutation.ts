@@ -1,20 +1,29 @@
 import { ObjectId } from 'mongodb'
 
-import { Game, MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
+import addMoveToCurrentPlayer from './util/add-move-to-current-player'
+import clearBattlefieldUnits from './util/clear-battlefield-units'
 import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../event-manager'
+import { Game, MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckResolver from '../types/game-deck-resolver'
-import { GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../types/game-resolver'
+import { GameStatus, MovePassDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../database/stores/game-store'
 import { getLogger } from 'log4js'
+import GetNextPlayerIdForCurrentRound from './util/get-next-player-id-for-current-round'
+import GetPlayerIdForNextRound from './util/get-player-id-for-next-round'
 import { GraphQLResolveInfo } from 'graphql'
+import initializeNewRound from './util/initialize-new-round'
+import IsGameOver from './util/is-game-over'
+import IsRoundOver from './util/is-round-over'
 import { MoveType } from '@gwent/graphql-schema'
-import MutationUtil from './mutation-util'
+import passCurrentPlayer from './util/pass-current-player'
 import { PassPlayedPayload, RoundEndedForDeckPayload } from '../subscription-resolver'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
+import SetGameVictors from './util/set-game-victors'
+import SetRoundResults from './util/set-round-results'
 
 /**
  * A class for executing the playPass GraphQL Mutation.
@@ -68,160 +77,53 @@ export default class PlayPassMutation {
       throw new PresentableError(message)
     }
 
-    const mutationUtil = new MutationUtil({
-      logger: PlayPassMutation.logger,
-      logPrefix,
-    })
+    passCurrentPlayer(game)
 
-    // pass
-    game.players = game.players.map((gamePlayer) => {
-      if (gamePlayer.user.toString() === player.user.toString()) {
-        return {
-          ...gamePlayer,
-          rounds: gamePlayer.rounds.map((round, index) => {
-            if (index === game.round - 1) {
-              round.moves = [
-                ...round.moves,
-                {
-                  created: new Date(),
-                  type: MoveType.Pass,
-                },
-              ]
-              round.passed = true
-            }
-            return round
-          }),
-        }
-      }
-      return gamePlayer
+    addMoveToCurrentPlayer({
+      game,
+      move: {
+        created: new Date(),
+        type: MoveType.Pass,
+      } as MovePassDbObject,
     })
 
     let nextPlayerId: ObjectId | undefined = undefined
-    const roundOver = mutationUtil.isRoundOver({
+    const roundOver = IsRoundOver.isRoundOver({
       game,
+      logPrefix,
     })
     if (roundOver) {
-      // set round winner(s)
-      let highestScore = 0
-      let usersWithHighestScore = 0
-      for (const gamePlayer of game.players) {
-        const playerRound = gamePlayer.rounds[game.round - 1]
-        const roundScore = playerRound.score
-        PlayPassMutation.logger.trace(
-          `${logPrefix} player "${gamePlayer.user}" round "${game.round}" score: "${roundScore}"`
-        )
-        if (roundScore > highestScore) {
-          PlayPassMutation.logger.trace(
-            `${logPrefix} player "${gamePlayer.user}" round "${game.round}" score "${roundScore}" is greater than previous highestScore of "${highestScore}", setting it to theirs`
-          )
-          highestScore = roundScore
-          usersWithHighestScore = 1
-        } else if (roundScore === highestScore) {
-          usersWithHighestScore++
-        }
-      }
-      PlayPassMutation.logger.trace(`${logPrefix} round "${game.round}" highestScore: "${highestScore}"`)
-      PlayPassMutation.logger.trace(
-        `${logPrefix} round "${game.round}" usersWithHighestScore: "${usersWithHighestScore}"`
-      )
-      const winners: ObjectId[] = []
-      game.players = game.players.map((gamePlayer) => {
-        return {
-          ...gamePlayer,
-          rounds: gamePlayer.rounds.map((round, index) => {
-            let result = round.result
-            if (index === game.round - 1) {
-              if (round.score === highestScore) {
-                if (usersWithHighestScore > 1) {
-                  result = RoundResult.Drew
-                } else {
-                  result = RoundResult.Won
-                }
-              } else {
-                result = RoundResult.Lost
-              }
-              PlayPassMutation.logger.trace(
-                `${logPrefix} player "${gamePlayer.user}" round "${game.round}" result: "${result}"`
-              )
-              if (result === RoundResult.Won || result === RoundResult.Drew) {
-                winners.push(gamePlayer.user)
-              }
-            }
-            return {
-              ...round,
-              result,
-            }
-          }),
-        }
-      })
-      PlayPassMutation.logger.debug(
-        `${logPrefix} ends round "${game.round}" in ${winners.length === 1 ? 'win' : 'draw'} for "${JSON.stringify(
-          winners
-        )}"`
-      )
-
-      // add remaining battlefield cards to discards
-      game.players = game.players.map((gamePlayer) => {
-        const playerRound = gamePlayer.rounds[game.round - 1]
-        return {
-          ...gamePlayer,
-          deck: {
-            ...gamePlayer.deck,
-            discard: [
-              ...gamePlayer.deck.discard,
-              ...playerRound.close.units,
-              ...playerRound.ranged.units,
-              ...playerRound.siege.units,
-            ],
-          },
-        }
-      })
-
-      const gameOver = mutationUtil.isGameOver({
+      SetRoundResults.setRoundResults({
         game,
+        logPrefix,
+      })
+      clearBattlefieldUnits(game)
+
+      const gameOver = IsGameOver.isGameOver({
+        game,
+        logPrefix,
       })
       if (gameOver) {
-        // set game victor(s)
-        let highestWins = 0
-        for (const gamePlayer of game.players) {
-          const playerWins = gamePlayer.rounds.filter((round) => round.result === RoundResult.Won).length
-          PlayPassMutation.logger.trace(`${logPrefix} player "${gamePlayer.user}" playerWins: "${playerWins}"`)
-          if (playerWins > highestWins) {
-            PlayPassMutation.logger.trace(
-              `${logPrefix} player "${gamePlayer.user}" wins "${playerWins}" is greater than previous highestWins of "${highestWins}", setting high wins to theirs`
-            )
-            highestWins = playerWins
-          }
-        }
-        PlayPassMutation.logger.trace(`${logPrefix} highestWins: "${highestWins}"`)
-        const victorIds: ObjectId[] = []
-        for (const gamePlayer of game.players) {
-          const playerWins = gamePlayer.rounds.filter((round) => round.result === RoundResult.Won).length
-          if (playerWins === highestWins) {
-            victorIds.push(gamePlayer.user)
-          }
-        }
-        PlayPassMutation.logger.debug(`${logPrefix} ends game in victory for "${JSON.stringify(victorIds)}"`)
-        game.victors = victorIds
-        game.status = GameStatus.Done
+        SetGameVictors.setGameVictors({
+          game,
+          logPrefix,
+        })
       } else {
-        // set next player
-        nextPlayerId = mutationUtil.getPlayerIdForNextRound({
+        nextPlayerId = GetPlayerIdForNextRound.getPlayerIdForNextRound({
+          game,
+          logPrefix,
+        })
+
+        initializeNewRound({
           game,
         })
-
-        // initialize next round
-        game.players = mutationUtil.initializeNewRound({
-          players: game.players,
-        })
-
-        game.round = game.round + 1
       }
     } else {
-      nextPlayerId = mutationUtil.getNextPlayerIdForCurrentRound({
+      nextPlayerId = GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({
         currentRound: game.round,
         currentTurn: game.turn,
         players: game.players,
+        logPrefix,
       })
     }
 

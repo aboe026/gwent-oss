@@ -495,6 +495,8 @@ function renderExistingGame({
     <div id={HTML_IDS.GameContainer}>
       <UnitFullCard
         fullUnit={fullUnit?.unit as DeckUnit}
+        effectiveStrength={(fullUnit?.unit as GameUnit)?.effectiveStrength}
+        effects={(fullUnit?.unit as GameUnit)?.effects}
         hasNext={nextUnit !== undefined}
         hasPrevious={previousUnit !== undefined}
         onSelect={() => {}}
@@ -713,7 +715,7 @@ function getNeighboringUnits({
       const unitArray = unitArrays[i]
       if (unitArray) {
         const sortedArray = sortObjectArray({
-          sortProperties: ['unit.strength', 'unit.id'],
+          sortProperties: [['effectiveStrength', 'unit.strength'], 'unit.name', 'unit.id'],
           array: unitArray,
         })
         const unitIds = sortedArray.map((arrayDeckUnit) => arrayDeckUnit.unit.id)

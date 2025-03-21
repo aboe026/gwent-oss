@@ -62,7 +62,7 @@ export default function GameCombatRow({
     combat === Combat.Close ? playerRound.close : combat === Combat.Ranged ? playerRound.ranged : playerRound.siege
   const sortedUnits = sortObjectArray({
     array: playerRow.units,
-    sortProperties: ['unit.strength', 'unit.name', 'unit.id'],
+    sortProperties: [['effectiveStrength', 'unit.strength'], 'unit.name', 'unit.id'],
   })
   let id = ''
   if (combat === Combat.Close) {
@@ -145,6 +145,7 @@ export default function GameCombatRow({
                   artStyle: gameUnit.artStyle,
                   unit: gameUnit.unit,
                 }}
+                effectiveStrength={gameUnit.effectiveStrength}
                 selected={gameUnit.unit.id === handCardSelected?.unit.id || selectedInHistory}
                 dotted={!isTurn && !selectedInHistory}
                 onFullscreen={() =>

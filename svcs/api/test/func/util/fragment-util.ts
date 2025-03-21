@@ -273,6 +273,25 @@ export function getGameUnitFragment() {
   return `
     artStyle
     effectiveStrength
+    effects {
+      operator
+      reason {
+        ... on EffectFromLeader {
+          leader {
+            ${getLeaderFragment()}
+          }
+        }
+        ... on EffectFromUnit {
+          effect {
+            ${getEffectFragment()}
+          }
+          unit {
+            ${getUnitFragment()}
+          }
+        }
+      }
+      total
+    }
     unit {
       ${getUnitFragment()}
     }

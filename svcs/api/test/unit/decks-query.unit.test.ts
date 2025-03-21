@@ -2,7 +2,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
 import DecksQuery from '../../src/graphql/resolvers/queries/decks-query'
 import DeckStore from '../../src/database/stores/deck-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('decks-query', () => {
   describe('decks', () => {

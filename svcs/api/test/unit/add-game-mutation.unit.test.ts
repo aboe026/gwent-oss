@@ -7,7 +7,7 @@ import { MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import { PLAYER_COUNTS, PubSubEvents } from '@gwent/constants'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../src/database/stores/user-store'
 

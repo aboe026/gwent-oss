@@ -5,7 +5,7 @@ import DlcResolver from '../../src/graphql/resolvers/types/dlc-resolver'
 import { Faction, FactionDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import FactionStore from '../../src/database/stores/faction-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import Verifier from '../../src/util/verifier'
 
 describe('faction-resolver', () => {

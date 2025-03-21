@@ -8,7 +8,7 @@ import { GameReadyPayload } from '../subscription-resolver'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
-import MutationUtil from './mutation-util'
+import MarkPlayerReady from './util/mark-player-ready'
 import PresentableError from '../../../util/presentable-error'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil from '../resolver-util'
@@ -45,48 +45,18 @@ export default class ReadyMutation {
       info,
     })
 
-    const { game, player } = await resolverUtil.getGamePlayer({
+    const { game } = await resolverUtil.getGamePlayer({
       gameId,
       userId,
       status: GameStatus.Redrawing,
       label: 'mark ready',
     })
 
-    if (player.ready) {
-      const message = 'Already marked as ready.'
-      ReadyMutation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-
-    const mutationUtil = new MutationUtil({
-      logger: ReadyMutation.logger,
+    MarkPlayerReady.markPlayerReady({
+      game,
+      userId,
       logPrefix,
     })
-
-    game.players = game.players.map((gamePlayer) => {
-      let ready = gamePlayer.ready
-      if (gamePlayer.user.toString() === userId.toString()) {
-        ready = true
-      }
-      return {
-        ...gamePlayer,
-        ready,
-      }
-    })
-    const unreadyPlayers = game.players.filter((gamePlayer) => gamePlayer.ready === false)
-    if (ReadyMutation.logger.isTraceEnabled()) {
-      ReadyMutation.logger.trace(
-        `${logPrefix} unreadyPlayers: "${JSON.stringify(unreadyPlayers.map((unreadyPlayer) => unreadyPlayer.user))}"`
-      )
-    }
-    if (unreadyPlayers.length === 0) {
-      ReadyMutation.logger.debug(`${logPrefix} has all players ready, starting first round.`)
-      game.players = mutationUtil.initializeNewRound({
-        players: game.players,
-      })
-      game.round = 1
-      game.status = GameStatus.Playing
-    }
 
     const updatedGame = await GameStore.save(game)
 

@@ -16,12 +16,12 @@ import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolv
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
-import MutationUtil from '../../src/graphql/resolvers/mutations/mutation-util'
 import PresentableError from '../../src/util/presentable-error'
 import { PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck-mutation'
-import TestUtil from '../test-util'
+import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
+import TestUtil from '../util/test-util'
 
 describe('set-deck-mutation', () => {
   describe('setDeck', () => {
@@ -139,7 +139,6 @@ describe('set-deck-mutation', () => {
           ],
         ],
         saveCalls,
-        // TODO: redefined logPrefix with extra stuff?
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
@@ -171,7 +170,7 @@ describe('set-deck-mutation', () => {
         errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
-    it('throws error if setGameTurnOder throws unexpected error', async () => {
+    it('throws error if setGameTurnOrder throws unexpected error', async () => {
       const gameAllDecksChosen: GameDbObject = {
         ...game,
         players: game.players.map((player) => {
@@ -183,6 +182,7 @@ describe('set-deck-mutation', () => {
             },
           }
         }),
+        status: GameStatus.Ordering,
       }
       const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
         game: gameAllDecksChosen,
@@ -212,7 +212,7 @@ describe('set-deck-mutation', () => {
         saveResponse: gameAllDecksChosen,
         randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
         resolveGameResponse: resolvedGameAllDecksChosen,
-        setGameTurnOderError: error,
+        setGameTurnOrderError: error,
         expected: error,
         getDeckCalls,
         getGamePlayerCalls,
@@ -280,7 +280,6 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`]],
       })
     })
     it('returns resolved deck if no errors', async () => {
@@ -342,6 +341,7 @@ describe('set-deck-mutation', () => {
             },
           }
         }),
+        status: GameStatus.Ordering,
       }
       const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
         game: gameAllDecksChosen,
@@ -437,7 +437,6 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`]],
       })
     })
     it('does not throw error if attempt to set turn order when another player has ScoiaTael', async () => {
@@ -452,6 +451,7 @@ describe('set-deck-mutation', () => {
             },
           }
         }),
+        status: GameStatus.Ordering,
       }
       const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
         game: gameAllDecksChosen,
@@ -480,7 +480,7 @@ describe('set-deck-mutation', () => {
         saveResponse: gameAllDecksChosen,
         randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
         resolveGameResponse: resolvedGameAllDecksChosen,
-        setGameTurnOderError: new PresentableError(
+        setGameTurnOrderError: new PresentableError(
           `Random order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
         ),
         expected,
@@ -550,7 +550,6 @@ describe('set-deck-mutation', () => {
             },
           ],
         ],
-        debugCalls: [[`${logPrefix} all decks set, changing game status to "${GameStatus.Ordering}"`]],
       })
     })
     it('logs to trace if enabled', async () => {
@@ -614,7 +613,7 @@ async function testSetDeck({
   randomSubset = [],
   saveResponse,
   resolveGameResponse,
-  setGameTurnOderError,
+  setGameTurnOrderError,
   expected,
   getDeckCalls = [],
   getGamePlayerCalls = [],
@@ -626,7 +625,6 @@ async function testSetDeck({
   logPrefix,
   errorCalls = [],
   warnCalls = [],
-  debugCalls = [],
   traceEnabled,
 }: {
   userId?: ObjectId
@@ -637,7 +635,7 @@ async function testSetDeck({
   randomSubset?: DeckUnitDbObject[]
   saveResponse?: GameDbObject
   resolveGameResponse?: Game
-  setGameTurnOderError?: Error
+  setGameTurnOrderError?: Error
   expected: Error | GameDeck
   getDeckCalls?: any[][]
   getGamePlayerCalls?: any[][]
@@ -649,7 +647,6 @@ async function testSetDeck({
   logPrefix?: string
   errorCalls?: any[][]
   warnCalls?: any[][]
-  debugCalls?: string[][]
   traceEnabled?: boolean
 }) {
   const context: Context = {
@@ -664,14 +661,6 @@ async function testSetDeck({
     game: gameId,
     deck: deckId,
   }
-  let player = getGamePlayerResponse?.player
-  if (getGamePlayerResponse) {
-    player = getGamePlayerResponse?.player
-  }
-  let handIds: string[] = []
-  if (player) {
-    handIds = randomSubset.map((deckUnit) => deckUnit.unit.toString())
-  }
   const getDeckSpy = jest.spyOn(DeckStore, 'getById').mockResolvedValue(getDeckResponse)
   const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
   if (getGamePlayerResponse) {
@@ -682,7 +671,7 @@ async function testSetDeck({
   const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject')
   if (!(expected instanceof Error)) {
     fromObjectSpy.mockResolvedValue(expected)
-  } else if (setGameTurnOderError) {
+  } else if (setGameTurnOrderError) {
     fromObjectSpy.mockImplementation()
   }
   const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
@@ -690,9 +679,9 @@ async function testSetDeck({
     resolveGameSpy.mockResolvedValue(resolveGameResponse)
   }
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const setOrderSpy = jest.spyOn(MutationUtil.prototype, 'setGameTurnOrder')
-  if (setGameTurnOderError) {
-    setOrderSpy.mockRejectedValue(setGameTurnOderError)
+  const setOrderSpy = jest.spyOn(SetGameTurnOrder, 'setGameTurnOrder')
+  if (setGameTurnOrderError) {
+    setOrderSpy.mockRejectedValue(setGameTurnOrderError)
   } else {
     setOrderSpy.mockImplementation()
   }
@@ -734,7 +723,6 @@ async function testSetDeck({
   expect(publishSpy.mock.calls).toEqual(publishCalls)
   expect(setOrderSpy.mock.calls).toEqual(setOrderCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
@@ -748,12 +736,6 @@ async function testSetDeck({
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
           [`${logPrefix} deck: "${JSON.stringify(getDeckResponse)}"`],
-          [`${logPrefix} hand: "${JSON.stringify(randomSubset)}"`],
-          [
-            `${logPrefix} undrawn: "${JSON.stringify(
-              (getDeckResponse as DeckDbObject).units.filter((deckUnit) => !handIds.includes(deckUnit.unit.toString()))
-            )}"`,
-          ],
           [`${logPrefix} updatedGame: "${JSON.stringify(saveResponse)}"`],
           [
             `${logPrefix} updatedPlayer: "${JSON.stringify(

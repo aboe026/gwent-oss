@@ -4,7 +4,7 @@ import { Effect } from '@gwent/graphql-schema/resolver-typings'
 import { EffectDbObject } from '@gwent/graphql-schema/database-typings'
 import EffectResolver from '../../src/graphql/resolvers/types/effect-resolver'
 import EffectStore from '../../src/database/stores/effect-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import Verifier from '../../src/util/verifier'
 
 describe('effect-resolver', () => {
@@ -91,6 +91,16 @@ describe('effect-resolver', () => {
         ],
         resolveObjectCalls: [[effect1], [effect2]],
       })
+    })
+  })
+  describe('fromId', () => {
+    it('calls to fromIds and returns first result', async () => {
+      const effect = TestUtil.getEffect({})
+      const fromIdsSpy = jest.spyOn(EffectResolver, 'fromIds').mockResolvedValue([effect])
+
+      await expect(EffectResolver.fromId(effect.id)).resolves.toEqual(effect)
+
+      expect(fromIdsSpy.mock.calls).toEqual([[[effect.id]]])
     })
   })
 })

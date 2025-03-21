@@ -11,7 +11,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import { MoveType } from '@gwent/graphql-schema'
 import PlayerMoveResolver from '../../src/graphql/resolvers/types/player-move-resolver'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('player-move-resolver', () => {
   describe('fromObject', () => {

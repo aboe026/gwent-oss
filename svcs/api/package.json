@@ -1,6 +1,6 @@
 {
   "name": "@gwent/api",
-  "version": "0.10.4",
+  "version": "0.11.0",
   "author": "Adam Boe",
   "description": "GraphQL backend to play Gwent.",
   "main": "src/index.ts",
@@ -48,6 +48,7 @@
     "ws": "8.18.0"
   },
   "devDependencies": {
+    "@gwent/test-utils": "workspace:*",
     "@types/basic-auth": "1.1.8",
     "@types/body-parser": "1.19.5",
     "@types/cookie-parser": "1.4.8",

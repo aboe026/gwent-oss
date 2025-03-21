@@ -2,7 +2,7 @@ import { Document, FindOptions, ObjectId } from 'mongodb'
 
 import { LeaderDbObject } from '@gwent/graphql-schema/database-typings'
 import LeaderStore, { GetLeadersInput } from '../../src/database/stores/leader-store'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 
 describe('leader-store', () => {
   describe('add', () => {

@@ -3,7 +3,7 @@ import { IncomingMessage } from 'http'
 import MongoStore from 'connect-mongo'
 
 import * as env from '../../src/env'
-import TestUtil from '../test-util'
+import TestUtil from '../util/test-util'
 import WebSocketAuth, { SessionDataWithUser } from '../../src/auth/websocket-auth'
 
 describe('websocket-auth', () => {

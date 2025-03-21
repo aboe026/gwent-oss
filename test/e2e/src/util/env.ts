@@ -28,7 +28,7 @@ export default getEnv({
     }),
     MONGO_DB: str({
       desc: 'The name of the MongoDB database to interact with',
-      default: 'gwent',
+      default: 'gwent-e2e',
     }),
     MONGO_URL: url({
       desc: 'Connection string for MongoDB instance',
