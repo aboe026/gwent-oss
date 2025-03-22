@@ -2,7 +2,7 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import initializeNewRound from './initialize-new-round'
+import initializeNewRound from '../util/initialize-new-round'
 import PresentableError from '../../../../util/presentable-error'
 
 /**

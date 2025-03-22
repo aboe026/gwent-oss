@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb'
 
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
-import MarkPlayerReady from '../util/mark-player-ready'
+import MarkPlayerReady from './mark-player-ready'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
