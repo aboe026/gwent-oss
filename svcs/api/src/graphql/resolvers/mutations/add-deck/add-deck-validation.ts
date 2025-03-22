@@ -134,7 +134,7 @@ export default class AddDeckValidation {
   }
 }
 
-interface ValidatedAddDeck {
+export interface ValidatedAddDeck {
   deckUnits: DeckUnit[]
   faction: FactionDbObject
   leader: LeaderDbObject

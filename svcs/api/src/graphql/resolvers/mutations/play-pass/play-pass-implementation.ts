@@ -15,6 +15,7 @@ import passCurrentPlayer from './pass-current-player'
 import PresentableError from '../../../../util/presentable-error'
 import SetGameVictors from './set-game-victors'
 import SetRoundResults from './set-round-results'
+import { ValidatedPlayPass } from './play-pass-validation'
 
 /**
  * A class for executing the playPass GraphQL Mutation.
@@ -31,13 +32,7 @@ export default class PlayPassImplementation {
    * @returns The Game with the round passed for the user.
    * @throws PresentableError if problem playing pass.
    */
-  static async playPassImplementation({
-    game,
-    logPrefix,
-  }: {
-    game: GameDbObject
-    logPrefix: string
-  }): Promise<ImplementedPlayPass> {
+  static async playPassImplementation({ game, logPrefix }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
     passCurrentPlayer(game)
 
     addMoveToCurrentPlayer({

@@ -85,7 +85,7 @@ export default class SetDeckValidation {
   }
 }
 
-interface ValidatedSetDeck {
+export interface ValidatedSetDeck {
   deck: DeckDbObject
   game: GameDbObject
   logPrefix: string

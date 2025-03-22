@@ -22,7 +22,13 @@ export default class LoginValidation {
    * @returns The User that was successfully logged in.
    * @throws PresentableError if problem authenticating user.
    */
-  static async loginValidation(args: MutationLoginArgs, info: GraphQLResolveInfo): Promise<ValidatedLogin> {
+  static async loginValidation(
+    args: MutationLoginArgs,
+    info: GraphQLResolveInfo
+  ): Promise<{
+    logPrefix: string
+    user: UserDbObject
+  }> {
     const resolverUtil = new ResolverUtil({
       logger: LoginValidation.logger,
     })
@@ -59,9 +65,4 @@ export default class LoginValidation {
       user,
     }
   }
-}
-
-interface ValidatedLogin {
-  logPrefix: string
-  user: UserDbObject
 }

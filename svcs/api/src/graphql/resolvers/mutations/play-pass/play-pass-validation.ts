@@ -69,7 +69,7 @@ export default class PlayPassValidation {
   }
 }
 
-interface ValidatedPlayPass {
+export interface ValidatedPlayPass {
   game: GameDbObject
   logPrefix: string
 }

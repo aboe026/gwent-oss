@@ -78,7 +78,7 @@ export default class RedrawValidation {
   }
 }
 
-interface ValidatedRedraw {
+export interface ValidatedRedraw {
   game: GameDbObject
   logPrefix: string
   unitId: string

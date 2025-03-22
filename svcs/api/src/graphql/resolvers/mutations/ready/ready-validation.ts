@@ -58,7 +58,7 @@ export default class ReadyValidation {
   }
 }
 
-interface ValidatedReady {
+export interface ValidatedReady {
   logPrefix: string
   game: GameDbObject
   userId: ObjectId

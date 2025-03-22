@@ -1,13 +1,6 @@
 import addMoveToCurrentPlayer from '../util/add-move-to-current-player'
 import CalculateGameEffectiveStrengths from './calculate-game-effective-strengths'
-import { Combat } from '@gwent/graphql-schema/resolver-typings'
-import {
-  DeckUnitDbObject,
-  GameDbObject,
-  GameDeckDbObject,
-  MoveUnitDbObject,
-  UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameDeckDbObject, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import GetNextPlayerIdForCurrentRound from '../util/get-next-player-id-for-current-round'
@@ -17,6 +10,7 @@ import modifyBattlefieldWithNewUnit from './modify-battlefield-with-new-unit'
 import { MoveType } from '@gwent/graphql-schema'
 import PresentableError from '../../../../util/presentable-error'
 import setGameScores from './set-game-scores'
+import { ValidatedPlayUnit } from './play-unit-validation'
 
 /**
  * A class for executing the playUnit GraphQL Mutation.
@@ -39,13 +33,7 @@ export default class PlayUnitImplementation {
     game,
     logPrefix,
     unit,
-  }: {
-    combat: Combat
-    deckUnit: DeckUnitDbObject
-    game: GameDbObject
-    logPrefix: string
-    unit: UnitDbObject
-  }): Promise<ImplementedPlayUnit> {
+  }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const roundUnits = await getRoundUnits({
       game,
       unitBeingPlayed: unit,

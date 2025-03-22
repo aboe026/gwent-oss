@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import { DeckUnitDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import PresentableError from '../../../../util/presentable-error'
 import RedrawUnit from './redraw-unit'
+import { ValidatedRedraw } from './redraw-validation'
 
 /**
  * A class for executing the redraw GraphQL Mutation.
@@ -21,17 +21,7 @@ export default class RedrawImplementation {
    * @returns The random DeckUnit that replaces their redrawn Unit in their hand.
    * @throws PresentableError if problem redrawing unit.
    */
-  static async redrawImplementation({
-    game,
-    logPrefix,
-    unitId,
-    userId,
-  }: {
-    game: GameDbObject
-    logPrefix: string
-    unitId: string
-    userId: ObjectId
-  }): Promise<ImplementedRedraw> {
+  static async redrawImplementation({ game, logPrefix, unitId, userId }: ValidatedRedraw): Promise<ImplementedRedraw> {
     // TODO: make input reference Validated interface if they are always the same
     const { from, to } = RedrawUnit.redrawUnit({
       game,

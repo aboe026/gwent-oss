@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
-import { DeckDbObject, DeckUnit, FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckStore from '../../../../database/stores/deck-store'
 import { getDeckStats } from '@gwent/utils'
 import PresentableError from '../../../../util/presentable-error'
+import { ValidatedAddDeck } from './add-deck-validation'
 
 /**
  * A class for executing the addDeck GraphQL Mutation.
@@ -28,14 +28,7 @@ export default class AddDeckImplementation {
     logPrefix,
     name,
     userId,
-  }: {
-    deckUnits: DeckUnit[]
-    faction: FactionDbObject
-    leader: LeaderDbObject
-    logPrefix: string
-    name: string
-    userId: ObjectId
-  }): Promise<DeckDbObject> {
+  }: ValidatedAddDeck): Promise<DeckDbObject> {
     let deck: DeckDbObject
     try {
       deck = await DeckStore.add({

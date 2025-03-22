@@ -1,9 +1,8 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
-import { User } from '@gwent/graphql-schema/resolver-typings'
+import { ValidatedAddGame } from './add-game-validation'
 
 /**
  * A class for executing the addGame GraphQL Mutation.
@@ -20,15 +19,7 @@ export default class AddGameImplementation {
    * @returns The Game that was added.
    * @throws PresentableError if problem adding game.
    */
-  static async AddGameImplementation({
-    userId,
-    opponents,
-    logPrefix,
-  }: {
-    userId: ObjectId
-    opponents: User[]
-    logPrefix: string
-  }): Promise<GameDbObject> {
+  static async AddGameImplementation({ userId, opponents, logPrefix }: ValidatedAddGame): Promise<GameDbObject> {
     const game = await GameStore.add({
       creatorId: userId,
       opponentIds: opponents.map((opponent) => opponent.id),

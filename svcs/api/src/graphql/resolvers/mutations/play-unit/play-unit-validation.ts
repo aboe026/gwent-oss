@@ -114,7 +114,7 @@ export default class PlayUnitValidation {
   }
 }
 
-interface ValidatedPlayUnit {
+export interface ValidatedPlayUnit {
   combat: Combat
   deckUnit: DeckUnitDbObject
   game: GameDbObject

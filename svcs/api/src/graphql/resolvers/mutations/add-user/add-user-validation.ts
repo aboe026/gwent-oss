@@ -42,7 +42,7 @@ export default class AddUserValidation {
   }
 }
 
-interface ValidatedAddUser {
+export interface ValidatedAddUser {
   logPrefix: string
   name: string
   password: string

@@ -3,6 +3,7 @@ import { getLogger } from 'log4js'
 import PresentableError from '../../../../util/presentable-error'
 import UserStore from '../../../../database/stores/user-store'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { ValidatedAddUser } from './add-user-validation'
 
 /**
  * A class for executing the addUser GraphQL Mutation.
@@ -18,15 +19,7 @@ export default class AddUserImplementation {
    * @returns The User that was added.
    * @throws PresentableError if problem adding user.
    */
-  static async addUserImplementation({
-    logPrefix,
-    name,
-    password,
-  }: {
-    logPrefix: string
-    name: string
-    password: string
-  }): Promise<UserDbObject> {
+  static async addUserImplementation({ logPrefix, name, password }: ValidatedAddUser): Promise<UserDbObject> {
     let user: UserDbObject
     try {
       user = await UserStore.add(name, password)

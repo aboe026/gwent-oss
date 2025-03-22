@@ -24,7 +24,12 @@ export default class SetOrderValidation {
     args: MutationSetOrderArgs,
     context: Context,
     info: GraphQLResolveInfo
-  ): Promise<ValidatedSetOrder> {
+  ): Promise<{
+    game: GameDbObject
+    gameDeck: GameDeckDbObject
+    logPrefix: string
+    userIds?: string[] | null
+  }> {
     const resolverUtil = new ResolverUtil({
       logger: SetOrderValidation.logger,
     })
@@ -67,11 +72,4 @@ export default class SetOrderValidation {
       userIds,
     }
   }
-}
-
-interface ValidatedSetOrder {
-  game: GameDbObject
-  gameDeck: GameDeckDbObject
-  logPrefix: string
-  userIds?: string[] | null
 }

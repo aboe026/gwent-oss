@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import MarkPlayerReady from './mark-player-ready'
 import PresentableError from '../../../../util/presentable-error'
+import { ValidatedReady } from './ready-validation'
 
 /**
  * A class for executing the ready GraphQL Mutation.
@@ -21,15 +21,7 @@ export default class ReadyImplementation {
    * @returns The Game that is now ready for the user.
    * @throws PresentableError if problem marking game as ready.
    */
-  static async readyImplementation({
-    logPrefix,
-    game,
-    userId,
-  }: {
-    logPrefix: string
-    game: GameDbObject
-    userId: ObjectId
-  }): Promise<GameDbObject> {
+  static async readyImplementation({ logPrefix, game, userId }: ValidatedReady): Promise<GameDbObject> {
     MarkPlayerReady.markPlayerReady({
       game,
       userId,

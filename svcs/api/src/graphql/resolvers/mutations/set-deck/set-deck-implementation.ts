@@ -1,10 +1,10 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
-import { DeckDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import PresentableError from '../../../../util/presentable-error'
 import SetGameDeck from './set-game-deck'
+import { ValidatedSetDeck } from './set-deck-validation'
 
 /**
  * A class for executing the setDeck GraphQL Mutation.
@@ -21,17 +21,7 @@ export default class SetDeckImplementation {
    * @returns The GameDeck that was set for the game.
    * @throws PresentableError if problem setting deck.
    */
-  static async setDeckImplementation({
-    deck,
-    game,
-    logPrefix,
-    userId,
-  }: {
-    deck: DeckDbObject
-    game: GameDbObject
-    logPrefix: string
-    userId: ObjectId
-  }): Promise<ImplementedSetDeck> {
+  static async setDeckImplementation({ deck, game, logPrefix, userId }: ValidatedSetDeck): Promise<ImplementedSetDeck> {
     SetGameDeck.setGameDeck({
       game,
       deck,

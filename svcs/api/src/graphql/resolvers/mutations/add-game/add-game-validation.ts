@@ -101,7 +101,7 @@ export default class AddGameValidation {
   }
 }
 
-interface ValidatedAddGame {
+export interface ValidatedAddGame {
   logPrefix: string
   opponents: User[]
   userId: ObjectId

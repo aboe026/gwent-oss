@@ -2,7 +2,7 @@ import { getLogger } from 'log4js'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
-import LogoutImplementation from './logoutImplementation'
+import LogoutImplementation from './logout-implementation'
 import LogoutValidation from './logout-validation'
 
 /**
