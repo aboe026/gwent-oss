@@ -9,7 +9,7 @@ import GameDeckQuery from './queries/game-deck-query'
 import GameQuery from './queries/game-query'
 import GamesQuery from './queries/games-query'
 import LeadersQuery from './queries/leaders-query'
-import LoginMutation from './mutations/login-mutation'
+import LoginMutation from './mutations/login/login-mutation'
 import LogoutMutation from './mutations/logout-mutation'
 import PlayPassMutation from './mutations/play-pass-mutation'
 import PlayUnitMutation from './mutations/play-unit-mutation'
@@ -31,7 +31,7 @@ export const resolvers: Resolvers = {
     addDeck: async (parent, args, context, info) => AddDeckMutation.addDeckMutation(args, context, info),
     addGame: async (parent, args, context, info) => AddGameMutation.addGameMutation(args, context, info),
     addUser: async (parent, args, context, info) => AddUserMutation.addUserMutation(args, info),
-    login: async (parent, args, context, info) => LoginMutation.login(args, context, info),
+    login: async (parent, args, context, info) => LoginMutation.loginMutation(args, context, info),
     logout: async (parent, args, context, info) => LogoutMutation.logout(context, info),
     playPass: async (parent, args, context, info) => PlayPassMutation.playPass(args, context, info),
     playUnit: async (parent, args, context, info) => PlayUnitMutation.playUnit(args, context, info),
