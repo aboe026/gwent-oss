@@ -1,24 +1,21 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import EventManager from '../../event-manager'
-import { Game, MutationAddGameArgs, User } from '@gwent/graphql-schema/resolver-typings'
-import { GameAddedPayload } from '../subscription-resolver'
-import GameResolver from '../types/game-resolver'
-import GameStore from '../../../database/stores/game-store'
 import { getDuplicateItems } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
-import { PLAYER_COUNTS, PubSubEvents } from '@gwent/constants'
-import PresentableError from '../../../util/presentable-error'
-import ResolverUtil from '../resolver-util'
-import UserResolver from '../types/user-resolver'
-import UserStore from '../../../database/stores/user-store'
+import { MutationAddGameArgs, User } from '@gwent/graphql-schema/resolver-typings'
+import { PLAYER_COUNTS } from '@gwent/constants'
+import PresentableError from '../../../../util/presentable-error'
+import ResolverUtil from '../../resolver-util'
+import UserResolver from '../../types/user-resolver'
+import UserStore from '../../../../database/stores/user-store'
 
 /**
  * A class for executing the addGame GraphQL Mutation.
  */
-export default class AddGameMutation {
-  private static logger = getLogger('AddGameMutation')
+export default class AddGameValidation {
+  private static logger = getLogger('AddGameValidation')
 
   /**
    * Add a Game for a user.
@@ -29,9 +26,13 @@ export default class AddGameMutation {
    * @returns The Game that was added.
    * @throws PresentableError if problem adding game.
    */
-  static async addGame(args: MutationAddGameArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
+  static async addGameValidation(
+    args: MutationAddGameArgs,
+    context: Context,
+    info: GraphQLResolveInfo
+  ): Promise<ValidatedAddGame> {
     const resolverUtil = new ResolverUtil({
-      logger: AddGameMutation.logger,
+      logger: AddGameValidation.logger,
     })
     const { _id: userId, name: creatorName } = resolverUtil.getContextUser({
       context,
@@ -50,27 +51,27 @@ export default class AddGameMutation {
     const duplicateNames = getDuplicateItems(opponentNames)
     if (duplicateNames.length > 0) {
       const message = `Opponent(s) ${JSON.stringify(duplicateNames)} are duplicates.`
-      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      AddGameValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
     if (opponentNames.includes(creatorName)) {
       const message = 'Opponents cannot include self.'
-      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      AddGameValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
     if (opponentNames.length < PLAYER_COUNTS.Min - 1) {
       const message = `Not enough opponents at "${opponentNames.length}", minimum is "${PLAYER_COUNTS.Min - 1}".`
-      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      AddGameValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
     if (opponentNames.length > PLAYER_COUNTS.Max - 1) {
       const message = `Excessive opponent count of "${opponentNames.length}", maximum is "${PLAYER_COUNTS.Max - 1}".`
-      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      AddGameValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
     const opponents = await UserStore.getByNames(opponentNames)
-    if (AddGameMutation.logger.isTraceEnabled()) {
-      AddGameMutation.logger.trace(`${logPrefix} opponents: "${JSON.stringify(opponents)}"`)
+    if (AddGameValidation.logger.isTraceEnabled()) {
+      AddGameValidation.logger.trace(`${logPrefix} opponents: "${JSON.stringify(opponents)}"`)
     }
     const resolvedOpponents: User[] = []
     const errors = []
@@ -84,30 +85,24 @@ export default class AddGameMutation {
     }
     if (errors.length > 0) {
       const message = `${errors.join(',')}.`
-      AddGameMutation.logger.warn(`${logPrefix} failed: ${message}`)
+      AddGameValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
 
-    if (AddGameMutation.logger.isTraceEnabled()) {
-      AddGameMutation.logger.trace(`${logPrefix} resolvedOpponents: "${JSON.stringify(resolvedOpponents)}"`)
-    }
-    const game = await GameStore.add({
-      creatorId: userId,
-      opponentIds: resolvedOpponents.map((opponent) => opponent.id),
-    })
-    if (AddGameMutation.logger.isTraceEnabled()) {
-      AddGameMutation.logger.trace(`${logPrefix} game: "${JSON.stringify(game)}"`)
+    if (AddGameValidation.logger.isTraceEnabled()) {
+      AddGameValidation.logger.trace(`${logPrefix} resolvedOpponents: "${JSON.stringify(resolvedOpponents)}"`)
     }
 
-    const resolvedGame = await GameResolver.fromObject({
-      game,
-      users: resolvedOpponents,
-    })
-
-    EventManager.pubsub.publish(PubSubEvents.GameAdded, {
-      gameAdded: resolvedGame,
-    } as GameAddedPayload)
-
-    return resolvedGame
+    return {
+      logPrefix,
+      opponents: resolvedOpponents,
+      userId,
+    }
   }
+}
+
+interface ValidatedAddGame {
+  logPrefix: string
+  opponents: User[]
+  userId: ObjectId
 }

@@ -9,6 +9,9 @@ A list of things to be done in the future.
     - keeps loggers in memory by name
     - when called, returns already instantiated log4js instance if it exists, otherwise creates ones
     - new "getLogger" needs to be called within individual methods
+- increase resolution of unit images
+  - search for better pics
+  - use AI upscaler?
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
