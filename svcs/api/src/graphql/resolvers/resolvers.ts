@@ -18,7 +18,7 @@ import RedrawMutation from './mutations/redraw/redraw-mutation'
 import { Resolvers } from '@gwent/graphql-schema/resolver-typings'
 import { scalars } from '@gwent/graphql-schema'
 import SetDeckMutation from './mutations/set-deck/set-deck-mutation'
-import SetOrderMutation from './mutations/set-order-mutation'
+import SetOrderMutation from './mutations/set-order/set-order-mutation'
 import SettingsQuery from './queries/settings-query'
 import SubscriptionResolver from './subscription-resolver'
 import UnitsQuery from './queries/units-query'
@@ -38,7 +38,7 @@ export const resolvers: Resolvers = {
     ready: async (parent, args, context, info) => ReadyMutation.readyMutation(args, context, info),
     redraw: async (parent, args, context, info) => RedrawMutation.redrawMutation(args, context, info),
     setDeck: async (parent, args, context, info) => SetDeckMutation.setDeckMutation(args, context, info),
-    setOrder: async (parent, args, context, info) => SetOrderMutation.setOrder(args, context, info),
+    setOrder: async (parent, args, context, info) => SetOrderMutation.setOrderMutation(args, context, info),
   },
   Query: {
     application: async (parent, args, context, info) => ApplicationQuery.application(context, info),

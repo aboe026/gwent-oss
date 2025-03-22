@@ -1,17 +1,16 @@
 import { getLogger } from 'log4js'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { Game, MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
-import { GameStatus } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameDeckDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
-import ResolverUtil from '../resolver-util'
-import SetGameTurnOrder from './util/set-game-turn-order'
+import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
+import ResolverUtil from '../../resolver-util'
 
 /**
  * A class for executing the setOrder GraphQL Mutation.
  */
-export default class SetOrderMutation {
-  private static logger = getLogger('SetOrderMutation')
+export default class SetOrderValidation {
+  private static logger = getLogger('SetOrderValidation')
 
   /**
    * Set the player turn order for a Game.
@@ -21,9 +20,13 @@ export default class SetOrderMutation {
    * @param info The information about the GraphQL request.
    * @returns The Game with player turn orders set.
    */
-  static async setOrder(args: MutationSetOrderArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
+  static async setOrderValidation(
+    args: MutationSetOrderArgs,
+    context: Context,
+    info: GraphQLResolveInfo
+  ): Promise<ValidatedSetOrder> {
     const resolverUtil = new ResolverUtil({
-      logger: SetOrderMutation.logger,
+      logger: SetOrderValidation.logger,
     })
     const { _id: userId } = resolverUtil.getContextUser({
       context,
@@ -57,12 +60,18 @@ export default class SetOrderMutation {
       status: GameStatus.Ordering,
     })
 
-    return SetGameTurnOrder.setGameTurnOrder({
+    return {
       game,
-      player,
-      userIds,
-      allowImplicit: true,
+      gameDeck: player.deck,
       logPrefix,
-    })
+      userIds,
+    }
   }
+}
+
+interface ValidatedSetOrder {
+  game: GameDbObject
+  gameDeck: GameDeckDbObject
+  logPrefix: string
+  userIds?: string[] | null
 }
