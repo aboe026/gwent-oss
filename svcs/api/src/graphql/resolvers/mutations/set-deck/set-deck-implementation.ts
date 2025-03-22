@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb'
 import { DeckDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import PresentableError from '../../../../util/presentable-error'
-import SetGameDeck from '../util/set-game-deck'
+import SetGameDeck from './set-game-deck'
 
 /**
  * A class for executing the setDeck GraphQL Mutation.

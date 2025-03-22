@@ -1,20 +1,20 @@
 import { ObjectId } from 'mongodb'
 
 import addMoveToCurrentPlayer from '../util/add-move-to-current-player'
-import clearBattlefieldUnits from '../util/clear-battlefield-units'
+import clearBattlefieldUnits from './clear-battlefield-units'
 import { GameDbObject, MovePassDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import { getLogger } from 'log4js'
 import GetNextPlayerIdForCurrentRound from '../util/get-next-player-id-for-current-round'
-import GetPlayerIdForNextRound from '../util/get-player-id-for-next-round'
+import GetPlayerIdForNextRound from './get-player-id-for-next-round'
 import initializeNewRound from '../util/initialize-new-round'
-import IsGameOver from '../util/is-game-over'
-import IsRoundOver from '../util/is-round-over'
+import IsGameOver from './is-game-over'
+import IsRoundOver from './is-round-over'
 import { MoveType } from '@gwent/graphql-schema'
 import passCurrentPlayer from './pass-current-player'
 import PresentableError from '../../../../util/presentable-error'
-import SetGameVictors from '../util/set-game-victors'
-import SetRoundResults from '../util/set-round-results'
+import SetGameVictors from './set-game-victors'
+import SetRoundResults from './set-round-results'
 
 /**
  * A class for executing the playPass GraphQL Mutation.
