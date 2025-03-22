@@ -13,7 +13,7 @@ import LoginMutation from './mutations/login/login-mutation'
 import LogoutMutation from './mutations/logout/logout-mutation'
 import PlayPassMutation from './mutations/play-pass/play-pass-mutation'
 import PlayUnitMutation from './mutations/play-unit-mutation'
-import ReadyMutation from './mutations/ready-mutation'
+import ReadyMutation from './mutations/ready/ready-mutation'
 import RedrawMutation from './mutations/redraw-mutation'
 import { Resolvers } from '@gwent/graphql-schema/resolver-typings'
 import { scalars } from '@gwent/graphql-schema'
@@ -35,7 +35,7 @@ export const resolvers: Resolvers = {
     logout: async (parent, args, context, info) => LogoutMutation.logoutMutation(context, info),
     playPass: async (parent, args, context, info) => PlayPassMutation.playPassMutation(args, context, info),
     playUnit: async (parent, args, context, info) => PlayUnitMutation.playUnit(args, context, info),
-    ready: async (parent, args, context, info) => ReadyMutation.ready(args, context, info),
+    ready: async (parent, args, context, info) => ReadyMutation.readyMutation(args, context, info),
     redraw: async (parent, args, context, info) => RedrawMutation.redraw(args, context, info),
     setDeck: async (parent, args, context, info) => SetDeckMutation.setDeck(args, context, info),
     setOrder: async (parent, args, context, info) => SetOrderMutation.setOrder(args, context, info),
