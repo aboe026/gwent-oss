@@ -1,6 +1,6 @@
 import AddDeckMutation from './mutations/add-deck/add-deck-mutation'
 import AddGameMutation from './mutations/add-game/add-game-mutation'
-import AddUserMutation from './mutations/add-user-mutation'
+import AddUserMutation from './mutations/add-user/add-user-mutation'
 import ApplicationQuery from './queries/application-query'
 import CurrentUserQuery from './queries/current-user-query'
 import DecksQuery from './queries/decks-query'
@@ -30,7 +30,7 @@ export const resolvers: Resolvers = {
   Mutation: {
     addDeck: async (parent, args, context, info) => AddDeckMutation.addDeckMutation(args, context, info),
     addGame: async (parent, args, context, info) => AddGameMutation.addGameMutation(args, context, info),
-    addUser: async (parent, args, context, info) => AddUserMutation.addUser(args, info),
+    addUser: async (parent, args, context, info) => AddUserMutation.addUserMutation(args, info),
     login: async (parent, args, context, info) => LoginMutation.login(args, context, info),
     logout: async (parent, args, context, info) => LogoutMutation.logout(context, info),
     playPass: async (parent, args, context, info) => PlayPassMutation.playPass(args, context, info),
