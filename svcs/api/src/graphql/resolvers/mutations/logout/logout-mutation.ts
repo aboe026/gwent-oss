@@ -2,7 +2,8 @@ import { getLogger } from 'log4js'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
-import ResolverUtil from '../resolver-util'
+import LogoutImplementation from './logoutImplementation'
+import LogoutValidation from './logout-validation'
 
 /**
  * A class for executing the logout GraphQL Mutation.
@@ -18,25 +19,18 @@ export default class LogoutMutation {
    * @param info The information about the GraphQL request.
    * @returns True if the user was successfully removed from the session, false otherwise.
    */
-  static logout(context: Context, info: GraphQLResolveInfo): boolean {
-    const resolverUtil = new ResolverUtil({
-      logger: LogoutMutation.logger,
-    })
-    const userId = context.session?.user?._id
+  static logoutMutation(context: Context, info: GraphQLResolveInfo): boolean {
+    const {
+      logPrefix,
+      userId, //
+    } = LogoutValidation.logoutValidation(context, info)
 
-    const logPrefix = `logout for user "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
-    resolverUtil.logRequestInfo({
-      info,
+    const loggedOut = LogoutImplementation.logoutImplementation({
+      context,
+      logPrefix,
+      userId,
     })
 
-    if (userId) {
-      LogoutMutation.logger.debug(`${logPrefix}: removing from session.`)
-      if (context.session?.user) {
-        delete context.session.user
-      }
-      return true
-    }
-    return false
+    return loggedOut
   }
 }
