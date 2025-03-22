@@ -11,7 +11,7 @@ import GamesQuery from './queries/games-query'
 import LeadersQuery from './queries/leaders-query'
 import LoginMutation from './mutations/login/login-mutation'
 import LogoutMutation from './mutations/logout/logout-mutation'
-import PlayPassMutation from './mutations/play-pass-mutation'
+import PlayPassMutation from './mutations/play-pass/play-pass-mutation'
 import PlayUnitMutation from './mutations/play-unit-mutation'
 import ReadyMutation from './mutations/ready-mutation'
 import RedrawMutation from './mutations/redraw-mutation'
@@ -33,7 +33,7 @@ export const resolvers: Resolvers = {
     addUser: async (parent, args, context, info) => AddUserMutation.addUserMutation(args, info),
     login: async (parent, args, context, info) => LoginMutation.loginMutation(args, context, info),
     logout: async (parent, args, context, info) => LogoutMutation.logoutMutation(context, info),
-    playPass: async (parent, args, context, info) => PlayPassMutation.playPass(args, context, info),
+    playPass: async (parent, args, context, info) => PlayPassMutation.playPassMutation(args, context, info),
     playUnit: async (parent, args, context, info) => PlayUnitMutation.playUnit(args, context, info),
     ready: async (parent, args, context, info) => ReadyMutation.ready(args, context, info),
     redraw: async (parent, args, context, info) => RedrawMutation.redraw(args, context, info),
