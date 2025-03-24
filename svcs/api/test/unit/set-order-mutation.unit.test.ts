@@ -4,7 +4,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
-import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order-mutation'
+import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order/set-order-mutation'
 import TestUtil from '../util/test-util'
 import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
 
@@ -88,7 +88,7 @@ async function testSetOrder({
     trace: traceSpy,
   } as any
 
-  await expect(SetOrderMutation.setOrder(args, context, null as any)).resolves.toEqual(error || resolvedGame)
+  await expect(SetOrderMutation.setOrderMutation(args, context, null as any)).resolves.toEqual(error || resolvedGame)
 
   expect(getGamePlayerSpy.mock.calls).toEqual([
     [

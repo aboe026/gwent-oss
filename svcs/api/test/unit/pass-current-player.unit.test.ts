@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import deepClone from '../util/deep-clone'
-import passCurrentPlayer from '../../src/graphql/resolvers/mutations/util/pass-current-player'
+import passCurrentPlayer from '../../src/graphql/resolvers/mutations/play-pass/pass-current-player'
 import TestUtil from '../util/test-util'
 
 describe('pass-current-player', () => {

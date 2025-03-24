@@ -8,12 +8,12 @@ import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolv
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import GetNextPlayerIdForCurrentRound from '../../src/graphql/resolvers/mutations/util/get-next-player-id-for-current-round'
-import GetPlayerIdForNextRound from '../../src/graphql/resolvers/mutations/util/get-player-id-for-next-round'
-import IsGameOver from '../../src/graphql/resolvers/mutations/util/is-game-over'
-import IsRoundOver from '../../src/graphql/resolvers/mutations/util/is-round-over'
+import GetPlayerIdForNextRound from '../../src/graphql/resolvers/mutations/play-pass/get-player-id-for-next-round'
+import IsGameOver from '../../src/graphql/resolvers/mutations/play-pass/is-game-over'
+import IsRoundOver from '../../src/graphql/resolvers/mutations/play-pass/is-round-over'
 import { MoveType } from '@gwent/graphql-schema'
 import { PubSubEvents } from '@gwent/constants'
-import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass-mutation'
+import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 
@@ -516,7 +516,7 @@ async function testPlayPass({
     isTraceEnabled: jest.fn().mockReturnValue(false),
   } as any
 
-  const promise = PlayPassMutation.playPass(args, context, null as any)
+  const promise = PlayPassMutation.playPassMutation(args, context, null as any)
   if (expected instanceof Error) {
     await expect(promise).rejects.toThrow(expected)
   } else {

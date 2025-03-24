@@ -562,7 +562,7 @@ async function testSetGameTurnOrder({
 
   const promise = SetGameTurnOrder.setGameTurnOrder({
     game,
-    player,
+    gameDeck: player.deck,
     userIds,
     logPrefix,
     allowImplicit,

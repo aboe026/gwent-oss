@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import deepClone from '../util/deep-clone'
-import modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/util/modify-battlefield-with-new-unit'
+import modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
 import TestUtil from '../util/test-util'
 
 describe('modify-battlefield-with-new-unit', () => {

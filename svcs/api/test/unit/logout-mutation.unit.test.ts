@@ -1,4 +1,4 @@
-import LogoutMutation from '../../src/graphql/resolvers/mutations/logout-mutation'
+import LogoutMutation from '../../src/graphql/resolvers/mutations/logout/logout-mutation'
 import TestUtil from '../util/test-util'
 
 describe('logout-mutation', () => {
@@ -67,7 +67,7 @@ function testLogout({
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
-  expect(LogoutMutation.logout(context, null as any)).toEqual(expected)
+  expect(LogoutMutation.logoutMutation(context, null as any)).toEqual(expected)
 
   expect(context?.session?.user).toEqual(undefined)
   expect(debugSpy.mock.calls).toEqual(debugCalls)

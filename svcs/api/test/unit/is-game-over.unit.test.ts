@@ -1,5 +1,5 @@
 import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
-import IsGameOver from '../../src/graphql/resolvers/mutations/util/is-game-over'
+import IsGameOver from '../../src/graphql/resolvers/mutations/play-pass/is-game-over'
 import TestUtil from '../util/test-util'
 
 describe('is-game-over', () => {

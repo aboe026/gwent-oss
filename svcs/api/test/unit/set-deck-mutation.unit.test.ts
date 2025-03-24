@@ -19,7 +19,7 @@ import * as gwentUtils from '@gwent/utils'
 import PresentableError from '../../src/util/presentable-error'
 import { PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
-import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck-mutation'
+import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck/set-deck-mutation'
 import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
 import TestUtil from '../util/test-util'
 
@@ -89,7 +89,6 @@ describe('set-deck-mutation', () => {
         deckId: deck._id.toString(),
         expected: Error(error),
         getDeckCalls,
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('throws error if deck is already set', async () => {
@@ -111,7 +110,6 @@ describe('set-deck-mutation', () => {
         expected: Error(error),
         getDeckCalls,
         getGamePlayerCalls,
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('throws error if updated game is undefined', async () => {
@@ -139,7 +137,6 @@ describe('set-deck-mutation', () => {
           ],
         ],
         saveCalls,
-        errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('throws error if player not on updated game', async () => {
@@ -167,7 +164,6 @@ describe('set-deck-mutation', () => {
           ],
         ],
         saveCalls,
-        errorCalls: [[`${logPrefix} failed: ${error}`]],
       })
     })
     it('throws error if setGameTurnOrder throws unexpected error', async () => {
@@ -274,7 +270,7 @@ describe('set-deck-mutation', () => {
           [
             {
               game: gameAllDecksChosen,
-              player: gameAllDecksChosen.players[0],
+              gameDeck: gameAllDecksChosen.players[0].deck,
               logPrefix: `setOrder via ${logPrefix}`,
               allowImplicit: false,
             },
@@ -431,7 +427,7 @@ describe('set-deck-mutation', () => {
           [
             {
               game: gameAllDecksChosen,
-              player: gameAllDecksChosen.players[0],
+              gameDeck: gameAllDecksChosen.players[0].deck,
               logPrefix: `setOrder via ${logPrefix}`,
               allowImplicit: false,
             },
@@ -544,7 +540,7 @@ describe('set-deck-mutation', () => {
           [
             {
               game: gameAllDecksChosen,
-              player: gameAllDecksChosen.players[0],
+              gameDeck: gameAllDecksChosen.players[0].deck,
               logPrefix: `setOrder via ${logPrefix}`,
               allowImplicit: false,
             },
@@ -623,8 +619,6 @@ async function testSetDeck({
   publishCalls = [],
   setOrderCalls = [],
   logPrefix,
-  errorCalls = [],
-  warnCalls = [],
   traceEnabled,
 }: {
   userId?: ObjectId
@@ -645,8 +639,6 @@ async function testSetDeck({
   publishCalls?: any[][]
   setOrderCalls?: any[][]
   logPrefix?: string
-  errorCalls?: any[][]
-  warnCalls?: any[][]
   traceEnabled?: boolean
 }) {
   const context: Context = {
@@ -685,19 +677,15 @@ async function testSetDeck({
   } else {
     setOrderSpy.mockImplementation()
   }
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   SetDeckMutation['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
 
-  const promise = SetDeckMutation.setDeck(args, context, null as any)
+  const promise = SetDeckMutation.setDeckMutation(args, context, null as any)
   if (expected instanceof Error) {
     await expect(promise).rejects.toThrow(expected)
   } else {
@@ -722,28 +710,7 @@ async function testSetDeck({
   )
   expect(publishSpy.mock.calls).toEqual(publishCalls)
   expect(setOrderSpy.mock.calls).toEqual(setOrderCalls)
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
   expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [
-            `${logPrefix} args: "${JSON.stringify({
-              game: gameId,
-              deck: deckId,
-            })}"`,
-          ],
-          [`${logPrefix} requested fields: "[]"`],
-          [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} deck: "${JSON.stringify(getDeckResponse)}"`],
-          [`${logPrefix} updatedGame: "${JSON.stringify(saveResponse)}"`],
-          [
-            `${logPrefix} updatedPlayer: "${JSON.stringify(
-              saveResponse?.players.find((player) => player.user.toString() === userId?.toString())
-            )}"`,
-          ],
-          [`${logPrefix} resolvedGame: "${JSON.stringify(resolveGameResponse)}"`],
-        ]
-      : []
+    traceEnabled ? [[`${logPrefix} resolvedGame: "${JSON.stringify(resolveGameResponse)}"`]] : []
   )
 }

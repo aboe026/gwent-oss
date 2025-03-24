@@ -1,6 +1,6 @@
 import AddDeckMutation from '../../src/graphql/resolvers/mutations/add-deck/add-deck-mutation'
-import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game-mutation'
-import AddUserMutation from '../../src/graphql/resolvers/mutations/add-user-mutation'
+import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game/add-game-mutation'
+import AddUserMutation from '../../src/graphql/resolvers/mutations/add-user/add-user-mutation'
 import ApplicationQuery from '../../src/graphql/resolvers/queries/application-query'
 import CurrentUserQuery from '../../src/graphql/resolvers/queries/current-user-query'
 import DecksQuery from '../../src/graphql/resolvers/queries/decks-query'
@@ -9,31 +9,31 @@ import GameDeckQuery from '../../src/graphql/resolvers/queries/game-deck-query'
 import GameQuery from '../../src/graphql/resolvers/queries/game-query'
 import GamesQuery from '../../src/graphql/resolvers/queries/games-query'
 import LeadersQuery from '../../src/graphql/resolvers/queries/leaders-query'
-import LoginMutation from '../../src/graphql/resolvers/mutations/login-mutation'
-import LogoutMutation from '../../src/graphql/resolvers/mutations/logout-mutation'
-import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass-mutation'
-import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit-mutation'
-import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
-import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw-mutation'
+import LoginMutation from '../../src/graphql/resolvers/mutations/login/login-mutation'
+import LogoutMutation from '../../src/graphql/resolvers/mutations/logout/logout-mutation'
+import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-mutation'
+import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-mutation'
+import ReadyMutation from '../../src/graphql/resolvers/mutations/ready/ready-mutation'
+import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw/redraw-mutation'
 import resolvers from '../../src/graphql/resolvers/resolvers'
-import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck-mutation'
-import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order-mutation'
+import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck/set-deck-mutation'
+import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order/set-order-mutation'
 import SettingsQuery from '../../src/graphql/resolvers/queries/settings-query'
 import UnitsQuery from '../../src/graphql/resolvers/queries/units-query'
 
 describe('resolvers', () => {
   it('calls queries and mutations', async () => {
     const addDeckSpy = jest.spyOn(AddDeckMutation, 'addDeckMutation').mockImplementation()
-    const addGameSpy = jest.spyOn(AddGameMutation, 'addGame').mockImplementation()
-    const addUserSpy = jest.spyOn(AddUserMutation, 'addUser').mockImplementation()
-    const loginSpy = jest.spyOn(LoginMutation, 'login').mockImplementation()
-    const logoutSpy = jest.spyOn(LogoutMutation, 'logout').mockImplementation()
-    const playPassSpy = jest.spyOn(PlayPassMutation, 'playPass').mockImplementation()
-    const playUnitSpy = jest.spyOn(PlayUnitMutation, 'playUnit').mockImplementation()
-    const readySpy = jest.spyOn(ReadyMutation, 'ready').mockImplementation()
-    const redrawSpy = jest.spyOn(RedrawMutation, 'redraw').mockImplementation()
-    const setDeckSpy = jest.spyOn(SetDeckMutation, 'setDeck').mockImplementation()
-    const setOrderSpy = jest.spyOn(SetOrderMutation, 'setOrder').mockImplementation()
+    const addGameSpy = jest.spyOn(AddGameMutation, 'addGameMutation').mockImplementation()
+    const addUserSpy = jest.spyOn(AddUserMutation, 'addUserMutation').mockImplementation()
+    const loginSpy = jest.spyOn(LoginMutation, 'loginMutation').mockImplementation()
+    const logoutSpy = jest.spyOn(LogoutMutation, 'logoutMutation').mockImplementation()
+    const playPassSpy = jest.spyOn(PlayPassMutation, 'playPassMutation').mockImplementation()
+    const playUnitSpy = jest.spyOn(PlayUnitMutation, 'playUnitMutation').mockImplementation()
+    const readySpy = jest.spyOn(ReadyMutation, 'readyMutation').mockImplementation()
+    const redrawSpy = jest.spyOn(RedrawMutation, 'redrawMutation').mockImplementation()
+    const setDeckSpy = jest.spyOn(SetDeckMutation, 'setDeckMutation').mockImplementation()
+    const setOrderSpy = jest.spyOn(SetOrderMutation, 'setOrderMutation').mockImplementation()
     const applicationSpy = jest.spyOn(ApplicationQuery, 'application').mockImplementation()
     const currentUserSpy = jest.spyOn(CurrentUserQuery, 'currentUser').mockImplementation()
     const decksSpy = jest.spyOn(DecksQuery, 'decks').mockImplementation()

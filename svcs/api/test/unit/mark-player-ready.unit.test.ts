@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import MarkPlayerReady from '../../src/graphql/resolvers/mutations/util/mark-player-ready'
+import MarkPlayerReady from '../../src/graphql/resolvers/mutations/ready/mark-player-ready'
 import deepClone from '../util/deep-clone'
 import TestUtil from '../util/test-util'
 

@@ -15,20 +15,20 @@ import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolv
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import GetNextPlayerIdForCurrentRound from '../../src/graphql/resolvers/mutations/util/get-next-player-id-for-current-round'
-import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit-mutation'
+import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
+import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
+import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-mutation'
 import { MoveType } from '@gwent/graphql-schema'
 import { PubSubEvents } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
-import UnitUtil from '../../src/graphql/resolvers/mutations/util/unit-util'
 
 describe('play-unit-mutation', () => {
   describe('playUnit', () => {
     const userId = new ObjectId()
     const gameId = new ObjectId().toString()
     const unitId = new ObjectId().toString()
-    const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
     it('throws error if unit not in hand', async () => {
       const message = 'Unit not in hand.'
       const game = getTestGame(gameId, userId, unitId)
@@ -48,7 +48,6 @@ describe('play-unit-mutation', () => {
           player: game.players[0],
         },
         expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('throws error if more than 1 unit with ID in hand', async () => {
@@ -81,7 +80,6 @@ describe('play-unit-mutation', () => {
           player: game.players[0],
         },
         expected: Error(`${message}.`),
-        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`]],
       })
     })
     it('throws error if unit does not exist', async () => {
@@ -97,7 +95,6 @@ describe('play-unit-mutation', () => {
         },
         unitsGetResponse: [],
         expected: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('throws error if more than 1 unit found', async () => {
@@ -121,7 +118,6 @@ describe('play-unit-mutation', () => {
         },
         unitsGetResponse: deckUnits,
         expected: Error(`${message}.`),
-        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`]],
       })
     })
     it('throws error if combat not specified for multi combat unit', async () => {
@@ -141,7 +137,6 @@ describe('play-unit-mutation', () => {
         },
         unitsGetResponse: [deckUnit],
         expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('throws error if combat does not match unit combats', async () => {
@@ -163,7 +158,6 @@ describe('play-unit-mutation', () => {
         },
         unitsGetResponse: [deckUnit],
         expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('throws error if combat not specified on unit without combat', async () => {
@@ -182,7 +176,6 @@ describe('play-unit-mutation', () => {
         },
         unitsGetResponse: [deckUnit],
         expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('throws error if save returns undefined', async () => {
@@ -251,7 +244,6 @@ describe('play-unit-mutation', () => {
         saveGameCalled: true,
         saveResponse: true,
         expected: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('returns updated game if no errors and close combat', async () => {
@@ -677,75 +669,6 @@ describe('play-unit-mutation', () => {
         }),
       })
     })
-    it('logs to trace if enabled', async () => {
-      const artStyle = 1
-      const strength = 2
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Close],
-        strength,
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            deck: {
-              ...game.players[0].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: strength,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                      effectiveStrength: strength,
-                      effects: [],
-                    },
-                  ],
-                },
-                score: strength,
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Close,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-          game.players[1],
-        ],
-        turn: game.players[1].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        saveGameCalled: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-        traceEnabled: true,
-      })
-    })
   })
 })
 
@@ -761,9 +684,6 @@ async function testPlayUnit({
   saveGameCalled,
   saveResponse,
   expected,
-  errorCalls = [],
-  warnCalls = [],
-  traceEnabled,
 }: {
   userId?: ObjectId
   gameId?: string
@@ -776,9 +696,6 @@ async function testPlayUnit({
   saveGameCalled?: boolean
   saveResponse?: boolean
   expected: Game | Error
-  errorCalls?: string[][]
-  warnCalls?: string[][]
-  traceEnabled?: boolean
 }) {
   const context: Context = {
     session: {},
@@ -803,8 +720,8 @@ async function testPlayUnit({
   }
   const roundUnits = [TestUtil.getDbUnit({}), TestUtil.getDbUnit({})]
   const effects = [TestUtil.getDbEffect({})]
-  const getRoundUnitsSpy = jest.spyOn(UnitUtil, 'getRoundUnits').mockResolvedValue(roundUnits)
-  const getUnitEffectsSpy = jest.spyOn(UnitUtil, 'getUnitEffects').mockResolvedValue(effects)
+  const getRoundUnitsSpy = jest.spyOn(getRoundUnits, 'default').mockResolvedValue(roundUnits)
+  const getUnitEffectsSpy = jest.spyOn(getUnitEffects, 'default').mockResolvedValue(effects)
   const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(GetNextPlayerIdForCurrentRound, 'getNextPlayerIdForCurrentRound')
   if (modifiedGame?.turn) {
     getNextPlayerIdForCurrentRoundSpy.mockReturnValue(modifiedGame.turn)
@@ -847,17 +764,8 @@ async function testPlayUnit({
   if (moveDate) {
     dateSpy.mockImplementation(() => moveDate)
   }
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  PlayUnitMutation['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
 
-  const promise = PlayUnitMutation.playUnit(args, context, null as any)
+  const promise = PlayUnitMutation.playUnitMutation(args, context, null as any)
   if (expected instanceof Error) {
     await expect(promise).rejects.toThrow(expected)
   } else {
@@ -972,24 +880,6 @@ async function testPlayUnit({
               },
             },
           ],
-        ]
-      : []
-  )
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
-  const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [
-            `${logPrefix} args: "${JSON.stringify({
-              game: gameId,
-              unit: unitId,
-              combat,
-            })}"`,
-          ],
-          [`${logPrefix} requested fields: "[]"`],
-          [`${logPrefix} requested arguments: "[]"`],
         ]
       : []
   )

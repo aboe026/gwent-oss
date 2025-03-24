@@ -4,7 +4,7 @@ import {
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/util/calculate-game-effective-strengths'
+import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
 import TestUtil from '../util/test-util'
 import deepClone from '../util/deep-clone'
 import { EffectReasonType } from '@gwent/graphql-schema'

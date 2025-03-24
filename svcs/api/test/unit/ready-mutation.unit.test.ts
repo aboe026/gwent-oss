@@ -8,7 +8,7 @@ import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import initializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 import { PubSubEvents } from '@gwent/constants'
-import ReadyMutation from '../../src/graphql/resolvers/mutations/ready-mutation'
+import ReadyMutation from '../../src/graphql/resolvers/mutations/ready/ready-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 
@@ -288,7 +288,7 @@ async function testReady({
     trace: traceSpy,
   } as any
 
-  const promise = ReadyMutation.ready(args, context, null as any)
+  const promise = ReadyMutation.readyMutation(args, context, null as any)
   if (expected instanceof Error) {
     await expect(promise).rejects.toThrow(expected)
   } else {

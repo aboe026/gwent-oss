@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
-import IsRoundOver from '../../src/graphql/resolvers/mutations/util/is-round-over'
+import IsRoundOver from '../../src/graphql/resolvers/mutations/play-pass/is-round-over'
 import TestUtil from '../util/test-util'
 
 describe('is-round-over', () => {

@@ -16,7 +16,7 @@ import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
 import * as gwentUtils from '@gwent/utils'
 import { MAX_REDRAWS, PubSubEvents } from '@gwent/constants'
-import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw-mutation'
+import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw/redraw-mutation'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 
@@ -378,7 +378,7 @@ async function testRedraw({
     trace: traceSpy,
   } as any
 
-  const promise = RedrawMutation.redraw(args, context, null as any)
+  const promise = RedrawMutation.redrawMutation(args, context, null as any)
   if (expected instanceof Error) {
     await expect(promise).rejects.toThrow(expected)
   } else {

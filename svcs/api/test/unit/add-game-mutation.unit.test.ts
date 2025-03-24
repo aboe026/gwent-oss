@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game-mutation'
+import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game/add-game-mutation'
 import { Context } from '@gwent/graphql-schema/context'
 import EventManager from '../../src/graphql/event-manager'
 import { MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
@@ -176,7 +176,7 @@ async function testAddGame({
     trace: traceSpy,
   } as any
 
-  const promise = AddGameMutation.addGame(args, context, null as any)
+  const promise = AddGameMutation.addGameMutation(args, context, null as any)
   if (exception) {
     await expect(promise).rejects.toThrow(exception)
   } else {
