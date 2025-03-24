@@ -34,6 +34,8 @@ export default class PlayUnitImplementation {
     logPrefix,
     unit,
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
+    const playerId = game.turn?.toString() // save current player before any modifications to game turn
+
     const roundUnits = await getRoundUnits({
       game,
       unitBeingPlayed: unit,
@@ -82,7 +84,7 @@ export default class PlayUnitImplementation {
       throw new PresentableError(message)
     }
 
-    const player = updatedGame.players.find((player) => player.user.toString() === game.turn?.toString())
+    const player = updatedGame.players.find((player) => player.user.toString() === playerId)
     if (!player) {
       const message = `Could not find player "${game.turn}" in updated game.`
       PlayUnitImplementation.logger.error(`${logPrefix} failed: ${message}`)
