@@ -5,24 +5,25 @@ import AddDeckImplementation from '../../src/graphql/resolvers/mutations/add-dec
 import AddDeckMutation from '../../src/graphql/resolvers/mutations/add-deck/add-deck-mutation'
 import AddDeckValidation from '../../src/graphql/resolvers/mutations/add-deck/add-deck-validation'
 import { Context } from '@gwent/graphql-schema/context'
-import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
-import EventManager from '../../src/graphql/event-manager'
 import { FactionKey, MutationAddDeckArgs } from '@gwent/graphql-schema/resolver-typings'
-import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
-import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import TestUtil from '../util/test-util'
-import { PubSubEvents } from '@gwent/constants'
+import AddDeckResolution from '../../src/graphql/resolvers/mutations/add-deck/add-deck-resolution'
 
 describe('add-deck-mutation', () => {
   describe('addDeckMutation', () => {
-    it('throws error if validate throws error', async () => {
+    it('throws error if validation throws error', async () => {
       await testAddDeckMutation({
-        validateError: Error('validate error'),
+        validateError: Error('validation error'),
       })
     })
-    it('throws error if implement throws error', async () => {
+    it('throws error if implementation throws error', async () => {
       await testAddDeckMutation({
-        implementError: Error('implement error'),
+        implementError: Error('implementation error'),
+      })
+    })
+    it('throws error if resolution throws error', async () => {
+      await testAddDeckMutation({
+        resolutionError: Error('resolution error'),
       })
     })
     it('returns resolved deck if no errors', async () => {
@@ -34,9 +35,11 @@ describe('add-deck-mutation', () => {
 async function testAddDeckMutation({
   validateError,
   implementError,
+  resolutionError,
 }: {
   validateError?: Error
   implementError?: Error
+  resolutionError?: Error
 }) {
   const unitId = new ObjectId()
   const unitArtStyle = 2
@@ -86,12 +89,8 @@ async function testAddDeckMutation({
       },
     ],
   })
-  const resolvedFaction = TestUtil.getFactionFromDbFaction(faction)
-  const resolvedLeader = TestUtil.getLeaderFromDbLeader(leader)
   const resolvedDeck = TestUtil.getDeckFromDbDeck({
     deck,
-    faction: resolvedFaction,
-    leader: resolvedLeader,
     units: deckUnits,
     user: TestUtil.getUser({
       id: userId,
@@ -117,19 +116,20 @@ async function testAddDeckMutation({
   } else {
     implementSpy.mockResolvedValue(deck)
   }
-  const resolveFactionSpy = jest.spyOn(FactionResolver, 'fromObject').mockResolvedValue(resolvedFaction)
-  const resolveLeaderSpy = jest.spyOn(LeaderResolver, 'fromObject').mockResolvedValue(resolvedLeader)
-  const resolveDeckSpy = jest.spyOn(DeckResolver, 'fromObject').mockResolvedValue(resolvedDeck)
-  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
+  const resolveSpy = jest.spyOn(AddDeckResolution, 'addDeckResolution')
+  if (resolutionError) {
+    resolveSpy.mockRejectedValue(resolutionError)
+  } else {
+    resolveSpy.mockResolvedValue(resolvedDeck)
+  }
 
   const promise = AddDeckMutation.addDeckMutation(args, context, info)
-  if (validateError || implementError) {
-    await expect(promise).rejects.toThrow(validateError || implementError)
+  if (validateError || implementError || resolutionError) {
+    await expect(promise).rejects.toThrow(validateError || implementError || resolutionError)
   } else {
     await expect(promise).resolves.toEqual(resolvedDeck)
   }
 
-  const anyError = validateError || implementError
   expect(validateSpy.mock.calls).toEqual([[args, context, info]])
   expect(implementSpy.mock.calls).toEqual(
     validateError
@@ -147,51 +147,17 @@ async function testAddDeckMutation({
           ],
         ]
   )
-  expect(resolveFactionSpy.mock.calls).toEqual(
-    anyError
-      ? []
-      : [
-          [
-            {
-              faction,
-            },
-          ],
-        ]
-  )
-  expect(resolveLeaderSpy.mock.calls).toEqual(
-    anyError
-      ? []
-      : [
-          [
-            {
-              leader,
-              faction: resolvedFaction,
-            },
-          ],
-        ]
-  )
-  expect(resolveDeckSpy.mock.calls).toEqual(
-    anyError
+  expect(resolveSpy.mock.calls).toEqual(
+    validateError || implementError
       ? []
       : [
           [
             {
               deck,
-              faction: resolvedFaction,
-              leader: resolvedLeader,
-              units: deckUnits,
-            },
-          ],
-        ]
-  )
-  expect(publishSpy.mock.calls).toEqual(
-    anyError
-      ? []
-      : [
-          [
-            PubSubEvents.DeckAdded,
-            {
-              deckAdded: resolvedDeck,
+              deckUnits,
+              faction,
+              leader,
+              logPrefix,
             },
           ],
         ]

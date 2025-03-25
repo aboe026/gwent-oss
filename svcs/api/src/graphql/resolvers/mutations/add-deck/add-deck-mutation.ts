@@ -1,23 +1,14 @@
-import { getLogger } from 'log4js'
-
 import AddDeckImplementation from './add-deck-implementation'
+import AddDeckResolution from './add-deck-resolution'
 import AddDeckValidation from './add-deck-validation'
 import { Context } from '@gwent/graphql-schema/context'
 import { Deck, MutationAddDeckArgs } from '@gwent/graphql-schema/resolver-typings'
-import { DeckAddedPayload } from '../../subscription-resolver'
-import DeckResolver from '../../types/deck-resolver'
-import EventManager from '../../../event-manager'
-import FactionResolver from '../../types/faction-resolver'
 import { GraphQLResolveInfo } from 'graphql'
-import LeaderResolver from '../../types/leader-resolver'
-import { PubSubEvents } from '@gwent/constants'
 
 /**
  * A class for executing the addDeck GraphQL Mutation.
  */
 export default class AddDeckMutation {
-  private static logger = getLogger('AddDeckMutation')
-
   /**
    * Add a Deck for a user.
    *
@@ -46,29 +37,12 @@ export default class AddDeckMutation {
       userId,
     })
 
-    const resolvedFaction = await FactionResolver.fromObject({
-      faction,
-    })
-    if (AddDeckMutation.logger.isTraceEnabled()) {
-      AddDeckMutation.logger.trace(`${logPrefix} resolvedFaction: "${JSON.stringify(resolvedFaction)}"`)
-    }
-    const resolvedDeck = await DeckResolver.fromObject({
+    return AddDeckResolution.addDeckResolution({
       deck,
-      faction: resolvedFaction,
-      leader: await LeaderResolver.fromObject({
-        leader,
-        faction: resolvedFaction,
-      }),
-      units: deckUnits,
+      deckUnits,
+      faction,
+      leader,
+      logPrefix,
     })
-    if (AddDeckMutation.logger.isTraceEnabled()) {
-      AddDeckMutation.logger.trace(`${logPrefix} resolvedDeck: "${JSON.stringify(resolvedDeck)}"`)
-    }
-
-    EventManager.pubsub.publish(PubSubEvents.DeckAdded, {
-      deckAdded: resolvedDeck,
-    } as DeckAddedPayload)
-
-    return resolvedDeck
   }
 }
