@@ -1,21 +1,14 @@
-import { getLogger } from 'log4js'
-
 import { Context } from '@gwent/graphql-schema/context'
-import EventManager from '../../../event-manager'
 import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
-import { GameReadyPayload } from '../../subscription-resolver'
-import GameResolver from '../../types/game-resolver'
 import { GraphQLResolveInfo } from 'graphql'
-import { PubSubEvents } from '@gwent/constants'
 import ReadyImplementation from './ready-implementation'
+import ReadyResolution from './ready-resolution'
 import ReadyValidation from './ready-validation'
 
 /**
  * A class for executing the ready GraphQL Mutation.
  */
 export default class ReadyMutation {
-  private static logger = getLogger('ReadyMutation')
-
   /**
    * Mark a Game as ready for a User. Prevents redrawing units after marked as ready.
    *
@@ -38,14 +31,9 @@ export default class ReadyMutation {
       userId,
     })
 
-    const resolvedGame = await GameResolver.fromObject({
+    return ReadyResolution.readyResolution({
       game: updatedGame,
+      logPrefix,
     })
-
-    EventManager.pubsub.publish(PubSubEvents.GameReady, {
-      gameReady: resolvedGame,
-    } as GameReadyPayload)
-
-    return resolvedGame
   }
 }
