@@ -1,8 +1,8 @@
 import AddUserImplementation from './add-user-implementation'
+import AddUserResolution from './add-user-resolution'
 import AddUserValidation from './add-user-validation'
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationAddUserArgs, User } from '@gwent/graphql-schema/resolver-typings'
-import UserResolver from '../../types/user-resolver'
 
 /**
  * A class for executing the addUser GraphQL Mutation.
@@ -29,6 +29,9 @@ export default class AddUserMutation {
       password,
     })
 
-    return UserResolver.fromObject(user)
+    return AddUserResolution.addUserResolution({
+      logPrefix,
+      user,
+    })
   }
 }
