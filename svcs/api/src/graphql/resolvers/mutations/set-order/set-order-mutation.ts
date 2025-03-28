@@ -1,5 +1,3 @@
-import { getLogger } from 'log4js'
-
 import { Context } from '@gwent/graphql-schema/context'
 import { Game, MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
@@ -10,8 +8,6 @@ import SetOrderValidation from './set-order-validation'
  * A class for executing the setOrder GraphQL Mutation.
  */
 export default class SetOrderMutation {
-  private static logger = getLogger('SetOrderMutation')
-
   /**
    * Set the player turn order for a Game.
    *
