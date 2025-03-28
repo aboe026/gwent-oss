@@ -43,6 +43,7 @@ export default class AddDeckResolution {
     if (AddDeckResolution.logger.isTraceEnabled()) {
       AddDeckResolution.logger.trace(`${logPrefix} resolvedFaction: "${JSON.stringify(resolvedFaction)}"`)
     }
+
     const resolvedDeck = await DeckResolver.fromObject({
       deck,
       faction: resolvedFaction,

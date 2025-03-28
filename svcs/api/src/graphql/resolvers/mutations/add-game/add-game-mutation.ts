@@ -1,21 +1,14 @@
-import { getLogger } from 'log4js'
-
-import { Context } from '@gwent/graphql-schema/context'
-import EventManager from '../../../event-manager'
-import { Game, MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
-import { GameAddedPayload } from '../../subscription-resolver'
-import GameResolver from '../../types/game-resolver'
-import { GraphQLResolveInfo } from 'graphql'
-import { PubSubEvents } from '@gwent/constants'
-import AddGameValidation from './add-game-validation'
 import AddGameImplementation from './add-game-implementation'
+import AddGameResolution from './add-game-resolution'
+import AddGameValidation from './add-game-validation'
+import { Context } from '@gwent/graphql-schema/context'
+import { Game, MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
+import { GraphQLResolveInfo } from 'graphql'
 
 /**
  * A class for executing the addGame GraphQL Mutation.
  */
 export default class AddGameMutation {
-  private static logger = getLogger('AddGameMutation')
-
   /**
    * Add a Game for a user.
    *
@@ -38,15 +31,10 @@ export default class AddGameMutation {
       userId,
     })
 
-    const resolvedGame = await GameResolver.fromObject({
+    return AddGameResolution.addGameResolution({
       game,
-      users: opponents,
+      logPrefix,
+      opponents,
     })
-
-    EventManager.pubsub.publish(PubSubEvents.GameAdded, {
-      gameAdded: resolvedGame,
-    } as GameAddedPayload)
-
-    return resolvedGame
   }
 }
