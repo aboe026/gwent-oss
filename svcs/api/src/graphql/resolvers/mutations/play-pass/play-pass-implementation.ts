@@ -1,10 +1,10 @@
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import addMoveToCurrentPlayer from '../util/add-move-to-current-player'
 import clearBattlefieldUnits from './clear-battlefield-units'
 import { GameDbObject, MovePassDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
-import { getLogger } from 'log4js'
 import GetNextPlayerIdForCurrentRound from '../util/get-next-player-id-for-current-round'
 import GetPlayerIdForNextRound from './get-player-id-for-next-round'
 import initializeNewRound from '../util/initialize-new-round'
