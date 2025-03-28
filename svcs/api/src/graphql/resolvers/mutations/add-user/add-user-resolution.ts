@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 
 import { User } from '@gwent/graphql-schema/resolver-typings'
-import UserResolver from '../../types/user-resolver'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import UserResolver from '../../types/user-resolver'
 
 /**
  * A class for executing the addUser GraphQL Mutation.
