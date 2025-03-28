@@ -40,7 +40,7 @@ export default class SetDeckMutation {
       userId,
     })
 
-    return SetDeckResolution.setResolution({
+    return SetDeckResolution.setDeckResolution({
       game: updatedGame,
       gameDeck,
       logPrefix,

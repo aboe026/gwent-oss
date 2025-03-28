@@ -1,329 +1,118 @@
-import { ObjectId } from 'mongodb'
-
 import { Context } from '@gwent/graphql-schema/context'
-import EventManager from '../../src/graphql/event-manager'
-import { Game, MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject, GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import GameStore from '../../src/database/stores/game-store'
-import initializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
-import { PubSubEvents } from '@gwent/constants'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
+import ReadyImplementation from '../../src/graphql/resolvers/mutations/ready/ready-implementation'
 import ReadyMutation from '../../src/graphql/resolvers/mutations/ready/ready-mutation'
-import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
+import ReadyResolution from '../../src/graphql/resolvers/mutations/ready/ready-resolution'
+import ReadyValidation from '../../src/graphql/resolvers/mutations/ready/ready-validation'
 import TestUtil from '../util/test-util'
 
 describe('ready-mutation', () => {
-  const userId = new ObjectId()
-  const gameId = new ObjectId().toString()
-  const logPrefix = `ready by "${userId}" on game "${gameId}"`
-  const getGamePlayerCalls = [
-    [
-      {
-        gameId,
-        userId,
-        status: GameStatus.Redrawing,
-        label: 'mark ready',
-      },
-    ],
-  ]
-  let gamePlayerSelf: GamePlayerDbObject
-  let gamePlayerOpponent: GamePlayerDbObject
-  let game: GameDbObject
-  let updatedGame: GameDbObject
-  let resolvedGame: Game
-  describe('ready', () => {
-    beforeEach(() => {
-      gamePlayerSelf = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        user: userId,
-      })
-      gamePlayerOpponent = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-      })
-      game = TestUtil.getDbGame({
-        id: gameId,
-        players: [gamePlayerSelf, gamePlayerOpponent],
-      })
-      updatedGame = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            ready: true,
-          },
-          game.players[1],
-        ],
-        updated: new Date(),
-      }
-      resolvedGame = TestUtil.getGame({
-        id: game._id,
-        players: [
-          TestUtil.getGamePlayer({
-            ready: true,
-            user: TestUtil.getUser({
-              id: userId,
-            }),
-          }),
-          TestUtil.getGamePlayer({
-            user: TestUtil.getUser({
-              id: gamePlayerOpponent.user,
-            }),
-          }),
-        ],
+  describe('readyMutation', () => {
+    it('throws error if validation throws error', async () => {
+      await testReadyMutation({
+        validationError: Error('validation error'),
       })
     })
-    it('throws error if save response is undefined', async () => {
-      const error = 'Could not set player as ready in probable race condition collision.'
-      await testReady({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: gamePlayerSelf,
-        },
-        saveResponse: undefined,
-        expected: Error(error),
-        getGamePlayerCalls,
-        saveCalls: [
-          [
-            {
-              ...updatedGame,
-              updated: game.updated,
-            },
-          ],
-        ],
-        errorCalls: [[`${logPrefix} failed: ${error}`]],
+    it('throws error if implementation throws error', async () => {
+      await testReadyMutation({
+        implementationError: Error('implementation error'),
       })
     })
-    it('returns resolved game if no errors', async () => {
-      await testReady({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: gamePlayerSelf,
-        },
-        saveResponse: updatedGame,
-        resolvedGame: resolvedGame,
-        expected: resolvedGame,
-        getGamePlayerCalls,
-        saveCalls: [
-          [
-            {
-              ...updatedGame,
-              updated: game.updated,
-            },
-          ],
-        ],
-        gameResolveCalls: [
-          [
-            {
-              game: updatedGame,
-            },
-          ],
-        ],
+    it('throws error if resolution throws error', async () => {
+      await testReadyMutation({
+        resolutionError: Error('resolution error'),
       })
     })
-    it('initiates first round if all players ready', async () => {
-      const readyOpponentGamePlayer: GamePlayerDbObject = {
-        ...gamePlayerOpponent,
-        ready: true,
-      }
-      const allPlayersReadyGame: GameDbObject = {
-        ...game,
-        players: [gamePlayerSelf, readyOpponentGamePlayer],
-      }
-      const allPlayersReadyUpdatedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            ready: true,
-          },
-          readyOpponentGamePlayer,
-        ],
-        round: 0,
-        status: GameStatus.Playing,
-      }
-      initializeNewRound({
-        game: allPlayersReadyUpdatedGame,
-      })
-      const allPlayersReadyResolvedGame: Game = {
-        ...resolvedGame,
-        round: 1,
-        players: allPlayersReadyUpdatedGame.players.map((dbGamePlayer) =>
-          TestUtil.getGamePlayer({
-            ready: true,
-            user: TestUtil.getUser({
-              id: dbGamePlayer.user,
-            }),
-          })
-        ),
-      }
-      await testReady({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game: allPlayersReadyGame,
-          player: gamePlayerSelf,
-        },
-        saveResponse: allPlayersReadyUpdatedGame,
-        resolvedGame: allPlayersReadyResolvedGame,
-        expected: allPlayersReadyResolvedGame,
-        getGamePlayerCalls,
-        saveCalls: [
-          [
-            {
-              ...allPlayersReadyUpdatedGame,
-              updated: game.updated,
-            },
-          ],
-        ],
-        gameResolveCalls: [
-          [
-            {
-              game: allPlayersReadyUpdatedGame,
-            },
-          ],
-        ],
-      })
-    })
-    it('logs to trace if enabled', async () => {
-      await testReady({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: gamePlayerSelf,
-        },
-        saveResponse: updatedGame,
-        resolvedGame: resolvedGame,
-        expected: resolvedGame,
-        getGamePlayerCalls,
-        saveCalls: [
-          [
-            {
-              ...updatedGame,
-              updated: game.updated,
-            },
-          ],
-        ],
-        gameResolveCalls: [
-          [
-            {
-              game: updatedGame,
-            },
-          ],
-        ],
-        logPrefix,
-        unreadyPlayerIds: [gamePlayerOpponent.user.toString()],
-        traceEnabled: true,
-      })
+    it('returns resolution if no errors', async () => {
+      await testReadyMutation({})
     })
   })
 })
 
-async function testReady({
-  userId,
-  gameId = new ObjectId().toString(),
-  getGamePlayerResponse,
-  saveResponse,
-  resolvedGame,
-  expected,
-  getGamePlayerCalls = [],
-  gameResolveCalls = [],
-  saveCalls = [],
-  logPrefix,
-  traceEnabled,
-  warnCalls = [],
-  errorCalls = [],
+async function testReadyMutation({
+  validationError,
+  implementationError,
+  resolutionError,
 }: {
-  userId?: ObjectId
-  gameId?: string
-  getGamePlayerResponse?: GamePlayerResponse
-  saveResponse?: GameDbObject
-  resolvedGame?: Game
-  expected?: Error | Game
-  getGamePlayerCalls?: any[][]
-  saveCalls?: any[][]
-  gameResolveCalls?: any[][]
-  logPrefix?: string
-  unreadyPlayerIds?: string[]
-  traceEnabled?: boolean
-  warnCalls?: any[][]
-  errorCalls?: any[][]
+  validationError?: Error
+  implementationError?: Error
+  resolutionError?: Error
 }) {
+  const logPrefix = 'log-prefix'
+  const user = TestUtil.getDbUser({})
   const context: Context = {
-    session: {},
+    session: {
+      user,
+    },
   }
-  if (userId && context.session) {
-    context.session.user = TestUtil.getDbUser({
-      id: userId,
+  const game = TestUtil.getDbGame({})
+  const updatedGame: GameDbObject = {
+    ...game,
+    updated: new Date(game.updated.getTime() + 1),
+  }
+  const resolvedGame = TestUtil.getGameFromDbGame({
+    game: updatedGame,
+  })
+  const args: MutationReadyArgs = {
+    game: game._id.toString(),
+  }
+
+  const validationSpy = jest.spyOn(ReadyValidation, 'readyValidation')
+  if (validationError) {
+    validationSpy.mockRejectedValue(validationError)
+  } else {
+    validationSpy.mockResolvedValue({
+      logPrefix,
+      game,
+      userId: user._id,
     })
   }
-  const args: MutationReadyArgs = {
-    game: gameId,
-  }
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (getGamePlayerResponse) {
-    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
-  }
-  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse)
-  const gameResolveSpy = jest.spyOn(GameResolver, 'fromObject')
-  if (resolvedGame) {
-    gameResolveSpy.mockResolvedValue(resolvedGame)
-  }
-  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  ReadyMutation['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
-
-  const promise = ReadyMutation.readyMutation(args, context, null as any)
-  if (expected instanceof Error) {
-    await expect(promise).rejects.toThrow(expected)
+  const implementationSpy = jest.spyOn(ReadyImplementation, 'readyImplementation')
+  if (implementationError) {
+    implementationSpy.mockRejectedValue(implementationError)
   } else {
-    await expect(promise).resolves.toEqual(expected)
+    implementationSpy.mockResolvedValue(updatedGame)
+  }
+  const resolutionSpy = jest.spyOn(ReadyResolution, 'readyResolution')
+  if (resolutionError) {
+    resolutionSpy.mockRejectedValue(resolutionError)
+  } else {
+    resolutionSpy.mockResolvedValue(resolvedGame)
   }
 
-  expect(getGamePlayerSpy.mock.calls).toEqual(getGamePlayerCalls)
-  expect(saveSpy.mock.calls).toEqual(saveCalls)
-  expect(gameResolveSpy.mock.calls).toEqual(gameResolveCalls)
-  expect(publishSpy.mock.calls).toEqual(
-    expected instanceof Error
+  const error = validationError || implementationError || resolutionError
+  const promise = ReadyMutation.readyMutation(args, context, null as any)
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedGame)
+  }
+
+  expect(validationSpy.mock.calls).toEqual([[args, context, null]])
+  expect(implementationSpy.mock.calls).toEqual(
+    validationError
       ? []
       : [
           [
-            PubSubEvents.GameReady,
             {
-              gameReady: resolvedGame,
+              game,
+              logPrefix,
+              userId: user._id,
             },
           ],
         ]
   )
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
+  expect(resolutionSpy.mock.calls).toEqual(
+    validationError || implementationError
+      ? []
+      : [
           [
-            `${logPrefix} args: "${JSON.stringify({
-              game: gameId,
-            })}"`,
+            {
+              game: updatedGame,
+              logPrefix,
+            },
           ],
-          [`${logPrefix} requested fields: "[]"`],
-          [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} updatedGame: "${JSON.stringify(saveResponse)}"`],
         ]
-      : []
   )
 }

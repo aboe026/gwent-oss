@@ -25,7 +25,7 @@ export default class SetDeckResolution {
    * @returns The GameDeck that was set for the game.
    * @throws PresentableError if problem setting deck.
    */
-  static async setResolution({
+  static async setDeckResolution({
     game,
     gameDeck,
     logPrefix,

@@ -1,234 +1,119 @@
-import { ObjectId } from 'mongodb'
-
+import AddGameImplementation from '../../src/graphql/resolvers/mutations/add-game/add-game-implementation'
 import AddGameMutation from '../../src/graphql/resolvers/mutations/add-game/add-game-mutation'
+import AddGameResolution from '../../src/graphql/resolvers/mutations/add-game/add-game-resolution'
+import AddGameValidation from '../../src/graphql/resolvers/mutations/add-game/add-game-validation'
 import { Context } from '@gwent/graphql-schema/context'
-import EventManager from '../../src/graphql/event-manager'
 import { MutationAddGameArgs } from '@gwent/graphql-schema/resolver-typings'
-import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import GameStore from '../../src/database/stores/game-store'
-import { PLAYER_COUNTS, PubSubEvents } from '@gwent/constants'
 import TestUtil from '../util/test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
-import UserStore from '../../src/database/stores/user-store'
 
 describe('add-game-mutation', () => {
-  describe('addGame', () => {
-    const userId = new ObjectId()
-    const logPrefix = `addGame by "${userId}"`
-    it('throws error if duplicate opponents', async () => {
-      const error = 'Opponent(s) ["test"] are duplicates.'
-      await testAddGame({
-        creatorId: userId,
-        opponentNames: ['test', 'test'],
-        exception: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
+  describe('addGameMutation', () => {
+    it('throws error if validation throws error', async () => {
+      await testAddGameMutation({
+        validationError: Error('validation error'),
       })
     })
-    it('throws error if creator listed with opponents', async () => {
-      const error = 'Opponents cannot include self.'
-      const creatorName = 'creator-name'
-      await testAddGame({
-        creatorId: userId,
-        creatorName,
-        opponentNames: [creatorName, 'test'],
-        exception: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
+    it('throws error if implementation throws error', async () => {
+      await testAddGameMutation({
+        implementationError: Error('implementation error'),
       })
     })
-    it('throws error if not enough opponents', async () => {
-      const error = `Not enough opponents at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`
-      await testAddGame({
-        creatorId: userId,
-        opponentNames: [],
-        exception: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
+    it('throws error if resolution throws error', async () => {
+      await testAddGameMutation({
+        resolutionError: Error('resolution error'),
       })
     })
-    it('throws error if too many opponents', async () => {
-      const error = `Excessive opponent count of "2", maximum is "${PLAYER_COUNTS.Min - 1}".`
-      await testAddGame({
-        creatorId: userId,
-        opponentNames: ['one', 'two'],
-        exception: Error(error),
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('throws error if opponent does not exist', async () => {
-      const opponent = 'opponent'
-      const error = `User with name "${opponent}" does not exist.`
-      await testAddGame({
-        creatorId: userId,
-        opponentNames: [opponent],
-        exception: Error(error),
-        getByNamesCalls: [[[opponent]]],
-        warnCalls: [[`${logPrefix} failed: ${error}`]],
-      })
-    })
-    it('returns resolved game if opponent exists', async () => {
-      const creatorId = new ObjectId()
-      const opponent = 'opponent'
-      const user = TestUtil.getDbUser({
-        name: 'opponent',
-      })
-      await testAddGame({
-        creatorId,
-        opponentNames: [user.name],
-        getUserByNamesResponse: [user],
-        addCalls: [
-          [
-            {
-              creatorId,
-              opponentIds: [user._id.toString()],
-            },
-          ],
-        ],
-        fromObjectCalled: true,
-        getByNamesCalls: [[[opponent]]],
-      })
-    })
-    it('logs to trace if enabled', async () => {
-      const opponent = 'opponent'
-      const user = TestUtil.getDbUser({
-        name: 'opponent',
-      })
-      await testAddGame({
-        creatorId: userId,
-        opponentNames: [user.name],
-        getUserByNamesResponse: [user],
-        addCalls: [
-          [
-            {
-              creatorId: userId,
-              opponentIds: [user._id.toString()],
-            },
-          ],
-        ],
-        fromObjectCalled: true,
-        getByNamesCalls: [[[opponent]]],
-        logPrefix,
-        traceEnabled: true,
-      })
+    it('returns resolution if no errors', async () => {
+      await testAddGameMutation({})
     })
   })
 })
 
-async function testAddGame({
-  creatorId,
-  creatorName,
-  opponentNames,
-  getUserByNamesResponse = [],
-  exception,
-  addCalls = [],
-  fromObjectCalled,
-  getByNamesCalls = [],
-  logPrefix,
-  traceEnabled,
-  warnCalls = [],
-  errorCalls = [],
+async function testAddGameMutation({
+  validationError,
+  implementationError,
+  resolutionError,
 }: {
-  creatorId?: ObjectId
-  creatorName?: string
-  opponentNames: string[]
-  getUserByNamesResponse?: UserDbObject[]
-  exception?: Error
-  addCalls?: any[][]
-  fromObjectCalled?: boolean
-  getByNamesCalls?: any[][]
-  logPrefix?: string
-  traceEnabled?: boolean
-  warnCalls?: any[][]
-  errorCalls?: any[][]
+  validationError?: Error
+  implementationError?: Error
+  resolutionError?: Error
 }) {
-  const user = TestUtil.getUser({
-    id: creatorId,
-    name: creatorName,
+  const logPrefix = 'log-prefix'
+  const user = TestUtil.getDbUser({})
+  const opponent = TestUtil.getUser({
+    name: 'opponent-name',
   })
   const context: Context = {
-    session: {},
-  }
-  if (creatorId && context.session) {
-    context.session.user = TestUtil.getDbUser({
-      id: creatorId,
-      name: creatorName,
-    })
+    session: {
+      user,
+    },
   }
   const args: MutationAddGameArgs = {
-    opponentNames,
+    opponentNames: [opponent.name],
   }
   const game = TestUtil.getDbGame({
-    creator: creatorId,
+    creator: user._id,
   })
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
-    creator: user,
+    creator: TestUtil.getUserFromDbUser(user),
   })
-  const getByNamesSpy = jest.spyOn(UserStore, 'getByNames').mockResolvedValue(getUserByNamesResponse)
-  const addSpy = jest.spyOn(GameStore, 'add').mockResolvedValue(game)
-  const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
-  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  AddGameMutation['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
+  const validationSpy = jest.spyOn(AddGameValidation, 'addGameValidation')
+  if (validationError) {
+    validationSpy.mockRejectedValue(validationError)
+  } else {
+    validationSpy.mockResolvedValue({
+      logPrefix,
+      opponents: [opponent],
+      userId: user._id,
+    })
+  }
+  const implementationSpy = jest.spyOn(AddGameImplementation, 'AddGameImplementation')
+  if (implementationError) {
+    implementationSpy.mockRejectedValue(implementationError)
+  } else {
+    implementationSpy.mockResolvedValue(game)
+  }
+  const resolutionSpy = jest.spyOn(AddGameResolution, 'addGameResolution')
+  if (resolutionError) {
+    resolutionSpy.mockRejectedValue(resolutionError)
+  } else {
+    resolutionSpy.mockResolvedValue(resolvedGame)
+  }
 
+  const error = validationError || implementationError || resolutionError
   const promise = AddGameMutation.addGameMutation(args, context, null as any)
-  if (exception) {
-    await expect(promise).rejects.toThrow(exception)
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
   } else {
     await expect(promise).resolves.toEqual(resolvedGame)
   }
 
-  expect(getByNamesSpy.mock.calls).toEqual(getByNamesCalls)
-  expect(addSpy.mock.calls).toEqual(addCalls)
-  expect(fromObjectSpy.mock.calls).toEqual(
-    fromObjectCalled
-      ? [
+  expect(validationSpy.mock.calls).toEqual([[args, context, null]])
+  expect(implementationSpy.mock.calls).toEqual(
+    validationError
+      ? []
+      : [
           [
             {
-              game: game,
-              users: getUserByNamesResponse.map((dbUser) => TestUtil.getUserFromDbUser(dbUser)),
+              logPrefix,
+              opponents: [opponent],
+              userId: user._id,
             },
           ],
         ]
-      : []
   )
-  expect(publishSpy.mock.calls).toEqual(
-    fromObjectCalled
-      ? [
+  expect(resolutionSpy.mock.calls).toEqual(
+    validationError || implementationError
+      ? []
+      : [
           [
-            PubSubEvents.GameAdded,
             {
-              gameAdded: resolvedGame,
+              game,
+              logPrefix,
+              opponents: [opponent],
             },
           ],
         ]
-      : []
-  )
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [
-            `${logPrefix} args: "${JSON.stringify({
-              opponentNames,
-            })}"`,
-          ],
-          [`${logPrefix} requested fields: "[]"`],
-          [`${logPrefix} requested arguments: "[]"`],
-          [`${logPrefix} opponents: "${JSON.stringify(getUserByNamesResponse)}"`],
-          [
-            `${logPrefix} resolvedOpponents: "${JSON.stringify(
-              getUserByNamesResponse.map((opponent) => TestUtil.getUserFromDbUser(opponent))
-            )}"`,
-          ],
-          [`${logPrefix} game: "${JSON.stringify(game)}"`],
-        ]
-      : []
   )
 }

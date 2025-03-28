@@ -1,716 +1,125 @@
-import { ObjectId } from 'mongodb'
-
 import { Context } from '@gwent/graphql-schema/context'
-import {
-  DeckDbObject,
-  DeckUnitDbObject,
-  FactionKey,
-  GameDbObject,
-  GamePlayerDbObject,
-  GameStatus,
-} from '@gwent/graphql-schema/database-typings'
-import DeckStore from '../../src/database/stores/deck-store'
-import EventManager from '../../src/graphql/event-manager'
-import { Game, GameDeck, MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
-import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
-import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import GameStore from '../../src/database/stores/game-store'
-import * as gwentUtils from '@gwent/utils'
-import PresentableError from '../../src/util/presentable-error'
-import { PubSubEvents, STARTING_HAND_SIZE } from '@gwent/constants'
-import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import SetDeckImplementation from '../../src/graphql/resolvers/mutations/set-deck/set-deck-implementation'
 import SetDeckMutation from '../../src/graphql/resolvers/mutations/set-deck/set-deck-mutation'
-import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
+import SetDeckResolution from '../../src/graphql/resolvers/mutations/set-deck/set-deck-resolution'
+import SetDeckValidation from '../../src/graphql/resolvers/mutations/set-deck/set-deck-validation'
 import TestUtil from '../util/test-util'
 
 describe('set-deck-mutation', () => {
-  describe('setDeck', () => {
-    const userId = new ObjectId()
-    const gamePlayer = TestUtil.getDbGamePlayer({
-      user: userId,
-    })
-    const game = TestUtil.getDbGame({
-      creator: userId,
-    })
-    const deck = TestUtil.getDbDeck({})
-    const opponentDeck = TestUtil.getDbDeck({})
-    const expected = {
-      discard: [],
-      hand: [],
-      name: deck.name,
-      redraws: [],
-      undrawn: [],
-      from: TestUtil.getDeckFromDbDeck({
-        deck,
-      }),
-    }
-    const resolvedGame = TestUtil.getGameFromDbGame({
-      game: game,
-    })
-    const logPrefix = `setDeck by "${userId}" for deck "${deck._id}" on game "${game._id}"`
-    const getDeckCalls = [
-      [
-        {
-          id: deck._id.toString(),
-        },
-      ],
-    ]
-    const getGamePlayerCalls = [
-      [
-        {
-          gameId: game._id.toString(),
-          userId,
-          status: GameStatus.Decking,
-          label: 'set deck',
-        },
-      ],
-    ]
-    const modifiedGame = {
-      ...game,
-      players: [
-        {
-          ...game.players[0],
-          deck: {
-            ...game.players[0].deck,
-            from: deck,
-            hand: deck.units.slice(0, STARTING_HAND_SIZE),
-            undrawn: deck.units.slice(STARTING_HAND_SIZE + 1, deck.units.length),
-          },
-        },
-        game.players[1],
-      ],
-    }
-    const saveCalls = [[modifiedGame]]
-    it('throws error if deck does not exist', async () => {
-      const error = 'Deck does not exist.'
-      await testSetDeck({
-        userId,
-        gameId: game._id.toString(),
-        deckId: deck._id.toString(),
-        expected: Error(error),
-        getDeckCalls,
+  describe('setDeckMutation', () => {
+    it('throws error if validation throws error', async () => {
+      await testSetDeckMutation({
+        validationError: Error('validation error'),
       })
     })
-    it('throws error if deck is already set', async () => {
-      const error = 'Deck already set.'
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGamePlayerResponse: {
-          game,
-          player: {
-            ...gamePlayer,
-            deck: TestUtil.getDbGameDeck({
-              from: TestUtil.getDbDeck({}),
-            }),
-          },
-        },
-        expected: Error(error),
-        getDeckCalls,
-        getGamePlayerCalls,
+    it('throws error if implementation throws error', async () => {
+      await testSetDeckMutation({
+        implementationError: Error('implementation error'),
       })
     })
-    it('throws error if updated game is undefined', async () => {
-      const error = 'Could not set deck in probable race condition collision.'
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGamePlayerResponse: {
-          game,
-          player: gamePlayer,
-        },
-        saveResponse: undefined,
-        randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
-        expected: Error(error),
-        getDeckCalls,
-        getGamePlayerCalls,
-        getRandomSubsetCalls: [
-          [
-            {
-              items: deck.units,
-              size: STARTING_HAND_SIZE,
-            },
-          ],
-        ],
-        saveCalls,
+    it('throws error if resolution throws error', async () => {
+      await testSetDeckMutation({
+        resolutionError: Error('resolution error'),
       })
     })
-    it('throws error if player not on updated game', async () => {
-      const error = 'Could not get player after setting deck.'
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGamePlayerResponse: {
-          game,
-          player: gamePlayer,
-        },
-        saveResponse: TestUtil.getDbGame({}),
-        randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
-        expected: Error(error),
-        getDeckCalls,
-        getGamePlayerCalls,
-        getRandomSubsetCalls: [
-          [
-            {
-              items: deck.units,
-              size: STARTING_HAND_SIZE,
-            },
-          ],
-        ],
-        saveCalls,
-      })
-    })
-    it('throws error if setGameTurnOrder throws unexpected error', async () => {
-      const gameAllDecksChosen: GameDbObject = {
-        ...game,
-        players: game.players.map((player) => {
-          return {
-            ...player,
-            deck: {
-              ...player.deck,
-              from: opponentDeck,
-            },
-          }
-        }),
-        status: GameStatus.Ordering,
-      }
-      const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
-        game: gameAllDecksChosen,
-      })
-      const error = Error('bad')
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGamePlayerResponse: {
-          game: {
-            ...game,
-            players: [
-              game.players[0],
-              {
-                ...game.players[1],
-                deck: {
-                  ...game.players[1].deck,
-                  from: opponentDeck,
-                },
-              },
-            ],
-          },
-          player: gamePlayer,
-        },
-        saveResponse: gameAllDecksChosen,
-        randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
-        resolveGameResponse: resolvedGameAllDecksChosen,
-        setGameTurnOrderError: error,
-        expected: error,
-        getDeckCalls,
-        getGamePlayerCalls,
-        getRandomSubsetCalls: [
-          [
-            {
-              items: deck.units,
-              size: STARTING_HAND_SIZE,
-            },
-          ],
-        ],
-        saveCalls: [
-          [
-            {
-              ...modifiedGame,
-              players: [
-                modifiedGame.players[0],
-                {
-                  ...modifiedGame.players[1],
-                  deck: {
-                    ...modifiedGame.players[1].deck,
-                    from: opponentDeck,
-                  },
-                },
-              ],
-              status: GameStatus.Ordering,
-            },
-          ],
-        ],
-        resolveGameDeckCalls: [
-          [
-            {
-              gameDeck: (
-                gameAllDecksChosen.players.find(
-                  (player) => player.user.toString() === userId?.toString()
-                ) as GamePlayerDbObject
-              ).deck,
-            },
-          ],
-        ],
-        publishCalls: [
-          [
-            PubSubEvents.DeckSet,
-            {
-              deckSet: {
-                deck: undefined,
-                game: resolvedGameAllDecksChosen,
-              },
-            },
-          ],
-          [
-            PubSubEvents.GameSet,
-            {
-              gameSet: resolvedGameAllDecksChosen,
-            },
-          ],
-        ],
-        setOrderCalls: [
-          [
-            {
-              game: gameAllDecksChosen,
-              gameDeck: gameAllDecksChosen.players[0].deck,
-              logPrefix: `setOrder via ${logPrefix}`,
-              allowImplicit: false,
-            },
-          ],
-        ],
-      })
-    })
-    it('returns resolved deck if no errors', async () => {
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGamePlayerResponse: {
-          game,
-          player: gamePlayer,
-        },
-        saveResponse: game,
-        randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
-        resolveGameResponse: resolvedGame,
-        expected,
-        getDeckCalls,
-        getGamePlayerCalls,
-        getRandomSubsetCalls: [
-          [
-            {
-              items: deck.units,
-              size: STARTING_HAND_SIZE,
-            },
-          ],
-        ],
-        saveCalls,
-        resolveGameDeckCalls: [
-          [
-            {
-              gameDeck: (
-                game.players.find((player) => player.user.toString() === userId?.toString()) as GamePlayerDbObject
-              ).deck,
-            },
-          ],
-        ],
-        publishCalls: [
-          [
-            PubSubEvents.DeckSet,
-            {
-              deckSet: {
-                deck: expected,
-                game: resolvedGame,
-              },
-            },
-          ],
-        ],
-      })
-    })
-    it('sets order if all players have chosen decks', async () => {
-      const gameAllDecksChosen: GameDbObject = {
-        ...game,
-        players: game.players.map((player) => {
-          return {
-            ...player,
-            deck: {
-              ...player.deck,
-              from: opponentDeck,
-            },
-          }
-        }),
-        status: GameStatus.Ordering,
-      }
-      const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
-        game: gameAllDecksChosen,
-      })
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGamePlayerResponse: {
-          game: {
-            ...game,
-            players: [
-              game.players[0],
-              {
-                ...game.players[1],
-                deck: {
-                  ...game.players[1].deck,
-                  from: opponentDeck,
-                },
-              },
-            ],
-          },
-          player: gamePlayer,
-        },
-        saveResponse: gameAllDecksChosen,
-        randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
-        resolveGameResponse: resolvedGameAllDecksChosen,
-        expected,
-        getDeckCalls,
-        getGamePlayerCalls,
-        getRandomSubsetCalls: [
-          [
-            {
-              items: deck.units,
-              size: STARTING_HAND_SIZE,
-            },
-          ],
-        ],
-        saveCalls: [
-          [
-            {
-              ...modifiedGame,
-              players: [
-                modifiedGame.players[0],
-                {
-                  ...modifiedGame.players[1],
-                  deck: {
-                    ...modifiedGame.players[1].deck,
-                    from: opponentDeck,
-                  },
-                },
-              ],
-              status: GameStatus.Ordering,
-            },
-          ],
-        ],
-        resolveGameDeckCalls: [
-          [
-            {
-              gameDeck: (
-                gameAllDecksChosen.players.find(
-                  (player) => player.user.toString() === userId?.toString()
-                ) as GamePlayerDbObject
-              ).deck,
-            },
-          ],
-        ],
-        publishCalls: [
-          [
-            PubSubEvents.DeckSet,
-            {
-              deckSet: {
-                deck: expected,
-                game: resolvedGameAllDecksChosen,
-              },
-            },
-          ],
-          [
-            PubSubEvents.GameSet,
-            {
-              gameSet: resolvedGameAllDecksChosen,
-            },
-          ],
-        ],
-        setOrderCalls: [
-          [
-            {
-              game: gameAllDecksChosen,
-              gameDeck: gameAllDecksChosen.players[0].deck,
-              logPrefix: `setOrder via ${logPrefix}`,
-              allowImplicit: false,
-            },
-          ],
-        ],
-      })
-    })
-    it('does not throw error if attempt to set turn order when another player has ScoiaTael', async () => {
-      const gameAllDecksChosen: GameDbObject = {
-        ...game,
-        players: game.players.map((player) => {
-          return {
-            ...player,
-            deck: {
-              ...player.deck,
-              from: opponentDeck,
-            },
-          }
-        }),
-        status: GameStatus.Ordering,
-      }
-      const resolvedGameAllDecksChosen = TestUtil.getGameFromDbGame({
-        game: gameAllDecksChosen,
-      })
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGamePlayerResponse: {
-          game: {
-            ...game,
-            players: [
-              game.players[0],
-              {
-                ...game.players[1],
-                deck: {
-                  ...game.players[1].deck,
-                  from: opponentDeck,
-                },
-              },
-            ],
-          },
-          player: gamePlayer,
-        },
-        saveResponse: gameAllDecksChosen,
-        randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
-        resolveGameResponse: resolvedGameAllDecksChosen,
-        setGameTurnOrderError: new PresentableError(
-          `Random order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
-        ),
-        expected,
-        getDeckCalls,
-        getGamePlayerCalls,
-        getRandomSubsetCalls: [
-          [
-            {
-              items: deck.units,
-              size: STARTING_HAND_SIZE,
-            },
-          ],
-        ],
-        saveCalls: [
-          [
-            {
-              ...modifiedGame,
-              players: [
-                modifiedGame.players[0],
-                {
-                  ...modifiedGame.players[1],
-                  deck: {
-                    ...modifiedGame.players[1].deck,
-                    from: opponentDeck,
-                  },
-                },
-              ],
-              status: GameStatus.Ordering,
-            },
-          ],
-        ],
-        resolveGameDeckCalls: [
-          [
-            {
-              gameDeck: (
-                gameAllDecksChosen.players.find(
-                  (player) => player.user.toString() === userId?.toString()
-                ) as GamePlayerDbObject
-              ).deck,
-            },
-          ],
-        ],
-        publishCalls: [
-          [
-            PubSubEvents.DeckSet,
-            {
-              deckSet: {
-                deck: expected,
-                game: resolvedGameAllDecksChosen,
-              },
-            },
-          ],
-          [
-            PubSubEvents.GameSet,
-            {
-              gameSet: resolvedGameAllDecksChosen,
-            },
-          ],
-        ],
-        setOrderCalls: [
-          [
-            {
-              game: gameAllDecksChosen,
-              gameDeck: gameAllDecksChosen.players[0].deck,
-              logPrefix: `setOrder via ${logPrefix}`,
-              allowImplicit: false,
-            },
-          ],
-        ],
-      })
-    })
-    it('logs to trace if enabled', async () => {
-      await testSetDeck({
-        userId,
-        deckId: deck._id.toString(),
-        gameId: game._id.toString(),
-        getDeckResponse: deck,
-        getGamePlayerResponse: {
-          game,
-          player: gamePlayer,
-        },
-        saveResponse: game,
-        randomSubset: deck.units.slice(0, STARTING_HAND_SIZE),
-        resolveGameResponse: resolvedGame,
-        expected,
-        getDeckCalls,
-        getGamePlayerCalls,
-        getRandomSubsetCalls: [
-          [
-            {
-              items: deck.units,
-              size: STARTING_HAND_SIZE,
-            },
-          ],
-        ],
-        saveCalls,
-        resolveGameDeckCalls: [
-          [
-            {
-              gameDeck: (
-                game.players.find((player) => player.user.toString() === userId?.toString()) as GamePlayerDbObject
-              ).deck,
-            },
-          ],
-        ],
-        publishCalls: [
-          [
-            PubSubEvents.DeckSet,
-            {
-              deckSet: {
-                deck: expected,
-                game: resolvedGame,
-              },
-            },
-          ],
-        ],
-        logPrefix,
-        traceEnabled: true,
-      })
+    it('returns resolution if no errors', async () => {
+      await testSetDeckMutation({})
     })
   })
 })
 
-async function testSetDeck({
-  userId,
-  gameId,
-  deckId,
-  getDeckResponse,
-  getGamePlayerResponse,
-  randomSubset = [],
-  saveResponse,
-  resolveGameResponse,
-  setGameTurnOrderError,
-  expected,
-  getDeckCalls = [],
-  getGamePlayerCalls = [],
-  getRandomSubsetCalls = [],
-  saveCalls = [],
-  resolveGameDeckCalls = [],
-  publishCalls = [],
-  setOrderCalls = [],
-  logPrefix,
-  traceEnabled,
+async function testSetDeckMutation({
+  validationError,
+  implementationError,
+  resolutionError,
 }: {
-  userId?: ObjectId
-  gameId: string
-  deckId: string
-  getDeckResponse?: DeckDbObject
-  getGamePlayerResponse?: GamePlayerResponse
-  randomSubset?: DeckUnitDbObject[]
-  saveResponse?: GameDbObject
-  resolveGameResponse?: Game
-  setGameTurnOrderError?: Error
-  expected: Error | GameDeck
-  getDeckCalls?: any[][]
-  getGamePlayerCalls?: any[][]
-  getRandomSubsetCalls?: any[][]
-  saveCalls?: any[][]
-  resolveGameDeckCalls?: any[][]
-  publishCalls?: any[][]
-  setOrderCalls?: any[][]
-  logPrefix?: string
-  traceEnabled?: boolean
+  validationError?: Error
+  implementationError?: Error
+  resolutionError?: Error
 }) {
+  const logPrefix = 'log-prefix'
+  const user = TestUtil.getDbUser({})
   const context: Context = {
-    session: {},
+    session: {
+      user,
+    },
   }
-  if (userId && context.session) {
-    context.session.user = TestUtil.getDbUser({
-      id: userId,
+  const game = TestUtil.getDbGame({})
+  const updatedGame: GameDbObject = {
+    ...game,
+    updated: new Date(game.updated.getTime() + 1),
+  }
+  const deck = TestUtil.getDbDeck({})
+  const gameDeck = TestUtil.getDbGameDeck({})
+  const resolvedGameDeck = TestUtil.getGameDeckFromDbGameDeck(gameDeck)
+  const args: MutationSetDeckArgs = {
+    game: game._id.toString(),
+    deck: deck._id.toString(),
+  }
+
+  const validationSpy = jest.spyOn(SetDeckValidation, 'setDeckValidation')
+  if (validationError) {
+    validationSpy.mockRejectedValue(validationError)
+  } else {
+    validationSpy.mockResolvedValue({
+      deck,
+      game,
+      logPrefix,
+      userId: user._id,
     })
   }
-  const args: MutationSetDeckArgs = {
-    game: gameId,
-    deck: deckId,
-  }
-  const getDeckSpy = jest.spyOn(DeckStore, 'getById').mockResolvedValue(getDeckResponse)
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (getGamePlayerResponse) {
-    getGamePlayerSpy.mockResolvedValue(getGamePlayerResponse)
-  }
-  const getRandomSubsetSpy = jest.spyOn(gwentUtils, 'getRandomSubset').mockReturnValue(randomSubset)
-  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse)
-  const fromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject')
-  if (!(expected instanceof Error)) {
-    fromObjectSpy.mockResolvedValue(expected)
-  } else if (setGameTurnOrderError) {
-    fromObjectSpy.mockImplementation()
-  }
-  const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
-  if (resolveGameResponse) {
-    resolveGameSpy.mockResolvedValue(resolveGameResponse)
-  }
-  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const setOrderSpy = jest.spyOn(SetGameTurnOrder, 'setGameTurnOrder')
-  if (setGameTurnOrderError) {
-    setOrderSpy.mockRejectedValue(setGameTurnOrderError)
+  const implementationSpy = jest.spyOn(SetDeckImplementation, 'setDeckImplementation')
+  if (implementationError) {
+    implementationSpy.mockRejectedValue(implementationError)
   } else {
-    setOrderSpy.mockImplementation()
+    implementationSpy.mockResolvedValue({
+      gameDeck,
+      game: updatedGame,
+    })
   }
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  SetDeckMutation['logger'] = {
-    debug: debugSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
+  const resolutionSpy = jest.spyOn(SetDeckResolution, 'setDeckResolution')
+  if (resolutionError) {
+    resolutionSpy.mockRejectedValue(resolutionError)
+  } else {
+    resolutionSpy.mockResolvedValue(resolvedGameDeck)
+  }
 
+  const error = validationError || implementationError || resolutionError
   const promise = SetDeckMutation.setDeckMutation(args, context, null as any)
-  if (expected instanceof Error) {
-    await expect(promise).rejects.toThrow(expected)
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(promise).resolves.toEqual(expected)
+    await expect(promise).resolves.toEqual(resolvedGameDeck)
   }
 
-  expect(getDeckSpy.mock.calls).toEqual(getDeckCalls)
-  expect(getGamePlayerSpy.mock.calls).toEqual(getGamePlayerCalls)
-  expect(getRandomSubsetSpy.mock.calls).toEqual(getRandomSubsetCalls)
-  expect(saveSpy.mock.calls).toEqual(saveCalls)
-  expect(fromObjectSpy.mock.calls).toEqual(resolveGameDeckCalls)
-  expect(resolveGameSpy.mock.calls).toEqual(
-    resolveGameResponse
-      ? [
+  expect(validationSpy.mock.calls).toEqual([[args, context, null]])
+  expect(implementationSpy.mock.calls).toEqual(
+    validationError
+      ? []
+      : [
           [
             {
-              game: saveResponse,
+              deck,
+              game,
+              logPrefix,
+              userId: user._id,
             },
           ],
         ]
-      : []
   )
-  expect(publishSpy.mock.calls).toEqual(publishCalls)
-  expect(setOrderSpy.mock.calls).toEqual(setOrderCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled ? [[`${logPrefix} resolvedGame: "${JSON.stringify(resolveGameResponse)}"`]] : []
+  expect(resolutionSpy.mock.calls).toEqual(
+    validationError || implementationError
+      ? []
+      : [
+          [
+            {
+              game: updatedGame,
+              gameDeck,
+              logPrefix,
+            },
+          ],
+        ]
   )
 }

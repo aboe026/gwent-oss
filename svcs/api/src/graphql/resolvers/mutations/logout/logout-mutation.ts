@@ -1,5 +1,3 @@
-import { getLogger } from 'log4js'
-
 import { Context } from '@gwent/graphql-schema/context'
 import { GraphQLResolveInfo } from 'graphql'
 import LogoutImplementation from './logout-implementation'
@@ -9,8 +7,6 @@ import LogoutValidation from './logout-validation'
  * A class for executing the logout GraphQL Mutation.
  */
 export default class LogoutMutation {
-  private static logger = getLogger('LogoutMutation')
-
   /**
    * Remove a user's session.
    *
@@ -25,12 +21,10 @@ export default class LogoutMutation {
       userId, //
     } = LogoutValidation.logoutValidation(context, info)
 
-    const loggedOut = LogoutImplementation.logoutImplementation({
+    return LogoutImplementation.logoutImplementation({
       context,
       logPrefix,
       userId,
     })
-
-    return loggedOut
   }
 }

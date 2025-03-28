@@ -1,83 +1,89 @@
+import { Context } from '@gwent/graphql-schema/context'
 import LogoutMutation from '../../src/graphql/resolvers/mutations/logout/logout-mutation'
 import TestUtil from '../util/test-util'
+import LogoutValidation from '../../src/graphql/resolvers/mutations/logout/logout-validation'
+import LogoutImplementation from '../../src/graphql/resolvers/mutations/logout/logout-implementation'
 
 describe('logout-mutation', () => {
-  describe('logout', () => {
-    const user = TestUtil.getDbUser({})
-    const logPrefix = `logout for user "${user._id}"`
-    it('returns false if no session on context', () => {
-      testLogout({
-        context: {},
-        expected: false,
+  describe('logoutMutation', () => {
+    it('throws error if validation throws error', async () => {
+      await testLogoutMutation({
+        validationError: Error('validation error'),
       })
     })
-    it('returns false if no user on session', () => {
-      testLogout({
-        context: {
-          session: {},
-        },
-        expected: false,
+    it('throws error if implementation throws error', async () => {
+      await testLogoutMutation({
+        implementationError: Error('implementation error'),
       })
     })
-    it('removes user from session and returns true if user on session', () => {
-      testLogout({
-        context: {
-          session: {
-            user,
-          },
-        },
-        expected: true,
-        debugCalls: [[`${logPrefix}: removing from session.`]],
+    it('returns resolution if no errors and logoutImplementation returns true', async () => {
+      await testLogoutMutation({
+        loggedOut: true,
       })
     })
-    it('logs to trace if enabled', async () => {
-      testLogout({
-        context: {
-          session: {
-            user,
-          },
-        },
-        expected: true,
-        debugCalls: [[`${logPrefix}: removing from session.`]],
-        logPrefix,
-        traceEnabled: true,
+    it('returns resolution if no errors and logoutImplementation returns false', async () => {
+      await testLogoutMutation({
+        loggedOut: false,
       })
     })
   })
 })
 
-function testLogout({
-  context,
-  expected,
-  logPrefix,
-  traceEnabled,
-  debugCalls = [],
+function testLogoutMutation({
+  validationError,
+  implementationError,
+  loggedOut,
 }: {
-  context?: any
-  expected: boolean
-  logPrefix?: string
-  traceEnabled?: boolean
-  debugCalls?: any[][]
+  validationError?: Error
+  implementationError?: Error
+  loggedOut?: boolean
 }) {
-  const debugSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  LogoutMutation['logger'] = {
-    debug: debugSpy,
-    trace: traceSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-  } as any
+  const logPrefix = 'log-prefix'
+  const user = TestUtil.getDbUser({})
+  const context: Context = {
+    session: {
+      user,
+    },
+  }
+  const validationSpy = jest.spyOn(LogoutValidation, 'logoutValidation')
+  if (validationError) {
+    validationSpy.mockImplementation(() => {
+      throw validationError
+    })
+  } else {
+    validationSpy.mockReturnValue({
+      logPrefix,
+      userId: user._id,
+    })
+  }
+  const implementationSpy = jest.spyOn(LogoutImplementation, 'logoutImplementation')
+  if (implementationError) {
+    implementationSpy.mockImplementation(() => {
+      throw implementationError
+    })
+  } else {
+    implementationSpy.mockReturnValue(!!loggedOut)
+  }
 
-  expect(LogoutMutation.logoutMutation(context, null as any)).toEqual(expected)
+  const error = validationError || implementationError
+  if (error) {
+    expect(() => LogoutMutation.logoutMutation(context, null as any)).toThrow(error)
+  } else {
+    expect(LogoutMutation.logoutMutation(context, null as any)).toEqual(loggedOut)
+  }
 
-  expect(context?.session?.user).toEqual(undefined)
-  expect(debugSpy.mock.calls).toEqual(debugCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [`${logPrefix} args: "{}"`],
-          [`${logPrefix} requested fields: "[]"`],
-          [`${logPrefix} requested arguments: "[]"`],
+  expect(validationSpy.mock.calls).toEqual([[context, null]])
+  expect(implementationSpy.mock.calls).toEqual(
+    validationError
+      ? []
+      : [
+          [
+            {
+              context,
+              logPrefix,
+              userId: user._id,
+            },
+          ],
         ]
-      : []
   )
 }

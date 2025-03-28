@@ -1,77 +1,107 @@
+import AddUserImplementation from '../../src/graphql/resolvers/mutations/add-user/add-user-implementation'
 import AddUserMutation from '../../src/graphql/resolvers/mutations/add-user/add-user-mutation'
-import { MutationAddUserArgs, User } from '@gwent/graphql-schema/resolver-typings'
+import AddUserResolution from '../../src/graphql/resolvers/mutations/add-user/add-user-resolution'
+import AddUserValidation from '../../src/graphql/resolvers/mutations/add-user/add-user-validation'
+import { MutationAddUserArgs } from '@gwent/graphql-schema/resolver-typings'
 import TestUtil from '../util/test-util'
-import { UserDbObject } from '@gwent/graphql-schema/database-typings'
-import UserStore from '../../src/database/stores/user-store'
 
 describe('add-user-mutation', () => {
-  describe('addUser', () => {
-    const name = 'james.bond@mi6.com'
-    it('throws error if user already exists', async () => {
-      const error = `User with name "${name}" already exists.`
-      await testAddUser({
-        name,
-        userAddResponse: Error(error),
-        expected: Error(error),
+  describe('addUserMutation', () => {
+    it('throws error if validation throws error', async () => {
+      await testAddUserMutation({
+        validationError: Error('validation error'),
       })
     })
-    it('throws error if not about user already existing', async () => {
-      const error = Error('Connection refused')
-      await testAddUser({
-        name,
-        userAddResponse: error,
-        expected: error,
+    it('throws error if implementation throws error', async () => {
+      await testAddUserMutation({
+        implementationError: Error('implementation error'),
       })
     })
-    it('returns user if no error', async () => {
-      const user = TestUtil.getDbUser({
-        name,
-      })
-      await testAddUser({
-        name,
-        userAddResponse: user,
-        expected: TestUtil.getUserFromDbUser(user),
+    it('throws error if resolution throws error', async () => {
+      await testAddUserMutation({
+        resolutionError: Error('resolution error'),
       })
     })
-    it('logs to trace if enabled', async () => {
-      const user = TestUtil.getDbUser({
-        name,
-      })
-      await testAddUser({
-        name,
-        userAddResponse: user,
-        expected: TestUtil.getUserFromDbUser(user),
-      })
+    it('returns resolution if no errors', async () => {
+      await testAddUserMutation({})
     })
   })
 })
 
-async function testAddUser({
-  name = 'james.bond@mi6.com',
-  userAddResponse,
-  expected,
+async function testAddUserMutation({
+  validationError,
+  implementationError,
+  resolutionError,
 }: {
-  name?: string
-  userAddResponse: UserDbObject | Error
-  expected?: User | Error
+  validationError?: Error
+  implementationError?: Error
+  resolutionError?: Error
 }) {
+  const logPrefix = 'log-prefix'
   const args: MutationAddUserArgs = {
-    name,
-    password: 'secret',
+    name: 'user-name',
+    password: 'user-password',
   }
-  const addSpy = jest.spyOn(UserStore, 'add')
-  if (userAddResponse instanceof Error) {
-    addSpy.mockRejectedValue(userAddResponse)
+  const user = TestUtil.getDbUser({
+    name: args.name,
+    password: args.password,
+  })
+  const resolvedUser = TestUtil.getUserFromDbUser(user)
+  const validationSpy = jest.spyOn(AddUserValidation, 'addUserValidation')
+  if (validationError) {
+    validationSpy.mockRejectedValue(validationError)
   } else {
-    addSpy.mockResolvedValue(userAddResponse)
+    validationSpy.mockResolvedValue({
+      logPrefix,
+      name: args.name,
+      password: args.password,
+    })
+  }
+  const implementationSpy = jest.spyOn(AddUserImplementation, 'addUserImplementation')
+  if (implementationError) {
+    implementationSpy.mockRejectedValue(implementationError)
+  } else {
+    implementationSpy.mockResolvedValue(user)
+  }
+  const resolutionSpy = jest.spyOn(AddUserResolution, 'addUserResolution')
+  if (resolutionError) {
+    resolutionSpy.mockRejectedValue(resolutionError)
+  } else {
+    resolutionSpy.mockResolvedValue(resolvedUser)
   }
 
+  const error = validationError || implementationError || resolutionError
   const promise = AddUserMutation.addUserMutation(args, null as any)
-  if (expected instanceof Error) {
-    await expect(promise).rejects.toThrow(expected)
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
   } else {
-    await expect(promise).resolves.toEqual(expected)
+    await expect(promise).resolves.toEqual(resolvedUser)
   }
 
-  expect(addSpy.mock.calls).toEqual([[args.name, args.password]])
+  expect(validationSpy.mock.calls).toEqual([[args, null]])
+  expect(implementationSpy.mock.calls).toEqual(
+    validationError
+      ? []
+      : [
+          [
+            {
+              logPrefix,
+              name: args.name,
+              password: args.password,
+            },
+          ],
+        ]
+  )
+  expect(resolutionSpy.mock.calls).toEqual(
+    validationError || implementationError
+      ? []
+      : [
+          [
+            {
+              logPrefix,
+              user,
+            },
+          ],
+        ]
+  )
 }
