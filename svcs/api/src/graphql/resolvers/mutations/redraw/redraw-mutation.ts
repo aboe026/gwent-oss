@@ -2,16 +2,10 @@ import { getLogger } from 'log4js'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { DeckUnit, MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
-import DeckUnitResolver from '../../types/deck-unit-resolver'
-import EventManager from '../../../event-manager'
-import GameDeckResolver from '../../types/game-deck-resolver'
-import GameResolver from '../../types/game-resolver'
 import { GraphQLResolveInfo } from 'graphql'
-import PresentableError from '../../../../util/presentable-error'
-import { PubSubEvents } from '@gwent/constants'
 import RedrawImplementation from './redraw-implementation'
+import RedrawResolution from './redraw-resolution'
 import RedrawValidation from './redraw-validation'
-import { UnitRedrawnPayload } from '../../subscription-resolver'
 
 /**
  * A class for executing the redraw GraphQL Mutation.
@@ -47,45 +41,12 @@ export default class RedrawMutation {
       userId,
     })
 
-    const resolvedTo = await DeckUnitResolver.fromObject({
-      deckUnit: to,
-    })
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} resolvedTo: "${JSON.stringify(resolvedTo)}"`)
-    }
-
-    const resolvedGame = await GameResolver.fromObject({
+    return RedrawResolution.redrawResolution({
+      from,
       game: updatedGame,
+      gameDeck: updatedGame.players.find((player) => player.user.toString() === userId.toString())?.deck,
+      logPrefix,
+      to,
     })
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`)
-    }
-    const resolvedFrom = await DeckUnitResolver.fromObject({
-      deckUnit: from,
-    })
-    if (RedrawMutation.logger.isTraceEnabled()) {
-      RedrawMutation.logger.trace(`${logPrefix} resolvedFrom: "${JSON.stringify(resolvedFrom)}"`)
-    }
-
-    const updatedGameDeck = updatedGame.players.find((player) => player.user.toString() === userId.toString())?.deck
-    if (!updatedGameDeck) {
-      const message = 'Could not get updated game deck when redrawing unit.'
-      RedrawMutation.logger.error(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-    const resolvedGameDeck = await GameDeckResolver.fromObject({
-      gameDeck: updatedGameDeck,
-    })
-
-    EventManager.pubsub.publish(PubSubEvents.UnitRedrawn, {
-      unitRedrawn: {
-        from: resolvedFrom,
-        deck: resolvedGameDeck,
-        game: resolvedGame,
-        to: resolvedTo,
-      },
-    } as UnitRedrawnPayload)
-
-    return resolvedTo
   }
 }
