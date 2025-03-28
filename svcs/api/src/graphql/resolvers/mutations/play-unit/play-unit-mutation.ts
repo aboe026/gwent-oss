@@ -1,22 +1,14 @@
 import { Context } from '@gwent/graphql-schema/context'
-import DeckUnitResolver from '../../types/deck-unit-resolver'
-import EventManager from '../../../event-manager'
 import { Game, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
-import GameDeckResolver from '../../types/game-deck-resolver'
-import GameResolver from '../../types/game-resolver'
-import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
 import PlayUnitImplementation from './play-unit-implementation'
+import PlayUnitResolution from './play-unit-resolution'
 import PlayUnitValidation from './play-unit-validation'
-import { PubSubEvents } from '@gwent/constants'
-import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../../subscription-resolver'
 
 /**
  * A class for executing the playUnit GraphQL Mutation.
  */
 export default class PlayUnitMutation {
-  private static logger = getLogger('PlayUnitMutation')
-
   /**
    * Play a unit for a user on a game.
    *
@@ -46,31 +38,11 @@ export default class PlayUnitMutation {
       unit,
     })
 
-    const resolvedGame = await GameResolver.fromObject({
-      game: updatedGame,
-    })
-    const resolvedUnit = await DeckUnitResolver.fromObject({
+    return PlayUnitResolution.playUnitResolution({
       deckUnit,
-    })
-    const resolvedGameDeck = await GameDeckResolver.fromObject({
+      game: updatedGame,
       gameDeck,
+      logPrefix,
     })
-
-    EventManager.pubsub.publish(PubSubEvents.UnitPlayedOnGame, {
-      unitPlayedOnGame: {
-        game: resolvedGame,
-        unit: resolvedUnit,
-      },
-    } as UnitPlayedOnGamePayload)
-
-    EventManager.pubsub.publish(PubSubEvents.UnitPlayedFromDeck, {
-      unitPlayedFromDeck: {
-        deck: resolvedGameDeck,
-        game: resolvedGame,
-        unit: resolvedUnit,
-      },
-    } as UnitPlayedFromDeckPayload)
-
-    return resolvedGame
   }
 }
