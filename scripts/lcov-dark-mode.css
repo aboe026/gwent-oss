@@ -1,12 +1,13 @@
 /* Dark Mode */
 body {
-  background-color: #131313;
-  color: white;
+  background-color: #181818;
+  color: #cccccc;
 }
 
-input {
+input,
+.fraction {
   background-color: #2f2f2f;
-  color: white;
+  color: #cccccc;
 }
 
 .fraction {
@@ -15,15 +16,23 @@ input {
 }
 
 .quiet {
-  color: white;
+  color: #cccccc;
 }
 
 .pln {
-  color: white;
+  color: #cccccc;
 }
 
 .typ {
-  color: #c400c4;
+  color: #c586c0;
+}
+
+.str {
+  color: #6a9955;
+}
+
+.com {
+  color: #5c5c5c !important;
 }
 
 .kwd {
