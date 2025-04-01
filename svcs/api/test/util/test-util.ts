@@ -438,10 +438,10 @@ export default class TestUtil {
     }
   }
 
-  static getDeck({ id, user }: { id?: string | ObjectId; user?: User }): Deck {
+  static getDeck({ faction, id, user }: { faction?: Faction; id?: string | ObjectId; user?: User }): Deck {
     return {
       created: new Date(),
-      faction: TestUtil.getFaction({}),
+      faction: faction || TestUtil.getFaction({}),
       id: (id || new ObjectId()).toString(),
       leader: TestUtil.getLeader({}),
       name: 'deck-name',

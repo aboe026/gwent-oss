@@ -10,25 +10,23 @@ import TestUtil from '../util/test-util'
 import AddDeckResolution from '../../src/graphql/resolvers/mutations/add-deck/add-deck-resolution'
 
 describe('add-deck-mutation', () => {
-  describe('addDeckMutation', () => {
-    it('throws error if validation throws error', async () => {
-      await testAddDeckMutation({
-        validateError: Error('validation error'),
-      })
+  it('throws error if validation throws error', async () => {
+    await testAddDeckMutation({
+      validateError: Error('validation error'),
     })
-    it('throws error if implementation throws error', async () => {
-      await testAddDeckMutation({
-        implementError: Error('implementation error'),
-      })
+  })
+  it('throws error if implementation throws error', async () => {
+    await testAddDeckMutation({
+      implementError: Error('implementation error'),
     })
-    it('throws error if resolution throws error', async () => {
-      await testAddDeckMutation({
-        resolutionError: Error('resolution error'),
-      })
+  })
+  it('throws error if resolution throws error', async () => {
+    await testAddDeckMutation({
+      resolutionError: Error('resolution error'),
     })
-    it('returns resolved deck if no errors', async () => {
-      await testAddDeckMutation({})
-    })
+  })
+  it('returns resolved deck if no errors', async () => {
+    await testAddDeckMutation({})
   })
 })
 

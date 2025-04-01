@@ -34,7 +34,7 @@ export default class AddDeckImplementation {
       deck = await DeckStore.add({
         factionId: faction._id,
         leaderId: leader._id,
-        name: name,
+        name,
         stats: getDeckStats(deckUnits),
         units: deckUnits.map((deckUnit) => {
           return {
@@ -50,7 +50,7 @@ export default class AddDeckImplementation {
         AddDeckImplementation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
-      AddDeckImplementation.logger.error(Error(`${logPrefix} failed: ${err}`))
+      AddDeckImplementation.logger.error(`${logPrefix} failed: ${err}`)
       throw err
     }
     if (AddDeckImplementation.logger.isTraceEnabled()) {

@@ -13,196 +13,193 @@ import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolv
 import * as validators from '@gwent/validators'
 
 describe('add-deck-validation', () => {
-  describe('addDeckValidation', () => {
-    const user = TestUtil.getDbUser({})
-    const faction = TestUtil.getDbFaction({})
-    const leader = TestUtil.getDbLeader({
-      faction: faction._id,
+  const user = TestUtil.getDbUser({})
+  const faction = TestUtil.getDbFaction({})
+  const leader = TestUtil.getDbLeader({
+    faction: faction._id,
+  })
+  const units = [
+    TestUtil.getDbUnit({}),
+    TestUtil.getDbUnit({
+      images: ['unit-2-image-1', 'unit-2-image-2'],
+    }),
+  ]
+  const deckUnits = [
+    TestUtil.getDeckUnit({
+      unit: TestUtil.getUnitFromDbUnit({
+        unit: units[0],
+      }),
+      artStyle: 1,
+    }),
+    TestUtil.getDeckUnit({
+      unit: TestUtil.getUnitFromDbUnit({
+        unit: units[1],
+      }),
+      artStyle: 2,
+    }),
+  ]
+  const logPrefix = `addDeck by "${user._id}"`
+  const args: MutationAddDeckArgs = {
+    faction: faction.key as FactionKey,
+    leader: leader._id.toString(),
+    name: 'deck-name',
+    units: [
+      {
+        id: units[0]._id.toString(),
+      },
+      {
+        id: units[1]._id.toString(),
+        artStyle: deckUnits[1].artStyle,
+      },
+    ],
+  }
+  it('throws error if getContextUser throws error', async () => {
+    const error = 'context user error'
+    await testAddDeckValidation({
+      args,
+      getContextUserError: Error(error),
+      error: Error(error),
     })
-    const units = [
-      TestUtil.getDbUnit({}),
-      TestUtil.getDbUnit({
-        images: ['unit-2-image-1', 'unit-2-image-2'],
-      }),
-    ]
-    const deckUnits = [
-      TestUtil.getDeckUnit({
-        unit: TestUtil.getUnitFromDbUnit({
-          unit: units[0],
-        }),
-        artStyle: 1,
-      }),
-      TestUtil.getDeckUnit({
-        unit: TestUtil.getUnitFromDbUnit({
-          unit: units[1],
-        }),
-        artStyle: 2,
-      }),
-    ]
-    const logPrefix = `addDeck by "${user._id}"`
-    const args: MutationAddDeckArgs = {
-      faction: faction.key as FactionKey,
-      leader: leader._id.toString(),
-      name: 'deck-name',
-      units: [
-        {
-          id: units[0]._id.toString(),
-        },
-        {
-          id: units[1]._id.toString(),
-          artStyle: deckUnits[1].artStyle,
-        },
+  })
+  it('throws error if verifyMongoIds throws error on leader id', async () => {
+    const error = 'bad leader id'
+    await testAddDeckValidation({
+      args,
+      verifyMongoIdsLeaderError: Error(error),
+      error: Error(error),
+    })
+  })
+  it('throws error if verifyMongoIds throws error on unit ids', async () => {
+    const error = 'bad unit ids'
+    await testAddDeckValidation({
+      args,
+      verifyMongoIdsUnitError: Error(error),
+      error: Error(error),
+    })
+  })
+  it('throws error if faction is NEUTRAL', async () => {
+    const message = `Faction "${FactionKey.Neutral}" not allowed.`
+    await testAddDeckValidation({
+      user,
+      args: {
+        ...args,
+        faction: FactionKey.Neutral,
+      },
+      error: Error(message),
+      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
+  it('throws error if FactionStore getByKey throws error', async () => {
+    const message = 'error from FactionStore getByKey'
+    await testAddDeckValidation({
+      user,
+      args,
+      factionGetError: Error(message),
+      error: Error(message),
+    })
+  })
+  it('throws error if LeaderStore getById throws error', async () => {
+    const message = 'error from LeaderStore getById'
+    await testAddDeckValidation({
+      user,
+      args,
+      faction,
+      leaderGetError: Error(message),
+      error: Error(message),
+    })
+  })
+  it('throws error if leader faction does not match faction', async () => {
+    const invalidFactionId = new ObjectId()
+    const message = `Faction ID "${invalidFactionId}" for leader "${leader._id}" does not match deck faction ID "${faction._id}".`
+    await testAddDeckValidation({
+      user,
+      args,
+      faction,
+      leader: {
+        ...leader,
+        faction: invalidFactionId,
+      },
+      error: Error(message),
+      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
+  it('throws error if first unit does not exist', async () => {
+    const message = `Unit with ID "${units[0]._id}" does not exist.`
+    await testAddDeckValidation({
+      user,
+      args,
+      faction,
+      leader,
+      units: [units[1]],
+      error: Error(message),
+      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
+  it('throws error if last unit does not exist', async () => {
+    const message = `Unit with ID "${units[1]._id}" does not exist.`
+    await testAddDeckValidation({
+      user,
+      args,
+      faction,
+      leader,
+      units: [units[0]],
+      error: Error(message),
+      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
+  it('throws error if no units exist', async () => {
+    const message = `Unit with ID "${units[0]._id}" does not exist.\nUnit with ID "${units[1]._id}" does not exist.`
+    await testAddDeckValidation({
+      user,
+      args,
+      faction,
+      leader,
+      units: [],
+      error: Error(message),
+      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
+  it('throws error if validateDeck throws single error', async () => {
+    const message = 'validateDeck single error'
+    await testAddDeckValidation({
+      user,
+      args,
+      faction,
+      leader,
+      units,
+      deckUnits,
+      validateDeckResponse: [message],
+      error: Error(message),
+      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
+  it('returns objects if no errors', async () => {
+    await testAddDeckValidation({
+      user,
+      args,
+      faction,
+      leader,
+      units,
+      deckUnits,
+    })
+  })
+  it('logs to trace if enabled', async () => {
+    await testAddDeckValidation({
+      user,
+      args,
+      faction,
+      leader,
+      units,
+      deckUnits,
+      traceEnabled: true,
+      traceCalls: [
+        [`${logPrefix} units: "${JSON.stringify(units)}"`],
+        [`${logPrefix} deckUnits: "${JSON.stringify(deckUnits)}"`],
       ],
-    }
-    it('throws error if getContextUser throws error', async () => {
-      const error = 'context user error'
-      await testAddDeckValidation({
-        args,
-        getContextUserError: Error(error),
-        error: Error(error),
-      })
-    })
-    it('throws error if verifyMongoIds throws error on leader id', async () => {
-      const error = 'bad leader id'
-      await testAddDeckValidation({
-        args,
-        verifyMongoIdsLeaderError: Error(error),
-        error: Error(error),
-      })
-    })
-    it('throws error if verifyMongoIds throws error on unit ids', async () => {
-      const error = 'bad unit ids'
-      await testAddDeckValidation({
-        args,
-        verifyMongoIdsUnitError: Error(error),
-        error: Error(error),
-      })
-    })
-    it('throws error if faction is NEUTRAL', async () => {
-      const message = `Faction "${FactionKey.Neutral}" not allowed.`
-      await testAddDeckValidation({
-        user,
-        args: {
-          ...args,
-          faction: FactionKey.Neutral,
-        },
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('throws error if FactionStore getByKey throws error', async () => {
-      const message = 'error from FactionStore getByKey'
-      await testAddDeckValidation({
-        user,
-        args,
-        factionGetError: Error(message),
-        error: Error(message),
-      })
-    })
-    it('throws error if LeaderStore getById throws error', async () => {
-      const message = 'error from LeaderStore getById'
-      await testAddDeckValidation({
-        user,
-        args,
-        faction,
-        leaderGetError: Error(message),
-        error: Error(message),
-      })
-    })
-    it('throws error if leader faction does not match faction', async () => {
-      const invalidFactionId = new ObjectId()
-      const message = `Faction ID "${invalidFactionId}" for leader "${leader._id}" does not match deck faction ID "${faction._id}".`
-      await testAddDeckValidation({
-        user,
-        args,
-        faction,
-        leader: {
-          ...leader,
-          faction: invalidFactionId,
-        },
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('throws error if first unit does not exist', async () => {
-      const message = `Unit with ID "${units[0]._id}" does not exist.`
-      await testAddDeckValidation({
-        user,
-        args,
-        faction,
-        leader,
-        units: [units[1]],
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('throws error if last unit does not exist', async () => {
-      const message = `Unit with ID "${units[1]._id}" does not exist.`
-      await testAddDeckValidation({
-        user,
-        args,
-        faction,
-        leader,
-        units: [units[0]],
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('throws error if no units exist', async () => {
-      const message = `Unit with ID "${units[0]._id}" does not exist.\nUnit with ID "${units[1]._id}" does not exist.`
-      await testAddDeckValidation({
-        user,
-        args,
-        faction,
-        leader,
-        units: [],
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('throws error if validateDeck throws single error', async () => {
-      const message = 'validateDeck single error'
-      await testAddDeckValidation({
-        user,
-        args,
-        faction,
-        leader,
-        units,
-        deckUnits,
-        validateDeckResponse: [message],
-        error: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('returns objects if no errors', async () => {
-      await testAddDeckValidation({
-        user,
-        args,
-        faction,
-        leader,
-        units,
-        deckUnits,
-      })
-    })
-    it('logs to trace if enabled', async () => {
-      await testAddDeckValidation({
-        user,
-        args,
-        faction,
-        leader,
-        units,
-        deckUnits,
-        traceEnabled: true,
-        traceCalls: [
-          [`${logPrefix} units: "${JSON.stringify(units)}"`],
-          [`${logPrefix} deckUnits: "${JSON.stringify(deckUnits)}"`],
-        ],
-      })
     })
   })
 })
 
-// TODO: verify errors of "FactionStore.getByKey" and "LeaderStore.getById"
 async function testAddDeckValidation({
   user = TestUtil.getDbUser({}),
   args,
