@@ -18,8 +18,8 @@ export default class AddUserResolution {
    * @returns The User that was added.
    * @throws PresentableError if problem adding user.
    */
-  static async addUserResolution({ logPrefix, user }: { logPrefix: string; user: UserDbObject }): Promise<User> {
-    const resolvedUser = await UserResolver.fromObject(user)
+  static addUserResolution({ logPrefix, user }: { logPrefix: string; user: UserDbObject }): User {
+    const resolvedUser = UserResolver.fromObject(user)
 
     if (AddUserResolution.logger.isTraceEnabled()) {
       AddUserResolution.logger.trace(`${logPrefix} resolvedUser: "${JSON.stringify(resolvedUser)}"`)

@@ -65,9 +65,11 @@ async function testAddUserMutation({
   }
   const resolutionSpy = jest.spyOn(AddUserResolution, 'addUserResolution')
   if (resolutionError) {
-    resolutionSpy.mockRejectedValue(resolutionError)
+    resolutionSpy.mockImplementation(() => {
+      throw resolutionError
+    })
   } else {
-    resolutionSpy.mockResolvedValue(resolvedUser)
+    resolutionSpy.mockReturnValue(resolvedUser)
   }
 
   const error = validationError || implementationError || resolutionError

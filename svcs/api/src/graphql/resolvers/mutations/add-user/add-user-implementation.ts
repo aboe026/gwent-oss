@@ -23,17 +23,18 @@ export default class AddUserImplementation {
     let user: UserDbObject
     try {
       user = await UserStore.add(name, password)
-      if (AddUserImplementation.logger.isTraceEnabled()) {
-        AddUserImplementation.logger.trace(`${logPrefix} user: "${JSON.stringify(user)}"`)
-      }
     } catch (err: unknown) {
       const alreadyExistsMessage = `User with name "${name}" already exists.`
       if (err instanceof Error && err.message === alreadyExistsMessage) {
         AddUserImplementation.logger.warn(`${logPrefix} failed: ${alreadyExistsMessage}`)
         throw new PresentableError(alreadyExistsMessage)
       }
-      AddUserImplementation.logger.error(Error(`${logPrefix} failed: ${err}`))
+      AddUserImplementation.logger.error(`${logPrefix} failed: ${err}`)
       throw err
+    }
+
+    if (AddUserImplementation.logger.isTraceEnabled()) {
+      AddUserImplementation.logger.trace(`${logPrefix} user: "${JSON.stringify(user)}"`)
     }
 
     return user
