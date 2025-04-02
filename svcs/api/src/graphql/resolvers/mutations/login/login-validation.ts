@@ -47,17 +47,18 @@ export default class LoginValidation {
     let user: UserDbObject
     try {
       user = await UserStore.validate(name, password)
-      if (LoginValidation.logger.isTraceEnabled()) {
-        LoginValidation.logger.trace(`${logPrefix} user: "${JSON.stringify(user)}"`)
-      }
     } catch (err: unknown) {
       if (err instanceof Error && err.message === `Invalid credentials for user "${name}"`) {
         const message = `Invalid credentials for user "${name}".`
         LoginValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
-      LoginValidation.logger.error(Error(`${logPrefix} failed: ${err}`))
+      LoginValidation.logger.error(`${logPrefix} failed: ${err}`)
       throw err
+    }
+
+    if (LoginValidation.logger.isTraceEnabled()) {
+      LoginValidation.logger.trace(`${logPrefix} user: "${JSON.stringify(user)}"`)
     }
 
     return {
