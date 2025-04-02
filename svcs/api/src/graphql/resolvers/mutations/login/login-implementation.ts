@@ -27,21 +27,17 @@ export default class LoginImplementation {
     logPrefix: string
     user: UserDbObject
   }) {
-    if (!context) {
-      LoginImplementation.logger.trace(`${logPrefix}: context not set, defining.`)
-      context = {
-        session: {
-          user,
-        },
-      }
-    } else if (!context.session) {
-      LoginImplementation.logger.trace(`${logPrefix}: session not set, defining.`)
+    if (context.session?.user) {
+      LoginImplementation.logger.trace(`${logPrefix} overwriting user on context session.`)
+      context.session.user = user
+    } else if (context.session) {
+      LoginImplementation.logger.trace(`${logPrefix} setting user on context session.`)
+      context.session.user = user
+    } else {
+      LoginImplementation.logger.trace(`${logPrefix} session not set, defining.`)
       context.session = {
         user,
       }
-    } else {
-      LoginImplementation.logger.trace(`${logPrefix}: setting user on context session.`)
-      context.session.user = user
     }
   }
 }
