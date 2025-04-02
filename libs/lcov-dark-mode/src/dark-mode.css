@@ -1,0 +1,74 @@
+body {
+  background-color: #181818 !important;
+  color: #cccccc !important;
+}
+
+input,
+.fraction {
+  background-color: #2f2f2f !important;
+  color: #cccccc !important;
+}
+
+.fraction {
+  background: #2f2f2f !important;
+  color: #d9d9d9 !important;
+}
+
+.quiet {
+  color: #cccccc !important;
+}
+
+.pln {
+  color: #cccccc !important;
+}
+
+.typ {
+  color: #c586c0 !important;
+}
+
+.str {
+  color: #6a9955 !important;
+}
+
+.com {
+  color: #5c5c5c !important;
+}
+
+.kwd {
+  color: #8d8dff !important;
+}
+
+a {
+  color: #5eb1ff !important;
+}
+
+span.cline-neutral {
+  background: #2f2f2f !important;
+}
+
+.low,
+.cline-no,
+.cstat-no,
+.fstat-no,
+.status-line.low {
+  background: #4c2227 !important;
+}
+
+.medium,
+.status-line.medium {
+  background: rgba(245, 204, 0, 0.3) !important;
+}
+
+.cbranch-no {
+  background: rgba(245, 204, 0, 0.3) !important;
+}
+
+.high,
+.cline-yes,
+.status-line.high {
+  background: #1a3725 !important;
+}
+
+.cover-empty {
+  background: #585858 !important;
+}

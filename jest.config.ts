@@ -62,7 +62,7 @@ const config: Config = {
         titleTemplate: '{title}',
       },
     ],
-    path.join(process.env.PROJECT_CWD || './', 'scripts', 'lcov-dark-mode-reporter.js'),
+    path.join(process.env.PROJECT_CWD || '.', 'libs', 'lcov-dark-mode', 'build', 'src', 'index.js'),
   ],
 }
 
