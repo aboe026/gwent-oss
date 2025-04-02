@@ -19,8 +19,8 @@ export default class LoginResolution {
    * @returns The User that was successfully logged in.
    * @throws PresentableError if problem authenticating user.
    */
-  static async loginResolution({ logPrefix, user }: { logPrefix: string; user: UserDbObject }): Promise<User> {
-    const resolvedUser = await UserResolver.fromObject(user)
+  static loginResolution({ logPrefix, user }: { logPrefix: string; user: UserDbObject }): User {
+    const resolvedUser = UserResolver.fromObject(user)
 
     if (LoginResolution.logger.isTraceEnabled()) {
       LoginResolution.logger.trace(`${logPrefix} resolvedUser: "${JSON.stringify(resolvedUser)}"`)
