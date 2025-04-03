@@ -19,13 +19,7 @@ export default class LogoutValidation {
    * @param info The information about the GraphQL request.
    * @returns True if the user was successfully removed from the session, false otherwise.
    */
-  static logoutValidation(
-    context: Context,
-    info: GraphQLResolveInfo
-  ): {
-    logPrefix: string
-    userId?: ObjectId
-  } {
+  static logoutValidation(context: Context, info: GraphQLResolveInfo): ValidatedLogout {
     const resolverUtil = new ResolverUtil({
       logger: LogoutValidation.logger,
     })
@@ -42,4 +36,9 @@ export default class LogoutValidation {
       userId,
     }
   }
+}
+
+export interface ValidatedLogout {
+  logPrefix: string
+  userId?: ObjectId
 }

@@ -27,7 +27,7 @@ export default class LogoutImplementation {
     userId?: ObjectId
   }): boolean {
     if (userId) {
-      LogoutImplementation.logger.debug(`${logPrefix}: removing from session.`)
+      LogoutImplementation.logger.debug(`${logPrefix} removing from session.`)
       if (context.session?.user) {
         delete context.session.user
       }
