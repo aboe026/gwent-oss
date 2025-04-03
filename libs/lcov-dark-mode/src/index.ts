@@ -1,4 +1,4 @@
-import { access, copyFile, readdir, readFile, stat, writeFile } from 'fs/promises'
+import { access, appendFile, readFile } from 'fs/promises'
 import type { AggregatedResult, Config, Reporter } from '@jest/reporters'
 import path from 'path'
 
@@ -23,14 +23,14 @@ export default class LcovDarkMode implements Reporter {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onRunComplete(contexts: Set<unknown>, results: AggregatedResult): void {
     /**
-     * Purposefully do not await this so that jest can write out HTML files in parallel.
+     * Purposefully do not await this so that jest can write out lcov HTML files in parallel.
      * Apparently jest waits until all reporters have finished before writing the lcov HTML files,
      * so this isn't awaited here in order for jest to not be blocked and proceed to writing those lcov HTML files
-     * which are needed by this method to modify them with the new dark-mode.css stylesheet in their heads.
+     * which are needed (specifically the base.css) by this method to modify them with the new dark-mode.css.
      */
     addDarkMode({
       coverageDirectory: this._options?.coverageDirectory || this._globalConfig.coverageDirectory,
-      waitMilliseconds: this._options?.waitMilliseconds || 0,
+      maxWaitMilliseconds: this._options?.waitMilliseconds || 5000,
     })
   }
 }
@@ -40,32 +40,75 @@ export default class LcovDarkMode implements Reporter {
  *
  * @param config The configuration required to add dark mode.
  * @param config.coverageDirectory The directory containing the lcov-report directory which contains the HTML coverage files.
- * @param config.waitMilliseconds An optional time (in milliseconds) to wait before modifying HTML files with dark mode. Useful if jest is slow in producing the HTML files.
+ * @param config.maxWaitMilliseconds The maximum amount of time (in milliseconds) to wait for lcov to generate HTML files.
  */
 export async function addDarkMode({
   coverageDirectory,
-  waitMilliseconds,
+  maxWaitMilliseconds = 5000,
 }: {
   coverageDirectory: string
-  waitMilliseconds: number
+  maxWaitMilliseconds: number
 }) {
-  await sleep(waitMilliseconds)
-
-  const lcovDir = path.join(coverageDirectory, 'lcov-report')
-  try {
-    await access(lcovDir)
-  } catch (err: unknown) {
-    throw Error(`Could not access LCOV directory "${lcovDir}": ${err}`)
-  }
-  const cssFileName = 'dark-mode.css'
-  await copyFile(path.join(__dirname, cssFileName), path.join(lcovDir, cssFileName))
-
-  const files = await getFilesRecursively({
-    directory: lcovDir,
-    extension: 'html',
+  const baseCssPath = path.join(coverageDirectory, 'lcov-report', 'base.css')
+  const darkModeCss = await readFile(path.join(__dirname, 'dark-mode.css'), {
+    encoding: 'utf-8',
   })
+  await waitForFileToExist({
+    filePath: baseCssPath,
+    timeoutMilliseconds: maxWaitMilliseconds,
+  })
+  await appendFile(baseCssPath, darkModeCss)
+}
 
-  await Promise.all(files.map((file) => addStylesheetLinkToHead(file)))
+/**
+ * Waits a maximum amount of time until a file exists. If file not found in that time limit, throw error.
+ *
+ * @param config The configuration for waiting on the file to exist.
+ * @param config.filePath The path of the file to check for the existence of.
+ * @param config.checkDurationMilliseconds How often (in milliseconds) to check whether or not the file exists.
+ * @param config.timeoutMilliseconds The maximum amount of time (in milliseconds) to wait for the file to exist.
+ * @throws Error if file does not exist after timeoutMilliseconds has elapsed.
+ */
+async function waitForFileToExist({
+  filePath,
+  checkDurationMilliseconds = 500,
+  timeoutMilliseconds = 5000,
+}: {
+  filePath: string
+  checkDurationMilliseconds?: number
+  timeoutMilliseconds?: number
+}) {
+  const start = Date.now()
+  let exists = false
+  while (!exists && Date.now() - start < timeoutMilliseconds) {
+    exists = await fileExists(filePath)
+    if (!exists) {
+      await sleep(checkDurationMilliseconds)
+    }
+  }
+  if (!exists) {
+    throw Error(`File "${filePath}" does not exist after "${timeoutMilliseconds}" milliseconds`)
+  }
+}
+
+/**
+ * Check to see if a file exists.
+ *
+ * @param filePath The path of the file to check the existence of.
+ * @returns Returns true if the file exists, false otherwise.
+ */
+async function fileExists(filePath: string): Promise<boolean> {
+  let exists = false
+
+  try {
+    await access(filePath)
+    exists = true
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err: unknown) {
+    // swallow
+  }
+
+  return exists
 }
 
 /**
@@ -80,71 +123,6 @@ async function sleep(milliseconds: number): Promise<void> {
 }
 
 /**
- * Gets all files in a directory recursively.
- *
- * @param config The configuration required to get the files.
- * @param config.directory The directory contiaining the files to retrieve recursively.
- * @param config.extension An optional extension to filter files to. If provided, only files which end in that extension will be returned.
- * @returns An array containing all the files in the directory recursively.
- */
-async function getFilesRecursively({
-  directory,
-  extension,
-}: {
-  directory: string
-  extension?: string
-}): Promise<string[]> {
-  const files: string[] = []
-
-  const filesInDir = await readdir(directory)
-  for (const fileInDir of filesInDir) {
-    const filePath = path.join(directory, fileInDir)
-    if (!extension || fileInDir.endsWith(`.${extension}`)) {
-      files.push(filePath)
-    }
-    const stats = await stat(filePath)
-    if (stats.isDirectory()) {
-      const subFiles = await getFilesRecursively({
-        directory: filePath,
-        extension,
-      })
-      files.push(...subFiles)
-    }
-  }
-
-  return files
-}
-
-/**
- * Add the dark-mode.css stylesheet to an HTML file, based off where the base.css stylesheet is.
- *
- * @param htmlFilePath The path to the HTML file which should be updated.
- */
-async function addStylesheetLinkToHead(htmlFilePath: string) {
-  const contents = await readFile(htmlFilePath, {
-    encoding: 'utf-8',
-  })
-  const lines = contents.split(/\r\n|\r|\n/)
-  let index = -1
-  let whitespace = ''
-  let relativePath = ''
-  for (let i = 0; i < lines.length && index < 0; i++) {
-    const line = lines[i]
-    const matches = line.match(/(\s+)<link rel="stylesheet" href="(.*)base.css" \/>/)
-    if (matches) {
-      index = i
-      whitespace = matches[1]
-      relativePath = matches[2]
-    }
-  }
-  if (index === -1) {
-    throw Error(`Could not find base.css stylesheet link in HTML file "${htmlFilePath}"`)
-  }
-  lines.splice(index, 0, `${whitespace}<link rel="stylesheet" href="${relativePath}dark-mode.css" />`)
-  await writeFile(htmlFilePath, lines.join('\n'))
-}
-
-/**
  * Configuration options to control the application of dark mode to lcov HTML files.
  */
 interface LcovDarkModeOptions {
@@ -153,7 +131,7 @@ interface LcovDarkModeOptions {
    */
   coverageDirectory?: string
   /**
-   * An optional time (in milliseconds) to wait before modifying HTML files with dark mode. Useful if jest is slow in producing the HTML files.
+   * The maximum amount of time (in milliseconds) to wait for lcov to generate HTML files. Default 5000. Useful to extend if Jest is slow to generate lcov HTML files.
    */
   waitMilliseconds?: number
 }
