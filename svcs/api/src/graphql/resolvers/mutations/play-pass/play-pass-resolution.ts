@@ -46,11 +46,19 @@ export default class PlayPassResolution {
 
     if (roundOver) {
       for (const gamePlayer of game.players) {
+        const resolvedGameDeck = await GameDeckResolver.fromObject({
+          gameDeck: gamePlayer.deck,
+        })
+
+        if (PlayPassResolution.logger.isTraceEnabled()) {
+          PlayPassResolution.logger.trace(
+            `${logPrefix} resolvedGameDeck for "${gamePlayer.user}": "${JSON.stringify(resolvedGameDeck)}"`
+          )
+        }
+
         EventManager.pubsub.publish(PubSubEvents.RoundEndedForDeck, {
           roundEndedForDeck: {
-            deck: await GameDeckResolver.fromObject({
-              gameDeck: gamePlayer.deck,
-            }),
+            deck: resolvedGameDeck,
             game: resolvedGame,
           },
         } as RoundEndedForDeckPayload)
