@@ -2,9 +2,9 @@ import { ObjectId } from 'mongodb'
 
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import TestUtil from '../util/test-util'
-import GetNextPlayerIdForCurrentRound from '../../src/graphql/resolvers/mutations/util/get-next-player-id-for-current-round'
+import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/util/set-next-turn-for-current-round'
 
-describe('get-next-player-id-for-current-round', () => {
+describe('set-next-turn-for-current-round', () => {
   const userId = new ObjectId()
   const logPrefix = `playUnit by "${userId}"`
   it('throws error if current player does not have order', () => {
@@ -616,7 +616,7 @@ function testGetNextPlayerIdForCurrentRound({
   const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
-  GetNextPlayerIdForCurrentRound['logger'] = {
+  SetNextTurnForCurrentRound['logger'] = {
     error: errorSpy,
     debug: debugSpy,
     trace: traceSpy,
@@ -625,19 +625,15 @@ function testGetNextPlayerIdForCurrentRound({
 
   if (expected instanceof Error) {
     expect(() =>
-      GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({
-        currentRound: game.round,
-        currentTurn: game.turn,
-        players: game.players,
+      SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
+        game,
         logPrefix,
       })
     ).toThrow(expected)
   } else {
     expect(
-      GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({
-        currentRound: game.round,
-        currentTurn: game.turn,
-        players: game.players,
+      SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
+        game,
         logPrefix,
       })
     ).toEqual(expected)

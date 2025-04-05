@@ -3,13 +3,13 @@ import CalculateGameEffectiveStrengths from './calculate-game-effective-strength
 import { GameDbObject, GameDeckDbObject, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import { getLogger } from 'log4js'
-import GetNextPlayerIdForCurrentRound from '../util/get-next-player-id-for-current-round'
 import getRoundUnits from './get-round-units'
 import getUnitEffects from './get-unit-effects'
 import modifyBattlefieldWithNewUnit from './modify-battlefield-with-new-unit'
 import { MoveType } from '@gwent/graphql-schema'
 import PresentableError from '../../../../util/presentable-error'
 import setGameScores from './set-game-scores'
+import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
 import { ValidatedPlayUnit } from './play-unit-validation'
 
 /**
@@ -69,10 +69,8 @@ export default class PlayUnitImplementation {
       } as MoveUnitDbObject,
     })
 
-    game.turn = GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({
-      currentRound: game.round,
-      currentTurn: game.turn,
-      players: game.players,
+    SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
+      game,
       logPrefix,
     })
 

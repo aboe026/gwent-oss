@@ -1,10 +1,10 @@
 import { ObjectId } from 'mongodb'
 
 import { GameDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
-import GetPlayerIdForNextRound from '../../src/graphql/resolvers/mutations/play-pass/get-player-id-for-next-round'
+import SetTurnForNextRound from '../../src/graphql/resolvers/mutations/play-pass/set-turn-for-next-round'
 import TestUtil from '../util/test-util'
 
-describe('get-player-id-for-next-round', () => {
+describe('set-turn-for-next-round', () => {
   const userId = new ObjectId()
   const gameId = new ObjectId()
   const logPrefix = `playPass by "${userId}" on game "${gameId}"`
@@ -206,14 +206,14 @@ function testGetPlayerIdForNextRound({
 }) {
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
-  GetPlayerIdForNextRound['logger'] = {
+  SetTurnForNextRound['logger'] = {
     debug: debugSpy,
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
   expect(
-    GetPlayerIdForNextRound.getPlayerIdForNextRound({
+    SetTurnForNextRound.setTurnForNextRound({
       game,
       logPrefix,
     })

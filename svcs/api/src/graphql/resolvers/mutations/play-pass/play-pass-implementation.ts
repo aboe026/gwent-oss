@@ -1,12 +1,9 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
 import addMoveToCurrentPlayer from '../util/add-move-to-current-player'
 import clearBattlefieldUnits from './clear-battlefield-units'
 import { GameDbObject, MovePassDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
-import GetNextPlayerIdForCurrentRound from '../util/get-next-player-id-for-current-round'
-import GetPlayerIdForNextRound from './get-player-id-for-next-round'
 import initializeNewRound from '../util/initialize-new-round'
 import IsGameOver from './is-game-over'
 import IsRoundOver from './is-round-over'
@@ -14,7 +11,9 @@ import { MoveType } from '@gwent/graphql-schema'
 import passCurrentPlayer from './pass-current-player'
 import PresentableError from '../../../../util/presentable-error'
 import SetGameVictors from './set-game-victors'
+import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
 import SetRoundResults from './set-round-results'
+import SetTurnForNextRound from './set-turn-for-next-round'
 import { ValidatedPlayPass } from './play-pass-validation'
 
 /**
@@ -43,7 +42,6 @@ export default class PlayPassImplementation {
       } as MovePassDbObject,
     })
 
-    let nextPlayerId: ObjectId | undefined = undefined
     const roundOver = IsRoundOver.isRoundOver({
       game,
       logPrefix,
@@ -65,7 +63,7 @@ export default class PlayPassImplementation {
           logPrefix,
         })
       } else {
-        nextPlayerId = GetPlayerIdForNextRound.getPlayerIdForNextRound({
+        SetTurnForNextRound.setTurnForNextRound({
           game,
           logPrefix,
         })
@@ -75,15 +73,11 @@ export default class PlayPassImplementation {
         })
       }
     } else {
-      nextPlayerId = GetNextPlayerIdForCurrentRound.getNextPlayerIdForCurrentRound({
-        currentRound: game.round,
-        currentTurn: game.turn,
-        players: game.players,
+      SetNextTurnForCurrentRound.setNextTurnForCurrentRound({
+        game,
         logPrefix,
       })
     }
-
-    game.turn = nextPlayerId
 
     const updatedGame = await GameStore.save(game)
 
