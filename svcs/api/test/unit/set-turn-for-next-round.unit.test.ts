@@ -30,16 +30,12 @@ describe('set-turn-for-next-round', () => {
         }),
       ],
     })
-    testGetPlayerIdForNextRound({
+    testSetTurnForNextRound({
       game,
       logPrefix,
       expected: userId,
-      debugCalls: [
-        [
-          `${logPrefix} getPlayerIdForNextRound single user "${userId}" won round "1", setting them as player for round "2"`,
-        ],
-      ],
-      traceCalls: [[`${logPrefix} getPlayerIdForNextRound nextRound: "2"`]],
+      debugCalls: [[`${logPrefix} single user "${userId}" won round "1", setting them as player for round "2"`]],
+      traceCalls: [[`${logPrefix} nextRound: "2"`]],
     })
   })
   it('returns last round winner if last player won', () => {
@@ -64,16 +60,12 @@ describe('set-turn-for-next-round', () => {
         }),
       ],
     })
-    testGetPlayerIdForNextRound({
+    testSetTurnForNextRound({
       game,
       logPrefix,
       expected: userId,
-      debugCalls: [
-        [
-          `${logPrefix} getPlayerIdForNextRound single user "${userId}" won round "1", setting them as player for round "2"`,
-        ],
-      ],
-      traceCalls: [[`${logPrefix} getPlayerIdForNextRound nextRound: "2"`]],
+      debugCalls: [[`${logPrefix} single user "${userId}" won round "1", setting them as player for round "2"`]],
+      traceCalls: [[`${logPrefix} nextRound: "2"`]],
     })
   })
   it('returns first game order player if both drew last round', () => {
@@ -100,16 +92,16 @@ describe('set-turn-for-next-round', () => {
         }),
       ],
     })
-    testGetPlayerIdForNextRound({
+    testSetTurnForNextRound({
       game,
       logPrefix,
       expected: userId,
       debugCalls: [
         [
-          `${logPrefix} getPlayerIdForNextRound no single user won round "1", setting next player as "${userId}" for round "2" based on game order`,
+          `${logPrefix} no single user won round "1", setting next player as "${userId}" for round "2" based on game order`,
         ],
       ],
-      traceCalls: [[`${logPrefix} getPlayerIdForNextRound nextRound: "2"`]],
+      traceCalls: [[`${logPrefix} nextRound: "2"`]],
     })
   })
   it('returns second game order player if both drew last round', () => {
@@ -136,16 +128,16 @@ describe('set-turn-for-next-round', () => {
         }),
       ],
     })
-    testGetPlayerIdForNextRound({
+    testSetTurnForNextRound({
       game,
       logPrefix,
       expected: userId,
       debugCalls: [
         [
-          `${logPrefix} getPlayerIdForNextRound no single user won round "1", setting next player as "${userId}" for round "2" based on game order`,
+          `${logPrefix} no single user won round "1", setting next player as "${userId}" for round "2" based on game order`,
         ],
       ],
-      traceCalls: [[`${logPrefix} getPlayerIdForNextRound nextRound: "2"`]],
+      traceCalls: [[`${logPrefix} nextRound: "2"`]],
     })
   })
   it('returns last round winner if first player won', () => {
@@ -170,26 +162,22 @@ describe('set-turn-for-next-round', () => {
         }),
       ],
     })
-    testGetPlayerIdForNextRound({
+    testSetTurnForNextRound({
       game,
       logPrefix,
       expected: userId,
-      debugCalls: [
-        [
-          `${logPrefix} getPlayerIdForNextRound single user "${userId}" won round "1", setting them as player for round "2"`,
-        ],
-      ],
+      debugCalls: [[`${logPrefix} single user "${userId}" won round "1", setting them as player for round "2"`]],
       traceEnabled: true,
       traceCalls: [
-        [`${logPrefix} getPlayerIdForNextRound nextRound: "2"`],
-        [`${logPrefix} getPlayerIdForNextRound usersByOrder: "${JSON.stringify([game.players[0], game.players[1]])}"`],
-        [`${logPrefix} getPlayerIdForNextRound roundWinners: "${JSON.stringify([userId])}"`],
+        [`${logPrefix} nextRound: "2"`],
+        [`${logPrefix} usersByOrder: "${JSON.stringify([game.players[0], game.players[1]])}"`],
+        [`${logPrefix} roundWinners: "${JSON.stringify([userId])}"`],
       ],
     })
   })
 })
 
-function testGetPlayerIdForNextRound({
+function testSetTurnForNextRound({
   game,
   logPrefix,
   expected,
@@ -217,7 +205,8 @@ function testGetPlayerIdForNextRound({
       game,
       logPrefix,
     })
-  ).toEqual(expected)
+  ).toEqual(undefined)
+  expect(game.turn).toEqual(expected)
 
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)

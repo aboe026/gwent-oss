@@ -33,11 +33,11 @@ export default class SetNextTurnForCurrentRound {
     SetNextTurnForCurrentRound.logger.trace(`${logPrefix} currentPlayerOrder: "${currentPlayerOrder}"`)
     if (currentPlayerOrder === undefined || currentPlayerOrder === null) {
       const message = `Could not determine order of current player "${currentPlayer.user}": "${currentPlayerOrder}".`
-      SetNextTurnForCurrentRound.logger.error(`${logPrefix} setNextTurnForCurrentRound failed: ${message}`)
+      SetNextTurnForCurrentRound.logger.error(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
     }
     for (let i = 0; i < game.players.length && nextPlayerId === undefined; i++) {
-      SetNextTurnForCurrentRound.logger.trace(`${logPrefix} setNextTurnForCurrentRound i: "${i}"`)
+      SetNextTurnForCurrentRound.logger.trace(`${logPrefix} i: "${i}"`)
       if (currentPlayer.order !== undefined) {
         const potentialNextPlayer = usersByOrder[(currentPlayerOrder + i + 1) % game.players.length]
         if (SetNextTurnForCurrentRound.logger.isTraceEnabled()) {

@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 
+import deepClone from '../util/deep-clone'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import TestUtil from '../util/test-util'
 import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/util/set-next-turn-for-current-round'
@@ -12,15 +13,15 @@ describe('set-next-turn-for-current-round', () => {
       user: userId,
     })
     const message = `Could not determine order of current player "${userId}": "undefined".`
-    testGetNextPlayerIdForCurrentRound({
+    testSetNextTurnForCurrentRound({
       game: TestUtil.getDbGame({
         players: [player],
         turn: player.user,
       }),
       logPrefix,
       expected: Error(message),
-      errorCalls: [[`${logPrefix} getNextPlayerIdForCurrentRound failed: ${message}`]],
-      traceCalls: [[`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "undefined"`]],
+      errorCalls: [[`${logPrefix} failed: ${message}`]],
+      traceCalls: [[`${logPrefix} currentPlayerOrder: "undefined"`]],
     })
   })
   it('throws error if both players have passed in the current round', () => {
@@ -42,7 +43,7 @@ describe('set-next-turn-for-current-round', () => {
       ],
     })
     const message = 'Could not determine next player for round "1".'
-    testGetNextPlayerIdForCurrentRound({
+    testSetNextTurnForCurrentRound({
       game: TestUtil.getDbGame({
         players: [player1, player2],
         round: 1,
@@ -52,15 +53,11 @@ describe('set-next-turn-for-current-round', () => {
       expected: Error(message),
       errorCalls: [[`${logPrefix} failed: ${message}`]],
       traceCalls: [
-        [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-        [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        [
-          `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
-        ],
-        [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
-        [
-          `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
-        ],
+        [`${logPrefix} currentPlayerOrder: "0"`],
+        [`${logPrefix} i: "0"`],
+        [`${logPrefix} player "${player2.user}" has already passed, ignoring for next player.`],
+        [`${logPrefix} i: "1"`],
+        [`${logPrefix} player "${player1.user}" has already passed, ignoring for next player.`],
       ],
     })
   })
@@ -75,7 +72,7 @@ describe('set-next-turn-for-current-round', () => {
         order: 1,
         rounds: [TestUtil.getDbPlayerRound({})],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
@@ -83,15 +80,8 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player2.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        ],
+        debugCalls: [[`${logPrefix} player "${player2.user}" has not yet passed, setting as next player.`]],
+        traceCalls: [[`${logPrefix} currentPlayerOrder: "0"`], [`${logPrefix} i: "0"`]],
       })
     })
     it('returns first player in turn order when second players turn and first player has not passed', () => {
@@ -104,7 +94,7 @@ describe('set-next-turn-for-current-round', () => {
         order: 1,
         rounds: [TestUtil.getDbPlayerRound({})],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
@@ -112,15 +102,8 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player1.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        ],
+        debugCalls: [[`${logPrefix} player "${player1.user}" has not yet passed, setting as next player.`]],
+        traceCalls: [[`${logPrefix} currentPlayerOrder: "1"`], [`${logPrefix} i: "0"`]],
       })
     })
     it('returns first player in turn order when first players turn and second player has passed', () => {
@@ -137,7 +120,7 @@ describe('set-next-turn-for-current-round', () => {
           }),
         ],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
@@ -145,18 +128,12 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player1.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} player "${player1.user}" has not yet passed, setting as next player.`]],
         traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
-          ],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          [`${logPrefix} currentPlayerOrder: "0"`],
+          [`${logPrefix} i: "0"`],
+          [`${logPrefix} player "${player2.user}" has already passed, ignoring for next player.`],
+          [`${logPrefix} i: "1"`],
         ],
       })
     })
@@ -174,7 +151,7 @@ describe('set-next-turn-for-current-round', () => {
         order: 1,
         rounds: [TestUtil.getDbPlayerRound({})],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 1,
@@ -182,18 +159,12 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player2.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} player "${player2.user}" has not yet passed, setting as next player.`]],
         traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
-          ],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          [`${logPrefix} currentPlayerOrder: "1"`],
+          [`${logPrefix} i: "0"`],
+          [`${logPrefix} player "${player1.user}" has already passed, ignoring for next player.`],
+          [`${logPrefix} i: "1"`],
         ],
       })
     })
@@ -219,7 +190,7 @@ describe('set-next-turn-for-current-round', () => {
           TestUtil.getDbPlayerRound({}),
         ],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 2,
@@ -227,15 +198,8 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player2.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        ],
+        debugCalls: [[`${logPrefix} player "${player2.user}" has not yet passed, setting as next player.`]],
+        traceCalls: [[`${logPrefix} currentPlayerOrder: "0"`], [`${logPrefix} i: "0"`]],
       })
     })
     it('returns first player in turn order when second players turn and first player has not passed', () => {
@@ -258,7 +222,7 @@ describe('set-next-turn-for-current-round', () => {
           TestUtil.getDbPlayerRound({}),
         ],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 2,
@@ -266,15 +230,8 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player1.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        ],
+        debugCalls: [[`${logPrefix} player "${player1.user}" has not yet passed, setting as next player.`]],
+        traceCalls: [[`${logPrefix} currentPlayerOrder: "1"`], [`${logPrefix} i: "0"`]],
       })
     })
     it('returns first player in turn order when first players turn and second player has passed', () => {
@@ -299,7 +256,7 @@ describe('set-next-turn-for-current-round', () => {
           }),
         ],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 2,
@@ -307,18 +264,12 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player1.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} player "${player1.user}" has not yet passed, setting as next player.`]],
         traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
-          ],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          [`${logPrefix} currentPlayerOrder: "0"`],
+          [`${logPrefix} i: "0"`],
+          [`${logPrefix} player "${player2.user}" has already passed, ignoring for next player.`],
+          [`${logPrefix} i: "1"`],
         ],
       })
     })
@@ -344,7 +295,7 @@ describe('set-next-turn-for-current-round', () => {
           TestUtil.getDbPlayerRound({}),
         ],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 2,
@@ -352,18 +303,12 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player2.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} player "${player2.user}" has not yet passed, setting as next player.`]],
         traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
-          ],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          [`${logPrefix} currentPlayerOrder: "1"`],
+          [`${logPrefix} i: "0"`],
+          [`${logPrefix} player "${player1.user}" has already passed, ignoring for next player.`],
+          [`${logPrefix} i: "1"`],
         ],
       })
     })
@@ -395,7 +340,7 @@ describe('set-next-turn-for-current-round', () => {
           TestUtil.getDbPlayerRound({}),
         ],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 3,
@@ -403,15 +348,8 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player2.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        ],
+        debugCalls: [[`${logPrefix} player "${player2.user}" has not yet passed, setting as next player.`]],
+        traceCalls: [[`${logPrefix} currentPlayerOrder: "0"`], [`${logPrefix} i: "0"`]],
       })
     })
     it('returns first player in turn order when second players turn and first player has not passed', () => {
@@ -440,7 +378,7 @@ describe('set-next-turn-for-current-round', () => {
           TestUtil.getDbPlayerRound({}),
         ],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 3,
@@ -448,15 +386,8 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player1.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
-        traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        ],
+        debugCalls: [[`${logPrefix} player "${player1.user}" has not yet passed, setting as next player.`]],
+        traceCalls: [[`${logPrefix} currentPlayerOrder: "1"`], [`${logPrefix} i: "0"`]],
       })
     })
     it('returns first player in turn order when first players turn and second player has passed', () => {
@@ -487,7 +418,7 @@ describe('set-next-turn-for-current-round', () => {
           }),
         ],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 3,
@@ -495,18 +426,12 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player1.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} player "${player1.user}" has not yet passed, setting as next player.`]],
         traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has already passed, ignoring for next player.`,
-          ],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          [`${logPrefix} currentPlayerOrder: "0"`],
+          [`${logPrefix} i: "0"`],
+          [`${logPrefix} player "${player2.user}" has already passed, ignoring for next player.`],
+          [`${logPrefix} i: "1"`],
         ],
       })
     })
@@ -538,7 +463,7 @@ describe('set-next-turn-for-current-round', () => {
           TestUtil.getDbPlayerRound({}),
         ],
       })
-      testGetNextPlayerIdForCurrentRound({
+      testSetNextTurnForCurrentRound({
         game: TestUtil.getDbGame({
           players: [player1, player2],
           round: 3,
@@ -546,18 +471,12 @@ describe('set-next-turn-for-current-round', () => {
         }),
         logPrefix,
         expected: player2.user,
-        debugCalls: [
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
-          ],
-        ],
+        debugCalls: [[`${logPrefix} player "${player2.user}" has not yet passed, setting as next player.`]],
         traceCalls: [
-          [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "1"`],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-          [
-            `${logPrefix} getNextPlayerIdForCurrentRound player "${player1.user}" has already passed, ignoring for next player.`,
-          ],
-          [`${logPrefix} getNextPlayerIdForCurrentRound i: "1"`],
+          [`${logPrefix} currentPlayerOrder: "1"`],
+          [`${logPrefix} i: "0"`],
+          [`${logPrefix} player "${player1.user}" has already passed, ignoring for next player.`],
+          [`${logPrefix} i: "1"`],
         ],
       })
     })
@@ -572,7 +491,7 @@ describe('set-next-turn-for-current-round', () => {
       order: 1,
       rounds: [TestUtil.getDbPlayerRound({})],
     })
-    testGetNextPlayerIdForCurrentRound({
+    testSetNextTurnForCurrentRound({
       game: TestUtil.getDbGame({
         players: [player1, player2],
         round: 1,
@@ -581,22 +500,18 @@ describe('set-next-turn-for-current-round', () => {
       logPrefix,
       expected: player2.user,
       traceEnabled: true,
-      debugCalls: [
-        [
-          `${logPrefix} getNextPlayerIdForCurrentRound player "${player2.user}" has not yet passed, setting as next player.`,
-        ],
-      ],
+      debugCalls: [[`${logPrefix} player "${player2.user}" has not yet passed, setting as next player.`]],
       traceCalls: [
-        [`${logPrefix} getNextPlayerIdForCurrentRound usersByOrder: "${JSON.stringify([player1, player2])}"`],
-        [`${logPrefix} getNextPlayerIdForCurrentRound currentPlayerOrder: "0"`],
-        [`${logPrefix} getNextPlayerIdForCurrentRound i: "0"`],
-        [`${logPrefix} getNextPlayerIdForCurrentRound potentialNextPlayer: "${JSON.stringify(player2)}"`],
+        [`${logPrefix} usersByOrder: "${JSON.stringify([player1, player2])}"`],
+        [`${logPrefix} currentPlayerOrder: "0"`],
+        [`${logPrefix} i: "0"`],
+        [`${logPrefix} potentialNextPlayer: "${JSON.stringify(player2)}"`],
       ],
     })
   })
 })
 
-function testGetNextPlayerIdForCurrentRound({
+function testSetNextTurnForCurrentRound({
   game,
   logPrefix,
   expected,
@@ -613,6 +528,7 @@ function testGetNextPlayerIdForCurrentRound({
   traceEnabled?: boolean
   traceCalls?: string[][]
 }) {
+  const origGame = deepClone(game)
   const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -636,8 +552,9 @@ function testGetNextPlayerIdForCurrentRound({
         game,
         logPrefix,
       })
-    ).toEqual(expected)
+    ).toEqual(undefined)
   }
+  expect(game.turn).toEqual(expected instanceof Error ? origGame.turn : expected)
 
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)

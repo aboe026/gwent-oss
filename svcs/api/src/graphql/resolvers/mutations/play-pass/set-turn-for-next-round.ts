@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import { GameDbObject, GamePlayerDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
 import { sortObjectArray } from '@gwent/utils'
@@ -14,6 +15,7 @@ export default class SetTurnForNextRound {
    * @returns The ID of the player who should start the next round.
    */
   static setTurnForNextRound({ game, logPrefix }: { game: GameDbObject; logPrefix: string }) {
+    let nextRoundUser: ObjectId
     SetTurnForNextRound.logger.trace(`${logPrefix} nextRound: "${game.round + 1}"`)
     const usersByOrder: GamePlayerDbObject[] = sortObjectArray({
       array: game.players,
@@ -32,23 +34,23 @@ export default class SetTurnForNextRound {
         `${logPrefix} roundWinners: "${JSON.stringify(roundWinners.map((roundWinner) => roundWinner.user))}"`
       )
     }
+
     if (roundWinners.length === 1) {
-      const nextUser = roundWinners[0].user
+      nextRoundUser = roundWinners[0].user
       SetTurnForNextRound.logger.debug(
-        `${logPrefix} single user "${nextUser}" won round "${game.round}", setting them as player for round "${
+        `${logPrefix} single user "${nextRoundUser}" won round "${game.round}", setting them as player for round "${
           game.round + 1
         }"`
       )
-      return nextUser
+    } else {
+      nextRoundUser = usersByOrder[game.round % game.players.length].user
+      SetTurnForNextRound.logger.debug(
+        `${logPrefix} no single user won round "${game.round}", setting next player as "${nextRoundUser}" for round "${
+          game.round + 1
+        }" based on game order`
+      )
     }
 
-    const nextUser = usersByOrder[game.round % game.players.length].user
-    SetTurnForNextRound.logger.debug(
-      `${logPrefix} no single user won round "${game.round}", setting next player as "${nextUser}" for round "${
-        game.round + 1
-      }" based on game order`
-    )
-
-    game.turn = nextUser
+    game.turn = nextRoundUser
   }
 }
