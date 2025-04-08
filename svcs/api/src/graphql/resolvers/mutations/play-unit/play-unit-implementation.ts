@@ -76,6 +76,10 @@ export default class PlayUnitImplementation {
 
     const updatedGame = await GameStore.save(game)
 
+    if (PlayUnitImplementation.logger.isTraceEnabled()) {
+      PlayUnitImplementation.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
+    }
+
     if (!updatedGame) {
       const message = 'Could not play unit in probable race condition collision.'
       PlayUnitImplementation.logger.error(`${logPrefix} failed: ${message}`)
