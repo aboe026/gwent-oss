@@ -74,6 +74,11 @@ export default class PlayUnitValidation {
     const units = await UnitStore.get({
       ids: [unitId],
     })
+
+    if (PlayUnitValidation.logger.isTraceEnabled()) {
+      PlayUnitValidation.logger.trace(`${logPrefix} units: "${JSON.stringify(units)}"`)
+    }
+
     if (units.length === 0) {
       const message = 'Unit does not exist.'
       PlayUnitValidation.logger.error(`${logPrefix} failed: ${message}`)
