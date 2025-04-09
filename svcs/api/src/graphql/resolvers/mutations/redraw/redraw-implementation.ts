@@ -22,7 +22,6 @@ export default class RedrawImplementation {
    * @throws PresentableError if problem redrawing unit.
    */
   static async redrawImplementation({ game, logPrefix, unitId, userId }: ValidatedRedraw): Promise<ImplementedRedraw> {
-    // TODO: make input reference Validated interface if they are always the same
     const { from, to } = RedrawUnit.redrawUnit({
       game,
       logPrefix,
@@ -35,6 +34,7 @@ export default class RedrawImplementation {
     if (RedrawImplementation.logger.isTraceEnabled()) {
       RedrawImplementation.logger.trace(`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`)
     }
+
     if (!updatedGame) {
       const message = 'Could not redraw unit in probable race condition collision.'
       RedrawImplementation.logger.error(`${logPrefix} failed: ${message}`)
