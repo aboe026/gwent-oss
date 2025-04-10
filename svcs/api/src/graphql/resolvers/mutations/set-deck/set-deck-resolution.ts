@@ -34,9 +34,12 @@ export default class SetDeckResolution {
     gameDeck: GameDeckDbObject
     logPrefix: string
   }): Promise<GameDeck> {
-    const resolvedDeck = await GameDeckResolver.fromObject({
+    const resolvedGameDeck = await GameDeckResolver.fromObject({
       gameDeck,
     })
+    if (SetDeckResolution.logger.isTraceEnabled()) {
+      SetDeckResolution.logger.trace(`${logPrefix} resolvedGameDeck: "${JSON.stringify(resolvedGameDeck)}"`)
+    }
     const resolvedGame = await GameResolver.fromObject({
       game,
     })
@@ -46,12 +49,13 @@ export default class SetDeckResolution {
 
     EventManager.pubsub.publish(PubSubEvents.DeckSet, {
       deckSet: {
-        deck: resolvedDeck,
+        deck: resolvedGameDeck,
         game: resolvedGame,
       },
     } as DeckSetPayload)
 
     if (game.status === GameStatus.Ordering) {
+      SetDeckResolution.logger.debug(`${logPrefix} All decks set, attempting to set order automatically.`)
       EventManager.pubsub.publish(PubSubEvents.GameSet, {
         gameSet: resolvedGame,
       } as GameSetPayload)
@@ -69,11 +73,13 @@ export default class SetDeckResolution {
         ) {
           // swallow
         } else {
-          throw err
+          const message = 'Could not set game turn order automatically'
+          SetDeckResolution.logger.error(`${logPrefix} failed: ${message}: ${err}`)
+          throw new PresentableError(`${message}.`)
         }
       }
     }
 
-    return resolvedDeck
+    return resolvedGameDeck
   }
 }
