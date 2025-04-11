@@ -121,7 +121,7 @@ async function fileExists(filePath: string): Promise<boolean> {
  * @param milliseconds The amount of time (in milliseconds) to sleep/wait/pause execution.
  */
 async function sleep(milliseconds: number): Promise<void> {
-  await new Promise((resolve) => {
+  return new Promise((resolve) => {
     setTimeout(resolve, milliseconds)
   })
 }
