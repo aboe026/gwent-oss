@@ -7,19 +7,24 @@ import PresentableError from '../../../../util/presentable-error'
 import { ValidatedAddDeck } from './add-deck-validation'
 
 /**
- * A class for executing the addDeck GraphQL Mutation.
+ * A class for implementing the addDeck GraphQL Mutation.
  */
 export default class AddDeckImplementation {
   private static logger = getLogger('AddDeck')
 
   /**
-   * Add a Deck for a user.
+   * Add a Deck for a user, saving it to the database.
    *
-   * @param args The arguments for adding a deck.
-   * @param context The session containing the user adding the deck.
-   * @param info The information about the GraphQL request.
-   * @returns The Deck that was added.
-   * @throws PresentableError if problem adding deck.
+   * @param config The configuration used to add the deck.
+   * @param config.deckUnits The DeckUnits which comprise the deck.
+   * @param config.faction The Faction the deck is being made of.
+   * @param config.leader The leader for the deck.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.name The name the deck should have to identify it.
+   * @param config.userId The ID of the User adding the deck.
+   * @returns The Deck that was created.
+   * @throws PresentableError if deck with name already exists.
+   * @throws Error if unforseen problem adding deck.
    */
   static async addDeckImplementation({
     deckUnits,

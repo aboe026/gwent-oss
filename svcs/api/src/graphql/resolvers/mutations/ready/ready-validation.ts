@@ -8,19 +8,18 @@ import { MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
 import ResolverUtil from '../../resolver-util'
 
 /**
- * A class for executing the ready GraphQL Mutation.
+ * A class for validating the ready GraphQL Mutation.
  */
 export default class ReadyValidation {
   private static logger = getLogger('ReadyValidation')
 
   /**
-   * Mark a Game as ready for a User. Prevents redrawing units after marked as ready.
+   * Validates the inputs for marking a game as ready.
    *
    * @param args The arguments for marking a game as ready.
    * @param context The session containing the user readying the game.
    * @param info The information about the GraphQL request.
-   * @returns The Game that is now ready for the user.
-   * @throws PresentableError if problem marking game as ready.
+   * @returns The information needed to mark the game as ready.
    */
   static async readyValidation(
     args: MutationReadyArgs,

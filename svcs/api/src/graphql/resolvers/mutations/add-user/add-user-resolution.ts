@@ -5,18 +5,18 @@ import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserResolver from '../../types/user-resolver'
 
 /**
- * A class for executing the addUser GraphQL Mutation.
+ * A class for resolving the addUser GraphQL Mutation.
  */
 export default class AddUserResolution {
   private static logger = getLogger('AddUserResolution')
 
   /**
-   * Add a User.
+   * Resolve a newly added user, passing it back on the request.
    *
-   * @param args The arguments for adding a user.
-   * @param info The information about the GraphQL request.
-   * @returns The User that was added.
-   * @throws PresentableError if problem adding user.
+   * @param config The configuration used to resolve the new user.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.user The newly created user.
+   * @returns The User that was added with fields resolved.
    */
   static addUserResolution({ logPrefix, user }: { logPrefix: string; user: UserDbObject }): User {
     const resolvedUser = UserResolver.fromObject(user)

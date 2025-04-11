@@ -11,19 +11,20 @@ import { PubSubEvents } from '@gwent/constants'
 import SetGameTurnOrder from '../util/set-game-turn-order'
 
 /**
- * A class for executing the setDeck GraphQL Mutation.
+ * A class for resolving the setDeck GraphQL Mutation.
  */
 export default class SetDeckResolution {
   private static logger = getLogger('SetDeckResolution')
 
   /**
-   * Sets a Deck for a Game. Deck cannot be changed after set.
+   * Resolve a game after a deck has been set for it, passing it back on the request and publishing it for subscriptions.
    *
-   * @param args The arguments for setting a deck.
-   * @param context The session containing the user setting the deck.
-   * @param info The information about the GraphQL request.
-   * @returns The GameDeck that was set for the game.
-   * @throws PresentableError if problem setting deck.
+   * @param config The configuration used to resolve the game with deck set.
+   * @param config.game The game with the deck set for it.
+   * @param config.gameDeck The GameDeck for the user after the deck was set on the game.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @returns The GameDeck that was set for the game with fields resolved.
+   * @throws PresentableError if known problem setting deck.
    */
   static async setDeckResolution({
     game,

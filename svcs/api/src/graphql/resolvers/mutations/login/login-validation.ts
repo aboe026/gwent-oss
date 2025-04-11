@@ -8,19 +8,18 @@ import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 import UserStore from '../../../../database/stores/user-store'
 
 /**
- * A class for executing the login GraphQL Mutation.
+ * A class for validating the login GraphQL Mutation.
  */
 export default class LoginValidation {
   private static logger = getLogger('LoginValidation')
 
   /**
-   * Authenticate a user session.
+   * Validates the inputs for logging in a user.
    *
    * @param args The arguments for logging in a user.
-   * @param context The session to add the user to if valid.
    * @param info The information about the GraphQL request.
-   * @returns The User that was successfully logged in.
-   * @throws PresentableError if problem authenticating user.
+   * @returns The information needed to log in the user.
+   * @throws PresentableError if known problem authenticating user.
    */
   static async loginValidation(
     args: MutationLoginArgs,

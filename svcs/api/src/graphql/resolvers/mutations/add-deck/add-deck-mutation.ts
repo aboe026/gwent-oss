@@ -16,7 +16,6 @@ export default class AddDeckMutation {
    * @param context The session containing the user adding the deck.
    * @param info The information about the GraphQL request.
    * @returns The Deck that was added.
-   * @throws PresentableError if problem adding deck.
    */
   static async addDeckMutation(args: MutationAddDeckArgs, context: Context, info: GraphQLResolveInfo): Promise<Deck> {
     const {

@@ -16,7 +16,6 @@ export default class PlayPassMutation {
    * @param context The session containing the user passing.
    * @param info The information about the GraphQL request.
    * @returns The Game with the round passed for the user.
-   * @throws PresentableError if problem playing pass.
    */
   static async playPassMutation(args: MutationPlayPassArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const {

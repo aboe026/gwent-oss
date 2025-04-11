@@ -4,19 +4,18 @@ import { Context } from '@gwent/graphql-schema/context'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 
 /**
- * A class for executing the login GraphQL Mutation.
+ * A class for implementing the login GraphQL Mutation.
  */
 export default class LoginImplementation {
   private static logger = getLogger('LoginImplementation')
 
   /**
-   * Authenticate a user session.
+   * Authenticate a user session, adding them to the context.
    *
-   * @param args The arguments for logging in a user.
-   * @param context The session to add the user to if valid.
-   * @param info The information about the GraphQL request.
-   * @returns The User that was successfully logged in.
-   * @throws PresentableError if problem authenticating user.
+   * @param config The configuration used to login the user.
+   * @param config.context The GraphQL context on which to save the user to use for authentication and authorization on subsequent queries/mutations/subscriptions.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.user The user to set on the context.
    */
   static loginImplementation({
     context,

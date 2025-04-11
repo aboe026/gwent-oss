@@ -4,17 +4,18 @@ import { ObjectId } from 'mongodb'
 import { Context } from '@gwent/graphql-schema/context'
 
 /**
- * A class for executing the logout GraphQL Mutation.
+ * A class for implementing the logout GraphQL Mutation.
  */
 export default class LogoutImplementation {
   private static logger = getLogger('LogoutImplementation')
 
   /**
-   * Remove a user's session.
+   * Remove a user's session from the GraphQL context so they are not longer authenticated.
    *
-   * @param args The arguments for logging out a user.
-   * @param context The session to remove the user from valid.
-   * @param info The information about the GraphQL request.
+   * @param config The configuration used to logout the user.
+   * @param config.context The GraphQL context to remove the user from.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.userId The ID of the user to log out.
    * @returns True if the user was successfully removed from the session, false otherwise.
    */
   static logoutImplementation({

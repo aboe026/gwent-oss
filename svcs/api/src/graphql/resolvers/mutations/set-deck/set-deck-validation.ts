@@ -10,19 +10,19 @@ import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 
 /**
- * A class for executing the setDeck GraphQL Mutation.
+ * A class for validating the setDeck GraphQL Mutation.
  */
 export default class SetDeckValidation {
   private static logger = getLogger('SetDeckValidation')
 
   /**
-   * Sets a Deck for a Game. Deck cannot be changed after set.
+   * Validates the inputs for setting a deck for a game.
    *
    * @param args The arguments for setting a deck.
    * @param context The session containing the user setting the deck.
    * @param info The information about the GraphQL request.
-   * @returns The GameDeck that was set for the game.
-   * @throws PresentableError if problem setting deck.
+   * @returns The information needed to set the deck.
+   * @throws PresentableError if known problem setting deck.
    */
   static async setDeckValidation(
     args: MutationSetDeckArgs,

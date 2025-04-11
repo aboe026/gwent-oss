@@ -11,19 +11,22 @@ import { PubSubEvents } from '@gwent/constants'
 import { UnitRedrawnPayload } from '../../subscription-resolver'
 
 /**
- * A class for executing the redraw GraphQL Mutation.
+ * A class for resolving the redraw GraphQL Mutation.
  */
 export default class RedrawResolution {
   private static logger = getLogger('RedrawResolution')
 
   /**
-   * Redraw a Unit for a Game for a random Unit from their undrawn Units.
+   * Resolve a game with a unit redrawn, passing it back on the request and publishing it for subscriptions.
    *
-   * @param args The arguments for redrawing a unit.
-   * @param context The session containing the user redrawing the unit.
-   * @param info The information about the GraphQL request.
-   * @returns The random DeckUnit that replaces their redrawn Unit in their hand.
-   * @throws PresentableError if problem redrawing unit.
+   * @param config The configuration used to resolve the game with unit redrawn.
+   * @param config.from The unit that was chosen to be redrawn.
+   * @param config.game The game which had the unit redrawn on.
+   * @param config.gameDeck The GameDeck after the unit was redrawn.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.to The deck unit that was randomly selected to replace the from unit.
+   * @returns The random DeckUnit that replaces their redrawn Unit in their hand with fields resolved.
+   * @throws PresentableError if known problem resolving redrawn unit.
    */
   static async redrawResolution({
     from,

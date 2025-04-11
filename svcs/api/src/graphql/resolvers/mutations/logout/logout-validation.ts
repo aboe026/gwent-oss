@@ -6,18 +6,17 @@ import { GraphQLResolveInfo } from 'graphql'
 import ResolverUtil from '../../resolver-util'
 
 /**
- * A class for executing the logout GraphQL Mutation.
+ * A class for validating the logout GraphQL Mutation.
  */
 export default class LogoutValidation {
   private static logger = getLogger('LogoutValidation')
 
   /**
-   * Remove a user's session.
+   * Validates the inputs for removing a users session.
    *
-   * @param args The arguments for logging out a user.
    * @param context The session to remove the user from valid.
    * @param info The information about the GraphQL request.
-   * @returns True if the user was successfully removed from the session, false otherwise.
+   * @returns The information needed to remove the session for a user.
    */
   static logoutValidation(context: Context, info: GraphQLResolveInfo): ValidatedLogout {
     const resolverUtil = new ResolverUtil({

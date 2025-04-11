@@ -17,19 +17,19 @@ import SetTurnForNextRound from './set-turn-for-next-round'
 import { ValidatedPlayPass } from './play-pass-validation'
 
 /**
- * A class for executing the playPass GraphQL Mutation.
+ * A class for implementing the playPass GraphQL Mutation.
  */
 export default class PlayPassImplementation {
   private static logger = getLogger('PlayPassImplementation')
 
   /**
-   * Pass the rest of the round for a user. Once a round is passed, the user can no longer play units the rest of the round.
+   * Pass the rest of the round for a user, saving the impact that has on the game to the database.
    *
-   * @param args The arguments for passing the round.
-   * @param context The session containing the user passing.
-   * @param info The information about the GraphQL request.
-   * @returns The Game with the round passed for the user.
-   * @throws PresentableError if problem playing pass.
+   * @param config The configuration used to pass on the game.
+   * @param config.game The game to pass the rest of the round for the current user.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @returns The Game with the round passed for the user as well as if the round is over or not.
+   * @throws PresentableError if known problem playing pass.
    */
   static async playPassImplementation({ game, logPrefix }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
     passCurrentPlayer(game)

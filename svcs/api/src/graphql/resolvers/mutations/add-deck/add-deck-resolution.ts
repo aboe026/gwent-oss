@@ -10,19 +10,21 @@ import { PubSubEvents } from '@gwent/constants'
 import { DeckDbObject, FactionDbObject, LeaderDbObject } from '@gwent/graphql-schema/database-typings'
 
 /**
- * A class for executing the addDeck GraphQL Mutation.
+ * A class for resolving the addDeck GraphQL Mutation.
  */
 export default class AddDeckResolution {
   private static logger = getLogger('AddDeckResolution')
 
   /**
-   * Add a Deck for a user.
+   * Resolve a newly added deck for a user, passing it back on the request and publishing it for subscriptions.
    *
-   * @param args The arguments for adding a deck.
-   * @param context The session containing the user adding the deck.
-   * @param info The information about the GraphQL request.
-   * @returns The Deck that was added.
-   * @throws PresentableError if problem adding deck.
+   * @param config The configuration used to resolve the new deck.
+   * @param config.deck The new deck that was added.
+   * @param config.deckUnits The DeckUnits that comprise the new deck.
+   * @param config.faction The faction the new deck was created for.
+   * @param config.leader The leader for the new deck.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @returns The Deck that was added with fields resolved.
    */
   static async addDeckResolution({
     deck,

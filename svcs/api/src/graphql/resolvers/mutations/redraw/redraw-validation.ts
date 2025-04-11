@@ -10,19 +10,19 @@ import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 
 /**
- * A class for executing the redraw GraphQL Mutation.
+ * A class for validating the redraw GraphQL Mutation.
  */
 export default class RedrawValidation {
   private static logger = getLogger('RedrawValidation')
 
   /**
-   * Redraw a Unit for a Game for a random Unit from their undrawn Units.
+   * Validates the inputs for redrawing a unit for a game.
    *
    * @param args The arguments for redrawing a unit.
    * @param context The session containing the user redrawing the unit.
    * @param info The information about the GraphQL request.
-   * @returns The random DeckUnit that replaces their redrawn Unit in their hand.
-   * @throws PresentableError if problem redrawing unit.
+   * @returns The information needed to redraw the unit.
+   * @throws PresentableError if known problem redrawing unit.
    */
   static async redrawValidation(
     args: MutationRedrawArgs,

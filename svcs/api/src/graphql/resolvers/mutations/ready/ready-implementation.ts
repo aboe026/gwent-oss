@@ -7,19 +7,20 @@ import PresentableError from '../../../../util/presentable-error'
 import { ValidatedReady } from './ready-validation'
 
 /**
- * A class for executing the ready GraphQL Mutation.
+ * A class for implementing the ready GraphQL Mutation.
  */
 export default class ReadyImplementation {
   private static logger = getLogger('ReadyImplementation')
 
   /**
-   * Mark a Game as ready for a User. Prevents redrawing units after marked as ready.
+   * Mark a Game as ready for a User, saving the impact that has on the game to the database.
    *
-   * @param args The arguments for marking a game as ready.
-   * @param context The session containing the user readying the game.
-   * @param info The information about the GraphQL request.
+   * @param config The configuration used to mark the game as ready.
+   * @param config.game The game to mark as ready for.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.userId The ID of the User to mark as ready on the game.
    * @returns The Game that is now ready for the user.
-   * @throws PresentableError if problem marking game as ready.
+   * @throws PresentableError if known problem marking game as ready.
    */
   static async readyImplementation({ logPrefix, game, userId }: ValidatedReady): Promise<GameDbObject> {
     MarkPlayerReady.markPlayerReady({

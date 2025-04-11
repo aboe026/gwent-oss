@@ -7,18 +7,18 @@ import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
 import ResolverUtil from '../../resolver-util'
 
 /**
- * A class for executing the setOrder GraphQL Mutation.
+ * A class for validating the setOrder GraphQL Mutation.
  */
 export default class SetOrderValidation {
   private static logger = getLogger('SetOrderValidation')
 
   /**
-   * Set the player turn order for a Game.
+   * Validates the inputs for setting the turn order of a game.
    *
    * @param args The arguments for setting the order of a game.
    * @param context The session containing the user setting the order.
    * @param info The information about the GraphQL request.
-   * @returns The Game with player turn orders set.
+   * @returns The information needed to set the order of the game.
    */
   static async setOrderValidation(
     args: MutationSetOrderArgs,

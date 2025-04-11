@@ -12,19 +12,19 @@ import UserResolver from '../../types/user-resolver'
 import UserStore from '../../../../database/stores/user-store'
 
 /**
- * A class for executing the addGame GraphQL Mutation.
+ * A class for validating the addGame GraphQL Mutation.
  */
 export default class AddGameValidation {
   private static logger = getLogger('AddGameValidation')
 
   /**
-   * Add a Game for a user.
+   * Validates the inputs for adding a new game.
    *
    * @param args The arguments for adding a game.
    * @param context The session containing the user adding the game.
    * @param info The information about the GraphQL request.
-   * @returns The Game that was added.
-   * @throws PresentableError if problem adding game.
+   * @returns The information needed to add the game.
+   * @throws PresentableError if known problem adding game.
    */
   static async addGameValidation(
     args: MutationAddGameArgs,

@@ -8,19 +8,19 @@ import ResolverUtil from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
 
 /**
- * A class for executing the playUnit GraphQL Mutation.
+ * A class for validating the playUnit GraphQL Mutation.
  */
 export default class PlayUnitValidation {
   private static logger = getLogger('PlayUnitValidation')
 
   /**
-   * Play a unit for a user on a game.
+   * Validates the inputs for playing a unit in a game.
    *
    * @param args The arguments for playing the unit.
    * @param context The session containing the user playing the unit.
    * @param info The information about the GraphQL request.
-   * @returns The Game with the unit played for the user.
-   * @throws PresentableError if problem playing unit.
+   * @returns The information needed to play the unit in the game.
+   * @throws PresentableError if known problem playing unit.
    */
   static async playUnitValidation(
     args: MutationPlayUnitArgs,

@@ -13,19 +13,22 @@ import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
 import { ValidatedPlayUnit } from './play-unit-validation'
 
 /**
- * A class for executing the playUnit GraphQL Mutation.
+ * A class for implementing the playUnit GraphQL Mutation.
  */
 export default class PlayUnitImplementation {
   private static logger = getLogger('PlayUnitImplementation')
 
   /**
-   * Play a unit for a user on a game.
+   * Play a unit for a user on a game, saving the impacts that has to the game in the database.
    *
-   * @param args The arguments for playing the unit.
-   * @param context The session containing the user playing the unit.
-   * @param info The information about the GraphQL request.
-   * @returns The Game with the unit played for the user.
-   * @throws PresentableError if problem playing unit.
+   * @param config The configuration used to play the unit.
+   * @param config.combat The combat row the unit should be deployed to.
+   * @param config.deckUnit The DeckUnit being played.
+   * @param config.game The game the unit is being played for.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.unit The Unit being played.
+   * @returns The Game and GameDeck with the unit played for the user.
+   * @throws PresentableError if known problem playing unit.
    */
   static async playUnitImplementation({
     combat,

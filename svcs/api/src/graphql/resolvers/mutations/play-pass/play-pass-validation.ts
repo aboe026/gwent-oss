@@ -7,19 +7,19 @@ import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 
 /**
- * A class for executing the playPass GraphQL Mutation.
+ * A class for validating the playPass GraphQL Mutation.
  */
 export default class PlayPassValidation {
   private static logger = getLogger('PlayPassValidation')
 
   /**
-   * Pass the rest of the round for a user. Once a round is passed, the user can no longer play units the rest of the round.
+   * Validates the inputs for a user to pass in a game.
    *
    * @param args The arguments for passing the round.
    * @param context The session containing the user passing.
    * @param info The information about the GraphQL request.
-   * @returns The Game with the round passed for the user.
-   * @throws PresentableError if problem playing pass.
+   * @returns The information needed to pass in the game.
+   * @throws PresentableError if known problem playing pass.
    */
   static async playPassValidation(
     args: MutationPlayPassArgs,

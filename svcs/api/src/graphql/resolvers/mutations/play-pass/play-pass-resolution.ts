@@ -9,19 +9,19 @@ import { PassPlayedPayload, RoundEndedForDeckPayload } from '../../subscription-
 import { PubSubEvents } from '@gwent/constants'
 
 /**
- * A class for executing the playPass GraphQL Mutation.
+ * A class for resolving the playPass GraphQL Mutation.
  */
 export default class PlayPassResolution {
   private static logger = getLogger('PlayPassResolution')
 
   /**
-   * Pass the rest of the round for a user. Once a round is passed, the user can no longer play units the rest of the round.
+   * Resolve a game after a user has passed in it, passing it back on the request and publishing it for subscriptions.
    *
-   * @param args The arguments for passing the round.
-   * @param context The session containing the user passing.
-   * @param info The information about the GraphQL request.
-   * @returns The Game with the round passed for the user.
-   * @throws PresentableError if problem playing pass.
+   * @param config The configuration used to resolve the game with the pass played.
+   * @param config.game The game that was passed on.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.roundOver Whether or not the pass action resulted in the round ending.
+   * @returns The Game with the round passed for the user with all fields resolved.
    */
   static async playPassResolution({
     game,

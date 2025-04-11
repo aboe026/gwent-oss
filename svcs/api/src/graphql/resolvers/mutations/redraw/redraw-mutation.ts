@@ -1,5 +1,3 @@
-import { getLogger } from 'log4js'
-
 import { Context } from '@gwent/graphql-schema/context'
 import { DeckUnit, MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
@@ -11,10 +9,8 @@ import RedrawValidation from './redraw-validation'
  * A class for executing the redraw GraphQL Mutation.
  */
 export default class RedrawMutation {
-  private static logger = getLogger('RedrawMutation')
-
   /**
-   * Redraw a Unit for a Game for a random Unit from their undrawn Units.
+   * Redraw a Unit of a Game for a random Unit from their undrawn Units.
    *
    * @param args The arguments for redrawing a unit.
    * @param context The session containing the user redrawing the unit.

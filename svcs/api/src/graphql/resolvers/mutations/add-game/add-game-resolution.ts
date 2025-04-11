@@ -8,19 +8,19 @@ import GameResolver from '../../types/game-resolver'
 import { PubSubEvents } from '@gwent/constants'
 
 /**
- * A class for executing the addGame GraphQL Mutation.
+ * A class for resolving the addGame GraphQL Mutation.
  */
 export default class AddGameResolution {
   private static logger = getLogger('AddGameResolution')
 
   /**
-   * Add a Game for a user.
+   * Resolve a newly added game for a user, passing it back on the request and publishing it for subscriptions.
    *
-   * @param args The arguments for adding a game.
-   * @param context The session containing the user adding the game.
-   * @param info The information about the GraphQL request.
-   * @returns The Game that was added.
-   * @throws PresentableError if problem adding game.
+   * @param config The configuration used to resolve the new game.
+   * @param config.game The new game that was added.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.opponents The name of the opponents participating in the game.
+   * @returns The Game that was added with fields resolved.
    */
   static async addGameResolution({
     game,

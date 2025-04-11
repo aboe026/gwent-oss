@@ -8,19 +8,18 @@ import GameResolver from '../../types/game-resolver'
 import { PubSubEvents } from '@gwent/constants'
 
 /**
- * A class for executing the ready GraphQL Mutation.
+ * A class for resolving the ready GraphQL Mutation.
  */
 export default class ReadyResolution {
   private static logger = getLogger('ReadyResolution')
 
   /**
-   * Mark a Game as ready for a User. Prevents redrawing units after marked as ready.
+   * Resolve a game after it is marked as ready by a user, passing it back on the request and publishing it for subscriptions.
    *
-   * @param args The arguments for marking a game as ready.
-   * @param context The session containing the user readying the game.
-   * @param info The information about the GraphQL request.
-   * @returns The Game that is now ready for the user.
-   * @throws PresentableError if problem marking game as ready.
+   * @param config The configuration used to resolve the game marked as ready.
+   * @param config.game The game with the impact of the ready applied.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @returns The Game that is now ready for the user with fields resolved.
    */
   static async readyResolution({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({

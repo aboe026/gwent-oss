@@ -14,19 +14,19 @@ import UnitStore from '../../../../database/stores/unit-store'
 import { validateDeck } from '@gwent/validators'
 
 /**
- * A class for executing the addDeck GraphQL Mutation.
+ * A class for validating the addDeck GraphQL Mutation.
  */
 export default class AddDeckValidation {
   private static logger = getLogger('AddDeckValidation')
 
   /**
-   * Add a Deck for a user.
+   * Validates the inputs for adding a new deck.
    *
    * @param args The arguments for adding a deck.
    * @param context The session containing the user adding the deck.
    * @param info The information about the GraphQL request.
-   * @returns The Deck that was added.
-   * @throws PresentableError if problem adding deck.
+   * @returns The information needed to add the deck.
+   * @throws PresentableError if known problem adding deck.
    */
   static async addDeckValidation(
     args: MutationAddDeckArgs,

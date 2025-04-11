@@ -10,19 +10,20 @@ import { PubSubEvents } from '@gwent/constants'
 import { UnitPlayedFromDeckPayload, UnitPlayedOnGamePayload } from '../../subscription-resolver'
 
 /**
- * A class for executing the playUnit GraphQL Mutation.
+ * A class for resolving the playUnit GraphQL Mutation.
  */
 export default class PlayUnitResolution {
   private static logger = getLogger('PlayUnitResolution')
 
   /**
-   * Play a unit for a user on a game.
+   * Resolve a game after a unit has been played, passing it back on the request and publishing it for subscriptions.
    *
-   * @param args The arguments for playing the unit.
-   * @param context The session containing the user playing the unit.
-   * @param info The information about the GraphQL request.
-   * @returns The Game with the unit played for the user.
-   * @throws PresentableError if problem playing unit.
+   * @param config The configuration used to resolve the game with the unit played.
+   * @param config.deckUnit The DeckUnit which was played on the game.
+   * @param config.game The game updated with the impact of having the unit played on it.
+   * @param config.gameDeck The game deck after the unit has been played.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @returns The Game with the unit played for the user with fields resolved.
    */
   static async playUnitResolution({
     deckUnit,

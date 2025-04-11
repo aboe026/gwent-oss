@@ -16,7 +16,6 @@ export default class PlayUnitMutation {
    * @param context The session containing the user playing the unit.
    * @param info The information about the GraphQL request.
    * @returns The Game with the unit played for the user.
-   * @throws PresentableError if problem playing unit.
    */
   static async playUnitMutation(args: MutationPlayUnitArgs, context: Context, info: GraphQLResolveInfo): Promise<Game> {
     const {

@@ -7,19 +7,21 @@ import RedrawUnit from './redraw-unit'
 import { ValidatedRedraw } from './redraw-validation'
 
 /**
- * A class for executing the redraw GraphQL Mutation.
+ * A class for implemeting the redraw GraphQL Mutation.
  */
 export default class RedrawImplementation {
   private static logger = getLogger('RedrawImplementation')
 
   /**
-   * Redraw a Unit for a Game for a random Unit from their undrawn Units.
+   * Redraw a Unit of a Game for a random Unit from their undrawn Units, saving the new game deck to the database.
    *
-   * @param args The arguments for redrawing a unit.
-   * @param context The session containing the user redrawing the unit.
-   * @param info The information about the GraphQL request.
-   * @returns The random DeckUnit that replaces their redrawn Unit in their hand.
-   * @throws PresentableError if problem redrawing unit.
+   * @param config The configuration used to redraw the unit.
+   * @param config.game The game to redraw the unit on.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.unitId The ID of the unit to redraw.
+   * @param config.userId The ID of the user performing the redraw.
+   * @returns The updated game with both the unit to redraw and the random unit that replaced it.
+   * @throws PresentableError if known problem redrawing unit.
    */
   static async redrawImplementation({ game, logPrefix, unitId, userId }: ValidatedRedraw): Promise<ImplementedRedraw> {
     const { from, to } = RedrawUnit.redrawUnit({

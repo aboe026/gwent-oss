@@ -5,21 +5,21 @@ import GameStore from '../../../../database/stores/game-store'
 import { ValidatedAddGame } from './add-game-validation'
 
 /**
- * A class for executing the addGame GraphQL Mutation.
+ * A class for implementing the addGame GraphQL Mutation.
  */
 export default class AddGameImplementation {
   private static logger = getLogger('AddGameImplementation')
 
   /**
-   * Add a Game for a user.
+   * Add a Game for a user, saving it to the database.
    *
-   * @param args The arguments for adding a game.
-   * @param context The session containing the user adding the game.
-   * @param info The information about the GraphQL request.
+   * @param config The configuration used to add the game.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.opponents The names of the opponents to participate in the game.
+   * @param config.userId The ID of the user creating the game.
    * @returns The Game that was added.
-   * @throws PresentableError if problem adding game.
    */
-  static async AddGameImplementation({ userId, opponents, logPrefix }: ValidatedAddGame): Promise<GameDbObject> {
+  static async AddGameImplementation({ logPrefix, opponents, userId }: ValidatedAddGame): Promise<GameDbObject> {
     const game = await GameStore.add({
       creatorId: userId,
       opponentIds: opponents.map((opponent) => opponent.id),
