@@ -1,12 +1,12 @@
-import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
-import TestUtil from '../util/test-util'
-import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import EventManager from '../../src/graphql/event-manager'
-import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
-import SetDeckResolution from '../../src/graphql/resolvers/mutations/set-deck/set-deck-resolution'
-import { PubSubEvents } from '@gwent/constants'
 import { FactionKey, GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
+import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import PresentableError from '../../src/util/presentable-error'
+import { PubSubEvents } from '@gwent/constants'
+import SetDeckResolution from '../../src/graphql/resolvers/mutations/set-deck/set-deck-resolution'
+import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
+import TestUtil from '../util/test-util'
 
 describe('set-deck-resolution', () => {
   const logPrefix = 'log-prefix'

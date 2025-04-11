@@ -7,14 +7,13 @@ import { sortObjectArray } from '@gwent/utils'
 
 export default class SetNextTurnForCurrentRound {
   private static logger = getLogger('SetNextTurnForCurrentRound')
+
   /**
-   * Gets the ID of the player whose turn it is next in the current round.
+   * Sets the game turn to the player whose turn it is next in the current round.
    *
    * @param config The configuration of used to determine who the next eligible player is on the game.
-   * @param config.currentRound The current round the game is on.
-   * @param config.players The GamePlayers on the game.
-   * @param config.currentTurn The game player whose turn it currently is.
-   * @returns The ID of the player whose turn is next, otherwise an Error.
+   * @param config.game The game to set the turn on for the current round.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @throws PresentableError if there is a problem getting the next player.
    */
   static setNextTurnForCurrentRound({ game, logPrefix }: { game: GameDbObject; logPrefix: string }) {

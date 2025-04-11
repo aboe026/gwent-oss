@@ -1,8 +1,6 @@
 import * as addMoveToCurrentPlayer from '../../src/graphql/resolvers/mutations/util/add-move-to-current-player'
 import * as clearBattlefieldUnits from '../../src/graphql/resolvers/mutations/play-pass/clear-battlefield-units'
 import GameStore from '../../src/database/stores/game-store'
-import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/util/set-next-turn-for-current-round'
-import SetTurnForNextRound from '../../src/graphql/resolvers/mutations/play-pass/set-turn-for-next-round'
 import * as initializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
 import IsGameOver from '../../src/graphql/resolvers/mutations/play-pass/is-game-over'
 import IsRoundOver from '../../src/graphql/resolvers/mutations/play-pass/is-round-over'
@@ -10,7 +8,9 @@ import { MoveType } from '@gwent/graphql-schema'
 import * as passCurrentPlayer from '../../src/graphql/resolvers/mutations/play-pass/pass-current-player'
 import PlayPassImplementation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-implementation'
 import SetGameVictors from '../../src/graphql/resolvers/mutations/play-pass/set-game-victors'
+import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/util/set-next-turn-for-current-round'
 import SetRoundResults from '../../src/graphql/resolvers/mutations/play-pass/set-round-results'
+import SetTurnForNextRound from '../../src/graphql/resolvers/mutations/play-pass/set-turn-for-next-round'
 import TestUtil from '../util/test-util'
 
 describe('play-pass-implementation', () => {

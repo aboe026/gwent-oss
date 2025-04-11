@@ -1,8 +1,8 @@
 import { getLogger } from 'log4js'
 
 import PresentableError from '../../../../util/presentable-error'
-import UserStore from '../../../../database/stores/user-store'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
+import UserStore from '../../../../database/stores/user-store'
 import { ValidatedAddUser } from './add-user-validation'
 
 /**

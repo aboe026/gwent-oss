@@ -1,7 +1,7 @@
 import { GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
-import UnitStore from '../../src/database/stores/unit-store'
 import TestUtil from '../util/test-util'
+import UnitStore from '../../src/database/stores/unit-store'
 
 describe('get-round-units', () => {
   const unitBeingPlayed = TestUtil.getDbUnit({})

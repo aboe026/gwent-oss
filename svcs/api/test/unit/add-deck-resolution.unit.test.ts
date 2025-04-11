@@ -1,10 +1,10 @@
-import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
-import TestUtil from '../util/test-util'
+import AddDeckResolution from '../../src/graphql/resolvers/mutations/add-deck/add-deck-resolution'
 import DeckResolver from '../../src/graphql/resolvers/types/deck-resolver'
 import EventManager from '../../src/graphql/event-manager'
-import AddDeckResolution from '../../src/graphql/resolvers/mutations/add-deck/add-deck-resolution'
+import FactionResolver from '../../src/graphql/resolvers/types/faction-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
 import { PubSubEvents } from '@gwent/constants'
+import TestUtil from '../util/test-util'
 
 describe('add-deck-resolution', () => {
   it('returns resolved deck', async () => {

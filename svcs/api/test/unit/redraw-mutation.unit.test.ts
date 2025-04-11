@@ -2,9 +2,9 @@ import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import { MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
 import RedrawImplementation from '../../src/graphql/resolvers/mutations/redraw/redraw-implementation'
-import RedrawValidation from '../../src/graphql/resolvers/mutations/redraw/redraw-validation'
-import RedrawResolution from '../../src/graphql/resolvers/mutations/redraw/redraw-resolution'
 import RedrawMutation from '../../src/graphql/resolvers/mutations/redraw/redraw-mutation'
+import RedrawResolution from '../../src/graphql/resolvers/mutations/redraw/redraw-resolution'
+import RedrawValidation from '../../src/graphql/resolvers/mutations/redraw/redraw-validation'
 import TestUtil from '../util/test-util'
 
 describe('redraw-mutation', () => {

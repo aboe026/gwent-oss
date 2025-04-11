@@ -1,11 +1,11 @@
 import { Context } from '@gwent/graphql-schema/context'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import { MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
 import PlayPassImplementation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-implementation'
 import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-mutation'
 import PlayPassValidation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-validation'
 import PlayPassResolution from '../../src/graphql/resolvers/mutations/play-pass/play-pass-resolution'
 import TestUtil from '../util/test-util'
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 
 describe('play-pass-mutation', () => {
   describe('playPassMutation', () => {

@@ -1,8 +1,8 @@
 import { Context } from '@gwent/graphql-schema/context'
-import LogoutMutation from '../../src/graphql/resolvers/mutations/logout/logout-mutation'
-import TestUtil from '../util/test-util'
-import LogoutValidation from '../../src/graphql/resolvers/mutations/logout/logout-validation'
 import LogoutImplementation from '../../src/graphql/resolvers/mutations/logout/logout-implementation'
+import LogoutMutation from '../../src/graphql/resolvers/mutations/logout/logout-mutation'
+import LogoutValidation from '../../src/graphql/resolvers/mutations/logout/logout-validation'
+import TestUtil from '../util/test-util'
 
 describe('logout-mutation', () => {
   describe('logoutMutation', () => {

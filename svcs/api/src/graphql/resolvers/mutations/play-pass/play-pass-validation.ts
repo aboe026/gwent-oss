@@ -1,6 +1,7 @@
+import { getLogger } from 'log4js'
+
 import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
 import PresentableError from '../../../../util/presentable-error'

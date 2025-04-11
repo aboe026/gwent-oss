@@ -1,7 +1,8 @@
+import { getLogger } from 'log4js'
+
 import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
 import { DeckUnitDbObject, GameDbObject, GameStatus, UnitDbObject } from '@gwent/graphql-schema/database-typings'
-import { getLogger } from 'log4js'
 import { GraphQLResolveInfo } from 'graphql'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'

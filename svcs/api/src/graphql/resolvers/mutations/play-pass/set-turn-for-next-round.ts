@@ -5,14 +5,14 @@ import { GameDbObject, GamePlayerDbObject, RoundResult } from '@gwent/graphql-sc
 import { sortObjectArray } from '@gwent/utils'
 
 export default class SetTurnForNextRound {
-  private static logger = getLogger('GetPlayerIdForNextRound')
+  private static logger = getLogger('SetTurnForNextRound')
 
   /**
-   * Gets the ID of the player whose turn it should be for the start of the next round.
+   * Sets the turn on the game to the player whose turn it should be for the start of the next round.
    *
    * @param config The configuration of used to determine who should start the next round.
    * @param config.game The game to determine the started of the next round for.
-   * @returns The ID of the player who should start the next round.
+   * @param config.logPrefix The prefix which should be prefixed on log statements.
    */
   static setTurnForNextRound({ game, logPrefix }: { game: GameDbObject; logPrefix: string }) {
     let nextRoundUser: ObjectId
