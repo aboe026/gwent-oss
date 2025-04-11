@@ -1,4 +1,5 @@
 import type { Config } from 'jest'
+import path from 'path'
 
 enum TEST_TYPE {
   Unit = 'unit',
@@ -35,19 +36,6 @@ const config: Config = {
   collectCoverage: true,
   coverageDirectory: `<rootDir>/coverage/${testType}`,
   coverageReporters: ['cobertura', 'lcov'],
-  reporters: [
-    'default',
-    [
-      'jest-junit',
-      {
-        ancestorSeparator: ' - ',
-        classNameTemplate: `${testType}.{classname}`,
-        outputDirectory: 'test-results',
-        outputName: `${testType}.xml`,
-        titleTemplate: '{title}',
-      },
-    ],
-  ],
   projects: [
     {
       ...sharedConfig,
@@ -61,6 +49,20 @@ const config: Config = {
       testEnvironment: 'jsdom',
       testMatch: [`**/*.${testType}.test.tsx`],
     },
+  ],
+  reporters: [
+    'default',
+    [
+      'jest-junit',
+      {
+        ancestorSeparator: ' - ',
+        classNameTemplate: `${testType}.{classname}`,
+        outputDirectory: 'test-results',
+        outputName: `${testType}.xml`,
+        titleTemplate: '{title}',
+      },
+    ],
+    path.join(process.env.PROJECT_CWD || '.', 'libs', 'lcov-dark-mode', 'build', 'src', 'index.js'),
   ],
 }
 

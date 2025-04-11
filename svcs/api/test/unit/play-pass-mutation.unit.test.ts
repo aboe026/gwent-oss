@@ -1,630 +1,126 @@
-import { ObjectId } from 'mongodb'
-
 import { Context } from '@gwent/graphql-schema/context'
-import EventManager from '../../src/graphql/event-manager'
-import { Game, GameDeck, MutationPlayPassArgs, RoundResult } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject, GameDeckDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
-import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import GameStore from '../../src/database/stores/game-store'
-import GetNextPlayerIdForCurrentRound from '../../src/graphql/resolvers/mutations/util/get-next-player-id-for-current-round'
-import GetPlayerIdForNextRound from '../../src/graphql/resolvers/mutations/util/get-player-id-for-next-round'
-import IsGameOver from '../../src/graphql/resolvers/mutations/util/is-game-over'
-import IsRoundOver from '../../src/graphql/resolvers/mutations/util/is-round-over'
-import { MoveType } from '@gwent/graphql-schema'
-import { PubSubEvents } from '@gwent/constants'
-import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass-mutation'
-import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
+import PlayPassImplementation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-implementation'
+import PlayPassMutation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-mutation'
+import PlayPassValidation from '../../src/graphql/resolvers/mutations/play-pass/play-pass-validation'
+import PlayPassResolution from '../../src/graphql/resolvers/mutations/play-pass/play-pass-resolution'
 import TestUtil from '../util/test-util'
 
 describe('play-pass-mutation', () => {
-  describe('playPass', () => {
-    const userId = new ObjectId()
-    const gameId = new ObjectId().toString()
-    const logPrefix = `playPass by "${userId}" on game "${gameId}"`
-    it('throws error if current round does not exist on player', async () => {
-      const message = `Could not get round "1" for player "${userId}"`
-      const player = TestUtil.getDbGamePlayer({
-        user: userId,
-      })
-      const game = TestUtil.getDbGame({
-        players: [player],
-        round: 1,
-      })
-      await testPlayPass({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player,
-        },
-        expected: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(player.rounds)}"`]],
+  describe('playPassMutation', () => {
+    it('throws error if validation throws error', async () => {
+      await testPlayPassMutation({
+        validationError: Error('validation error'),
       })
     })
-    it('throws error if user already passed the current round', async () => {
-      const message = 'Already passed round "1"'
-      const player = TestUtil.getDbGamePlayer({
-        user: userId,
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            passed: true,
-          }),
-        ],
-      })
-      const game = TestUtil.getDbGame({
-        players: [player],
-        round: 1,
-      })
-      await testPlayPass({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player,
-        },
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+    it('throws error if implementation throws error', async () => {
+      await testPlayPassMutation({
+        implementationError: Error('implementation error'),
       })
     })
-    it('throws error if save returns undefined', async () => {
-      const message = 'Could not play pass in probable race condition collision.'
-      const firstPlayer = TestUtil.getDbGamePlayer({
-        user: userId,
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 0,
-      })
-      const secondPlayer = TestUtil.getDbGamePlayer({
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 1,
-      })
-      const moveDate = new Date()
-      const game = TestUtil.getDbGame({
-        players: [firstPlayer, secondPlayer],
-        round: 1,
-        turn: firstPlayer.user,
-      })
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...firstPlayer,
-            rounds: [
-              {
-                ...firstPlayer.rounds[0],
-                passed: true,
-                moves: [
-                  {
-                    created: moveDate,
-                    type: MoveType.Pass,
-                  },
-                ],
-              },
-            ],
-          },
-          secondPlayer,
-        ],
-        turn: secondPlayer.user,
-      }
-      await testPlayPass({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: firstPlayer,
-        },
-        saveResponse: true,
-        modifiedGame,
-        moveDate,
-        nextPlayerId: secondPlayer.user,
-        expected: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
+    it('throws error if resolution throws error', async () => {
+      await testPlayPassMutation({
+        resolutionError: Error('resolution error'),
       })
     })
-    it('returns resolved game if no errors', async () => {
-      const firstPlayer = TestUtil.getDbGamePlayer({
-        user: userId,
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 0,
-      })
-      const secondPlayer = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 1,
-      })
-      const moveDate = new Date()
-      const game = TestUtil.getDbGame({
-        players: [firstPlayer, secondPlayer],
-        round: 1,
-        turn: firstPlayer.user,
-      })
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...firstPlayer,
-            rounds: [
-              {
-                ...firstPlayer.rounds[0],
-                passed: true,
-                moves: [
-                  {
-                    created: moveDate,
-                    type: MoveType.Pass,
-                  },
-                ],
-              },
-            ],
-          },
-          secondPlayer,
-        ],
-        turn: secondPlayer.user,
-      }
-      await testPlayPass({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: firstPlayer,
-        },
-        modifiedGame,
-        moveDate,
-        nextPlayerId: secondPlayer.user,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-      })
-    })
-    it('returns resolved game if round over in draw', async () => {
-      const firstPlayer = TestUtil.getDbGamePlayer({
-        user: userId,
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 0,
-      })
-      const secondPlayer = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            passed: true,
-          }),
-        ],
-        order: 1,
-      })
-      const moveDate = new Date()
-      const game = TestUtil.getDbGame({
-        players: [firstPlayer, secondPlayer],
-        round: 1,
-        turn: firstPlayer.user,
-      })
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...firstPlayer,
-            rounds: [
-              {
-                ...firstPlayer.rounds[0],
-                passed: true,
-                result: RoundResult.Drew,
-                moves: [
-                  {
-                    created: moveDate,
-                    type: MoveType.Pass,
-                  },
-                ],
-              },
-              TestUtil.getDbPlayerRound({}),
-            ],
-          },
-          {
-            ...secondPlayer,
-            rounds: [
-              {
-                ...secondPlayer.rounds[0],
-                result: RoundResult.Drew,
-              },
-              TestUtil.getDbPlayerRound({}),
-            ],
-          },
-        ],
-        turn: secondPlayer.user,
-        round: 2,
-      }
-      await testPlayPass({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: firstPlayer,
-        },
-        modifiedGame,
-        moveDate,
-        nextPlayerId: secondPlayer.user,
+    it('returns resolution if no errors if roundOver is true', async () => {
+      await testPlayPassMutation({
         roundOver: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
       })
     })
-    it('returns resolved game if round over in win', async () => {
-      const firstPlayer = TestUtil.getDbGamePlayer({
-        user: userId,
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            score: 1,
-          }),
-        ],
-        order: 0,
-      })
-      const secondPlayer = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            passed: true,
-          }),
-        ],
-        order: 1,
-      })
-      const moveDate = new Date()
-      const game = TestUtil.getDbGame({
-        players: [firstPlayer, secondPlayer],
-        round: 1,
-        turn: firstPlayer.user,
-      })
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...firstPlayer,
-            rounds: [
-              {
-                ...firstPlayer.rounds[0],
-                passed: true,
-                result: RoundResult.Won,
-                moves: [
-                  {
-                    created: moveDate,
-                    type: MoveType.Pass,
-                  },
-                ],
-              },
-              TestUtil.getDbPlayerRound({}),
-            ],
-          },
-          {
-            ...secondPlayer,
-            rounds: [
-              {
-                ...secondPlayer.rounds[0],
-                result: RoundResult.Lost,
-              },
-              TestUtil.getDbPlayerRound({}),
-            ],
-          },
-        ],
-        round: 2,
-      }
-      await testPlayPass({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: firstPlayer,
-        },
-        modifiedGame,
-        moveDate,
-        nextPlayerId: firstPlayer.user,
-        roundOver: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-      })
-    })
-    it('returns resolved game if game over', async () => {
-      const firstPlayer = TestUtil.getDbGamePlayer({
-        user: userId,
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            result: RoundResult.Won,
-          }),
-          TestUtil.getDbPlayerRound({}),
-        ],
-        order: 0,
-      })
-      const secondPlayer = TestUtil.getDbGamePlayer({
-        deck: TestUtil.getDbGameDeck({
-          from: TestUtil.getDbDeck({}),
-        }),
-        rounds: [
-          TestUtil.getDbPlayerRound({
-            result: RoundResult.Lost,
-          }),
-          TestUtil.getDbPlayerRound({
-            passed: true,
-          }),
-        ],
-        order: 1,
-      })
-      const moveDate = new Date()
-      const game = TestUtil.getDbGame({
-        players: [firstPlayer, secondPlayer],
-        round: 2,
-        turn: firstPlayer.user,
-      })
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...firstPlayer,
-            rounds: [
-              firstPlayer.rounds[0],
-              {
-                ...firstPlayer.rounds[1],
-                passed: true,
-                result: RoundResult.Drew,
-                moves: [
-                  {
-                    created: moveDate,
-                    type: MoveType.Pass,
-                  },
-                ],
-              },
-            ],
-          },
-          {
-            ...secondPlayer,
-            rounds: [
-              secondPlayer.rounds[0],
-              {
-                ...secondPlayer.rounds[1],
-                result: RoundResult.Drew,
-              },
-            ],
-          },
-        ],
-        turn: firstPlayer.user,
-        round: 2,
-        victors: [firstPlayer.user],
-        status: GameStatus.Done,
-      }
-      await testPlayPass({
-        userId,
-        gameId,
-        getGamePlayerResponse: {
-          game,
-          player: firstPlayer,
-        },
-        modifiedGame,
-        moveDate,
-        roundOver: true,
-        gameOver: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
+    it('returns resolution if no errors if roundOver is false', async () => {
+      await testPlayPassMutation({
+        roundOver: false,
       })
     })
   })
 })
 
-async function testPlayPass({
-  userId,
-  gameId = '',
-  getGamePlayerResponse,
-  nextPlayerId,
-  modifiedGame,
-  saveResponse,
-  moveDate,
-  roundOver = false,
-  gameOver = false,
-  expected,
-  errorCalls = [],
-  warnCalls = [],
+async function testPlayPassMutation({
+  validationError,
+  implementationError,
+  resolutionError,
+  roundOver,
 }: {
-  userId?: ObjectId
-  gameId?: string
-  getGamePlayerResponse: GamePlayerResponse
-  nextPlayerId?: ObjectId
-  modifiedGame?: GameDbObject
-  saveResponse?: boolean
-  moveDate?: Date
+  validationError?: Error
+  implementationError?: Error
+  resolutionError?: Error
   roundOver?: boolean
-  gameOver?: boolean
-  expected: Game | Error
-  errorCalls?: string[][]
-  warnCalls?: string[][]
 }) {
-  const logPrefix = `playPass by "${userId}" on game "${gameId}"`
+  const logPrefix = 'log-prefix'
+  const game = TestUtil.getDbGame({})
+  const updatedGame: GameDbObject = {
+    ...game,
+    updated: new Date(game.updated.getTime() + 1),
+  }
+  const resolvedGame = TestUtil.getGameFromDbGame({
+    game: updatedGame,
+  })
   const context: Context = {
     session: {},
   }
-  if (userId && context.session) {
-    context.session.user = TestUtil.getDbUser({
-      id: userId,
+  const args: MutationPlayPassArgs = {
+    game: game._id.toString(),
+  }
+
+  const validationSpy = jest.spyOn(PlayPassValidation, 'playPassValidation')
+  if (validationError) {
+    validationSpy.mockRejectedValue(validationError)
+  } else {
+    validationSpy.mockResolvedValue({
+      game,
+      logPrefix,
     })
   }
-  const args: MutationPlayPassArgs = {
-    game: gameId,
-  }
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer').mockResolvedValue(getGamePlayerResponse)
-  const isRoundOverSpy = jest.spyOn(IsRoundOver, 'isRoundOver').mockReturnValue(roundOver)
-  const isGameOverSpy = jest.spyOn(IsGameOver, 'isGameOver').mockReturnValue(gameOver)
-  const getPlayerIdForNextRoundSpy = jest.spyOn(GetPlayerIdForNextRound, 'getPlayerIdForNextRound')
-  if (nextPlayerId) {
-    getPlayerIdForNextRoundSpy.mockReturnValue(nextPlayerId)
-  }
-  const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(GetNextPlayerIdForCurrentRound, 'getNextPlayerIdForCurrentRound')
-  if (nextPlayerId) {
-    getNextPlayerIdForCurrentRoundSpy.mockReturnValue(nextPlayerId)
-  }
-
-  const updatedGame: GameDbObject = {
-    ...(modifiedGame as GameDbObject),
-    updated: new Date(),
-    turn: nextPlayerId,
-  }
-  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse ? undefined : updatedGame)
-  let resolvedGame: Game | undefined = undefined
-  if (expected && !(expected instanceof Error)) {
-    resolvedGame = expected
-  }
-  const gameResolverSpy = jest.spyOn(GameResolver, 'fromObject')
-  if (resolvedGame) {
-    gameResolverSpy.mockResolvedValue(resolvedGame)
-  }
-  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const gameDecks: GameDeckDbObject[] = []
-  const resolvedGameDecks: GameDeck[] = []
-  if (updatedGame && updatedGame.players) {
-    for (const player of updatedGame.players) {
-      gameDecks.push(player.deck)
-      resolvedGameDecks.push(TestUtil.getGameDeckFromDbGameDeck(player.deck))
-    }
-  }
-  const gameDeckResolverSpy = jest.spyOn(GameDeckResolver, 'fromObject')
-  if (resolvedGameDecks) {
-    for (const resolvedGameDeck of resolvedGameDecks) {
-      gameDeckResolverSpy.mockResolvedValueOnce(resolvedGameDeck)
-    }
-  }
-  const dateSpy = jest.spyOn(global, 'Date')
-  if (moveDate) {
-    dateSpy.mockImplementation(() => moveDate)
-  }
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
-  PlayPassMutation['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(false),
-  } as any
-
-  const promise = PlayPassMutation.playPass(args, context, null as any)
-  if (expected instanceof Error) {
-    await expect(promise).rejects.toThrow(expected)
+  const implementationSpy = jest.spyOn(PlayPassImplementation, 'playPassImplementation')
+  if (implementationError) {
+    implementationSpy.mockRejectedValue(implementationError)
   } else {
-    await expect(promise).resolves.toEqual(expected)
+    implementationSpy.mockResolvedValue({
+      game: updatedGame,
+      roundOver: !!roundOver,
+    })
+  }
+  const resolutionSpy = jest.spyOn(PlayPassResolution, 'playPassResolution')
+  if (resolutionError) {
+    resolutionSpy.mockRejectedValue(resolutionError)
+  } else {
+    resolutionSpy.mockResolvedValue(resolvedGame)
   }
 
-  expect(getGamePlayerSpy.mock.calls).toEqual(
-    getGamePlayerResponse
-      ? [
+  const error = validationError || implementationError || resolutionError
+  const promise = PlayPassMutation.playPassMutation(args, context, null as any)
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedGame)
+  }
+
+  expect(validationSpy.mock.calls).toEqual([[args, context, null]])
+  expect(implementationSpy.mock.calls).toEqual(
+    validationError
+      ? []
+      : [
           [
             {
-              gameId,
-              userId,
-              status: GameStatus.Playing,
-              turn: true,
-              label: 'pass round',
-            },
-          ],
-        ]
-      : []
-  )
-  expect(isRoundOverSpy).toHaveBeenCalledTimes(nextPlayerId || gameOver ? 1 : 0)
-  expect(isGameOverSpy).toHaveBeenCalledTimes(roundOver ? 1 : 0)
-  expect(getPlayerIdForNextRoundSpy.mock.calls).toEqual(
-    nextPlayerId && roundOver
-      ? [
-          [
-            {
-              game: modifiedGame,
+              game,
               logPrefix,
             },
           ],
         ]
-      : []
   )
-  expect(getNextPlayerIdForCurrentRoundSpy.mock.calls).toEqual(
-    nextPlayerId && !roundOver
-      ? [
-          [
-            {
-              currentRound: modifiedGame?.round,
-              currentTurn: userId,
-              players: modifiedGame?.players,
-              logPrefix,
-            },
-          ],
-        ]
-      : []
-  )
-  const gameReturned = (nextPlayerId || gameOver) && !saveResponse
-  expect(saveSpy.mock.calls).toEqual(
-    nextPlayerId || gameOver
-      ? [
-          [
-            {
-              ...updatedGame,
-              updated: modifiedGame?.updated,
-            },
-          ],
-        ]
-      : []
-  )
-  expect(gameResolverSpy.mock.calls).toEqual(
-    gameReturned
-      ? [
+  expect(resolutionSpy.mock.calls).toEqual(
+    validationError || implementationError
+      ? []
+      : [
           [
             {
               game: updatedGame,
+              logPrefix,
+              roundOver: !!roundOver,
             },
           ],
         ]
-      : []
   )
-  expect(gameDeckResolverSpy.mock.calls).toEqual(
-    gameReturned && roundOver
-      ? gameDecks.map((gameDeck) => {
-          return [
-            {
-              gameDeck,
-            },
-          ]
-        })
-      : []
-  )
-  const publishCalls: any[][] = []
-  if (gameReturned) {
-    publishCalls.push([
-      PubSubEvents.PassPlayed,
-      {
-        passPlayed: resolvedGame,
-      },
-    ])
-    if (roundOver) {
-      for (const resolvedGameDeck of resolvedGameDecks) {
-        publishCalls.push([
-          PubSubEvents.RoundEndedForDeck,
-          {
-            roundEndedForDeck: {
-              deck: resolvedGameDeck,
-              game: resolvedGame,
-            },
-          },
-        ])
-      }
-    }
-  }
-  expect(publishSpy.mock.calls).toEqual(publishCalls)
-  expect(dateSpy.mock.calls).toEqual(moveDate ? [[]] : [])
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
 }

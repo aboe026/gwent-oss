@@ -48,6 +48,7 @@ import { STARTING_HAND_SIZE, STARTING_LIVES } from '@gwent/constants'
 export default class TestUtil {
   static getDbUnit({
     id,
+    images = ['unit-image'],
     dlc,
     faction,
     effects,
@@ -57,6 +58,7 @@ export default class TestUtil {
     strength,
   }: {
     id?: ObjectId | string
+    images?: string[]
     dlc?: ObjectId | string
     faction?: ObjectId | string
     effects?: (ObjectId | string)[]
@@ -71,7 +73,7 @@ export default class TestUtil {
       deckable: true,
       faction: faction ? new ObjectId(faction) : new ObjectId(),
       hero,
-      images: ['unit-image'],
+      images,
       name: 'unit-name',
       quote: 'unit-quote',
       dlc: dlc ? new ObjectId(dlc) : undefined,
@@ -172,12 +174,14 @@ export default class TestUtil {
     }
   }
 
-  static getDeckUnit({ id, artStyle = 1 }: { id?: ObjectId | string; artStyle?: number }): DeckUnit {
+  static getDeckUnit({ id, artStyle = 1, unit }: { id?: ObjectId | string; artStyle?: number; unit?: Unit }): DeckUnit {
     return {
       artStyle,
-      unit: TestUtil.getUnit({
-        id,
-      }),
+      unit:
+        unit ||
+        TestUtil.getUnit({
+          id,
+        }),
     }
   }
 
@@ -271,13 +275,15 @@ export default class TestUtil {
   }
 
   static getDbLeader({
-    id,
-    faction,
     dlc = undefined,
+    faction,
+    id,
+    name = 'leader-name',
   }: {
-    id?: ObjectId | string
-    faction?: ObjectId | string
     dlc?: ObjectId | string
+    faction?: ObjectId | string
+    id?: ObjectId | string
+    name?: string
   }): LeaderDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
@@ -285,7 +291,7 @@ export default class TestUtil {
       created: new Date(),
       faction: faction ? new ObjectId(faction) : new ObjectId(),
       image: 'leader-image',
-      name: 'leader-name',
+      name,
       quote: 'leader-quote',
       dlc: dlc ? new ObjectId(dlc) : undefined,
     }
@@ -432,10 +438,10 @@ export default class TestUtil {
     }
   }
 
-  static getDeck({ id, user }: { id?: string | ObjectId; user?: User }): Deck {
+  static getDeck({ faction, id, user }: { faction?: Faction; id?: string | ObjectId; user?: User }): Deck {
     return {
       created: new Date(),
-      faction: TestUtil.getFaction({}),
+      faction: faction || TestUtil.getFaction({}),
       id: (id || new ObjectId()).toString(),
       leader: TestUtil.getLeader({}),
       name: 'deck-name',

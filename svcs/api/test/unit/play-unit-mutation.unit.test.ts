@@ -1,1022 +1,132 @@
-import { ObjectId } from 'mongodb'
-
+import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
-import { Combat, DeckUnit, Game, GameDeck, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
-import {
-  DeckUnitDbObject,
-  GameDbObject,
-  GameDeckDbObject,
-  GameStatus,
-  UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
-import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
-import EventManager from '../../src/graphql/event-manager'
-import GameDeckResolver from '../../src/graphql/resolvers/types/game-deck-resolver'
-import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
-import GameStore from '../../src/database/stores/game-store'
-import GetNextPlayerIdForCurrentRound from '../../src/graphql/resolvers/mutations/util/get-next-player-id-for-current-round'
-import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit-mutation'
-import { MoveType } from '@gwent/graphql-schema'
-import { PubSubEvents } from '@gwent/constants'
-import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import PlayUnitImplementation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-implementation'
+import PlayUnitMutation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-mutation'
+import PlayUnitResolution from '../../src/graphql/resolvers/mutations/play-unit/play-unit-resolution'
+import PlayUnitValidation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-validation'
 import TestUtil from '../util/test-util'
-import UnitStore from '../../src/database/stores/unit-store'
-import UnitUtil from '../../src/graphql/resolvers/mutations/util/unit-util'
 
 describe('play-unit-mutation', () => {
-  describe('playUnit', () => {
-    const userId = new ObjectId()
-    const gameId = new ObjectId().toString()
-    const unitId = new ObjectId().toString()
-    const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
-    it('throws error if unit not in hand', async () => {
-      const message = 'Unit not in hand.'
-      const game = getTestGame(gameId, userId, unitId)
-      game.players = [
-        {
-          ...game.players[0],
-          deck: TestUtil.getDbGameDeck({}),
-        },
-        game.players[1],
-      ]
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
+  describe('playUnitMutation', () => {
+    it('throws error if validation throws error', async () => {
+      await testPlayUnitMutation({
+        validationError: Error('validation error'),
       })
     })
-    it('throws error if more than 1 unit with ID in hand', async () => {
-      const message = `Found more than 1 unit with ID "${unitId}"`
-      const deckUnits = [
-        TestUtil.getDbDeckUnit({
-          id: unitId,
-        }),
-        TestUtil.getDbDeckUnit({
-          id: unitId,
-        }),
-      ]
-      const game = getTestGame(gameId, userId, unitId)
-      game.players = [
-        {
-          ...game.players[0],
-          deck: {
-            ...game.players[0].deck,
-            hand: deckUnits,
-          },
-        },
-        game.players[1],
-      ]
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        expected: Error(`${message}.`),
-        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`]],
+    it('throws error if implementation throws error', async () => {
+      await testPlayUnitMutation({
+        implementationError: Error('implementation error'),
       })
     })
-    it('throws error if unit does not exist', async () => {
-      const message = 'Unit does not exist.'
-      const game = getTestGame(gameId, userId, unitId)
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [],
-        expected: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
+    it('throws error if resolution throws error', async () => {
+      await testPlayUnitMutation({
+        resolutionError: Error('resolution error'),
       })
     })
-    it('throws error if more than 1 unit found', async () => {
-      const message = `Found multiple units with ID "${unitId}"`
-      const deckUnits = [
-        TestUtil.getDbUnit({
-          id: unitId,
-        }),
-        TestUtil.getDbUnit({
-          id: unitId,
-        }),
-      ]
-      const game = getTestGame(gameId, userId, unitId)
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: deckUnits,
-        expected: Error(`${message}.`),
-        errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify(deckUnits)}"`]],
-      })
-    })
-    it('throws error if combat not specified for multi combat unit', async () => {
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Close, Combat.Ranged],
-      })
-      const message = `Must specify combat: One of "${JSON.stringify(deckUnit.combats)}".`
-      const game = getTestGame(gameId, userId, unitId)
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('throws error if combat does not match unit combats', async () => {
-      const combat = Combat.Close
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Siege],
-      })
-      const message = `Combat "${combat}" does match unit combats of "${JSON.stringify(deckUnit.combats)}".`
-      const game = getTestGame(gameId, userId, unitId)
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        combat,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('throws error if combat not specified on unit without combat', async () => {
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-      })
-      const message = 'Must specify combat.'
-      const game = getTestGame(gameId, userId, unitId)
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('throws error if save returns undefined', async () => {
-      const message = 'Could not play unit in probable race condition collision.'
-      const artStyle = 1
-      const strength = 2
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Close],
-        strength,
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            deck: {
-              ...game.players[0].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: strength,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                      effectiveStrength: strength,
-                      effects: [],
-                    },
-                  ],
-                },
-                score: strength,
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Close,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-          game.players[1],
-        ],
-        turn: game.players[1].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        saveGameCalled: true,
-        saveResponse: true,
-        expected: Error(message),
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('returns updated game if no errors and close combat', async () => {
-      const artStyle = 1
-      const strength = 2
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Close],
-        strength,
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            deck: {
-              ...game.players[0].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: strength,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                      effectiveStrength: strength,
-                      effects: [],
-                    },
-                  ],
-                },
-                score: strength,
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Close,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-          game.players[1],
-        ],
-        turn: game.players[1].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        saveGameCalled: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-      })
-    })
-    it('returns updated game if no errors and ranged combat', async () => {
-      const artStyle = 1
-      const strength = 2
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Ranged],
-        strength,
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            deck: {
-              ...game.players[0].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                ranged: {
-                  score: strength,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                      effectiveStrength: strength,
-                      effects: [],
-                    },
-                  ],
-                },
-                score: strength,
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Ranged,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-          game.players[1],
-        ],
-        turn: game.players[1].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        combat: Combat.Ranged,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        saveGameCalled: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-      })
-    })
-    it('returns updated game if no errors and siege combat', async () => {
-      const artStyle = 1
-      const strength = 2
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Siege],
-        strength,
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            deck: {
-              ...game.players[0].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                siege: {
-                  score: strength,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                      effectiveStrength: strength,
-                      effects: [],
-                    },
-                  ],
-                },
-                score: strength,
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Siege,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-          game.players[1],
-        ],
-        turn: game.players[1].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        combat: Combat.Siege,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        saveGameCalled: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-      })
-    })
-    it('returns updated game if no errors and no strength', async () => {
-      const artStyle = 1
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Close],
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            deck: {
-              ...game.players[0].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                  ],
-                },
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Close,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-          game.players[1],
-        ],
-        turn: game.players[1].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        saveGameCalled: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-      })
-    })
-    it('returns updated game if no errors and second game player', async () => {
-      const artStyle = 1
-      const strength = 2
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Close],
-        strength,
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      game.players = game.players = [
-        {
-          ...game.players[1],
-          order: 0,
-        },
-        {
-          ...game.players[0],
-          order: 1,
-        },
-      ]
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          game.players[0],
-          {
-            ...game.players[1],
-            deck: {
-              ...game.players[1].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: strength,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                      effectiveStrength: strength,
-                      effects: [],
-                    },
-                  ],
-                },
-                score: strength,
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Close,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-        ],
-        turn: game.players[0].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[1],
-        },
-        unitsGetResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        saveGameCalled: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-      })
-    })
-    it('returns updated game if no errors and second round', async () => {
-      const artStyle = 1
-      const strength = 2
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Close],
-        strength,
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      game.players = game.players.map((gamePlayer) => {
-        return {
-          ...gamePlayer,
-          rounds: [...gamePlayer.rounds, TestUtil.getDbPlayerRound({})],
-        }
-      })
-      game.round = 2
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            deck: {
-              ...game.players[0].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({}),
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: strength,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                      effectiveStrength: strength,
-                      effects: [],
-                    },
-                  ],
-                },
-                score: strength,
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Close,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-          game.players[1],
-        ],
-        turn: game.players[1].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        saveGameCalled: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-      })
-    })
-    it('logs to trace if enabled', async () => {
-      const artStyle = 1
-      const strength = 2
-      const deckUnit = TestUtil.getDbUnit({
-        id: unitId,
-        combats: [Combat.Close],
-        strength,
-      })
-      const moveDate = new Date()
-      const game = getTestGame(gameId, userId, unitId)
-      const modifiedGame: GameDbObject = {
-        ...game,
-        players: [
-          {
-            ...game.players[0],
-            deck: {
-              ...game.players[0].deck,
-              hand: [],
-            },
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: strength,
-                  units: [
-                    {
-                      artStyle,
-                      unit: deckUnit._id,
-                      effectiveStrength: strength,
-                      effects: [],
-                    },
-                  ],
-                },
-                score: strength,
-                moves: [
-                  {
-                    created: moveDate,
-                    row: Combat.Close,
-                    unit: {
-                      artStyle,
-                      unit: deckUnit._id,
-                    },
-                    type: MoveType.Unit,
-                  },
-                ],
-              }),
-            ],
-          },
-          game.players[1],
-        ],
-        turn: game.players[1].user,
-      }
-      await testPlayUnit({
-        userId,
-        gameId,
-        unitId,
-        resolvedGameResponse: {
-          game,
-          player: game.players[0],
-        },
-        unitsGetResponse: [deckUnit],
-        modifiedGame,
-        moveDate,
-        saveGameCalled: true,
-        expected: TestUtil.getGameFromDbGame({
-          game: modifiedGame,
-        }),
-        traceEnabled: true,
-      })
+    it('returns resolution if no errors', async () => {
+      await testPlayUnitMutation({})
     })
   })
 })
 
-async function testPlayUnit({
-  userId,
-  gameId = '',
-  unitId = '',
-  combat,
-  resolvedGameResponse,
-  unitsGetResponse,
-  modifiedGame,
-  moveDate,
-  saveGameCalled,
-  saveResponse,
-  expected,
-  errorCalls = [],
-  warnCalls = [],
-  traceEnabled,
+async function testPlayUnitMutation({
+  validationError,
+  implementationError,
+  resolutionError,
 }: {
-  userId?: ObjectId
-  gameId?: string
-  unitId?: string
-  combat?: Combat
-  resolvedGameResponse?: GamePlayerResponse
-  unitsGetResponse?: UnitDbObject[]
-  modifiedGame?: GameDbObject
-  moveDate?: Date
-  saveGameCalled?: boolean
-  saveResponse?: boolean
-  expected: Game | Error
-  errorCalls?: string[][]
-  warnCalls?: string[][]
-  traceEnabled?: boolean
+  validationError?: Error
+  implementationError?: Error
+  resolutionError?: Error
 }) {
+  const logPrefix = 'log-prefix'
   const context: Context = {
     session: {},
   }
-  if (userId && context.session) {
-    context.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
+  const game = TestUtil.getDbGame({})
+  const updatedGame: GameDbObject = {
+    ...game,
+    updated: new Date(game.updated.getTime() + 1),
   }
+  const unit = TestUtil.getDbUnit({})
+  const combat = Combat.Close
+  const deckUnit = TestUtil.getDbDeckUnit({
+    id: unit._id,
+  })
+  const gameDeck = TestUtil.getDbGameDeck({})
+  const resolvedGame = TestUtil.getGameFromDbGame({
+    game: updatedGame,
+  })
   const args: MutationPlayUnitArgs = {
-    game: gameId,
-    unit: unitId,
+    game: game._id.toString(),
+    unit: unit._id.toString(),
     combat,
   }
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (resolvedGameResponse) {
-    getGamePlayerSpy.mockResolvedValue(resolvedGameResponse)
-  }
-  const getUnitsSpy = jest.spyOn(UnitStore, 'get')
-  if (unitsGetResponse) {
-    getUnitsSpy.mockResolvedValue(unitsGetResponse)
-  }
-  const roundUnits = [TestUtil.getDbUnit({}), TestUtil.getDbUnit({})]
-  const effects = [TestUtil.getDbEffect({})]
-  const getRoundUnitsSpy = jest.spyOn(UnitUtil, 'getRoundUnits').mockResolvedValue(roundUnits)
-  const getUnitEffectsSpy = jest.spyOn(UnitUtil, 'getUnitEffects').mockResolvedValue(effects)
-  const getNextPlayerIdForCurrentRoundSpy = jest.spyOn(GetNextPlayerIdForCurrentRound, 'getNextPlayerIdForCurrentRound')
-  if (modifiedGame?.turn) {
-    getNextPlayerIdForCurrentRoundSpy.mockReturnValue(modifiedGame.turn)
-  }
 
-  const updated = new Date()
-  const updatedGame: GameDbObject = {
-    ...(modifiedGame as GameDbObject),
-    updated,
-  }
-  const saveSpy = jest.spyOn(GameStore, 'save').mockResolvedValue(saveResponse ? undefined : updatedGame)
-  const resolveGameSpy = jest.spyOn(GameResolver, 'fromObject')
-  if (expected && !(expected instanceof Error)) {
-    resolveGameSpy.mockResolvedValue(expected)
-  }
-  let dbDeckUnit: DeckUnitDbObject | undefined = undefined
-  let resolvedDeckUnit: DeckUnit | undefined = undefined
-  let gameDeck: GameDeckDbObject | undefined = undefined
-  let resolvedGameDeck: GameDeck | undefined = undefined
-  if (resolvedGameResponse && !(resolvedGameResponse instanceof Error)) {
-    dbDeckUnit = resolvedGameResponse.player.deck.hand[0]
-    if (dbDeckUnit) {
-      resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit(dbDeckUnit)
-    }
-    gameDeck = resolvedGameResponse.player.deck
-    if (gameDeck) {
-      resolvedGameDeck = TestUtil.getGameDeckFromDbGameDeck(gameDeck)
-    }
-  }
-  const resolveUnitSpy = jest.spyOn(DeckUnitResolver, 'fromObject')
-  if (resolvedDeckUnit) {
-    resolveUnitSpy.mockResolvedValue(resolvedDeckUnit)
-  }
-  const resolveGameDeckSpy = jest.spyOn(GameDeckResolver, 'fromObject')
-  if (resolvedGameDeck) {
-    resolveGameDeckSpy.mockResolvedValue(resolvedGameDeck)
-  }
-  const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
-  const dateSpy = jest.spyOn(global, 'Date')
-  if (moveDate) {
-    dateSpy.mockImplementation(() => moveDate)
-  }
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  PlayUnitMutation['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
-
-  const promise = PlayUnitMutation.playUnit(args, context, null as any)
-  if (expected instanceof Error) {
-    await expect(promise).rejects.toThrow(expected)
+  const validationSpy = jest.spyOn(PlayUnitValidation, 'playUnitValidation')
+  if (validationError) {
+    validationSpy.mockRejectedValue(validationError)
   } else {
-    await expect(promise).resolves.toEqual(expected)
+    validationSpy.mockResolvedValue({
+      combat,
+      deckUnit,
+      game,
+      logPrefix,
+      unit,
+    })
+  }
+  const implementationSpy = jest.spyOn(PlayUnitImplementation, 'playUnitImplementation')
+  if (implementationError) {
+    implementationSpy.mockRejectedValue(implementationError)
+  } else {
+    implementationSpy.mockResolvedValue({
+      game: updatedGame,
+      gameDeck,
+    })
+  }
+  const resolutionSpy = jest.spyOn(PlayUnitResolution, 'playUnitResolution')
+  if (resolutionError) {
+    resolutionSpy.mockRejectedValue(resolutionError)
+  } else {
+    resolutionSpy.mockResolvedValue(resolvedGame)
   }
 
-  expect(getGamePlayerSpy.mock.calls).toEqual(
-    resolvedGameResponse
-      ? [
-          [
-            {
-              gameId,
-              userId,
-              status: GameStatus.Playing,
-              turn: true,
-              label: 'play units',
-            },
-          ],
-        ]
-      : []
-  )
-  expect(getUnitsSpy.mock.calls).toEqual(
-    unitsGetResponse
-      ? [
-          [
-            {
-              ids: [unitId],
-            },
-          ],
-        ]
-      : []
-  )
-  expect(getRoundUnitsSpy.mock.calls).toEqual(
-    saveGameCalled
-      ? [
-          [
-            {
-              game: resolvedGameResponse ? resolvedGameResponse.game : undefined,
-              unitBeingPlayed: unitsGetResponse ? unitsGetResponse[0] : undefined,
-            },
-          ],
-        ]
-      : []
-  )
-  expect(getUnitEffectsSpy.mock.calls).toEqual(saveGameCalled ? [[roundUnits]] : [])
-  expect(dateSpy.mock.calls).toEqual(moveDate ? [[]] : [])
-  const gameReturned = saveGameCalled && !saveResponse
-  expect(saveSpy.mock.calls).toEqual(
-    saveGameCalled
-      ? [
-          [
-            {
-              ...updatedGame,
-              updated: modifiedGame?.updated,
-            },
-          ],
-        ]
-      : []
-  )
-  expect(resolveGameSpy.mock.calls).toEqual(
-    gameReturned
-      ? [
-          [
-            {
-              game: updatedGame,
-            },
-          ],
-        ]
-      : []
-  )
-  expect(resolveUnitSpy.mock.calls).toEqual(
-    gameReturned
-      ? [
-          [
-            {
-              deckUnit: dbDeckUnit,
-            },
-          ],
-        ]
-      : []
-  )
-  expect(resolveGameDeckSpy.mock.calls).toEqual(
-    gameReturned
-      ? [
-          [
-            {
-              gameDeck,
-            },
-          ],
-        ]
-      : []
-  )
-  expect(publishSpy.mock.calls).toEqual(
-    gameReturned
-      ? [
-          [
-            PubSubEvents.UnitPlayedOnGame,
-            {
-              unitPlayedOnGame: {
-                game: expected,
-                unit: resolvedDeckUnit,
-              },
-            },
-          ],
-          [
-            PubSubEvents.UnitPlayedFromDeck,
-            {
-              unitPlayedFromDeck: {
-                deck: resolvedGameDeck,
-                game: expected,
-                unit: resolvedDeckUnit,
-              },
-            },
-          ],
-        ]
-      : []
-  )
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
-  const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [
-            `${logPrefix} args: "${JSON.stringify({
-              game: gameId,
-              unit: unitId,
-              combat,
-            })}"`,
-          ],
-          [`${logPrefix} requested fields: "[]"`],
-          [`${logPrefix} requested arguments: "[]"`],
-        ]
-      : []
-  )
-}
+  const error = validationError || implementationError || resolutionError
+  const promise = PlayUnitMutation.playUnitMutation(args, context, null as any)
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedGame)
+  }
 
-function getTestGame(gameId: string, userId: ObjectId, unitId: string): GameDbObject {
-  return TestUtil.getDbGame({
-    id: gameId,
-    players: [
-      TestUtil.getDbGamePlayer({
-        user: userId,
-        deck: TestUtil.getDbGameDeck({
-          hand: [
-            TestUtil.getDbDeckUnit({
-              id: unitId,
-            }),
+  expect(validationSpy.mock.calls).toEqual([[args, context, null]])
+  expect(implementationSpy.mock.calls).toEqual(
+    validationError
+      ? []
+      : [
+          [
+            {
+              combat,
+              deckUnit,
+              game,
+              logPrefix,
+              unit,
+            },
           ],
-        }),
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 0,
-      }),
-      TestUtil.getDbGamePlayer({
-        rounds: [TestUtil.getDbPlayerRound({})],
-        order: 1,
-      }),
-    ],
-    turn: userId,
-    round: 1,
-  })
+        ]
+  )
+  expect(resolutionSpy.mock.calls).toEqual(
+    validationError || implementationError
+      ? []
+      : [
+          [
+            {
+              deckUnit,
+              game: updatedGame,
+              gameDeck,
+              logPrefix,
+            },
+          ],
+        ]
+  )
 }

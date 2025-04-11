@@ -2,7 +2,7 @@ import { ObjectId } from 'mongodb'
 
 import deepClone from '../util/deep-clone'
 import { GameDbObject, GameStatus, RoundResult } from '@gwent/graphql-schema/database-typings'
-import SetGameVictors from '../../src/graphql/resolvers/mutations/util/set-game-victors'
+import SetGameVictors from '../../src/graphql/resolvers/mutations/play-pass/set-game-victors'
 import TestUtil from '../util/test-util'
 
 describe('set-game-victors', () => {

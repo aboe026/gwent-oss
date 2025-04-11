@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.11.2 - 2025-04-11
+
+### Fixed
+
+- Refactor mutations file structure ([#32](https://github.com/aboe026/gwent/pull/32)) (Adam Boe)
+- Dark mode for lcov HTML code coverage ([#32](https://github.com/aboe026/gwent/pull/32)) (Adam Boe)
+
 ## 0.11.1 - 2025-03-20
 
 ### Fixed

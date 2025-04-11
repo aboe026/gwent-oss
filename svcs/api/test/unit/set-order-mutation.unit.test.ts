@@ -1,129 +1,92 @@
-import { ObjectId } from 'mongodb'
-
 import { Context } from '@gwent/graphql-schema/context'
-import { GameStatus } from '@gwent/graphql-schema/database-typings'
 import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
-import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
-import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order-mutation'
-import TestUtil from '../util/test-util'
 import SetGameTurnOrder from '../../src/graphql/resolvers/mutations/util/set-game-turn-order'
+import SetOrderMutation from '../../src/graphql/resolvers/mutations/set-order/set-order-mutation'
+import SetOrderValidation from '../../src/graphql/resolvers/mutations/set-order/set-order-validation'
+import TestUtil from '../util/test-util'
 
 describe('set-order-mutation', () => {
-  describe('setOrder', () => {
-    const userId = new ObjectId()
-    it('calls to private setOrder method when userIds not specified', async () => {
-      await testSetOrder({
-        userId,
+  describe('setOrderMutation', () => {
+    it('throws error if validation throws error', async () => {
+      await testSetOrderMutation({
+        validationError: Error('validation error'),
       })
     })
-    it('calls to private setOrder method when userIds are specified', async () => {
-      await testSetOrder({
-        userId,
-        userIds: [userId.toString(), new ObjectId().toString()],
+    it('throws error if implementation throws error', async () => {
+      await testSetOrderMutation({
+        setGameTurnOrderError: Error('setGameTurnOrder error'),
       })
     })
-    it('logs to trace if enabled', async () => {
-      await testSetOrder({
-        userId,
-        traceEnabled: true,
-      })
+    it('returns resolved game if no errors', async () => {
+      await testSetOrderMutation({})
     })
   })
 })
 
-async function testSetOrder({
-  userId,
-  gameId = new ObjectId().toString(),
-  userIds,
-  error,
-  errorCalls = [],
-  warnCalls = [],
-  traceEnabled,
+async function testSetOrderMutation({
+  validationError,
+  setGameTurnOrderError,
 }: {
-  userId?: string | ObjectId
-  gameId?: string
-  userIds?: string[]
-  error?: Error
-  errorCalls?: any[][]
-  warnCalls?: any[][]
-  traceEnabled?: boolean
+  validationError?: Error
+  setGameTurnOrderError?: Error
 }) {
+  const logPrefix = 'log-prefix'
+  const user = TestUtil.getDbUser({})
   const context: Context = {
-    session: {},
+    session: {
+      user,
+    },
   }
-  if (userId && context.session) {
-    context.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
-  }
-  const args: MutationSetOrderArgs = {
-    game: gameId,
-    users: userIds,
-  }
-  const logPrefix = `setOrder by "${userId}" to users "${JSON.stringify(userIds)}" on game "${gameId}"`
-  const game = TestUtil.getDbGame({
-    id: gameId,
-    players: [
-      TestUtil.getDbGamePlayer({
-        user: userId,
-      }),
-      TestUtil.getDbGamePlayer({}),
-    ],
-  })
+  const game = TestUtil.getDbGame({})
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
   })
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer').mockResolvedValue({
-    game,
-    player: game.players[0],
-  })
-  const setOrderSpy = jest.spyOn(SetGameTurnOrder, 'setGameTurnOrder').mockResolvedValue(resolvedGame)
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  SetOrderMutation['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
+  const gameDeck = TestUtil.getDbGameDeck({})
+  const args: MutationSetOrderArgs = {
+    game: game._id.toString(),
+    users: [],
+  }
 
-  await expect(SetOrderMutation.setOrder(args, context, null as any)).resolves.toEqual(error || resolvedGame)
+  const validationSpy = jest.spyOn(SetOrderValidation, 'setOrderValidation')
+  if (validationError) {
+    validationSpy.mockRejectedValue(validationError)
+  } else {
+    validationSpy.mockResolvedValue({
+      game,
+      gameDeck,
+      logPrefix,
+      userIds: args.users,
+    })
+  }
+  const setGameTurnOrderSpy = jest.spyOn(SetGameTurnOrder, 'setGameTurnOrder')
+  if (setGameTurnOrderError) {
+    setGameTurnOrderSpy.mockRejectedValue(setGameTurnOrderError)
+  } else {
+    setGameTurnOrderSpy.mockResolvedValue(resolvedGame)
+  }
 
-  expect(getGamePlayerSpy.mock.calls).toEqual([
-    [
-      {
-        gameId,
-        userId,
-        label: 'set order',
-        status: GameStatus.Ordering,
-      },
-    ],
-  ])
-  expect(setOrderSpy.mock.calls).toEqual(
-    error
+  const error = validationError || setGameTurnOrderError
+  const promise = SetOrderMutation.setOrderMutation(args, context, null as any)
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedGame)
+  }
+
+  expect(validationSpy.mock.calls).toEqual([[args, context, null]])
+  expect(setGameTurnOrderSpy.mock.calls).toEqual(
+    validationError
       ? []
       : [
           [
             {
               game,
-              player: game.players[0],
-              userIds,
+              gameDeck,
+              userIds: [],
               allowImplicit: true,
               logPrefix,
             },
           ],
         ]
-  )
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [`${logPrefix} args: "${JSON.stringify(args)}"`],
-          [`${logPrefix} requested fields: "[]"`],
-          [`${logPrefix} requested arguments: "[]"`],
-        ]
-      : []
   )
 }

@@ -2,7 +2,7 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import EventManager from '../../../event-manager'
-import { FactionKey, GameDbObject, GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { FactionKey, GameDbObject, GameDeckDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import FactionStore from '../../../../database/stores/faction-store'
 import { Game } from '@gwent/graphql-schema/resolver-typings'
 import GameResolver from '../../types/game-resolver'
@@ -32,13 +32,13 @@ export default class SetGameTurnOrder {
    */
   static async setGameTurnOrder({
     game,
-    player,
+    gameDeck,
     userIds,
     allowImplicit,
     logPrefix,
   }: {
     game: GameDbObject
-    player: GamePlayerDbObject
+    gameDeck: GameDeckDbObject
     userIds?: string[] | null
     allowImplicit: boolean
     logPrefix: string
@@ -67,7 +67,7 @@ export default class SetGameTurnOrder {
       SetGameTurnOrder.logger.debug(`${logPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)
     }
-    if (scoiaTaelPlayers.length === 1 && player.deck.from?.faction.toString() !== scoiaTaelId) {
+    if (scoiaTaelPlayers.length === 1 && gameDeck.from?.faction.toString() !== scoiaTaelId) {
       const message = `Setting order not allowed when another player has deck faction of "${FactionKey.ScoiaTael}".`
       SetGameTurnOrder.logger.warn(`${logPrefix} setGameTurnOrder failed: ${message}`)
       throw new PresentableError(message)

@@ -1,6 +1,6 @@
 import deepClone from '../util/deep-clone'
 import TestUtil from '../util/test-util'
-import clearBattlefieldUnits from '../../src/graphql/resolvers/mutations/util/clear-battlefield-units'
+import clearBattlefieldUnits from '../../src/graphql/resolvers/mutations/play-pass/clear-battlefield-units'
 
 describe('clear-battlefield-units', () => {
   describe('first round', () => {

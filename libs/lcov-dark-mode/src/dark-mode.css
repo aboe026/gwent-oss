@@ -1,0 +1,75 @@
+/* Dark Mode */
+body {
+  background-color: #181818;
+  color: #cccccc;
+}
+
+input,
+.fraction {
+  background-color: #2f2f2f;
+  color: #cccccc;
+}
+
+.fraction {
+  background: #2f2f2f;
+  color: #d9d9d9;
+}
+
+.quiet {
+  color: #cccccc;
+}
+
+.pln {
+  color: #cccccc;
+}
+
+.typ {
+  color: #c586c0;
+}
+
+.str {
+  color: #6a9955;
+}
+
+.com {
+  color: #5c5c5c !important;
+}
+
+.kwd {
+  color: #8d8dff;
+}
+
+a {
+  color: #5eb1ff;
+}
+
+span.cline-neutral {
+  background: #2f2f2f;
+}
+
+.low,
+.cline-no,
+.cstat-no,
+.fstat-no,
+.status-line.low {
+  background: #4c2227;
+}
+
+.medium,
+.status-line.medium {
+  background: rgba(245, 204, 0, 0.3);
+}
+
+.cbranch-no {
+  background: rgba(245, 204, 0, 0.3) !important;
+}
+
+.high,
+.cline-yes,
+.status-line.high {
+  background: #1a3725;
+}
+
+.cover-empty {
+  background: #585858;
+}

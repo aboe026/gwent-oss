@@ -5,7 +5,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
-import { NOT_AUTHENTICATED_MESSAGE } from '@gwent/constants'
+import { NOT_AUTHENTICATED_MESSAGE, REDACTED } from '@gwent/constants'
 import PresentableError from '../../src/util/presentable-error'
 import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
@@ -132,9 +132,96 @@ describe('resolver-util', () => {
         traceEnabled: false,
       })
     })
-    it('logs to trace if enabled', () => {
+    it('logs single non secure field', () => {
       testLogRequestInfo({
         traceEnabled: true,
+        args: {
+          foo: 'bar',
+        },
+        argsPrintout: {
+          foo: 'bar',
+        },
+      })
+    })
+    it('logs multiple non secure fields', () => {
+      testLogRequestInfo({
+        traceEnabled: true,
+        args: {
+          foo: 'bar',
+          hello: 'world',
+        },
+        argsPrintout: {
+          foo: 'bar',
+          hello: 'world',
+        },
+      })
+    })
+    it('redacts single secure field', () => {
+      testLogRequestInfo({
+        traceEnabled: true,
+        args: {
+          foo: 'bar',
+        },
+        argsPrintout: {
+          foo: REDACTED,
+        },
+        secureKeys: ['foo'],
+      })
+    })
+    it('redacts multiple secure fields with keys in order', () => {
+      testLogRequestInfo({
+        traceEnabled: true,
+        args: {
+          foo: 'bar',
+          hello: 'world',
+        },
+        argsPrintout: {
+          foo: REDACTED,
+          hello: REDACTED,
+        },
+        secureKeys: ['foo', 'hello'],
+      })
+    })
+    it('redacts multiple secure fields with keys out of order', () => {
+      testLogRequestInfo({
+        traceEnabled: true,
+        args: {
+          foo: 'bar',
+          hello: 'world',
+        },
+        argsPrintout: {
+          foo: REDACTED,
+          hello: REDACTED,
+        },
+        secureKeys: ['hello', 'foo'],
+      })
+    })
+    it('redacts single secure fields with non secure field first', () => {
+      testLogRequestInfo({
+        traceEnabled: true,
+        args: {
+          foo: 'bar',
+          hello: 'world',
+        },
+        argsPrintout: {
+          foo: 'bar',
+          hello: REDACTED,
+        },
+        secureKeys: ['hello'],
+      })
+    })
+    it('redacts single secure fields with non secure field last', () => {
+      testLogRequestInfo({
+        traceEnabled: true,
+        args: {
+          foo: 'bar',
+          hello: 'world',
+        },
+        argsPrintout: {
+          foo: REDACTED,
+          hello: 'world',
+        },
+        secureKeys: ['foo'],
       })
     })
   })
@@ -365,10 +452,17 @@ function testVerifyMongoIds({
   expect(warnSpy.mock.calls).toEqual(warnCalls)
 }
 
-function testLogRequestInfo({ traceEnabled }: { traceEnabled: boolean }) {
-  const args = {
-    hello: 'world',
-  }
+function testLogRequestInfo({
+  args,
+  secureKeys,
+  argsPrintout,
+  traceEnabled = false,
+}: {
+  args?: any
+  secureKeys?: string[]
+  argsPrintout?: any
+  traceEnabled?: boolean
+}) {
   const info: GraphQLResolveInfo = {} as GraphQLResolveInfo
   const logPrefix = 'prefix'
   const logger = getLogger('test')
@@ -383,13 +477,14 @@ function testLogRequestInfo({ traceEnabled }: { traceEnabled: boolean }) {
     resolverUtil.logRequestInfo({
       args,
       info,
+      secureKeys,
     })
   ).toEqual(undefined)
 
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
       ? [
-          [`${logPrefix} args: "${JSON.stringify(args)}"`],
+          [`${logPrefix} args: "${JSON.stringify(argsPrintout)}"`],
           [`${logPrefix} requested fields: "[]"`],
           [`${logPrefix} requested arguments: "[]"`],
         ]
