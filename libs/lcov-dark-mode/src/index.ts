@@ -29,8 +29,9 @@ export default class LcovDarkMode implements Reporter {
      * which are needed (specifically the base.css) by this method to modify them with the new dark-mode.css.
      */
     addDarkMode({
+      checkDurationMilliseconds: this._options?.checkDurationMilliseconds,
       coverageDirectory: this._options?.coverageDirectory || this._globalConfig.coverageDirectory,
-      maxWaitMilliseconds: this._options?.waitMilliseconds || 5000,
+      maxWaitMilliseconds: this._options?.waitMilliseconds,
     })
   }
 }
@@ -43,17 +44,20 @@ export default class LcovDarkMode implements Reporter {
  * @param config.maxWaitMilliseconds The maximum amount of time (in milliseconds) to wait for lcov to generate HTML files.
  */
 export async function addDarkMode({
+  checkDurationMilliseconds,
   coverageDirectory,
-  maxWaitMilliseconds = 5000,
+  maxWaitMilliseconds,
 }: {
+  checkDurationMilliseconds?: number
   coverageDirectory: string
-  maxWaitMilliseconds: number
+  maxWaitMilliseconds?: number
 }) {
   const baseCssPath = path.join(coverageDirectory, 'lcov-report', 'base.css')
   const darkModeCss = await readFile(path.join(__dirname, 'dark-mode.css'), {
     encoding: 'utf-8',
   })
   await waitForFileToExist({
+    checkDurationMilliseconds,
     filePath: baseCssPath,
     timeoutMilliseconds: maxWaitMilliseconds,
   })
@@ -71,7 +75,7 @@ export async function addDarkMode({
  */
 async function waitForFileToExist({
   filePath,
-  checkDurationMilliseconds = 500,
+  checkDurationMilliseconds = 100,
   timeoutMilliseconds = 5000,
 }: {
   filePath: string
@@ -126,6 +130,10 @@ async function sleep(milliseconds: number): Promise<void> {
  * Configuration options to control the application of dark mode to lcov HTML files.
  */
 interface LcovDarkModeOptions {
+  /**
+   * How often (in milliseconds) to check whether or not the locv HTML files have been generated yet. Default is 100.
+   */
+  checkDurationMilliseconds?: number
   /**
    * The directory containing the lcov-report directory which contains the HTML coverage files.
    */
