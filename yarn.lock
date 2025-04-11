@@ -3856,9 +3856,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gwent/api@workspace:svcs/api":
+"@gwent/api@workspace:msvs/api":
   version: 0.0.0-use.local
-  resolution: "@gwent/api@workspace:svcs/api"
+  resolution: "@gwent/api@workspace:msvs/api"
   dependencies:
     "@apollo/server": "npm:4.11.3"
     "@graphql-tools/schema": "npm:10.0.23"
@@ -3903,9 +3903,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/client-env@workspace:*, @gwent/client-env@workspace:svcs/ui/libs/client/libs/env":
+"@gwent/client-env@workspace:*, @gwent/client-env@workspace:msvs/ui/libs/client/libs/env":
   version: 0.0.0-use.local
-  resolution: "@gwent/client-env@workspace:svcs/ui/libs/client/libs/env"
+  resolution: "@gwent/client-env@workspace:msvs/ui/libs/client/libs/env"
   dependencies:
     "@types/jest": "npm:29.5.14"
     jest-junit: "npm:16.0.0"
@@ -3913,9 +3913,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/client@workspace:*, @gwent/client@workspace:svcs/ui/libs/client":
+"@gwent/client@workspace:*, @gwent/client@workspace:msvs/ui/libs/client":
   version: 0.0.0-use.local
-  resolution: "@gwent/client@workspace:svcs/ui/libs/client"
+  resolution: "@gwent/client@workspace:msvs/ui/libs/client"
   dependencies:
     "@apollo/client": "npm:3.13.5"
     "@gwent/client-env": "workspace:*"
@@ -4096,9 +4096,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/ui@workspace:svcs/ui":
+"@gwent/ui@workspace:msvs/ui":
   version: 0.0.0-use.local
-  resolution: "@gwent/ui@workspace:svcs/ui"
+  resolution: "@gwent/ui@workspace:msvs/ui"
   dependencies:
     "@gwent/client": "workspace:*"
     "@gwent/env": "workspace:*"
