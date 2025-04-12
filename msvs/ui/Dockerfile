@@ -13,7 +13,7 @@ ENV NODE_ENV=production
 
 COPY . ${APP_DIR}
 
-WORKDIR ${APP_DIR}/svcs/ui
+WORKDIR ${APP_DIR}/msvs/ui
 RUN yarn install
 RUN yarn build
 RUN yarn cache clean --all
@@ -34,7 +34,7 @@ LABEL version=${VERSION}
 
 COPY --from=build ${APP_DIR} ${APP_DIR}
 
-WORKDIR ${APP_DIR}/svcs/ui
+WORKDIR ${APP_DIR}/msvs/ui
 RUN yarn workspaces focus --production
 
 EXPOSE 3000
