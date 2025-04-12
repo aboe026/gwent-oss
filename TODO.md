@@ -2,7 +2,15 @@
 
 A list of things to be done in the future.
 
+## Table of Contents
+
+- [Fixes](#fixes)
+- [Features](#features)
+- [External Bugs](#external-bugs)
+
 ## Fixes
+
+Existing problems in the codebase that need to be fixed.
 
 - remove need for classes just for log4js spying
   - have "getLogger" method
@@ -67,6 +75,8 @@ A list of things to be done in the future.
 
 ## Features
 
+New things that should be added to the codebase.
+
 - for "Move" type, have "impact" field
   - cards removed/added
   - effects applied to other cards
@@ -104,3 +114,17 @@ A list of things to be done in the future.
   - need query to get users
     - restrict to users "friends"?
   - change addGame mutation to accept ids instead of usernames
+
+## External Bugs
+
+Bugs found in external dependencies that have not been resolved (and require workarounds):
+
+| Description                                                                                                                                                                                                              | Workaround                                                                                                                                                                                                                  | Issue Link                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Webpack cannot reference parent yarn workspace g:ts-node script                                                                                                                                                          | Need to list duplicate `ts-node` devDependency in [msvs/ui/libs/client/package.json](./msvs/ui/libs/client/package.json)                                                                                                    | https://github.com/TypeStrong/ts-loader/issues/1510              |
+| Webpack cannot use typescript references in webpack.config.ts without first building references                                                                                                                          | Need to have `yarn g:tsc --build` before webpack commands in [msvs/ui/libs/client/package.json](./msvs/ui/libs/client/package.json) `build` script (and have to run `yarn g:rimraf build/src` after webpack build finishes) | https://github.com/webpack/webpack/issues/16324                  |
+| Nodemon not restarting on file creation                                                                                                                                                                                  | Need to run `yarn build` in [msvs/api](./msvs/api/) before running `yarn watch` for first time                                                                                                                              | https://github.com/remy/nodemon/issues/2074                      |
+| TestCafe not working on TypeScript files                                                                                                                                                                                 | Need to run `yarn build` on e2e TypeScript files and have TestCafe run using the compiled javascript                                                                                                                        |                                                                  |
+| TestCafe image not working with Yarn PnP                                                                                                                                                                                 | Need to run `yarn build-image` in [test/e2e](./test/e2e/) to build custom docker image to work with Yarn PnP.                                                                                                               | https://github.com/DevExpress/testcafe/issues/7419               |
+| Line endings LF on Windows for codegen output                                                                                                                                                                            | Installed https://www.npmjs.com/package/eol and added as a hook in the [codegen.ts](./libs/graphql-schema/codegen.ts)                                                                                                       | https://github.com/dotansimha/graphql-code-generator/issues/5154 |
+| TestCafe throws error `ERROR Cannot prepare tests due to the following error: The fixture of 'Shows about page without logging in' test (null) is not of expected type (non-null object).` when overriding context type. | Run script `remove-context-overrides` to remove declarations for `test` and `fixture` from built javascript.                                                                                                                |                                                                  |
