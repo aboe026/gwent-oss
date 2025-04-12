@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.3 - 2025-04-11
+
+### Fixed
+
+- Rename microservices directory ([#33](https://github.com/aboe026/gwent/pull/33)) (Adam Boe)
+
 ## 0.11.2 - 2025-04-11
 
 ### Fixed
