@@ -2237,3 +2237,5 @@ test('Morale scores persist to end of game', async (t) => {
     ],
   })
 })
+
+// TODO: morale effect for other units go away if it gets scorched.

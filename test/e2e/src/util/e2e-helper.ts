@@ -251,12 +251,13 @@ export class E2eHelper {
     gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
     if (deckUnit.unit.name === 'Scorch') {
       player.discard = (player.discard || 0) + 1
-      if (scorching && opponent) {
+      if (scorching) {
         for (const scorch of scorching) {
-          opponent.score = (opponent.score || 0) - (scorch.strength || 0)
-          opponent.discard = (opponent.discard || 0) + 1
+          const scorchee = opponent ? opponent : player
+          scorchee.score = (scorchee.score || 0) - (scorch.strength || 0)
+          scorchee.discard = (scorchee.discard || 0) + 1
           E2eHelper.removeUnitFromGamePlayer({
-            player: opponent,
+            player: scorchee,
             row: scorch.row,
             unitName: scorch.name,
             strength: scorch.strength || 0,

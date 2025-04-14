@@ -80,7 +80,6 @@ New things that should be added to the codebase.
 - Scorch
   - does it take into account base strength or effective strength? Probably effective strength
   - does the scorched card go to normal discard pile?
-- show scorch limitations (row, min strength) in full card description
 - show scorch tooltip across entire battlefield
 - for "Move" type, have "impact" field
 
