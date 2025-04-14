@@ -1,6 +1,6 @@
 import ApiClient from './api-client'
 import Banner from '../components/banner'
-import { Combat, Deck, DeckUnit, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, DeckUnit, FactionKey, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import GamePage, { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
@@ -13,6 +13,12 @@ export interface ContextGamePlayer {
   client: ApiClient
   deck: Deck
   gameDeck: GameDeck
+}
+
+export interface ContextGameDeck {
+  faction: FactionKey
+  leader: string
+  units: string[]
 }
 
 export class E2eHelper {
@@ -91,6 +97,35 @@ export class E2eHelper {
       player.siege = {
         score: (player.siege?.score || 0) + (strength || 0),
         units: [...(player.siege?.units || []), unit],
+      }
+    }
+  }
+
+  static removeUnitFromGamePlayer({
+    player,
+    unitName,
+    strength,
+    row,
+  }: {
+    player: GamePlayerExpected
+    unitName: string
+    strength?: number
+    row: Combat
+  }): void {
+    if (row === Combat.Close) {
+      player.close = {
+        score: (player.close?.score || 0) - (strength || 0),
+        units: [...(player.close?.units || [])].filter((unit) => unit.name !== unitName),
+      }
+    } else if (row === Combat.Ranged) {
+      player.ranged = {
+        score: (player.ranged?.score || 0) - (strength || 0),
+        units: [...(player.ranged?.units || [])].filter((unit) => unit.name !== unitName),
+      }
+    } else if (row === Combat.Siege) {
+      player.siege = {
+        score: (player.siege?.score || 0) - (strength || 0),
+        units: [...(player.siege?.units || [])].filter((unit) => unit.name !== unitName),
       }
     }
   }
@@ -184,20 +219,28 @@ export class E2eHelper {
 
   static playUnit({
     player,
+    opponent,
     deckUnit,
     effectiveStrength,
     row,
     gameDeck,
     moves,
     switchTurnsWith,
+    scorching,
   }: {
     player: GamePlayerExpected
+    opponent?: GamePlayerExpected
     deckUnit: DeckUnit
     effectiveStrength?: number
     row?: Combat
     gameDeck: GameDeck
     moves?: (HistoryMove | HistoryPass)[]
     switchTurnsWith?: GamePlayerExpected
+    scorching?: {
+      name: string
+      row: Combat
+      strength?: number | null
+    }[]
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
     if (!row) {
@@ -206,12 +249,28 @@ export class E2eHelper {
     player.score = (player.score || 0) + strength
     player.hand = (player.hand || STARTING_HAND_SIZE) - 1
     gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
-    E2eHelper.addUnitToGamePlayer({
-      player,
-      unitName: deckUnit.unit.name,
-      row,
-      strength: strength,
-    })
+    if (deckUnit.unit.name === 'Scorch') {
+      player.discard = (player.discard || 0) + 1
+      if (scorching && opponent) {
+        for (const scorch of scorching) {
+          opponent.score = (opponent.score || 0) - (scorch.strength || 0)
+          opponent.discard = (opponent.discard || 0) + 1
+          E2eHelper.removeUnitFromGamePlayer({
+            player: opponent,
+            row: scorch.row,
+            unitName: scorch.name,
+            strength: scorch.strength || 0,
+          })
+        }
+      }
+    } else {
+      E2eHelper.addUnitToGamePlayer({
+        player,
+        unitName: deckUnit.unit.name,
+        row,
+        strength: strength,
+      })
+    }
     if (moves) {
       moves.push({
         userName: player.name,

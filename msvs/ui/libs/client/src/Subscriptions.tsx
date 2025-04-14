@@ -238,6 +238,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
                 gameDeck: {
                   ...previous.gameDeck,
                   hand: previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.unit.id),
+                  discard:
+                    playedUnit.unit.name === 'Scorch'
+                      ? [...previous.gameDeck.discard, playedUnit]
+                      : previous.gameDeck.discard,
                 },
               }
             }

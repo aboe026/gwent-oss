@@ -460,6 +460,8 @@ function renderExistingGame({
     deckUnit: fullUnit?.unit,
     unitArrays: potentialUnitArrays,
   })
+  const battlefieldHighlighted = handCardSelected && handCardSelected.unit.name === 'Scorch'
+  const isTurn = game?.turn?.user.id === self?.user.id
 
   return gameProps.loading || gameDeckProps.loading ? (
     <Centered>
@@ -563,7 +565,47 @@ function renderExistingGame({
           self={self}
           setPassConfirmationOpen={setPassConfirmationOpen}
         />
-        <div id={HTML_IDS.GameCenterContainer}>
+        <div
+          id={HTML_IDS.GameCenterContainer}
+          className={battlefieldHighlighted ? HTML_CLASSES.ItemHighlighted : ''}
+          style={{
+            borderStyle: battlefieldHighlighted ? (isTurn ? 'solid' : 'dotted') : 'none',
+            cursor:
+              battlefieldHighlighted && isTurn
+                ? 'pointer'
+                : battlefieldHighlighted && !isTurn
+                ? 'not-allowed'
+                : 'default',
+          }}
+          title={
+            battlefieldHighlighted && isTurn
+              ? 'Place here to destroy the strongest unit(s) on the battlefield (including your own)'
+              : battlefieldHighlighted && !isTurn
+              ? 'It is not your turn to play'
+              : ''
+          }
+          onClick={async () => {
+            if (
+              game.status === GameStatus.Playing &&
+              handCardSelected &&
+              handCardSelected.unit.name === 'Scorch' &&
+              game.turn?.user.id === self.user.id
+            ) {
+              await retryCheckingAuth({
+                checkAuth,
+                method: async () => {
+                  await playUnitProps.playUnit({
+                    variables: {
+                      game: game.id,
+                      unit: handCardSelected?.unit.id,
+                    },
+                  })
+                  setHandCardSelected(undefined)
+                },
+              })
+            }
+          }}
+        >
           {game.status === GameStatus.Decking ? (
             <GameSetDeck
               alreadySet={!!gameDeckProps.deck?.from}

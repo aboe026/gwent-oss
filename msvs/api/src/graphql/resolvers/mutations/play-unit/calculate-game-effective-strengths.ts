@@ -1,5 +1,3 @@
-import { ObjectId } from 'mongodb'
-
 import {
   EffectDbObject,
   EffectFromUnitDbObject,
@@ -9,6 +7,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EffectReasonType } from '@gwent/graphql-schema'
+import getEffectWithKey from './get-effect-with-key'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -79,20 +78,20 @@ export default class CalculateGameEffectiveStrengths {
         throw new PresentableError(`Could not find Unit with ID "${rowUnit.unit}"`)
       }
     }
-    let moraleEffectId = ''
-    const moraleEffect = effects.find((effect) => effect.key === EffectKey.Morale)
-    if (moraleEffect) {
-      moraleEffectId = moraleEffect._id.toString()
-    }
+
+    const moraleEffect = getEffectWithKey({
+      effectKey: EffectKey.Morale,
+      effects,
+    })
 
     const moraleIdsInRow: string[] = []
-    if (moraleEffectId) {
+    if (moraleEffect) {
       for (const rowDbUnit of rowDbUnits) {
         if (rowDbUnit.effects) {
           let unitHasMorale = false
           for (let i = 0; i < rowDbUnit.effects.length && !unitHasMorale; i++) {
             const effect = rowDbUnit.effects[i]
-            if (effect.toString() === moraleEffectId) {
+            if (effect.toString() === moraleEffect._id.toString()) {
               unitHasMorale = true
             }
           }
@@ -114,9 +113,9 @@ export default class CalculateGameEffectiveStrengths {
           for (const moraleId of moralesToApply) {
             rowUnit.effectiveStrength += 1
             const moraleDbUnit = units.find((unit) => unit._id.toString() === moraleId)
-            if (moraleDbUnit) {
+            if (moraleEffect && moraleDbUnit) {
               const reason: EffectFromUnitDbObject = {
-                effect: new ObjectId(moraleEffectId),
+                effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
                 unit: moraleDbUnit._id,
               }

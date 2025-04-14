@@ -11,7 +11,7 @@ import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
 
-interface GamePlayTestCtx extends E2eCtx {
+interface GameEffectMoraleTestCtx extends E2eCtx {
   scenario: string
   self: ContextGamePlayer
   opponent: ContextGamePlayer
@@ -27,13 +27,13 @@ interface GamePlayTestCtx extends E2eCtx {
   }
   game: Game
 }
-const fixture = getFixtureCtx<E2eCtx, GamePlayTestCtx>()
-const test = getTestCtx<E2eCtx, GamePlayTestCtx>()
+const fixture = getFixtureCtx<E2eCtx, GameEffectMoraleTestCtx>()
+const test = getTestCtx<E2eCtx, GameEffectMoraleTestCtx>()
 
 fixture('Game Effect Morale')
   .page(HomePage.getUrl())
   .beforeEach(async (t) => {
-    t.ctx.scenario = 'game-play'
+    t.ctx.scenario = 'game-effect-morale'
     const self = await new ApiClient({}).addUser({
       name: `${t.ctx.scenario}-self-${t.ctx.start}`,
     })

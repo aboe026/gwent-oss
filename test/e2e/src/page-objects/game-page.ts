@@ -300,7 +300,8 @@ export default class GamePage {
         for (let j = 0; j < moves[i].length; j++) {
           const move = moves[i][j]
           if ('combatRow' in move) {
-            const description = `${move.userName}: ${move.unitName} deployed as ${toTitleCase(move.combatRow)}`
+            const row = move.unitName === 'Scorch' ? 'to battlefield' : `as ${toTitleCase(move.combatRow)}`
+            const description = `${move.userName}: ${move.unitName} deployed ${row}`
             const selected =
               highlightedMove &&
               highlightedMove.playerName === move.userName &&
@@ -933,7 +934,11 @@ export default class GamePage {
     await t.click(card)
     if (verify) {
       await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
-      await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      if (unitName === 'Scorch') {
+        await t.expect(GamePage.elements.CenterContainer.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      } else {
+        await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      }
     }
     await t.click(combatRow)
   }

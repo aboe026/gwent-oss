@@ -37,12 +37,20 @@ export default function GameCombatRow({
 }) {
   const { checkAuth } = useUserContext()
   const titledCombat = toTitleCase(combat)
+  const scorchSelected = handCardSelected && handCardSelected.unit.name === 'Scorch'
   const validRow =
-    isSelf && handCardSelected && handCardSelected.unit.combats && handCardSelected.unit.combats.includes(combat)
+    isSelf &&
+    handCardSelected &&
+    handCardSelected.unit.combats &&
+    handCardSelected.unit.combats.includes(combat) &&
+    !scorchSelected
   const invalidRow =
-    handCardSelected && handCardSelected.unit.combats && !handCardSelected.unit.combats.includes(combat)
-  let description = `${titledCombat} combat row`
-  if (handCardSelected) {
+    handCardSelected &&
+    handCardSelected.unit.combats &&
+    !handCardSelected.unit.combats.includes(combat) &&
+    !scorchSelected
+  let description = scorchSelected ? '' : `${titledCombat} combat row`
+  if (handCardSelected && !scorchSelected) {
     if (isSelf) {
       if (validRow) {
         if (isTurn) {
@@ -88,7 +96,7 @@ export default function GameCombatRow({
           validRow ? `${HTML_CLASSES.ItemHighlighted} game-unit-combat-row-valid` : ''
         } ${!isTurn || invalidRow ? 'game-unit-combat-row-invalid' : ''}`}
         style={{
-          cursor: validRow && isTurn ? 'pointer' : handCardSelected ? 'not-allowed' : 'default',
+          cursor: (validRow || scorchSelected) && isTurn ? 'pointer' : handCardSelected ? 'not-allowed' : 'default',
           borderStyle: validRow ? (isTurn ? 'solid' : 'dotted') : 'none',
         }}
         title={description}

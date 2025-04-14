@@ -104,7 +104,7 @@ export default class PlayUnitValidation {
     if (unit.combats && unit.combats.length === 1 && !combat) {
       combat = unit.combats[0] as Combat
     }
-    if (!combat) {
+    if (!combat && unit.combats && unit.combats.length > 0) {
       const message = 'Must specify combat.'
       PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
       throw new PresentableError(message)
@@ -121,7 +121,7 @@ export default class PlayUnitValidation {
 }
 
 export interface ValidatedPlayUnit {
-  combat: Combat
+  combat?: Combat | null
   deckUnit: DeckUnitDbObject
   game: GameDbObject
   logPrefix: string

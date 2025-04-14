@@ -49,7 +49,9 @@ export default class PlayUnitImplementation {
     modifyBattlefieldWithNewUnit({
       game,
       combat,
-      deckUnit,
+      battlefieldUnits: roundUnits,
+      effects: unitEffects,
+      newDeckUnit: deckUnit,
     })
 
     CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
