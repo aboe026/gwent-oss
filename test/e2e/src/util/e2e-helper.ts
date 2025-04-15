@@ -141,13 +141,13 @@ export class E2eHelper {
     effectiveStrength: number
     row: Combat
   }) {
-    let currenStrength = 0
+    let currentStrength = 0
     if (row === Combat.Close) {
       const rowUnit = player.close?.units.find((unit) => unit.name === unitName)
       if (!rowUnit) {
         throw Error(`Could not find unit "${unitName}" in "${Combat.Close}" for "${player.name}"`)
       }
-      currenStrength = rowUnit.strength || 0
+      currentStrength = rowUnit.effectiveStrength || rowUnit.strength || 0
       if (player.close) {
         player.close.units = player.close.units.map((unit) => {
           if (unit.name === unitName) {
@@ -155,14 +155,14 @@ export class E2eHelper {
           }
           return unit
         })
-        player.close.score = player.close.score + (effectiveStrength - currenStrength)
+        player.close.score = player.close.score + (effectiveStrength - currentStrength)
       }
     } else if (row === Combat.Ranged) {
       const rowUnit = player.ranged?.units.find((unit) => unit.name === unitName)
       if (!rowUnit) {
         throw Error(`Could not find unit "${unitName}" in "${Combat.Ranged}" for "${player.name}"`)
       }
-      currenStrength = rowUnit.strength || 0
+      currentStrength = rowUnit.effectiveStrength || rowUnit.strength || 0
       if (player.ranged) {
         player.ranged.units = player.ranged.units.map((unit) => {
           if (unit.name === unitName) {
@@ -170,14 +170,14 @@ export class E2eHelper {
           }
           return unit
         })
-        player.ranged.score = player.ranged.score + (effectiveStrength - currenStrength)
+        player.ranged.score = player.ranged.score + (effectiveStrength - currentStrength)
       }
     } else if (row === Combat.Siege) {
       const rowUnit = player.siege?.units.find((unit) => unit.name === unitName)
       if (!rowUnit) {
         throw Error(`Could not find unit "${unitName}" in "${Combat.Siege}" for "${player.name}"`)
       }
-      currenStrength = rowUnit.strength || 0
+      currentStrength = rowUnit.effectiveStrength || rowUnit.strength || 0
       if (player.siege) {
         player.siege.units = player.siege.units.map((unit) => {
           if (unit.name === unitName) {
@@ -185,11 +185,11 @@ export class E2eHelper {
           }
           return unit
         })
-        player.siege.score = player.siege.score + (effectiveStrength - currenStrength)
+        player.siege.score = player.siege.score + (effectiveStrength - currentStrength)
       }
     }
-    if (player.score) {
-      player.score = player.score + (effectiveStrength - currenStrength)
+    if (player.score !== undefined && player.score !== null) {
+      player.score = player.score + (effectiveStrength - currentStrength)
     }
   }
 
@@ -268,7 +268,7 @@ export class E2eHelper {
         player,
         unitName: deckUnit.unit.name,
         row,
-        strength: strength,
+        strength,
       })
     }
     if (moves) {

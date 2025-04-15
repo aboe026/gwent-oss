@@ -290,7 +290,7 @@ export default class ApiClient {
   }): Promise<Game> {
     const response: any = await this._client.request(
       gql`
-        mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat!) {
+        mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat) {
           playUnit(game: $game, unit: $unit, combat: $combat) {
             ${this.fieldsOnGame()}
           }
