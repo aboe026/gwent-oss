@@ -219,7 +219,6 @@ export class E2eHelper {
 
   static playUnit({
     player,
-    opponent,
     deckUnit,
     effectiveStrength,
     row,
@@ -229,7 +228,6 @@ export class E2eHelper {
     scorching,
   }: {
     player: GamePlayerExpected
-    opponent?: GamePlayerExpected
     deckUnit: DeckUnit
     effectiveStrength?: number
     row?: Combat
@@ -237,6 +235,7 @@ export class E2eHelper {
     moves?: (HistoryMove | HistoryPass)[]
     switchTurnsWith?: GamePlayerExpected
     scorching?: {
+      player: GamePlayerExpected
       name: string
       row: Combat
       strength?: number | null
@@ -253,7 +252,7 @@ export class E2eHelper {
       player.discard = (player.discard || 0) + 1
       if (scorching) {
         for (const scorch of scorching) {
-          const scorchee = opponent ? opponent : player
+          const scorchee = scorch.player
           scorchee.score = (scorchee.score || 0) - (scorch.strength || 0)
           scorchee.discard = (scorchee.discard || 0) + 1
           E2eHelper.removeUnitFromGamePlayer({
