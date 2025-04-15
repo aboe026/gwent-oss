@@ -62,10 +62,17 @@ export default function modifyBattlefieldWithNewUnit({
 
   // scorch, remove strongest non-hero unit(s) from battlefield
   if (isScorch) {
-    const gameUnits = getGameUnits(game)
+    const gameUnits = getGameUnits({
+      combat: newUnit.scorchScope,
+      players: newUnit.scorchScope
+        ? game.players.filter((player) => player.user.toString() !== game.turn?.toString())
+        : game.players,
+      round: game.round - 1,
+    })
     const strongestGameUnits = getStrongestNonHeroUnits({
       gameUnits,
       units: battlefieldUnits,
+      minimumStrength: newUnit.scorchMin,
     })
     const strongestUnitIds = strongestGameUnits.map((unit) => unit.unit.toString())
     for (const player of game.players) {

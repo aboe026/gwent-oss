@@ -250,19 +250,6 @@ export class E2eHelper {
     gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
     if (deckUnit.unit.name === 'Scorch') {
       player.discard = (player.discard || 0) + 1
-      if (scorching) {
-        for (const scorch of scorching) {
-          const scorchee = scorch.player
-          scorchee.score = (scorchee.score || 0) - (scorch.strength || 0)
-          scorchee.discard = (scorchee.discard || 0) + 1
-          E2eHelper.removeUnitFromGamePlayer({
-            player: scorchee,
-            row: scorch.row,
-            unitName: scorch.name,
-            strength: scorch.strength || 0,
-          })
-        }
-      }
     } else {
       E2eHelper.addUnitToGamePlayer({
         player,
@@ -270,6 +257,19 @@ export class E2eHelper {
         row,
         strength,
       })
+    }
+    if (scorching) {
+      for (const scorch of scorching) {
+        const scorchee = scorch.player
+        scorchee.score = (scorchee.score || 0) - (scorch.strength || 0)
+        scorchee.discard = (scorchee.discard || 0) + 1
+        E2eHelper.removeUnitFromGamePlayer({
+          player: scorchee,
+          row: scorch.row,
+          unitName: scorch.name,
+          strength: scorch.strength || 0,
+        })
+      }
     }
     if (moves) {
       moves.push({
