@@ -41,7 +41,6 @@ export default function scorchBattlefield({
   const hasScorchEffect =
     scorchEffect && newUnit.effects && newUnit.effects.map((id) => id.toString()).includes(scorchEffect._id.toString())
 
-  // scorch, remove strongest non-hero unit(s) from battlefield
   if (hasScorchEffect) {
     const gameUnits = getGameUnits({
       combat: newUnit.scorchScope,
@@ -56,34 +55,51 @@ export default function scorchBattlefield({
       minimumStrength: newUnit.scorchMin,
     })
     const strongestUnitIds = strongestGameUnits.map((unit) => unit.unit.toString())
+
     for (const player of game.players) {
-      if (newUnit.name === 'Scorch') {
-        player.deck.discard.push(newDeckUnit)
-      }
       const round = player.rounds[game.round - 1]
       const unitsLost: GameUnitDbObject[] = []
-      round.close.units = round.close.units.filter((unit) => {
-        if (strongestUnitIds.includes(unit.unit.toString())) {
-          unitsLost.push(unit)
-          return false
-        }
-        return true
-      })
-      round.ranged.units = round.ranged.units.filter((unit) => {
-        if (strongestUnitIds.includes(unit.unit.toString())) {
-          unitsLost.push(unit)
-          return false
-        }
-        return true
-      })
-      round.siege.units = round.siege.units.filter((unit) => {
-        if (strongestUnitIds.includes(unit.unit.toString())) {
-          unitsLost.push(unit)
-          return false
-        }
-        return true
-      })
+      if (newUnit.name === 'Scorch' && player.user.toString() === game.turn?.toString()) {
+        unitsLost.push(newDeckUnit)
+      }
+      round.close.units = round.close.units.filter((gameUnit) =>
+        isUnitScorched({
+          gameUnit,
+          strongestUnitIds,
+          unitsLost,
+        })
+      )
+      round.ranged.units = round.ranged.units.filter((gameUnit) =>
+        isUnitScorched({
+          gameUnit,
+          strongestUnitIds,
+          unitsLost,
+        })
+      )
+      round.siege.units = round.siege.units.filter((gameUnit) =>
+        isUnitScorched({
+          gameUnit,
+          strongestUnitIds,
+          unitsLost,
+        })
+      )
       player.deck.discard.push(...unitsLost)
     }
   }
+}
+
+function isUnitScorched({
+  gameUnit,
+  strongestUnitIds,
+  unitsLost,
+}: {
+  gameUnit: GameUnitDbObject
+  strongestUnitIds: string[]
+  unitsLost: GameUnitDbObject[]
+}): boolean {
+  if (strongestUnitIds.includes(gameUnit.unit.toString())) {
+    unitsLost.push(gameUnit)
+    return false
+  }
+  return true
 }
