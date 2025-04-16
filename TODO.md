@@ -93,7 +93,6 @@ New things that should be added to the codebase.
 - Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
-- if effective strength greater than normal strength, green. If less, red.
 - games list improvements
   - progress bar for game status
   - highlight games waiting on you?

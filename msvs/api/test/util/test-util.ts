@@ -55,6 +55,7 @@ export default class TestUtil {
     combats,
     effectPrefix,
     hero = false,
+    name = 'unit-name',
     strength,
   }: {
     id?: ObjectId | string
@@ -65,6 +66,7 @@ export default class TestUtil {
     combats?: string[]
     effectPrefix?: string
     hero?: boolean
+    name?: string
     strength?: number
   }): UnitDbObject {
     return {
@@ -74,7 +76,7 @@ export default class TestUtil {
       faction: faction ? new ObjectId(faction) : new ObjectId(),
       hero,
       images,
-      name: 'unit-name',
+      name,
       quote: 'unit-quote',
       dlc: dlc ? new ObjectId(dlc) : undefined,
       effects: effects ? effects.map((effect) => new ObjectId(effect)) : undefined,
