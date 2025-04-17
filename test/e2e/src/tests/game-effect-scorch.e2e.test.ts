@@ -2236,7 +2236,6 @@ test('Scorch scoped to Siege combat does not remove opponents Siege combat if it
   })
 })
 
-// Clan Dimun Pirate destroys himself if no stronger units on battlefield
 test('Clan Dimun Pirate removes strongest card if on opponents side', async (t) => {
   const unitName1 = 'Milva'
   const unitName2 = 'Clan Dimun Pirate'
@@ -2564,6 +2563,8 @@ test('Clan Dimun Pirate removes itself if strongest unit', async (t) => {
     moves: [moves],
   })
 })
+
+// TODO: test that scorch with unit that has scorchScope doesn't scorch self unit if self has same unit as opponent that is going to get scorched
 
 async function prepareGame({
   self,

@@ -12,7 +12,7 @@ export default function getGameUnits({
   const gameUnits: GameUnitDbObject[] = []
 
   for (const player of players) {
-    const playerRound = player.rounds[round]
+    const playerRound = player.rounds[round - 1]
     const roundUnits = []
     if (!combat || combat === Combat.Close) {
       roundUnits.push(...playerRound.close.units)

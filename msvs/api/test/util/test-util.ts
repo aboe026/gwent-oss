@@ -156,7 +156,7 @@ export default class TestUtil {
   }: {
     artStyle?: number
     id?: ObjectId
-    effectiveStrength?: number
+    effectiveStrength?: number | null
     effects?: GameUnitEffectDbObject[]
   }): GameUnitDbObject {
     return {

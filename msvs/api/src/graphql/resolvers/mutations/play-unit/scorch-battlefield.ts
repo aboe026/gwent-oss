@@ -4,6 +4,7 @@ import {
   EffectKey,
   GameDbObject,
   GameUnitDbObject,
+  PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import getEffectWithKey from './get-effect-with-key'
@@ -47,7 +48,7 @@ export default function scorchBattlefield({
       players: newUnit.scorchScope
         ? game.players.filter((player) => player.user.toString() !== game.turn?.toString())
         : game.players,
-      round: game.round - 1,
+      round: game.round,
     })
     const strongestGameUnits = getStrongestNonHeroUnits({
       gameUnits,
@@ -57,49 +58,51 @@ export default function scorchBattlefield({
     const strongestUnitIds = strongestGameUnits.map((unit) => unit.unit.toString())
 
     for (const player of game.players) {
-      const round = player.rounds[game.round - 1]
-      const unitsLost: GameUnitDbObject[] = []
-      if (newUnit.name === 'Scorch' && player.user.toString() === game.turn?.toString()) {
-        unitsLost.push(newDeckUnit)
+      // if no scorch scope, anyone can be effected/scorched
+      // if scorch scope, only opponents (players who are not the current game turn player) can be effected/scorched
+      const scorchablePlayer = !newUnit.scorchScope || player.user.toString() !== game.turn?.toString()
+      if (scorchablePlayer) {
+        const round = player.rounds[game.round - 1]
+        const unitsLost: GameUnitDbObject[] = []
+        if (newUnit.name === 'Scorch' && player.user.toString() === game.turn?.toString()) {
+          unitsLost.push(newDeckUnit)
+        }
+        scorchUnitsInRow({
+          row: round.close,
+          strongestUnitIds,
+          unitsLost,
+        })
+        scorchUnitsInRow({
+          row: round.ranged,
+          strongestUnitIds,
+          unitsLost,
+        })
+        scorchUnitsInRow({
+          row: round.siege,
+          strongestUnitIds,
+          unitsLost,
+        })
+        player.deck.discard.push(...unitsLost)
       }
-      round.close.units = round.close.units.filter((gameUnit) =>
-        isUnitScorched({
-          gameUnit,
-          strongestUnitIds,
-          unitsLost,
-        })
-      )
-      round.ranged.units = round.ranged.units.filter((gameUnit) =>
-        isUnitScorched({
-          gameUnit,
-          strongestUnitIds,
-          unitsLost,
-        })
-      )
-      round.siege.units = round.siege.units.filter((gameUnit) =>
-        isUnitScorched({
-          gameUnit,
-          strongestUnitIds,
-          unitsLost,
-        })
-      )
-      player.deck.discard.push(...unitsLost)
     }
   }
 }
 
-function isUnitScorched({
-  gameUnit,
+export function scorchUnitsInRow({
+  row,
   strongestUnitIds,
   unitsLost,
 }: {
-  gameUnit: GameUnitDbObject
+  row: PlayerCombatRowDbObject
   strongestUnitIds: string[]
   unitsLost: GameUnitDbObject[]
-}): boolean {
-  if (strongestUnitIds.includes(gameUnit.unit.toString())) {
-    unitsLost.push(gameUnit)
-    return false
+}) {
+  for (let i = 0; i < row.units.length; i++) {
+    const gameUnit = row.units[i]
+    if (strongestUnitIds.includes(gameUnit.unit.toString())) {
+      row.units.splice(i, 1)
+      i = i - 1
+      unitsLost.push(gameUnit)
+    }
   }
-  return true
 }
