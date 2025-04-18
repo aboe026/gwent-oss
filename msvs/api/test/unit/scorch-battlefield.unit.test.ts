@@ -1,6 +1,5 @@
-import { ObjectId } from 'mongodb'
-
 import {
+  Combat,
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
@@ -9,42 +8,32 @@ import {
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import scorchBattelfield, { scorchUnitsInRow } from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
-import TestUtil from '../util/test-util'
 import * as getEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import * as getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
 import * as getStrongestNonHeroUnits from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-units'
-import deepClone from '../util/deep-clone'
+import ScorchBattelfield from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
+import TestUtil from '../util/test-util'
 
 describe('scorch-battlefield', () => {
   describe('scorchBattlefield', () => {
+    const logPrefix = 'log-prefix'
+    const self = TestUtil.getDbGamePlayer({
+      rounds: [TestUtil.getDbPlayerRound({})],
+    })
     it('throws error if newDeckUnit not in battlefieldUnits', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
       })
       const unit = TestUtil.getDbUnit({})
-      const self = TestUtil.getDbGamePlayer({
-        rounds: [TestUtil.getDbPlayerRound({})],
-      })
       const game = TestUtil.getDbGame({
-        players: [
-          self,
-          TestUtil.getDbGamePlayer({
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
-                  units: [TestUtil.getDbGameUnit({})],
-                },
-              }),
-            ],
-          }),
-        ],
+        players: [self, TestUtil.getDbGamePlayer({})],
         turn: self.user,
         round: 1,
       })
+      const message = `Could not find unit for new deck unit "${unit._id}".`
 
       testScorchBattlefield({
+        logPrefix,
         battlefieldUnits: [
           TestUtil.getDbUnit({
             effects: [scorchEffect._id],
@@ -55,37 +44,23 @@ describe('scorch-battlefield', () => {
         }),
         scorchEffect,
         game,
-        expected: Error(`Could not find unit for new deck unit "${unit._id}"`),
+        error: Error(message),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('does not perform scorching if newDeckUnit does not have scorch effect', () => {
+    it('does not call to scorchUnitsForPlayers if newDeckUnit does not have scorch effect', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
       })
       const unit = TestUtil.getDbUnit({})
-      const self = TestUtil.getDbGamePlayer({
-        rounds: [TestUtil.getDbPlayerRound({})],
-      })
       const game = TestUtil.getDbGame({
-        players: [
-          self,
-          TestUtil.getDbGamePlayer({
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
-                  units: [TestUtil.getDbGameUnit({})],
-                },
-              }),
-            ],
-          }),
-        ],
+        players: [self, TestUtil.getDbGamePlayer({})],
         turn: self.user,
         round: 1,
       })
-      const origGame = deepClone(game)
 
       testScorchBattlefield({
+        logPrefix,
         battlefieldUnits: [
           unit,
           TestUtil.getDbUnit({
@@ -97,848 +72,450 @@ describe('scorch-battlefield', () => {
         }),
         scorchEffect,
         game,
-        expected: origGame,
       })
     })
-    it('removes Scorch if no other units on battlefield', () => {
+    it('calls to scorchUnitsForPlayers if newDeckUnit has scorch effect with no scorchScope and first player', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
       })
       const unit = TestUtil.getDbUnit({
-        name: 'Scorch',
         effects: [scorchEffect._id],
       })
-      const newDeckUnit = TestUtil.getDbDeckUnit({
-        id: unit._id,
-      })
-      const self = TestUtil.getDbGamePlayer({
-        rounds: [TestUtil.getDbPlayerRound({})],
-      })
       const game = TestUtil.getDbGame({
-        players: [
-          self,
-          TestUtil.getDbGamePlayer({
-            rounds: [
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
-                  units: [TestUtil.getDbGameUnit({})],
-                },
-              }),
-            ],
-          }),
-        ],
+        players: [self, TestUtil.getDbGamePlayer({})],
         turn: self.user,
         round: 1,
       })
-      const origGame = deepClone(game)
 
       testScorchBattlefield({
+        logPrefix,
         battlefieldUnits: [unit],
-        newDeckUnit,
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
         scorchEffect,
         game,
-        strongestGameUnits: [],
         getGameUnitsCalls: [
           [
             {
               combat: undefined,
               players: game.players,
-              round: 1,
+              round: game.round,
             },
           ],
         ],
-        expected: {
-          ...origGame,
-          players: [
-            {
-              ...origGame.players[0],
-              deck: {
-                ...origGame.players[0].deck,
-                discard: [newDeckUnit],
-              },
-            },
-            origGame.players[1],
-          ],
-        },
       })
     })
-    describe('close combat', () => {
-      // TODO: refactor to mock out scorchUnitsInRow
-      it('removes Scorch and other unit if single self unit on battlefield', () => {
-        const scorchEffect = TestUtil.getDbEffect({
-          key: EffectKey.Scorch,
-        })
-        const unit = TestUtil.getDbUnit({
-          name: 'Scorch',
-          effects: [scorchEffect._id],
-        })
-        const newDeckUnit = TestUtil.getDbDeckUnit({
-          id: unit._id,
-        })
-        const strongestGameUnit = TestUtil.getDbGameUnit({})
-        const self = TestUtil.getDbGamePlayer({
-          rounds: [
-            TestUtil.getDbPlayerRound({
-              close: {
-                score: 0,
-                units: [strongestGameUnit],
-              },
-            }),
-          ],
-        })
-        const game = TestUtil.getDbGame({
-          players: [
-            self,
-            TestUtil.getDbGamePlayer({
-              rounds: [TestUtil.getDbPlayerRound({})],
-            }),
-          ],
-          turn: self.user,
-          round: 1,
-        })
-        const origGame = deepClone(game)
-
-        testScorchBattlefield({
-          battlefieldUnits: [unit],
-          newDeckUnit,
-          scorchEffect,
-          game,
-          strongestGameUnits: [strongestGameUnit],
-          getGameUnitsCalls: [
-            [
-              {
-                combat: undefined,
-                players: game.players,
-                round: 1,
-              },
-            ],
-          ],
-          expected: {
-            ...origGame,
-            players: [
-              {
-                ...origGame.players[0],
-                deck: {
-                  ...origGame.players[0].deck,
-                  discard: [newDeckUnit, strongestGameUnit],
-                },
-                rounds: [
-                  {
-                    ...origGame.players[0].rounds[0],
-                    close: {
-                      score: 0,
-                      units: [],
-                    },
-                  },
-                ],
-              },
-              origGame.players[1],
-            ],
-          },
-        })
+    it('calls to scorchUnitsForPlayers if newDeckUnit has scorch effect with no scorchScope and second player', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
       })
-      it('removes Scorch and other unit if single strongest self unit on battlefield', () => {
-        const scorchEffect = TestUtil.getDbEffect({
-          key: EffectKey.Scorch,
-        })
-        const unit = TestUtil.getDbUnit({
-          name: 'Scorch',
-          effects: [scorchEffect._id],
-        })
-        const newDeckUnit = TestUtil.getDbDeckUnit({
-          id: unit._id,
-        })
-        const strongestGameUnit = TestUtil.getDbGameUnit({})
-        const self = TestUtil.getDbGamePlayer({
-          rounds: [
-            TestUtil.getDbPlayerRound({
-              close: {
-                score: 0,
-                units: [TestUtil.getDbGameUnit({}), strongestGameUnit, TestUtil.getDbGameUnit({})],
-              },
-            }),
-          ],
-        })
-        const game = TestUtil.getDbGame({
-          players: [
-            self,
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [TestUtil.getDbGameUnit({})],
-                  },
-                }),
-              ],
-            }),
-          ],
-          turn: self.user,
-          round: 1,
-        })
-        const origGame = deepClone(game)
-
-        testScorchBattlefield({
-          battlefieldUnits: [unit],
-          newDeckUnit,
-          scorchEffect,
-          game,
-          strongestGameUnits: [strongestGameUnit],
-          getGameUnitsCalls: [
-            [
-              {
-                combat: undefined,
-                players: game.players,
-                round: 1,
-              },
-            ],
-          ],
-          expected: {
-            ...origGame,
-            players: [
-              {
-                ...origGame.players[0],
-                deck: {
-                  ...origGame.players[0].deck,
-                  discard: [newDeckUnit, strongestGameUnit],
-                },
-                rounds: [
-                  {
-                    ...origGame.players[0].rounds[0],
-                    close: {
-                      score: 0,
-                      units: [
-                        origGame.players[0].rounds[0].close.units[0],
-                        origGame.players[0].rounds[0].close.units[2],
-                      ],
-                    },
-                  },
-                ],
-              },
-              origGame.players[1],
-            ],
-          },
-        })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
       })
-      it('removes Scorch and other units if multiple strongest self units on battlefield', () => {
-        const scorchEffect = TestUtil.getDbEffect({
-          key: EffectKey.Scorch,
-        })
-        const unit = TestUtil.getDbUnit({
-          name: 'Scorch',
-          effects: [scorchEffect._id],
-        })
-        const newDeckUnit = TestUtil.getDbDeckUnit({
-          id: unit._id,
-        })
-        const strongestGameUnit1 = TestUtil.getDbGameUnit({})
-        const strongestGameUnit2 = TestUtil.getDbGameUnit({})
-        const self = TestUtil.getDbGamePlayer({
-          rounds: [
-            TestUtil.getDbPlayerRound({
-              close: {
-                score: 0,
-                units: [strongestGameUnit1, strongestGameUnit2],
-              },
-            }),
-          ],
-        })
-        const game = TestUtil.getDbGame({
-          players: [
-            self,
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [TestUtil.getDbGameUnit({})],
-                  },
-                }),
-              ],
-            }),
-          ],
-          turn: self.user,
-          round: 1,
-        })
-        const origGame = deepClone(game)
-
-        testScorchBattlefield({
-          battlefieldUnits: [unit],
-          newDeckUnit,
-          scorchEffect,
-          game,
-          strongestGameUnits: [strongestGameUnit1, strongestGameUnit2],
-          getGameUnitsCalls: [
-            [
-              {
-                combat: undefined,
-                players: game.players,
-                round: 1,
-              },
-            ],
-          ],
-          expected: {
-            ...origGame,
-            players: [
-              {
-                ...origGame.players[0],
-                deck: {
-                  ...origGame.players[0].deck,
-                  discard: [newDeckUnit, strongestGameUnit1, strongestGameUnit2],
-                },
-                rounds: [
-                  {
-                    ...origGame.players[0].rounds[0],
-                    close: {
-                      score: 0,
-                      units: [],
-                    },
-                  },
-                ],
-              },
-              origGame.players[1],
-            ],
-          },
-        })
+      const game = TestUtil.getDbGame({
+        players: [TestUtil.getDbGamePlayer({}), self],
+        turn: self.user,
+        round: 1,
       })
-      it('removes Scorch and other unit if single opponent unit on battlefield', () => {
-        const scorchEffect = TestUtil.getDbEffect({
-          key: EffectKey.Scorch,
-        })
-        const unit = TestUtil.getDbUnit({
-          name: 'Scorch',
-          effects: [scorchEffect._id],
-        })
-        const newDeckUnit = TestUtil.getDbDeckUnit({
-          id: unit._id,
-        })
-        const strongestGameUnit = TestUtil.getDbGameUnit({})
-        const self = TestUtil.getDbGamePlayer({
-          rounds: [TestUtil.getDbPlayerRound({})],
-        })
-        const game = TestUtil.getDbGame({
-          players: [
-            self,
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [strongestGameUnit],
-                  },
-                }),
-              ],
-            }),
-          ],
-          turn: self.user,
-          round: 1,
-        })
-        const origGame = deepClone(game)
 
-        testScorchBattlefield({
-          battlefieldUnits: [unit],
-          newDeckUnit,
-          scorchEffect,
-          game,
-          strongestGameUnits: [strongestGameUnit],
-          getGameUnitsCalls: [
-            [
-              {
-                combat: undefined,
-                players: game.players,
-                round: 1,
-              },
-            ],
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
+        scorchEffect,
+        game,
+        getGameUnitsCalls: [
+          [
+            {
+              combat: undefined,
+              players: game.players,
+              round: game.round,
+            },
           ],
-          expected: {
-            ...origGame,
-            players: [
-              {
-                ...origGame.players[0],
-                deck: {
-                  ...origGame.players[0].deck,
-                  discard: [newDeckUnit],
-                },
-              },
-              {
-                ...origGame.players[1],
-                deck: {
-                  ...origGame.players[1].deck,
-                  discard: [strongestGameUnit],
-                },
-                rounds: [
-                  {
-                    ...origGame.players[1].rounds[0],
-                    close: {
-                      score: 0,
-                      units: [],
-                    },
-                  },
-                ],
-              },
-            ],
-          },
-        })
+        ],
       })
-      it('removes Scorch and other unit if single strongest opponent unit on battlefield', () => {
-        const scorchEffect = TestUtil.getDbEffect({
-          key: EffectKey.Scorch,
-        })
-        const unit = TestUtil.getDbUnit({
-          name: 'Scorch',
-          effects: [scorchEffect._id],
-        })
-        const newDeckUnit = TestUtil.getDbDeckUnit({
-          id: unit._id,
-        })
-        const strongestGameUnit = TestUtil.getDbGameUnit({})
-        const self = TestUtil.getDbGamePlayer({
-          rounds: [TestUtil.getDbPlayerRound({})],
-        })
-        const game = TestUtil.getDbGame({
-          players: [
-            self,
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [TestUtil.getDbGameUnit({}), strongestGameUnit, TestUtil.getDbGameUnit({})],
-                  },
-                }),
-              ],
-            }),
-          ],
-          turn: self.user,
-          round: 1,
-        })
-        const origGame = deepClone(game)
+    })
+    it('calls to scorchUnitsForPlayers if newDeckUnit has scorch effect with scorchScope and first player', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+        scorchScope: Combat.Close,
+      })
+      const game = TestUtil.getDbGame({
+        players: [self, TestUtil.getDbGamePlayer({})],
+        turn: self.user,
+        round: 1,
+      })
 
-        testScorchBattlefield({
-          battlefieldUnits: [unit],
-          newDeckUnit,
-          scorchEffect,
-          game,
-          strongestGameUnits: [strongestGameUnit],
-          getGameUnitsCalls: [
-            [
-              {
-                combat: undefined,
-                players: game.players,
-                round: 1,
-              },
-            ],
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
+        scorchEffect,
+        game,
+        getGameUnitsCalls: [
+          [
+            {
+              combat: Combat.Close,
+              players: [game.players[1]],
+              round: game.round,
+            },
           ],
-          expected: {
-            ...origGame,
-            players: [
-              {
-                ...origGame.players[0],
-                deck: {
-                  ...origGame.players[0].deck,
-                  discard: [newDeckUnit],
-                },
-              },
-              {
-                ...origGame.players[1],
-                deck: {
-                  ...origGame.players[1].deck,
-                  discard: [strongestGameUnit],
-                },
-                rounds: [
-                  {
-                    ...origGame.players[1].rounds[0],
-                    close: {
-                      score: 0,
-                      units: [
-                        origGame.players[1].rounds[0].close.units[0],
-                        origGame.players[1].rounds[0].close.units[2],
-                      ],
-                    },
-                  },
-                ],
-              },
-            ],
-          },
-        })
+        ],
+      })
+    })
+    it('calls to scorchUnitsForPlayers if newDeckUnit has scorch effect with scorchScope and first player', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+        scorchScope: Combat.Close,
+      })
+      const game = TestUtil.getDbGame({
+        players: [TestUtil.getDbGamePlayer({}), self],
+        turn: self.user,
+        round: 1,
+      })
+
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
+        scorchEffect,
+        game,
+        getGameUnitsCalls: [
+          [
+            {
+              combat: Combat.Close,
+              players: [game.players[0]],
+              round: game.round,
+            },
+          ],
+        ],
+      })
+    })
+    it('logs to trace if enabled', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+      })
+      const game = TestUtil.getDbGame({
+        players: [self, TestUtil.getDbGamePlayer({})],
+        turn: self.user,
+        round: 1,
+      })
+
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
+        scorchEffect,
+        game,
+        getGameUnitsCalls: [
+          [
+            {
+              combat: undefined,
+              players: game.players,
+              round: game.round,
+            },
+          ],
+        ],
+        traceEnabled: true,
       })
     })
   })
   describe('scorchUnitsInRow', () => {
+    const unit1 = TestUtil.getDbGameUnit({})
+    const unit2 = TestUtil.getDbGameUnit({})
+    const unit3 = TestUtil.getDbGameUnit({})
     describe('empty strongestUnitIds', () => {
       it('does nothing if no units in row', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
+        testScorchUnitsInRow({
           units: [],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [],
+          strongestUnitIds: [],
+          left: [],
+          scorched: [],
         })
-        expect(unitsLost).toEqual([])
       })
       it('does not remove single unit if not in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [unit],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [unit],
+        testScorchUnitsInRow({
+          units: [unit1],
+          strongestUnitIds: [],
+          left: [unit1],
+          scorched: [],
         })
-        expect(unitsLost).toEqual([])
       })
       it('does not remove multiple units if none in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit1 = TestUtil.getDbGameUnit({})
-        const unit2 = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [unit1, unit2],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [unit1, unit2],
+        testScorchUnitsInRow({
+          units: [unit1, unit2, unit3],
+          strongestUnitIds: [],
+          left: [unit1, unit2, unit3],
+          scorched: [],
         })
-        expect(unitsLost).toEqual([])
       })
     })
     describe('single strongestUnitIds', () => {
       it('does nothing if no units in row', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
+        testScorchUnitsInRow({
           units: [],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [new ObjectId().toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [],
+          strongestUnitIds: [unit1.unit.toString()],
+          left: [],
+          scorched: [],
         })
-        expect(unitsLost).toEqual([])
       })
       it('does not remove single unit if not in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [unit],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [new ObjectId().toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [unit],
+        testScorchUnitsInRow({
+          units: [unit1],
+          strongestUnitIds: [unit2.unit.toString()],
+          left: [unit1],
+          scorched: [],
         })
-        expect(unitsLost).toEqual([])
       })
       it('does not remove multiple units if none in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit1 = TestUtil.getDbGameUnit({})
-        const unit2 = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
+        testScorchUnitsInRow({
           units: [unit1, unit2],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [new ObjectId().toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [unit1, unit2],
+          strongestUnitIds: [unit3.unit.toString()],
+          left: [unit1, unit2],
+          scorched: [],
         })
-        expect(unitsLost).toEqual([])
       })
       it('removes single unit if in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [unit],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [unit.unit.toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [],
+        testScorchUnitsInRow({
+          units: [unit1],
+          strongestUnitIds: [unit1.unit.toString()],
+          left: [],
+          scorched: [unit1],
         })
-        expect(unitsLost).toEqual([unit])
       })
       it('remove first unit if first in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit1 = TestUtil.getDbGameUnit({})
-        const unit2 = TestUtil.getDbGameUnit({})
-        const unit3 = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
+        testScorchUnitsInRow({
           units: [unit1, unit2, unit3],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [unit1.unit.toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [unit2, unit3],
+          strongestUnitIds: [unit1.unit.toString()],
+          left: [unit2, unit3],
+          scorched: [unit1],
         })
-        expect(unitsLost).toEqual([unit1])
       })
       it('remove middle unit if middle in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit1 = TestUtil.getDbGameUnit({})
-        const unit2 = TestUtil.getDbGameUnit({})
-        const unit3 = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
+        testScorchUnitsInRow({
           units: [unit1, unit2, unit3],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [unit2.unit.toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [unit1, unit3],
+          strongestUnitIds: [unit2.unit.toString()],
+          left: [unit1, unit3],
+          scorched: [unit2],
         })
-        expect(unitsLost).toEqual([unit2])
       })
       it('remove last unit if last in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit1 = TestUtil.getDbGameUnit({})
-        const unit2 = TestUtil.getDbGameUnit({})
-        const unit3 = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
+        testScorchUnitsInRow({
           units: [unit1, unit2, unit3],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [unit3.unit.toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [unit1, unit2],
+          strongestUnitIds: [unit3.unit.toString()],
+          left: [unit1, unit2],
+          scorched: [unit3],
         })
-        expect(unitsLost).toEqual([unit3])
       })
       it('removes first two unit if first two in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit1 = TestUtil.getDbGameUnit({})
-        const unit2 = TestUtil.getDbGameUnit({})
-        const unit3 = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
+        testScorchUnitsInRow({
           units: [unit1, unit2, unit3],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [unit1.unit.toString(), unit2.unit.toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [unit3],
+          strongestUnitIds: [unit1.unit.toString(), unit2.unit.toString()],
+          left: [unit3],
+          scorched: [unit1, unit2],
         })
-        expect(unitsLost).toEqual([unit1, unit2])
       })
       it('removes last two unit if last two in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit1 = TestUtil.getDbGameUnit({})
-        const unit2 = TestUtil.getDbGameUnit({})
-        const unit3 = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
+        testScorchUnitsInRow({
           units: [unit1, unit2, unit3],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [unit2.unit.toString(), unit3.unit.toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [unit1],
+          strongestUnitIds: [unit2.unit.toString(), unit3.unit.toString()],
+          left: [unit1],
+          scorched: [unit2, unit3],
         })
-        expect(unitsLost).toEqual([unit2, unit3])
       })
       it('removes all units if all in strongestUnitIds', () => {
-        const unitsLost: GameUnitDbObject[] = []
-        const unit1 = TestUtil.getDbGameUnit({})
-        const unit2 = TestUtil.getDbGameUnit({})
-        const unit3 = TestUtil.getDbGameUnit({})
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
+        testScorchUnitsInRow({
           units: [unit1, unit2, unit3],
-        }
-
-        expect(
-          scorchUnitsInRow({
-            row,
-            strongestUnitIds: [unit1.unit.toString(), unit2.unit.toString(), unit3.unit.toString()],
-            unitsLost,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          score: 0,
-          units: [],
+          strongestUnitIds: [unit1.unit.toString(), unit2.unit.toString(), unit3.unit.toString()],
+          left: [],
+          scorched: [unit1, unit2, unit3],
         })
-        expect(unitsLost).toEqual([unit1, unit2, unit3])
       })
     })
   })
 })
 
 function testScorchBattlefield({
+  logPrefix,
   battlefieldUnits,
   scorchEffect,
   game,
   newDeckUnit,
-  strongestGameUnits,
-  expected,
+  error,
   getGameUnitsCalls = [],
+  errorCalls = [],
+  traceEnabled,
 }: {
+  logPrefix: string
   battlefieldUnits: UnitDbObject[]
   scorchEffect: EffectDbObject | undefined
   game: GameDbObject
   newDeckUnit: DeckUnitDbObject
-  strongestGameUnits?: GameUnitDbObject[]
-  expected: GameDbObject | Error
+  error?: Error
   getGameUnitsCalls?: any[][]
+  errorCalls?: string[][]
+  traceEnabled?: boolean
 }) {
+  const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
   const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
   const gameUnits = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+  const strongestGameUnits = [gameUnits[1]]
   const getEffectWithKeySpy = jest.spyOn(getEffectWithKey, 'default').mockReturnValue(scorchEffect)
   const getGameUnitsSpy = jest.spyOn(getGameUnits, 'default').mockReturnValue(gameUnits)
   const getStrongestNonHeroUnitsSpy = jest.spyOn(getStrongestNonHeroUnits, 'default')
-  if (strongestGameUnits) {
+  if (getGameUnitsCalls.length > 0) {
     getStrongestNonHeroUnitsSpy.mockReturnValue(strongestGameUnits)
   }
+  const scorchUnitsForPlayersSpy = jest.spyOn(ScorchBattelfield as any, 'scorchUnitsForPlayers').mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  ScorchBattelfield['logger'] = {
+    error: errorSpy,
+    debug: debugSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
 
-  if (expected instanceof Error) {
+  if (error instanceof Error) {
     expect(() =>
-      scorchBattelfield({
+      ScorchBattelfield.scorchBattlefield({
         battlefieldUnits,
         effects,
+        logPrefix,
         game,
         newDeckUnit,
       })
-    ).toThrow(expected)
+    ).toThrow(error)
   } else {
     expect(
-      scorchBattelfield({
+      ScorchBattelfield.scorchBattlefield({
         battlefieldUnits,
         effects,
+        logPrefix,
         game,
         newDeckUnit,
       })
     ).toEqual(undefined)
-    expect(game).toEqual(expected)
   }
 
-  expect(getEffectWithKeySpy.mock.calls).toEqual([
-    [
-      {
-        effectKey: EffectKey.Scorch,
-        effects,
-      },
-    ],
-  ])
+  expect(getEffectWithKeySpy.mock.calls).toEqual(
+    error
+      ? []
+      : [
+          [
+            {
+              effectKey: EffectKey.Scorch,
+              effects,
+            },
+          ],
+        ]
+  )
   expect(getGameUnitsSpy.mock.calls).toEqual(getGameUnitsCalls)
   expect(getStrongestNonHeroUnitsSpy.mock.calls).toEqual(
-    strongestGameUnits
+    getGameUnitsCalls.length > 0
       ? [
           [
             {
               gameUnits,
               units: battlefieldUnits,
-              minimumStrength: battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
-                ?.scorchMin,
+              minimumStrength: newUnit?.scorchMin,
             },
           ],
         ]
       : []
   )
+  expect(scorchUnitsForPlayersSpy.mock.calls).toEqual(
+    getGameUnitsCalls.length > 0
+      ? [
+          [
+            {
+              game,
+              logPrefix,
+              scorchingDeckUnit: newDeckUnit,
+              scorchingUnit: newUnit,
+              strongestUnitIds: strongestGameUnits.map((gameUnit) => gameUnit.unit.toString()),
+            },
+          ],
+        ]
+      : []
+  )
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+  expect(debugSpy.mock.calls).toEqual(
+    getGameUnitsCalls.length > 0 ? [[`${logPrefix} unit "${newUnit?.name}" has scorch effect, applying it`]] : []
+  )
+  const traceCalls: string[][] = []
+  if (traceEnabled) {
+    traceCalls.push(
+      ...[
+        [`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`],
+        [`${logPrefix} scorchEffect: "${JSON.stringify(scorchEffect)}"`],
+        [`${logPrefix} hasScorchEffect: "${getGameUnitsCalls.length > 0}"`],
+      ]
+    )
+    if (getGameUnitsCalls.length > 0) {
+      traceCalls.push(
+        ...[
+          [`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`],
+          [`${logPrefix} strongestGameUnits: "${JSON.stringify(strongestGameUnits)}"`],
+          [
+            `${logPrefix} strongestUnitIds: "${JSON.stringify(
+              strongestGameUnits.map((gameUnit) => gameUnit.unit.toString())
+            )}"`,
+          ],
+        ]
+      )
+    }
+  }
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
+}
+
+function testScorchUnitsInRow({
+  units,
+  strongestUnitIds,
+  scorched,
+  left,
+}: {
+  units: GameUnitDbObject[]
+  strongestUnitIds: string[]
+  scorched: GameUnitDbObject[]
+  left: GameUnitDbObject[]
+}) {
+  const row: PlayerCombatRowDbObject = {
+    score: 0,
+    units,
+  }
+
+  expect(
+    ScorchBattelfield['scorchUnitsInRow']({
+      row: {
+        score: 0,
+        units,
+      },
+      strongestUnitIds,
+    })
+  ).toEqual(scorched)
+
+  expect(row).toEqual({
+    score: 0,
+    units: left,
+  })
 }

@@ -47,41 +47,47 @@ import { STARTING_HAND_SIZE, STARTING_LIVES } from '@gwent/constants'
 
 export default class TestUtil {
   static getDbUnit({
+    combats,
+    dlc,
+    effectPrefix,
+    effects,
+    faction,
+    hero = false,
     id,
     images = ['unit-image'],
-    dlc,
-    faction,
-    effects,
-    combats,
-    effectPrefix,
-    hero = false,
     name = 'unit-name',
+    scorchMin,
+    scorchScope,
     strength,
   }: {
+    combats?: string[]
+    dlc?: ObjectId | string
+    effectPrefix?: string
+    effects?: (ObjectId | string)[]
+    faction?: ObjectId | string
+    hero?: boolean
     id?: ObjectId | string
     images?: string[]
-    dlc?: ObjectId | string
-    faction?: ObjectId | string
-    effects?: (ObjectId | string)[]
-    combats?: string[]
-    effectPrefix?: string
-    hero?: boolean
     name?: string
+    scorchMin?: number
+    scorchScope?: Combat
     strength?: number
   }): UnitDbObject {
     return {
       _id: id ? new ObjectId(id) : new ObjectId(),
+      combats,
       created: new Date(),
       deckable: true,
+      dlc: dlc ? new ObjectId(dlc) : undefined,
+      effectPrefix,
+      effects: effects ? effects.map((effect) => new ObjectId(effect)) : undefined,
       faction: faction ? new ObjectId(faction) : new ObjectId(),
       hero,
       images,
       name,
       quote: 'unit-quote',
-      dlc: dlc ? new ObjectId(dlc) : undefined,
-      effects: effects ? effects.map((effect) => new ObjectId(effect)) : undefined,
-      combats,
-      effectPrefix,
+      scorchMin,
+      scorchScope,
       strength,
     }
   }

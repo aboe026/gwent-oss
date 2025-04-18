@@ -47,10 +47,11 @@ export default class PlayUnitImplementation {
     const unitEffects = await getUnitEffects(roundUnits)
 
     modifyBattlefieldWithNewUnit({
-      game,
-      combat,
       battlefieldUnits: roundUnits,
+      combat,
       effects: unitEffects,
+      game,
+      logPrefix,
       newDeckUnit: deckUnit,
     })
 

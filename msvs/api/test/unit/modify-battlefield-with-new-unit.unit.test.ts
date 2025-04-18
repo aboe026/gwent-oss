@@ -1117,10 +1117,11 @@ function testModifyBattlefieldWithNewUnit({
 
   expect(
     modifyBattlefieldWithNewUnit({
-      combat,
       battlefieldUnits,
-      game,
+      combat,
       effects,
+      game,
+      logPrefix: 'log-prefix',
       newDeckUnit,
     })
   ).toEqual(undefined)

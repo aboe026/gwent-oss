@@ -1,6 +1,6 @@
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import { DeckUnitDbObject, EffectDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
-import scorchBattlefield from './scorch-battlefield'
+import ScorchBattlefield from './scorch-battlefield'
 
 /**
  * Modifies the battlefield of the current round in a game due to the deployment of a new unit. Other units on or off the battlefield may be impacted by unit effects.
@@ -15,12 +15,14 @@ export default function modifyBattlefieldWithNewUnit({
   combat,
   effects,
   game,
+  logPrefix,
   newDeckUnit,
 }: {
   battlefieldUnits: UnitDbObject[]
   combat?: Combat | null
   effects: EffectDbObject[]
   game: GameDbObject
+  logPrefix: string
   newDeckUnit: DeckUnitDbObject
 }) {
   for (const player of game.players) {
@@ -37,10 +39,11 @@ export default function modifyBattlefieldWithNewUnit({
     }
   }
 
-  scorchBattlefield({
+  ScorchBattlefield.scorchBattlefield({
     battlefieldUnits,
     effects,
     game,
+    logPrefix,
     newDeckUnit,
   })
 }
