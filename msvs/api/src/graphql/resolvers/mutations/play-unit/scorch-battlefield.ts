@@ -164,7 +164,6 @@ export default class ScorchBattlefield {
     row: PlayerCombatRowDbObject
     strongestUnitIds: string[]
   }): GameUnitDbObject[] {
-    // TODO: add logging
     const unitsScorched: GameUnitDbObject[] = []
 
     for (let i = 0; i < row.units.length; i++) {

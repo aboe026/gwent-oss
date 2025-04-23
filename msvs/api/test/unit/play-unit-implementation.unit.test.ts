@@ -159,9 +159,12 @@ async function testPlayUnitImplementation({
   expect(modifyBattlefieldWithNewUnitSpy.mock.calls).toEqual([
     [
       {
-        game,
+        battlefieldUnits: units,
         combat,
-        deckUnit,
+        effects,
+        game,
+        logPrefix,
+        newDeckUnit: deckUnit,
       },
     ],
   ])

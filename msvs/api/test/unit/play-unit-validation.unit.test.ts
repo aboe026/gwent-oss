@@ -184,7 +184,7 @@ describe('play-unit-validation', () => {
       warnCalls: [[`${logPrefix} failed: ${message}`]],
     })
   })
-  it('throws error if no combat specified and unit does not have combats', async () => {
+  it('returns objects if no errors and no combat specified for unit with no combat', async () => {
     const deckUnit = TestUtil.getDbDeckUnit({})
     const game = TestUtil.getDbGame({
       players: [
@@ -199,15 +199,13 @@ describe('play-unit-validation', () => {
       id: deckUnit.unit,
     })
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
-    const message = 'Must specify combat.'
     await testPlayUnitValidation({
       user,
       game,
       unitId: deckUnit.unit.toString(),
       units: [unit],
       logPrefix,
-      expectedError: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
+      expectedDeckUnit: deckUnit,
     })
   })
   it('returns objects if no errors and no combat specified for unit with single combat', async () => {

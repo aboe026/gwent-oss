@@ -1,9 +1,9 @@
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnitDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
+import ScorchBattlefield from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
 import TestUtil from '../util/test-util'
-import { DeckUnitDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
-import * as scorchBattlefield from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
 
 describe('modify-battlefield-with-new-unit', () => {
   describe('modifyBattlefieldWithNewUnit', () => {
@@ -1112,8 +1112,9 @@ function testModifyBattlefieldWithNewUnit({
   game: GameDbObject
   expected: GameDbObject
 }) {
+  const logPrefix = 'log-prefix'
   const effects = [TestUtil.getDbEffect({})]
-  const scorchBattlefieldSpy = jest.spyOn(scorchBattlefield, 'default').mockImplementation()
+  const scorchBattlefieldSpy = jest.spyOn(ScorchBattlefield, 'scorchBattlefield').mockImplementation()
 
   expect(
     modifyBattlefieldWithNewUnit({
@@ -1121,7 +1122,7 @@ function testModifyBattlefieldWithNewUnit({
       combat,
       effects,
       game,
-      logPrefix: 'log-prefix',
+      logPrefix,
       newDeckUnit,
     })
   ).toEqual(undefined)
@@ -1133,6 +1134,7 @@ function testModifyBattlefieldWithNewUnit({
         battlefieldUnits,
         effects,
         game,
+        logPrefix,
         newDeckUnit,
       },
     ],
