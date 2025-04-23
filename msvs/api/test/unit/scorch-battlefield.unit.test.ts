@@ -12,7 +12,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
-import * as getEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
+import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import * as getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
 import * as getStrongestNonHeroUnits from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-units'
 import ScorchBattelfield from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
@@ -937,7 +937,7 @@ function testScorchBattlefield({
   const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
   const gameUnits = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
   const strongestGameUnits = [gameUnits[1]]
-  const getEffectWithKeySpy = jest.spyOn(getEffectWithKey, 'default').mockReturnValue(scorchEffect)
+  const getEffectWithKeySpy = jest.spyOn(GetEffectWithKey, 'getEffectWithKey').mockReturnValue(scorchEffect)
   const getGameUnitsSpy = jest.spyOn(getGameUnits, 'default').mockReturnValue(gameUnits)
   const getStrongestNonHeroUnitsSpy = jest.spyOn(getStrongestNonHeroUnits, 'default')
   if (getGameUnitsCalls.length > 0) {

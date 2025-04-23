@@ -11,7 +11,7 @@ import {
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import getEffectWithKey from './get-effect-with-key'
+import GetEffectWithKey from './get-effect-with-key'
 import getGameUnits from './get-game-units'
 import getStrongestNonHeroUnits from './get-strongest-non-hero-units'
 
@@ -41,7 +41,7 @@ export default class ScorchBattlefield {
       ScorchBattlefield.logger.trace(`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`)
     }
 
-    const scorchEffect = getEffectWithKey({
+    const scorchEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Scorch,
       effects,
     })

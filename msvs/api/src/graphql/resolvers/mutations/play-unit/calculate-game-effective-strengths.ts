@@ -7,7 +7,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EffectReasonType } from '@gwent/graphql-schema'
-import getEffectWithKey from './get-effect-with-key'
+import GetEffectWithKey from './get-effect-with-key'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -79,7 +79,7 @@ export default class CalculateGameEffectiveStrengths {
       }
     }
 
-    const moraleEffect = getEffectWithKey({
+    const moraleEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Morale,
       effects,
     })
