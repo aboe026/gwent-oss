@@ -1,10 +1,12 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
   GameDbObject,
+  GamePlayerDbObject,
   GameUnitDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
@@ -81,72 +83,76 @@ export default class ScorchBattlefield {
         ScorchBattlefield.logger.trace(`${logPrefix} strongestUnitIds: "${JSON.stringify(strongestUnitIds)}"`)
       }
 
-      ScorchBattlefield.scorchUnitsForPlayers({
-        game,
-        logPrefix,
-        scorchingDeckUnit: newDeckUnit,
-        scorchingUnit: newUnit,
-        strongestUnitIds,
-      })
+      for (const player of game.players) {
+        ScorchBattlefield.scorchUnitsForPlayer({
+          player,
+          round: game.round,
+          turn: game.turn,
+          logPrefix,
+          scorchingDeckUnit: newDeckUnit,
+          scorchingUnit: newUnit,
+          strongestUnitIds,
+        })
+      }
     }
   }
 
-  private static scorchUnitsForPlayers({
-    game,
+  private static scorchUnitsForPlayer({
+    player,
+    round,
+    turn,
     logPrefix,
     scorchingUnit,
     scorchingDeckUnit,
     strongestUnitIds,
   }: {
-    game: GameDbObject
+    player: GamePlayerDbObject
+    round: number
+    turn: ObjectId | undefined
     logPrefix: string
     scorchingUnit: UnitDbObject
     scorchingDeckUnit: DeckUnitDbObject
     strongestUnitIds: string[]
   }) {
-    for (const player of game.players) {
-      if (scorchingUnit.name === 'Scorch' && player.user.toString() === game.turn?.toString()) {
-        // the named "Scorch" card does not stay on the battlefield
-        player.deck.discard.push(scorchingDeckUnit)
-        if (ScorchBattlefield.logger.isTraceEnabled()) {
-          ScorchBattlefield.logger.trace(
-            `${logPrefix} newUnit "${scorchingUnit._id}" has name "Scorch" and played by current player, so discarding it`
-          )
-        }
-      }
-
-      // if no scorch scope, anyone can be effected/scorched
-      // if scorch scope, only opponents (players who are not the current game turn player) can be effected/scorched
-      const scorchablePlayer = !scorchingUnit.scorchScope || player.user.toString() !== game.turn?.toString()
+    if (scorchingUnit.name === 'Scorch' && player.user.toString() === turn?.toString()) {
+      // the named "Scorch" card does not stay on the battlefield
+      player.deck.discard.push(scorchingDeckUnit)
       if (ScorchBattlefield.logger.isTraceEnabled()) {
         ScorchBattlefield.logger.trace(
-          `${logPrefix} scorchablePlayer "${scorchablePlayer}" for player "${player.user}"`
+          `${logPrefix} newUnit "${scorchingUnit._id}" has name "Scorch" and played by current player "${player.user}", so discarding it`
         )
       }
+    }
 
-      if (strongestUnitIds.length > 0 && scorchablePlayer) {
-        const unitsScorched: GameUnitDbObject[] = []
-        const round = player.rounds[game.round - 1]
-        for (const roundRow of [round.close, round.ranged, round.siege]) {
-          unitsScorched.push(
-            ...ScorchBattlefield.scorchUnitsInRow({
-              row: roundRow,
-              strongestUnitIds,
-            })
-          )
-        }
-        if (ScorchBattlefield.logger.isTraceEnabled()) {
-          ScorchBattlefield.logger.trace(`${logPrefix} unitsLost: "${JSON.stringify(unitsScorched)}"`)
-        }
+    // if no scorch scope, anyone can be effected/scorched
+    // if scorch scope, only opponents (players who are not the current game turn player) can be effected/scorched
+    const scorchablePlayer = !scorchingUnit.scorchScope || player.user.toString() !== turn?.toString()
+    if (ScorchBattlefield.logger.isTraceEnabled()) {
+      ScorchBattlefield.logger.trace(`${logPrefix} scorchablePlayer "${scorchablePlayer}" for player "${player.user}"`)
+    }
 
-        if (unitsScorched.length > 0) {
-          ScorchBattlefield.logger.debug(
-            `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify(
-              unitsScorched.map((gameUnit) => gameUnit.unit)
-            )}" for player "${player.user}"`
-          )
-          player.deck.discard.push(...unitsScorched)
-        }
+    if (strongestUnitIds.length > 0 && scorchablePlayer) {
+      const unitsScorched: GameUnitDbObject[] = []
+      const playerRound = player.rounds[round - 1]
+      for (const roundRow of [playerRound.close, playerRound.ranged, playerRound.siege]) {
+        unitsScorched.push(
+          ...ScorchBattlefield.scorchUnitsInRow({
+            row: roundRow,
+            strongestUnitIds,
+          })
+        )
+      }
+      if (ScorchBattlefield.logger.isTraceEnabled()) {
+        ScorchBattlefield.logger.trace(`${logPrefix} unitsLost: "${JSON.stringify(unitsScorched)}"`)
+      }
+
+      if (unitsScorched.length > 0) {
+        ScorchBattlefield.logger.debug(
+          `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify(
+            unitsScorched.map((gameUnit) => gameUnit.unit)
+          )}" for player "${player.user}"`
+        )
+        player.deck.discard.push(...unitsScorched)
       }
     }
   }

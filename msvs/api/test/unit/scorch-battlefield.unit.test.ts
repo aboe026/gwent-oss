@@ -1,13 +1,17 @@
+import { ObjectId } from 'mongodb'
+
 import {
   Combat,
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
   GameDbObject,
+  GamePlayerDbObject,
   GameUnitDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import deepClone from '../util/deep-clone'
 import * as getEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import * as getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
 import * as getStrongestNonHeroUnits from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-units'
@@ -238,6 +242,561 @@ describe('scorch-battlefield', () => {
       })
     })
   })
+  describe('scorchUnitsForPlayer', () => {
+    const logPrefix = 'log-prefix'
+    it('does not move scorchingDeckUnit to discard if name is Scorch and not turn', () => {
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        name: 'Scorch',
+      })
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: new ObjectId(),
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds: [],
+        expected: origPlayer,
+      })
+    })
+    it('moves scorchingDeckUnit to discard if name is Scorch and turn', () => {
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [TestUtil.getDbPlayerRound({})],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        name: 'Scorch',
+      })
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: player.user,
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds: [],
+        expected: {
+          ...origPlayer,
+          deck: {
+            ...origPlayer.deck,
+            discard: [scorchingDeckUnit],
+          },
+        },
+      })
+    })
+    it('does not move anything to discard if scorchUnitsInRow returns nothing', () => {
+      const scorchedUnit = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({})
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [new ObjectId().toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: player.user,
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        scorchUnitsInRowResponses: [[], [], []],
+        expected: origPlayer,
+        scorchUnitsInRowCalls: getScorchUnitsInRowCalls({
+          player,
+          round: 1,
+          strongestUnitIds,
+        }),
+      })
+    })
+    it('moves unitsScorched to discards if no scorch scope and turn', () => {
+      const scorchedUnit = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        combats: [Combat.Ranged],
+      })
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [scorchedUnit.unit.toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: player.user,
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        scorchUnitsInRowResponses: [[], [scorchedUnit], []],
+        expected: {
+          ...origPlayer,
+          deck: {
+            ...origPlayer.deck,
+            discard: [scorchedUnit],
+          },
+        },
+        scorchUnitsInRowCalls: getScorchUnitsInRowCalls({
+          player,
+          round: 1,
+          strongestUnitIds,
+        }),
+        debugCalls: [
+          [
+            `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
+              scorchedUnit.unit,
+            ])}" for player "${player.user}"`,
+          ],
+        ],
+      })
+    })
+    it('moves unitsScorched to discards if no scorch scope and not turn', () => {
+      const scorchedUnit = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        combats: [Combat.Siege],
+      })
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [scorchedUnit.unit.toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: new ObjectId(),
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        scorchUnitsInRowResponses: [[], [], [scorchedUnit]],
+        expected: {
+          ...origPlayer,
+          deck: {
+            ...origPlayer.deck,
+            discard: [scorchedUnit],
+          },
+        },
+        scorchUnitsInRowCalls: getScorchUnitsInRowCalls({
+          player,
+          round: 1,
+          strongestUnitIds,
+        }),
+        debugCalls: [
+          [
+            `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
+              scorchedUnit.unit,
+            ])}" for player "${player.user}"`,
+          ],
+        ],
+      })
+    })
+    it('does not move unitsScorched to discards if scorch scope and turn', () => {
+      const scorchedUnit = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        scorchScope: Combat.Close,
+      })
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [scorchedUnit.unit.toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: player.user,
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        expected: {
+          ...origPlayer,
+        },
+      })
+    })
+    it('moves unitsScorched to discards if scorch scope and not turn', () => {
+      const scorchedUnit = TestUtil.getDbDeckUnit({})
+      const nonScorchedUnit = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit, nonScorchedUnit],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        scorchScope: Combat.Close,
+      })
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [scorchedUnit.unit.toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: new ObjectId(),
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        scorchUnitsInRowResponses: [[scorchedUnit], [], []],
+        expected: {
+          ...origPlayer,
+          deck: {
+            ...origPlayer.deck,
+            discard: [scorchedUnit],
+          },
+        },
+        scorchUnitsInRowCalls: getScorchUnitsInRowCalls({
+          player,
+          round: 1,
+          strongestUnitIds,
+        }),
+        debugCalls: [
+          [
+            `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
+              scorchedUnit.unit,
+            ])}" for player "${player.user}"`,
+          ],
+        ],
+      })
+    })
+    it('moves unitsScorched to discards if multiple units scorched in same combat', () => {
+      const scorchedUnit1 = TestUtil.getDbDeckUnit({})
+      const scorchedUnit2 = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit1, scorchedUnit2],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        combats: [Combat.Close],
+      })
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [scorchedUnit1.unit.toString(), scorchedUnit2.unit.toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: player.user,
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        scorchUnitsInRowResponses: [[scorchedUnit1, scorchedUnit2], [], []],
+        expected: {
+          ...origPlayer,
+          deck: {
+            ...origPlayer.deck,
+            discard: [scorchedUnit1, scorchedUnit2],
+          },
+        },
+        scorchUnitsInRowCalls: getScorchUnitsInRowCalls({
+          player,
+          round: 1,
+          strongestUnitIds,
+        }),
+        debugCalls: [
+          [
+            `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
+              scorchedUnit1.unit,
+              scorchedUnit2.unit,
+            ])}" for player "${player.user}"`,
+          ],
+        ],
+      })
+    })
+    it('moves unitsScorched to discards if multiple units scorched in different combats', () => {
+      const scorchedUnit1 = TestUtil.getDbDeckUnit({})
+      const scorchedUnit2 = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit1, scorchedUnit2],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        name: 'Scorch',
+      })
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [scorchedUnit1.unit.toString(), scorchedUnit2.unit.toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: player.user,
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        scorchUnitsInRowResponses: [[scorchedUnit1], [scorchedUnit2], []],
+        expected: {
+          ...origPlayer,
+          deck: {
+            ...origPlayer.deck,
+            discard: [scorchingDeckUnit, scorchedUnit1, scorchedUnit2],
+          },
+        },
+        scorchUnitsInRowCalls: getScorchUnitsInRowCalls({
+          player,
+          round: 1,
+          strongestUnitIds,
+        }),
+        debugCalls: [
+          [
+            `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
+              scorchedUnit1.unit,
+              scorchedUnit2.unit,
+            ])}" for player "${player.user}"`,
+          ],
+        ],
+      })
+    })
+    it('scorch works in round 2', () => {
+      const scorchedUnit = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({}),
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({})
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [scorchedUnit.unit.toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 2,
+        turn: player.user,
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        scorchUnitsInRowResponses: [[scorchedUnit], [], []],
+        expected: {
+          ...origPlayer,
+          deck: {
+            ...origPlayer.deck,
+            discard: [scorchedUnit],
+          },
+        },
+        scorchUnitsInRowCalls: getScorchUnitsInRowCalls({
+          player,
+          round: 2,
+          strongestUnitIds,
+        }),
+        debugCalls: [
+          [
+            `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
+              scorchedUnit.unit,
+            ])}" for player "${player.user}"`,
+          ],
+        ],
+        traceEnabled: true,
+        traceCalls: [
+          [`${logPrefix} scorchablePlayer "true" for player "${player.user}"`],
+          [`${logPrefix} unitsLost: "${JSON.stringify([scorchedUnit])}"`],
+        ],
+      })
+    })
+    it('scorch works in round 3', () => {
+      const scorchedUnit = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({}),
+          TestUtil.getDbPlayerRound({}),
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({})
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [scorchedUnit.unit.toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 3,
+        turn: player.user,
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        scorchUnitsInRowResponses: [[scorchedUnit], [], []],
+        expected: {
+          ...origPlayer,
+          deck: {
+            ...origPlayer.deck,
+            discard: [scorchedUnit],
+          },
+        },
+        scorchUnitsInRowCalls: getScorchUnitsInRowCalls({
+          player,
+          round: 3,
+          strongestUnitIds,
+        }),
+        debugCalls: [
+          [
+            `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
+              scorchedUnit.unit,
+            ])}" for player "${player.user}"`,
+          ],
+        ],
+        traceEnabled: true,
+        traceCalls: [
+          [`${logPrefix} scorchablePlayer "true" for player "${player.user}"`],
+          [`${logPrefix} unitsLost: "${JSON.stringify([scorchedUnit])}"`],
+        ],
+      })
+    })
+    it('logs to trace if enabled', () => {
+      const scorchedUnit = TestUtil.getDbDeckUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [scorchedUnit],
+            },
+          }),
+        ],
+      })
+      const scorchingUnit = TestUtil.getDbUnit({
+        name: 'Scorch',
+      })
+      const scorchingDeckUnit = TestUtil.getDbDeckUnit({
+        id: scorchingUnit._id,
+      })
+      const strongestUnitIds = [scorchedUnit.unit.toString()]
+      const origPlayer = deepClone(player)
+
+      testScorchUnitsForPlayer({
+        player,
+        round: 1,
+        turn: player.user,
+        logPrefix,
+        scorchingDeckUnit,
+        scorchingUnit,
+        strongestUnitIds,
+        scorchUnitsInRowResponses: [[scorchedUnit], [], []],
+        expected: {
+          ...origPlayer,
+          deck: {
+            ...origPlayer.deck,
+            discard: [scorchingDeckUnit, scorchedUnit],
+          },
+        },
+        scorchUnitsInRowCalls: getScorchUnitsInRowCalls({
+          player,
+          round: 1,
+          strongestUnitIds,
+        }),
+        debugCalls: [
+          [
+            `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
+              scorchedUnit.unit,
+            ])}" for player "${player.user}"`,
+          ],
+        ],
+        traceEnabled: true,
+        traceCalls: [
+          [
+            `${logPrefix} newUnit "${scorchingUnit._id}" has name "Scorch" and played by current player "${player.user}", so discarding it`,
+          ],
+          [`${logPrefix} scorchablePlayer "true" for player "${player.user}"`],
+          [`${logPrefix} unitsLost: "${JSON.stringify([scorchedUnit])}"`],
+        ],
+      })
+    })
+  })
   describe('scorchUnitsInRow', () => {
     const unit1 = TestUtil.getDbGameUnit({})
     const unit2 = TestUtil.getDbGameUnit({})
@@ -384,7 +943,7 @@ function testScorchBattlefield({
   if (getGameUnitsCalls.length > 0) {
     getStrongestNonHeroUnitsSpy.mockReturnValue(strongestGameUnits)
   }
-  const scorchUnitsForPlayersSpy = jest.spyOn(ScorchBattelfield as any, 'scorchUnitsForPlayers').mockImplementation()
+  const scorchUnitsForPlayersSpy = jest.spyOn(ScorchBattelfield as any, 'scorchUnitsForPlayer').mockImplementation()
   const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -445,17 +1004,17 @@ function testScorchBattlefield({
   )
   expect(scorchUnitsForPlayersSpy.mock.calls).toEqual(
     getGameUnitsCalls.length > 0
-      ? [
-          [
-            {
-              game,
-              logPrefix,
-              scorchingDeckUnit: newDeckUnit,
-              scorchingUnit: newUnit,
-              strongestUnitIds: strongestGameUnits.map((gameUnit) => gameUnit.unit.toString()),
-            },
-          ],
-        ]
+      ? game.players.map((player) => [
+          {
+            player,
+            round: game.round,
+            turn: game.turn,
+            logPrefix,
+            scorchingDeckUnit: newDeckUnit,
+            scorchingUnit: newUnit,
+            strongestUnitIds: strongestGameUnits.map((gameUnit) => gameUnit.unit.toString()),
+          },
+        ])
       : []
   )
   expect(errorSpy.mock.calls).toEqual(errorCalls)
@@ -485,6 +1044,91 @@ function testScorchBattlefield({
       )
     }
   }
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
+}
+
+function getScorchUnitsInRowCalls({
+  player,
+  round,
+  strongestUnitIds,
+}: {
+  player: GamePlayerDbObject
+  round: number
+  strongestUnitIds: string[]
+}): any[][] {
+  const calls: any[][] = []
+
+  const playerRound = player.rounds[round - 1]
+  for (const roundRow of [playerRound.close, playerRound.ranged, playerRound.siege]) {
+    calls.push([
+      {
+        row: roundRow,
+        strongestUnitIds,
+      },
+    ])
+  }
+
+  return calls
+}
+
+function testScorchUnitsForPlayer({
+  player,
+  round,
+  turn,
+  logPrefix,
+  scorchingUnit,
+  scorchingDeckUnit,
+  strongestUnitIds,
+  scorchUnitsInRowResponses,
+  expected,
+  scorchUnitsInRowCalls = [],
+  debugCalls = [],
+  traceCalls = [],
+  traceEnabled,
+}: {
+  player: GamePlayerDbObject
+  round: number
+  turn: ObjectId
+  logPrefix: string
+  scorchingUnit: UnitDbObject
+  scorchingDeckUnit: DeckUnitDbObject
+  strongestUnitIds: string[]
+  scorchUnitsInRowResponses?: GameUnitDbObject[][]
+  expected: GamePlayerDbObject
+  scorchUnitsInRowCalls?: any[][]
+  debugCalls?: string[][]
+  traceCalls?: string[][]
+  traceEnabled?: boolean
+}) {
+  const scorchUnitsInRowSpy = jest.spyOn(ScorchBattelfield as any, 'scorchUnitsInRow')
+  if (scorchUnitsInRowResponses) {
+    for (const scorchUnitsInRowResponse of scorchUnitsInRowResponses) {
+      scorchUnitsInRowSpy.mockReturnValueOnce(scorchUnitsInRowResponse)
+    }
+  }
+  const debugSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  ScorchBattelfield['logger'] = {
+    debug: debugSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
+
+  expect(
+    ScorchBattelfield['scorchUnitsForPlayer']({
+      player,
+      round,
+      turn,
+      logPrefix,
+      scorchingDeckUnit,
+      scorchingUnit,
+      strongestUnitIds,
+    })
+  ).toEqual(undefined)
+  expect(player).toEqual(expected)
+
+  expect(scorchUnitsInRowSpy.mock.calls).toEqual(scorchUnitsInRowCalls)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 
