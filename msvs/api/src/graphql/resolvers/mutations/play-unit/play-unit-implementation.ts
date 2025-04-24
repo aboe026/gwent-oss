@@ -59,6 +59,7 @@ export default class PlayUnitImplementation {
       game,
       units: [unit, ...roundUnits],
       effects: unitEffects,
+      logPrefix,
     })
 
     setGameScores(game)

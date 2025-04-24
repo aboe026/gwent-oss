@@ -44,6 +44,7 @@ export default class ScorchBattlefield {
     const scorchEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Scorch,
       effects,
+      logPrefix,
     })
     if (ScorchBattlefield.logger.isTraceEnabled()) {
       ScorchBattlefield.logger.trace(`${logPrefix} scorchEffect: "${JSON.stringify(scorchEffect)}"`)

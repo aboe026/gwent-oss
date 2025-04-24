@@ -28,26 +28,31 @@ export default class CalculateGameEffectiveStrengths {
     game,
     units,
     effects,
+    logPrefix,
   }: {
     game: GameDbObject
     units: UnitDbObject[]
     effects: EffectDbObject[]
+    logPrefix: string
   }) {
     for (const player of game.players) {
       CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
         row: player.rounds[game.round - 1].close,
         units,
         effects,
+        logPrefix,
       })
       CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
         row: player.rounds[game.round - 1].ranged,
         units,
         effects,
+        logPrefix,
       })
       CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
         row: player.rounds[game.round - 1].siege,
         units,
         effects,
+        logPrefix,
       })
     }
   }
@@ -64,10 +69,12 @@ export default class CalculateGameEffectiveStrengths {
     row,
     units,
     effects,
+    logPrefix,
   }: {
     row: PlayerCombatRowDbObject
     units: UnitDbObject[]
     effects: EffectDbObject[]
+    logPrefix: string
   }) {
     const rowDbUnits: UnitDbObject[] = []
     for (const rowUnit of row.units) {
@@ -82,6 +89,7 @@ export default class CalculateGameEffectiveStrengths {
     const moraleEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Morale,
       effects,
+      logPrefix,
     })
 
     const moraleIdsInRow: string[] = []

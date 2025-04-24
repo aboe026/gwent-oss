@@ -984,6 +984,7 @@ function testScorchBattlefield({
             {
               effectKey: EffectKey.Scorch,
               effects,
+              logPrefix,
             },
           ],
         ]

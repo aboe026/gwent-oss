@@ -174,6 +174,7 @@ async function testPlayUnitImplementation({
         game,
         units: [unit, ...units],
         effects: effects,
+        logPrefix,
       },
     ],
   ])

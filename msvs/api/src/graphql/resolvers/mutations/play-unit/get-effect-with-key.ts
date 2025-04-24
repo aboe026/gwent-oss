@@ -8,10 +8,15 @@ export default class GetEffectWithKey {
   static getEffectWithKey({
     effectKey,
     effects,
+    logPrefix,
   }: {
     effectKey: EffectKey
     effects: EffectDbObject[]
+    logPrefix: string
   }): EffectDbObject | undefined {
+    if (GetEffectWithKey.logger.isTraceEnabled()) {
+      GetEffectWithKey.logger.trace(`${logPrefix} effectKey: "${effectKey}", effects: "${JSON.stringify(effects)}"`)
+    }
     if (effects.length > 0) {
       const effectsWithKey = effects.filter((effect) => effect.key === effectKey.toString())
       if (effectsWithKey.length > 1) {
