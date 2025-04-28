@@ -13,7 +13,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import GetEffectWithKey from './get-effect-with-key'
 import getGameUnits from './get-game-units'
-import getStrongestNonHeroUnits from './get-strongest-non-hero-units'
+import GetStrongestNonHeroUnits from './get-strongest-non-hero-units'
 
 export default class ScorchBattlefield {
   private static logger = getLogger('ScorchBattlefield')
@@ -70,10 +70,11 @@ export default class ScorchBattlefield {
         ScorchBattlefield.logger.trace(`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`)
       }
 
-      const strongestGameUnits = getStrongestNonHeroUnits({
+      const strongestGameUnits = GetStrongestNonHeroUnits.getStrongestNonHeroUnits({
         gameUnits,
-        units: battlefieldUnits,
+        logPrefix,
         minimumStrength: newUnit.scorchMin,
+        units: battlefieldUnits,
       })
       if (ScorchBattlefield.logger.isTraceEnabled()) {
         ScorchBattlefield.logger.trace(`${logPrefix} strongestGameUnits: "${JSON.stringify(strongestGameUnits)}"`)

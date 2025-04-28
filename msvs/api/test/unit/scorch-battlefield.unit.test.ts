@@ -14,7 +14,7 @@ import {
 import deepClone from '../util/deep-clone'
 import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import * as getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
-import * as getStrongestNonHeroUnits from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-units'
+import GetStrongestNonHeroUnits from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-units'
 import ScorchBattelfield from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
 import TestUtil from '../util/test-util'
 
@@ -939,7 +939,7 @@ function testScorchBattlefield({
   const strongestGameUnits = [gameUnits[1]]
   const getEffectWithKeySpy = jest.spyOn(GetEffectWithKey, 'getEffectWithKey').mockReturnValue(scorchEffect)
   const getGameUnitsSpy = jest.spyOn(getGameUnits, 'default').mockReturnValue(gameUnits)
-  const getStrongestNonHeroUnitsSpy = jest.spyOn(getStrongestNonHeroUnits, 'default')
+  const getStrongestNonHeroUnitsSpy = jest.spyOn(GetStrongestNonHeroUnits, 'getStrongestNonHeroUnits')
   if (getGameUnitsCalls.length > 0) {
     getStrongestNonHeroUnitsSpy.mockReturnValue(strongestGameUnits)
   }
