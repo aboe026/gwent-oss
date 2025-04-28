@@ -996,6 +996,7 @@ function testScorchBattlefield({
           [
             {
               gameUnits,
+              logPrefix,
               units: battlefieldUnits,
               minimumStrength: newUnit?.scorchMin,
             },
