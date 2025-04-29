@@ -280,86 +280,221 @@ describe('unit-resolver', () => {
     it('returns null if effects are null', () => {
       expect(UnitResolver.effectAbilities(TestUtil.getDbUnit({}), null)).toEqual(null)
     })
-    it('returns clear weather text if weather effect with no combat rows', () => {
-      const effect = TestUtil.getEffect({
-        key: EffectKey.Weather,
+    describe('weather', () => {
+      it('returns clear weather text if weather effect with no combat rows', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Weather,
+        })
+        expect(UnitResolver.effectAbilities(TestUtil.getDbUnit({}), [effect])).toEqual([
+          {
+            ...effect,
+            ability: 'Remove all weather effects which are active on the battlefield, including your own.',
+          },
+        ])
       })
-      expect(UnitResolver.effectAbilities(TestUtil.getDbUnit({}), [effect])).toEqual([
-        {
-          ...effect,
-          ability: 'Remove all weather effects which are active on the battlefield, including your own.',
-        },
-      ])
+      it('returns row specific ability if weather effect with single combat row', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Weather,
+          ability: 'Reduce the strength of all cards in the given row(s) on the battlefield, including your own.',
+        })
+        expect(
+          UnitResolver.effectAbilities(
+            TestUtil.getDbUnit({
+              combats: [Combat.Close],
+            }),
+            [effect]
+          )
+        ).toEqual([
+          {
+            ...effect,
+            ability: 'Reduce the strength of all cards in the Close row on the battlefield, including your own.',
+          },
+        ])
+      })
+      it('returns row specific ability if weather effect with multiple combat row', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Weather,
+          ability: 'Reduce the strength of all cards in the given row(s) on the battlefield, including your own.',
+        })
+        expect(
+          UnitResolver.effectAbilities(
+            TestUtil.getDbUnit({
+              combats: [Combat.Close, Combat.Ranged],
+            }),
+            [effect]
+          )
+        ).toEqual([
+          {
+            ...effect,
+            ability:
+              'Reduce the strength of all cards in the Close and Ranged rows on the battlefield, including your own.',
+          },
+        ])
+      })
     })
-    it('returns row specific ability if weather effect with single combat row', () => {
-      const effect = TestUtil.getEffect({
-        key: EffectKey.Weather,
-        ability: 'Reduce the strength of all cards in the given row(s) on the battlefield, including your own.',
-      })
-      expect(
-        UnitResolver.effectAbilities(
-          TestUtil.getDbUnit({
-            combats: [Combat.Close],
-          }),
-          [effect]
-        )
-      ).toEqual([
-        {
-          ...effect,
-          ability: 'Reduce the strength of all cards in the Close row on the battlefield, including your own.',
-        },
-      ])
-    })
-    it('returns row specific ability if weather effect with multiple combat row', () => {
-      const effect = TestUtil.getEffect({
-        key: EffectKey.Weather,
-        ability: 'Reduce the strength of all cards in the given row(s) on the battlefield, including your own.',
-      })
-      expect(
-        UnitResolver.effectAbilities(
-          TestUtil.getDbUnit({
-            combats: [Combat.Close, Combat.Ranged],
-          }),
-          [effect]
-        )
-      ).toEqual([
-        {
-          ...effect,
-          ability:
-            'Reduce the strength of all cards in the Close and Ranged rows on the battlefield, including your own.',
-        },
-      ])
-    })
-    it('returns standard muster text if muster effect with no effectPrefix', () => {
-      const effect = TestUtil.getEffect({
-        key: EffectKey.Muster,
-        ability: 'Find any cards with the same name in your deck and play them instantly.',
-      })
-      expect(UnitResolver.effectAbilities(TestUtil.getDbUnit({}), [effect])).toEqual([
-        {
-          ...effect,
+    describe('muster', () => {
+      it('returns standard muster text if muster effect with no effectPrefix', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Muster,
           ability: 'Find any cards with the same name in your deck and play them instantly.',
-        },
-      ])
-    })
-    it('returns specific muster text if muster effect with effectPrefix', () => {
-      const effect = TestUtil.getEffect({
-        key: EffectKey.Muster,
-        ability: 'Find any cards with the same name in your deck and play them instantly.',
+        })
+        expect(UnitResolver.effectAbilities(TestUtil.getDbUnit({}), [effect])).toEqual([
+          {
+            ...effect,
+            ability: 'Find any cards with the same name in your deck and play them instantly.',
+          },
+        ])
       })
-      expect(
-        UnitResolver.effectAbilities(
-          TestUtil.getDbUnit({
-            effectPrefix: 'Crone',
-          }),
-          [effect]
-        )
-      ).toEqual([
-        {
-          ...effect,
-          ability: 'Find any cards with the "Crone" prefix in your deck and play them instantly.',
-        },
-      ])
+      it('returns specific muster text if muster effect with effectPrefix', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Muster,
+          ability: 'Find any cards with the same name in your deck and play them instantly.',
+        })
+        expect(
+          UnitResolver.effectAbilities(
+            TestUtil.getDbUnit({
+              effectPrefix: 'Crone',
+            }),
+            [effect]
+          )
+        ).toEqual([
+          {
+            ...effect,
+            ability: 'Find any cards with the "Crone" prefix in your deck and play them instantly.',
+          },
+        ])
+      })
+    })
+    describe('scorch', () => {
+      it('returns standard scorch text if no scorchScope', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Scorch,
+          ability: 'Kills the strongest card(s) on the battlefield.',
+        })
+        expect(UnitResolver.effectAbilities(TestUtil.getDbUnit({}), [effect])).toEqual([
+          {
+            ...effect,
+            ability: 'Kills the strongest card(s) on the battlefield.',
+          },
+        ])
+      })
+      it('returns specific scorch text if scorchScope CLOSE but no scorchMin', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Scorch,
+          ability: 'Kills the strongest card(s) on the battlefield.',
+        })
+        expect(
+          UnitResolver.effectAbilities(
+            TestUtil.getDbUnit({
+              scorchScope: Combat.Close,
+            }),
+            [effect]
+          )
+        ).toEqual([
+          {
+            ...effect,
+            ability: `Destroys your enemy's strongest Close Combat unit(s).`,
+          },
+        ])
+      })
+      it('returns specific scorch text if scorchScope RANGED but no scorchMin', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Scorch,
+          ability: 'Kills the strongest card(s) on the battlefield.',
+        })
+        expect(
+          UnitResolver.effectAbilities(
+            TestUtil.getDbUnit({
+              scorchScope: Combat.Ranged,
+            }),
+            [effect]
+          )
+        ).toEqual([
+          {
+            ...effect,
+            ability: `Destroys your enemy's strongest Ranged Combat unit(s).`,
+          },
+        ])
+      })
+      it('returns specific scorch text if scorchScope SIEGE but no scorchMin', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Scorch,
+          ability: 'Kills the strongest card(s) on the battlefield.',
+        })
+        expect(
+          UnitResolver.effectAbilities(
+            TestUtil.getDbUnit({
+              scorchScope: Combat.Siege,
+            }),
+            [effect]
+          )
+        ).toEqual([
+          {
+            ...effect,
+            ability: `Destroys your enemy's strongest Siege Combat unit(s).`,
+          },
+        ])
+      })
+      it('returns specific scorch text if scorchScope CLOSE and scorchMin', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Scorch,
+          ability: 'Kills the strongest card(s) on the battlefield.',
+        })
+        expect(
+          UnitResolver.effectAbilities(
+            TestUtil.getDbUnit({
+              scorchScope: Combat.Close,
+              scorchMin: 10,
+            }),
+            [effect]
+          )
+        ).toEqual([
+          {
+            ...effect,
+            ability: `Destroys your enemy's strongest Close Combat unit(s) if the combined strength of all their Close Combat units is 10 or more.`,
+          },
+        ])
+      })
+      it('returns specific scorch text if scorchScope RANGED and scorchMin', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Scorch,
+          ability: 'Kills the strongest card(s) on the battlefield.',
+        })
+        expect(
+          UnitResolver.effectAbilities(
+            TestUtil.getDbUnit({
+              scorchScope: Combat.Ranged,
+              scorchMin: 10,
+            }),
+            [effect]
+          )
+        ).toEqual([
+          {
+            ...effect,
+            ability: `Destroys your enemy's strongest Ranged Combat unit(s) if the combined strength of all their Ranged Combat units is 10 or more.`,
+          },
+        ])
+      })
+      it('returns specific scorch text if scorchScope SIEGE and scorchMin', () => {
+        const effect = TestUtil.getEffect({
+          key: EffectKey.Scorch,
+          ability: 'Kills the strongest card(s) on the battlefield.',
+        })
+        expect(
+          UnitResolver.effectAbilities(
+            TestUtil.getDbUnit({
+              scorchScope: Combat.Siege,
+              scorchMin: 10,
+            }),
+            [effect]
+          )
+        ).toEqual([
+          {
+            ...effect,
+            ability: `Destroys your enemy's strongest Siege Combat unit(s) if the combined strength of all their Siege Combat units is 10 or more.`,
+          },
+        ])
+      })
     })
   })
 })
