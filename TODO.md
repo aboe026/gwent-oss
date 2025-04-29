@@ -82,6 +82,7 @@ New things that should be added to the codebase.
   - does the scorched card go to normal discard pile?
 - show scorch tooltip across entire battlefield
 - for "Move" type, have "impact" field
+- for scoped, it is combined strength of row is 10 or more, not just if a single unit is 10 or more
 
   - cards removed/added
   - effects applied to other cards
