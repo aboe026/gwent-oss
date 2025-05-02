@@ -111,6 +111,7 @@ fixture('Game Effect Scorch')
         'Schirru',
         'Toruviel',
         'Triss Merigold',
+        'Vesemir',
         'Villentretenmerth',
         'Vrihedd Brigade Recruit',
         'Vrihedd Brigade Veteran',
@@ -122,6 +123,7 @@ fixture('Game Effect Scorch')
       faction: FactionKey.Skellige,
       leader: 'Crach an Craite',
       units: [
+        'Berserker',
         'Blueboy Lugos',
         'Clan an Craite Warrior',
         'Clan Brokvar Archer',
@@ -136,6 +138,7 @@ fixture('Game Effect Scorch')
         'Holger Blackhand',
         'Madman Lugos',
         'Olaf',
+        'Roach',
         'Scorch',
         'Svanrige',
         'Triss Merigold',
@@ -1065,20 +1068,23 @@ test('Scorch takes into account morale to determine strongest', async (t) => {
 })
 
 test('Scorch scoped to Close combat removes strongest Close combat card on opponents side over 10 effective strength', async (t) => {
-  // TODO: replace make first 2 units stronger than 3rd one to test that it is properly limiting itself
-  const unitName1 = 'Holger Blackhand'
+  const unitName1 = 'Emiel Regis Rohellec Terzieff'
   const unitName2 = 'Yaevinn'
-  const unitName3 = 'Olaf'
-  const unitName4 = 'Villentretenmerth'
+  const unitName3 = 'Vesemir'
+  const unitName4 = 'Mahakaman Defender'
+  const unitName5 = 'Roach'
+  const unitName6 = 'Vesemir'
+  const unitName7 = 'Olaf'
+  const unitName8 = 'Villentretenmerth'
   await prepareGame({
     t,
     self: {
       deck: t.ctx.scoiatael,
-      hand: [unitName2, unitName4],
+      hand: [unitName2, unitName4, unitName6, unitName8],
     },
     opponent: {
       deck: t.ctx.skellige,
-      hand: [unitName1, unitName3],
+      hand: [unitName1, unitName3, unitName5, unitName7],
     },
   })
   const selfPlayer = E2eHelper.getGamePlayer({
@@ -1195,12 +1201,110 @@ test('Scorch scoped to Close combat removes strongest Close combat card on oppon
     row: combatRowSelf2,
     moves,
     switchTurnsWith: opponentPlayer,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [moves],
+  })
+
+  const unitToMoveOpponent3 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName5)
+  if (!unitToMoveOpponent3) {
+    throw Error(`Could not find unit in hand with name "${unitName5}"`)
+  }
+  const combatRowOpponent3 = unitToMoveOpponent3.unit.combats ? unitToMoveOpponent3.unit.combats[0] : Combat.Close
+  await t.ctx.opponent.client.playUnit({
+    gameId: t.ctx.game.id,
+    unitId: unitToMoveOpponent3.unit.id,
+    combat: combatRowOpponent3,
+  })
+  E2eHelper.playUnit({
+    player: opponentPlayer,
+    gameDeck: t.ctx.opponent.gameDeck,
+    deckUnit: unitToMoveOpponent3,
+    row: combatRowOpponent3,
+    moves,
+    switchTurnsWith: selfPlayer,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [moves],
+  })
+
+  const unitToMoveSelf3 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName6)
+  if (!unitToMoveSelf3) {
+    throw Error(`Could not find unit in hand with name "${unitName6}"`)
+  }
+  const combatRowSelf3 = unitToMoveSelf3.unit.combats ? unitToMoveSelf3.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unitToMoveSelf3.unit.name,
+    row: combatRowSelf3,
+  })
+  E2eHelper.playUnit({
+    player: selfPlayer,
+    gameDeck: t.ctx.self.gameDeck,
+    deckUnit: unitToMoveSelf3,
+    row: combatRowSelf3,
+    moves,
+    switchTurnsWith: opponentPlayer,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [moves],
+  })
+
+  const unitToMoveOpponent4 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName7)
+  if (!unitToMoveOpponent4) {
+    throw Error(`Could not find unit in hand with name "${unitName7}"`)
+  }
+  const combatRowOpponent4 = Combat.Ranged
+  await t.ctx.opponent.client.playUnit({
+    gameId: t.ctx.game.id,
+    unitId: unitToMoveOpponent4.unit.id,
+    combat: combatRowOpponent4,
+  })
+  E2eHelper.playUnit({
+    player: opponentPlayer,
+    gameDeck: t.ctx.opponent.gameDeck,
+    deckUnit: unitToMoveOpponent4,
+    row: combatRowOpponent4,
+    moves,
+    switchTurnsWith: selfPlayer,
+  })
+  await GamePage.verify({
+    opponent: opponentPlayer,
+    self: selfPlayer,
+    hand: t.ctx.self.gameDeck.hand,
+    moves: [moves],
+  })
+
+  const unitToMoveSelf4 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName8)
+  if (!unitToMoveSelf4) {
+    throw Error(`Could not find unit in hand with name "${unitName8}"`)
+  }
+  const combatRowSelf4 = unitToMoveSelf4.unit.combats ? unitToMoveSelf4.unit.combats[0] : Combat.Close
+  await GamePage.moveUnit({
+    unitName: unitToMoveSelf4.unit.name,
+    row: combatRowSelf4,
+  })
+  E2eHelper.playUnit({
+    player: selfPlayer,
+    gameDeck: t.ctx.self.gameDeck,
+    deckUnit: unitToMoveSelf4,
+    row: combatRowSelf4,
+    moves,
+    switchTurnsWith: opponentPlayer,
     scorching: [
       {
         name: unitName3,
+        player: opponentPlayer,
         row: combatRowOpponent2,
         strength: unitToMoveOpponent2.unit.strength,
-        player: opponentPlayer,
       },
     ],
   })
