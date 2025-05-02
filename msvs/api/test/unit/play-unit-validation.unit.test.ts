@@ -129,7 +129,7 @@ describe('play-unit-validation', () => {
       errorCalls: [[`${logPrefix} failed: ${message}: "${JSON.stringify([unit, unit])}"`]],
     })
   })
-  it('throws error if not combats specified and unit has multiple combats', async () => {
+  it('throws error if no combats specified and unit has multiple combats', async () => {
     const deckUnit = TestUtil.getDbDeckUnit({})
     const game = TestUtil.getDbGame({
       players: [
