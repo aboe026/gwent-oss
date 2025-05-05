@@ -12,6 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- change "test-results" to just "results" so only single "t" directory for easier navigation?
 - remove need for classes just for log4js spying
   - have "getLogger" method
     - keeps loggers in memory by name
@@ -58,6 +59,9 @@ Existing problems in the codebase that need to be fixed.
 - Have "DateTime" on resolver object map to javascript Date object?
 - Make Combat a type (because of image)
 - If ever want to increase MAX_REDRAWS to greater than 2, need to have different unique constraint than just from/to id. Probably need an id for the redraw object itself.
+- have log4js config be dynamic
+  - target log level of specific classes/loggers
+  - configure while running (need role/admin for that?)
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
@@ -77,16 +81,9 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- Scorch
-  - does it take into account base strength or effective strength? Probably effective strength
-  - does the scorched card go to normal discard pile?
-- show scorch tooltip across entire battlefield
 - for "Move" type, have "impact" field
-- for scoped, it is combined strength of row is 10 or more, not just if a single unit is 10 or more
-
   - cards removed/added
   - effects applied to other cards
-
 - Limit user creation
   - activation code?
   - manual review?

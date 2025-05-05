@@ -1,13 +1,11 @@
 import ApiClient from '../util/api-client'
-import { Combat, DeckUnit, FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
-import { ContextGameDeck, ContextGamePlayer, E2eHelper } from '../util/e2e-helper'
+import { Combat, FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
+import { ContextGameDeck, ContextGamePlayer, E2eHelper, MoralingExpected } from '../util/e2e-helper'
 import { E2eCtx, E2ETestController, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
-import E2eUtil from '../util/e2e-util'
 import { ensureUnitsInHand } from '@gwent/test-utils'
 import env from '../util/env'
-import GamePage, { HistoryMove, HistoryPass } from '../page-objects/game-page'
+import GameManager from '../util/game-manager'
 import HomePage from '../page-objects/home-page'
-import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
 
 interface GameEffectMoraleTestCtx extends E2eCtx {
@@ -24,7 +22,7 @@ const fixture = getFixtureCtx<E2eCtx, GameEffectMoraleTestCtx>()
 const test = getTestCtx<E2eCtx, GameEffectMoraleTestCtx>()
 
 fixture('Game Effect Scorch')
-  .page(HomePage.getUrl())
+  .only.page(HomePage.getUrl())
   .beforeEach(async (t) => {
     t.ctx.scenario = 'game-effect-scorch'
     const self = await new ApiClient({}).addUser({
@@ -37,6 +35,7 @@ fixture('Game Effect Scorch')
     t.ctx.monsters = {
       faction: FactionKey.Monsters,
       leader: 'Eredin Bringer of Death',
+      // TODO: just create with all units? do only units in hand matter?
       units: [
         'Draug',
         'Emiel Regis Rohellec Terzieff',
@@ -171,7 +170,7 @@ fixture('Game Effect Scorch')
 
 test('Scorch does nothing if no other units on the battlefield', async (t) => {
   const unitName1 = 'Scorch'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -183,59 +182,15 @@ test('Scorch does nothing if no other units on the battlefield', async (t) => {
     },
     selfFirst: true,
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    turn: PlayerTurn.Current,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.initialize({})
 
-  const unitToMoveSelf = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveSelf) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowSelf = unitToMoveSelf.unit.combats ? unitToMoveSelf.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf.unit.name,
-    row: combatRowSelf,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf,
-    row: combatRowSelf,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
 })
 
 test('Scorch removes strongest card if on opponents side', async (t) => {
   const unitName1 = 'Dennis Cranmer'
   const unitName2 = 'Scorch'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -246,85 +201,19 @@ test('Scorch removes strongest card if on opponents side', async (t) => {
       hand: [unitName1],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf = unitToMoveSelf.unit.combats ? unitToMoveSelf.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf.unit.name,
-    row: combatRowSelf,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf,
-    row: combatRowSelf,
-    moves,
-    switchTurnsWith: opponentPlayer,
+  await gameManager.deploy({
+    unitName: unitName2,
     scorching: [
       {
         name: unitName1,
-        row: combatRowOpponent,
-        strength: unitToMoveOpponent.unit.strength,
-        player: opponentPlayer,
+        row: Combat.Close,
+        strength: 6,
+        player: gameManager.opponent.gamePlayer,
       },
     ],
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
@@ -332,7 +221,7 @@ test('Scorch removes strongest card if on own side', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Griffin'
   const unitName3 = 'Scorch'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -343,132 +232,31 @@ test('Scorch removes strongest card if on own side', async (t) => {
       hand: [unitName1],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.pass({})
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  await t.ctx.opponent.client.playPass({
-    gameId: t.ctx.game.id,
-  })
-  E2eHelper.playPass({
-    player: opponentPlayer,
-    moves,
-    round: 1,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
+  await gameManager.deploy({
+    unitName: unitName3,
     scorching: [
       {
         name: unitName2,
-        row: combatRowSelf1,
-        strength: unitToMoveSelf1.unit.strength,
-        player: selfPlayer,
+        row: Combat.Close,
+        strength: 5,
+        player: gameManager.self.gamePlayer,
       },
     ],
   })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
 })
+
+// TODO: opponent can play scorch
 
 test('Scorch removes opponents unit even after they pass', async (t) => {
   const unitName1 = 'Ida Emean aep Sivney'
   const unitName2 = 'Griffin'
   const unitName3 = 'Scorch'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -479,124 +267,21 @@ test('Scorch removes opponents unit even after they pass', async (t) => {
       hand: [unitName1],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.pass({})
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  await t.ctx.opponent.client.playPass({
-    gameId: t.ctx.game.id,
-  })
-  E2eHelper.playPass({
-    player: opponentPlayer,
-    moves,
-    round: 1,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
+  await gameManager.deploy({
+    unitName: unitName3,
     scorching: [
       {
         name: unitName1,
-        row: combatRowOpponent,
-        strength: unitToMoveOpponent.unit.strength,
-        player: opponentPlayer,
+        row: Combat.Ranged,
+        strength: 6,
+        player: gameManager.opponent.gamePlayer,
       },
     ],
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
@@ -604,7 +289,7 @@ test('Scorch removes strongest units if multiple with highest strength', async (
   const unitName1 = 'Ida Emean aep Sivney'
   const unitName2 = 'Fiend'
   const unitName3 = 'Scorch'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -615,137 +300,34 @@ test('Scorch removes strongest units if multiple with highest strength', async (
       hand: [unitName1],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.pass({})
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  await t.ctx.opponent.client.playPass({
-    gameId: t.ctx.game.id,
-  })
-  E2eHelper.playPass({
-    player: opponentPlayer,
-    moves,
-    round: 1,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
+  await gameManager.deploy({
+    unitName: unitName3,
     scorching: [
       {
         name: unitName1,
-        row: combatRowOpponent,
-        strength: unitToMoveOpponent.unit.strength,
-        player: opponentPlayer,
+        row: Combat.Ranged,
+        strength: 6,
+        player: gameManager.opponent.gamePlayer,
       },
       {
         name: unitName2,
-        row: combatRowSelf1,
-        strength: unitToMoveSelf1.unit.strength,
-        player: selfPlayer,
+        row: Combat.Close,
+        strength: 6,
+        player: gameManager.self.gamePlayer,
       },
     ],
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
 test('Scorch does not effect heroes', async (t) => {
   const unitName1 = 'Eithne'
   const unitName2 = 'Scorch'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -756,84 +338,16 @@ test('Scorch does not effect heroes', async (t) => {
       hand: [unitName1],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf = unitToMoveSelf.unit.combats ? unitToMoveSelf.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf.unit.name,
-    row: combatRowSelf,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf,
-    row: combatRowSelf,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName2 })
 })
 
 test('Scorch does not effect unit played after it', async (t) => {
   const unitName1 = 'Scorch'
   const unitName2 = 'Dennis Cranmer'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -845,78 +359,10 @@ test('Scorch does not effect unit played after it', async (t) => {
     },
     selfFirst: true,
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    turn: PlayerTurn.Current,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.initialize({})
 
-  const unitToMoveSelf = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveSelf) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowSelf = unitToMoveSelf.unit.combats ? unitToMoveSelf.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf.unit.name,
-    row: combatRowSelf,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf,
-    row: combatRowSelf,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName2 })
 })
 
 test('Scorch takes into account morale to determine strongest', async (t) => {
@@ -924,7 +370,7 @@ test('Scorch takes into account morale to determine strongest', async (t) => {
   const unitName2 = 'Fiend'
   const unitName3 = 'Dennis Cranmer'
   const unitName4 = 'Scorch'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -935,135 +381,21 @@ test('Scorch takes into account morale to determine strongest', async (t) => {
       hand: [unitName1, unitName3],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3, effectiveStrength: 7 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowOpponent2 = unitToMoveOpponent2.unit.combats ? unitToMoveOpponent2.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-    effectiveStrength: 7,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
+  await gameManager.deploy({
+    unitName: unitName4,
     scorching: [
       {
         name: unitName3,
-        row: combatRowOpponent2,
+        row: Combat.Close,
         strength: 7,
-        player: opponentPlayer,
+        player: gameManager.opponent.gamePlayer,
       },
     ],
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
@@ -1076,7 +408,7 @@ test('Scorch scoped to Close combat removes strongest Close combat card on oppon
   const unitName6 = 'Vesemir'
   const unitName7 = 'Olaf'
   const unitName8 = 'Villentretenmerth'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.scoiatael,
@@ -1087,232 +419,25 @@ test('Scorch scoped to Close combat removes strongest Close combat card on oppon
       hand: [unitName1, unitName3, unitName5, unitName7],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.deploy({ unitName: unitName4 })
+  await gameManager.deploy({ unitName: unitName5 })
+  await gameManager.deploy({ unitName: unitName6 })
+  await gameManager.deploy({ unitName: unitName7, combat: Combat.Ranged })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowOpponent2 = unitToMoveOpponent2.unit.combats ? unitToMoveOpponent2.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent3 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName5)
-  if (!unitToMoveOpponent3) {
-    throw Error(`Could not find unit in hand with name "${unitName5}"`)
-  }
-  const combatRowOpponent3 = unitToMoveOpponent3.unit.combats ? unitToMoveOpponent3.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent3.unit.id,
-    combat: combatRowOpponent3,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent3,
-    row: combatRowOpponent3,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf3 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName6)
-  if (!unitToMoveSelf3) {
-    throw Error(`Could not find unit in hand with name "${unitName6}"`)
-  }
-  const combatRowSelf3 = unitToMoveSelf3.unit.combats ? unitToMoveSelf3.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf3.unit.name,
-    row: combatRowSelf3,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf3,
-    row: combatRowSelf3,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent4 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName7)
-  if (!unitToMoveOpponent4) {
-    throw Error(`Could not find unit in hand with name "${unitName7}"`)
-  }
-  const combatRowOpponent4 = Combat.Ranged
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent4.unit.id,
-    combat: combatRowOpponent4,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent4,
-    row: combatRowOpponent4,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf4 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName8)
-  if (!unitToMoveSelf4) {
-    throw Error(`Could not find unit in hand with name "${unitName8}"`)
-  }
-  const combatRowSelf4 = unitToMoveSelf4.unit.combats ? unitToMoveSelf4.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf4.unit.name,
-    row: combatRowSelf4,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf4,
-    row: combatRowSelf4,
-    moves,
-    switchTurnsWith: opponentPlayer,
+  await gameManager.deploy({
+    unitName: unitName8,
     scorching: [
       {
         name: unitName3,
-        player: opponentPlayer,
-        row: combatRowOpponent2,
-        strength: unitToMoveOpponent2.unit.strength,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+        strength: 6,
       },
     ],
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
@@ -1321,7 +446,7 @@ test('Scorch scoped to Close combat does not remove opponents Close combat if it
   const unitName2 = 'Yaevinn'
   const unitName3 = 'Madman Lugos'
   const unitName4 = 'Villentretenmerth'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.scoiatael,
@@ -1332,127 +457,12 @@ test('Scorch scoped to Close combat does not remove opponents Close combat if it
       hand: [unitName1, unitName3],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowOpponent2 = unitToMoveOpponent2.unit.combats ? unitToMoveOpponent2.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName4 })
 })
 
 test('Scorch scoped to Close combat does not remove opponents unit over 10 effective strength if not in Close combat row', async (t) => {
@@ -1460,7 +470,7 @@ test('Scorch scoped to Close combat does not remove opponents unit over 10 effec
   const unitName2 = 'Yaevinn'
   const unitName3 = 'Olaf'
   const unitName4 = 'Villentretenmerth'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.scoiatael,
@@ -1471,127 +481,12 @@ test('Scorch scoped to Close combat does not remove opponents unit over 10 effec
       hand: [unitName1, unitName3],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowOpponent2 = Combat.Ranged
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName4 })
 })
 
 test('Scorch scoped to Range combat removes strongest Ranged combat card on opponents side over 10 effective strength', async (t) => {
@@ -1600,7 +495,7 @@ test('Scorch scoped to Range combat removes strongest Ranged combat card on oppo
   const unitName2 = 'Gargoyle'
   const unitName3 = 'Milva'
   const unitName4 = 'Toad'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -1611,144 +506,32 @@ test('Scorch scoped to Range combat removes strongest Ranged combat card on oppo
       hand: [unitName1, unitName3],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowOpponent2 = Combat.Ranged
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
+  await gameManager.deploy({
+    unitName: unitName4,
     scorching: [
       {
         name: unitName3,
-        row: combatRowOpponent2,
-        strength: unitToMoveOpponent2.unit.strength,
-        player: opponentPlayer,
+        row: Combat.Ranged,
+        strength: 10,
+        player: gameManager.opponent.gamePlayer,
       },
     ],
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
 test('Scorch scoped to Ranged combat does not remove opponents Ranged combat if it is not over 10 effective strength', async (t) => {
   // TODO: replace make first 2 units stronger than 3rd one to test that it is properly limiting itself
+  // TODO: make self ranged row over 10 effective strengtht to verify it doesn't hurt self
   const unitName1 = 'Yaevinn'
   const unitName2 = 'Gargoyle'
   const unitName3 = 'Ida Emean aep Sivney'
   const unitName4 = 'Toad'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -1759,137 +542,22 @@ test('Scorch scoped to Ranged combat does not remove opponents Ranged combat if 
       hand: [unitName1, unitName3],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowOpponent2 = Combat.Ranged
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName4 })
 })
 
 test('Scorch scoped to Ranged combat does not remove opponents unit over 10 effective strength if not in Ranged combat row', async (t) => {
   // TODO: replace make first 2 units stronger than 3rd one to test that it is properly limiting itself
   const unitNameOptional = 'Forktail'
-  const unitName1 = 'Zoltan Chivay'
+  const unitName1 = 'Albrich'
   const unitName2 = 'Gargoyle'
   const unitName3 = 'Heavy Zerrikanian Fire Scorpion'
   const unitName4 = 'Toad'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.monsters,
@@ -1900,156 +568,15 @@ test('Scorch scoped to Ranged combat does not remove opponents unit over 10 effe
       hand: [unitName1, unitName3],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    turn: t.ctx.game.turn?.user.id === t.ctx.self.user.id ? PlayerTurn.Current : undefined,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: t.ctx.game.turn?.user.id === t.ctx.opponent.user.id ? PlayerTurn.Current : undefined,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
   if (t.ctx.game.turn?.user.id === t.ctx.self.user.id) {
-    const unitToMoveSelfOptional = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitNameOptional)
-    if (!unitToMoveSelfOptional) {
-      throw Error(`Could not find unit in hand with name "${unitNameOptional}"`)
-    }
-    const combatRowSelfOptional = unitToMoveSelfOptional.unit.combats
-      ? unitToMoveSelfOptional.unit.combats[0]
-      : Combat.Close
-    await GamePage.moveUnit({
-      unitName: unitToMoveSelfOptional.unit.name,
-      row: combatRowSelfOptional,
-    })
-    E2eHelper.playUnit({
-      player: selfPlayer,
-      gameDeck: t.ctx.self.gameDeck,
-      deckUnit: unitToMoveSelfOptional,
-      row: combatRowSelfOptional,
-      moves,
-      switchTurnsWith: opponentPlayer,
-    })
-    await GamePage.verify({
-      opponent: opponentPlayer,
-      self: selfPlayer,
-      hand: t.ctx.self.gameDeck.hand,
-      moves: [moves],
-    })
+    await gameManager.deploy({ unitName: unitNameOptional })
   }
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowOpponent2 = unitToMoveOpponent2.unit.combats ? unitToMoveOpponent2.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName4 })
 })
 
 test('Scorch scoped to Siege combat removes strongest Siege combat card on opponents side over 10 effective strength', async (t) => {
@@ -2058,7 +585,7 @@ test('Scorch scoped to Siege combat removes strongest Siege combat card on oppon
   const unitName2 = 'Yaevinn'
   const unitName3 = 'Heavy Zerrikanian Fire Scorpion'
   const unitName4 = 'Schirru'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.scoiatael,
@@ -2069,134 +596,21 @@ test('Scorch scoped to Siege combat removes strongest Siege combat card on oppon
       hand: [unitName1, unitName3],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowOpponent2 = unitToMoveOpponent2.unit.combats ? unitToMoveOpponent2.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
+  await gameManager.deploy({
+    unitName: unitName4,
     scorching: [
       {
         name: unitName3,
-        row: combatRowOpponent2,
-        strength: unitToMoveOpponent2.unit.strength,
-        player: opponentPlayer,
+        row: Combat.Siege,
+        strength: 10,
+        player: gameManager.opponent.gamePlayer,
       },
     ],
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
@@ -2206,7 +620,7 @@ test('Scorch scoped to Siege combat does not remove opponents Siege combat if it
   const unitName2 = 'Yaevinn'
   const unitName3 = 'Zerrikanian Fire Scorpion'
   const unitName4 = 'Schirru'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.scoiatael,
@@ -2217,133 +631,18 @@ test('Scorch scoped to Siege combat does not remove opponents Siege combat if it
       hand: [unitName1, unitName3],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowOpponent2 = unitToMoveOpponent2.unit.combats ? unitToMoveOpponent2.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName4 })
 })
 
 test('Clan Dimun Pirate removes strongest card if on opponents side', async (t) => {
   const unitName1 = 'Milva'
   const unitName2 = 'Clan Dimun Pirate'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.skellige,
@@ -2354,85 +653,19 @@ test('Clan Dimun Pirate removes strongest card if on opponents side', async (t) 
       hand: [unitName1],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf = unitToMoveSelf.unit.combats ? unitToMoveSelf.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf.unit.name,
-    row: combatRowSelf,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf,
-    row: combatRowSelf,
-    moves,
-    switchTurnsWith: opponentPlayer,
+  await gameManager.deploy({
+    unitName: unitName2,
     scorching: [
       {
         name: unitName1,
-        row: combatRowOpponent,
-        strength: unitToMoveOpponent.unit.strength,
-        player: opponentPlayer,
+        row: Combat.Ranged,
+        strength: 10,
+        player: gameManager.opponent.gamePlayer,
       },
     ],
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
@@ -2440,7 +673,7 @@ test('Clan Dimun Pirate removes strongest card if on own side', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Olaf'
   const unitName3 = 'Clan Dimun Pirate'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.skellige,
@@ -2451,131 +684,28 @@ test('Clan Dimun Pirate removes strongest card if on own side', async (t) => {
       hand: [unitName1],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.pass({})
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  await t.ctx.opponent.client.playPass({
-    gameId: t.ctx.game.id,
-  })
-  E2eHelper.playPass({
-    player: opponentPlayer,
-    moves,
-    round: 1,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
+  await gameManager.deploy({
+    unitName: unitName3,
     scorching: [
       {
         name: unitName2,
-        row: combatRowSelf1,
-        strength: unitToMoveSelf1.unit.strength,
-        player: selfPlayer,
+        row: Combat.Close,
+        strength: 12,
+        player: gameManager.self.gamePlayer,
       },
     ],
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
 test('Clan Dimun Pirate removes itself if strongest unit', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Clan Dimun Pirate'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.skellige,
@@ -2586,85 +716,19 @@ test('Clan Dimun Pirate removes itself if strongest unit', async (t) => {
       hand: [unitName1],
     },
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    turn: PlayerTurn.Current,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.initialize({})
 
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveSelf) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowSelf = unitToMoveSelf.unit.combats ? unitToMoveSelf.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf.unit.name,
-    row: combatRowSelf,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf,
-    row: combatRowSelf,
-    moves,
-    switchTurnsWith: opponentPlayer,
+  await gameManager.deploy({
+    unitName: unitName2,
     scorching: [
       {
         name: unitName2,
-        row: combatRowSelf,
-        strength: unitToMoveSelf.unit.strength,
-        player: selfPlayer,
+        row: Combat.Ranged,
+        strength: 6,
+        player: gameManager.self.gamePlayer,
       },
     ],
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
   })
 })
 
@@ -2673,7 +737,7 @@ test('Villentretenmerth removes only opponents unit if self has same one', async
   const unitName1 = 'Olaf'
   const unitName2 = 'Olaf'
   const unitName3 = 'Villentretenmerth'
-  await prepareGame({
+  const gameManager = await prepareGame({
     t,
     self: {
       deck: t.ctx.skellige,
@@ -2683,147 +747,56 @@ test('Villentretenmerth removes only opponents unit if self has same one', async
       deck: t.ctx.skellige,
       hand: [unitName2, unitNameOptional],
     },
-    selfFirst: true,
   })
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    turn: PlayerTurn.Current,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-
-  let unitToMoveOpponentOptional: DeckUnit | undefined = undefined
-  const combatRowOpponentOptional = Combat.Close
+  let optionalUnitPlayed = false
   if (t.ctx.game.turn?.user.id === t.ctx.opponent.user.id) {
-    unitToMoveOpponentOptional = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitNameOptional)
-    if (!unitToMoveOpponentOptional) {
-      throw Error(`Could not find unit in hand with name "${unitNameOptional}"`)
-    }
-    await t.ctx.opponent.client.playUnit({
-      combat: combatRowOpponentOptional,
-      gameId: t.ctx.game.id,
-      unitId: unitToMoveOpponentOptional.unit.id,
-    })
-    E2eHelper.playUnit({
-      player: opponentPlayer,
-      gameDeck: t.ctx.opponent.gameDeck,
-      deckUnit: unitToMoveOpponentOptional,
-      row: combatRowOpponentOptional,
-      moves,
-      switchTurnsWith: selfPlayer,
-    })
+    optionalUnitPlayed = true
+    await gameManager.deploy({ unitName: unitNameOptional })
   }
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({
+    unitName: unitName2,
+    moraling: optionalUnitPlayed
+      ? [
+          {
+            name: unitNameOptional,
+            player: gameManager.opponent.gamePlayer,
+            row: Combat.Close,
+            effectiveStrength: 5,
+          },
+        ]
+      : [],
   })
+  await gameManager.initialize({})
 
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveOpponent) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowOpponent = unitToMoveOpponent.unit.combats ? unitToMoveOpponent.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent.unit.id,
-    combat: combatRowOpponent,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent,
-    row: combatRowOpponent,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  if (unitToMoveOpponentOptional) {
-    E2eHelper.setEffectiveStrength({
-      player: opponentPlayer,
-      effectiveStrength: 5,
-      row: combatRowOpponentOptional,
-      unitName: unitNameOptional,
+  const moraling: MoralingExpected[] = []
+  if (optionalUnitPlayed) {
+    moraling.push({
+      name: unitNameOptional,
+      player: gameManager.opponent.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 4,
     })
   }
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
+  await gameManager.deploy({
+    unitName: unitName3,
     scorching: [
       {
         name: unitName2,
-        row: combatRowOpponent,
-        strength: unitToMoveOpponent.unit.strength,
-        player: opponentPlayer,
+        row: Combat.Close,
+        strength: 12,
+        player: gameManager.opponent.gamePlayer,
       },
     ],
-  })
-  E2eHelper.setEffectiveStrength({
-    player: selfPlayer,
-    effectiveStrength: 8,
-    row: combatRowSelf2,
-    unitName: unitName3,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
+    moraling: [
+      ...moraling,
+      {
+        player: gameManager.self.gamePlayer,
+        effectiveStrength: 8,
+        row: Combat.Close,
+        name: unitName3,
+      },
+    ],
   })
 })
 
@@ -2845,7 +818,7 @@ async function prepareGame({
     hand: string[]
   }
   selfFirst?: boolean
-}) {
+}): Promise<GameManager> {
   t.ctx.self.deck = await t.ctx.self.client.addDeck({
     faction: self.deck.faction,
     leaderName: self.deck.leader,
@@ -2899,4 +872,31 @@ async function prepareGame({
   t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   t.ctx.opponent.gameDeck = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
   t.ctx.game = await t.ctx.self.client.getGame(t.ctx.game.id)
+
+  const gameManager = new GameManager({
+    gameId: t.ctx.game.id,
+    self: {
+      client: t.ctx.self.client,
+      deck: t.ctx.self.gameDeck,
+      gamePlayer: E2eHelper.getGamePlayer({
+        player: t.ctx.self,
+        turn: selfFirst ? PlayerTurn.Current : undefined,
+        ready: true,
+        passed: false,
+        score: 0,
+      }),
+    },
+    opponent: {
+      client: t.ctx.opponent.client,
+      deck: t.ctx.opponent.gameDeck,
+      gamePlayer: E2eHelper.getGamePlayer({
+        player: t.ctx.opponent,
+        turn: selfFirst ? undefined : PlayerTurn.Current,
+        ready: true,
+        score: 0,
+      }),
+    },
+  })
+
+  return gameManager
 }

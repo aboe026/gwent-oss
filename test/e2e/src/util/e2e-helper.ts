@@ -226,6 +226,7 @@ export class E2eHelper {
     moves,
     switchTurnsWith,
     scorching,
+    moraling,
   }: {
     player: GamePlayerExpected
     deckUnit: DeckUnit
@@ -234,12 +235,8 @@ export class E2eHelper {
     gameDeck: GameDeck
     moves?: (HistoryMove | HistoryPass)[]
     switchTurnsWith?: GamePlayerExpected
-    scorching?: {
-      player: GamePlayerExpected
-      name: string
-      row: Combat
-      strength?: number | null
-    }[]
+    scorching?: ScorchingExpected[]
+    moraling?: MoralingExpected[]
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
     if (!row) {
@@ -257,6 +254,16 @@ export class E2eHelper {
         row,
         strength,
       })
+    }
+    if (moraling) {
+      for (const morale of moraling) {
+        E2eHelper.setEffectiveStrength({
+          effectiveStrength: morale.effectiveStrength,
+          player: morale.player,
+          row: morale.row,
+          unitName: morale.name,
+        })
+      }
     }
     if (scorching) {
       for (const scorch of scorching) {
@@ -582,4 +589,18 @@ interface CardPlayer {
 interface CombatCard {
   name: string
   row: Combat
+}
+
+export interface ScorchingExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  strength?: number | null
+}
+
+export interface MoralingExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
 }
