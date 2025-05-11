@@ -2,14 +2,12 @@ import ApiClient from '../util/api-client'
 import { Combat, FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
 import { ContextGamePlayer, E2eHelper } from '../util/e2e-helper'
 import { E2eCtx, E2ETestController, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
-import E2eUtil from '../util/e2e-util'
 import { ensureUnitsInHand } from '@gwent/test-utils'
 import env from '../util/env'
 import FullCard from '../components/full-card'
 import GameManager from '../util/game-manager'
-import GamePage, { HistoryMove, HistoryPass } from '../page-objects/game-page'
+import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
-import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
 
 interface GameEffectMoraleTestCtx extends E2eCtx {
@@ -624,240 +622,92 @@ test('Can see reason for morale in opponents fullcard details', async (t) => {
   })
 })
 
-// TODO: fix this running through API instead of UI
-// TODO: update this with units that would actually change outcome if morale didn't work properly
-test.only('Morale scores persist to end of game', async (t) => {
+test('Morale scores persist to end of game', async (t) => {
   const unitName1 = 'Milva'
-  const unitName2 = 'Toruviel'
-  const unitName3 = 'Isengrim Faoiltiarna'
-  const unitName4 = 'Dennis Cranmer'
-  const unitName5 = 'Olgierd Von Everec'
-  const unitName6 = 'Cynthia'
+  const unitName2 = 'Olgierd Von Everec'
+  const unitName3 = 'Black Infantry Archer'
+  const unitName4 = 'Triss Merigold'
   const gameManager = await prepareGame({
     t,
-    selfHandUnitNames: [unitName1, unitName2, unitName3, unitName4],
-    opponentHandUnitNames: [unitName5, unitName6],
+    selfHandUnitNames: [unitName1, unitName2],
+    opponentHandUnitNames: [unitName3, unitName4],
   })
   // round 1
   await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.pass({})
-  await gameManager.deploy({
-    unitName: unitName2,
-    moraling: [
-      {
-        name: unitName2,
-        effectiveStrength: 3,
-        row: Combat.Ranged,
-        player: gameManager.self.gamePlayer,
-      },
-    ],
-  })
-  await gameManager.pass({
-    switchTurnsWith: gameManager.self.gamePlayer,
-  })
-  // round 2
-  await gameManager.pass({})
-  await gameManager.deploy({ unitName: unitName5, combat: Combat.Ranged })
-  await gameManager.deploy({
-    unitName: unitName6,
-    moraling: [
-      {
-        name: unitName6,
-        effectiveStrength: 5,
-        row: Combat.Ranged,
-        player: gameManager.opponent.gamePlayer,
-      },
-    ],
-  })
-  await gameManager.pass({
-    switchTurnsWith: gameManager.opponent.gamePlayer,
-  })
-  // round 3
-  await gameManager.pass({})
   await gameManager.deploy({ unitName: unitName3 })
   await gameManager.deploy({
-    unitName: unitName4,
+    unitName: unitName2,
+    combat: Combat.Ranged,
     moraling: [
       {
-        name: unitName4,
+        name: unitName1,
+        effectiveStrength: 11,
+        row: Combat.Ranged,
+        player: gameManager.self.gamePlayer,
+      },
+      {
+        name: unitName2,
         effectiveStrength: 7,
-        row: Combat.Close,
+        row: Combat.Ranged,
         player: gameManager.self.gamePlayer,
       },
     ],
   })
+  await gameManager.deploy({ unitName: unitName4 })
+  await gameManager.pass({})
+  await gameManager.pass({})
+  // round 2
+  await gameManager.pass({})
   await gameManager.initialize({})
   await gameManager.pass({
     victors: [gameManager.self.gamePlayer.name],
   })
 })
 
-test('Morale effect for other units goes away after it gets scorched', async (t) => {
+test.only('Morale effect for other units goes away after it gets scorched', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Vreemde'
   const unitName3 = 'Milva'
   const unitName4 = 'Scorch'
-  await ensureUnitsInHand({
-    gameId: t.ctx.game.id,
-    mongoConnectionString: env.MONGO_URL,
-    mongoDatabaseName: env.MONGO_DB,
-    unitNames: [unitName1, unitName3],
-    userId: t.ctx.self.user.id,
+  const gameManager = await prepareGame({
+    t,
+    selfHandUnitNames: [unitName1, unitName3],
+    opponentHandUnitNames: [unitName2, unitName4],
   })
-  await ensureUnitsInHand({
-    gameId: t.ctx.game.id,
-    mongoConnectionString: env.MONGO_URL,
-    mongoDatabaseName: env.MONGO_DB,
-    unitNames: [unitName2, unitName4],
-    userId: t.ctx.opponent.user.id,
-  })
-  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
-  t.ctx.opponent.gameDeck = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.self,
-    turn: PlayerTurn.Current,
-    ready: true,
-    passed: false,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: t.ctx.opponent,
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
-  await LoginPage.login({
-    username: t.ctx.self.user.name,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [[]],
-  })
-
-  const unitToMoveSelf1 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName1)
-  if (!unitToMoveSelf1) {
-    throw Error(`Could not find unit in hand with name "${unitName1}"`)
-  }
-  const combatRowSelf1 = unitToMoveSelf1.unit.combats ? unitToMoveSelf1.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf1.unit.name,
-    row: combatRowSelf1,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf1,
-    row: combatRowSelf1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent1 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName2)
-  if (!unitToMoveOpponent1) {
-    throw Error(`Could not find unit in hand with name "${unitName2}"`)
-  }
-  const combatRowOpponent1 = unitToMoveOpponent1.unit.combats ? unitToMoveOpponent1.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent1.unit.id,
-    combat: combatRowOpponent1,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent1,
-    row: combatRowOpponent1,
-    moves,
-    switchTurnsWith: selfPlayer,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveSelf2 = t.ctx.self.gameDeck.hand.find((unit) => unit.unit.name === unitName3)
-  if (!unitToMoveSelf2) {
-    throw Error(`Could not find unit in hand with name "${unitName3}"`)
-  }
-  const combatRowSelf2 = unitToMoveSelf2.unit.combats ? unitToMoveSelf2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unitToMoveSelf2.unit.name,
-    row: combatRowSelf2,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: t.ctx.self.gameDeck,
-    deckUnit: unitToMoveSelf2,
-    row: combatRowSelf2,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-  E2eHelper.setEffectiveStrength({
-    player: selfPlayer,
-    effectiveStrength: 3,
-    unitName: unitName1,
-    row: combatRowSelf1,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
-  })
-
-  const unitToMoveOpponent2 = t.ctx.opponent.gameDeck.hand.find((unit) => unit.unit.name === unitName4)
-  if (!unitToMoveOpponent2) {
-    throw Error(`Could not find unit in hand with name "${unitName4}"`)
-  }
-  const combatRowOpponent2 = unitToMoveOpponent2.unit.combats ? unitToMoveOpponent2.unit.combats[0] : Combat.Close
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMoveOpponent2.unit.id,
-    combat: combatRowOpponent2,
-  })
-  E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: t.ctx.opponent.gameDeck,
-    deckUnit: unitToMoveOpponent2,
-    row: combatRowOpponent2,
-    moves,
-    switchTurnsWith: selfPlayer,
-    scorching: [
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({
+    unitName: unitName3,
+    moraling: [
       {
-        name: unitName3,
-        player: selfPlayer,
-        row: combatRowSelf2,
-        strength: unitToMoveSelf2.unit.strength,
+        name: unitName1,
+        effectiveStrength: 3,
+        row: Combat.Ranged,
+        player: gameManager.self.gamePlayer,
       },
     ],
   })
-  E2eHelper.setEffectiveStrength({
-    player: selfPlayer,
-    unitName: unitName1,
-    effectiveStrength: 2,
-    row: combatRowSelf1,
-  })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: t.ctx.self.gameDeck.hand,
-    moves: [moves],
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName4,
+    scorching: [
+      {
+        name: unitName3,
+        strength: 10,
+        row: Combat.Ranged,
+        player: gameManager.self.gamePlayer,
+      },
+    ],
+    moraling: [
+      {
+        name: unitName1,
+        effectiveStrength: 2,
+        row: Combat.Ranged,
+        player: gameManager.self.gamePlayer,
+      },
+    ],
   })
 })
-
-// TODO: test effect works for both self and opponent
 
 async function prepareGame({
   t,

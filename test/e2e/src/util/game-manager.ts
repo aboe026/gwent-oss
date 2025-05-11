@@ -57,6 +57,7 @@ export default class GameManager {
         self: this.self.gamePlayer,
         hand: this.self.deck.hand,
         moves: this.moves,
+        round: this.round,
       })
     }
   }
