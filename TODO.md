@@ -81,6 +81,8 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
+- have method to get unit names (of "inert"/non-special) for e2e decks (either hard-coded or dynamically get)
+
 - for "Move" type, have "impact" field
   - cards removed/added
   - effects applied to other cards

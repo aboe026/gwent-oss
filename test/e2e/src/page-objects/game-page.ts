@@ -1062,7 +1062,7 @@ export interface HistoryPass {
   round: number
 }
 
-interface RoundScores {
+export interface RoundScores {
   creator: number
   opponent: number
 }

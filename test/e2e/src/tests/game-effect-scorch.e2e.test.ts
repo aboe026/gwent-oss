@@ -8,7 +8,7 @@ import GameManager from '../util/game-manager'
 import HomePage from '../page-objects/home-page'
 import { PlayerTurn } from '../components/game-player-info'
 
-interface GameEffectMoraleTestCtx extends E2eCtx {
+interface GameEffectScorchTestCtx extends E2eCtx {
   scenario: string
   self: ContextGamePlayer
   opponent: ContextGamePlayer
@@ -18,11 +18,11 @@ interface GameEffectMoraleTestCtx extends E2eCtx {
   skellige: ContextGameDeck
   game: Game
 }
-const fixture = getFixtureCtx<E2eCtx, GameEffectMoraleTestCtx>()
-const test = getTestCtx<E2eCtx, GameEffectMoraleTestCtx>()
+const fixture = getFixtureCtx<E2eCtx, GameEffectScorchTestCtx>()
+const test = getTestCtx<E2eCtx, GameEffectScorchTestCtx>()
 
 fixture('Game Effect Scorch')
-  .only.page(HomePage.getUrl())
+  .page(HomePage.getUrl())
   .beforeEach(async (t) => {
     t.ctx.scenario = 'game-effect-scorch'
     const self = await new ApiClient({}).addUser({
@@ -808,7 +808,7 @@ async function prepareGame({
   t,
   selfFirst,
 }: {
-  t: E2ETestController<E2eCtx, GameEffectMoraleTestCtx>
+  t: E2ETestController<E2eCtx, GameEffectScorchTestCtx>
   self: {
     deck: ContextGameDeck
     hand: string[]
