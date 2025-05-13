@@ -39,70 +39,30 @@ fixture('Game Effect Morale')
     const opponent = await new ApiClient({}).addUser({
       name: `${t.ctx.scenario}-opponent-${t.ctx.start}`,
     })
-
-    t.ctx.scoiatael = {
-      faction: FactionKey.ScoiaTael,
-      leader: 'Francesca Findabair the Beautiful',
-      units: [
-        'Barclay Els',
-        'Ciaran aep Easnillien',
-        'Dennis Cranmer',
-        'Dol Blathanna Archer',
-        'Dol Blathanna Scout',
-        'Eithne',
-        'Emiel Regis Rohellec Terzieff',
-        'Filavandrel aen Fidhail',
-        'Ida Emean aep Sivney',
-        'Isengrim Faoiltiarna',
-        'Mahakaman Defender',
-        'Milva',
-        'Olgierd Von Everec',
-        'Riordain',
-        'Saesenthessis',
-        'Toruviel',
-        'Triss Merigold',
-        'Vesemir',
-        'Vrihedd Brigade Recruit',
-        'Vrihedd Brigade Veteran',
-        'Yaevinn',
-        'Zoltan Chivay',
-      ],
-    }
-    t.ctx.nilfgaard = {
-      faction: FactionKey.NilfgaardianEmpire,
-      leader: 'Emhyr var Emreis the Relentless',
-      units: [
-        'Albrich',
-        'Assire var Anahid',
-        'Black Infantry Archer',
-        'Cahir Mawr Dyffryn aep Ceallach',
-        'Cynthia',
-        'Emiel Regis Rohellec Terzieff',
-        'Fringilla Vigo',
-        'Heavy Zerrikanian Fire Scorpion',
-        'Letho of Gulet',
-        'Morteisen',
-        'Morvran Voorhis',
-        'Olgierd Von Everec',
-        'Renuald aep Matsen',
-        'Roach',
-        'Siege Engineer',
-        'Scorch',
-        'Tibor Eggebracht',
-        'Triss Merigold',
-        'Vanhemar',
-        'Vesemir',
-        'Vreemde',
-        'Zerrikanian Fire Scorpion',
-      ],
-    }
-
     const selfClient = new ApiClient({
       username: self.name,
     })
     const opponentClient = new ApiClient({
       username: opponent.name,
     })
+
+    t.ctx.scoiatael = {
+      faction: FactionKey.ScoiaTael,
+      leader: 'Francesca Findabair the Beautiful',
+      units: await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: FactionKey.ScoiaTael,
+      }),
+    }
+    t.ctx.nilfgaard = {
+      faction: FactionKey.NilfgaardianEmpire,
+      leader: 'Emhyr var Emreis the Relentless',
+      units: await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: FactionKey.NilfgaardianEmpire,
+        specials: ['Scorch'],
+      }),
+    }
 
     t.ctx.game = await selfClient.addGame([opponent.name])
 
@@ -664,7 +624,7 @@ test('Morale scores persist to end of game', async (t) => {
   })
 })
 
-test.only('Morale effect for other units goes away after it gets scorched', async (t) => {
+test('Morale effect for other units goes away after it gets scorched', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Vreemde'
   const unitName3 = 'Milva'

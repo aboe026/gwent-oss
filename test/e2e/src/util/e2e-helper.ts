@@ -22,6 +22,23 @@ export interface ContextGameDeck {
 }
 
 export class E2eHelper {
+  static async getUnitsForDeck({
+    client,
+    faction,
+    specials = [],
+  }: {
+    client: ApiClient
+    faction: FactionKey
+    specials?: string[]
+  }): Promise<string[]> {
+    const units = await client.getUnits({
+      deckable: true,
+      factions: [faction, FactionKey.Neutral],
+    })
+    const nonSpecialUnits = units.filter((unit) => !unit.special).map((unit) => unit.name)
+    return [...nonSpecialUnits, ...specials]
+  }
+
   static async switchToUser({ username, password = 'password' }: { username: string; password?: string }) {
     await Banner.goTo(Banner.elements.MenuProfile)
     await ProfilePage.logout()

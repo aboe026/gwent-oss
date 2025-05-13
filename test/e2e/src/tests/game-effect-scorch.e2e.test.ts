@@ -31,130 +31,49 @@ fixture('Game Effect Scorch')
     const opponent = await new ApiClient({}).addUser({
       name: `${t.ctx.scenario}-opponent-${t.ctx.start}`,
     })
-
-    t.ctx.monsters = {
-      faction: FactionKey.Monsters,
-      leader: 'Eredin Bringer of Death',
-      // TODO: just create with all units? do only units in hand matter?
-      units: [
-        'Draug',
-        'Emiel Regis Rohellec Terzieff',
-        'Endrega',
-        'Fiend',
-        'Fire Elemental',
-        'Foglet',
-        'Forktail',
-        'Frightener',
-        'Gargoyle',
-        'Griffin',
-        'Ice Giant',
-        'Imlerith',
-        'Leshen',
-        'Plague Maiden',
-        'Roach',
-        'Scorch',
-        'Toad',
-        'Vesemir',
-        'Villentretenmerth',
-        'Werewolf',
-        'Wyvern',
-        'Zoltan Chivay',
-      ],
-    }
-    t.ctx.nilfgaard = {
-      faction: FactionKey.NilfgaardianEmpire,
-      leader: 'Emhyr var Emreis His Imperial Majesty',
-      units: [
-        'Albrich',
-        'Sweers',
-        'Vreemde',
-        'Morteisen',
-        'Puttkammer',
-        'Roach',
-        'Rotten Mangonel',
-        'Cynthia',
-        'Rainfarn',
-        'Vanhemar',
-        'Emiel Regis Rohellec Terzieff',
-        'Renuald aep Matsen',
-        'Zerrikanian Fire Scorpion',
-        'Zoltan Chivay',
-        'Assire var Anahid',
-        'Cahir Mawr Dyffryn aep Ceallach',
-        'Fringilla Vigo',
-        'Siege Engineer',
-        'Vesemir',
-        'Black Infantry Archer',
-        'Black Infantry Archer',
-        'Heavy Zerrikanian Fire Scorpion',
-      ],
-    }
-    t.ctx.scoiatael = {
-      faction: FactionKey.ScoiaTael,
-      leader: 'Francesca Findabair the Beautiful',
-      units: [
-        'Barclay Els',
-        'Ciaran aep Easnillien',
-        'Dennis Cranmer',
-        'Dol Blathanna Archer',
-        'Dol Blathanna Scout',
-        'Eithne',
-        'Emiel Regis Rohellec Terzieff',
-        'Filavandrel aen Fidhail',
-        'Ida Emean aep Sivney',
-        'Isengrim Faoiltiarna',
-        'Mahakaman Defender',
-        'Milva',
-        'Olgierd Von Everec',
-        'Riordain',
-        'Schirru',
-        'Toruviel',
-        'Triss Merigold',
-        'Vesemir',
-        'Villentretenmerth',
-        'Vrihedd Brigade Recruit',
-        'Vrihedd Brigade Veteran',
-        'Yaevinn',
-        'Zoltan Chivay',
-      ],
-    }
-    t.ctx.skellige = {
-      faction: FactionKey.Skellige,
-      leader: 'Crach an Craite',
-      units: [
-        'Berserker',
-        'Blueboy Lugos',
-        'Clan an Craite Warrior',
-        'Clan Brokvar Archer',
-        'Clan Brokvar Archer',
-        'Clan Brokvar Archer',
-        'Clan Dimun Pirate',
-        'Clan Heymaey Skald',
-        'Clan Tordarroch Armorsmith',
-        'Donar an Hindar',
-        'Emiel Regis Rohellec Terzieff',
-        'Hjalmar',
-        'Holger Blackhand',
-        'Madman Lugos',
-        'Olaf',
-        'Roach',
-        'Scorch',
-        'Svanrige',
-        'Triss Merigold',
-        'Udalryk',
-        'Vesemir',
-        'Villentretenmerth',
-        'War Longship',
-        'Zoltan Chivay',
-      ],
-    }
-
     const selfClient = new ApiClient({
       username: self.name,
     })
     const opponentClient = new ApiClient({
       username: opponent.name,
     })
+
+    t.ctx.monsters = {
+      faction: FactionKey.Monsters,
+      leader: 'Eredin Bringer of Death',
+      units: await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: FactionKey.Monsters,
+        specials: ['Scorch'],
+      }),
+    }
+    t.ctx.nilfgaard = {
+      faction: FactionKey.NilfgaardianEmpire,
+      leader: 'Emhyr var Emreis His Imperial Majesty',
+      units: await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: FactionKey.NilfgaardianEmpire,
+        specials: ['Scorch'],
+      }),
+    }
+    t.ctx.scoiatael = {
+      faction: FactionKey.ScoiaTael,
+      leader: 'Francesca Findabair the Beautiful',
+      units: await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: FactionKey.ScoiaTael,
+        specials: ['Scorch'],
+      }),
+    }
+    t.ctx.skellige = {
+      faction: FactionKey.Skellige,
+      leader: 'Crach an Craite',
+      units: await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: FactionKey.Skellige,
+        specials: ['Scorch'],
+      }),
+    }
 
     t.ctx.game = await selfClient.addGame([opponent.name])
 
@@ -801,6 +720,7 @@ test('Villentretenmerth removes only opponents unit if self has same one', async
 })
 
 // TODO: test that scorch does not effect unit without strength (eg Drummer)
+// TODO: test that multiple scorches can be played right after each other
 
 async function prepareGame({
   self,
