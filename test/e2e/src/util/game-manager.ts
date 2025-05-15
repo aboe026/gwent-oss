@@ -1,13 +1,15 @@
 import ApiClient from './api-client'
-import { Combat, DeckUnit, GameDeck } from '@gwent/graphql-schema/resolver-typings'
-import { PlayerTurn } from '../components/game-player-info'
+import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import { E2eHelper, MoralingExpected, ScorchingExpected } from './e2e-helper'
 import E2eUtil from './e2e-util'
+import { ensureUnitsInHand } from '@gwent/test-utils'
+import env from './env'
 import GamePage, { GamePlayerExpected, HistoryMove, HistoryPass, RoundScores } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
+import { PlayerTurn } from '../components/game-player-info'
 import { STARTING_LIVES } from '@gwent/constants'
 
-export default class GameManager {
+export class GameManager {
   public gameId: string
   public self: GameManagerPlayer
   public opponent: GameManagerPlayer
@@ -209,6 +211,157 @@ export default class GameManager {
       })
     }
   }
+}
+
+export default async function createGameManager({
+  label,
+  self,
+  opponent,
+  opponentFirst,
+}: {
+  label: string
+  self?: GameManagerSetupPlayer
+  opponent?: GameManagerSetupPlayer
+  opponentFirst?: boolean
+}): Promise<GameManager> {
+  const selfUser = await new ApiClient({}).addUser({
+    name: `self-${label}`,
+  })
+  const opponentUser = await new ApiClient({}).addUser({
+    name: `opponent-${label}`,
+  })
+  const selfClient = new ApiClient({
+    username: selfUser.name,
+  })
+  const opponentClient = new ApiClient({
+    username: opponentUser.name,
+  })
+
+  const game = await selfClient.addGame([opponentUser.name])
+
+  const selfFaction = self?.faction || FactionKey.NorthernRealms
+  const opponentFaction = opponent?.faction || FactionKey.NorthernRealms
+  const selfDeck = await selfClient.addDeck({
+    faction: selfFaction,
+    leaderName: self?.leader || getDefaultLeaderName(selfFaction),
+    name: `self-deck-${label}`,
+    unitNames: await E2eHelper.getUnitsForDeck({
+      client: selfClient,
+      faction: selfFaction,
+      specials: self?.specialUnitNames,
+    }),
+  })
+  const opponentDeck = await opponentClient.addDeck({
+    faction: opponentFaction,
+    leaderName: opponent?.leader || getDefaultLeaderName(opponentFaction),
+    name: `opponent-deck-${label}`,
+    unitNames: await E2eHelper.getUnitsForDeck({
+      client: opponentClient,
+      faction: opponentFaction,
+      specials: opponent?.specialUnitNames,
+    }),
+  })
+
+  await selfClient.setDeck({
+    deckId: selfDeck.id,
+    gameId: game.id,
+  })
+  await opponentClient.setDeck({
+    deckId: opponentDeck.id,
+    gameId: game.id,
+  })
+
+  const firstPlayerId = opponentFirst ? opponentUser.id : selfUser.id
+  const secondPlayerId = opponentFirst ? selfUser.id : opponentUser.id
+  await selfClient.setOrder({
+    gameId: game.id,
+    userIds: [firstPlayerId, secondPlayerId],
+  })
+
+  await selfClient.ready(game.id)
+  await opponentClient.ready(game.id)
+
+  if (self?.handUnitNames) {
+    await ensureUnitsInHand({
+      gameId: game.id,
+      mongoConnectionString: env.MONGO_URL,
+      mongoDatabaseName: env.MONGO_DB,
+      unitNames: self.handUnitNames,
+      userId: selfUser.id,
+    })
+  }
+  if (opponent?.handUnitNames) {
+    await ensureUnitsInHand({
+      gameId: game.id,
+      mongoConnectionString: env.MONGO_URL,
+      mongoDatabaseName: env.MONGO_DB,
+      unitNames: opponent.handUnitNames,
+      userId: opponentUser.id,
+    })
+  }
+
+  const selfGameDeck = await selfClient.getGameDeck(game.id)
+  const opponentGameDeck = await opponentClient.getGameDeck(game.id)
+  return new GameManager({
+    gameId: game.id,
+    self: {
+      client: selfClient,
+      deck: selfGameDeck,
+      gamePlayer: E2eHelper.getGamePlayer({
+        player: {
+          user: selfUser,
+          client: selfClient,
+          deck: selfDeck,
+          gameDeck: selfGameDeck,
+        },
+        turn: opponentFirst ? undefined : PlayerTurn.Current,
+        ready: true,
+        passed: false,
+        score: 0,
+      }),
+    },
+    opponent: {
+      client: opponentClient,
+      deck: opponentGameDeck,
+      gamePlayer: E2eHelper.getGamePlayer({
+        player: {
+          user: opponentUser,
+          client: opponentClient,
+          deck: opponentDeck,
+          gameDeck: opponentGameDeck,
+        },
+        turn: opponentFirst ? PlayerTurn.Current : undefined,
+        ready: true,
+        score: 0,
+      }),
+    },
+  })
+}
+
+function getDefaultLeaderName(faction: FactionKey): string {
+  if (faction === FactionKey.Monsters) {
+    return 'Eredin King of the Wild Hunt'
+  }
+  if (faction === FactionKey.NilfgaardianEmpire) {
+    return 'Emhyr var Emreis His Imperial Majesty'
+  }
+  if (faction === FactionKey.NorthernRealms) {
+    return 'Foltest Lord Commander of the North'
+  }
+  if (faction === FactionKey.ScoiaTael) {
+    return 'Francesca Findabair Pureblood Elf'
+  }
+  if (faction === FactionKey.Skellige) {
+    return 'Crach an Craite'
+  }
+  throw Error(`Cannot determine leader for invalid faction key "${faction}"`)
+}
+
+interface GameManagerSetupPlayer {
+  faction: FactionKey
+  leader?: string
+  specialUnitNames?: string[]
+  handUnitNames?: string[]
 }
 
 interface GameManagerPlayer {

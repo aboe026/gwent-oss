@@ -4,7 +4,7 @@ import { ContextGameDeck, ContextGamePlayer, E2eHelper, MoralingExpected } from 
 import { E2eCtx, E2ETestController, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { ensureUnitsInHand } from '@gwent/test-utils'
 import env from '../util/env'
-import GameManager from '../util/game-manager'
+import { GameManager } from '../util/game-manager'
 import HomePage from '../page-objects/home-page'
 import { PlayerTurn } from '../components/game-player-info'
 
