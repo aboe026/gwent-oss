@@ -115,7 +115,15 @@ test('Morale unit does not effect itself', async (t) => {
   })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName })
+  const deckUnit = await gameManager.deploy({ unitName })
+  await GamePage.fullscreenCombatCard({
+    unitName,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit.unit,
+  })
 })
 
 test('Morale unit does not effect hero', async (t) => {
@@ -125,11 +133,23 @@ test('Morale unit does not effect hero', async (t) => {
     t,
     selfHandUnitNames: [unitName1, unitName2],
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
   await gameManager.pass({})
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName2 })
+  const deckUnit2 = await gameManager.deploy({ unitName: unitName2 })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+  })
 })
 
 test('Morale hero unit not effected by other morale', async (t) => {
@@ -154,7 +174,6 @@ test('Morale hero unit not effected by other morale', async (t) => {
       },
     ],
   })
-  // TODO: move fullscreen verification ot full-card.e2e.test.ts?
   await GamePage.fullscreenCombatCard({
     unitName: unitName2,
     row: Combat.Close,
@@ -184,14 +203,42 @@ test('Morale unit does not effect unit not in row', async (t) => {
     t,
     selfHandUnitNames: [unitName1, unitName2],
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit = await gameManager.deploy({ unitName: unitName1 })
   await gameManager.pass({})
   await gameManager.initialize({})
 
   await gameManager.deploy({ unitName: unitName2 })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Close,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit.unit,
+  })
 })
 
-// TODO: morale does not effect opponent unit
+test('Morale unit does not effect opponent unit', async (t) => {
+  const unitName1 = 'Milva'
+  const unitName2 = 'Albrich'
+  const gameManager = await prepareGame({
+    t,
+    selfHandUnitNames: [unitName1],
+    opponentHandUnitNames: [unitName2],
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.initialize({})
+
+  const deckUnit = await gameManager.deploy({ unitName: unitName2 })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Ranged,
+    self: false,
+  })
+  await FullCard.verify({
+    unit: deckUnit.unit,
+  })
+})
 
 test('Morale effects normal unit if morale played before', async (t) => {
   const unitName1 = 'Milva'
@@ -200,11 +247,11 @@ test('Morale effects normal unit if morale played before', async (t) => {
     t,
     selfHandUnitNames: [unitName1, unitName2],
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
   await gameManager.pass({})
   await gameManager.initialize({})
 
-  await gameManager.deploy({
+  const deckUnit2 = await gameManager.deploy({
     unitName: unitName2,
     moraling: [
       {
@@ -215,6 +262,26 @@ test('Morale effects normal unit if morale played before', async (t) => {
       },
     ],
   })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: '+1',
+        strength: 3,
+        reason: `Morale from ${unitName1}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+  })
 })
 
 test('Morale effects normal unit if morale played after', async (t) => {
@@ -224,11 +291,11 @@ test('Morale effects normal unit if morale played after', async (t) => {
     t,
     selfHandUnitNames: [unitName1, unitName2],
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
   await gameManager.pass({})
   await gameManager.initialize({})
 
-  await gameManager.deploy({
+  const deckUnit2 = await gameManager.deploy({
     unitName: unitName2,
     moraling: [
       {
@@ -238,6 +305,26 @@ test('Morale effects normal unit if morale played after', async (t) => {
         player: gameManager.self.gamePlayer,
       },
     ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: '+1',
+        strength: 3,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
   })
 })
 
@@ -249,12 +336,12 @@ test('Morale effects multiple normal units', async (t) => {
     t,
     selfHandUnitNames: [unitName1, unitName2, unitName3],
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
   await gameManager.pass({})
-  await gameManager.deploy({ unitName: unitName2 })
+  const deckUnit2 = await gameManager.deploy({ unitName: unitName2 })
   await gameManager.initialize({})
 
-  await gameManager.deploy({
+  const deckUnit3 = await gameManager.deploy({
     unitName: unitName3,
     moraling: [
       {
@@ -270,6 +357,38 @@ test('Morale effects multiple normal units', async (t) => {
         player: gameManager.self.gamePlayer,
       },
     ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: '+1',
+        strength: 3,
+        reason: `Morale from ${unitName3}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    effectiveStrength: 7,
+    effects: [
+      {
+        operator: '+1',
+        strength: 7,
+        reason: `Morale from ${unitName3}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit3.unit,
   })
 })
 
@@ -634,7 +753,7 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
     selfHandUnitNames: [unitName1, unitName3],
     opponentHandUnitNames: [unitName2, unitName4],
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit = await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
   await gameManager.deploy({
     unitName: unitName3,
@@ -648,6 +767,7 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
     ],
   })
   await gameManager.initialize({})
+
   await gameManager.deploy({
     unitName: unitName4,
     scorching: [
@@ -666,6 +786,14 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
         player: gameManager.self.gamePlayer,
       },
     ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit.unit,
   })
 })
 
