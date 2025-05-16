@@ -64,3 +64,7 @@ export function getFixtureCtx<FixtureCtxType, TestCtxType>() {
 export function getTestCtx<FixtureCtxType, TestCtxType>() {
   return test as E2eTest<FixtureCtxType, TestCtxType>
 }
+
+export function getScenario(t: E2ETestController<E2eCtx, E2eCtx>): string {
+  return (t as any).testRun.test.fixture.name.replace(/ /g, '-').toLowerCase()
+}

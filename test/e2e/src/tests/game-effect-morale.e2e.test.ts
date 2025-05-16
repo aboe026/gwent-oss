@@ -1,20 +1,19 @@
 import createGameManager from '../util/game-manager'
 import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
-const scenario = 'game-effect-morale'
 
 fixture('Game Effect Morale').page(HomePage.getUrl())
 
-test('Morale unit does not effect itself', async () => {
+test('Morale unit does not effect itself', async (t) => {
   const unitName = 'Milva'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName],
@@ -33,11 +32,11 @@ test('Morale unit does not effect itself', async () => {
   })
 })
 
-test('Morale unit does not effect hero', async () => {
+test('Morale unit does not effect hero', async (t) => {
   const unitName1 = 'Eithne'
   const unitName2 = 'Milva'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2],
@@ -62,11 +61,11 @@ test('Morale unit does not effect hero', async () => {
   })
 })
 
-test('Morale hero unit not effected by other morale', async () => {
+test('Morale hero unit not effected by other morale', async (t) => {
   const unitName1 = 'Isengrim Faoiltiarna'
   const unitName2 = 'Olgierd Von Everec'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2],
@@ -109,11 +108,11 @@ test('Morale hero unit not effected by other morale', async () => {
   })
 })
 
-test('Morale unit does not effect unit not in row', async () => {
+test('Morale unit does not effect unit not in row', async (t) => {
   const unitName1 = 'Dennis Cranmer'
   const unitName2 = 'Milva'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2],
@@ -134,11 +133,11 @@ test('Morale unit does not effect unit not in row', async () => {
   })
 })
 
-test('Morale unit does not effect opponent unit', async () => {
+test('Morale unit does not effect opponent unit', async (t) => {
   const unitName1 = 'Milva'
   const unitName2 = 'Albrich'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1],
@@ -162,11 +161,11 @@ test('Morale unit does not effect opponent unit', async () => {
   })
 })
 
-test('Morale effects normal unit if morale played before', async () => {
+test('Morale effects normal unit if morale played before', async (t) => {
   const unitName1 = 'Milva'
   const unitName2 = 'Toruviel'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2],
@@ -209,11 +208,11 @@ test('Morale effects normal unit if morale played before', async () => {
   })
 })
 
-test('Morale effects normal unit if morale played after', async () => {
+test('Morale effects normal unit if morale played after', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Milva'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2],
@@ -256,12 +255,12 @@ test('Morale effects normal unit if morale played after', async () => {
   })
 })
 
-test('Morale effects multiple normal units', async () => {
+test('Morale effects multiple normal units', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Ida Emean aep Sivney'
   const unitName3 = 'Milva'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2, unitName3],
@@ -323,11 +322,11 @@ test('Morale effects multiple normal units', async () => {
   })
 })
 
-test('Multiple morales effect each other', async () => {
+test('Multiple morales effect each other', async (t) => {
   const unitName1 = 'Milva'
   const unitName2 = 'Olgierd Von Everec'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2],
@@ -385,13 +384,13 @@ test('Multiple morales effect each other', async () => {
   })
 })
 
-test('Multiple morales effect themselves and multiple standard units in same row', async () => {
+test('Multiple morales effect themselves and multiple standard units in same row', async (t) => {
   const unitName1 = 'Riordain'
   const unitName2 = 'Ida Emean aep Sivney'
   const unitName3 = 'Milva'
   const unitName4 = 'Olgierd Von Everec'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2, unitName3, unitName4],
@@ -513,13 +512,13 @@ test('Multiple morales effect themselves and multiple standard units in same row
   })
 })
 
-test('Multiple morales effect themselves and multiple standard units in different rows', async () => {
+test('Multiple morales effect themselves and multiple standard units in different rows', async (t) => {
   const unitName1 = 'Milva'
   const unitName2 = 'Toruviel'
   const unitName3 = 'Isengrim Faoiltiarna'
   const unitName4 = 'Dennis Cranmer'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2, unitName3, unitName4],
@@ -596,11 +595,11 @@ test('Multiple morales effect themselves and multiple standard units in differen
   })
 })
 
-test('Can see reason for morale in opponents fullcard details', async () => {
+test('Can see reason for morale in opponents fullcard details', async (t) => {
   const unitName1 = 'Albrich'
   const unitName2 = 'Olgierd Von Everec'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
     },
@@ -647,13 +646,13 @@ test('Can see reason for morale in opponents fullcard details', async () => {
   })
 })
 
-test('Morale scores persist to end of game', async () => {
+test('Morale scores persist to end of game', async (t) => {
   const unitName1 = 'Milva'
   const unitName2 = 'Olgierd Von Everec'
   const unitName3 = 'Black Infantry Archer'
   const unitName4 = 'Triss Merigold'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName2],
@@ -695,13 +694,13 @@ test('Morale scores persist to end of game', async () => {
   })
 })
 
-test('Morale effect for other units goes away after it gets scorched', async () => {
+test('Morale effect for other units goes away after it gets scorched', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Vreemde'
   const unitName3 = 'Milva'
   const unitName4 = 'Scorch'
   const gameManager = await createGameManager({
-    label: `${scenario}-${Date.now()}`,
+    label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.ScoiaTael,
       handUnitNames: [unitName1, unitName3],

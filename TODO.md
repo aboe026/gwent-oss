@@ -63,6 +63,7 @@ Existing problems in the codebase that need to be fixed.
   - target log level of specific classes/loggers
   - configure while running (need role/admin for that?)
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
+- dynamically set scenario name for e2e tests based on their fixture name, have it set on context
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
