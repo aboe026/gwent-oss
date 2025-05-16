@@ -1067,18 +1067,18 @@ export interface RoundScores {
   opponent: number
 }
 
-interface HighlightedHandCard {
+export interface HighlightedHandCard {
   unitName: string
   dotted?: boolean
   rows?: Combat[] | null
 }
 
-interface HighlightedBattlefieldCard {
+export interface HighlightedBattlefieldCard {
   unitName: string
   row: Combat
 }
 
-interface HighlightedHistory {
+export interface HighlightedHistory {
   playerName: string
   unitName: string
   row: Combat

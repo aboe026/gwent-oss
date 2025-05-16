@@ -4,7 +4,15 @@ import { E2eHelper, MoralingExpected, ScorchingExpected } from './e2e-helper'
 import E2eUtil from './e2e-util'
 import { ensureUnitsInHand } from '@gwent/test-utils'
 import env from './env'
-import GamePage, { GamePlayerExpected, HistoryMove, HistoryPass, RoundScores } from '../page-objects/game-page'
+import GamePage, {
+  GamePlayerExpected,
+  HighlightedBattlefieldCard,
+  HighlightedHandCard,
+  HighlightedHistory,
+  HistoryMove,
+  HistoryPass,
+  RoundScores,
+} from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
 import { STARTING_LIVES } from '@gwent/constants'
@@ -14,7 +22,7 @@ export class GameManager {
   public self: GameManagerPlayer
   public opponent: GameManagerPlayer
   public moves: (HistoryMove | HistoryPass)[][]
-  public verify: boolean
+  public shouldVerify: boolean
   public apiDriven: boolean
   public round: number
 
@@ -41,14 +49,15 @@ export class GameManager {
       roundScores: [],
     }
     this.moves = [[]]
-    this.verify = verify
+    this.shouldVerify = verify
     this.apiDriven = apiDriven
     this.round = 1
   }
 
   async initialize({ verify = true, apiDriven = false }: { verify?: boolean; apiDriven?: boolean }) {
-    this.verify = verify
+    this.shouldVerify = verify
     this.apiDriven = apiDriven
+    await E2eUtil.goTo(LoginPage.getUrl())
     await LoginPage.login({
       username: this.self.gamePlayer.name,
     })
@@ -111,7 +120,7 @@ export class GameManager {
       scorching,
       moraling,
     })
-    if (this.verify || verify) {
+    if (this.shouldVerify || verify) {
       await GamePage.verify({
         opponent: this.opponent.gamePlayer,
         self: this.self.gamePlayer,
@@ -188,7 +197,7 @@ export class GameManager {
       }
     }
 
-    if (this.verify || verify) {
+    if (this.shouldVerify || verify) {
       let roundScores: RoundScores[] | undefined
       if (gameOver && this.self.roundScores && this.opponent.roundScores) {
         roundScores = []
@@ -210,6 +219,27 @@ export class GameManager {
         rounds: roundScores,
       })
     }
+  }
+
+  async verify({
+    highlightedHandCard,
+    highlightedBattlefieldCard,
+    highlightedHistory,
+  }: {
+    highlightedHandCard?: HighlightedHandCard
+    highlightedBattlefieldCard?: HighlightedBattlefieldCard
+    highlightedHistory?: HighlightedHistory
+  }) {
+    await GamePage.verify({
+      opponent: this.opponent.gamePlayer,
+      self: this.self.gamePlayer,
+      hand: this.self.deck.hand,
+      moves: this.moves,
+      round: this.round,
+      highlightedHandCard,
+      highlightedBattlefieldCard,
+      highlightedHistory,
+    })
   }
 }
 
