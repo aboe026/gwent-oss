@@ -709,7 +709,7 @@ test('Morale effect for other units goes away after it gets scorched', async () 
     opponent: {
       faction: FactionKey.NilfgaardianEmpire,
       handUnitNames: [unitName2, unitName4],
-      specialUnitNames: [unitName4],
+      specialUnitNames: [unitName4], // TODO: remove specialUnitNames since they are already in handUnitNames
     },
   })
   const deckUnit = await gameManager.deploy({ unitName: unitName1 })
@@ -726,6 +726,7 @@ test('Morale effect for other units goes away after it gets scorched', async () 
     ],
   })
   await gameManager.initialize({})
+  // TODO: verify morale shows in fullscreen before scorch
 
   await gameManager.deploy({
     unitName: unitName4,

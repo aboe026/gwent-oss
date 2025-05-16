@@ -35,8 +35,23 @@ export class E2eHelper {
       deckable: true,
       factions: [faction, FactionKey.Neutral],
     })
-    const nonSpecialUnits = units.filter((unit) => !unit.special).map((unit) => unit.name)
-    return [...nonSpecialUnits, ...specials]
+    const unitNames = units.filter((unit) => !unit.special).map((unit) => unit.name)
+    for (const special of specials) {
+      const expectedOccurrences = specials.filter((name) => name === special).length
+      const currentOccurrences = unitNames.filter((name) => name === special).length
+      const possibleOccurrences = units.filter((unit) => unit.name === special).length
+
+      if (expectedOccurrences > possibleOccurrences) {
+        throw Error(
+          `Cannot add "${expectedOccurrences}" instances of "${special}" for deck with faction "${faction}", only "${possibleOccurrences}" instances available`
+        )
+      }
+
+      if (currentOccurrences < expectedOccurrences) {
+        unitNames.push(special)
+      }
+    }
+    return unitNames
   }
 
   static async switchToUser({ username, password = 'password' }: { username: string; password?: string }) {

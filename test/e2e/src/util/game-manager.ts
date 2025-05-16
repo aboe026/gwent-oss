@@ -239,8 +239,16 @@ export default async function createGameManager({
 
   const game = await selfClient.addGame([opponentUser.name])
 
-  const selfFaction = self?.faction || FactionKey.NorthernRealms
-  const opponentFaction = opponent?.faction || FactionKey.NorthernRealms
+  const selfFaction = self?.faction
+    ? self.faction
+    : opponent?.faction === FactionKey.ScoiaTael
+    ? FactionKey.NorthernRealms
+    : FactionKey.ScoiaTael
+  const opponentFaction = opponent?.faction
+    ? opponent.faction
+    : self?.faction === FactionKey.ScoiaTael
+    ? FactionKey.NorthernRealms
+    : FactionKey.ScoiaTael
   const selfDeck = await selfClient.addDeck({
     faction: selfFaction,
     leaderName: self?.leader || getDefaultLeaderName(selfFaction),
@@ -248,7 +256,7 @@ export default async function createGameManager({
     unitNames: await E2eHelper.getUnitsForDeck({
       client: selfClient,
       faction: selfFaction,
-      specials: self?.specialUnitNames,
+      specials: [...(self?.specialUnitNames || []), ...(self?.handUnitNames || [])],
     }),
   })
   const opponentDeck = await opponentClient.addDeck({
@@ -258,7 +266,7 @@ export default async function createGameManager({
     unitNames: await E2eHelper.getUnitsForDeck({
       client: opponentClient,
       faction: opponentFaction,
-      specials: opponent?.specialUnitNames,
+      specials: [...(opponent?.specialUnitNames || []), ...(opponent?.handUnitNames || [])],
     }),
   })
 
@@ -271,15 +279,21 @@ export default async function createGameManager({
     gameId: game.id,
   })
 
-  const firstPlayerId = opponentFirst ? opponentUser.id : selfUser.id
-  const secondPlayerId = opponentFirst ? selfUser.id : opponentUser.id
-  await selfClient.setOrder({
-    gameId: game.id,
-    userIds: [firstPlayerId, secondPlayerId],
-  })
+  if (
+    (selfFaction === FactionKey.ScoiaTael && opponentFaction !== FactionKey.ScoiaTael) ||
+    (opponentFaction === FactionKey.ScoiaTael && selfFaction !== FactionKey.ScoiaTael)
+  ) {
+    const firstPlayerId = opponentFirst ? opponentUser.id : selfUser.id
+    const secondPlayerId = opponentFirst ? selfUser.id : opponentUser.id
+    const scoiataelClient = selfFaction === FactionKey.ScoiaTael ? selfClient : opponentClient
+    await scoiataelClient.setOrder({
+      gameId: game.id,
+      userIds: [firstPlayerId, secondPlayerId],
+    })
+  }
 
   await selfClient.ready(game.id)
-  await opponentClient.ready(game.id)
+  const updatedGame = await opponentClient.ready(game.id)
 
   if (self?.handUnitNames) {
     await ensureUnitsInHand({
@@ -314,7 +328,7 @@ export default async function createGameManager({
           deck: selfDeck,
           gameDeck: selfGameDeck,
         },
-        turn: opponentFirst ? undefined : PlayerTurn.Current,
+        turn: updatedGame.turn?.user.id === selfUser.id ? PlayerTurn.Current : undefined,
         ready: true,
         passed: false,
         score: 0,
@@ -330,7 +344,7 @@ export default async function createGameManager({
           deck: opponentDeck,
           gameDeck: opponentGameDeck,
         },
-        turn: opponentFirst ? PlayerTurn.Current : undefined,
+        turn: updatedGame.turn?.user.id === opponentUser.id ? PlayerTurn.Current : undefined,
         ready: true,
         score: 0,
       }),

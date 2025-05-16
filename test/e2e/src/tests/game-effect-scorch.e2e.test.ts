@@ -1,124 +1,46 @@
-import ApiClient from '../util/api-client'
-import { Combat, FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
-import { ContextGameDeck, ContextGamePlayer, E2eHelper, MoralingExpected } from '../util/e2e-helper'
-import { E2eCtx, E2ETestController, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
-import { ensureUnitsInHand } from '@gwent/test-utils'
-import env from '../util/env'
-import { GameManager } from '../util/game-manager'
+import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import createGameManager from '../util/game-manager'
+import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import HomePage from '../page-objects/home-page'
+import { MoralingExpected } from '../util/e2e-helper'
 import { PlayerTurn } from '../components/game-player-info'
 
-interface GameEffectScorchTestCtx extends E2eCtx {
-  scenario: string
-  self: ContextGamePlayer
-  opponent: ContextGamePlayer
-  monsters: ContextGameDeck
-  nilfgaard: ContextGameDeck
-  scoiatael: ContextGameDeck
-  skellige: ContextGameDeck
-  game: Game
-}
-const fixture = getFixtureCtx<E2eCtx, GameEffectScorchTestCtx>()
-const test = getTestCtx<E2eCtx, GameEffectScorchTestCtx>()
+const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
+const test = getTestCtx<E2eCtx, E2eCtx>()
+const scenario = 'game-effect-scorch'
 
-fixture('Game Effect Scorch')
-  .page(HomePage.getUrl())
-  .beforeEach(async (t) => {
-    t.ctx.scenario = 'game-effect-scorch'
-    const self = await new ApiClient({}).addUser({
-      name: `${t.ctx.scenario}-self-${t.ctx.start}`,
-    })
-    const opponent = await new ApiClient({}).addUser({
-      name: `${t.ctx.scenario}-opponent-${t.ctx.start}`,
-    })
-    const selfClient = new ApiClient({
-      username: self.name,
-    })
-    const opponentClient = new ApiClient({
-      username: opponent.name,
-    })
+fixture('Game Effect Scorch').page(HomePage.getUrl())
 
-    t.ctx.monsters = {
-      faction: FactionKey.Monsters,
-      leader: 'Eredin Bringer of Death',
-      units: await E2eHelper.getUnitsForDeck({
-        client: selfClient,
-        faction: FactionKey.Monsters,
-        specials: ['Scorch'],
-      }),
-    }
-    t.ctx.nilfgaard = {
-      faction: FactionKey.NilfgaardianEmpire,
-      leader: 'Emhyr var Emreis His Imperial Majesty',
-      units: await E2eHelper.getUnitsForDeck({
-        client: selfClient,
-        faction: FactionKey.NilfgaardianEmpire,
-        specials: ['Scorch'],
-      }),
-    }
-    t.ctx.scoiatael = {
-      faction: FactionKey.ScoiaTael,
-      leader: 'Francesca Findabair the Beautiful',
-      units: await E2eHelper.getUnitsForDeck({
-        client: selfClient,
-        faction: FactionKey.ScoiaTael,
-        specials: ['Scorch'],
-      }),
-    }
-    t.ctx.skellige = {
-      faction: FactionKey.Skellige,
-      leader: 'Crach an Craite',
-      units: await E2eHelper.getUnitsForDeck({
-        client: selfClient,
-        faction: FactionKey.Skellige,
-        specials: ['Scorch'],
-      }),
-    }
-
-    t.ctx.game = await selfClient.addGame([opponent.name])
-
-    t.ctx.self = {
-      user: self,
-      client: selfClient,
-    } as any
-    t.ctx.opponent = {
-      user: opponent,
-      client: opponentClient,
-    } as any
-  })
-
-test('Scorch does nothing if no other units on the battlefield', async (t) => {
+test('Scorch does nothing if no other units on the battlefield', async () => {
   const unitName1 = 'Scorch'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.monsters,
-      hand: [unitName1],
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1],
+      specialUnitNames: [unitName1],
     },
-    opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [],
-    },
-    selfFirst: true,
   })
   await gameManager.initialize({})
 
   await gameManager.deploy({ unitName: unitName1 })
 })
 
-test('Scorch removes strongest card if on opponents side', async (t) => {
+test('Scorch removes strongest card if on opponents side', async () => {
   const unitName1 = 'Dennis Cranmer'
   const unitName2 = 'Scorch'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.monsters,
-      hand: [unitName2],
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2],
+      specialUnitNames: [unitName2],
     },
     opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1],
     },
+    opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.initialize({})
@@ -136,24 +58,24 @@ test('Scorch removes strongest card if on opponents side', async (t) => {
   })
 })
 
-test('Scorch removes strongest card if on own side', async (t) => {
+test('Scorch removes strongest card if on own side', async () => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Griffin'
   const unitName3 = 'Scorch'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.monsters,
-      hand: [unitName2, unitName3],
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2, unitName3],
+      specialUnitNames: [unitName3],
     },
     opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1],
     },
   })
-  await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.pass({})
+  await gameManager.deploy({ unitName: unitName1 })
   await gameManager.initialize({})
 
   await gameManager.deploy({
@@ -169,26 +91,25 @@ test('Scorch removes strongest card if on own side', async (t) => {
   })
 })
 
-// TODO: opponent can play scorch
-
-test('Scorch removes opponents unit even after they pass', async (t) => {
-  const unitName1 = 'Ida Emean aep Sivney'
-  const unitName2 = 'Griffin'
+test('Opponents scorch removes strongest card if on opponents side', async () => {
+  const unitName1 = 'Dennis Cranmer'
+  const unitName2 = 'Foglet'
   const unitName3 = 'Scorch'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.monsters,
-      hand: [unitName2, unitName3],
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2],
     },
     opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName3],
+      specialUnitNames: [unitName3],
     },
+    opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.pass({})
   await gameManager.initialize({})
 
   await gameManager.deploy({
@@ -196,7 +117,7 @@ test('Scorch removes opponents unit even after they pass', async (t) => {
     scorching: [
       {
         name: unitName1,
-        row: Combat.Ranged,
+        row: Combat.Close,
         strength: 6,
         player: gameManager.opponent.gamePlayer,
       },
@@ -204,58 +125,126 @@ test('Scorch removes opponents unit even after they pass', async (t) => {
   })
 })
 
-test('Scorch removes strongest units if multiple with highest strength', async (t) => {
-  const unitName1 = 'Ida Emean aep Sivney'
-  const unitName2 = 'Fiend'
+test('Opponents scorch removes strongest card if on self side', async () => {
+  const unitName1 = 'Dennis Cranmer'
+  const unitName2 = 'Toad'
   const unitName3 = 'Scorch'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.monsters,
-      hand: [unitName2, unitName3],
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2],
     },
     opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName3],
+      specialUnitNames: [unitName3],
     },
+    opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.pass({})
   await gameManager.initialize({})
 
   await gameManager.deploy({
     unitName: unitName3,
     scorching: [
       {
-        name: unitName1,
-        row: Combat.Ranged,
-        strength: 6,
-        player: gameManager.opponent.gamePlayer,
-      },
-      {
         name: unitName2,
-        row: Combat.Close,
-        strength: 6,
+        row: Combat.Ranged,
+        strength: 7,
         player: gameManager.self.gamePlayer,
       },
     ],
   })
 })
 
-test('Scorch does not effect heroes', async (t) => {
+test('Scorch removes opponents unit even after they pass', async () => {
+  const unitName1 = 'Ida Emean aep Sivney'
+  const unitName2 = 'Griffin'
+  const unitName3 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2, unitName3],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName3,
+    scorching: [
+      {
+        name: unitName1,
+        row: Combat.Ranged,
+        strength: 6,
+        player: gameManager.opponent.gamePlayer,
+      },
+    ],
+  })
+})
+
+test('Scorch removes strongest units if multiple with highest strength', async () => {
+  const unitName1 = 'Fiend'
+  const unitName2 = 'Ida Emean aep Sivney'
+  const unitName3 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1, unitName3],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName3,
+    scorching: [
+      {
+        name: unitName1,
+        row: Combat.Close,
+        strength: 6,
+        player: gameManager.self.gamePlayer,
+      },
+      {
+        name: unitName2,
+        row: Combat.Ranged,
+        strength: 6,
+        player: gameManager.opponent.gamePlayer,
+      },
+    ],
+  })
+})
+
+test('Scorch does not effect heroes', async () => {
   const unitName1 = 'Eithne'
   const unitName2 = 'Scorch'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.monsters,
-      hand: [unitName2],
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2],
     },
     opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1],
     },
+    opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.initialize({})
@@ -263,20 +252,19 @@ test('Scorch does not effect heroes', async (t) => {
   await gameManager.deploy({ unitName: unitName2 })
 })
 
-test('Scorch does not effect unit played after it', async (t) => {
+test('Scorch does not effect unit played after it', async () => {
   const unitName1 = 'Scorch'
   const unitName2 = 'Dennis Cranmer'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.monsters,
-      hand: [unitName1],
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1],
     },
     opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName2],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2],
     },
-    selfFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.initialize({})
@@ -284,21 +272,22 @@ test('Scorch does not effect unit played after it', async (t) => {
   await gameManager.deploy({ unitName: unitName2 })
 })
 
-test('Scorch takes into account morale to determine strongest', async (t) => {
+test('Scorch takes into account morale to determine strongest', async () => {
   const unitName1 = 'Isengrim Faoiltiarna'
   const unitName2 = 'Fiend'
   const unitName3 = 'Dennis Cranmer'
   const unitName4 = 'Scorch'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.monsters,
-      hand: [unitName2, unitName4],
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2, unitName4],
     },
     opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1, unitName3],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName3],
     },
+    opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
@@ -318,7 +307,7 @@ test('Scorch takes into account morale to determine strongest', async (t) => {
   })
 })
 
-test('Scorch scoped to Close combat removes strongest Close combat card on opponents side over 10 effective strength', async (t) => {
+test('Scorch scoped to Close combat removes strongest Close combat card on opponents side over 10 effective strength', async () => {
   const unitName1 = 'Emiel Regis Rohellec Terzieff'
   const unitName2 = 'Yaevinn'
   const unitName3 = 'Vesemir'
@@ -327,16 +316,17 @@ test('Scorch scoped to Close combat removes strongest Close combat card on oppon
   const unitName6 = 'Vesemir'
   const unitName7 = 'Olaf'
   const unitName8 = 'Villentretenmerth'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName2, unitName4, unitName6, unitName8],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2, unitName4, unitName6, unitName8],
     },
     opponent: {
-      deck: t.ctx.skellige,
-      hand: [unitName1, unitName3, unitName5, unitName7],
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3, unitName5, unitName7],
     },
+    opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
@@ -360,21 +350,22 @@ test('Scorch scoped to Close combat removes strongest Close combat card on oppon
   })
 })
 
-test('Scorch scoped to Close combat does not remove opponents Close combat if it is not over 10 effective strength', async (t) => {
+test('Scorch scoped to Close combat does not remove opponents Close combat if it is not over 10 effective strength', async () => {
   const unitName1 = 'Holger Blackhand'
   const unitName2 = 'Yaevinn'
   const unitName3 = 'Madman Lugos'
   const unitName4 = 'Villentretenmerth'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName2, unitName4],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2, unitName4],
     },
     opponent: {
-      deck: t.ctx.skellige,
-      hand: [unitName1, unitName3],
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3],
     },
+    opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
@@ -384,228 +375,216 @@ test('Scorch scoped to Close combat does not remove opponents Close combat if it
   await gameManager.deploy({ unitName: unitName4 })
 })
 
-test('Scorch scoped to Close combat does not remove opponents unit over 10 effective strength if not in Close combat row', async (t) => {
-  const unitName1 = 'Holger Blackhand'
-  const unitName2 = 'Yaevinn'
-  const unitName3 = 'Olaf'
-  const unitName4 = 'Villentretenmerth'
-  const gameManager = await prepareGame({
-    t,
+test('Scorch scoped to Close combat does not remove opponents unit over 10 effective strength if not in Close combat row', async () => {
+  const unitName1 = 'Yaevinn'
+  const unitName2 = 'Olaf'
+  const unitName3 = 'Villentretenmerth'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName2, unitName4],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName3],
     },
     opponent: {
-      deck: t.ctx.skellige,
-      hand: [unitName1, unitName3],
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName2],
     },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2, combat: Combat.Ranged })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({ unitName: unitName3 })
+})
+
+test('Scorch scoped to Range combat removes strongest Ranged combat card on opponents side over 10 effective strength', async () => {
+  const unitName1 = 'Dennis Cranmer'
+  const unitName2 = 'Olgierd Von Everec'
+  const unitName3 = 'Vrihedd Brigade Veteran'
+  const unitName4 = 'Grave Hag'
+  const unitName5 = 'Vrihedd Brigade Veteran'
+  const unitName6 = 'Toad'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2, unitName4, unitName6],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName3, unitName5],
+    },
+    opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
   await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged })
-  await gameManager.initialize({})
-
   await gameManager.deploy({ unitName: unitName4 })
-})
-
-test('Scorch scoped to Range combat removes strongest Ranged combat card on opponents side over 10 effective strength', async (t) => {
-  // TODO: replace make first 2 units stronger than 3rd one to test that it is properly limiting itself
-  const unitName1 = 'Yaevinn'
-  const unitName2 = 'Gargoyle'
-  const unitName3 = 'Milva'
-  const unitName4 = 'Toad'
-  const gameManager = await prepareGame({
-    t,
-    self: {
-      deck: t.ctx.monsters,
-      hand: [unitName2, unitName4],
-    },
-    opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1, unitName3],
-    },
-  })
-  await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.deploy({ unitName: unitName5, combat: Combat.Ranged })
   await gameManager.initialize({})
 
   await gameManager.deploy({
-    unitName: unitName4,
+    unitName: unitName6,
     scorching: [
       {
         name: unitName3,
         row: Combat.Ranged,
-        strength: 10,
+        strength: 5,
         player: gameManager.opponent.gamePlayer,
       },
-    ],
-  })
-})
-
-test('Scorch scoped to Ranged combat does not remove opponents Ranged combat if it is not over 10 effective strength', async (t) => {
-  // TODO: replace make first 2 units stronger than 3rd one to test that it is properly limiting itself
-  // TODO: make self ranged row over 10 effective strengtht to verify it doesn't hurt self
-  const unitName1 = 'Yaevinn'
-  const unitName2 = 'Gargoyle'
-  const unitName3 = 'Ida Emean aep Sivney'
-  const unitName4 = 'Toad'
-  const gameManager = await prepareGame({
-    t,
-    self: {
-      deck: t.ctx.monsters,
-      hand: [unitName2, unitName4],
-    },
-    opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1, unitName3],
-    },
-  })
-  await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.deploy({ unitName: unitName3 })
-  await gameManager.initialize({})
-
-  await gameManager.deploy({ unitName: unitName4 })
-})
-
-test('Scorch scoped to Ranged combat does not remove opponents unit over 10 effective strength if not in Ranged combat row', async (t) => {
-  // TODO: replace make first 2 units stronger than 3rd one to test that it is properly limiting itself
-  const unitNameOptional = 'Forktail'
-  const unitName1 = 'Albrich'
-  const unitName2 = 'Gargoyle'
-  const unitName3 = 'Heavy Zerrikanian Fire Scorpion'
-  const unitName4 = 'Toad'
-  const gameManager = await prepareGame({
-    t,
-    self: {
-      deck: t.ctx.monsters,
-      hand: [unitNameOptional, unitName2, unitName4],
-    },
-    opponent: {
-      deck: t.ctx.nilfgaard,
-      hand: [unitName1, unitName3],
-    },
-  })
-  if (t.ctx.game.turn?.user.id === t.ctx.self.user.id) {
-    await gameManager.deploy({ unitName: unitNameOptional })
-  }
-  await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.deploy({ unitName: unitName3 })
-  await gameManager.initialize({})
-
-  await gameManager.deploy({ unitName: unitName4 })
-})
-
-test('Scorch scoped to Siege combat removes strongest Siege combat card on opponents side over 10 effective strength', async (t) => {
-  // TODO: replace make first 2 units stronger than 3rd one to test that it is properly limiting itself
-  const unitName1 = 'Black Infantry Archer'
-  const unitName2 = 'Yaevinn'
-  const unitName3 = 'Heavy Zerrikanian Fire Scorpion'
-  const unitName4 = 'Schirru'
-  const gameManager = await prepareGame({
-    t,
-    self: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName2, unitName4],
-    },
-    opponent: {
-      deck: t.ctx.nilfgaard,
-      hand: [unitName1, unitName3],
-    },
-  })
-  await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.deploy({ unitName: unitName3 })
-  await gameManager.initialize({})
-
-  await gameManager.deploy({
-    unitName: unitName4,
-    scorching: [
       {
-        name: unitName3,
-        row: Combat.Siege,
-        strength: 10,
+        name: unitName5,
+        row: Combat.Ranged,
+        strength: 5,
         player: gameManager.opponent.gamePlayer,
       },
     ],
   })
 })
 
-test('Scorch scoped to Siege combat does not remove opponents Siege combat if it is not over 10 effective strength', async (t) => {
-  // TODO: replace make first 2 units stronger than 3rd one to test that it is properly limiting itself
+test('Scorch scoped to Ranged combat does not remove opponents Ranged combat if it is not over 10 effective strength', async () => {
+  const unitName1 = 'Dennis Cranmer'
+  const unitName2 = 'Olgierd Von Everec'
+  const unitName3 = 'Vrihedd Brigade Veteran'
+  const unitName4 = 'Grave Hag'
+  const unitName5 = 'Vrihedd Brigade Recruit'
+  const unitName6 = 'Toad'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2, unitName4, unitName6],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName3, unitName5],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName4 })
+  await gameManager.deploy({ unitName: unitName5, combat: Combat.Ranged })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({ unitName: unitName6 })
+})
+
+test('Scorch scoped to Ranged combat does not remove opponents unit over 10 effective strength if not in Ranged combat row', async () => {
+  const unitName1 = 'Dennis Cranmer'
+  const unitName2 = 'Olgierd Von Everec'
+  const unitName3 = 'Vrihedd Brigade Veteran'
+  const unitName4 = 'Grave Hag'
+  const unitName5 = 'Vrihedd Brigade Veteran'
+  const unitName6 = 'Toad'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2, unitName4, unitName6],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName3, unitName5],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.deploy({ unitName: unitName4 })
+  await gameManager.deploy({ unitName: unitName5 })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({ unitName: unitName6 })
+})
+
+test('Scorch scoped to Siege combat removes strongest Siege combat card on opponents side over 10 effective strength', async () => {
   const unitName1 = 'Black Infantry Archer'
   const unitName2 = 'Yaevinn'
   const unitName3 = 'Zerrikanian Fire Scorpion'
-  const unitName4 = 'Schirru'
-  const gameManager = await prepareGame({
-    t,
+  const unitName4 = 'Filavandrel aen Fidhail'
+  const unitName5 = 'Siege Engineer'
+  const unitName6 = 'Schirru'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName2, unitName4],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2, unitName4, unitName6],
     },
     opponent: {
-      deck: t.ctx.nilfgaard,
-      hand: [unitName1, unitName3],
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName3, unitName5],
     },
+    opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
   await gameManager.deploy({ unitName: unitName3 })
-  await gameManager.initialize({})
-
   await gameManager.deploy({ unitName: unitName4 })
-})
-
-test('Clan Dimun Pirate removes strongest card if on opponents side', async (t) => {
-  const unitName1 = 'Milva'
-  const unitName2 = 'Clan Dimun Pirate'
-  const gameManager = await prepareGame({
-    t,
-    self: {
-      deck: t.ctx.skellige,
-      hand: [unitName2],
-    },
-    opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1],
-    },
-  })
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName5 })
   await gameManager.initialize({})
 
   await gameManager.deploy({
-    unitName: unitName2,
+    unitName: unitName6,
     scorching: [
       {
-        name: unitName1,
-        row: Combat.Ranged,
-        strength: 10,
+        name: unitName5,
+        row: Combat.Siege,
+        strength: 6,
         player: gameManager.opponent.gamePlayer,
       },
     ],
   })
 })
 
-test('Clan Dimun Pirate removes strongest card if on own side', async (t) => {
-  const unitName1 = 'Toruviel'
-  const unitName2 = 'Olaf'
-  const unitName3 = 'Clan Dimun Pirate'
-  const gameManager = await prepareGame({
-    t,
+test('Scorch scoped to Siege combat does not remove opponents Siege combat if it is not over 10 effective strength', async () => {
+  const unitName1 = 'Black Infantry Archer'
+  const unitName2 = 'Yaevinn'
+  const unitName3 = 'Rotten Mangonel'
+  const unitName4 = 'Filavandrel aen Fidhail'
+  const unitName5 = 'Siege Engineer'
+  const unitName6 = 'Schirru'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.skellige,
-      hand: [unitName2, unitName3],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2, unitName4, unitName6],
     },
     opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1],
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName3, unitName5],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.deploy({ unitName: unitName4 })
+  await gameManager.deploy({ unitName: unitName5 })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({ unitName: unitName6 })
+})
+
+test('Clan Dimun Pirate removes strongest card if on opponents side', async () => {
+  const unitName1 = 'Clan Tordarroch Armorsmith'
+  const unitName2 = 'Milva'
+  const unitName3 = 'Clan Dimun Pirate'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2],
     },
   })
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.pass({})
   await gameManager.initialize({})
 
   await gameManager.deploy({
@@ -613,6 +592,38 @@ test('Clan Dimun Pirate removes strongest card if on own side', async (t) => {
     scorching: [
       {
         name: unitName2,
+        row: Combat.Ranged,
+        strength: 10,
+        player: gameManager.opponent.gamePlayer,
+      },
+    ],
+  })
+})
+
+test('Clan Dimun Pirate removes strongest card if on own side', async () => {
+  const unitName1 = 'Olaf'
+  const unitName2 = 'Milva'
+  const unitName3 = 'Clan Dimun Pirate'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName3,
+    scorching: [
+      {
+        name: unitName1,
         row: Combat.Close,
         strength: 12,
         player: gameManager.self.gamePlayer,
@@ -621,28 +632,30 @@ test('Clan Dimun Pirate removes strongest card if on own side', async (t) => {
   })
 })
 
-test('Clan Dimun Pirate removes itself if strongest unit', async (t) => {
-  const unitName1 = 'Toruviel'
-  const unitName2 = 'Clan Dimun Pirate'
-  const gameManager = await prepareGame({
-    t,
+test('Clan Dimun Pirate removes itself if strongest unit', async () => {
+  const unitName1 = 'Donar an Hindar'
+  const unitName2 = 'Riordain'
+  const unitName3 = 'Clan Dimun Pirate'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.skellige,
-      hand: [unitName2],
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3],
     },
     opponent: {
-      deck: t.ctx.scoiatael,
-      hand: [unitName1],
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2],
     },
   })
   await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
   await gameManager.initialize({})
 
   await gameManager.deploy({
-    unitName: unitName2,
+    unitName: unitName3,
     scorching: [
       {
-        name: unitName2,
+        name: unitName3,
         row: Combat.Ranged,
         strength: 6,
         player: gameManager.self.gamePlayer,
@@ -651,24 +664,69 @@ test('Clan Dimun Pirate removes itself if strongest unit', async (t) => {
   })
 })
 
-test('Villentretenmerth removes only opponents unit if self has same one', async (t) => {
+test('Clan Dimun Pirate removes itself and others if all strongest units', async () => {
+  const unitName1 = 'Blueboy Lugos'
+  const unitName2 = 'Barclay Els'
+  const unitName3 = 'Clan Dimun Pirate'
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName3,
+    scorching: [
+      {
+        name: unitName1,
+        row: Combat.Close,
+        strength: 6,
+        player: gameManager.self.gamePlayer,
+      },
+      {
+        name: unitName2,
+        row: Combat.Close,
+        strength: 6,
+        player: gameManager.opponent.gamePlayer,
+      },
+      {
+        name: unitName3,
+        row: Combat.Ranged,
+        strength: 6,
+        player: gameManager.self.gamePlayer,
+      },
+    ],
+  })
+})
+
+// TODO: repeat for close and siege
+test('Villentretenmerth removes only opponents unit if self has same one', async () => {
   const unitNameOptional = 'Clan Heymaey Skald'
   const unitName1 = 'Olaf'
   const unitName2 = 'Olaf'
   const unitName3 = 'Villentretenmerth'
-  const gameManager = await prepareGame({
-    t,
+  const gameManager = await createGameManager({
+    label: `${scenario}-${Date.now()}`,
     self: {
-      deck: t.ctx.skellige,
-      hand: [unitName1, unitName3],
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3],
     },
     opponent: {
-      deck: t.ctx.skellige,
-      hand: [unitName2, unitNameOptional],
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName2, unitNameOptional],
     },
   })
   let optionalUnitPlayed = false
-  if (t.ctx.game.turn?.user.id === t.ctx.opponent.user.id) {
+  if (gameManager.opponent.gamePlayer.turn === PlayerTurn.Current) {
     optionalUnitPlayed = true
     await gameManager.deploy({ unitName: unitNameOptional })
   }
@@ -721,102 +779,3 @@ test('Villentretenmerth removes only opponents unit if self has same one', async
 
 // TODO: test that scorch does not effect unit without strength (eg Drummer)
 // TODO: test that multiple scorches can be played right after each other
-
-async function prepareGame({
-  self,
-  opponent,
-  t,
-  selfFirst,
-}: {
-  t: E2ETestController<E2eCtx, GameEffectScorchTestCtx>
-  self: {
-    deck: ContextGameDeck
-    hand: string[]
-  }
-  opponent: {
-    deck: ContextGameDeck
-    hand: string[]
-  }
-  selfFirst?: boolean
-}): Promise<GameManager> {
-  t.ctx.self.deck = await t.ctx.self.client.addDeck({
-    faction: self.deck.faction,
-    leaderName: self.deck.leader,
-    name: `${t.ctx.scenario}-self-deck-${Date.now()}`,
-    unitNames: self.deck.units,
-  })
-  t.ctx.opponent.deck = await t.ctx.opponent.client.addDeck({
-    faction: opponent.deck.faction,
-    leaderName: opponent.deck.leader,
-    name: `${t.ctx.scenario}-opponent-deck-${Date.now()}`,
-    unitNames: opponent.deck.units,
-  })
-
-  await t.ctx.self.client.setDeck({
-    deckId: t.ctx.self.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  await t.ctx.opponent.client.setDeck({
-    deckId: t.ctx.opponent.deck.id,
-    gameId: t.ctx.game.id,
-  })
-
-  if (self.deck.faction === FactionKey.ScoiaTael || opponent.deck.faction === FactionKey.ScoiaTael) {
-    const client = self.deck.faction === FactionKey.ScoiaTael ? t.ctx.self.client : t.ctx.opponent.client
-    await client.setOrder({
-      gameId: t.ctx.game.id,
-      userIds: [
-        selfFirst ? t.ctx.self.user.id : t.ctx.opponent.user.id,
-        selfFirst ? t.ctx.opponent.user.id : t.ctx.self.user.id,
-      ],
-    })
-  }
-  await t.ctx.self.client.ready(t.ctx.game.id)
-  await t.ctx.opponent.client.ready(t.ctx.game.id)
-
-  await ensureUnitsInHand({
-    gameId: t.ctx.game.id,
-    mongoConnectionString: env.MONGO_URL,
-    mongoDatabaseName: env.MONGO_DB,
-    unitNames: self.hand,
-    userId: t.ctx.self.user.id,
-  })
-  await ensureUnitsInHand({
-    gameId: t.ctx.game.id,
-    mongoConnectionString: env.MONGO_URL,
-    mongoDatabaseName: env.MONGO_DB,
-    unitNames: opponent.hand,
-    userId: t.ctx.opponent.user.id,
-  })
-
-  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
-  t.ctx.opponent.gameDeck = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
-  t.ctx.game = await t.ctx.self.client.getGame(t.ctx.game.id)
-
-  const gameManager = new GameManager({
-    gameId: t.ctx.game.id,
-    self: {
-      client: t.ctx.self.client,
-      deck: t.ctx.self.gameDeck,
-      gamePlayer: E2eHelper.getGamePlayer({
-        player: t.ctx.self,
-        turn: selfFirst ? PlayerTurn.Current : undefined,
-        ready: true,
-        passed: false,
-        score: 0,
-      }),
-    },
-    opponent: {
-      client: t.ctx.opponent.client,
-      deck: t.ctx.opponent.gameDeck,
-      gamePlayer: E2eHelper.getGamePlayer({
-        player: t.ctx.opponent,
-        turn: selfFirst ? undefined : PlayerTurn.Current,
-        ready: true,
-        score: 0,
-      }),
-    },
-  })
-
-  return gameManager
-}
