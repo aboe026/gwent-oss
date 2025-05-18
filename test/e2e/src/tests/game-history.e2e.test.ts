@@ -6,7 +6,7 @@ import GamePage from '../page-objects/game-page'
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
 
-fixture.only('Game History')
+fixture('Game History')
 
 test('Selecting self unit when not turn in history highlights it and card on battlefield', async (t) => {
   const unitName = 'Dennis Cranmer'
