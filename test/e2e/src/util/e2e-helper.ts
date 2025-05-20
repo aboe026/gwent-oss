@@ -22,6 +22,25 @@ export interface ContextGameDeck {
 }
 
 export class E2eHelper {
+  static async isLoggedIn(): Promise<boolean> {
+    const bannerUsernameExists = await Banner.elements.Username.exists
+    if (bannerUsernameExists) {
+      const bannerUserNameValue = await Banner.elements.Username.innerText
+      if (bannerUserNameValue) {
+        return true
+      }
+    }
+    return false
+  }
+
+  static async switchUser({ username, password = 'password' }: { username: string; password?: string }) {
+    await Banner.goTo(Banner.elements.MenuProfile)
+    await ProfilePage.logout()
+    await LoginPage.login({
+      username,
+      password,
+    })
+  }
   static async getUnitsForDeck({
     client,
     faction,

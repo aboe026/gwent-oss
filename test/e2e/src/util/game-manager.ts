@@ -57,10 +57,15 @@ export class GameManager {
   async initialize({ verify = true, apiDriven = false }: { verify?: boolean; apiDriven?: boolean }) {
     this.shouldVerify = verify
     this.apiDriven = apiDriven
-    await E2eUtil.goTo(LoginPage.getUrl())
-    await LoginPage.login({
-      username: this.self.gamePlayer.name,
-    })
+    if (await E2eHelper.isLoggedIn()) {
+      await E2eHelper.switchToUser({
+        username: this.self.gamePlayer.name,
+      })
+    } else {
+      await LoginPage.login({
+        username: this.self.gamePlayer.name,
+      })
+    }
     await E2eUtil.goTo(GamePage.getUrl(this.gameId))
     if (verify) {
       await GamePage.verify({
@@ -240,6 +245,14 @@ export class GameManager {
       highlightedBattlefieldCard,
       highlightedHistory,
     })
+  }
+
+  getHandUnit({ name, opponent }: { name: string; opponent?: boolean }): DeckUnit {
+    const unit = (opponent ? this.opponent : this.self).deck.hand.find((deckUnit) => deckUnit.unit.name === name)
+    if (!unit) {
+      throw Error(`Could not find unit "${name}" in hand.`)
+    }
+    return unit
   }
 }
 
