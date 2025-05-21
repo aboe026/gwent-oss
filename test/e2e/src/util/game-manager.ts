@@ -62,6 +62,7 @@ export class GameManager {
         username: this.self.gamePlayer.name,
       })
     } else {
+      await E2eUtil.goTo(LoginPage.getUrl())
       await LoginPage.login({
         username: this.self.gamePlayer.name,
       })
