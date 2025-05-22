@@ -1,5 +1,6 @@
 import ApiClient from '../util/api-client'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import { E2eHelper } from '../util/e2e-helper'
 import GamesPage from '../page-objects/games-page'
 import { FactionKey, Game, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
 import LoginPage from '../page-objects/login-page'
@@ -32,7 +33,7 @@ const test = getTestCtx<E2eCtx, GamesStatusTestCtx>()
 fixture('Games Status')
   .page(GamesPage.getUrl())
   .beforeEach(async (t) => {
-    t.ctx.scenario = 'games-status'
+    t.ctx.scenario = getScenario(t)
     const selfUsername = `${t.ctx.scenario}-self-${t.ctx.start}`
     const opponentUsername = `${t.ctx.scenario}-opponent-${t.ctx.start}`
 
@@ -56,59 +57,18 @@ fixture('Games Status')
     t.ctx.scoiaTael = {
       faction: FactionKey.ScoiaTael,
       leader: 'Francesca Findabair Queen of Dol Blathanna',
-      units: [
-        'Barclay Els',
-        'Ciaran aep Easnillien',
-        'Cirilla Fiona Elen Riannon',
-        'Dol Blathanna Archer',
-        'Dol Blathanna Scout',
-        'Dol Blathanna Scout',
-        'Dol Blathanna Scout',
-        'Dwarven Skirmisher',
-        'Dwarven Skirmisher',
-        'Dwarven Skirmisher',
-        'Eithne',
-        'Elven Skirmisher',
-        'Elven Skirmisher',
-        'Elven Skirmisher',
-        'Emiel Regis Rohellec Terzieff',
-        'Filavandrel aen Fidhail',
-        'Havekar Healer',
-        'Havekar Healer',
-        'Havekar Healer',
-        'Havekar Smuggler',
-        'Havekar Smuggler',
-        'Havekar Smuggler',
-        'Scorch',
-      ],
+      units: await E2eHelper.getUnitsForDeck({
+        client: t.ctx.self.client,
+        faction: FactionKey.ScoiaTael,
+      }),
     }
     t.ctx.nilfgaard = {
       faction: FactionKey.NilfgaardianEmpire,
       leader: 'Emhyr var Emreis the Relentless',
-      units: [
-        'Albrich',
-        'Assire var Anahid',
-        'Black Infantry Archer',
-        'Black Infantry Archer',
-        'Emiel Regis Rohellec Terzieff',
-        'Etolian Auxiliary Archers',
-        'Etolian Auxiliary Archers',
-        'Heavy Zerrikanian Fire Scorpion',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Renuald aep Matsen',
-        'Rotten Mangonel',
-        'Shilard Fitz-Oesterlen',
-        'Siege Engineer',
-        'Siege Technician',
-        'Young Emissary',
-        'Young Emissary',
-      ],
+      units: await E2eHelper.getUnitsForDeck({
+        client: t.ctx.self.client,
+        faction: FactionKey.NilfgaardianEmpire,
+      }),
     }
 
     t.ctx.game = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
@@ -505,3 +465,5 @@ test('Games page updated with playing status if marked ready through API by oppo
     ],
   })
 })
+
+// TODO: finished status
