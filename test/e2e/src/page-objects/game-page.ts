@@ -446,10 +446,20 @@ export default class GamePage {
         expectedRounds.push(`Round "${i + 1}" self "${rounds[i].creator}" opponent "${rounds[i].opponent}"`)
       }
       const actualRounds: string[] = []
-      const selfRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorRow}`).nth(0)
+      if (!self.name) {
+        throw Error('No name defined for self')
+      }
+      const selfRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorUsername}`)
+        .withText(self.name)
+        .parent(`.${HTML_CLASSES.GameSummaryVictorRow}`)
       const selfRounds = selfRow.find(`.${HTML_CLASSES.GameSummaryVictorRound}`)
       const selfRoundsCount = await selfRounds.count
-      const opponentRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorRow}`).nth(1)
+      if (!opponent.name) {
+        throw Error('No name defined for opponent')
+      }
+      const opponentRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorUsername}`)
+        .withText(opponent.name)
+        .parent(`.${HTML_CLASSES.GameSummaryVictorRow}`)
       const opponentRounds = opponentRow.find(`.${HTML_CLASSES.GameSummaryVictorRound}`)
       const opponentRoundsCount = await opponentRounds.count
       const greaterRowsCount = selfRoundsCount > opponentRoundsCount ? selfRoundsCount : opponentRoundsCount
@@ -699,6 +709,7 @@ export default class GamePage {
     })
     await GamePage.verifyCenter({
       self: {
+        name: self.name,
         ready: self.ready,
         set: !!self.from,
         passed: self.passed,
@@ -707,6 +718,7 @@ export default class GamePage {
         siege: self.siege,
       },
       opponent: {
+        name: opponent.name,
         ready: opponent.ready,
         set: !!opponent.from,
         passed: opponent.passed,
@@ -1098,6 +1110,7 @@ interface CombatRow {
 }
 
 interface CenterPlayer {
+  name?: string
   set?: boolean
   ready?: boolean
   passed?: boolean

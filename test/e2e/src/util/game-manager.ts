@@ -255,6 +255,13 @@ export class GameManager {
     }
     return unit
   }
+
+  switchPlayers() {
+    const self = this.self
+    const opponent = this.opponent
+    this.self = opponent
+    this.opponent = self
+  }
 }
 
 export default async function createGameManager({

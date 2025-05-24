@@ -7,7 +7,9 @@ import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
+import { ensureUnitsInHand } from '@gwent/test-utils'
 import env from '../util/env'
+import { GameManager } from '../util/game-manager'
 import GamePage, { GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
@@ -139,11 +141,14 @@ test('Speed Run', async (t) => {
     faction: faction2,
     leader: leader2,
     name: deckName2,
-    units: nilfgaardUnits,
+    units: await E2eHelper.getUnitsForDeck({
+      client: client2,
+      faction: faction2.key,
+    }),
     verifyRedirect: false,
   })
   const gameId = await GamePage.getIdFromUrl()
-  const gameDeck2 = await client2.getGameDeck(gameId)
+  let gameDeck2 = await client2.getGameDeck(gameId)
   const gamePlayer2: GamePlayerExpected = {
     name: username2,
     discard: 0,
@@ -162,6 +167,25 @@ test('Speed Run', async (t) => {
     },
     hand: gameDeck2.hand,
   })
+  await ensureUnitsInHand({
+    gameId,
+    mongoConnectionString: env.MONGO_URL,
+    mongoDatabaseName: env.MONGO_DB,
+    userId: (await client2.currentUser()).id,
+    unitNames: [
+      'Albrich',
+      'Assire var Anahid',
+      'Cahir Mawr Dyffryn aep Ceallach',
+      'Cynthia',
+      'Fringilla Vigo',
+      'Heavy Zerrikanian Fire Scorpion',
+      'Morteisen',
+      'Puttkammer',
+      'Rainfarn',
+      'Renuald aep Matsen',
+    ],
+  })
+  gameDeck2 = await client2.getGameDeck(gameId)
 
   await Banner.goTo(Banner.elements.MenuProfile)
   await ProfilePage.verify({
@@ -204,10 +228,13 @@ test('Speed Run', async (t) => {
     faction: faction1,
     leader: leader1,
     name: deckName1,
-    units: scoiataelUnits,
+    units: await E2eHelper.getUnitsForDeck({
+      client: client1,
+      faction: faction1.key,
+    }),
     verifyRedirect: false,
   })
-  const gameDeck1 = await client1.getGameDeck(gameId)
+  let gameDeck1 = await client1.getGameDeck(gameId)
   const gamePlayer1: GamePlayerExpected = {
     name: username1,
     discard: 0,
@@ -246,6 +273,25 @@ test('Speed Run', async (t) => {
     hand: gameDeck1.hand,
     redraws: [],
   })
+  await ensureUnitsInHand({
+    gameId,
+    mongoConnectionString: env.MONGO_URL,
+    mongoDatabaseName: env.MONGO_DB,
+    userId: (await client1.currentUser()).id,
+    unitNames: [
+      'Barclay Els',
+      'Ciaran aep Easnillien',
+      'Dennis Cranmer',
+      'Dol Blathanna Archer',
+      'Emiel Regis Rohellec Terzieff',
+      'Filavandrel aen Fidhail',
+      'Ida Emean aep Sivney',
+      'Riordain',
+      'Toruviel',
+      'Yaevinn',
+    ],
+  })
+  gameDeck1 = await client1.getGameDeck(gameId)
 
   await Banner.goTo(Banner.elements.MenuProfile)
   await ProfilePage.verify({
@@ -287,55 +333,28 @@ test('Speed Run', async (t) => {
   gamePlayer2.ready = true
   gamePlayer2.passed = false
   gamePlayer2.turn = PlayerTurn.Current
-  let round = 1
-  const moves1: (HistoryMove | HistoryPass)[] = []
-  const moves2: (HistoryMove | HistoryPass)[] = []
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: gameDeck2.hand,
-    moves: [moves1],
-  })
-  const sortedHand2 = sortObjectArray({
-    array: gameDeck2.hand,
-    sortProperties: ['unit.strength', 'unit.id'],
-    reverse: true,
-  })
-  const unit2 = sortedHand2[0]
-  const combat2 = unit2.unit.combats ? unit2.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unit2.unit.name,
-    row: combat2,
-  })
-  E2eHelper.playUnit({
-    player: gamePlayer2,
-    deckUnit: unit2,
-    gameDeck: gameDeck2,
-    moves: moves1,
-    switchTurnsWith: gamePlayer1,
-  })
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: gameDeck2.hand,
-    moves: [moves1],
-  })
 
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username2,
+  const gameManager = await new GameManager({
+    gameId,
+    self: {
+      client: client2,
+      deck: await client2.getGameDeck(gameId),
+      gamePlayer: gamePlayer2,
+    },
+    opponent: {
+      client: client1,
+      deck: await client1.getGameDeck(gameId),
+      gamePlayer: gamePlayer1,
+    },
+    apiDriven: false,
+    verify: true,
   })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
+  await gameManager.verify({})
+  const unitName1 = 'Rainfarn'
+  await gameManager.deploy({ unitName: unitName1 })
 
-  // user1 pass
-  await LoginPage.login({
-    username: username1,
-  })
-  await Banner.verify(username1)
-  await HomePage.verify(username1)
-
-  await HomePage.goTo(HomePage.elements.ViewGames)
+  // user 1 pass
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -349,43 +368,13 @@ test('Speed Run', async (t) => {
   })
   await GamesPage.selectGame(0)
 
-  gamePlayer1.passed = false
-  gamePlayer2.passed = undefined
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: gameDeck1.hand,
-    moves: [moves1],
-  })
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer1,
-    round,
-    moves: moves1,
-    switchTurnsWith: gamePlayer2,
-  })
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: gameDeck1.hand,
-    moves: [moves1],
-  })
-
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username1,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
+  gameManager.self.gamePlayer.passed = false
+  gameManager.opponent.gamePlayer.passed = undefined
+  await gameManager.verify({})
+  await gameManager.pass({})
 
   // user2 pass twice
-  await LoginPage.login({
-    username: username2,
-  })
-  await Banner.verify(username2)
-  await HomePage.verify(username2)
-
-  await HomePage.goTo(HomePage.elements.ViewGames)
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -398,64 +387,15 @@ test('Speed Run', async (t) => {
     ],
   })
   await GamesPage.selectGame(0)
-  gamePlayer2.passed = false
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: gameDeck2.hand,
-    moves: [moves1],
+  gameManager.self.gamePlayer.passed = false
+  await gameManager.verify({})
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
   })
-
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer2,
-    round,
-    moves: moves1,
-  })
-  E2eHelper.endRound({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    losers: [gamePlayer1],
-  })
-  round = 2
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: gameDeck2.hand,
-    round,
-    moves: [moves1, moves2],
-  })
-
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer2,
-    round,
-    moves: moves2,
-    switchTurnsWith: gamePlayer1,
-  })
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: gameDeck2.hand,
-    round,
-    moves: [moves1, moves2],
-  })
-
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username2,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
+  await gameManager.pass({})
 
   // user1 pass in defeat
-  await LoginPage.login({
-    username: username1,
-  })
-  await Banner.verify(username1)
-  await HomePage.verify(username1)
-
-  await HomePage.goTo(HomePage.elements.ViewGames)
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -469,44 +409,10 @@ test('Speed Run', async (t) => {
   })
   await GamesPage.selectGame(0)
 
-  gamePlayer1.passed = false
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: gameDeck1.hand,
-    round,
-    moves: [moves1, moves2],
-  })
-
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer1,
-    round,
-    moves: moves2,
-  })
-  E2eHelper.endRound({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    losers: [gamePlayer1, gamePlayer2],
-    gameOver: true,
-  })
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: gameDeck1.hand,
-    round,
-    moves: [moves1, moves2],
+  gameManager.self.gamePlayer.passed = false
+  await gameManager.verify({})
+  await gameManager.pass({
     victors: [username2],
-    rounds: [
-      {
-        creator: unit2.unit.strength || 0,
-        opponent: 0,
-      },
-      {
-        creator: 0,
-        opponent: 0,
-      },
-    ],
   })
 
   await GamePage.summaryGoToGames()
@@ -1477,3 +1383,22 @@ test('Scenic Route', async (t) => {
     ],
   })
 })
+
+async function switchTurns(gameManager: GameManager) {
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: gameManager.self.gamePlayer.name,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+
+  gameManager.switchPlayers()
+
+  await LoginPage.login({
+    username: gameManager.self.gamePlayer.name,
+  })
+  await Banner.verify(gameManager.self.gamePlayer.name)
+  await HomePage.verify(gameManager.self.gamePlayer.name)
+
+  await HomePage.goTo(HomePage.elements.ViewGames)
+}

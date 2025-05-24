@@ -66,6 +66,7 @@ export const HTML_CLASSES = {
   GameOrderRowEarlier: 'game-order-row-earlier',
   GameOrderRowLater: 'game-order-row-later',
   GameSummaryVictorRow: 'game-summary-victor-row',
+  GameSummaryVictorUsername: 'game-victor-username',
   GameSummaryVictorRound: 'game-summary-victor-round',
   GameSummaryRoundWon: 'game-summary-round-won',
   GameSummaryRoundLost: 'game-summary-round-lost',

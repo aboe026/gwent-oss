@@ -50,6 +50,23 @@ export default class ApiClient {
     return response.addUser
   }
 
+  async currentUser(): Promise<User> {
+    const response: any = await this._client.request(
+      gql`
+        query CurrentUser {
+          currentUser {
+            ${this.fieldsOnUser()}
+          }
+        }
+      `
+    )
+    const user = response.currentUser
+    if (!user) {
+      throw Error('No user for client')
+    }
+    return user
+  }
+
   async getFactions(): Promise<Faction[]> {
     const response: any = await this._client.request(
       gql`
