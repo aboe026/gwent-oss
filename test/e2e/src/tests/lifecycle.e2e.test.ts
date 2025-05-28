@@ -5,19 +5,17 @@ import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
-import { E2eHelper } from '../util/e2e-helper'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import { ensureUnitsInHand } from '@gwent/test-utils'
 import env from '../util/env'
 import { GameManager } from '../util/game-manager'
-import GamePage, { GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
+import GamePage, { GamePlayerExpected } from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
 import ProfilePage from '../page-objects/profile-page'
 import SignupPage from '../page-objects/signup-page'
-import { sortObjectArray } from '@gwent/utils'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
@@ -25,60 +23,10 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Lifecycle').page(env.BASE_URL)
 
-const nilfgaardUnits = [
-  'Albrich',
-  'Assire var Anahid',
-  'Black Infantry Archer',
-  'Cahir Mawr Dyffryn aep Ceallach',
-  'Cynthia',
-  'Emiel Regis Rohellec Terzieff',
-  'Fringilla Vigo',
-  'Heavy Zerrikanian Fire Scorpion',
-  'Letho of Gulet',
-  'Morteisen',
-  'Morvran Voorhis',
-  'Puttkammer',
-  'Renuald aep Matsen',
-  'Roach',
-  'Siege Engineer',
-  'Sweers',
-  'Tibor Eggebracht',
-  'Triss Merigold',
-  'Vanhemar',
-  'Vesemir',
-  'Vreemde',
-  'Zerrikanian Fire Scorpion',
-]
-const scoiataelUnits = [
-  'Barclay Els',
-  'Ciaran aep Easnillien',
-  'Dennis Cranmer',
-  'Dol Blathanna Archer',
-  'Dol Blathanna Scout',
-  'Eithne',
-  'Emiel Regis Rohellec Terzieff',
-  'Filavandrel aen Fidhail',
-  'Ida Emean aep Sivney',
-  'Iorveth',
-  'Mahakaman Defender',
-  'Mahakaman Defender',
-  'Riordain',
-  'Roach',
-  'Saesenthessis',
-  'Toruviel',
-  'Triss Merigold',
-  'Vesemir',
-  'Vrihedd Brigade Recruit',
-  'Vrihedd Brigade Veteran',
-  'Yaevinn',
-  'Zoltan Chivay',
-]
-
 test('Speed Run', async (t) => {
-  const scenario = 'lifecycle-speed-run'
-  // user1 sign up
-  const username1 = `${scenario}-user-1-${t.ctx.start}`
-  const deckName1 = `${scenario}-deck-1-${t.ctx.start}`
+  // user 1 sign up
+  const username1 = `${getScenario(t)}-user-1-${t.ctx.start}`
+  const deckName1 = `${getScenario(t)}-deck-1-${t.ctx.start}`
   await SignupPage.signUp({
     username: username1,
   })
@@ -100,9 +48,9 @@ test('Speed Run', async (t) => {
   await ProfilePage.logout()
   await LoginPage.verifyNotLoggedIn({})
 
-  // user2 sign up, create game and set deck
-  const username2 = `${scenario}-user-2-${t.ctx.start}`
-  const deckName2 = `${scenario}-deck-2-${t.ctx.start}`
+  // user 2 sign up, create game and set deck
+  const username2 = `${getScenario(t)}-user-2-${t.ctx.start}`
+  const deckName2 = `${getScenario(t)}-deck-2-${t.ctx.start}`
   await SignupPage.signUp({
     username: username2,
   })
@@ -137,14 +85,37 @@ test('Speed Run', async (t) => {
   })
   await DeckList.clickCreateNone()
   await DeckEditor.verify({})
+  const handUnitNames2 = [
+    'Albrich',
+    'Assire var Anahid',
+    'Cahir Mawr Dyffryn aep Ceallach',
+    'Cynthia',
+    'Fringilla Vigo',
+    'Heavy Zerrikanian Fire Scorpion',
+    'Morteisen',
+    'Puttkammer',
+    'Rainfarn',
+    'Vreemde',
+  ]
+  const drawUnitNames2 = [
+    'Emiel Regis Rohellec Terzieff',
+    'Renuald aep Matsen',
+    'Roach',
+    'Rotten Mangonel',
+    'Siege Engineer',
+    'Sweers',
+    'Vanhemar',
+    'Vesemir',
+    'Young Emissary',
+    'Young Emissary',
+    'Zerrikanian Fire Scorpion',
+    'Zoltan Chivay',
+  ]
   await DeckEditor.createDeck({
     faction: faction2,
     leader: leader2,
     name: deckName2,
-    units: await E2eHelper.getUnitsForDeck({
-      client: client2,
-      faction: faction2.key,
-    }),
+    units: [...handUnitNames2, ...drawUnitNames2].sort(),
     verifyRedirect: false,
   })
   const gameId = await GamePage.getIdFromUrl()
@@ -172,18 +143,7 @@ test('Speed Run', async (t) => {
     mongoConnectionString: env.MONGO_URL,
     mongoDatabaseName: env.MONGO_DB,
     userId: (await client2.currentUser()).id,
-    unitNames: [
-      'Albrich',
-      'Assire var Anahid',
-      'Cahir Mawr Dyffryn aep Ceallach',
-      'Cynthia',
-      'Fringilla Vigo',
-      'Heavy Zerrikanian Fire Scorpion',
-      'Morteisen',
-      'Puttkammer',
-      'Rainfarn',
-      'Renuald aep Matsen',
-    ],
+    unitNames: handUnitNames2,
   })
   gameDeck2 = await client2.getGameDeck(gameId)
 
@@ -194,7 +154,7 @@ test('Speed Run', async (t) => {
   await ProfilePage.logout()
   await LoginPage.verifyNotLoggedIn({})
 
-  // user1 set deck, order and ready
+  // user 1 set deck, order and ready
   await LoginPage.login({
     username: username1,
   })
@@ -224,14 +184,37 @@ test('Speed Run', async (t) => {
   })
   await GamePage.clickSetDeck()
   await DeckList.clickCreateNone()
+  const handUnitNames1 = [
+    'Barclay Els',
+    'Ciaran aep Easnillien',
+    'Dennis Cranmer',
+    'Dol Blathanna Archer',
+    'Emiel Regis Rohellec Terzieff',
+    'Filavandrel aen Fidhail',
+    'Ida Emean aep Sivney',
+    'Riordain',
+    'Toruviel',
+    'Yaevinn',
+  ]
+  const drawUnitNames1 = [
+    'Dol Blathanna Scout',
+    'Dol Blathanna Scout',
+    'Dol Blathanna Scout',
+    'Mahakaman Defender',
+    'Mahakaman Defender',
+    'Mahakaman Defender',
+    'Mahakaman Defender',
+    'Mahakaman Defender',
+    'Roach',
+    'Vesemir',
+    'Vrihedd Brigade Recruit',
+    'Zoltan Chivay',
+  ]
   await DeckEditor.createDeck({
     faction: faction1,
     leader: leader1,
     name: deckName1,
-    units: await E2eHelper.getUnitsForDeck({
-      client: client1,
-      faction: faction1.key,
-    }),
+    units: [...handUnitNames1, ...drawUnitNames1].sort(),
     verifyRedirect: false,
   })
   let gameDeck1 = await client1.getGameDeck(gameId)
@@ -278,18 +261,7 @@ test('Speed Run', async (t) => {
     mongoConnectionString: env.MONGO_URL,
     mongoDatabaseName: env.MONGO_DB,
     userId: (await client1.currentUser()).id,
-    unitNames: [
-      'Barclay Els',
-      'Ciaran aep Easnillien',
-      'Dennis Cranmer',
-      'Dol Blathanna Archer',
-      'Emiel Regis Rohellec Terzieff',
-      'Filavandrel aen Fidhail',
-      'Ida Emean aep Sivney',
-      'Riordain',
-      'Toruviel',
-      'Yaevinn',
-    ],
+    unitNames: handUnitNames1,
   })
   gameDeck1 = await client1.getGameDeck(gameId)
 
@@ -300,7 +272,7 @@ test('Speed Run', async (t) => {
   await ProfilePage.logout()
   await LoginPage.verifyNotLoggedIn({})
 
-  // user2 ready and play unit
+  // user 2 ready and play unit
   await LoginPage.login({
     username: username2,
   })
@@ -373,7 +345,7 @@ test('Speed Run', async (t) => {
   await gameManager.verify({})
   await gameManager.pass({})
 
-  // user2 pass twice
+  // user 2 pass twice
   await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
@@ -394,7 +366,7 @@ test('Speed Run', async (t) => {
   })
   await gameManager.pass({})
 
-  // user1 pass in defeat
+  // user 1 pass in defeat
   await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
@@ -431,11 +403,9 @@ test('Speed Run', async (t) => {
 })
 
 test('Scenic Route', async (t) => {
-  const scenario = 'lifecycle-scenic-route'
-
-  // user1 signup and create deck
-  const username1 = `${scenario}-user-1-${t.ctx.start}`
-  const deckName1 = `${scenario}-deck-1-${t.ctx.start}`
+  // user 1 signup and create deck
+  const username1 = `${getScenario(t)}-user-1-${t.ctx.start}`
+  const deckName1 = `${getScenario(t)}-deck-1-${t.ctx.start}`
   await SignupPage.signUp({
     username: username1,
   })
@@ -456,11 +426,37 @@ test('Scenic Route', async (t) => {
     faction: factionKey1,
     name: 'Emhyr var Emreis Invader of the North',
   })
+  const handUnitNames1 = [
+    'Albrich',
+    'Assire var Anahid',
+    'Cahir Mawr Dyffryn aep Ceallach',
+    'Cynthia',
+    'Fringilla Vigo',
+    'Heavy Zerrikanian Fire Scorpion',
+    'Morteisen',
+    'Puttkammer',
+    'Rainfarn',
+    'Vreemde',
+  ]
+  const drawUnitNames1 = [
+    'Emiel Regis Rohellec Terzieff',
+    'Renuald aep Matsen',
+    'Roach',
+    'Rotten Mangonel',
+    'Siege Engineer',
+    'Sweers',
+    'Vanhemar',
+    'Vesemir',
+    'Young Emissary',
+    'Young Emissary',
+    'Zerrikanian Fire Scorpion',
+    'Zoltan Chivay',
+  ]
   await DeckPage.createDeck({
     faction: faction1,
     leader: leader1,
     name: deckName1,
-    units: nilfgaardUnits,
+    units: [...handUnitNames1, ...drawUnitNames1].sort(),
     pickers: true,
   })
   const deck1 = await client1.getDeck(deckName1)
@@ -485,9 +481,9 @@ test('Scenic Route', async (t) => {
   await ProfilePage.logout()
   await LoginPage.verifyNotLoggedIn({})
 
-  // user2 signup, create deck, game and set deck
-  const username2 = `${scenario}-user-2-${t.ctx.start}`
-  const deckName2 = `${scenario}-deck-2-${t.ctx.start}`
+  // user 2 signup, create deck, game and set deck
+  const username2 = `${getScenario(t)}-user-2-${t.ctx.start}`
+  const deckName2 = `${getScenario(t)}-deck-2-${t.ctx.start}`
   await SignupPage.signUp({
     username: username2,
   })
@@ -508,11 +504,37 @@ test('Scenic Route', async (t) => {
     faction: factionKey2,
     name: 'Francesca Findabair Hope of the Aen Seidhe',
   })
+  const handUnitNames2 = [
+    'Barclay Els',
+    'Ciaran aep Easnillien',
+    'Dennis Cranmer',
+    'Dol Blathanna Archer',
+    'Emiel Regis Rohellec Terzieff',
+    'Filavandrel aen Fidhail',
+    'Ida Emean aep Sivney',
+    'Riordain',
+    'Toruviel',
+    'Yaevinn',
+  ]
+  const drawUnitNames2 = [
+    'Dol Blathanna Scout',
+    'Dol Blathanna Scout',
+    'Dol Blathanna Scout',
+    'Mahakaman Defender',
+    'Mahakaman Defender',
+    'Mahakaman Defender',
+    'Mahakaman Defender',
+    'Mahakaman Defender',
+    'Roach',
+    'Vesemir',
+    'Vrihedd Brigade Recruit',
+    'Zoltan Chivay',
+  ]
   await DeckPage.createDeck({
     faction: faction2,
     leader: leader2,
     name: deckName2,
-    units: scoiataelUnits,
+    units: [...handUnitNames2, ...drawUnitNames2].sort(),
     pickers: true,
   })
   const deck2 = await client2.getDeck(deckName2)
@@ -555,7 +577,7 @@ test('Scenic Route', async (t) => {
     neutralFaction,
   })
   const gameId = await GamePage.getIdFromUrl()
-  const gameDeck2 = await client2.getGameDeck(gameId)
+  let gameDeck2 = await client2.getGameDeck(gameId)
   const gamePlayer2: GamePlayerExpected = {
     name: username2,
     faction: faction2,
@@ -573,20 +595,20 @@ test('Scenic Route', async (t) => {
     },
     hand: gameDeck2.hand,
   })
-
-  // user1 set deck
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username2,
+  await ensureUnitsInHand({
+    gameId,
+    mongoConnectionString: env.MONGO_URL,
+    mongoDatabaseName: env.MONGO_DB,
+    userId: (await client2.currentUser()).id,
+    unitNames: handUnitNames2,
   })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username1,
-  })
-  await Banner.verify(username1)
-  await HomePage.verify(username1)
+  gameDeck2 = await client2.getGameDeck(gameId)
 
+  // user 1 set deck
+  await changePlayers({
+    from: username2,
+    to: username1,
+  })
   const game = await client1.getGame(gameId)
   await Banner.goTo(Banner.elements.MenuGames)
   await GamesPage.verify({
@@ -617,7 +639,7 @@ test('Scenic Route', async (t) => {
     verifyCloses: false,
     neutralFaction,
   })
-  const gameDeck1 = await client1.getGameDeck(gameId)
+  let gameDeck1 = await client1.getGameDeck(gameId)
   const gamePlayer1: GamePlayerExpected = {
     name: username1,
     faction: faction1,
@@ -634,19 +656,20 @@ test('Scenic Route', async (t) => {
     hand: gameDeck1.hand,
     turnOrder: [],
   })
+  await ensureUnitsInHand({
+    gameId,
+    mongoConnectionString: env.MONGO_URL,
+    mongoDatabaseName: env.MONGO_DB,
+    userId: (await client1.currentUser()).id,
+    unitNames: handUnitNames1,
+  })
+  gameDeck1 = await client1.getGameDeck(gameId)
 
-  // user2 set order and redraw 2
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username1,
+  // user 2 set order and redraw 2
+  await changePlayers({
+    from: username1,
+    to: username2,
   })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username2,
-  })
-  await Banner.verify(username2)
-  await HomePage.verify(username2)
   await Banner.goTo(Banner.elements.MenuGames)
   await GamesPage.verify({
     games: [
@@ -686,7 +709,7 @@ test('Scenic Route', async (t) => {
     hand: gameDeck2.hand,
     redraws: [],
   })
-  const redraw1 = gameDeck2.hand[0].unit.name
+  const redraw1 = 'Barclay Els'
   await GamePage.redraw(redraw1)
   const redraw1GameDeck2 = await client2.getGameDeck(gameId)
   await GamePage.verify({
@@ -700,7 +723,7 @@ test('Scenic Route', async (t) => {
       },
     ],
   })
-  const redraw2 = gameDeck2.hand[gameDeck2.hand.length - 1].unit.name
+  const redraw2 = 'Dennis Cranmer'
   await GamePage.redraw(redraw2)
   const redraw2GameDeck2 = await client2.getGameDeck(gameId)
   await GamePage.verify({
@@ -736,19 +759,11 @@ test('Scenic Route', async (t) => {
     ],
   })
 
-  // user1 redraw 2 and play unit for round 1
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username2,
+  // user 1 redraw 2 and play unit for round 1
+  await changePlayers({
+    from: username2,
+    to: username1,
   })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username1,
-  })
-  await Banner.verify(username1)
-  await HomePage.verify(username1)
-
   await Banner.goTo(Banner.elements.MenuGames)
   await GamesPage.verify({
     games: [
@@ -773,7 +788,7 @@ test('Scenic Route', async (t) => {
     redraws: [],
   })
 
-  const redraw3 = gameDeck1.hand[0].unit.name
+  const redraw3 = 'Morteisen'
   await GamePage.redraw(redraw3)
   const redraw3GameDeck1 = await client1.getGameDeck(gameId)
   await GamePage.verify({
@@ -787,7 +802,7 @@ test('Scenic Route', async (t) => {
       },
     ],
   })
-  const redraw4 = gameDeck1.hand[gameDeck1.hand.length - 1].unit.name
+  const redraw4 = 'Rainfarn'
   await GamePage.redraw(redraw4)
   const redraw4GameDeck1 = await client1.getGameDeck(gameId)
   await GamePage.verify({
@@ -809,57 +824,26 @@ test('Scenic Route', async (t) => {
   gamePlayer1.ready = true
   gamePlayer1.passed = false
   gamePlayer1.turn = PlayerTurn.Current
-  const moves1: (HistoryMove | HistoryPass)[] = []
-  const moves2: (HistoryMove | HistoryPass)[] = []
-  const moves3: (HistoryMove | HistoryPass)[] = []
-  let round = 1
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    moves: [moves1],
-  })
 
-  const sortedHandSelf = sortObjectArray({
-    array: redraw4GameDeck1.hand,
-    sortProperties: ['unit.strength', 'unit.id'],
-    reverse: true,
+  const gameManager = new GameManager({
+    gameId,
+    self: {
+      client: client1,
+      deck: await client1.getGameDeck(gameId),
+      gamePlayer: gamePlayer1,
+    },
+    opponent: {
+      client: client2,
+      deck: await client2.getGameDeck(gameId),
+      gamePlayer: gamePlayer2,
+    },
   })
-  const unit1Self = sortedHandSelf[0]
-  const combat1Self = unit1Self.unit.combats ? unit1Self.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unit1Self.unit.name,
-    row: combat1Self,
-  })
-  E2eHelper.playUnit({
-    player: gamePlayer1,
-    gameDeck: redraw4GameDeck1,
-    deckUnit: unit1Self,
-    moves: moves1,
-    row: combat1Self,
-    switchTurnsWith: gamePlayer2,
-  })
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    moves: [moves1],
-  })
+  await gameManager.initialize({})
 
-  // user2 play unit for round 1
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username1,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username2,
-  })
-  await Banner.verify(username2)
-  await HomePage.verify(username2)
+  await gameManager.deploy({ unitName: 'Vreemde' })
 
-  await Banner.goTo(Banner.elements.MenuGames)
+  // user 2 play unit for round 1
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -874,53 +858,11 @@ test('Scenic Route', async (t) => {
   await GamesPage.selectGame(0)
   gamePlayer1.passed = undefined
   gamePlayer2.passed = false
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    moves: [moves1],
-  })
+  await gameManager.verify({})
+  await gameManager.deploy({ unitName: 'Ida Emean aep Sivney', combat: Combat.Ranged })
 
-  const sortedHandOpponent = sortObjectArray({
-    array: redraw2GameDeck2.hand,
-    sortProperties: ['unit.strength', 'unit.id'],
-    reverse: true,
-  })
-  const unit1Opponent = sortedHandOpponent[sortedHandOpponent.length - 1]
-  const combat1Opponent = unit1Opponent.unit.combats ? unit1Opponent.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unit1Opponent.unit.name,
-    row: combat1Opponent,
-  })
-  E2eHelper.playUnit({
-    player: gamePlayer2,
-    gameDeck: redraw2GameDeck2,
-    deckUnit: unit1Opponent,
-    moves: moves1,
-    row: combat1Opponent,
-    switchTurnsWith: gamePlayer1,
-  })
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    moves: [moves1],
-  })
-
-  // user1 pass round 1
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username2,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username1,
-  })
-  await Banner.verify(username1)
-  await HomePage.verify(username1)
-
-  await Banner.goTo(Banner.elements.MenuGames)
+  // user 1 pass round 1
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -935,41 +877,10 @@ test('Scenic Route', async (t) => {
   await GamesPage.selectGame(0)
   gamePlayer1.passed = false
   gamePlayer2.passed = undefined
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    moves: [moves1],
-  })
-
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer1,
-    round,
-    moves: moves1,
-    switchTurnsWith: gamePlayer2,
-  })
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    moves: [moves1],
-  })
+  await gameManager.pass({})
 
   // user 2 pass round 1
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username1,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username2,
-  })
-  await Banner.verify(username2)
-  await HomePage.verify(username2)
-
-  await Banner.goTo(Banner.elements.MenuGames)
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -983,48 +894,13 @@ test('Scenic Route', async (t) => {
   })
   await GamesPage.selectGame(0)
   gamePlayer2.passed = false
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    moves: [moves1],
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
   })
-
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer2,
-    round,
-    moves: moves1,
-    switchTurnsWith: gamePlayer1,
-  })
-  E2eHelper.endRound({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    losers: [gamePlayer2],
-  })
-  round = 2
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    round,
-    moves: [moves1, moves2],
-  })
+  await gameManager.deploy({ unitName: 'Riordain', combat: Combat.Ranged })
 
   // user 1 play unit for round 2
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username2,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username1,
-  })
-  await Banner.verify(username1)
-  await HomePage.verify(username1)
-
-  await Banner.goTo(Banner.elements.MenuGames)
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -1039,50 +915,10 @@ test('Scenic Route', async (t) => {
   await GamesPage.selectGame(0)
   gamePlayer1.passed = false
   gamePlayer2.passed = undefined
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    round: 2,
-    moves: [moves1, moves2],
-  })
+  await gameManager.deploy({ unitName: 'Cahir Mawr Dyffryn aep Ceallach' })
 
-  const unit2Self = sortedHandSelf[sortedHandSelf.length - 1]
-  const combat2Self = unit2Self.unit.combats ? unit2Self.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unit2Self.unit.name,
-    row: combat2Self,
-  })
-  E2eHelper.playUnit({
-    player: gamePlayer1,
-    gameDeck: redraw4GameDeck1,
-    deckUnit: unit2Self,
-    moves: moves2,
-    row: combat2Self,
-    switchTurnsWith: gamePlayer2,
-  })
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    round,
-    moves: [moves1, moves2],
-  })
-
-  // user 2 play unit for round 2
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username1,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username2,
-  })
-  await Banner.verify(username2)
-  await HomePage.verify(username2)
-
-  await Banner.goTo(Banner.elements.MenuGames)
+  // user 2 pass for round 2
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -1097,50 +933,10 @@ test('Scenic Route', async (t) => {
   await GamesPage.selectGame(0)
   gamePlayer1.passed = undefined
   gamePlayer2.passed = false
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    round: 2,
-    moves: [moves1, moves2],
-  })
+  await gameManager.pass({})
 
-  const unit2Opponent = sortedHandOpponent[0]
-  const combat2Opponent = unit2Opponent.unit.combats ? unit2Opponent.unit.combats[0] : Combat.Close
-  await GamePage.moveUnit({
-    unitName: unit2Opponent.unit.name,
-    row: combat2Opponent,
-  })
-  E2eHelper.playUnit({
-    player: gamePlayer2,
-    gameDeck: redraw2GameDeck2,
-    deckUnit: unit2Opponent,
-    moves: moves2,
-    row: combat2Opponent,
-    switchTurnsWith: gamePlayer1,
-  })
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    round: 2,
-    moves: [moves1, moves2],
-  })
-
-  // user 1 pass for round 2
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username2,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username1,
-  })
-  await Banner.verify(username1)
-  await HomePage.verify(username1)
-
-  await Banner.goTo(Banner.elements.MenuGames)
+  // user 1 pass for round 2 and round 3
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -1154,44 +950,13 @@ test('Scenic Route', async (t) => {
   })
   await GamesPage.selectGame(0)
   gamePlayer1.passed = false
-  gamePlayer2.passed = undefined
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    round: 2,
-    moves: [moves1, moves2],
+  await gameManager.pass({
+    switchTurnsWith: gamePlayer1,
   })
+  await gameManager.pass({})
 
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer1,
-    round,
-    moves: moves2,
-    switchTurnsWith: gamePlayer2,
-  })
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    round,
-    moves: [moves1, moves2],
-  })
-
-  // user 2 pass for round 2 and round 3
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username1,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username2,
-  })
-  await Banner.verify(username2)
-  await HomePage.verify(username2)
-
-  await Banner.goTo(Banner.elements.MenuGames)
+  // user 2 pass for round 3 to end game
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -1204,119 +969,11 @@ test('Scenic Route', async (t) => {
     ],
   })
   await GamesPage.selectGame(0)
+  gamePlayer1.passed = true
   gamePlayer2.passed = false
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    round: 2,
-    moves: [moves1, moves2],
-  })
-
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer2,
-    round,
-    moves: moves2,
-  })
-  E2eHelper.endRound({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    losers: [gamePlayer1],
-  })
-  round = 3
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    round,
-    moves: [moves1, moves2, moves3],
-  })
-
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer2,
-    round,
-    moves: moves3,
-    switchTurnsWith: gamePlayer1,
-  })
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    round,
-    moves: [moves1, moves2, moves3],
-  })
-
-  // user 1 pass for round 3 to end game
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username2,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username1,
-  })
-  await Banner.verify(username1)
-  await HomePage.verify(username1)
-
-  await Banner.goTo(Banner.elements.MenuGames)
-  await GamesPage.verify({
-    games: [
-      {
-        created: game.created,
-        owner: username2,
-        players: [username2, username1],
-        status: GameStatus.Playing,
-        factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
-      },
-    ],
-  })
-  await GamesPage.selectGame(0)
-  gamePlayer1.passed = false
-  gamePlayer2.passed = true
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    round: 3,
-    moves: [moves1, moves2, moves3],
-  })
-
-  await GamePage.pass({})
-  E2eHelper.playPass({
-    player: gamePlayer1,
-    round,
-    moves: moves3,
-  })
-  E2eHelper.endRound({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    losers: [gamePlayer1, gamePlayer2],
-    gameOver: true,
-  })
-  await GamePage.verify({
-    self: gamePlayer1,
-    opponent: gamePlayer2,
-    hand: redraw4GameDeck1.hand,
-    round,
-    moves: [moves1, moves2, moves3],
-    victors: [gamePlayer2.name, gamePlayer1.name],
-    rounds: [
-      {
-        creator: unit1Opponent.unit.strength || 0,
-        opponent: unit1Self.unit.strength || 0,
-      },
-      {
-        creator: unit2Opponent.unit.strength || 0,
-        opponent: unit2Self.unit.strength || 0,
-      },
-      {
-        creator: 0,
-        opponent: 0,
-      },
-    ],
+  const victors = [gamePlayer2.name, gamePlayer1.name]
+  await gameManager.pass({
+    victors,
   })
 
   await GamePage.summaryGoToGames()
@@ -1328,25 +985,13 @@ test('Scenic Route', async (t) => {
         players: [username2, username1],
         status: GameStatus.Done,
         factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
-        victors: [gamePlayer2.name, gamePlayer1.name],
+        victors,
       },
     ],
   })
 
-  // user 2 verifies game summary
-  await Banner.goTo(Banner.elements.MenuProfile)
-  await ProfilePage.verify({
-    username: username1,
-  })
-  await ProfilePage.logout()
-  await LoginPage.verifyNotLoggedIn({})
-  await LoginPage.login({
-    username: username2,
-  })
-  await Banner.verify(username2)
-  await HomePage.verify(username2)
-
-  await Banner.goTo(Banner.elements.MenuGames)
+  // user 1 verifies game summary
+  await switchTurns(gameManager)
   await GamesPage.verify({
     games: [
       {
@@ -1355,33 +1000,12 @@ test('Scenic Route', async (t) => {
         players: [username2, username1],
         status: GameStatus.Done,
         factions: [FactionKey.ScoiaTael, FactionKey.NilfgaardianEmpire],
-        victors: [gamePlayer2.name, gamePlayer1.name],
+        victors,
       },
     ],
   })
   await GamesPage.selectGame(0)
-  await GamePage.verify({
-    self: gamePlayer2,
-    opponent: gamePlayer1,
-    hand: redraw2GameDeck2.hand,
-    round,
-    moves: [moves1, moves2, moves3],
-    victors: [gamePlayer2.name, gamePlayer1.name],
-    rounds: [
-      {
-        creator: unit1Opponent.unit.strength || 0,
-        opponent: unit1Self.unit.strength || 0,
-      },
-      {
-        creator: unit2Opponent.unit.strength || 0,
-        opponent: unit2Self.unit.strength || 0,
-      },
-      {
-        creator: 0,
-        opponent: 0,
-      },
-    ],
-  })
+  await gameManager.verify({})
 })
 
 async function switchTurns(gameManager: GameManager) {
@@ -1399,6 +1023,23 @@ async function switchTurns(gameManager: GameManager) {
   })
   await Banner.verify(gameManager.self.gamePlayer.name)
   await HomePage.verify(gameManager.self.gamePlayer.name)
+
+  await HomePage.goTo(HomePage.elements.ViewGames)
+}
+
+async function changePlayers({ from, to }: { from: string; to: string }) {
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: from,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+
+  await LoginPage.login({
+    username: to,
+  })
+  await Banner.verify(to)
+  await HomePage.verify(to)
 
   await HomePage.goTo(HomePage.elements.ViewGames)
 }

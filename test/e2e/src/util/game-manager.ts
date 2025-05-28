@@ -15,7 +15,6 @@ import GamePage, {
 } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
-import { STARTING_LIVES } from '@gwent/constants'
 
 export class GameManager {
   public gameId: string
@@ -25,6 +24,7 @@ export class GameManager {
   public shouldVerify: boolean
   public apiDriven: boolean
   public round: number
+  private victors?: string[]
 
   constructor({
     gameId,
@@ -147,10 +147,12 @@ export class GameManager {
     switchTurnsWith?: GamePlayerExpected
     victors?: string[]
   }) {
-    let gameOver = false
     const isSelfTurn = this.self.gamePlayer.turn === PlayerTurn.Current
     const currentPlayer = isSelfTurn ? this.self : this.opponent
     const otherPlayer = isSelfTurn ? this.opponent : this.self
+    if (victors) {
+      this.victors = victors
+    }
 
     if (isSelfTurn && !this.apiDriven) {
       await GamePage.pass({})
@@ -181,48 +183,27 @@ export class GameManager {
           losers.push(this.self.gamePlayer)
         }
       }
-      gameOver =
-        [this.self.gamePlayer, this.opponent.gamePlayer]
-          .map((gamePlayer) => {
-            let livesLeft = STARTING_LIVES - (gamePlayer.losses || 0)
-            if (losers.map((loser) => loser.name).includes(gamePlayer.name)) {
-              livesLeft--
-            }
-            return livesLeft
-          })
-          .filter((livesLeft) => livesLeft > 0).length <= 1
       E2eHelper.endRound({
         self: this.self.gamePlayer,
         opponent: this.opponent.gamePlayer,
         losers,
-        gameOver,
+        gameOver: !!this.victors,
       })
-      if (!gameOver) {
+      if (!this.victors) {
         this.moves.push([])
         this.round++
       }
     }
 
     if (this.shouldVerify || verify) {
-      let roundScores: RoundScores[] | undefined
-      if (gameOver && this.self.roundScores && this.opponent.roundScores) {
-        roundScores = []
-        for (let i = 0; i < this.round; i++) {
-          roundScores.push({
-            creator: this.self.roundScores[i],
-            opponent: this.opponent.roundScores[i],
-          })
-        }
-      }
-
       await GamePage.verify({
         opponent: this.opponent.gamePlayer,
         self: this.self.gamePlayer,
         hand: this.self.deck.hand,
         moves: this.moves,
         round: this.round,
-        victors,
-        rounds: roundScores,
+        victors: this.victors,
+        rounds: this.getRoundScores(),
       })
     }
   }
@@ -242,6 +223,8 @@ export class GameManager {
       hand: this.self.deck.hand,
       moves: this.moves,
       round: this.round,
+      victors: this.victors,
+      rounds: this.getRoundScores(),
       highlightedHandCard,
       highlightedBattlefieldCard,
       highlightedHistory,
@@ -261,6 +244,19 @@ export class GameManager {
     const opponent = this.opponent
     this.self = opponent
     this.opponent = self
+  }
+
+  private getRoundScores(): RoundScores[] {
+    const roundScores: RoundScores[] = []
+    if (this.victors && this.self.roundScores && this.opponent.roundScores) {
+      for (let i = 0; i < this.round; i++) {
+        roundScores.push({
+          creator: this.self.roundScores[i],
+          opponent: this.opponent.roundScores[i],
+        })
+      }
+    }
+    return roundScores
   }
 }
 
