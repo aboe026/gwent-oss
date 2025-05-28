@@ -54,6 +54,7 @@ export default function App() {
   const authTimedOut = user?.id === AUTH_TIMEOUT_ID
   const loggedIn = !!user?.id && !authTimedOut
   const loginOrSignup = [ROUTES.Login.path, ROUTES.Signup.path].includes(pathname)
+  const justLoggedOut = !user?.id && user?.name
 
   if (currentUserLoading) {
     return (
@@ -83,7 +84,9 @@ export default function App() {
       <ApolloConsumer>
         {(client: ApolloClient<object>) => {
           client.resetStore()
-          setPreLoginPath('')
+          if (justLoggedOut) {
+            setPreLoginPath('')
+          }
           return <Navigate to={ROUTES.Login.path} replace />
         }}
       </ApolloConsumer>
