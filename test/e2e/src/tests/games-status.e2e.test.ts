@@ -1,4 +1,5 @@
 import ApiClient from '../util/api-client'
+import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
 import GamesPage from '../page-objects/games-page'
@@ -466,4 +467,93 @@ test('Games page updated with playing status if marked ready through API by oppo
   })
 })
 
-// TODO: finished status
+test('Games page updated with finished status if passed through API by self last', async (t) => {
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+  })
+  await gameManager.pass({})
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+  })
+  await gameManager.pass({})
+  await LoginPage.login({
+    username: gameManager.self.gamePlayer.name,
+  })
+  const game = await gameManager.self.client.getGame(gameManager.gameId)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
+        status: GameStatus.Playing,
+        factions: [
+          gameManager.self.deck.from?.faction.key as FactionKey,
+          gameManager.opponent.deck.from?.faction.key as FactionKey,
+        ],
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
+        status: GameStatus.Done,
+        factions: [
+          gameManager.self.deck.from?.faction.key as FactionKey,
+          gameManager.opponent.deck.from?.faction.key as FactionKey,
+        ],
+        victors: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
+      },
+    ],
+  })
+})
+
+test('Games page updated with finished status if passed through API by opponent last', async (t) => {
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    opponentFirst: true,
+  })
+  await gameManager.pass({})
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+  })
+  await gameManager.pass({})
+  await LoginPage.login({
+    username: gameManager.self.gamePlayer.name,
+  })
+  const game = await gameManager.self.client.getGame(gameManager.gameId)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
+        status: GameStatus.Playing,
+        factions: [
+          gameManager.self.deck.from?.faction.key as FactionKey,
+          gameManager.opponent.deck.from?.faction.key as FactionKey,
+        ],
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
+        status: GameStatus.Done,
+        factions: [
+          gameManager.self.deck.from?.faction.key as FactionKey,
+          gameManager.opponent.deck.from?.faction.key as FactionKey,
+        ],
+        victors: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
+      },
+    ],
+  })
+})

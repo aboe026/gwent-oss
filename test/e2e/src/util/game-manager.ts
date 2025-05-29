@@ -304,6 +304,7 @@ export default async function createGameManager({
       client: selfClient,
       faction: selfFaction,
       specials: [...(self?.specialUnitNames || []), ...(self?.handUnitNames || [])],
+      ignores: self?.ignoreUnitNames,
     }),
   })
   const opponentDeck = await opponentClient.addDeck({
@@ -314,6 +315,7 @@ export default async function createGameManager({
       client: opponentClient,
       faction: opponentFaction,
       specials: [...(opponent?.specialUnitNames || []), ...(opponent?.handUnitNames || [])],
+      ignores: opponent?.ignoreUnitNames,
     }),
   })
 
@@ -423,6 +425,7 @@ interface GameManagerSetupPlayer {
   leader?: string
   specialUnitNames?: string[]
   handUnitNames?: string[]
+  ignoreUnitNames?: string[]
 }
 
 interface GameManagerPlayer {

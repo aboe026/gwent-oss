@@ -45,10 +45,12 @@ export class E2eHelper {
     client,
     faction,
     specials = [],
+    ignores,
   }: {
     client: ApiClient
     faction: FactionKey
     specials?: string[]
+    ignores?: string[]
   }): Promise<string[]> {
     const units = await client.getUnits({
       deckable: true,
@@ -68,6 +70,14 @@ export class E2eHelper {
 
       if (currentOccurrences < expectedOccurrences) {
         unitNames.push(special)
+      }
+    }
+    if (ignores) {
+      for (const ignore of ignores) {
+        const index = unitNames.indexOf(ignore)
+        if (index >= 0) {
+          unitNames.splice(index, 1)
+        }
       }
     }
     return unitNames

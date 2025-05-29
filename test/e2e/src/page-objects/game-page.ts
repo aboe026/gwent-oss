@@ -299,8 +299,8 @@ export default class GamePage {
         expected.push(`Round ${i + 1}`)
         for (let j = 0; j < moves[i].length; j++) {
           const move = moves[i][j]
-          if ('combatRow' in move) {
-            const row = move.unitName === 'Scorch' ? 'to battlefield' : `as ${toTitleCase(move.combatRow)}`
+          if ('unitName' in move) {
+            const row = move.combatRow ? `as ${toTitleCase(move.combatRow)}` : 'to battlefield'
             const description = `${move.userName}: ${move.unitName} deployed ${row}`
             const selected =
               highlightedMove &&
@@ -1066,7 +1066,7 @@ interface Redraws {
 export interface HistoryMove {
   userName: string
   unitName: string
-  combatRow: Combat
+  combatRow?: Combat
 }
 
 export interface HistoryPass {
