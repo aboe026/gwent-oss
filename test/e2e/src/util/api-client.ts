@@ -17,7 +17,7 @@ import {
   Unit,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
-import env from './env'
+import env from './e2e-env'
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/esm/types'
 
 export default class ApiClient {

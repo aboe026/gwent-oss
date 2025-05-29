@@ -1,7 +1,7 @@
 import { ClientFunction, t } from 'testcafe'
 import urlJoin from 'url-join'
 
-import env from './env'
+import env from './e2e-env'
 
 export default class E2eUtil {
   static getCurrentUrl = ClientFunction(() => {

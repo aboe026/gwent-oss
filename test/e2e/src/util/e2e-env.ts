@@ -42,5 +42,13 @@ export default getEnv({
       desc: 'The secret to use for securing user sessions',
       default: 'youshouldreallychangethisforproductionusage',
     }),
+    WINDOW_HEIGHT: num({
+      desc: 'Width in pixels to size the browser window to',
+      default: 1080,
+    }),
+    WINDOW_WIDTH: num({
+      desc: 'Height in pixesl to size the browser window to',
+      default: 1920,
+    }),
   },
 })

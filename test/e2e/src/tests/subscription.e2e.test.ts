@@ -5,7 +5,7 @@ import urlJoin from 'url-join'
 import WebSocket from 'ws'
 
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
-import env from '../util/env'
+import env from '../util/e2e-env'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
