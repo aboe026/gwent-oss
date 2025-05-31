@@ -1,16 +1,16 @@
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
 import { Combat, Deck, FactionKey, Game, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
-import GamePage, { HistoryMove, HistoryPass } from '../page-objects/game-page'
+import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 import { E2eHelper } from '../util/e2e-helper'
 import { PlayerTurn } from '../components/game-player-info'
-import { sortObjectArray } from '@gwent/utils'
+import createGameManager from '../util/game-manager'
 
 interface GameSubscriptionTestCtx extends E2eCtx {
   scenario: string
@@ -937,540 +937,334 @@ test('Game not marked as ready if use API to mark other game as ready', async (t
 })
 
 test('Page automatically updates after unit played via API on game page', async (t) => {
-  const gameDeckSelf = await t.ctx.self.client.setDeck({
-    deckId: t.ctx.self.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
-    deckId: t.ctx.opponent.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  await t.ctx.self.client.setOrder({
-    gameId: t.ctx.game.id,
-    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
-  })
-  await t.ctx.self.client.ready(t.ctx.game.id)
-  await t.ctx.opponent.client.ready(t.ctx.game.id)
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.self.client,
-      deck: t.ctx.self.deck,
-      gameDeck: gameDeckSelf,
-      user: t.ctx.self.user,
+  const unitName = 'Dennis Cranmer'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName],
     },
-    ready: true,
-    passed: false,
-    turn: PlayerTurn.Current,
-    score: 0,
   })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.opponent.client,
-      deck: t.ctx.opponent.deck,
-      gameDeck: gameDeckOpponent,
-      user: t.ctx.opponent.user,
-    },
-    ready: true,
-    score: 0,
+  const deckUnit = gameManager.getHandUnit({
+    name: unitName,
   })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [[]],
-  })
+  await gameManager.initialize({})
 
-  const sortedHand = sortObjectArray({
-    array: gameDeckSelf.hand,
-    sortProperties: ['unit.strength', 'unit.id'],
-    reverse: true,
-  })
-  const unitToMove = sortedHand[0]
-  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
-
-  await t.ctx.self.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMove.unit.id,
-    combat: combatRow,
+  await gameManager.self.client.playUnit({
+    gameId: gameManager.gameId,
+    unitId: deckUnit.unit.id,
+    combat: Combat.Close,
   })
   E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: gameDeckSelf,
-    deckUnit: unitToMove,
-    row: combatRow,
-    switchTurnsWith: opponentPlayer,
+    player: gameManager.self.gamePlayer,
+    gameDeck: gameManager.self.deck,
+    deckUnit,
+    row: Combat.Close,
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    moves: gameManager.moves[gameManager.round - 1],
   })
-
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [
-      [
-        {
-          userName: selfPlayer.name,
-          unitName: unitToMove.unit.name,
-          combatRow: combatRow,
-        },
-      ],
-    ],
-  })
+  await gameManager.verify({})
 })
 
 test('Page automatically updates after opponent plays unit via API on game page', async (t) => {
-  const gameDeckSelf = await t.ctx.self.client.setDeck({
-    deckId: t.ctx.self.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
-    deckId: t.ctx.opponent.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  await t.ctx.self.client.setOrder({
-    gameId: t.ctx.game.id,
-    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
-  })
-  await t.ctx.self.client.ready(t.ctx.game.id)
-  await t.ctx.opponent.client.ready(t.ctx.game.id)
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.self.client,
-      deck: t.ctx.self.deck,
-      gameDeck: gameDeckSelf,
-      user: t.ctx.self.user,
+  const unitName = 'Dennis Cranmer'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName],
     },
-    ready: true,
-    passed: false,
-    turn: PlayerTurn.Current,
-    score: 0,
+    opponentFirst: true,
   })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.opponent.client,
-      deck: t.ctx.opponent.deck,
-      gameDeck: gameDeckOpponent,
-      user: t.ctx.opponent.user,
-    },
-    ready: true,
-    score: 0,
+  const deckUnit = gameManager.getHandUnit({
+    name: unitName,
+    opponent: true,
   })
-  const moves: (HistoryMove | HistoryPass)[] = []
+  await gameManager.initialize({})
 
-  await t.ctx.self.client.playPass({
-    gameId: t.ctx.game.id,
-  })
-  E2eHelper.playPass({
-    player: selfPlayer,
-    round: 1,
-    moves,
-    switchTurnsWith: opponentPlayer,
-  })
-
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [moves],
-  })
-
-  const sortedHand = sortObjectArray({
-    array: gameDeckOpponent.hand,
-    sortProperties: ['unit.strength', 'unit.id'],
-    reverse: true,
-  })
-  const unitToMove = sortedHand[0]
-  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
-
-  await t.ctx.opponent.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMove.unit.id,
-    combat: combatRow,
+  await gameManager.opponent.client.playUnit({
+    gameId: gameManager.gameId,
+    unitId: deckUnit.unit.id,
+    combat: Combat.Close,
   })
   E2eHelper.playUnit({
-    player: opponentPlayer,
-    gameDeck: gameDeckOpponent,
-    deckUnit: unitToMove,
-    row: combatRow,
-    moves,
+    player: gameManager.opponent.gamePlayer,
+    gameDeck: gameManager.opponent.deck,
+    deckUnit,
+    row: Combat.Close,
+    switchTurnsWith: gameManager.self.gamePlayer,
+    moves: gameManager.moves[gameManager.round - 1],
   })
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [moves],
-  })
+  await gameManager.verify({})
 })
 
 test('Page automatically updates after unit played via API on games list', async (t) => {
-  const gameDeckSelf = await t.ctx.self.client.setDeck({
-    deckId: t.ctx.self.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
-    deckId: t.ctx.opponent.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  await t.ctx.self.client.setOrder({
-    gameId: t.ctx.game.id,
-    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
-  })
-  await t.ctx.self.client.ready(t.ctx.game.id)
-  await t.ctx.opponent.client.ready(t.ctx.game.id)
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.self.client,
-      deck: t.ctx.self.deck,
-      gameDeck: gameDeckSelf,
-      user: t.ctx.self.user,
+  const unitName = 'Dennis Cranmer'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName],
     },
-    ready: true,
-    passed: false,
-    turn: PlayerTurn.Current,
-    score: 0,
   })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.opponent.client,
-      deck: t.ctx.opponent.deck,
-      gameDeck: gameDeckOpponent,
-      user: t.ctx.opponent.user,
-    },
-    ready: true,
-    score: 0,
+  const deckUnit = gameManager.getHandUnit({
+    name: unitName,
   })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [[]],
-  })
+  await gameManager.initialize({})
 
   await Banner.goTo(Banner.elements.MenuGames)
+  const game = await gameManager.self.client.getGame(gameManager.gameId)
   await GamesPage.verify({
     games: [
       {
-        created: t.ctx.game.created,
-        owner: t.ctx.self.user.name,
-        players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
         status: GameStatus.Playing,
-        factions: [t.ctx.self.deck.faction.key, t.ctx.opponent.deck.faction.key],
+        factions: [
+          gameManager.self.gamePlayer.faction?.key as FactionKey,
+          gameManager.opponent.gamePlayer.faction?.key as FactionKey,
+        ],
       },
     ],
   })
 
-  const sortedHand = sortObjectArray({
-    array: gameDeckSelf.hand,
-    sortProperties: ['unit.strength', 'unit.id'],
-    reverse: true,
-  })
-  const unitToMove = sortedHand[0]
-  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
-
-  await t.ctx.self.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMove.unit.id,
-    combat: combatRow,
+  await gameManager.self.client.playUnit({
+    gameId: gameManager.gameId,
+    unitId: deckUnit.unit.id,
+    combat: Combat.Close,
   })
   E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: gameDeckSelf,
-    deckUnit: unitToMove,
-    row: combatRow,
-    switchTurnsWith: opponentPlayer,
+    player: gameManager.self.gamePlayer,
+    gameDeck: gameManager.self.deck,
+    deckUnit,
+    row: Combat.Close,
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    moves: gameManager.moves[gameManager.round - 1],
   })
-
   await GamesPage.verify({
     games: [
       {
-        created: t.ctx.game.created,
-        owner: t.ctx.self.user.name,
-        players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
         status: GameStatus.Playing,
-        factions: [t.ctx.self.deck.faction.key, t.ctx.opponent.deck.faction.key],
+        factions: [
+          gameManager.self.gamePlayer.faction?.key as FactionKey,
+          gameManager.opponent.gamePlayer.faction?.key as FactionKey,
+        ],
       },
     ],
   })
 
   await GamesPage.selectGame(0)
-
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [
-      [
-        {
-          userName: selfPlayer.name,
-          unitName: unitToMove.unit.name,
-          combatRow: combatRow,
-        },
-      ],
-    ],
-  })
+  await gameManager.verify({})
 })
 
 test('Page automatically updates after pass at round start via API on game page', async (t) => {
-  const gameDeckSelf = await t.ctx.self.client.setDeck({
-    deckId: t.ctx.self.deck.id,
-    gameId: t.ctx.game.id,
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
   })
-  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
-    deckId: t.ctx.opponent.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  await t.ctx.self.client.setOrder({
-    gameId: t.ctx.game.id,
-    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
-  })
-  await t.ctx.self.client.ready(t.ctx.game.id)
-  await t.ctx.opponent.client.ready(t.ctx.game.id)
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.self.client,
-      deck: t.ctx.self.deck,
-      gameDeck: gameDeckSelf,
-      user: t.ctx.self.user,
-    },
-    ready: true,
-    passed: false,
-    turn: PlayerTurn.Current,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.opponent.client,
-      deck: t.ctx.opponent.deck,
-      gameDeck: gameDeckOpponent,
-      user: t.ctx.opponent.user,
-    },
-    ready: true,
-    score: 0,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    self: selfPlayer,
-    opponent: opponentPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [[]],
-  })
+  await gameManager.initialize({})
 
-  await t.ctx.self.client.playPass({
-    gameId: t.ctx.game.id,
+  await gameManager.self.client.playPass({
+    gameId: gameManager.gameId,
   })
   E2eHelper.playPass({
-    player: selfPlayer,
-    round: 1,
-    switchTurnsWith: opponentPlayer,
+    player: gameManager.self.gamePlayer,
+    round: gameManager.round,
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    moves: gameManager.moves[gameManager.round - 1],
   })
 
-  await GamePage.verify({
-    self: selfPlayer,
-    opponent: opponentPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [
-      [
-        {
-          userName: selfPlayer.name,
-          round: 1,
-        },
-      ],
-    ],
+  await gameManager.verify({})
+})
+
+test('Page automatically updates after opponent passes at round start via API on game page', async (t) => {
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    opponentFirst: true,
   })
+  await gameManager.initialize({})
+
+  await gameManager.opponent.client.playPass({
+    gameId: gameManager.gameId,
+  })
+  E2eHelper.playPass({
+    player: gameManager.opponent.gamePlayer,
+    round: gameManager.round,
+    switchTurnsWith: gameManager.self.gamePlayer,
+    moves: gameManager.moves[gameManager.round - 1],
+  })
+
+  await gameManager.verify({})
 })
 
 test('Page automatically updates after pass at round end via API on game page', async (t) => {
-  const gameDeckSelf = await t.ctx.self.client.setDeck({
-    deckId: t.ctx.self.deck.id,
-    gameId: t.ctx.game.id,
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    opponentFirst: true,
   })
-  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
-    deckId: t.ctx.opponent.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  await t.ctx.self.client.setOrder({
-    gameId: t.ctx.game.id,
-    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
-  })
-  await t.ctx.self.client.ready(t.ctx.game.id)
-  await t.ctx.opponent.client.ready(t.ctx.game.id)
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.self.client,
-      deck: t.ctx.self.deck,
-      gameDeck: gameDeckSelf,
-      user: t.ctx.self.user,
-    },
-    ready: true,
-    passed: false,
-    turn: PlayerTurn.Current,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.opponent.client,
-      deck: t.ctx.opponent.deck,
-      gameDeck: gameDeckOpponent,
-      user: t.ctx.opponent.user,
-    },
-    ready: true,
-    score: 0,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
+  await gameManager.pass({})
+  await gameManager.initialize({})
 
-  const sortedHand = sortObjectArray({
-    array: gameDeckSelf.hand,
-    sortProperties: ['unit.strength', 'unit.id'],
-    reverse: true,
-  })
-  const unitToMove = sortedHand[0]
-  const combatRow = unitToMove.unit.combats ? unitToMove.unit.combats[0] : Combat.Close
-  await t.ctx.self.client.playUnit({
-    gameId: t.ctx.game.id,
-    unitId: unitToMove.unit.id,
-    combat: combatRow,
-  })
-  E2eHelper.playUnit({
-    player: selfPlayer,
-    gameDeck: gameDeckSelf,
-    deckUnit: unitToMove,
-    row: combatRow,
-    moves,
-  })
-
-  await t.ctx.opponent.client.playPass({
-    gameId: t.ctx.game.id,
+  await gameManager.self.client.playPass({
+    gameId: gameManager.gameId,
   })
   E2eHelper.playPass({
-    player: opponentPlayer,
-    round: 1,
-    moves,
-  })
-
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [moves],
-  })
-
-  await t.ctx.self.client.playPass({
-    gameId: t.ctx.game.id,
-  })
-  E2eHelper.playPass({
-    player: selfPlayer,
-    round: 1,
-    moves,
+    player: gameManager.self.gamePlayer,
+    round: gameManager.round,
+    switchTurnsWith: gameManager.self.gamePlayer,
+    moves: gameManager.moves[gameManager.round - 1],
   })
   E2eHelper.endRound({
-    self: selfPlayer,
-    opponent: opponentPlayer,
-    losers: [opponentPlayer],
+    self: gameManager.self.gamePlayer,
+    opponent: gameManager.opponent.gamePlayer,
+    losers: [gameManager.self.gamePlayer, gameManager.opponent.gamePlayer],
   })
+  gameManager.round++
+  gameManager.moves.push([])
 
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    round: 2,
-    moves: [moves, []],
+  await gameManager.verify({})
+})
+
+test('Page automatically updates after opponent passes at round end via API on game page', async (t) => {
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
   })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.opponent.client.playPass({
+    gameId: gameManager.gameId,
+  })
+  E2eHelper.playPass({
+    player: gameManager.opponent.gamePlayer,
+    round: gameManager.round,
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    moves: gameManager.moves[gameManager.round - 1],
+  })
+  E2eHelper.endRound({
+    self: gameManager.self.gamePlayer,
+    opponent: gameManager.opponent.gamePlayer,
+    losers: [gameManager.self.gamePlayer, gameManager.opponent.gamePlayer],
+  })
+  gameManager.round++
+  gameManager.moves.push([])
+
+  await gameManager.verify({})
 })
 
 test('Page automatically updates after pass via API on games list', async (t) => {
-  const gameDeckSelf = await t.ctx.self.client.setDeck({
-    deckId: t.ctx.self.deck.id,
-    gameId: t.ctx.game.id,
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
   })
-  const gameDeckOpponent = await t.ctx.opponent.client.setDeck({
-    deckId: t.ctx.opponent.deck.id,
-    gameId: t.ctx.game.id,
-  })
-  await t.ctx.self.client.setOrder({
-    gameId: t.ctx.game.id,
-    userIds: [t.ctx.self.user.id, t.ctx.opponent.user.id],
-  })
-  await t.ctx.self.client.ready(t.ctx.game.id)
-  await t.ctx.opponent.client.ready(t.ctx.game.id)
-  const selfPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.self.client,
-      deck: t.ctx.self.deck,
-      gameDeck: gameDeckSelf,
-      user: t.ctx.self.user,
-    },
-    ready: true,
-    passed: false,
-    turn: PlayerTurn.Current,
-    score: 0,
-  })
-  const opponentPlayer = E2eHelper.getGamePlayer({
-    player: {
-      client: t.ctx.opponent.client,
-      deck: t.ctx.opponent.deck,
-      gameDeck: gameDeckOpponent,
-      user: t.ctx.opponent.user,
-    },
-    ready: true,
-    score: 0,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [[]],
-  })
+  await gameManager.initialize({})
 
   await Banner.goTo(Banner.elements.MenuGames)
+  const game = await gameManager.self.client.getGame(gameManager.gameId)
   await GamesPage.verify({
     games: [
       {
-        created: t.ctx.game.created,
-        owner: t.ctx.self.user.name,
-        players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
         status: GameStatus.Playing,
-        factions: [t.ctx.self.deck.faction.key, t.ctx.opponent.deck.faction.key],
+        factions: [
+          gameManager.self.gamePlayer.faction?.key as FactionKey,
+          gameManager.opponent.gamePlayer.faction?.key as FactionKey,
+        ],
       },
     ],
   })
 
-  await t.ctx.self.client.playPass({
-    gameId: t.ctx.game.id,
+  await gameManager.self.client.playPass({
+    gameId: gameManager.gameId,
   })
   E2eHelper.playPass({
-    player: selfPlayer,
-    round: 1,
-    switchTurnsWith: opponentPlayer,
+    player: gameManager.self.gamePlayer,
+    round: gameManager.round,
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    moves: gameManager.moves[gameManager.round - 1],
   })
-
   await GamesPage.verify({
     games: [
       {
-        created: t.ctx.game.created,
-        owner: t.ctx.self.user.name,
-        players: [t.ctx.self.user.name, t.ctx.opponent.user.name],
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
         status: GameStatus.Playing,
-        factions: [t.ctx.self.deck.faction.key, t.ctx.opponent.deck.faction.key],
+        factions: [
+          gameManager.self.gamePlayer.faction?.key as FactionKey,
+          gameManager.opponent.gamePlayer.faction?.key as FactionKey,
+        ],
       },
     ],
   })
-  await GamesPage.selectGame(0)
 
-  await GamePage.verify({
-    opponent: opponentPlayer,
-    self: selfPlayer,
-    hand: gameDeckSelf.hand,
-    moves: [
-      [
-        {
-          userName: selfPlayer.name,
-          round: 1,
-        },
-      ],
+  await GamesPage.selectGame(0)
+  await gameManager.verify({})
+})
+
+test('Page automatically updates after game finished on games list', async (t) => {
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+  })
+  await gameManager.pass({})
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await Banner.goTo(Banner.elements.MenuGames)
+  const game = await gameManager.self.client.getGame(gameManager.gameId)
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
+        status: GameStatus.Playing,
+        factions: [
+          gameManager.self.gamePlayer.faction?.key as FactionKey,
+          gameManager.opponent.gamePlayer.faction?.key as FactionKey,
+        ],
+      },
     ],
   })
+
+  await gameManager.self.client.playPass({
+    gameId: gameManager.gameId,
+  })
+  E2eHelper.playPass({
+    player: gameManager.self.gamePlayer,
+    round: gameManager.round,
+    moves: gameManager.moves[gameManager.round - 1],
+  })
+  E2eHelper.endRound({
+    self: gameManager.self.gamePlayer,
+    opponent: gameManager.opponent.gamePlayer,
+    losers: [gameManager.self.gamePlayer, gameManager.opponent.gamePlayer],
+    gameOver: true,
+  })
+  gameManager.victors = [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name]
+  await GamesPage.verify({
+    games: [
+      {
+        created: game.created,
+        owner: game.creator.name,
+        players: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
+        status: GameStatus.Done,
+        factions: [
+          gameManager.self.gamePlayer.faction?.key as FactionKey,
+          gameManager.opponent.gamePlayer.faction?.key as FactionKey,
+        ],
+        victors: [gameManager.self.gamePlayer.name, gameManager.opponent.gamePlayer.name],
+      },
+    ],
+  })
+
+  await GamesPage.selectGame(0)
+  await gameManager.verify({})
 })

@@ -24,7 +24,7 @@ export class GameManager {
   public shouldVerify: boolean
   public apiDriven: boolean
   public round: number
-  private victors?: string[]
+  public victors?: string[]
 
   constructor({
     gameId,
@@ -251,8 +251,8 @@ export class GameManager {
     if (this.victors && this.self.roundScores && this.opponent.roundScores) {
       for (let i = 0; i < this.round; i++) {
         roundScores.push({
-          creator: this.self.roundScores[i],
-          opponent: this.opponent.roundScores[i],
+          creator: this.self.roundScores[i] || 0,
+          opponent: this.opponent.roundScores[i] || 0,
         })
       }
     }
