@@ -208,7 +208,7 @@ describe('effect-scorch', () => {
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
     gameDeckSelf.discard = [unitSelf1]
     gameDeckOpponent.discard = [unitOpponent1]
-    const opponentGamePlayerUpdated = expectizeGamePlayer({
+    const opponentGamePlayer = expectizeGamePlayer({
       user: opponent,
       gameDeck: gameDeckOpponent,
       order: 0,
@@ -272,11 +272,164 @@ describe('effect-scorch', () => {
                 }),
               ],
             }),
-            opponentGamePlayerUpdated,
+            opponentGamePlayer,
           ],
           status: GameStatus.Playing,
           round: 1,
-          turn: opponentGamePlayerUpdated,
+          turn: opponentGamePlayer,
+        }),
+      },
+    })
+  })
+  it('scorch does not effect hero unit', async () => {
+    const { game, opponent, self } = await setupGame({
+      opponentFirst: true,
+    })
+    const unitName1 = 'Vernon Roche'
+    const unitName2 = 'Scorch'
+    await ensureUnitsInHand({
+      gameId: game.id,
+      userId: self.id,
+      mongoConnectionString: funcEnv.MONGO_URL,
+      mongoDatabaseName: funcEnv.MONGO_DB,
+      unitNames: [unitName2],
+    })
+    await ensureUnitsInHand({
+      gameId: game.id,
+      userId: opponent.id,
+      mongoConnectionString: funcEnv.MONGO_URL,
+      mongoDatabaseName: funcEnv.MONGO_DB,
+      unitNames: [unitName1],
+    })
+
+    const gameDeckSelf = await getGameDeck({
+      gameId: game.id,
+      userId: self.id,
+    })
+    const gameDeckOpponent = await getGameDeck({
+      gameId: game.id,
+      userId: opponent.id,
+    })
+
+    const unitSelf1 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName2)
+    if (!unitSelf1) {
+      throw Error(`Could not find self unit "${unitName1}" in hand`)
+    }
+    const unitOpponent1 = gameDeckOpponent.hand.find((unit) => unit.unit.name === unitName1)
+    if (!unitOpponent1) {
+      throw Error(`Could not find opponent unit "${unitName2}" in hand`)
+    }
+
+    gameDeckOpponent.hand = gameDeckOpponent.hand.filter((handUnit) => handUnit.unit.id !== unitOpponent1.unit.id)
+    const selfGamePlayer = game.players.find((player) => player.user.id === self.id) as GamePlayer
+    const opponentGamePlayer = expectizeGamePlayer({
+      user: opponent,
+      gameDeck: gameDeckOpponent,
+      order: 0,
+      ready: true,
+      rounds: [
+        expectizePlayerRound({
+          close: {
+            score: 10,
+            units: [
+              TestUtil.getGameUnit({
+                unit: unitOpponent1.unit,
+              }),
+            ],
+          },
+          moves: [
+            {
+              created: expect.any(Date),
+              row: Combat.Close,
+              unit: unitOpponent1,
+            } as MoveUnit,
+          ],
+          ranged: TestUtil.getPlayerCombatRow({}),
+          siege: TestUtil.getPlayerCombatRow({}),
+          score: 10,
+        }),
+      ],
+    })
+    await expect(
+      graphql({
+        schema,
+        source: `mutation {
+          playUnit(
+            game: "${game.id}"
+            unit: "${unitOpponent1.unit.id}"
+          ) {
+            ${getGameFragment()}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: TestUtil.getDbUserFromUser(opponent),
+          },
+        },
+      })
+    ).resolves.toEqual({
+      data: {
+        playUnit: expectizeGame({
+          creator: game.creator,
+          players: [selfGamePlayer, opponentGamePlayer],
+          status: GameStatus.Playing,
+          round: 1,
+          turn: selfGamePlayer,
+        }),
+      },
+    })
+
+    gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
+    gameDeckSelf.discard = [unitSelf1]
+    gameDeckOpponent.discard = [unitOpponent1]
+    await expect(
+      graphql({
+        schema,
+        source: `mutation {
+          playUnit(
+            game: "${game.id}"
+            unit: "${unitSelf1.unit.id}"
+          ) {
+            ${getGameFragment()}
+          }
+        }`,
+        contextValue: {
+          session: {
+            user: TestUtil.getDbUserFromUser(self),
+          },
+        },
+      })
+    ).resolves.toEqual({
+      data: {
+        playUnit: expectizeGame({
+          creator: game.creator,
+          players: [
+            expectizeGamePlayer({
+              user: self,
+              gameDeck: gameDeckSelf,
+              order: 1,
+              ready: true,
+              rounds: [
+                expectizePlayerRound({
+                  close: TestUtil.getPlayerCombatRow({}),
+                  moves: [
+                    {
+                      created: expect.any(Date),
+                      row: null,
+                      unit: unitSelf1,
+                    } as MoveUnit,
+                  ],
+                  ranged: TestUtil.getPlayerCombatRow({}),
+                  siege: TestUtil.getPlayerCombatRow({}),
+                  score: 0,
+                }),
+              ],
+            }),
+            opponentGamePlayer,
+          ],
+          status: GameStatus.Playing,
+          round: 1,
+          turn: opponentGamePlayer,
         }),
       },
     })
