@@ -289,6 +289,43 @@ test('Scorch removes strongest units if multiple with highest strength', async (
   })
 })
 
+test('Scorch removes strongest unit in second round if same unit played in first round', async (t) => {
+  const unitName1 = 'Dol Blathanna Scout'
+  const unitName2 = 'Dol Blathanna Scout'
+  const unitName3 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName3],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName2],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.pass({
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+  })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName3,
+    scorching: [
+      {
+        name: unitName2,
+        row: Combat.Close,
+        strength: 6,
+        player: gameManager.opponent.gamePlayer,
+      },
+    ],
+  })
+})
+
 test('Scorch does not effect heroes', async (t) => {
   const unitName1 = 'Eithne'
   const unitName2 = 'Scorch'
@@ -942,5 +979,3 @@ test('Schirru removes only opponents unit if self has same one', async (t) => {
     ],
   })
 })
-
-// TODO: verify scorching in second round with victim same name as first round card works
