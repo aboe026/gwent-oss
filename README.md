@@ -31,6 +31,8 @@ A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
     - [End to End](#end-to-end)
   - [Upgrade Dependencies](#upgrade-dependencies)
   - [Upgrade Yarn](#upgrade-yarn)
+  - [Changes](./CHANGELOG.md)
+  - [To-Do](./TODO.md)
 
 ## Containerization
 

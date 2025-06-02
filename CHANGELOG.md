@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.12.0 - 2025-06-02
+
+### Added
+
+- Scorch Effect ([#34](https://github.com/aboe026/gwent/pull/34)) (Adam Boe)
+
 ## 0.11.3 - 2025-04-11
 
 ### Fixed
