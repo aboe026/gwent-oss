@@ -1,6 +1,15 @@
 import { GraphQLError, graphql } from 'graphql'
 
-import { addDeck, addGame, addUser, getLeaderId, getUnitsInput, ready, setDeck } from './util/graphql-util'
+import {
+  addDeck,
+  addGame,
+  addUser,
+  getLeaderId,
+  getStrengthUnits,
+  getUnitsInput,
+  ready,
+  setDeck,
+} from './util/graphql-util'
 import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import {
   getDeckFragment,
@@ -267,7 +276,9 @@ describe('permissions', () => {
                 name: "Deck unauthenticated",
                 faction: MONSTERS,
                 leader: "${await getLeaderId({ name: 'Eredin Bringer of Death' })}",
-                units: [${await getUnitsInput(FactionKey.Monsters)}]
+                units: [${getUnitsInput(
+                  (await getStrengthUnits({ faction: FactionKey.Monsters })).map((deckUnit) => deckUnit.unit.id)
+                )}]
               ) {
                 ${getDeckFragment()}
               }

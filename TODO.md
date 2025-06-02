@@ -83,7 +83,6 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- replace E2eHelper.playUnit and .playPass with GameManager where able
 - for "Move" type, have "impact" field
   - cards removed/added
   - effects applied to other cards

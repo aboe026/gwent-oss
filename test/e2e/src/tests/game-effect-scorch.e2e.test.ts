@@ -942,3 +942,5 @@ test('Schirru removes only opponents unit if self has same one', async (t) => {
     ],
   })
 })
+
+// TODO: verify scorching in second round with victim same name as first round card works
