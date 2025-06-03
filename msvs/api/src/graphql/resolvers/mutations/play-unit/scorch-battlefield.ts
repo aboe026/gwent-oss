@@ -17,9 +17,22 @@ import GetEffectWithKey from './get-effect-with-key'
 import getGameUnits from './get-game-units'
 import GetStrongestNonHeroUnitIds from './get-strongest-non-hero-unit-ids'
 
+/**
+ * A class to modify the battlefield if a scorching unit is played.
+ */
 export default class ScorchBattlefield {
   private static logger = getLogger('ScorchBattlefield')
 
+  /**
+   * Potentially remove units from the battlefield if a scorching unit is played.
+   *
+   * @param config The configuration used to scorch the battlefield.
+   * @param config.battlefieldUnits battlefieldUnits The Unit database documents currently on the battlefield for all players.
+   * @param config.effects The Effect database documents for any effect that may be present on the battlefield, including an incoming scorch.
+   * @param config.game The game which is potentially being scorched.
+   * @param config.logPrefix What to prepend log output statements with.
+   * @param config.newDeckUnit The new DeckUnit database document currently being played and which may potentially have a scorching effect.
+   */
   static scorchBattlefield({
     battlefieldUnits,
     effects,
@@ -96,6 +109,19 @@ export default class ScorchBattlefield {
     }
   }
 
+  /**
+   * Scorch a players battlefield units depending on the scorching unit played.
+   *
+   * @param config The configuration used to determine which, if any, of the game players cards to remove from the battlefield due to scorching.
+   * @param config.battlefieldUnits battlefieldUnits The Unit database documents currently on the battlefield for all players.
+   * @param config.player The game player whose battlefield units are potentially being scorched.
+   * @param config.round The current round of the game.
+   * @param config.turn Whose turn it currently is in the game and is playing a scorching unit.
+   * @param config.logPrefix What to prepend log output statements with.
+   * @param config.scorchingUnit The Unit being deployed to the battlefield with a scorching effect.
+   * @param config.scorchingDeckUnit The DeckUnit being deployed to the battlefield with a scorching effect.
+   * @param config.strongestUnitIdsOnBattlefield A list of the strongest units across the entire battlefield which may be used to determine which of the players units should be scorched.
+   */
   private static scorchPlayer({
     battlefieldUnits,
     player,
@@ -140,6 +166,16 @@ export default class ScorchBattlefield {
     }
   }
 
+  /**
+   * Scorch units for a game player.
+   *
+   * @param config The configuration used to determine which units to scorch for a player.
+   * @param config.battlefieldUnits battlefieldUnits The Unit database documents currently on the battlefield for all players.
+   * @param config.round The current round of the game.
+   * @param config.logPrefix What to prepend log output statements with.
+   * @param config.scorchingUnit The Unit being deployed to the battlefield with a scorching effect.
+   * @param config.strongestUnitIdsOnBattlefield A list of the strongest units across the entire battlefield which may be used to determine which of the players units should be scorched.
+   */
   private static scorchUnitsForPlayer({
     battlefieldUnits,
     player,
@@ -195,6 +231,15 @@ export default class ScorchBattlefield {
     }
   }
 
+  /**
+   * Gets the rows eligible to be scorched based on the scorching unit.
+   *
+   * @param config The configuration used to determine which rows are eligible to be scorched.
+   * @param config.logPrefix What to prepend log output statements with.
+   * @param config.playerRound The current round for the player to get scorch eligible rows for.
+   * @param config.scorchingUnit The Unit being deployed to the battlefield with a scorching effect.
+   * @returns Rows eligible to be scorched.
+   */
   private static getRowsToScorch({
     logPrefix,
     playerRound,
@@ -236,6 +281,16 @@ export default class ScorchBattlefield {
     return rows
   }
 
+  /**
+   * Adds a row to the rows input parameter if it is eligible to be scorched.
+   *
+   * @param config The configuration used to determine if a row is eligible to be scorched and should be added to the rows input parameter.
+   * @param config.combat The combat row currently under consideration for eligibility of scorching.
+   * @param config.logPrefix What to prepend log output statements with.
+   * @param config.playerCombatRow The row containing the units which may be scorched if eligible.
+   * @param config.rows The rows eligible to be scorched, to which the playerCombatRow input parameter may be added.
+   * @param config.scorchingUnit The Unit being deployed to the battlefield with a scorching effect.
+   */
   private static addRowToScorchIfEligible({
     combat,
     logPrefix,
@@ -274,6 +329,14 @@ export default class ScorchBattlefield {
     }
   }
 
+  /**
+   * Remove the given units from a players row, returning those GameUnits removed.
+   *
+   * @param config The configuration used to remove units from a player row.
+   * @param config.row The player row to remove units from.
+   * @param config.unitIdsToScorch The list of unit IDs to remove from the player row.
+   * @returns A list of all GameUnits removed from the player row.
+   */
   private static scorchUnitsInRow({
     row,
     unitIdsToScorch,

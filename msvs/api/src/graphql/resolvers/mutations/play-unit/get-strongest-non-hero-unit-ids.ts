@@ -1,9 +1,21 @@
 import { GameUnitDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { getLogger } from 'log4js'
 
+/**
+ * A class for retrieving the strongest non-hero Unit ids in a given list of GameUnits.
+ */
 export default class GetStrongestNonHeroUnitIds {
   private static logger = getLogger('GetStrongestNonHeroUnitIds')
 
+  /**
+   * Retrieves the strongest non-hero units from a list of GameUnit database documents.
+   *
+   * @param config The configuration used to get the strongest non-hero units.
+   * @param config.gameUnits The list of GameUnit databaes documents to get the strongest non-hero units from.
+   * @param config.logPrefix What to prepend to log output statements.
+   * @param config.units The list of Unit database objects matching the GameUnit database objects to determine their strength.
+   * @returns A list of the strongest units which are not heros.
+   */
   static getStrongestNonHeroUnitIds({
     gameUnits,
     logPrefix,

@@ -923,6 +923,52 @@ test('Play unit after session expires', async (t) => {
   await gameManager.verify({})
 })
 
+test('Play Scorch after session expires', async (t) => {
+  const unitName1 = 'Rainfarn'
+  const unitName2 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2],
+    },
+    opponent: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.initialize({})
+  await gameManager.deploy({ unitName: unitName1 })
+  await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
+
+  await GamePage.moveUnit({
+    unitName: unitName2,
+    row: Combat.Close,
+  })
+  await E2eUtil.verifyCurrentUrl(GamePage.getUrl(gameManager.gameId))
+  await GamePage.verifyHistoryError(`Error playing unit "${unitName2}": ${NOT_AUTHENTICATED_MESSAGE}`)
+  await reAuthenticate(gameManager.self.gamePlayer.name, t)
+  E2eHelper.playUnit({
+    player: gameManager.self.gamePlayer,
+    gameDeck: gameManager.self.deck,
+    deckUnit: gameManager.getHandUnit({
+      name: unitName2,
+    }),
+    switchTurnsWith: gameManager.opponent.gamePlayer,
+    moves: gameManager.moves[gameManager.round - 1],
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+        strength: 4,
+      },
+    ],
+  })
+  await gameManager.verify({})
+})
+
 test('Play pass to start round after session expires', async (t) => {
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
