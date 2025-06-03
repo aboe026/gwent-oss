@@ -225,13 +225,6 @@ describe('add-deck-mutation', () => {
         const user = await addUser(name)
         const deckUnits = await getStrengthUnits({ faction: wrongFaction })
 
-        const unitsInput = deckUnits
-          .map(
-            (deckUnit) => `{
-              id: "${deckUnit.unit.id}"
-            }`
-          )
-          .join(',')
         await expect(
           graphql({
             schema,
@@ -240,7 +233,7 @@ describe('add-deck-mutation', () => {
                 name: "${name}",
                 faction: ${faction},
                 leader: "${await getLeaderId({ name: leader })}",
-                units: [${unitsInput}]
+                units: [${getUnitsInput(deckUnits.map((deckUnit) => deckUnit.unit.id))}]
               ) {
                 ${getDeckFragment()}
               }
@@ -258,6 +251,7 @@ describe('add-deck-mutation', () => {
           errors: [
             new GraphQLError(
               deckUnits
+                .filter((deckUnit) => deckUnit.unit.faction.key === wrongFaction)
                 .map(
                   (deckUnit) =>
                     `Invalid faction "${wrongFaction}" for unit "${deckUnit.unit.id}", must be either "${faction}" or "${FactionKey.Neutral}".`
