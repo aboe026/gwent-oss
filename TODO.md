@@ -2,8 +2,18 @@
 
 A list of things to be done in the future.
 
+## Table of Contents
+
+- [Fixes](#fixes)
+- [Features](#features)
+- [External Bugs](#external-bugs)
+
 ## Fixes
 
+Existing problems in the codebase that need to be fixed.
+
+- specify full node version (including minor and patch)
+- change "test-results" to just "results" so only single "t" directory for easier navigation?
 - remove need for classes just for log4js spying
   - have "getLogger" method
     - keeps loggers in memory by name
@@ -50,7 +60,14 @@ A list of things to be done in the future.
 - Have "DateTime" on resolver object map to javascript Date object?
 - Make Combat a type (because of image)
 - If ever want to increase MAX_REDRAWS to greater than 2, need to have different unique constraint than just from/to id. Probably need an id for the redraw object itself.
+- have log4js config be dynamic
+  - target log level of specific classes/loggers
+  - configure while running (need role/admin for that?)
+  - save config in database?
+    - save config in memory as well to reduce database reads?
+      - how to handle changes when multiple instances running?
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
+- dynamically set scenario name for e2e tests based on their fixture name, have it set on context
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
@@ -67,6 +84,8 @@ A list of things to be done in the future.
 
 ## Features
 
+New things that should be added to the codebase.
+
 - for "Move" type, have "impact" field
   - cards removed/added
   - effects applied to other cards
@@ -77,7 +96,6 @@ A list of things to be done in the future.
 - Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
-- if effective strength greater than normal strength, green. If less, red.
 - games list improvements
   - progress bar for game status
   - highlight games waiting on you?
@@ -104,3 +122,17 @@ A list of things to be done in the future.
   - need query to get users
     - restrict to users "friends"?
   - change addGame mutation to accept ids instead of usernames
+
+## External Bugs
+
+Bugs found in external dependencies that have not been resolved (and require workarounds):
+
+| Description                                                                                                                                                                                                              | Workaround                                                                                                                                                                                                                  | Issue Link                                                       |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Webpack cannot reference parent yarn workspace g:ts-node script                                                                                                                                                          | Need to list duplicate `ts-node` devDependency in [msvs/ui/libs/client/package.json](./msvs/ui/libs/client/package.json)                                                                                                    | https://github.com/TypeStrong/ts-loader/issues/1510              |
+| Webpack cannot use typescript references in webpack.config.ts without first building references                                                                                                                          | Need to have `yarn g:tsc --build` before webpack commands in [msvs/ui/libs/client/package.json](./msvs/ui/libs/client/package.json) `build` script (and have to run `yarn g:rimraf build/src` after webpack build finishes) | https://github.com/webpack/webpack/issues/16324                  |
+| Nodemon not restarting on file creation                                                                                                                                                                                  | Need to run `yarn build` in [msvs/api](./msvs/api/) before running `yarn watch` for first time                                                                                                                              | https://github.com/remy/nodemon/issues/2074                      |
+| TestCafe not working on TypeScript files                                                                                                                                                                                 | Need to run `yarn build` on e2e TypeScript files and have TestCafe run using the compiled javascript                                                                                                                        |                                                                  |
+| TestCafe image not working with Yarn PnP                                                                                                                                                                                 | Need to run `yarn build-image` in [test/e2e](./test/e2e/) to build custom docker image to work with Yarn PnP.                                                                                                               | https://github.com/DevExpress/testcafe/issues/7419               |
+| Line endings LF on Windows for codegen output                                                                                                                                                                            | Installed https://www.npmjs.com/package/eol and added as a hook in the [codegen.ts](./libs/graphql-schema/codegen.ts)                                                                                                       | https://github.com/dotansimha/graphql-code-generator/issues/5154 |
+| TestCafe throws error `ERROR Cannot prepare tests due to the following error: The fixture of 'Shows about page without logging in' test (null) is not of expected type (non-null object).` when overriding context type. | Run script `remove-context-overrides` to remove declarations for `test` and `fixture` from built javascript.                                                                                                                |                                                                  |

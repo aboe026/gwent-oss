@@ -35,7 +35,7 @@ export default function App() {
   const { pathname } = useLocation()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [reAuthFuncs, setReAuthFuncs] = useState<Function[]>([])
-  const [preLoginPath] = useState(pathname === ROUTES.Logout.path ? ROUTES.Home.path : pathname)
+  const [preLoginPath, setPreLoginPath] = useState(pathname === ROUTES.Logout.path ? ROUTES.Home.path : pathname)
   const { loading: currentUserLoading, data: currentUserData } = useCurrentUserQuery({
     notifyOnNetworkStatusChange: true, // makes sure "currentUserData" gets set to "undefined" when cache changed
     nextFetchPolicy: 'cache-only', // makes sure the query does not immediately run after cache changed
@@ -54,6 +54,7 @@ export default function App() {
   const authTimedOut = user?.id === AUTH_TIMEOUT_ID
   const loggedIn = !!user?.id && !authTimedOut
   const loginOrSignup = [ROUTES.Login.path, ROUTES.Signup.path].includes(pathname)
+  const justLoggedOut = !user?.id && user?.name
 
   if (currentUserLoading) {
     return (
@@ -83,6 +84,9 @@ export default function App() {
       <ApolloConsumer>
         {(client: ApolloClient<object>) => {
           client.resetStore()
+          if (justLoggedOut) {
+            setPreLoginPath('')
+          }
           return <Navigate to={ROUTES.Login.path} replace />
         }}
       </ApolloConsumer>

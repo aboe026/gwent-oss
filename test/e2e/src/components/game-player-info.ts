@@ -64,8 +64,8 @@ export default class GamePlayerInfo {
       await t.expect(this.elements.TokensLost.exists).notOk()
     }
     if (allReady) {
-      await t.expect(this.elements.TokensWon.count).eql(lives - losses)
-      await t.expect(this.elements.TokensLost.count).eql(losses)
+      await t.expect(this.elements.TokensWon.count).eql(lives - losses, `User "${name}" has correct tokens won`)
+      await t.expect(this.elements.TokensLost.count).eql(losses, `User "${name}" has correct tokens lost`)
       if (score === undefined) {
         await t.expect(this.elements.Score.exists).notOk()
       } else {

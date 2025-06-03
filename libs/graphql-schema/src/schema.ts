@@ -258,7 +258,7 @@ export default gql`
 
   type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
     created: DateTime! @column
-    row: Combat! @column
+    row: Combat @column
     unit: DeckUnit! @column(overrideType: "DeckUnitDbObject")
   }
 

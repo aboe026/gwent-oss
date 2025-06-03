@@ -1,4 +1,6 @@
+import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
+import DeckPage from '../page-objects/deck-page'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import HomePage from '../page-objects/home-page'
@@ -49,4 +51,30 @@ test('Login after direct logout URL redirects to home', async (t) => {
     username,
   })
   await HomePage.verify(username)
+})
+
+test('Redirect to Home page on login after user directly navigates and logs into non-home page', async (t) => {
+  const username1 = `logout-1-${t.ctx.start}`
+  const username2 = `logout-2-${t.ctx.start}`
+  await new ApiClient({}).addUser({
+    name: username1,
+  })
+  await new ApiClient({}).addUser({
+    name: username2,
+  })
+  await E2eUtil.goTo(DeckPage.getUrl())
+  await LoginPage.login({
+    username: username1,
+  })
+  await DeckPage.verify({})
+  await Banner.goTo(Banner.elements.MenuProfile)
+  await ProfilePage.verify({
+    username: username1,
+  })
+  await ProfilePage.logout()
+  await LoginPage.verifyNotLoggedIn({})
+  await LoginPage.login({
+    username: username2,
+  })
+  await HomePage.verify(username2)
 })

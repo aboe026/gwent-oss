@@ -1,15 +1,12 @@
 import ApiClient from '../util/api-client'
+import createGameManager from '../util/game-manager'
 import { Combat, FactionKey, User } from '@gwent/graphql-schema/resolver-typings'
 import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
-import { E2eHelper } from '../util/e2e-helper'
-import E2eUtil from '../util/e2e-util'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import FullCard from '../components/full-card'
-import GamePage, { HistoryMove, HistoryPass } from '../page-objects/game-page'
+import GamePage from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
-import { PlayerTurn } from '../components/game-player-info'
-import { sortObjectArray } from '@gwent/utils'
 
 interface FullCardTestCtx extends E2eCtx {
   scenario: string
@@ -611,265 +608,88 @@ test('Select card for deck', async (t) => {
 })
 
 test('Moving to previous and next units works for a hand card', async (t) => {
-  const client = new ApiClient({
-    username: t.ctx.user.name,
+  const unitName1 = 'Ciaran aep Easnillien'
+  const unitName2 = 'Dennis Cranmer'
+  const unitName3 = 'Yaevinn'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [
+        'Riordain',
+        unitName1,
+        unitName2,
+        unitName3,
+        'Yennefer of Vengerberg',
+        'Eithne',
+        'Iorveth',
+        'Isengrim Faoiltiarna',
+        'Milva',
+        'Saesenthessis',
+      ],
+    },
   })
-  const opponent = await client.addUser({
-    name: `full-card-game-opponent-${t.ctx.start}`,
-  })
-  const deck = await client.addDeck({
-    faction: FactionKey.Monsters,
-    leaderName: 'Eredin Destroyer of Worlds',
-    name: `full-card-game-${t.ctx.start}`,
-    unitNames: [
-      'Botchling',
-      'Celaeno Harpy',
-      'Crone Weavess',
-      'Draug',
-      'Forktail',
-      'Gargoyle',
-      'Ghoul',
-      'Grave Hag',
-      'Griffin',
-      'Harpy',
-      'Ice Giant',
-      'Imlerith',
-      'Kayran',
-      'Leshen',
-      'Nekker',
-      'Plague Maiden',
-      'Toad',
-      'Vampire: Bruxa',
-      'Vampire: Ekimmara',
-      'Vampire: Fleder',
-      'Vampire: Garkain',
-      'Vampire: Katakan',
-    ],
-  })
-  const game = await client.addGame([opponent.name])
-  const gameDeck = await client.setDeck({
-    deckId: deck.id,
-    gameId: game.id,
-  })
-  await E2eUtil.goTo(GamePage.getUrl(game.id))
-  const sortedHand = sortObjectArray({
-    sortProperties: ['unit.strength', 'unit.id'],
-    array: gameDeck.hand,
-  })
-  const previous = sortedHand[0].unit
-  const unit = sortedHand[1].unit
-  const next = sortedHand[2].unit
+  await gameManager.initialize({})
+
   await FullCard.verify({})
-  await GamePage.fullscreenHandCard(unit.name)
-  await FullCard.verify({ unit })
+  await GamePage.fullscreenHandCard(unitName2)
+  await FullCard.verify({
+    unit: gameManager.getHandUnit({
+      name: unitName2,
+    }).unit,
+  })
   await FullCard.next()
-  await FullCard.verify({ unit: next })
+  await FullCard.verify({
+    unit: gameManager.getHandUnit({
+      name: unitName3,
+    }).unit,
+  })
   await FullCard.previous()
-  await FullCard.verify({ unit })
+  await FullCard.verify({
+    unit: gameManager.getHandUnit({
+      name: unitName2,
+    }).unit,
+  })
   await FullCard.previous()
-  await FullCard.verify({ unit: previous })
+  await FullCard.verify({
+    unit: gameManager.getHandUnit({
+      name: unitName1,
+    }).unit,
+  })
   await FullCard.close()
   await FullCard.verify({})
 })
 
 test('Moving to previous and next units works for a combat row card', async (t) => {
-  const clientSelf = new ApiClient({
-    username: t.ctx.user.name,
-  })
-  const opponent = await clientSelf.addUser({
-    name: `${t.ctx.scenario}-opponent-${t.ctx.start}`,
-  })
-  const clientOpponent = new ApiClient({
-    username: opponent.name,
-  })
-  const game = await clientSelf.addGame([opponent.name])
-
-  const deckSelf = await clientSelf.addDeck({
-    faction: FactionKey.ScoiaTael,
-    leaderName: 'Francesca Findabair the Beautiful',
-    name: `${t.ctx.scenario}-self-deck-${Date.now()}`,
-    unitNames: [
-      'Barclay Els',
-      'Ciaran aep Easnillien',
-      'Dennis Cranmer',
-      'Dol Blathanna Archer',
-      'Dol Blathanna Scout',
-      'Eithne',
-      'Emiel Regis Rohellec Terzieff',
-      'Filavandrel aen Fidhail',
-      'Ida Emean aep Sivney',
-      'Iorveth',
-      'Mahakaman Defender',
-      'Mahakaman Defender',
-      'Riordain',
-      'Roach',
-      'Saesenthessis',
-      'Toruviel',
-      'Triss Merigold',
-      'Vesemir',
-      'Vrihedd Brigade Recruit',
-      'Vrihedd Brigade Veteran',
-      'Yaevinn',
-      'Zoltan Chivay',
-    ],
-  })
-  const deckOpponent = await clientOpponent.addDeck({
-    faction: FactionKey.NilfgaardianEmpire,
-    leaderName: 'Emhyr var Emreis the Relentless',
-    name: `${t.ctx.scenario}-opponent-deck-${Date.now()}`,
-    unitNames: [
-      'Albrich',
-      'Assire var Anahid',
-      'Black Infantry Archer',
-      'Cahir Mawr Dyffryn aep Ceallach',
-      'Cynthia',
-      'Emiel Regis Rohellec Terzieff',
-      'Fringilla Vigo',
-      'Heavy Zerrikanian Fire Scorpion',
-      'Letho of Gulet',
-      'Morteisen',
-      'Morvran Voorhis',
-      'Puttkammer',
-      'Renuald aep Matsen',
-      'Roach',
-      'Siege Engineer',
-      'Sweers',
-      'Tibor Eggebracht',
-      'Triss Merigold',
-      'Vanhemar',
-      'Vesemir',
-      'Vreemde',
-      'Zerrikanian Fire Scorpion',
-    ],
-  })
-  const gameDeckSelf = await clientSelf.setDeck({
-    deckId: deckSelf.id,
-    gameId: game.id,
-  })
-  const gameDeckOpponent = await clientOpponent.setDeck({
-    deckId: deckOpponent.id,
-    gameId: game.id,
-  })
-  await clientSelf.setOrder({
-    gameId: game.id,
-    userIds: [t.ctx.user.id, opponent.id],
-  })
-  await clientSelf.ready(game.id)
-  await clientOpponent.ready(game.id)
-
-  const gamePlayerSelf = E2eHelper.getGamePlayer({
-    player: {
-      user: t.ctx.user,
-      client: clientSelf,
-      deck: deckSelf,
-      gameDeck: gameDeckSelf,
+  const unitName1 = 'Ciaran aep Easnillien'
+  const unitName2 = 'Dennis Cranmer'
+  const unitName3 = 'Yaevinn'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName2, unitName3],
     },
-    ready: true,
-    score: 0,
-    passed: false,
-    turn: PlayerTurn.Current,
   })
-  const gamePlayerOpponent = E2eHelper.getGamePlayer({
-    player: {
-      user: opponent,
-      client: clientOpponent,
-      deck: deckOpponent,
-      gameDeck: gameDeckOpponent,
-    },
-    ready: true,
-    score: 0,
-    passed: undefined,
-    turn: undefined,
-  })
-  const moves: (HistoryMove | HistoryPass)[] = []
+  const unit1 = await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  const unit2 = await gameManager.deploy({ unitName: unitName2 })
+  const unit3 = await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.initialize({})
 
-  await E2eUtil.goTo(GamePage.getUrl(game.id))
-  await GamePage.verify({
-    self: gamePlayerSelf,
-    opponent: gamePlayerOpponent,
-    hand: gameDeckSelf.hand,
-    moves: [moves],
-  })
-
-  const sortedHand = sortObjectArray({
-    sortProperties: ['unit.strength', 'unit.id'],
-    array: gameDeckSelf.hand,
-  })
-  const sortedCloseCards = sortedHand.filter((card) => card.unit.combats && card.unit.combats.includes(Combat.Close))
-  if (sortedCloseCards.length < 3) {
-    throw Error('Not enough Close combat cards for test')
-  }
-
-  await GamePage.moveUnit({
-    unitName: sortedCloseCards[0].unit.name,
-    row: Combat.Close,
-  })
-  E2eHelper.playUnit({
-    player: gamePlayerSelf,
-    gameDeck: gameDeckSelf,
-    deckUnit: sortedCloseCards[0],
-    row: Combat.Close,
-    moves,
-    switchTurnsWith: gamePlayerOpponent,
-  })
-
-  await clientOpponent.playPass({
-    gameId: game.id,
-  })
-  E2eHelper.playPass({
-    player: gamePlayerOpponent,
-    round: 1,
-    moves,
-    switchTurnsWith: gamePlayerSelf,
-  })
-
-  await GamePage.moveUnit({
-    unitName: sortedCloseCards[1].unit.name,
-    row: Combat.Close,
-  })
-  E2eHelper.playUnit({
-    player: gamePlayerSelf,
-    gameDeck: gameDeckSelf,
-    deckUnit: sortedCloseCards[1],
-    row: Combat.Close,
-    moves,
-  })
-
-  await GamePage.moveUnit({
-    unitName: sortedCloseCards[2].unit.name,
-    row: Combat.Close,
-  })
-  E2eHelper.playUnit({
-    player: gamePlayerSelf,
-    gameDeck: gameDeckSelf,
-    deckUnit: sortedCloseCards[2],
-    row: Combat.Close,
-    moves,
-  })
-
-  await GamePage.verify({
-    self: gamePlayerSelf,
-    opponent: gamePlayerOpponent,
-    hand: gameDeckSelf.hand,
-    moves: [moves],
-  })
-
-  const previous = sortedCloseCards[0].unit
-  const unit = sortedCloseCards[1].unit
-  const next = sortedCloseCards[2].unit
   await FullCard.verify({})
   await GamePage.fullscreenCombatCard({
-    unitName: unit.name,
+    unitName: unitName2,
     row: Combat.Close,
     self: true,
   })
-  await FullCard.verify({ unit })
+  await FullCard.verify({ unit: unit2.unit })
   await FullCard.next()
-  await FullCard.verify({ unit: next })
+  await FullCard.verify({ unit: unit3.unit })
   await FullCard.previous()
-  await FullCard.verify({ unit })
+  await FullCard.verify({ unit: unit2.unit })
   await FullCard.previous()
-  await FullCard.verify({ unit: previous })
+  await FullCard.verify({ unit: unit1.unit })
   await FullCard.close()
   await FullCard.verify({})
 })

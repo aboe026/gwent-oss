@@ -6,6 +6,34 @@
 
 A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
 
+## Table of Contents
+
+- [Containerization](#containerization)
+  - [Prereqs](#prereqs)
+  - [Build](#build)
+  - [Up](#up)
+  - [Stop](#stop)
+  - [Start](#start)
+  - [Down](#down)
+- [Running Locally](#running-locally)
+  - [Prereqs](#prereqs-1)
+  - [Install](#install)
+  - [Build](#build)
+  - [Start](#start)
+  - [Watch](#watch)
+  - [Run](#run)
+- [Development](#development)
+  - [Prereqs](#prereqs-2)
+  - [Lint](#lint)
+  - [Test](#test)
+    - [Unit](#unit)
+    - [Functional](#functional)
+    - [End to End](#end-to-end)
+  - [Upgrade Dependencies](#upgrade-dependencies)
+  - [Upgrade Yarn](#upgrade-yarn)
+  - [Changes](./CHANGELOG.md)
+  - [To-Do](./TODO.md)
+
 ## Containerization
 
 The fastest way to utilize the project is by running it in a containerized environment.
@@ -180,6 +208,8 @@ yarn lint-fix
 
 #### Unit
 
+Unit tests mock any external dependencies and are meant to just test each unit of code under isolation. This ensures edge cases which might be extremely difficult to target otherwise are tested thoroughly.
+
 To run unit tests, run
 
 ```sh
@@ -216,7 +246,11 @@ _Note_: To run a specific test, execute
 yarn test-unit -t 'test name'
 ```
 
-#### E2E
+#### End to End
+
+End to End (E2E) tests execute against a running instance of a Gwent server and are meant to be as close to a "real world" scenario as tests can possibly be.
+
+The E2E tests are expecting the Gwent server to be configured to use the `gwent-e2e` database.
 
 To run End-To-End (E2E) tests, make sure the services and libraries are [built](#build), then run
 
@@ -255,17 +289,3 @@ yarn set version latest
 ```
 
 then [install](#install) to have the change picked up.
-
-### External Bugs
-
-Bugs found in external dependencies that have not been resolved (and require workarounds):
-
-| Description                                                                                                                                                                                                              | Workaround                                                                                                                                                                                                                  | Issue Link                                                       |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| Webpack cannot reference parent yarn workspace g:ts-node script                                                                                                                                                          | Need to list duplicate `ts-node` devDependency in [msvs/ui/libs/client/package.json](./msvs/ui/libs/client/package.json)                                                                                                    | https://github.com/TypeStrong/ts-loader/issues/1510              |
-| Webpack cannot use typescript references in webpack.config.ts without first building references                                                                                                                          | Need to have `yarn g:tsc --build` before webpack commands in [msvs/ui/libs/client/package.json](./msvs/ui/libs/client/package.json) `build` script (and have to run `yarn g:rimraf build/src` after webpack build finishes) | https://github.com/webpack/webpack/issues/16324                  |
-| Nodemon not restarting on file creation                                                                                                                                                                                  | Need to run `yarn build` in [msvs/api](./msvs/api/) before running `yarn watch` for first time                                                                                                                              | https://github.com/remy/nodemon/issues/2074                      |
-| TestCafe not working on TypeScript files                                                                                                                                                                                 | Need to run `yarn build` on e2e TypeScript files and have TestCafe run using the compiled javascript                                                                                                                        |                                                                  |
-| TestCafe image not working with Yarn PnP                                                                                                                                                                                 | Need to run `yarn build-image` in [test/e2e](./test/e2e/) to build custom docker image to work with Yarn PnP.                                                                                                               | https://github.com/DevExpress/testcafe/issues/7419               |
-| Line endings LF on Windows for codegen output                                                                                                                                                                            | Installed https://www.npmjs.com/package/eol and added as a hook in the [codegen.ts](./libs/graphql-schema/codegen.ts)                                                                                                       | https://github.com/dotansimha/graphql-code-generator/issues/5154 |
-| TestCafe throws error `ERROR Cannot prepare tests due to the following error: The fixture of 'Shows about page without logging in' test (null) is not of expected type (non-null object).` when overriding context type. | Run script `remove-context-overrides` to remove declarations for `test` and `fixture` from built javascript.                                                                                                                |                                                                  |

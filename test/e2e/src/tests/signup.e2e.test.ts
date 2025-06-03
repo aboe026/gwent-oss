@@ -1,7 +1,7 @@
 import ApiClient from '../util/api-client'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
-import env from '../util/env'
+import env from '../util/e2e-env'
 import HomePage from '../page-objects/home-page'
 import SignupPage from '../page-objects/signup-page'
 

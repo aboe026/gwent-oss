@@ -297,7 +297,7 @@ export type MovePass = {
 export type MoveUnit = {
   __typename?: 'MoveUnit';
   created: Scalars['DateTime']['output'];
-  row: Combat;
+  row?: Maybe<Combat>;
   unit: DeckUnit;
 };
 
@@ -941,7 +941,7 @@ export type MovePassResolvers<ContextType = Context, ParentType extends Resolver
 
 export type MoveUnitResolvers<ContextType = Context, ParentType extends ResolversParentTypes['MoveUnit'] = ResolversParentTypes['MoveUnit']> = {
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  row?: Resolver<ResolversTypes['Combat'], ParentType, ContextType>;
+  row?: Resolver<Maybe<ResolversTypes['Combat']>, ParentType, ContextType>;
   unit?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

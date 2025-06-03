@@ -2,7 +2,7 @@ import path from 'path'
 
 import DbProfiler from '@gwent/db-profiler'
 import { E2eCtx, E2ETestController } from './src/util/e2e-ctx'
-import env from './src/util/env'
+import env from './src/util/e2e-env'
 
 const profiler = new DbProfiler({
   mongoUrl: env.MONGO_URL,
@@ -35,6 +35,7 @@ const config: any = {
     test: {
       before: async (t: E2ETestController<E2eCtx, E2eCtx>) => {
         t.ctx.start = new Date().getTime()
+        await t.resizeWindow(env.WINDOW_WIDTH, env.WINDOW_HEIGHT)
       },
     },
   },

@@ -1,5 +1,6 @@
 import ApiClient from '../util/api-client'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import { E2eHelper } from '../util/e2e-helper'
 import { FactionKey, GamePlayer } from '@gwent/graphql-schema/resolver-typings'
 import { FILTER_FIELD } from '@gwent/graphql-schema/games-filter'
 import GamesPage, { GameInList } from '../page-objects/games-page'
@@ -21,7 +22,7 @@ const test = getTestCtx<E2eCtx, GamesFilterTestCtx>()
 fixture('Games Filter')
   .page(GamesPage.getUrl())
   .beforeEach(async (t) => {
-    const scenario = 'games-filter'
+    const scenario = getScenario(t)
     t.ctx.username1 = `${scenario}-user-1-${t.ctx.start}`
     t.ctx.username2 = `${scenario}-user-2-${t.ctx.start}`
     t.ctx.username3 = `${scenario}-user-3-${t.ctx.start}`
@@ -52,146 +53,46 @@ fixture('Games Filter')
       faction: FactionKey.Monsters,
       leaderName: 'Eredin Bringer of Death',
       name: `${scenario}-deck-1-${t.ctx.start}`,
-      unitNames: [
-        'Arachas',
-        'Biting Frost',
-        'Botchling',
-        'Cirilla Fiona Elen Riannon',
-        'Cockatrice',
-        "Commander's Horn",
-        'Crone Whispess',
-        'Draug',
-        'Fiend',
-        'Frightener',
-        "Gaunter O'Dimm",
-        'Ghoul',
-        'Grave Hag',
-        'Imlerith',
-        'Kayran',
-        'Nekker',
-        'Olgierd Von Everec',
-        'Scorch',
-        'Toad',
-        'Triss Merigold',
-        'Vampire: Fleder',
-        'Villentretenmerth',
-      ],
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: client1,
+        faction: FactionKey.Monsters,
+      }),
     })
     const deck2 = await client2.addDeck({
       faction: FactionKey.Skellige,
       leaderName: 'King Bran',
       name: `${scenario}-deck-2-${t.ctx.start}`,
-      unitNames: [
-        'Berserker',
-        'Birna Bran',
-        'Cerys',
-        'Clan Dimun Pirate',
-        'Draig Bon-Dhu',
-        'Ermion',
-        'Hjalmar',
-        'Holger Blackhand',
-        'Kambi',
-        'Light Longship',
-        'Light Longship',
-        'Light Longship',
-        'Mardroeme',
-        'Mardroeme',
-        'Mardroeme',
-        'Olaf',
-        'War Longship',
-        'War Longship',
-        'War Longship',
-        'Young Berserker',
-        'Young Berserker',
-        'Young Berserker',
-      ],
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: client2,
+        faction: FactionKey.Skellige,
+      }),
     })
     const deck3 = await client2.addDeck({
       faction: FactionKey.Monsters,
       leaderName: 'Eredin Bringer of Death',
       name: `${scenario}-deck-3-${t.ctx.start}`,
-      unitNames: [
-        'Arachas',
-        'Biting Frost',
-        'Botchling',
-        'Cirilla Fiona Elen Riannon',
-        'Cockatrice',
-        "Commander's Horn",
-        'Crone Whispess',
-        'Draug',
-        'Fiend',
-        'Frightener',
-        "Gaunter O'Dimm",
-        'Ghoul',
-        'Grave Hag',
-        'Imlerith',
-        'Kayran',
-        'Nekker',
-        'Olgierd Von Everec',
-        'Scorch',
-        'Toad',
-        'Triss Merigold',
-        'Vampire: Fleder',
-        'Villentretenmerth',
-      ],
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: client2,
+        faction: FactionKey.Monsters,
+      }),
     })
     const deck4 = await client1.addDeck({
       faction: FactionKey.ScoiaTael,
       leaderName: 'Francesca Findabair Hope of the Aen Seidhe',
       name: `${scenario}-deck-4-${t.ctx.start}`,
-      unitNames: [
-        'Barclay Els',
-        'Dennis Cranmer',
-        'Dol Blathanna Archer',
-        'Dol Blathanna Scout',
-        'Dwarven Skirmisher',
-        'Eithne',
-        'Elven Skirmisher',
-        'Filavandrel aen Fidhail',
-        'Havekar Healer',
-        'Havekar Smuggler',
-        'Ida Emean aep Sivney',
-        'Iorveth',
-        'Isengrim Faoiltiarna',
-        'Mahakaman Defender',
-        'Milva',
-        'Riordain',
-        'Saesenthessis',
-        'Schirru',
-        'Toruviel',
-        'Vrihedd Brigade Recruit',
-        'Vrihedd Brigade Veteran',
-        'Yaevinn',
-      ],
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: client1,
+        faction: FactionKey.ScoiaTael,
+      }),
     })
     const deck5 = await client3.addDeck({
       faction: FactionKey.Skellige,
       leaderName: 'King Bran',
       name: `${scenario}-deck-5-${t.ctx.start}`,
-      unitNames: [
-        'Berserker',
-        'Birna Bran',
-        'Cerys',
-        'Clan Dimun Pirate',
-        'Draig Bon-Dhu',
-        'Ermion',
-        'Hjalmar',
-        'Holger Blackhand',
-        'Kambi',
-        'Light Longship',
-        'Light Longship',
-        'Light Longship',
-        'Mardroeme',
-        'Mardroeme',
-        'Mardroeme',
-        'Olaf',
-        'War Longship',
-        'War Longship',
-        'War Longship',
-        'Young Berserker',
-        'Young Berserker',
-        'Young Berserker',
-      ],
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: client3,
+        faction: FactionKey.Skellige,
+      }),
     })
     await client1.setDeck({
       deckId: deck1.id,

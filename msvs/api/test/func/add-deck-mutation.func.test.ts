@@ -24,7 +24,7 @@ describe('add-deck-mutation', () => {
                 name: "${name}",
                 faction: ${faction},
                 leader: "${leaderId}",
-                units: [${await getUnitsInput(faction)}]
+                units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
               ) {
                 ${getDeckFragment()}
               }
@@ -86,7 +86,7 @@ describe('add-deck-mutation', () => {
                 name: "${name}",
                 faction: ${faction},
                 leader: "${new ObjectId().toString()}",
-                units: [${await getUnitsInput(faction)}]
+                units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
               ) {
                 ${getDeckFragment()}
               }
@@ -117,7 +117,7 @@ describe('add-deck-mutation', () => {
                 name: "${name}",
                 faction: ${faction},
                 leader: "${leaderId}",
-                units: [${await getUnitsInput(faction)}]
+                units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
               ) {
                 ${getDeckFragment()}
               }
@@ -154,7 +154,9 @@ describe('add-deck-mutation', () => {
                 name: "${name}",
                 faction: ${factionKey},
                 leader: "${leaderId}",
-                units: [${await getUnitsInput(factionKey)}]
+                units: [${getUnitsInput(
+                  (await getStrengthUnits({ faction: factionKey })).map((deckUnit) => deckUnit.unit.id)
+                )}]
               ) {
                 ${getDeckFragment()}
               }
@@ -182,7 +184,7 @@ describe('add-deck-mutation', () => {
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
         const dummyUnitId = new ObjectId()
-        const unitsInput = await getUnitsInput(faction)
+        const unitsInput = getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))
         await expect(
           graphql({
             schema,
@@ -221,15 +223,8 @@ describe('add-deck-mutation', () => {
         const leader = 'Eredin Bringer of Death'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const deckUnits = await getStrengthUnits(wrongFaction)
+        const deckUnits = await getStrengthUnits({ faction: wrongFaction })
 
-        const unitsInput = deckUnits
-          .map(
-            (deckUnit) => `{
-              id: "${deckUnit.unit.id}"
-            }`
-          )
-          .join(',')
         await expect(
           graphql({
             schema,
@@ -238,7 +233,7 @@ describe('add-deck-mutation', () => {
                 name: "${name}",
                 faction: ${faction},
                 leader: "${await getLeaderId({ name: leader })}",
-                units: [${unitsInput}]
+                units: [${getUnitsInput(deckUnits.map((deckUnit) => deckUnit.unit.id))}]
               ) {
                 ${getDeckFragment()}
               }
@@ -256,6 +251,7 @@ describe('add-deck-mutation', () => {
           errors: [
             new GraphQLError(
               deckUnits
+                .filter((deckUnit) => deckUnit.unit.faction.key === wrongFaction)
                 .map(
                   (deckUnit) =>
                     `Invalid faction "${wrongFaction}" for unit "${deckUnit.unit.id}", must be either "${faction}" or "${FactionKey.Neutral}".`
@@ -270,7 +266,7 @@ describe('add-deck-mutation', () => {
         const leader = 'Eredin Bringer of Death'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const deckUnits = await getStrengthUnits(faction)
+        const deckUnits = await getStrengthUnits({ faction })
         const length = 21
         const unitsInput = deckUnits
           .slice(0, length)
@@ -353,7 +349,7 @@ describe('add-deck-mutation', () => {
         const leader = 'Eredin Bringer of Death'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const units = await getStrengthUnits(faction)
+        const units = await getStrengthUnits({ faction })
         units[0].artStyle = -1
         const unitsInput = units
           .map(
@@ -398,7 +394,7 @@ describe('add-deck-mutation', () => {
         const leader = 'Eredin Bringer of Death'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const units = await getStrengthUnits(faction)
+        const units = await getStrengthUnits({ faction })
         units[0].artStyle = 0
         const unitsInput = units
           .map(
@@ -443,7 +439,7 @@ describe('add-deck-mutation', () => {
         const leader = 'Eredin Bringer of Death'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const units = await getStrengthUnits(faction)
+        const units = await getStrengthUnits({ faction })
         units[0].artStyle = units[0].unit.images.length + 1
         const unitsInput = units
           .map(
@@ -502,7 +498,7 @@ describe('add-deck-mutation', () => {
                 name: "${name}",
                 faction: ${faction},
                 leader: "${await getLeaderId({ name: leader })}",
-                units: [${await getUnitsInput(faction)}]
+                units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
               ) {
                 ${getDeckFragment()}
               }
@@ -534,7 +530,7 @@ describe('add-deck-mutation', () => {
               name: "${name}",
               faction: ${faction},
               leader: "${await getLeaderId({ name: leader })}",
-              units: [${await getUnitsInput(faction)}]
+              units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
             ) {
               ${getDeckFragment()}
             }
@@ -553,7 +549,7 @@ describe('add-deck-mutation', () => {
               factionKey: faction,
               leaderName: leader,
               name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              unitNames: (await getStrengthUnits({ faction })).map((unit) => unit.unit.name),
               user,
             }),
           },
@@ -572,7 +568,7 @@ describe('add-deck-mutation', () => {
               name: "${name}",
               faction: ${faction},
               leader: "${await getLeaderId({ name: leader })}",
-              units: [${await getUnitsInput(faction)}]
+              units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
             ) {
               ${getDeckFragment()}
             }
@@ -591,7 +587,7 @@ describe('add-deck-mutation', () => {
               factionKey: faction,
               leaderName: leader,
               name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              unitNames: (await getStrengthUnits({ faction })).map((unit) => unit.unit.name),
               user,
             }),
           },
@@ -610,7 +606,7 @@ describe('add-deck-mutation', () => {
               name: "${name}",
               faction: ${faction},
               leader: "${await getLeaderId({ name: leader })}",
-              units: [${await getUnitsInput(faction)}]
+              units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
             ) {
               ${getDeckFragment()}
             }
@@ -629,7 +625,7 @@ describe('add-deck-mutation', () => {
               factionKey: faction,
               leaderName: leader,
               name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              unitNames: (await getStrengthUnits({ faction })).map((unit) => unit.unit.name),
               user,
             }),
           },
@@ -648,7 +644,7 @@ describe('add-deck-mutation', () => {
               name: "${name}",
               faction: ${faction},
               leader: "${await getLeaderId({ name: leader })}",
-              units: [${await getUnitsInput(faction)}]
+              units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
             ) {
               ${getDeckFragment()}
             }
@@ -667,7 +663,7 @@ describe('add-deck-mutation', () => {
               factionKey: faction,
               leaderName: leader,
               name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              unitNames: (await getStrengthUnits({ faction })).map((unit) => unit.unit.name),
               user,
             }),
           },
@@ -686,7 +682,7 @@ describe('add-deck-mutation', () => {
               name: "${name}",
               faction: ${faction},
               leader: "${await getLeaderId({ name: leader })}",
-              units: [${await getUnitsInput(faction)}]
+              units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
             ) {
               ${getDeckFragment()}
             }
@@ -705,7 +701,7 @@ describe('add-deck-mutation', () => {
               factionKey: faction,
               leaderName: leader,
               name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              unitNames: (await getStrengthUnits({ faction })).map((unit) => unit.unit.name),
               user,
             }),
           },
@@ -717,7 +713,7 @@ describe('add-deck-mutation', () => {
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const deckUnits = await getStrengthUnits(faction)
+        const deckUnits = await getStrengthUnits({ faction })
 
         const unitsInput = deckUnits
           .map(
@@ -753,7 +749,7 @@ describe('add-deck-mutation', () => {
               factionKey: faction,
               leaderName: leader,
               name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              unitNames: (await getStrengthUnits({ faction })).map((unit) => unit.unit.name),
               user,
             }),
           },
@@ -765,7 +761,7 @@ describe('add-deck-mutation', () => {
         const leader = 'King Bran'
         const name = `decks-${Date.now()}`
         const user = await addUser(name)
-        const deckUnits = await getStrengthUnits(faction)
+        const deckUnits = await getStrengthUnits({ faction })
 
         const unitsInput = deckUnits
           .map(
@@ -801,7 +797,7 @@ describe('add-deck-mutation', () => {
               factionKey: faction,
               leaderName: leader,
               name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              unitNames: (await getStrengthUnits({ faction })).map((unit) => unit.unit.name),
               user,
               maxArtStyle: true,
             }),
@@ -830,7 +826,7 @@ describe('add-deck-mutation', () => {
               name: "${name}",
               faction: ${faction},
               leader: "${await getLeaderId({ name: leader })}",
-              units: [${await getUnitsInput(faction)}]
+              units: [${getUnitsInput((await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id))}]
             ) {
               ${getDeckFragment()}
             }
@@ -849,7 +845,7 @@ describe('add-deck-mutation', () => {
               factionKey: faction,
               leaderName: leader,
               name,
-              unitNames: (await getStrengthUnits(faction)).map((unit) => unit.unit.name),
+              unitNames: (await getStrengthUnits({ faction })).map((unit) => unit.unit.name),
               user,
             }),
           },

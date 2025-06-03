@@ -89,7 +89,8 @@ export default function GameHistory({
                   imageTitle = 'Passed'
                 } else if (playerMove.move.__typename === 'MoveUnit') {
                   pointable = true
-                  description = `${playerMove.move.unit.unit.name} deployed as ${toTitleCase(playerMove.move.row)}`
+                  const row = playerMove.move.row ? `as ${toTitleCase(playerMove.move.row)}` : 'to battlefield'
+                  description = `${playerMove.move.unit.unit.name} deployed ${row}`
                   image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
                   imageTitle = playerMove.move.unit.unit.name
                   if (

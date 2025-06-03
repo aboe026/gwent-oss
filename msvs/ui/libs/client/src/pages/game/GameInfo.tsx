@@ -69,9 +69,9 @@ export default function GameInfo({
         isSelf: true,
         faction: gameDeckProps.deck?.from?.faction,
         leader: gameDeckProps.deck?.from?.leader,
-        discard: gameDeckProps.deck?.discard.length,
-        hand: gameDeckProps.deck?.hand.length,
-        undrawn: gameDeckProps.deck?.undrawn.length,
+        discard: self.counts?.discard !== undefined ? self.counts?.discard : gameDeckProps.deck?.discard.length,
+        hand: self.counts?.hand !== undefined ? self.counts?.hand : gameDeckProps.deck?.hand.length,
+        undrawn: self.counts?.undrawn !== undefined ? self.counts?.undrawn : gameDeckProps.deck?.undrawn.length,
         deckName: gameDeckProps.deck?.from?.name,
         deckUpdated: gameDeckProps.deck?.from?.created,
       })}

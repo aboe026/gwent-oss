@@ -155,7 +155,7 @@ export interface PlayUnitProps {
           Exact<{
             game: Scalars['ID']['input']
             unit: Scalars['ID']['input']
-            combat: Combat
+            combat?: InputMaybe<Combat>
           }>,
           DefaultContext,
           ApolloCache<any> // eslint-disable-line @typescript-eslint/no-explicit-any

@@ -17,7 +17,7 @@ import {
   Unit,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
-import env from './env'
+import env from './e2e-env'
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/esm/types'
 
 export default class ApiClient {
@@ -48,6 +48,23 @@ export default class ApiClient {
       }
     )
     return response.addUser
+  }
+
+  async currentUser(): Promise<User> {
+    const response: any = await this._client.request(
+      gql`
+        query CurrentUser {
+          currentUser {
+            ${this.fieldsOnUser()}
+          }
+        }
+      `
+    )
+    const user = response.currentUser
+    if (!user) {
+      throw Error('No user for client')
+    }
+    return user
   }
 
   async getFactions(): Promise<Faction[]> {
@@ -290,7 +307,7 @@ export default class ApiClient {
   }): Promise<Game> {
     const response: any = await this._client.request(
       gql`
-        mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat!) {
+        mutation PlayUnit($game: ID!, $unit: ID!, $combat: Combat) {
           playUnit(game: $game, unit: $unit, combat: $combat) {
             ${this.fieldsOnGame()}
           }

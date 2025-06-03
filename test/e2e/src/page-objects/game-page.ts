@@ -299,8 +299,9 @@ export default class GamePage {
         expected.push(`Round ${i + 1}`)
         for (let j = 0; j < moves[i].length; j++) {
           const move = moves[i][j]
-          if ('combatRow' in move) {
-            const description = `${move.userName}: ${move.unitName} deployed as ${toTitleCase(move.combatRow)}`
+          if ('unitName' in move) {
+            const row = move.combatRow ? `as ${toTitleCase(move.combatRow)}` : 'to battlefield'
+            const description = `${move.userName}: ${move.unitName} deployed ${row}`
             const selected =
               highlightedMove &&
               highlightedMove.playerName === move.userName &&
@@ -445,10 +446,20 @@ export default class GamePage {
         expectedRounds.push(`Round "${i + 1}" self "${rounds[i].creator}" opponent "${rounds[i].opponent}"`)
       }
       const actualRounds: string[] = []
-      const selfRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorRow}`).nth(0)
+      if (!self.name) {
+        throw Error('No name defined for self')
+      }
+      const selfRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorUsername}`)
+        .withText(self.name)
+        .parent(`.${HTML_CLASSES.GameSummaryVictorRow}`)
       const selfRounds = selfRow.find(`.${HTML_CLASSES.GameSummaryVictorRound}`)
       const selfRoundsCount = await selfRounds.count
-      const opponentRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorRow}`).nth(1)
+      if (!opponent.name) {
+        throw Error('No name defined for opponent')
+      }
+      const opponentRow = GamePage.elements.SummaryRoundBreakdown.find(`.${HTML_CLASSES.GameSummaryVictorUsername}`)
+        .withText(opponent.name)
+        .parent(`.${HTML_CLASSES.GameSummaryVictorRow}`)
       const opponentRounds = opponentRow.find(`.${HTML_CLASSES.GameSummaryVictorRound}`)
       const opponentRoundsCount = await opponentRounds.count
       const greaterRowsCount = selfRoundsCount > opponentRoundsCount ? selfRoundsCount : opponentRoundsCount
@@ -698,6 +709,7 @@ export default class GamePage {
     })
     await GamePage.verifyCenter({
       self: {
+        name: self.name,
         ready: self.ready,
         set: !!self.from,
         passed: self.passed,
@@ -706,6 +718,7 @@ export default class GamePage {
         siege: self.siege,
       },
       opponent: {
+        name: opponent.name,
         ready: opponent.ready,
         set: !!opponent.from,
         passed: opponent.passed,
@@ -933,7 +946,11 @@ export default class GamePage {
     await t.click(card)
     if (verify) {
       await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
-      await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      if (unitName === 'Scorch') {
+        await t.expect(GamePage.elements.CenterContainer.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      } else {
+        await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      }
     }
     await t.click(combatRow)
   }
@@ -1049,7 +1066,7 @@ interface Redraws {
 export interface HistoryMove {
   userName: string
   unitName: string
-  combatRow: Combat
+  combatRow?: Combat
 }
 
 export interface HistoryPass {
@@ -1057,23 +1074,23 @@ export interface HistoryPass {
   round: number
 }
 
-interface RoundScores {
+export interface RoundScores {
   creator: number
   opponent: number
 }
 
-interface HighlightedHandCard {
+export interface HighlightedHandCard {
   unitName: string
   dotted?: boolean
   rows?: Combat[] | null
 }
 
-interface HighlightedBattlefieldCard {
+export interface HighlightedBattlefieldCard {
   unitName: string
   row: Combat
 }
 
-interface HighlightedHistory {
+export interface HighlightedHistory {
   playerName: string
   unitName: string
   row: Combat
@@ -1093,6 +1110,7 @@ interface CombatRow {
 }
 
 interface CenterPlayer {
+  name?: string
   set?: boolean
   ready?: boolean
   passed?: boolean

@@ -1,6 +1,6 @@
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
-import env from '../util/env'
+import env from '../util/e2e-env'
 import LoginPage from '../page-objects/login-page'
 import ProfilePage from '../page-objects/profile-page'
 import SignupPage from '../page-objects/signup-page'

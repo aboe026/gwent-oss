@@ -1,6 +1,6 @@
 import ApiClient from './api-client'
 import Banner from '../components/banner'
-import { Combat, Deck, DeckUnit, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, DeckUnit, FactionKey, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import GamePage, { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
@@ -15,7 +15,74 @@ export interface ContextGamePlayer {
   gameDeck: GameDeck
 }
 
+export interface ContextGameDeck {
+  faction: FactionKey
+  leader: string
+  units: string[]
+}
+
 export class E2eHelper {
+  static async isLoggedIn(): Promise<boolean> {
+    const bannerUsernameExists = await Banner.elements.Username.exists
+    if (bannerUsernameExists) {
+      const bannerUserNameValue = await Banner.elements.Username.innerText
+      if (bannerUserNameValue) {
+        return true
+      }
+    }
+    return false
+  }
+
+  static async switchUser({ username, password = 'password' }: { username: string; password?: string }) {
+    await Banner.goTo(Banner.elements.MenuProfile)
+    await ProfilePage.logout()
+    await LoginPage.login({
+      username,
+      password,
+    })
+  }
+  static async getUnitsForDeck({
+    client,
+    faction,
+    specials = [],
+    ignores,
+  }: {
+    client: ApiClient
+    faction: FactionKey
+    specials?: string[]
+    ignores?: string[]
+  }): Promise<string[]> {
+    const units = await client.getUnits({
+      deckable: true,
+      factions: [faction, FactionKey.Neutral],
+    })
+    const unitNames = units.filter((unit) => !unit.special).map((unit) => unit.name)
+    for (const special of specials) {
+      const expectedOccurrences = specials.filter((name) => name === special).length
+      const currentOccurrences = unitNames.filter((name) => name === special).length
+      const possibleOccurrences = units.filter((unit) => unit.name === special).length
+
+      if (expectedOccurrences > possibleOccurrences) {
+        throw Error(
+          `Cannot add "${expectedOccurrences}" instances of "${special}" for deck with faction "${faction}", only "${possibleOccurrences}" instances available`
+        )
+      }
+
+      if (currentOccurrences < expectedOccurrences) {
+        unitNames.push(special)
+      }
+    }
+    if (ignores) {
+      for (const ignore of ignores) {
+        const index = unitNames.indexOf(ignore)
+        if (index >= 0) {
+          unitNames.splice(index, 1)
+        }
+      }
+    }
+    return unitNames
+  }
+
   static async switchToUser({ username, password = 'password' }: { username: string; password?: string }) {
     await Banner.goTo(Banner.elements.MenuProfile)
     await ProfilePage.logout()
@@ -95,6 +162,35 @@ export class E2eHelper {
     }
   }
 
+  static removeUnitFromGamePlayer({
+    player,
+    unitName,
+    strength,
+    row,
+  }: {
+    player: GamePlayerExpected
+    unitName: string
+    strength?: number
+    row: Combat
+  }): void {
+    if (row === Combat.Close) {
+      player.close = {
+        score: (player.close?.score || 0) - (strength || 0),
+        units: [...(player.close?.units || [])].filter((unit) => unit.name !== unitName),
+      }
+    } else if (row === Combat.Ranged) {
+      player.ranged = {
+        score: (player.ranged?.score || 0) - (strength || 0),
+        units: [...(player.ranged?.units || [])].filter((unit) => unit.name !== unitName),
+      }
+    } else if (row === Combat.Siege) {
+      player.siege = {
+        score: (player.siege?.score || 0) - (strength || 0),
+        units: [...(player.siege?.units || [])].filter((unit) => unit.name !== unitName),
+      }
+    }
+  }
+
   static setEffectiveStrength({
     player,
     effectiveStrength,
@@ -106,13 +202,13 @@ export class E2eHelper {
     effectiveStrength: number
     row: Combat
   }) {
-    let currenStrength = 0
+    let currentStrength = 0
     if (row === Combat.Close) {
       const rowUnit = player.close?.units.find((unit) => unit.name === unitName)
       if (!rowUnit) {
         throw Error(`Could not find unit "${unitName}" in "${Combat.Close}" for "${player.name}"`)
       }
-      currenStrength = rowUnit.strength || 0
+      currentStrength = rowUnit.effectiveStrength || rowUnit.strength || 0
       if (player.close) {
         player.close.units = player.close.units.map((unit) => {
           if (unit.name === unitName) {
@@ -120,14 +216,14 @@ export class E2eHelper {
           }
           return unit
         })
-        player.close.score = player.close.score + (effectiveStrength - currenStrength)
+        player.close.score = player.close.score + (effectiveStrength - currentStrength)
       }
     } else if (row === Combat.Ranged) {
       const rowUnit = player.ranged?.units.find((unit) => unit.name === unitName)
       if (!rowUnit) {
         throw Error(`Could not find unit "${unitName}" in "${Combat.Ranged}" for "${player.name}"`)
       }
-      currenStrength = rowUnit.strength || 0
+      currentStrength = rowUnit.effectiveStrength || rowUnit.strength || 0
       if (player.ranged) {
         player.ranged.units = player.ranged.units.map((unit) => {
           if (unit.name === unitName) {
@@ -135,14 +231,14 @@ export class E2eHelper {
           }
           return unit
         })
-        player.ranged.score = player.ranged.score + (effectiveStrength - currenStrength)
+        player.ranged.score = player.ranged.score + (effectiveStrength - currentStrength)
       }
     } else if (row === Combat.Siege) {
       const rowUnit = player.siege?.units.find((unit) => unit.name === unitName)
       if (!rowUnit) {
         throw Error(`Could not find unit "${unitName}" in "${Combat.Siege}" for "${player.name}"`)
       }
-      currenStrength = rowUnit.strength || 0
+      currentStrength = rowUnit.effectiveStrength || rowUnit.strength || 0
       if (player.siege) {
         player.siege.units = player.siege.units.map((unit) => {
           if (unit.name === unitName) {
@@ -150,11 +246,11 @@ export class E2eHelper {
           }
           return unit
         })
-        player.siege.score = player.siege.score + (effectiveStrength - currenStrength)
+        player.siege.score = player.siege.score + (effectiveStrength - currentStrength)
       }
     }
-    if (player.score) {
-      player.score = player.score + (effectiveStrength - currenStrength)
+    if (player.score !== undefined && player.score !== null) {
+      player.score = player.score + (effectiveStrength - currentStrength)
     }
   }
 
@@ -190,6 +286,8 @@ export class E2eHelper {
     gameDeck,
     moves,
     switchTurnsWith,
+    scorching,
+    moraling,
   }: {
     player: GamePlayerExpected
     deckUnit: DeckUnit
@@ -198,6 +296,8 @@ export class E2eHelper {
     gameDeck: GameDeck
     moves?: (HistoryMove | HistoryPass)[]
     switchTurnsWith?: GamePlayerExpected
+    scorching?: ScorchingExpected[]
+    moraling?: MoralingExpected[]
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
     if (!row) {
@@ -206,12 +306,39 @@ export class E2eHelper {
     player.score = (player.score || 0) + strength
     player.hand = (player.hand || STARTING_HAND_SIZE) - 1
     gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
-    E2eHelper.addUnitToGamePlayer({
-      player,
-      unitName: deckUnit.unit.name,
-      row,
-      strength: strength,
-    })
+    if (deckUnit.unit.name === 'Scorch') {
+      player.discard = (player.discard || 0) + 1
+    } else {
+      E2eHelper.addUnitToGamePlayer({
+        player,
+        unitName: deckUnit.unit.name,
+        row,
+        strength,
+      })
+    }
+    if (moraling) {
+      for (const morale of moraling) {
+        E2eHelper.setEffectiveStrength({
+          effectiveStrength: morale.effectiveStrength,
+          player: morale.player,
+          row: morale.row,
+          unitName: morale.name,
+        })
+      }
+    }
+    if (scorching) {
+      for (const scorch of scorching) {
+        const scorchee = scorch.player
+        scorchee.score = (scorchee.score || 0) - (scorch.strength || 0)
+        scorchee.discard = (scorchee.discard || 0) + 1
+        E2eHelper.removeUnitFromGamePlayer({
+          player: scorchee,
+          row: scorch.row,
+          unitName: scorch.name,
+          strength: scorch.strength || 0,
+        })
+      }
+    }
     if (moves) {
       moves.push({
         userName: player.name,
@@ -523,4 +650,18 @@ interface CardPlayer {
 interface CombatCard {
   name: string
   row: Combat
+}
+
+export interface ScorchingExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  strength?: number | null
+}
+
+export interface MoralingExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
 }

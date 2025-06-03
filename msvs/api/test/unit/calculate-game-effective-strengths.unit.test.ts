@@ -12,6 +12,7 @@ import { ObjectId } from 'mongodb'
 
 describe('calculate-game-effective-strengths', () => {
   describe('calculateEffectiveStrengths', () => {
+    const logPrefix = 'log-prefix'
     it('calls to calculateEffectiveStrengthsForRow for each combat type for each player', () => {
       const calculateEffectiveStrengthsForRowSpy = jest
         .spyOn(CalculateGameEffectiveStrengths as any, 'calculateEffectiveStrengthsForRow')
@@ -83,6 +84,7 @@ describe('calculate-game-effective-strengths', () => {
 
       expect(
         CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+          logPrefix,
           effects,
           game,
           units,
@@ -95,6 +97,7 @@ describe('calculate-game-effective-strengths', () => {
             row: game.players[0].rounds[1].close,
             units,
             effects,
+            logPrefix,
           },
         ],
         [
@@ -102,6 +105,7 @@ describe('calculate-game-effective-strengths', () => {
             row: game.players[0].rounds[1].ranged,
             units,
             effects,
+            logPrefix,
           },
         ],
         [
@@ -109,6 +113,7 @@ describe('calculate-game-effective-strengths', () => {
             row: game.players[0].rounds[1].siege,
             units,
             effects,
+            logPrefix,
           },
         ],
         [
@@ -116,6 +121,7 @@ describe('calculate-game-effective-strengths', () => {
             row: game.players[1].rounds[1].close,
             units,
             effects,
+            logPrefix,
           },
         ],
         [
@@ -123,6 +129,7 @@ describe('calculate-game-effective-strengths', () => {
             row: game.players[1].rounds[1].ranged,
             units,
             effects,
+            logPrefix,
           },
         ],
         [
@@ -130,12 +137,14 @@ describe('calculate-game-effective-strengths', () => {
             row: game.players[1].rounds[1].siege,
             units,
             effects,
+            logPrefix,
           },
         ],
       ])
     })
   })
   describe('calculateEffectiveStrengthsForRow', () => {
+    const logPrefix = 'log-prefix'
     describe('no effects', () => {
       it('throws error if unit with ID not contained in units', () => {
         const id = new ObjectId()
@@ -150,6 +159,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(() =>
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects: [],
             row,
             units: [],
@@ -165,6 +175,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects: [],
             row,
             units: [],
@@ -187,6 +198,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects: [],
             row,
             units,
@@ -213,6 +225,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects: [],
             row,
             units,
@@ -247,6 +260,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects: [],
             row,
             units,
@@ -289,6 +303,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -335,6 +350,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -396,6 +412,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -457,6 +474,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -518,6 +536,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -585,6 +604,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -667,6 +687,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -744,6 +765,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -795,6 +817,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -869,6 +892,7 @@ describe('calculate-game-effective-strengths', () => {
 
         expect(
           CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+            logPrefix,
             effects,
             row,
             units,
@@ -940,6 +964,7 @@ describe('calculate-game-effective-strengths', () => {
             effects,
             row,
             units,
+            logPrefix,
           })
         ).toEqual(undefined)
 

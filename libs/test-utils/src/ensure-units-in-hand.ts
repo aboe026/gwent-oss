@@ -62,27 +62,65 @@ export async function ensureUnitsInHand({
         return matchingUnit
       })
 
-      const unitNamesToAddToHand = [...unitNames]
-      const otherUnitNamesInHand = handUnits.map((unit) => unit.name).filter((name) => !unitNames.includes(name))
+      const undrawnToAddToHand: UnitDbObject[] = []
+      const unitsAlreadyInHandMap: {
+        [name: string]: UnitDbObject[]
+      } = {}
 
-      for (const handUnit of handUnits) {
-        const index = unitNamesToAddToHand.indexOf(handUnit.name)
-        if (index >= 0) {
-          unitNamesToAddToHand.splice(index, 1)
+      for (const unitName of unitNames) {
+        const numRequired = unitNames.filter((name) => name === unitName).length
+        const numHanded = handUnits.filter((handUnit) => handUnit.name === unitName).length
+        const numUndrawn = undrawnUnits.filter((undrawnUnit) => undrawnUnit.name === unitName).length
+        const numAdding = undrawnToAddToHand.map((unit) => unit.name).filter((name) => name === unitName).length
+
+        if (numRequired > numHanded + numUndrawn) {
+          throw Error(
+            `Cannot set "${numRequired}" instances of "${unitName}" in hand for "${
+              player.user
+            }", maximum available in deck is "${numHanded + numUndrawn}"`
+          )
+        }
+
+        const alreadyCountedInHand = unitsAlreadyInHandMap[unitName] ? unitsAlreadyInHandMap[unitName].length : 0
+        const canClaimFromHand = numHanded - alreadyCountedInHand
+        if (canClaimFromHand > 0) {
+          // unit already in hand, add to unitsAlreadyInHandMap
+          if (!unitsAlreadyInHandMap[unitName]) {
+            unitsAlreadyInHandMap[unitName] = []
+          }
+          unitsAlreadyInHandMap[unitName].push(
+            handUnits.filter((handUnit) => handUnit.name === unitName)[alreadyCountedInHand]
+          )
+        } else {
+          // unit not in hand, designate undrawn unit to move to hand
+          const undrawnIndex = numUndrawn - numAdding - 1
+          undrawnToAddToHand.push(undrawnUnits.filter((undrawnUnit) => undrawnUnit.name === unitName)[undrawnIndex])
         }
       }
 
-      for (let i = 0; i < unitNamesToAddToHand.length; i++) {
-        const unitNameToAddToHand = unitNamesToAddToHand[i]
-        const unitNameToRemoveFromHand = otherUnitNamesInHand[i]
-        const positionInUndrawn = undrawnUnits.map((unit) => unit.name).indexOf(unitNameToAddToHand)
-        const positionInHand = handUnits.map((unit) => unit.name).indexOf(unitNameToRemoveFromHand)
+      const unitsAlreadyInHandIds: string[] = []
+      for (const name of Object.keys(unitsAlreadyInHandMap)) {
+        for (const unit of unitsAlreadyInHandMap[name]) {
+          unitsAlreadyInHandIds.push(unit._id.toString())
+        }
+      }
+
+      const unitIdsEligibleToRemoveFromHand = handUnits
+        .filter((unit) => !unitsAlreadyInHandIds.includes(unit._id.toString()))
+        .map((unit) => unit._id.toString())
+      const undrawnIdsToMoveToHand = undrawnToAddToHand.map((unit) => unit._id.toString())
+
+      for (let i = 0; i < undrawnToAddToHand.length; i++) {
+        const unitToAddToHand = undrawnIdsToMoveToHand[i]
+        const unitToRemoveFromHand = unitIdsEligibleToRemoveFromHand[i]
+        const positionInUndrawn = undrawnUnits.map((unit) => unit._id.toString()).indexOf(unitToAddToHand)
+        const positionInHand = handUnits.map((unit) => unit._id.toString()).indexOf(unitToRemoveFromHand)
 
         if (positionInUndrawn < 0) {
-          throw Error(`Could not find position in undrawn for unit "${unitNameToAddToHand}"`)
+          throw Error(`Could not find position in undrawn for unit "${unitToAddToHand}"`)
         }
         if (positionInHand < 0) {
-          throw Error(`Could not find position in hand for unit "${unitNameToRemoveFromHand}"`)
+          throw Error(`Could not find position in hand for unit "${unitToRemoveFromHand}"`)
         }
 
         const undrawnUnitToMoveToHand = player.deck.undrawn[positionInUndrawn]

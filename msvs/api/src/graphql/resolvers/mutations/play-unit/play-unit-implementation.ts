@@ -47,15 +47,19 @@ export default class PlayUnitImplementation {
     const unitEffects = await getUnitEffects(roundUnits)
 
     modifyBattlefieldWithNewUnit({
-      game,
+      battlefieldUnits: roundUnits,
       combat,
-      deckUnit,
+      effects: unitEffects,
+      game,
+      logPrefix,
+      newDeckUnit: deckUnit,
     })
 
     CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits],
       effects: unitEffects,
+      logPrefix,
     })
 
     setGameScores(game)

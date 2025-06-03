@@ -1,7 +1,7 @@
 import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
-import env from '../util/env'
+import env from '../util/e2e-env'
 import { HTML_IDS, ROUTES } from '@gwent/constants'
 import { version } from '../../package.json'
 

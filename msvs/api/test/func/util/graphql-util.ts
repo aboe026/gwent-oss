@@ -152,12 +152,24 @@ export async function getUnits({ factions }: { factions: FactionKey[] }): Promis
   return units
 }
 
-export async function getStrengthUnits(faction: FactionKey): Promise<DeckUnit[]> {
+export async function getStrengthUnits({
+  faction,
+  allStrengthUnits = true,
+  unitNames,
+}: {
+  faction: FactionKey
+  allStrengthUnits?: boolean
+  unitNames?: string[]
+}): Promise<DeckUnit[]> {
   const units = await getUnits({
-    factions: [faction],
+    factions: [faction, FactionKey.Neutral],
   })
   return units
-    .filter((unit) => unit.strength !== null || unit.strength !== undefined)
+    .filter((unit) => {
+      const includedByStrength = allStrengthUnits && unit.strength !== null && unit.strength !== undefined
+      const includedByName = unitNames && unitNames.includes(unit.name)
+      return includedByStrength || includedByName
+    })
     .map((unit) => {
       return {
         unit,
@@ -166,13 +178,11 @@ export async function getStrengthUnits(faction: FactionKey): Promise<DeckUnit[]>
     })
 }
 
-export async function getUnitsInput(faction: FactionKey): Promise<string> {
-  const deckUnits = await getStrengthUnits(faction)
-
-  return deckUnits
+export function getUnitsInput(unitIds: string[]): string {
+  return unitIds
     .map(
-      (deckUnit) => `{
-        id: "${deckUnit.unit.id}"
+      (unitId) => `{
+        id: "${unitId}"
       }`
     )
     .join(',')
@@ -183,11 +193,13 @@ export async function addDeck({
   name,
   leader,
   userId,
+  unitIds,
 }: {
   name: string
   faction: FactionKey
   leader?: string
   userId?: string
+  unitIds?: string[]
 }): Promise<Deck> {
   if (!userId) {
     userId = (await addUser(`addDeck-${Date.now()}`)).id
@@ -202,7 +214,9 @@ export async function addDeck({
           name: leader,
           faction,
         })}",
-        units: [${await getUnitsInput(faction)}]
+        units: [${await getUnitsInput(
+          unitIds || (await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id)
+        )}]
       ) {
         ${getDeckFragment()}
       }

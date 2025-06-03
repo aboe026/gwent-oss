@@ -1,5 +1,6 @@
 import ApiClient from '../util/api-client'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import { E2eHelper } from '../util/e2e-helper'
 import { FactionKey, Game, GamePlayer } from '@gwent/graphql-schema/resolver-typings'
 import GamesPage, { GameInList } from '../page-objects/games-page'
 import LoginPage from '../page-objects/login-page'
@@ -17,7 +18,7 @@ const test = getTestCtx<E2eCtx, GamesSortTestCtx>()
 fixture('Games Sort')
   .page(GamesPage.getUrl())
   .beforeEach(async (t) => {
-    const scenario = 'games-sort'
+    const scenario = getScenario(t)
     t.ctx.username = `${scenario}-user-${t.ctx.start}`
     t.ctx.opponent = `${scenario}-opponent-${t.ctx.start}`
     await new ApiClient({}).addUser({
@@ -38,59 +39,19 @@ fixture('Games Sort')
       faction: FactionKey.Monsters,
       leaderName: 'Eredin Bringer of Death',
       name: `${scenario}-deck-1-${t.ctx.start}`,
-      unitNames: [
-        'Arachas',
-        'Biting Frost',
-        'Botchling',
-        'Cirilla Fiona Elen Riannon',
-        'Cockatrice',
-        "Commander's Horn",
-        'Crone Whispess',
-        'Draug',
-        'Fiend',
-        'Frightener',
-        "Gaunter O'Dimm",
-        'Ghoul',
-        'Grave Hag',
-        'Imlerith',
-        'Kayran',
-        'Nekker',
-        'Olgierd Von Everec',
-        'Scorch',
-        'Toad',
-        'Triss Merigold',
-        'Vampire: Fleder',
-        'Villentretenmerth',
-      ],
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: client1,
+        faction: FactionKey.Monsters,
+      }),
     })
     const deck2 = await client2.addDeck({
       faction: FactionKey.Skellige,
       leaderName: 'King Bran',
       name: `${scenario}-deck-2-${t.ctx.start}`,
-      unitNames: [
-        'Berserker',
-        'Birna Bran',
-        'Cerys',
-        'Clan Dimun Pirate',
-        'Draig Bon-Dhu',
-        'Ermion',
-        'Hjalmar',
-        'Holger Blackhand',
-        'Kambi',
-        'Light Longship',
-        'Light Longship',
-        'Light Longship',
-        'Mardroeme',
-        'Mardroeme',
-        'Mardroeme',
-        'Olaf',
-        'War Longship',
-        'War Longship',
-        'War Longship',
-        'Young Berserker',
-        'Young Berserker',
-        'Young Berserker',
-      ],
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: client2,
+        faction: FactionKey.Skellige,
+      }),
     })
     await client1.setDeck({
       deckId: deck1.id,

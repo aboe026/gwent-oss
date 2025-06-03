@@ -230,6 +230,15 @@ export default class UnitResolver {
           }
         } else if (effect.key === EffectKey.Muster && unit.effectPrefix) {
           ability = effect.ability.replace('same name', `"${unit.effectPrefix}" prefix`)
+        } else if (effect.key === EffectKey.Scorch) {
+          if (unit.scorchScope) {
+            const combat = toTitleCase(unit.scorchScope)
+            ability = `Destroys your enemy's strongest ${combat} Combat unit(s)`
+            if (unit.scorchMin) {
+              ability += ` if the combined strength of all their ${combat} Combat units is ${unit.scorchMin} or more`
+            }
+            ability += '.'
+          }
         }
         return {
           ...effect,
