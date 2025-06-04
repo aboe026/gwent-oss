@@ -4027,6 +4027,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@gwent/client-env@workspace:msvs/ui/libs/client/libs/env"
   dependencies:
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@types/jest": "npm:29.5.14"
     jest-junit: "npm:16.0.0"
     ts-jest: "npm:29.3.4"
@@ -4042,6 +4043,7 @@ __metadata:
     "@gwent/constants": "workspace:*"
     "@gwent/env": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@gwent/utils": "workspace:*"
     "@gwent/validators": "workspace:*"
     "@types/jest": "npm:29.5.14"
@@ -4076,6 +4078,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@gwent/constants@workspace:libs/constants"
   dependencies:
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@types/jest": "npm:29.5.14"
     jest-junit: "npm:16.0.0"
     ts-jest: "npm:29.3.4"
@@ -4086,6 +4089,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@gwent/core@workspace:."
   dependencies:
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
     "@types/node": "npm:22.15.29"
@@ -4127,6 +4131,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@gwent/env@workspace:libs/env"
   dependencies:
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@types/jest": "npm:29.5.14"
     dotenv: "npm:16.5.0"
     envalid: "npm:8.0.0"
@@ -4148,6 +4153,7 @@ __metadata:
     "@graphql-codegen/typescript-react-apollo": "npm:4.3.3"
     "@graphql-codegen/typescript-resolvers": "npm:4.5.1"
     "@gwent/constants": "workspace:*"
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@parcel/watcher": "npm:2.5.1"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
@@ -4166,7 +4172,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/lcov-dark-mode@workspace:libs/lcov-dark-mode":
+"@gwent/lcov-dark-mode@workspace:*, @gwent/lcov-dark-mode@workspace:libs/lcov-dark-mode":
   version: 0.0.0-use.local
   resolution: "@gwent/lcov-dark-mode@workspace:libs/lcov-dark-mode"
   dependencies:
@@ -4186,6 +4192,7 @@ __metadata:
     "@gwent/constants": "workspace:*"
     "@gwent/env": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@gwent/test-utils": "workspace:*"
     "@gwent/utils": "workspace:*"
     "@gwent/validators": "workspace:*"
@@ -4230,6 +4237,7 @@ __metadata:
   dependencies:
     "@gwent/client": "workspace:*"
     "@gwent/env": "workspace:*"
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@gwent/utils": "workspace:*"
     "@types/express": "npm:5.0.0"
     "@types/fs-extra": "npm:11.0.4"
@@ -4288,6 +4296,7 @@ __metadata:
   resolution: "@gwent/utils@workspace:libs/utils"
   dependencies:
     "@gwent/graphql-schema": "workspace:*"
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@types/jest": "npm:29.5.14"
     "@types/node": "npm:22.15.29"
     jest-junit: "npm:16.0.0"
@@ -4301,6 +4310,7 @@ __metadata:
   dependencies:
     "@gwent/constants": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
+    "@gwent/lcov-dark-mode": "workspace:*"
     "@types/jest": "npm:29.5.14"
     "@types/node": "npm:22.15.29"
     jest-junit: "npm:16.0.0"

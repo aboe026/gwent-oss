@@ -34,6 +34,7 @@
   "devDependencies": {
     "@gwent/client-env": "workspace:*",
     "@gwent/env": "workspace:*",
+    "@gwent/lcov-dark-mode": "workspace:*",
     "@types/jest": "29.5.14",
     "@types/node": "22.15.29",
     "@types/react": "19.1.6",

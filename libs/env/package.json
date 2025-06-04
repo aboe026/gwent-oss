@@ -19,6 +19,7 @@
     "envalid": "8.0.0"
   },
   "devDependencies": {
+    "@gwent/lcov-dark-mode": "workspace:*",
     "@types/jest": "29.5.14",
     "jest-junit": "16.0.0",
     "ts-jest": "29.3.4"

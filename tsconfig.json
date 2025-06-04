@@ -107,6 +107,7 @@
     { "path": "libs/db-profiler" },
     { "path": "libs/env" },
     { "path": "libs/graphql-schema" },
+    { "path": "libs/lcov-dark-mode" },
     { "path": "libs/utils" },
     { "path": "libs/validators" },
     { "path": "msvs/api" },

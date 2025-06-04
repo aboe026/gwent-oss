@@ -44,6 +44,7 @@
     "watch": "yarn workspaces foreach --worktree --parallel --interlaced run watch"
   },
   "devDependencies": {
+    "@gwent/lcov-dark-mode": "workspace:*",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.14",
     "@types/node": "22.15.29",
