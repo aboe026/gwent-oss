@@ -76,10 +76,6 @@ Existing problems in the codebase that need to be fixed.
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
 - Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)
-- Fix root "yarn build"
-  - right now it runs "yarn build" in all workspaces simultaneously.
-  - This is a problem because there are explicit dependencies on libraries being built first
-  - Need to have a script generate dependency tree, then perform builds in reverse order
 
 ## Features
 
