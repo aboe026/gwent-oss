@@ -108,6 +108,7 @@ node {
                                     stage('Install') {
                                         sh 'node --version'
                                         sh 'yarn --version'
+                                        sh 'corepack enable'
                                         sh 'yarn install --immutable'
                                     }
                                     stage('Lint') {
