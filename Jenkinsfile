@@ -211,7 +211,8 @@ node {
                             composeYaml.services.api.environment.push('SESSION_TIMEOUT_SECONDS=60')
                             composeYaml.networks = [
                                 default: [
-                                    name: uniqueName
+                                    name: uniqueName,
+                                    external: true
                                 ]
                             ]
                             writeYaml file: composeFileName, data: composeYaml, overwrite: true
