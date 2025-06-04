@@ -36,7 +36,7 @@ export default class AppInfo {
           AppInfo.logger.trace(`contents: "${contents}"`)
         }
         try {
-          const json = JSON.parse(contents)
+          const json = JSON.parse(contents.toString())
           if ('buildNumber' in json) {
             const type = typeof json.buildNumber
             if (type === 'number') {

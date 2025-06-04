@@ -14,6 +14,7 @@ const DENY_LIST: string[] = [
   'prettier', // 3.0 broke auto pretty on save (TypeError: Invalid host defined options)
   'replace-in-file', // 8.0.0 switched to ESM, need to switch to ESM to be able to use
   'url-join', // 5.0 switched to ESM, need to switch to ESM to be able to use
+  '@types/url-join', // 5.0 breaks and is not needed for url-join 5.0
 ]
 
 //

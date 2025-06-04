@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "fs-extra": "11.3.0",
-    "mongodb": "6.15.0"
+    "mongodb": "6.16.0"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",
-    "@types/node": "22.13.10"
+    "@types/node": "22.15.29"
   }
 }
