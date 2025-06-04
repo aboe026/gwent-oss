@@ -14,6 +14,7 @@ ENV NODE_ENV=production
 COPY . ${APP_DIR}
 
 WORKDIR ${APP_DIR}/msvs/ui
+RUN corepack enable
 RUN yarn install
 RUN yarn build
 RUN yarn cache clean --all
@@ -35,7 +36,7 @@ LABEL version=${VERSION}
 COPY --from=build ${APP_DIR} ${APP_DIR}
 
 WORKDIR ${APP_DIR}/msvs/ui
-RUN yarn workspaces focus --production
+RUN corepack enable && yarn workspaces focus --production
 
 EXPOSE 3000
 ENV CLIENT_DIR=../../libs/client/build
