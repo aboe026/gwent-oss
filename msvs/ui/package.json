@@ -1,5 +1,5 @@
 {
-  "name": "@gwent/ui",
+  "name": "@gwent/msvs-ui",
   "version": "0.12.1",
   "author": "Adam Boe",
   "description": "React frontend to play Gwent.",
@@ -7,7 +7,7 @@
   "scripts": {
     "build": "yarn g:npm-run-all --parallel build-tsc build-client",
     "build-tsc": "yarn g:tsc --build",
-    "build-client": "yarn workspaces foreach --worktree --exclude @gwent/ui --parallel --interlaced run build",
+    "build-client": "yarn workspaces foreach --worktree --exclude @gwent/msvs-ui --parallel --interlaced run build",
     "build-image": "docker build --tag=gwent-ui:${IMAGE_TAG:-latest} --progress=plain --file=Dockerfile --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0} ${BUILD_OPTIONS:-} ../../",
     "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo && yarn workspaces foreach --worktree --parallel --interlaced run clean",
     "coverage-view": "yarn g:coverage-view",
@@ -18,7 +18,7 @@
     "test-unit": "yarn g:jest --test-type=unit",
     "watch": "yarn g:npm-run-all --parallel watch-tsc watch-client watch-built",
     "watch-built": "cross-env CLIENT_DIR=../../libs/client/build IMAGES_DIR=../../images yarn g:nodemon --watch build --watch libs/client/build/dynamic-env.js --exec 'yarn node build/src/index.js'",
-    "watch-client": "yarn workspaces foreach --worktree --exclude @gwent/ui --parallel --interlaced run watch",
+    "watch-client": "yarn workspaces foreach --worktree --exclude @gwent/msvs-ui --parallel --interlaced run watch",
     "watch-tsc": "yarn g:tsc --build --watch"
   },
   "dependencies": {

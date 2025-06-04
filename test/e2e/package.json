@@ -1,5 +1,5 @@
 {
-  "name": "@gwent/e2e-tests",
+  "name": "@gwent/test-e2e",
   "version": "0.12.1",
   "author": "Adam Boe",
   "description": "E2E browser testing for Gwent website",

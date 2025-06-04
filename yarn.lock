@@ -4023,53 +4023,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@gwent/api@workspace:msvs/api":
-  version: 0.0.0-use.local
-  resolution: "@gwent/api@workspace:msvs/api"
-  dependencies:
-    "@apollo/server": "npm:4.12.2"
-    "@graphql-tools/schema": "npm:10.0.23"
-    "@gwent/constants": "workspace:*"
-    "@gwent/env": "workspace:*"
-    "@gwent/graphql-schema": "workspace:*"
-    "@gwent/test-utils": "workspace:*"
-    "@gwent/utils": "workspace:*"
-    "@gwent/validators": "workspace:*"
-    "@types/basic-auth": "npm:1.1.8"
-    "@types/body-parser": "npm:1.19.5"
-    "@types/cookie-parser": "npm:1.4.8"
-    "@types/cors": "npm:2.8.18"
-    "@types/express": "npm:4.17.21"
-    "@types/express-session": "npm:1.18.1"
-    "@types/figlet": "npm:1.7.0"
-    "@types/fs-extra": "npm:11.0.4"
-    "@types/jest": "npm:29.5.14"
-    "@types/semver": "npm:7.7.0"
-    "@types/ws": "npm:8.18.1"
-    basic-auth: "npm:2.0.1"
-    body-parser: "npm:2.2.0"
-    connect-mongo: "npm:5.1.0"
-    connection-string: "npm:4.4.0"
-    cookie: "npm:1.0.2"
-    cookie-parser: "npm:1.4.7"
-    cors: "npm:2.8.5"
-    express: "npm:5.1.0"
-    express-session: "npm:1.18.1"
-    figlet: "npm:1.8.1"
-    fs-extra: "npm:11.3.0"
-    graphql: "npm:16.11.0"
-    graphql-middleware: "npm:6.1.35"
-    graphql-shield: "npm:7.6.5"
-    graphql-subscriptions: "npm:3.0.0"
-    graphql-ws: "npm:6.0.5"
-    jest-junit: "npm:16.0.0"
-    log4js: "npm:6.9.1"
-    mongodb: "npm:6.16.0"
-    ts-jest: "npm:29.3.4"
-    ws: "npm:8.18.2"
-  languageName: unknown
-  linkType: soft
-
 "@gwent/client-env@workspace:*, @gwent/client-env@workspace:msvs/ui/libs/client/libs/env":
   version: 0.0.0-use.local
   resolution: "@gwent/client-env@workspace:msvs/ui/libs/client/libs/env"
@@ -4170,32 +4123,6 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/e2e-tests@workspace:test/e2e":
-  version: 0.0.0-use.local
-  resolution: "@gwent/e2e-tests@workspace:test/e2e"
-  dependencies:
-    "@gwent/constants": "workspace:*"
-    "@gwent/db-profiler": "workspace:*"
-    "@gwent/env": "workspace:*"
-    "@gwent/graphql-schema": "workspace:*"
-    "@gwent/test-utils": "workspace:*"
-    "@gwent/utils": "workspace:*"
-    "@types/node": "npm:22.15.29"
-    "@types/url-join": "npm:4.0.3"
-    "@types/ws": "npm:8.18.1"
-    cookie: "npm:1.0.2"
-    cross-env: "npm:7.0.3"
-    graphql: "npm:16.11.0"
-    graphql-request: "npm:6.1.0"
-    graphql-ws: "npm:6.0.5"
-    mongodb: "npm:6.16.0"
-    replace-in-file: "npm:7.2.0"
-    testcafe: "npm:3.7.2"
-    url-join: "npm:4.0.1"
-    ws: "npm:8.18.2"
-  languageName: unknown
-  linkType: soft
-
 "@gwent/env@workspace:*, @gwent/env@workspace:libs/env":
   version: 0.0.0-use.local
   resolution: "@gwent/env@workspace:libs/env"
@@ -4250,22 +4177,56 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/test-utils@workspace:*, @gwent/test-utils@workspace:libs/test-utils":
+"@gwent/msvs-api@workspace:msvs/api":
   version: 0.0.0-use.local
-  resolution: "@gwent/test-utils@workspace:libs/test-utils"
+  resolution: "@gwent/msvs-api@workspace:msvs/api"
   dependencies:
+    "@apollo/server": "npm:4.12.2"
+    "@graphql-tools/schema": "npm:10.0.23"
+    "@gwent/constants": "workspace:*"
+    "@gwent/env": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
+    "@gwent/test-utils": "workspace:*"
+    "@gwent/utils": "workspace:*"
+    "@gwent/validators": "workspace:*"
+    "@types/basic-auth": "npm:1.1.8"
+    "@types/body-parser": "npm:1.19.5"
+    "@types/cookie-parser": "npm:1.4.8"
+    "@types/cors": "npm:2.8.18"
+    "@types/express": "npm:4.17.21"
+    "@types/express-session": "npm:1.18.1"
+    "@types/figlet": "npm:1.7.0"
+    "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:29.5.14"
-    "@types/node": "npm:22.15.29"
+    "@types/semver": "npm:7.7.0"
+    "@types/ws": "npm:8.18.1"
+    basic-auth: "npm:2.0.1"
+    body-parser: "npm:2.2.0"
+    connect-mongo: "npm:5.1.0"
+    connection-string: "npm:4.4.0"
+    cookie: "npm:1.0.2"
+    cookie-parser: "npm:1.4.7"
+    cors: "npm:2.8.5"
+    express: "npm:5.1.0"
+    express-session: "npm:1.18.1"
+    figlet: "npm:1.8.1"
+    fs-extra: "npm:11.3.0"
+    graphql: "npm:16.11.0"
+    graphql-middleware: "npm:6.1.35"
+    graphql-shield: "npm:7.6.5"
+    graphql-subscriptions: "npm:3.0.0"
+    graphql-ws: "npm:6.0.5"
     jest-junit: "npm:16.0.0"
+    log4js: "npm:6.9.1"
     mongodb: "npm:6.16.0"
     ts-jest: "npm:29.3.4"
+    ws: "npm:8.18.2"
   languageName: unknown
   linkType: soft
 
-"@gwent/ui@workspace:msvs/ui":
+"@gwent/msvs-ui@workspace:msvs/ui":
   version: 0.0.0-use.local
-  resolution: "@gwent/ui@workspace:msvs/ui"
+  resolution: "@gwent/msvs-ui@workspace:msvs/ui"
   dependencies:
     "@gwent/client": "workspace:*"
     "@gwent/env": "workspace:*"
@@ -4279,6 +4240,45 @@ __metadata:
     jest-junit: "npm:16.0.0"
     log4js: "npm:6.9.1"
     replace-in-file: "npm:7.2.0"
+    ts-jest: "npm:29.3.4"
+  languageName: unknown
+  linkType: soft
+
+"@gwent/test-e2e@workspace:test/e2e":
+  version: 0.0.0-use.local
+  resolution: "@gwent/test-e2e@workspace:test/e2e"
+  dependencies:
+    "@gwent/constants": "workspace:*"
+    "@gwent/db-profiler": "workspace:*"
+    "@gwent/env": "workspace:*"
+    "@gwent/graphql-schema": "workspace:*"
+    "@gwent/test-utils": "workspace:*"
+    "@gwent/utils": "workspace:*"
+    "@types/node": "npm:22.15.29"
+    "@types/url-join": "npm:4.0.3"
+    "@types/ws": "npm:8.18.1"
+    cookie: "npm:1.0.2"
+    cross-env: "npm:7.0.3"
+    graphql: "npm:16.11.0"
+    graphql-request: "npm:6.1.0"
+    graphql-ws: "npm:6.0.5"
+    mongodb: "npm:6.16.0"
+    replace-in-file: "npm:7.2.0"
+    testcafe: "npm:3.7.2"
+    url-join: "npm:4.0.1"
+    ws: "npm:8.18.2"
+  languageName: unknown
+  linkType: soft
+
+"@gwent/test-utils@workspace:*, @gwent/test-utils@workspace:libs/test-utils":
+  version: 0.0.0-use.local
+  resolution: "@gwent/test-utils@workspace:libs/test-utils"
+  dependencies:
+    "@gwent/graphql-schema": "workspace:*"
+    "@types/jest": "npm:29.5.14"
+    "@types/node": "npm:22.15.29"
+    jest-junit: "npm:16.0.0"
+    mongodb: "npm:6.16.0"
     ts-jest: "npm:29.3.4"
   languageName: unknown
   linkType: soft
