@@ -20,4 +20,4 @@ export const REDACTED = '****'
 
 export const GAME_ORDER_COIN_FLIP_DURATION_SECONDS = 5
 
-export { AppRoute, HTML_CLASSES, HTML_IDS, PubSubEvents, ROUTES }
+export { type AppRoute, HTML_CLASSES, HTML_IDS, PubSubEvents, ROUTES }
