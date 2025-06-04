@@ -4,7 +4,7 @@ ARG BUILD=0
 #########
 # BUILD #
 #########
-FROM node:22-alpine AS build
+FROM node:22.16.0-alpine AS build
 
 ARG APP_DIR
 ARG BUILD
@@ -21,7 +21,7 @@ RUN yarn cache clean --all
 ###########
 # RUNTIME #
 ###########
-FROM node:22-alpine
+FROM node:22.16.0-alpine
 
 ARG APP_DIR
 ARG BUILD

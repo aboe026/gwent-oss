@@ -12,7 +12,6 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- specify full node version (including minor and patch)
 - change "test-results" to just "results" so only single "t" directory for easier navigation?
 - remove need for classes just for log4js spying
   - have "getLogger" method
