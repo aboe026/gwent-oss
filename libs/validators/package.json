@@ -19,7 +19,6 @@
     "@gwent/graphql-schema": "workspace:*"
   },
   "devDependencies": {
-    "@gwent/lcov-dark-mode": "workspace:*",
     "@types/jest": "29.5.14",
     "@types/node": "22.15.29",
     "jest-junit": "16.0.0",

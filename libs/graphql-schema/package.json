@@ -58,7 +58,6 @@
     "@graphql-codegen/typescript-operations": "4.6.1",
     "@graphql-codegen/typescript-react-apollo": "4.3.3",
     "@graphql-codegen/typescript-resolvers": "4.5.1",
-    "@gwent/lcov-dark-mode": "workspace:*",
     "@parcel/watcher": "2.5.1",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "29.5.14",

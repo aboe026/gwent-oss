@@ -4,7 +4,7 @@
   "author": "Adam Boe",
   "description": "A recreation of the card game Gwent from The Witcher 3: Wild Hunt",
   "scripts": {
-    "build": "yarn workspaces foreach --worktree --parallel --interlaced --include '@gwent/msvs-*' --include '@gwent/test-*' run build",
+    "build": "yarn workspaces foreach --worktree --parallel --interlaced --include '@gwent/msvs-*' --include '@gwent/test-*' --include @gwent/lcov-dark-mode run build",
     "build-all": "yarn workspaces foreach --worktree --parallel --interlaced run build",
     "build-images": "yarn workspaces foreach --worktree --parallel --interlaced run build-image",
     "build-libs": "yarn workspaces foreach --worktree --parallel --interlaced --exclude '@gwent/msvs-*' --exclude '@gwent/test-*' run build",
