@@ -15,7 +15,7 @@ describe('index', () => {
     process.exitCode = 0
 
     await jest.isolateModules(async () => {
-      await import('../../src/index')
+      require('../../src/index') // eslint-disable-line @typescript-eslint/no-require-imports
     })
 
     await sleep(0.25) // need explicit sleep here because isolateModules does not await :/
@@ -27,8 +27,8 @@ describe('index', () => {
     }))
     process.exitCode = 0
 
-    await jest.isolateModules(async () => {
-      await import('../../src/index')
+    await jest.isolateModules(() => {
+      require('../../src/index') // eslint-disable-line @typescript-eslint/no-require-imports
     })
 
     await sleep(0.25) // need explicit sleep here because isolateModules does not await thrown error :/

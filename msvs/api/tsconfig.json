@@ -11,6 +11,7 @@
     { "path": "../../libs/constants" },
     { "path": "../../libs/env" },
     { "path": "../../libs/graphql-schema" },
+    { "path": "../../libs/lcov-dark-mode" },
     { "path": "../../libs/test-utils" },
     { "path": "../../libs/utils" },
     { "path": "../../libs/validators" }

@@ -5,5 +5,5 @@
   },
   "extends": "../../tsconfig",
   "include": ["src/**/*"],
-  "references": [{ "path": "../../libs/graphql-schema" }]
+  "references": [{ "path": "../graphql-schema" }, { "path": "../lcov-dark-mode" }]
 }

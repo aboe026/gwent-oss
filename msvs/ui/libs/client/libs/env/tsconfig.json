@@ -8,5 +8,6 @@
     "resolveJsonModule": false
   },
   "extends": "../../../../../../tsconfig",
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
+  "references": [{ "path": "../../../../../../libs/lcov-dark-mode" }]
 }
