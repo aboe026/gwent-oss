@@ -9,6 +9,7 @@
   "include": ["src/**/*", "package.json", ".testcaferc.ts"],
   "references": [
     { "path": "../../libs/constants" },
+    { "path": "../../libs/db-profiler" },
     { "path": "../../libs/env" },
     { "path": "../../libs/graphql-schema" },
     { "path": "../../libs/test-utils" },

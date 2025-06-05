@@ -53,7 +53,7 @@ export default class Server {
     Server.app.use(express.static(Server.clientDir))
 
     // necessary to get Route's working properly
-    Server.app.get('*', function (req, res) {
+    Server.app.get('*name', function (req, res) {
       res.sendFile(path.resolve(Server.clientDir, 'index.html'))
     })
 

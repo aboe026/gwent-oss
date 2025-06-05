@@ -164,7 +164,7 @@ describe('server', () => {
       expect(useSpy.mock.calls).toEqual([[undefined]])
       expect(sendFileSpy.mock.calls).toEqual([[resolvedPath]])
       expect(resolveSpy.mock.calls).toEqual([[clientDir, 'index.html']])
-      expect(getSpy.mock.calls).toEqual([['*', expect.any(Function)]])
+      expect(getSpy.mock.calls).toEqual([['*name', expect.any(Function)]])
       expect(envSpy.mock.calls).toEqual([[], [], []])
       expect(listenSpy.mock.calls).toEqual([
         [

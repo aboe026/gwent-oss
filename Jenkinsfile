@@ -7,7 +7,7 @@ import org.aboe026.Xml
 node {
     def workDir = "${WORKSPACE}/${env.BRANCH_NAME}-${env.BUILD_ID}"
     def nodeImage
-    def composeVersion = '2.14.0'
+    def composeVersion = '2.36.2'
     def dockerRegistry = 'localhost:5000'
     def composeFileName = 'docker-compose.yaml'
     def e2eSuites = [
@@ -108,6 +108,7 @@ node {
                                     stage('Install') {
                                         sh 'node --version'
                                         sh 'yarn --version'
+                                        sh 'corepack enable'
                                         sh 'yarn install --immutable'
                                     }
                                     stage('Lint') {
@@ -210,7 +211,8 @@ node {
                             composeYaml.services.api.environment.push('SESSION_TIMEOUT_SECONDS=60')
                             composeYaml.networks = [
                                 default: [
-                                    name: uniqueName
+                                    name: uniqueName,
+                                    external: true
                                 ]
                             ]
                             writeYaml file: composeFileName, data: composeYaml, overwrite: true

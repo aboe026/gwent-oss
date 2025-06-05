@@ -7,5 +7,5 @@
   },
   "extends": "../../tsconfig",
   "include": ["src/**/*", "generated/**/*"],
-  "references": [{ "path": "../../libs/constants" }]
+  "references": [{ "path": "../constants" }]
 }
