@@ -1,6 +1,6 @@
 {
   "name": "@gwent/core",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "author": "Adam Boe",
   "description": "A recreation of the card game Gwent from The Witcher 3: Wild Hunt",
   "scripts": {
@@ -9,7 +9,7 @@
     "build-libs": "yarn workspaces foreach --worktree --parallel --interlaced --topological-dev --exclude '@gwent/msvs-*' --exclude '@gwent/test-*' run build",
     "clean": "npm-run-all clean-children clean-root",
     "clean-children": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent/core run clean",
-    "clean-root": "rimraf coverage test-results",
+    "clean-root": "rimraf coverage results",
     "compose-build": "cd compose && docker compose build",
     "compose-start": "cd compose && docker compose start",
     "compose-stop": "cd compose && docker compose stop",

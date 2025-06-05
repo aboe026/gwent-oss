@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "composite": true,
-    "outDir": "build",
     "module": "ESNext",
     "moduleResolution": "node",
     "target": "es5",

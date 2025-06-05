@@ -1,6 +1,6 @@
 {
   "name": "@gwent/graphql-schema",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "author": "Adam Boe",
   "description": "Schema definitions for GraphQL API",
   "main": "build/src/index.js",
@@ -30,7 +30,7 @@
     "build": "yarn g:npm-run-all --sequential build-codegen build-node",
     "build-codegen": "graphql-codegen --config codegen.ts",
     "build-node": "yarn g:tsc --build",
-    "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo",
+    "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "convert-eol": "yarn g:ts-node scripts/convert-eol.ts",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",

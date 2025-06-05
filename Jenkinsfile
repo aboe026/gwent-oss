@@ -58,8 +58,8 @@ node {
                             testcafeImageTag = "${e2ePackageJson.dependencies.testcafe}--${uniqueName}"
 
                             // explicitly create directories to avoid EACCES: permission denied from testcafe/testcafe container
-                            sh 'mkdir test-results'
-                            sh 'chmod -R 777 test-results'
+                            sh 'mkdir results'
+                            sh 'chmod -R 777 results'
                             sh 'mkdir screenshots'
                             sh 'chmod -R 777 screenshots'
                             sh 'mkdir perf'
@@ -125,7 +125,7 @@ node {
                                             println 'Exception was caught in try block of unit tests stage.'
                                             println err
                                         } finally {
-                                            junit testResults: 'test-results/unit.xml', allowEmptyResults: true
+                                            junit testResults: 'results/unit.xml', allowEmptyResults: true
                                             recordCoverage(
                                                 skipPublishingChecks: true,
                                                 sourceCodeRetention: 'EVERY_BUILD',
@@ -156,7 +156,7 @@ node {
                                             println 'Exception was caught in try block of func tests stage.'
                                             println err
                                         } finally {
-                                            junit testResults: 'test-results/func.xml', allowEmptyResults: true
+                                            junit testResults: 'results/func.xml', allowEmptyResults: true
                                         }
                                     }
                                 }
@@ -392,7 +392,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
                     \'${browser} --ignore-certificate-errors\' \
                     build/src/tests \
                     --config-file=build/.testcaferc.js \
-                    --reporter spec,xunit:test-results/${suiteName}.xml \
+                    --reporter spec,xunit:results/${suiteName}.xml \
                     --quarantine-mode \
                     --screenshots path=screenshots/,takeOnFails=true
             """
@@ -402,7 +402,7 @@ def runE2eTest(String displayName, String suiteName, String browser, String uniq
             println err
         } finally {
             dir('test/e2e') {
-                def filePath = "test-results/${suiteName}.xml"
+                def filePath = "results/${suiteName}.xml"
                 if (fileExists(filePath)) {
                     def contents = readFile filePath
                     if (contents) {

@@ -1,11 +1,9 @@
 {
   "compilerOptions": {
-    "composite": true,
     "jsx": "react-jsx",
     "lib": ["dom", "esnext"],
     "module": "esnext",
-    "moduleResolution": "node",
-    "outDir": "build"
+    "moduleResolution": "node"
   },
   "extends": "../../../../tsconfig",
   "include": ["src/**/*"],

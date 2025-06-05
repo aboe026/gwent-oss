@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.12.2 - 2025-06-04
+
+### Fixed
+
+- Rename test results directory ([#36](https://github.com/aboe026/gwent/pull/36)) (Adam Boe)
+- Fix running tests in non root directory ([#36](https://github.com/aboe026/gwent/pull/36)) (Adam Boe)
+
 ## 0.12.1 - 2025-06-04
 
 ### Fixed

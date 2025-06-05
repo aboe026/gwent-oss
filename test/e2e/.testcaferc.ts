@@ -45,7 +45,7 @@ const config: any = {
     },
     {
       name: 'xunit',
-      output: 'test-results/e2e.xml',
+      output: 'results/e2e.xml',
     },
   ],
   screenshots: {
