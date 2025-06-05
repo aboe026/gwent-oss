@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
-    "composite": true,
     "module": "CommonJS",
-    "moduleResolution": "node",
-    "outDir": "build"
+    "moduleResolution": "node"
   },
   "extends": "../../tsconfig",
   "include": ["src/**/*", "generated/**/*"],

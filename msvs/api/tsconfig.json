@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
-    "composite": true,
     "module": "Node16",
-    "moduleResolution": "node16",
-    "outDir": "build"
+    "moduleResolution": "node16"
   },
   "extends": "../../tsconfig",
   "include": ["package.json", "src/**/*", "src/database/upgrades/resources/*.json"],

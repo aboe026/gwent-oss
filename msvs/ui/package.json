@@ -10,7 +10,7 @@
     "build-client": "yarn workspaces foreach --worktree --parallel --interlaced --topological-dev --exclude @gwent/msvs-ui run build",
     "build-image": "docker build --tag=gwent-ui:${IMAGE_TAG:-latest} --progress=plain --file=Dockerfile --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0} ${BUILD_OPTIONS:-} ../../",
     "clean": "npm-run-all clean-children clean-root",
-    "clean-root": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo",
+    "clean-root": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "clean-children": "yarn workspaces foreach --worktree --parallel --interlaced --exclude @gwent/msvs-ui run clean",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",

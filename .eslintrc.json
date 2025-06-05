@@ -10,7 +10,7 @@
     "generated",
     "logback.log",
     "perf",
-    "test-results",
+    "results",
     "tsconfig.tsbuildinfo"
   ],
   "overrides": [

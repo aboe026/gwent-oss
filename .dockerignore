@@ -23,7 +23,7 @@ logback.log
 **/coverage
 **/perf
 **/test
-**/test-results
+**/results
 
 compose
 node_modules

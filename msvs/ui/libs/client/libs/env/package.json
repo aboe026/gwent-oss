@@ -7,7 +7,7 @@
   "types": "build/src/env.d.ts",
   "scripts": {
     "build": "yarn g:tsc --build",
-    "clean": "yarn g:rimraf build coverage test-results tsconfig.tsbuildinfo",
+    "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",

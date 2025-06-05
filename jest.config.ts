@@ -57,7 +57,7 @@ const config: Config = {
       {
         ancestorSeparator: ' - ',
         classNameTemplate: `${testType}.{classname}`,
-        outputDirectory: 'test-results',
+        outputDirectory: 'results',
         outputName: `${testType}.xml`,
         titleTemplate: '{title}',
       },

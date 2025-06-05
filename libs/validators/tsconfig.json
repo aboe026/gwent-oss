@@ -1,8 +1,4 @@
 {
-  "compilerOptions": {
-    "composite": true,
-    "outDir": "build"
-  },
   "extends": "../../tsconfig",
   "include": ["src/**/*"],
   "references": [{ "path": "../constants" }, { "path": "../graphql-schema" }]
