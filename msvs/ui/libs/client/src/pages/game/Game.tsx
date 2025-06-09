@@ -81,14 +81,8 @@ import './Game.css'
  */
 export default function GamePage() {
   useTitle('Game | Gwent')
-  const [deckListOpen, setDeckListOpen] = useState(false)
-  const [deckEditorOpen, setDeckEditorOpen] = useState(false)
   const [handCardSelected, setHandCardSelected] = useState<DeckUnit | undefined>()
-  const [historyCardSelected, setHistoryCardSelected] = useState<UnitForPlayer | undefined>()
-  const [fullUnit, setFullUnit] = useState<UnitForPlayer | undefined>()
   const [playerOrder, setPlayerOrder] = useState<GamePlayer[]>([])
-  const [coinTossVisible, setCoinTossVisible] = useState(false)
-  const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
   const { checkAuth, user } = useUserContext()
   const { pathname } = useLocation()
   const isNew = pathname.endsWith('/new')
@@ -234,68 +228,6 @@ export default function GamePage() {
       }
     },
   })
-  const currentGame = gameData?.game as Game | undefined
-  const previousGame = usePrevious(currentGame)
-  useEffect(() => {
-    const self = currentGame?.players.find((player) => player.user.name === user?.name)
-    if (currentGame?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing && !self?.ready) {
-      setCoinTossVisible(true)
-      setTimeout(() => setCoinTossVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
-    }
-  }, [currentGame])
-
-  const historyRefs: {
-    [key: string]: RefObject<HTMLDivElement | null>
-  } = {}
-  const movesByRounds: MoveForRound[] = []
-  if (gameData?.game) {
-    const game = gameData?.game
-    for (let i = game.round - 1; i >= 0; i--) {
-      const allPlayerMoves: PlayerMove[] = []
-      for (let j = 0; j < game.players.length; j++) {
-        for (let k = 0; k < game.players[j].rounds[i].moves.length; k++) {
-          const refId = `${i}.${j}.${k}`
-          const ref = createRef<HTMLDivElement>()
-          historyRefs[refId] = ref
-          allPlayerMoves.push({
-            move: game.players[j].rounds[i].moves[k] as Move,
-            playerIndex: j,
-            ref,
-          })
-        }
-      }
-      movesByRounds.push({
-        round: i + 1,
-        playerMoves: sortObjectArray({
-          array: allPlayerMoves,
-          sortProperties: ['move.created'],
-        }),
-      })
-    }
-  }
-
-  function scrollHistoryIntoView({ playerId, unit }: UnitForPlayer) {
-    if (gameData?.game && playerId) {
-      const game = gameData.game
-      const roundIndex = game.round - 1
-      const playerIndex = game.players.map((player) => player.user.id).indexOf(playerId)
-      let moveIndex: number | undefined = undefined
-      for (
-        let i = game.players[playerIndex].rounds[roundIndex].moves.length - 1;
-        i >= 0 && moveIndex === undefined;
-        i--
-      ) {
-        const move = game.players[playerIndex].rounds[roundIndex].moves[i]
-        if (move.__typename === 'MoveUnit' && move.unit.unit.id === unit.unit.id) {
-          moveIndex = i
-        }
-      }
-      if (moveIndex !== undefined) {
-        const stringRefId = `${roundIndex}.${playerIndex}.${moveIndex}`
-        historyRefs[stringRefId].current?.scrollIntoView()
-      }
-    }
-  }
 
   return isNew ? (
     <NewGame
@@ -306,132 +238,96 @@ export default function GamePage() {
       }}
     />
   ) : (
-    renderExistingGame({
-      checkAuth,
-      coinTossVisible,
-      deckEditorOpen,
-      deckListOpen,
-      fullUnit,
-      gameDeckProps: {
+    <ExistingGame
+      checkAuth={checkAuth}
+      gameDeckProps={{
         deck: gameDeckData?.gameDeck as GameDeck | undefined,
         error: gameDeckError,
         loading: gameDeckLoading,
         refetch: gameDeckRefetch,
-      },
-      gameProps: {
-        game: currentGame,
+      }}
+      gameProps={{
+        game: gameData?.game as Game | undefined,
         error: gameError,
         loading: gameLoading,
         refetch: gameRefetch,
-      },
-      handCardSelected,
-      historyCardSelected,
-      movesByRounds,
-      passConfirmationOpen,
-      playerOrder,
-      playPassProps: {
+      }}
+      handCardSelected={handCardSelected}
+      playerOrder={playerOrder}
+      playPassProps={{
         playPass,
         error: playPassError,
         loading: playPassLoading,
-      },
-      playUnitProps: {
+      }}
+      playUnitProps={{
         playUnit,
         error: playUnitError,
         loading: playUnitLoading,
-      },
-      readyProps: {
+      }}
+      readyProps={{
         ready,
         error: readyError,
         loading: readyLoading,
-      },
-      redrawProps: {
+      }}
+      redrawProps={{
         redraw,
         error: redrawError,
         loading: redrawLoading,
-      },
-      scrollHistoryIntoView,
-      setCoinTossVisible,
-      setDeckEditorOpen,
-      setDeckListOpen,
-      setDeckProps: {
+      }}
+      setDeckProps={{
         setDeck,
         error: setDeckError,
         loading: setDeckLoading,
-      },
-      setFullUnit,
-      setHandCardSelected,
-      setHistoryCardSelected,
-      setOrderProps: {
+      }}
+      setHandCardSelected={setHandCardSelected}
+      setOrderProps={{
         setOrder,
         loading: setOrderLoading,
         error: setOrderError,
-      },
-      setPassConfirmationOpen,
-      setPlayerOrder,
-      user,
-    })
+      }}
+      setPlayerOrder={setPlayerOrder}
+      user={user}
+    />
   )
 }
 
-function renderExistingGame({
+function ExistingGame({
   checkAuth,
-  coinTossVisible,
-  deckEditorOpen,
-  deckListOpen,
-  fullUnit,
   gameDeckProps,
   gameProps,
   handCardSelected,
-  historyCardSelected,
-  movesByRounds,
-  passConfirmationOpen,
   playerOrder,
   playPassProps,
   playUnitProps,
   redrawProps,
   readyProps,
-  scrollHistoryIntoView,
-  setCoinTossVisible,
-  setDeckEditorOpen,
-  setDeckListOpen,
   setDeckProps,
-  setFullUnit,
   setHandCardSelected,
-  setHistoryCardSelected,
   setOrderProps,
-  setPassConfirmationOpen,
   setPlayerOrder,
   user,
 }: {
   checkAuth: CheckAuth
-  coinTossVisible: boolean
-  deckEditorOpen: boolean
-  deckListOpen: boolean
   gameDeckProps: GameDeckProps
   gameProps: GameProps
-  fullUnit: UnitForPlayer | undefined
   handCardSelected: DeckUnit | undefined
-  historyCardSelected: UnitForPlayer | undefined
-  movesByRounds: MoveForRound[]
-  passConfirmationOpen: boolean
   playerOrder: GamePlayer[]
   playPassProps: PlayPassProps
   playUnitProps: PlayUnitProps
   readyProps: ReadyProps
   redrawProps: RedrawProps
-  scrollHistoryIntoView: (args: UnitForPlayer) => void
-  setCoinTossVisible: Dispatch<SetStateAction<boolean>>
-  setDeckEditorOpen: Dispatch<SetStateAction<boolean>>
-  setDeckListOpen: Dispatch<SetStateAction<boolean>>
   setDeckProps: SetDeckProps
-  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
-  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setOrderProps: SetOrderProps
-  setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
   setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
   user: User | null | undefined
 }) {
+  const [deckListOpen, setDeckListOpen] = useState(false)
+  const [deckEditorOpen, setDeckEditorOpen] = useState(false)
+  const [historyCardSelected, setHistoryCardSelected] = useState<UnitForPlayer | undefined>()
+  const [coinTossVisible, setCoinTossVisible] = useState(false)
+  const [fullUnit, setFullUnit] = useState<UnitForPlayer | undefined>()
+  const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
   const { game } = gameProps
   const resolvedGameError = getApolloError(gameProps.error)
   const resolvedGameDeckError = getApolloError(gameDeckProps.error)
@@ -462,6 +358,66 @@ function renderExistingGame({
   })
   const battlefieldHighlighted = handCardSelected && handCardSelected.unit.name === 'Scorch'
   const isTurn = game?.turn?.user.id === self?.user.id
+
+  const previousGame = usePrevious(game)
+  useEffect(() => {
+    const self = game?.players.find((player) => player.user.name === user?.name)
+    if (game?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing && !self?.ready) {
+      setCoinTossVisible(true)
+      setTimeout(() => setCoinTossVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
+    }
+  }, [game])
+
+  const historyRefs: {
+    [key: string]: RefObject<HTMLDivElement | null>
+  } = {}
+  const movesByRounds: MoveForRound[] = []
+  if (game) {
+    for (let i = game.round - 1; i >= 0; i--) {
+      const allPlayerMoves: PlayerMove[] = []
+      for (let j = 0; j < game.players.length; j++) {
+        for (let k = 0; k < game.players[j].rounds[i].moves.length; k++) {
+          const refId = `${i}.${j}.${k}`
+          const ref = createRef<HTMLDivElement>()
+          historyRefs[refId] = ref
+          allPlayerMoves.push({
+            move: game.players[j].rounds[i].moves[k] as Move,
+            playerIndex: j,
+            ref,
+          })
+        }
+      }
+      movesByRounds.push({
+        round: i + 1,
+        playerMoves: sortObjectArray({
+          array: allPlayerMoves,
+          sortProperties: ['move.created'],
+        }),
+      })
+    }
+  }
+
+  function scrollHistoryIntoView({ playerId, unit }: UnitForPlayer) {
+    if (game && playerId) {
+      const roundIndex = game.round - 1
+      const playerIndex = game.players.map((player) => player.user.id).indexOf(playerId)
+      let moveIndex: number | undefined = undefined
+      for (
+        let i = game.players[playerIndex].rounds[roundIndex].moves.length - 1;
+        i >= 0 && moveIndex === undefined;
+        i--
+      ) {
+        const move = game.players[playerIndex].rounds[roundIndex].moves[i]
+        if (move.__typename === 'MoveUnit' && move.unit.unit.id === unit.unit.id) {
+          moveIndex = i
+        }
+      }
+      if (moveIndex !== undefined) {
+        const stringRefId = `${roundIndex}.${playerIndex}.${moveIndex}`
+        historyRefs[stringRefId].current?.scrollIntoView()
+      }
+    }
+  }
 
   return gameProps.loading || gameDeckProps.loading ? (
     <Centered>
