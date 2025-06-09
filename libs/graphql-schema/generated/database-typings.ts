@@ -267,6 +267,13 @@ export type GameUnitRedrawn = {
   to: DeckUnit;
 };
 
+/** A unit which was impacted by another unit. */
+export type Impact = {
+  __typename?: 'Impact';
+  unit: GameUnit;
+  user: User;
+};
+
 export type Leader = {
   __typename?: 'Leader';
   ability: Scalars['String']['output'];
@@ -295,6 +302,7 @@ export type MovePass = {
 export type MoveUnit = {
   __typename?: 'MoveUnit';
   created: Scalars['DateTime']['output'];
+  impacts?: Maybe<Array<Impact>>;
   row?: Maybe<Combat>;
   unit: DeckUnit;
 };
@@ -689,6 +697,11 @@ export type GameUnitEffectDbObject = {
   total: number,
 };
 
+export type ImpactDbObject = {
+  unit: GameUnitDbObject,
+  user: ObjectId,
+};
+
 export type LeaderDbObject = {
   ability: string,
   created: any,
@@ -717,6 +730,7 @@ export type MovePassDbObject = {
 
 export type MoveUnitDbObject = {
   created: any,
+  impacts?: Array<ImpactDbObject>,
   row?: Maybe<string>,
   unit: DeckUnitDbObject,
   type: MoveType,

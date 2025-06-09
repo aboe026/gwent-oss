@@ -80,9 +80,39 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
+- is there even a need to keep "effect" on "impact"? Can't it be derived from deck unit effects?
+- click on impact to highlight battlefield card?
+- search bar for history?
+  - only show moves with matching unit name or impact with unit name
 - for "Move" type, have "impact" field
   - cards removed/added
   - effects applied to other cards
+- for "MoveUnit" type, have "reason" field
+
+  ```
+  enum MoveType {
+    "Deployment by a game player to the battlefield."
+    DEPLOY
+    "Mustered when matching Muster unit added to battlefield."
+    MUSTER
+    "Revived after Medic added to battlefield."
+    REVIVE
+    "Summoned when matching Avenger unit removed from battlefield."
+    SUMMON
+    "Transformed when Mardroeme unit added to battlefield row."
+    TRANSFORM
+  }
+
+  type MoveUnitReason @entity {
+    type: MoveType! @column
+    unit: DeckUnit! @column(overrideType: "DeckUnitDbObject")
+  }
+  ```
+
+- Better game summarization (graphs?)
+  - points per round
+  - time per round
+  - efficiency per round?
 - Limit user creation
   - activation code?
   - manual review?

@@ -1,5 +1,11 @@
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
-import { DeckUnitDbObject, EffectDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  DeckUnitDbObject,
+  EffectDbObject,
+  GameDbObject,
+  ImpactDbObject,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import ScorchBattlefield from './scorch-battlefield'
 
 /**
@@ -24,7 +30,7 @@ export default function modifyBattlefieldWithNewUnit({
   game: GameDbObject
   logPrefix: string
   newDeckUnit: DeckUnitDbObject
-}) {
+}): ImpactDbObject[] | undefined {
   for (const player of game.players) {
     if (player.user.toString() === game.turn?.toString()) {
       player.deck.hand = player.deck.hand.filter((handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString())
@@ -39,7 +45,7 @@ export default function modifyBattlefieldWithNewUnit({
     }
   }
 
-  ScorchBattlefield.scorchBattlefield({
+  return ScorchBattlefield.scorchBattlefield({
     battlefieldUnits,
     effects,
     game,

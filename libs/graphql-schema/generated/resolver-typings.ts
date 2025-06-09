@@ -269,6 +269,13 @@ export type GameUnitRedrawn = {
   to: DeckUnit;
 };
 
+/** A unit which was impacted by another unit. */
+export type Impact = {
+  __typename?: 'Impact';
+  unit: GameUnit;
+  user: User;
+};
+
 export type Leader = {
   __typename?: 'Leader';
   ability: Scalars['String']['output'];
@@ -297,6 +304,7 @@ export type MovePass = {
 export type MoveUnit = {
   __typename?: 'MoveUnit';
   created: Scalars['DateTime']['output'];
+  impacts?: Maybe<Array<Impact>>;
   row?: Maybe<Combat>;
   unit: DeckUnit;
 };
@@ -653,7 +661,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping of union types */
 export type ResolversUnionTypes<_RefType extends Record<string, unknown>> = {
   EffectReason: ( EffectFromLeader ) | ( EffectFromUnit );
-  Move: ( MoveLeader ) | ( MovePass ) | ( MoveUnit );
+  Move: ( MoveLeader ) | ( MovePass ) | ( Omit<MoveUnit, 'impacts'> & { impacts?: Maybe<Array<_RefType['Impact']>> } );
 };
 
 
@@ -688,12 +696,13 @@ export type ResolversTypes = {
   GameUnitEffect: ResolverTypeWrapper<Omit<GameUnitEffect, 'reason'> & { reason: ResolversTypes['EffectReason'] }>;
   GameUnitRedrawn: ResolverTypeWrapper<Omit<GameUnitRedrawn, 'game'> & { game: ResolversTypes['Game'] }>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
+  Impact: ResolverTypeWrapper<Omit<Impact, 'unit'> & { unit: ResolversTypes['GameUnit'] }>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Leader: ResolverTypeWrapper<Leader>;
   Move: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['Move']>;
   MoveLeader: ResolverTypeWrapper<MoveLeader>;
   MovePass: ResolverTypeWrapper<MovePass>;
-  MoveUnit: ResolverTypeWrapper<MoveUnit>;
+  MoveUnit: ResolverTypeWrapper<Omit<MoveUnit, 'impacts'> & { impacts?: Maybe<Array<ResolversTypes['Impact']>> }>;
   Mutation: ResolverTypeWrapper<{}>;
   PlayerCombatRow: ResolverTypeWrapper<Omit<PlayerCombatRow, 'units'> & { units: Array<ResolversTypes['GameUnit']> }>;
   PlayerRound: ResolverTypeWrapper<Omit<PlayerRound, 'close' | 'moves' | 'ranged' | 'siege'> & { close: ResolversTypes['PlayerCombatRow'], moves: Array<ResolversTypes['Move']>, ranged: ResolversTypes['PlayerCombatRow'], siege: ResolversTypes['PlayerCombatRow'] }>;
@@ -739,12 +748,13 @@ export type ResolversParentTypes = {
   GameUnitEffect: Omit<GameUnitEffect, 'reason'> & { reason: ResolversParentTypes['EffectReason'] };
   GameUnitRedrawn: Omit<GameUnitRedrawn, 'game'> & { game: ResolversParentTypes['Game'] };
   ID: Scalars['ID']['output'];
+  Impact: Omit<Impact, 'unit'> & { unit: ResolversParentTypes['GameUnit'] };
   Int: Scalars['Int']['output'];
   Leader: Leader;
   Move: ResolversUnionTypes<ResolversParentTypes>['Move'];
   MoveLeader: MoveLeader;
   MovePass: MovePass;
-  MoveUnit: MoveUnit;
+  MoveUnit: Omit<MoveUnit, 'impacts'> & { impacts?: Maybe<Array<ResolversParentTypes['Impact']>> };
   Mutation: {};
   PlayerCombatRow: Omit<PlayerCombatRow, 'units'> & { units: Array<ResolversParentTypes['GameUnit']> };
   PlayerRound: Omit<PlayerRound, 'close' | 'moves' | 'ranged' | 'siege'> & { close: ResolversParentTypes['PlayerCombatRow'], moves: Array<ResolversParentTypes['Move']>, ranged: ResolversParentTypes['PlayerCombatRow'], siege: ResolversParentTypes['PlayerCombatRow'] };
@@ -912,6 +922,12 @@ export type GameUnitRedrawnResolvers<ContextType = Context, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type ImpactResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Impact'] = ResolversParentTypes['Impact']> = {
+  unit?: Resolver<ResolversTypes['GameUnit'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type LeaderResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Leader'] = ResolversParentTypes['Leader']> = {
   ability?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -941,6 +957,7 @@ export type MovePassResolvers<ContextType = Context, ParentType extends Resolver
 
 export type MoveUnitResolvers<ContextType = Context, ParentType extends ResolversParentTypes['MoveUnit'] = ResolversParentTypes['MoveUnit']> = {
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  impacts?: Resolver<Maybe<Array<ResolversTypes['Impact']>>, ParentType, ContextType>;
   row?: Resolver<Maybe<ResolversTypes['Combat']>, ParentType, ContextType>;
   unit?: Resolver<ResolversTypes['DeckUnit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -1114,6 +1131,7 @@ export type Resolvers<ContextType = Context> = {
   GameUnit?: GameUnitResolvers<ContextType>;
   GameUnitEffect?: GameUnitEffectResolvers<ContextType>;
   GameUnitRedrawn?: GameUnitRedrawnResolvers<ContextType>;
+  Impact?: ImpactResolvers<ContextType>;
   Leader?: LeaderResolvers<ContextType>;
   Move?: MoveResolvers<ContextType>;
   MoveLeader?: MoveLeaderResolvers<ContextType>;

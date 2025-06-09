@@ -7,6 +7,7 @@ import {
   MovePassDbObject,
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import MoveImpactsResolver from './move-impacts-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 
 /**
@@ -59,6 +60,9 @@ export default class PlayerMoveResolver {
             deckUnit: unitMove.unit,
           })),
         row: unitMove.row as Combat,
+        impacts: await MoveImpactsResolver.fromObject({
+          impacts: unitMove.impacts,
+        }),
         __typename: 'MoveUnit',
       }
     }

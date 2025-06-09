@@ -46,7 +46,7 @@ export default class PlayUnitImplementation {
     })
     const unitEffects = await getUnitEffects(roundUnits)
 
-    modifyBattlefieldWithNewUnit({
+    const impacts = modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
       combat,
       effects: unitEffects,
@@ -64,17 +64,19 @@ export default class PlayUnitImplementation {
 
     setGameScores(game)
 
+    const move: MoveUnitDbObject = {
+      created: new Date(),
+      row: combat,
+      unit: {
+        artStyle: deckUnit.artStyle,
+        unit: deckUnit.unit,
+      },
+      impacts,
+      type: MoveType.Unit,
+    }
     addMoveToCurrentPlayer({
       game,
-      move: {
-        created: new Date(),
-        row: combat,
-        unit: {
-          artStyle: deckUnit.artStyle,
-          unit: deckUnit.unit,
-        },
-        type: MoveType.Unit,
-      } as MoveUnitDbObject,
+      move,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

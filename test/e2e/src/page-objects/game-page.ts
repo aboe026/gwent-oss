@@ -327,7 +327,8 @@ export default class GamePage {
             actual.push(await move.innerText)
           } else {
             const movePlayerName = await move.find(`.${HTML_CLASSES.GameHistoryMoveUsername}`).innerText
-            const moveDescription = await move.find(`.${HTML_CLASSES.GameHistoryMoveDescription}`).innerText
+            const moveUnitName = await move.find(`.${HTML_CLASSES.GameHistoryMovePrimaryText}`).innerText
+            const moveReason = await move.find(`.${HTML_CLASSES.GameHistoryMoveSecondaryText}`).innerText
             const highlighted = await move.hasClass(HTML_CLASSES.ItemHighlighted)
             const styles = await move.style
             const isDotted =
@@ -336,7 +337,9 @@ export default class GamePage {
               styles['border-left-style'] === 'dotted' ||
               styles['border-right-style'] === 'dotted'
             actual.push(
-              `${movePlayerName}: ${moveDescription}${highlighted ? ' selected' : ''}${isDotted ? ' dotted' : ''}`
+              `${movePlayerName}: ${moveUnitName} ${moveReason}${highlighted ? ' selected' : ''}${
+                isDotted ? ' dotted' : ''
+              }`
             )
           }
         }
@@ -971,8 +974,9 @@ export default class GamePage {
     for (let j = 1; j < movesCount && !historyMove; j++) {
       const move = roundContainer.child().nth(j)
       const movePlayerName = await move.find(`.${HTML_CLASSES.GameHistoryMoveUsername}`).innerText
-      const moveDescription = await move.find(`.${HTML_CLASSES.GameHistoryMoveDescription}`).innerText
-      const moveText = `${movePlayerName}: ${moveDescription}`
+      const moveUnitName = await move.find(`.${HTML_CLASSES.GameHistoryMovePrimaryText}`).innerText
+      const moveReason = await move.find(`.${HTML_CLASSES.GameHistoryMoveSecondaryText}`).innerText
+      const moveText = `${movePlayerName}: ${moveUnitName} ${moveReason}`
       if (moveText === expectedMoveText) {
         historyMove = move
       }

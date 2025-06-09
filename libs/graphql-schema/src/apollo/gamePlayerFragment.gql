@@ -32,9 +32,29 @@ fragment GamePlayerFragment on GamePlayer {
         unit {
           artStyle
           unit {
-            name
+            effects {
+              image
+              key
+              name
+            }
             id
             images
+            name
+          }
+        }
+        impacts {
+          unit {
+            artStyle
+            unit {
+              name
+              id
+              images
+            }
+            effectiveStrength
+          }
+          user {
+            id
+            name
           }
         }
       }

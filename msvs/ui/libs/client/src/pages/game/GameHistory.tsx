@@ -1,13 +1,15 @@
-import { CgTime } from 'react-icons/cg'
-import { Dispatch, SetStateAction } from 'react'
+import { CgChevronUp, CgChevronDown, CgTime } from 'react-icons/cg'
+import { Dispatch, SetStateAction, useState } from 'react'
 
 import Centered from '../../components/Centered'
-import { DeckUnit, GamePlayer, Game, GameStatus } from '@gwent/graphql-schema/apollo-typings'
+import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
+import { DeckUnit, GamePlayer, Game, GameStatus, Impact, EffectKey, Effect } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from '../../util/error-util'
+import { groupBy, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { MoveForRound, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
-import { toTitleCase } from '@gwent/utils'
+import './GameHistory.css'
 
 export default function GameHistory({
   game,
@@ -72,25 +74,32 @@ export default function GameHistory({
                 const isSelf = gamePlayer.user.name === self.user.name
                 let isSelected = false
                 let isOnBattlefield = false
-                const textClass = `game-history-move-text ${
+                let textClass = `game-history-move-text ${
                   isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'
                 }`
-                let description = ''
+                let primaryText = ''
+                let secondaryText = ''
                 let image = ''
                 let imageTitle = ''
                 let error = false
                 let pointable = false
+                let impacts: Impact[] | undefined | null
+                let deckUnit: DeckUnit | undefined
                 if (playerMove.move.__typename === 'MoveLeader') {
-                  description = `Activated leader ${playerMove.move.leader.name} ability`
+                  primaryText = `Activated leader ${playerMove.move.leader.name} ability`
                   image = playerMove.move.leader.image
                 } else if (playerMove.move.__typename === 'MovePass') {
-                  description = `Passed the rest of round ${movesByRound.round}`
+                  primaryText = `Passed the rest of round ${movesByRound.round}`
                   image = 'images/actions/pass.png'
                   imageTitle = 'Passed'
+                  textClass += ' game-history-move-text-wrappable'
                 } else if (playerMove.move.__typename === 'MoveUnit') {
+                  impacts = playerMove.move.impacts
+                  deckUnit = playerMove.move.unit
                   pointable = true
-                  const row = playerMove.move.row ? `as ${toTitleCase(playerMove.move.row)}` : 'to battlefield'
-                  description = `${playerMove.move.unit.unit.name} deployed ${row}`
+                  primaryText = playerMove.move.unit.unit.name
+                  const placement = playerMove.move.row ? `as ${toTitleCase(playerMove.move.row)}` : 'to battlefield'
+                  secondaryText = `deployed ${placement}`
                   image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
                   imageTitle = playerMove.move.unit.unit.name
                   if (
@@ -113,54 +122,79 @@ export default function GameHistory({
                     isOnBattlefield = userUnitsOnBattlefield.includes(playerMove.move.unit.unit.id)
                   }
                 } else {
-                  description = `Invalid move type: "${playerMove.move.__typename}"`
+                  primaryText = `Invalid move type: "${playerMove.move.__typename}"`
                   error = true
                 }
+                const playerClass = isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
 
                 return (
-                  <div
-                    key={`r${movesByRound.round}-i${index}`}
-                    ref={playerMove.ref}
-                    className={`${HTML_CLASSES.GameHistoryMove} ${
-                      isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
-                    } ${isSelected ? 'item-highlighted' : ''} ${pointable ? 'pointable' : ''}`}
-                    style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
-                    title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
-                    onClick={() => {
-                      if (playerMove.move.__typename === 'MoveUnit') {
-                        if (
-                          historyCardSelected &&
-                          historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
-                          historyCardSelected.playerId === gamePlayer.user.id
-                        ) {
-                          setHistoryCardSelected(undefined)
-                        } else {
-                          setHistoryCardSelected({
-                            playerId: gamePlayer.user.id,
-                            unit: playerMove.move.unit,
-                          })
+                  <div key={`r${movesByRound.round}-i${index}`} className={HTML_CLASSES.GameHistoryMoveContainer}>
+                    <div
+                      ref={playerMove.ref}
+                      className={`game-history-move-unit ${isSelected ? 'item-highlighted' : ''} ${
+                        pointable ? 'pointable' : ''
+                      }`}
+                      style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
+                      title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
+                      onClick={() => {
+                        if (playerMove.move.__typename === 'MoveUnit') {
+                          if (
+                            historyCardSelected &&
+                            historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
+                            historyCardSelected.playerId === gamePlayer.user.id
+                          ) {
+                            setHistoryCardSelected(undefined)
+                          } else {
+                            setHistoryCardSelected({
+                              playerId: gamePlayer.user.id,
+                              unit: playerMove.move.unit,
+                            })
+                          }
+                          setHandCardSelected(undefined)
                         }
-                        setHandCardSelected(undefined)
-                      }
-                    }}
-                  >
-                    <div className="game-history-move-image-container-outer">
-                      <div className="game-history-move-image-container-inner">
-                        {image && <img className="game-history-move-image" src={image} title={imageTitle} />}
+                      }}
+                    >
+                      <div className={`game-history-move-overview ${playerClass}`}>
+                        <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
+                          {image && <img className="game-history-move-image" src={image} title={imageTitle} />}
+                        </ContainerFixedAspectRatio>
+                        <div className="game-history-move-user-description">
+                          <div
+                            className={`${textClass} ${HTML_CLASSES.GameHistoryMoveUsername}`}
+                            title={gamePlayer.user.name}
+                          >
+                            {gamePlayer.user.name}
+                          </div>
+                          <div className="game-history-move-texts">
+                            <div
+                              className={`${textClass} ${error ? 'error-text' : ''} ${
+                                HTML_CLASSES.GameHistoryMovePrimaryText
+                              }`}
+                              title={primaryText}
+                            >
+                              {primaryText}
+                            </div>
+                            {secondaryText && (
+                              <div
+                                className={`${textClass} ${HTML_CLASSES.GameHistoryMoveSecondaryText}`}
+                                title={secondaryText}
+                              >
+                                {secondaryText}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="game-history-move-user-description">
-                      <div className={`${textClass} ${HTML_CLASSES.GameHistoryMoveUsername}`}>
-                        {gamePlayer.user.name}
-                      </div>
-                      <div
-                        className={`${textClass} ${error ? 'error-text' : ''} ${
-                          HTML_CLASSES.GameHistoryMoveDescription
-                        }`}
-                      >
-                        {description}
-                      </div>
-                    </div>
+                    {deckUnit &&
+                      hasImpactableEffect({
+                        deckUnit,
+                      }) &&
+                      renderImpact({
+                        deckUnit,
+                        impacts,
+                        self,
+                      })}
                   </div>
                 )
               })}
@@ -169,5 +203,178 @@ export default function GameHistory({
         </>
       )}
     </div>
+  )
+}
+
+function renderImpact({
+  deckUnit,
+  impacts,
+  self,
+}: {
+  deckUnit: DeckUnit
+  impacts: Impact[] | null | undefined
+  self: GamePlayer
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const unitsImpacted = impacts ? impacts.length : 0
+  const { effect, error } = getEffectForImpact({
+    deckUnit,
+  })
+
+  if (!effect) {
+    return <div className="error-text">{error}</div>
+  }
+  return (
+    <div className="move-impact-container">
+      <div
+        className={`move-impact-effect-container pointable ${expanded ? '' : 'move-impact-effect-container-collapsed'}`}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="move-impact-effect-member">{unitsImpacted}</div>
+        <img src={effect.image} title={effect.name} className="move-impact-effect-member move-impact-effect-icon" />
+        {expanded ? (
+          <CgChevronUp className="move-impact-effect-member" color="black" title="Collapse" />
+        ) : (
+          <CgChevronDown className="move-impact-effect-member" color="black" title="Expand" />
+        )}
+      </div>
+      {expanded && (
+        <div className="move-impact-units-container">
+          <div className="move-impact-units">
+            {!impacts || impacts.length === 0 ? (
+              <div>
+                {getNoImpactMessage({
+                  effectKey: effect.key,
+                })}
+              </div>
+            ) : (
+              renderImpacts({
+                impacts,
+                self,
+              })
+            )}
+          </div>
+          <div className="move-impact-hide pointable" onClick={() => setExpanded(false)}>
+            <CgChevronUp color="black" title="Collapse" />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function renderImpacts({ impacts, self }: { impacts: Impact[]; self: GamePlayer }) {
+  const groups = groupBy({
+    array: impacts,
+    property: 'user.name',
+  })
+
+  return groups.map((group, groupIndex) => {
+    const sortedUnits = sortObjectArray({
+      array: group,
+      sortProperties: ['unit.unit.name', 'unit.unit.id'],
+    })
+
+    return (
+      <div key={groupIndex}>
+        <div className="move-impact-group-container">
+          {sortedUnits.map((impactedUnit, index) => {
+            const isSelf = impactedUnit.user.name === self.user.name
+            const textClass = `game-history-move-text ${
+              isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'
+            }`
+            const playerClass = isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
+
+            return (
+              <div key={index} className={`move-impact-unit-container ${playerClass}`}>
+                <ContainerFixedAspectRatio aspectRatio="309 / 444" width="30%">
+                  <img
+                    src={impactedUnit.unit.unit.images[impactedUnit.unit.artStyle - 1]}
+                    className="move-impact-unit-image"
+                    title={impactedUnit.unit.unit.name}
+                  />
+                </ContainerFixedAspectRatio>
+                <div className="move-impact-unit-info">
+                  <div className={textClass} title={impactedUnit.user.name}>
+                    {impactedUnit.user.name}
+                  </div>
+                  <div className={textClass} title={impactedUnit.unit.unit.name}>
+                    {impactedUnit.unit.unit.name}
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        {groups.length > 1 && groupIndex < groups.length - 1 && <div className="move-impact-group-separator"></div>}
+      </div>
+    )
+  })
+}
+
+interface EffectForImpact {
+  effect: Effect | null | undefined
+  error: string
+}
+
+function getEffectForImpact({ deckUnit }: { deckUnit: DeckUnit }): EffectForImpact {
+  let error = ''
+  const effects =
+    deckUnit.unit.effects &&
+    deckUnit.unit.effects.filter(
+      (effect) => ![EffectKey.Agile, EffectKey.Avenger, EffectKey.Berserker].includes(effect.key)
+    )
+  if (!effects) {
+    error = 'Could not determine Effect for Impact'
+  } else if (effects.length > 1) {
+    error = `Found multiple Effects for Impact: "${JSON.stringify(effects.map((effect) => effect.key))}`
+  }
+
+  return {
+    effect: effects && effects[0],
+    error,
+  }
+}
+
+function getNoImpactMessage({ effectKey }: { effectKey: EffectKey }): string {
+  let noImpactMessage = ''
+  if (effectKey === EffectKey.Bond) {
+    noImpactMessage = 'No similar units in row to bond with.'
+  } else if (effectKey === EffectKey.Horn) {
+    noImpactMessage = 'No eligible units in row to strengthen.'
+  } else if (effectKey === EffectKey.Mardroeme) {
+    noImpactMessage = 'No Berserkers in row to transform.'
+  } else if (effectKey === EffectKey.Medic) {
+    noImpactMessage = 'No eligible units in Lost to revive.'
+  } else if (effectKey === EffectKey.Muster) {
+    noImpactMessage = 'No eligible units in Draw to muster.'
+  } else if (effectKey === EffectKey.Morale) {
+    noImpactMessage = 'No eligible units in row to strengthen.'
+  } else if (effectKey === EffectKey.Scorch) {
+    noImpactMessage = 'No eligible units on battlefield to scorch.'
+  } else if (effectKey === EffectKey.Spy) {
+    noImpactMessage = 'No units in Draw to add to Hand.'
+  } else if (effectKey === EffectKey.Weather) {
+    noImpactMessage = 'No eligible units on battlefield to weaken.'
+  }
+  return noImpactMessage
+}
+
+function hasImpactableEffect({ deckUnit }: { deckUnit: DeckUnit }): boolean {
+  const effectsWithImpact = [
+    EffectKey.Bond,
+    EffectKey.Decoy,
+    EffectKey.Horn,
+    EffectKey.Mardroeme,
+    EffectKey.Medic,
+    EffectKey.Morale,
+    EffectKey.Muster,
+    EffectKey.Scorch,
+    EffectKey.Spy,
+    EffectKey.Weather,
+  ]
+  return (
+    !!deckUnit.unit.effects &&
+    deckUnit.unit.effects.filter((effect) => effectsWithImpact.includes(effect.key)).length > 0
   )
 }
