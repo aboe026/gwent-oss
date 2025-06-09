@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
-import { DeckUnit, GamePlayer, Game, GameStatus, Impact, EffectKey, Effect } from '@gwent/graphql-schema/apollo-typings'
+import { DeckUnit, GamePlayer, Game, GameStatus, EffectKey, Effect, Impact } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from '../../util/error-util'
 import { groupBy, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -189,12 +189,7 @@ export default function GameHistory({
                     {deckUnit &&
                       hasImpactableEffect({
                         deckUnit,
-                      }) &&
-                      renderImpact({
-                        deckUnit,
-                        impacts,
-                        self,
-                      })}
+                      }) && <MoveUnitImpact deckUnit={deckUnit} impacts={impacts} self={self} />}
                   </div>
                 )
               })}
@@ -206,7 +201,7 @@ export default function GameHistory({
   )
 }
 
-function renderImpact({
+function MoveUnitImpact({
   deckUnit,
   impacts,
   self,
