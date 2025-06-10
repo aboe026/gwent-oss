@@ -109,6 +109,8 @@ New things that should be added to the codebase.
   }
   ```
 
+- Avenger
+  - How to handle duplicates on battlefield?
 - Better game summarization (graphs?)
   - points per round
   - time per round

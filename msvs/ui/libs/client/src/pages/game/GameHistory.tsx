@@ -77,6 +77,9 @@ export default function GameHistory({
                 let textClass = `game-history-move-text ${
                   isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'
                 }`
+                const descriptionClass = `game-history-move-user-description ${
+                  isSelf ? 'game-history-move-user-description-self' : 'game-history-move-user-description-opponent'
+                }`
                 let primaryText = ''
                 let secondaryText = ''
                 let image = ''
@@ -158,7 +161,7 @@ export default function GameHistory({
                         <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
                           {image && <img className="game-history-move-image" src={image} title={imageTitle} />}
                         </ContainerFixedAspectRatio>
-                        <div className="game-history-move-user-description">
+                        <div className={descriptionClass}>
                           <div
                             className={`${textClass} ${HTML_CLASSES.GameHistoryMoveUsername}`}
                             title={gamePlayer.user.name}
@@ -271,7 +274,7 @@ function renderImpacts({ impacts, self }: { impacts: Impact[]; self: GamePlayer 
     })
 
     return (
-      <div key={groupIndex}>
+      <div key={groupIndex} className="move-impact-groups-container">
         <div className="move-impact-group-container">
           {sortedUnits.map((impactedUnit, index) => {
             const isSelf = impactedUnit.user.name === self.user.name
@@ -282,7 +285,7 @@ function renderImpacts({ impacts, self }: { impacts: Impact[]; self: GamePlayer 
 
             return (
               <div key={index} className={`move-impact-unit-container ${playerClass}`}>
-                <ContainerFixedAspectRatio aspectRatio="309 / 444" width="30%">
+                <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
                   <img
                     src={impactedUnit.unit.unit.images[impactedUnit.unit.artStyle - 1]}
                     className="move-impact-unit-image"

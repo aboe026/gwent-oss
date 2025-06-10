@@ -1,7 +1,7 @@
 .move-impact-container {
   display: flex;
   flex-direction: column;
-  width: 80%;
+  width: calc(100% - 8px);
   align-items: center;
 }
 
@@ -34,20 +34,22 @@
 .move-impact-units-container {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  width: calc(100% - 8px);
+  padding: 4px;
   border-radius: 5px;
-  padding-top: 10px;
-  background-color: darkgray;
+  background-color: lightgray;
+  border-style: solid;
+  border-width: 4px;
+  border-radius: 5px;
+  border-color: darkgray;
 }
 
 .move-impact-units {
   display: flex;
   flex-direction: column;
-  width: calc(100% - 20px);
+  width: 100%;
   align-items: center;
   text-align: center;
-  padding-left: 10px;
-  padding-right: 10px;
 }
 
 .move-impact-group-separator {
@@ -58,24 +60,33 @@
   background-color: black;
 }
 
+.move-impact-groups-container {
+  width: 100%;
+}
+
 .move-impact-group-container {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 4px;
 }
 
 .move-impact-unit-container {
   display: flex;
   gap: 10px;
-  width: 90%;
-  align-items: center;
+  width: calc(100% - 8px);
   justify-content: center;
+  border-style: solid;
+  border-radius: 5px;
+  border-color: darkgray;
+  border-width: 4px;
 }
 
 .move-impact-unit-info {
   display: flex;
   flex-direction: column;
-  width: 70%;
+  width: calc(75% - 15px);
+  padding: 5px;
+  justify-content: space-between;
 }
 
 .move-impact-unit-text {
