@@ -45,11 +45,14 @@ export default function modifyBattlefieldWithNewUnit({
     }
   }
 
-  return ScorchBattlefield.scorchBattlefield({
+  const scorches = ScorchBattlefield.scorchBattlefield({
     battlefieldUnits,
     effects,
     game,
     logPrefix,
     newDeckUnit,
   })
+  if (scorches.length > 0) {
+    return scorches
+  }
 }

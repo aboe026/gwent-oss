@@ -1,8 +1,11 @@
 import {
+  DeckUnitDbObject,
   EffectDbObject,
   EffectFromUnitDbObject,
   EffectKey,
   GameDbObject,
+  GamePlayerDbObject,
+  ImpactDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -29,32 +32,32 @@ export default class CalculateGameEffectiveStrengths {
     units,
     effects,
     logPrefix,
+    newDeckUnit,
   }: {
     game: GameDbObject
     units: UnitDbObject[]
     effects: EffectDbObject[]
     logPrefix: string
-  }) {
+    newDeckUnit: DeckUnitDbObject
+  }): ImpactDbObject[] | undefined {
+    let impacts: ImpactDbObject[] | undefined = undefined
     for (const player of game.players) {
-      CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
-        row: player.rounds[game.round - 1].close,
-        units,
-        effects,
-        logPrefix,
-      })
-      CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
-        row: player.rounds[game.round - 1].ranged,
-        units,
-        effects,
-        logPrefix,
-      })
-      CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
-        row: player.rounds[game.round - 1].siege,
-        units,
-        effects,
-        logPrefix,
-      })
+      const round = player.rounds[game.round - 1]
+      for (const row of [round.close, round.ranged, round.siege]) {
+        const rowImpacts = CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
+          row,
+          units,
+          effects,
+          logPrefix,
+          player,
+          newDeckUnit,
+        })
+        if (player.user.toString() === game.turn?.toString() && rowImpacts.length > 0) {
+          impacts = rowImpacts
+        }
+      }
     }
+    return impacts
   }
 
   /**
@@ -70,12 +73,17 @@ export default class CalculateGameEffectiveStrengths {
     units,
     effects,
     logPrefix,
+    player,
+    newDeckUnit,
   }: {
     row: PlayerCombatRowDbObject
     units: UnitDbObject[]
     effects: EffectDbObject[]
     logPrefix: string
-  }) {
+    player: GamePlayerDbObject
+    newDeckUnit: DeckUnitDbObject
+  }): ImpactDbObject[] {
+    const impacts: ImpactDbObject[] = []
     const rowDbUnits: UnitDbObject[] = []
     for (const rowUnit of row.units) {
       const matchingUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
@@ -127,6 +135,12 @@ export default class CalculateGameEffectiveStrengths {
                 type: EffectReasonType.Unit,
                 unit: moraleDbUnit._id,
               }
+              if (moraleDbUnit._id.toString() === newDeckUnit.unit.toString()) {
+                impacts.push({
+                  unit: rowUnit,
+                  user: player.user,
+                })
+              }
               rowUnit.effects.push({
                 operator: '+1',
                 reason,
@@ -137,5 +151,7 @@ export default class CalculateGameEffectiveStrengths {
         }
       }
     }
+
+    return impacts
   }
 }

@@ -46,7 +46,7 @@ export default class PlayUnitImplementation {
     })
     const unitEffects = await getUnitEffects(roundUnits)
 
-    const impacts = modifyBattlefieldWithNewUnit({
+    const modificationImpacts = modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
       combat,
       effects: unitEffects,
@@ -55,11 +55,12 @@ export default class PlayUnitImplementation {
       newDeckUnit: deckUnit,
     })
 
-    CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+    const strengthImpacts = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits],
       effects: unitEffects,
       logPrefix,
+      newDeckUnit: deckUnit,
     })
 
     setGameScores(game)
@@ -71,7 +72,7 @@ export default class PlayUnitImplementation {
         artStyle: deckUnit.artStyle,
         unit: deckUnit.unit,
       },
-      impacts,
+      impacts: modificationImpacts || strengthImpacts,
       type: MoveType.Unit,
     }
     addMoveToCurrentPlayer({
