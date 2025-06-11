@@ -174,6 +174,7 @@ export default function GameHistory({
                                 HTML_CLASSES.GameHistoryMovePrimaryText
                               }`}
                               title={primaryText}
+                              style={{ fontWeight: secondaryText ? 'bold' : 'normal' }}
                             >
                               {primaryText}
                             </div>
@@ -249,6 +250,7 @@ function MoveUnitImpact({
               renderImpacts({
                 impacts,
                 self,
+                effectKey: effect.key,
               })
             )}
           </div>
@@ -261,7 +263,7 @@ function MoveUnitImpact({
   )
 }
 
-function renderImpacts({ impacts, self }: { impacts: Impact[]; self: GamePlayer }) {
+function renderImpacts({ impacts, self, effectKey }: { impacts: Impact[]; self: GamePlayer; effectKey: EffectKey }) {
   const groups = groupBy({
     array: impacts,
     property: 'user.name',
@@ -282,6 +284,15 @@ function renderImpacts({ impacts, self }: { impacts: Impact[]; self: GamePlayer 
               isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'
             }`
             const playerClass = isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
+            const infoClass = `move-impact-unit-info ${
+              isSelf ? 'move-impact-unit-info-self' : 'move-impact-unit-info-opponent'
+            }`
+            let description = ''
+            if (effectKey === EffectKey.Morale) {
+              description = 'moraled in strength'
+            } else if (effectKey === EffectKey.Scorch) {
+              description = 'scorched from battlefield'
+            }
 
             return (
               <div key={index} className={`move-impact-unit-container ${playerClass}`}>
@@ -292,12 +303,17 @@ function renderImpacts({ impacts, self }: { impacts: Impact[]; self: GamePlayer 
                     title={impactedUnit.unit.unit.name}
                   />
                 </ContainerFixedAspectRatio>
-                <div className="move-impact-unit-info">
+                <div className={infoClass}>
                   <div className={textClass} title={impactedUnit.user.name}>
                     {impactedUnit.user.name}
                   </div>
-                  <div className={textClass} title={impactedUnit.unit.unit.name}>
-                    {impactedUnit.unit.unit.name}
+                  <div>
+                    <div className={textClass} title={impactedUnit.unit.unit.name}>
+                      {impactedUnit.unit.unit.name}
+                    </div>
+                    <div className={textClass} title={description}>
+                      {description}
+                    </div>
                   </div>
                 </div>
               </div>

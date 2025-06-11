@@ -677,7 +677,7 @@ th {
   width: 100%;
   height: 100%;
   gap: 10px;
-  border-radius: 5px;
+  border-radius: 10px;
   background-color: darkgray;
 }
 
@@ -704,10 +704,6 @@ th {
 
 .game-history-move-text-opponent {
   text-align: right;
-}
-
-.game-history-move-username {
-  font-weight: bold;
 }
 
 .game-history-move-image-container-outer {

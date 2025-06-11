@@ -80,7 +80,15 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- is there even a need to keep "effect" on "impact"? Can't it be derived from deck unit effects?
+- remove "renderXYZ" methods in favor of functional components always?
+- morale impact
+- click on impact to highlight battlefield card?
+- unit tests
+- func tests
+- e2e tests
+- increment minor version
+- changelog
+
 - click on impact to highlight battlefield card?
 - search bar for history?
   - only show moves with matching unit name or impact with unit name
