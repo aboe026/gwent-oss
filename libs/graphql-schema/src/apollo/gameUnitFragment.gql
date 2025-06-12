@@ -23,6 +23,7 @@ fragment GameUnitFragment on GameUnit {
       }
     }
   }
+  row
   unit {
     ...CardUnitFragment
   }

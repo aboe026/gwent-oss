@@ -45,6 +45,7 @@ export const HTML_CLASSES = {
   GameHistoryMoveContainer: 'game-history-move-container',
   GameHistoryRoundContainer: 'game-history-round-container',
   GameHistoryRoundName: 'game-history-round-name',
+  GameHistoryMoveUnit: 'game-history-move-unit',
   GameHistoryMoveUsername: 'game-history-move-username',
   GameHistoryMovePrimaryText: 'game-history-move-primary-text',
   GameHistoryMoveSecondaryText: 'game-history-move-secondary-text',

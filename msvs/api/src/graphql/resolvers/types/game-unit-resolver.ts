@@ -1,4 +1,4 @@
-import { GameUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, GameUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
 import { GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameUnitEffectResolver from './game-unit-effect-resolver'
 import UnitResolver from './unit-resolver'
@@ -22,6 +22,7 @@ export default class GameUnitResolver {
       effects: await GameUnitEffectResolver.fromArray({
         gameUnitEffects: gameUnit.effects,
       }),
+      row: gameUnit.row ? (gameUnit.row as Combat) : undefined,
       unit:
         unit ||
         (await UnitResolver.fromId({

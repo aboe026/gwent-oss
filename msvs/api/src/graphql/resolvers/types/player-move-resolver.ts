@@ -55,11 +55,10 @@ export default class PlayerMoveResolver {
       const unitMove = move as MoveUnitDbObject
       return {
         created: unitMove.created,
-        unit:
-          gameUnit ||
-          (await GameUnitResolver.fromObject({
-            gameUnit: unitMove.unit,
-          })),
+        unit: await GameUnitResolver.fromObject({
+          gameUnit: unitMove.unit,
+          unit: gameUnit ? gameUnit.unit : undefined,
+        }),
         impacts: await MoveImpactsResolver.fromObject({
           impacts: unitMove.impacts,
         }),
