@@ -615,6 +615,7 @@ function ExistingGame({
           playPassProps={playPassProps}
           playUnitProps={playUnitProps}
           self={self}
+          setFullUnit={setFullUnit}
           setHandCardSelected={setHandCardSelected}
           setHistoryCardSelected={setHistoryCardSelected}
         />

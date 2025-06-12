@@ -216,6 +216,7 @@ export default gql`
     artStyle: Int! @column
     effectiveStrength: Int @column
     effects: [GameUnitEffect!] @column(overrideType: "Array<GameUnitEffectDbObject>")
+    row: Combat @column
     unit: Unit! @column(overrideType: "ObjectId")
   }
 
@@ -264,8 +265,7 @@ export default gql`
 
   type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
     created: DateTime! @column
-    row: Combat @column
-    unit: DeckUnit! @column(overrideType: "DeckUnitDbObject")
+    unit: GameUnit! @column(overrideType: "GameUnitDbObject")
     impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
   }
 

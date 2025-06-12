@@ -28,29 +28,12 @@ fragment GamePlayerFragment on GamePlayer {
       }
       ... on MoveUnit {
         created
-        row
         unit {
-          artStyle
-          unit {
-            effects {
-              image
-              key
-              name
-            }
-            id
-            images
-            name
-          }
+          ...GameUnitFragment
         }
         impacts {
           unit {
-            artStyle
-            unit {
-              name
-              id
-              images
-            }
-            effectiveStrength
+            ...GameUnitFragment
           }
           user {
             id

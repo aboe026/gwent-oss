@@ -249,6 +249,7 @@ export type GameUnit = {
   artStyle: Scalars['Int']['output'];
   effectiveStrength?: Maybe<Scalars['Int']['output']>;
   effects?: Maybe<Array<GameUnitEffect>>;
+  row?: Maybe<Combat>;
   unit: Unit;
 };
 
@@ -303,8 +304,7 @@ export type MoveUnit = {
   __typename?: 'MoveUnit';
   created: Scalars['DateTime']['output'];
   impacts?: Maybe<Array<Impact>>;
-  row?: Maybe<Combat>;
-  unit: DeckUnit;
+  unit: GameUnit;
 };
 
 export type Mutation = {
@@ -688,6 +688,7 @@ export type GameUnitDbObject = {
   artStyle: number,
   effectiveStrength?: Maybe<number>,
   effects?: Array<GameUnitEffectDbObject>,
+  row?: Maybe<string>,
   unit: ObjectId,
 };
 
@@ -731,8 +732,7 @@ export type MovePassDbObject = {
 export type MoveUnitDbObject = {
   created: any,
   impacts?: Array<ImpactDbObject>,
-  row?: Maybe<string>,
-  unit: DeckUnitDbObject,
+  unit: GameUnitDbObject,
   type: MoveType,
 };
 

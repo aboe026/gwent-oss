@@ -3,7 +3,16 @@ import { Dispatch, SetStateAction, useState } from 'react'
 
 import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
-import { DeckUnit, GamePlayer, Game, GameStatus, EffectKey, Effect, Impact } from '@gwent/graphql-schema/apollo-typings'
+import {
+  DeckUnit,
+  GamePlayer,
+  Game,
+  GameStatus,
+  EffectKey,
+  Effect,
+  Impact,
+  GameUnit,
+} from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from '../../util/error-util'
 import { groupBy, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -21,6 +30,7 @@ export default function GameHistory({
   self,
   setHandCardSelected,
   setHistoryCardSelected,
+  setFullUnit,
 }: {
   game: Game
   handCardSelected: DeckUnit | undefined
@@ -31,6 +41,7 @@ export default function GameHistory({
   self: GamePlayer
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
@@ -87,7 +98,7 @@ export default function GameHistory({
                 let error = false
                 let pointable = false
                 let impacts: Impact[] | undefined | null
-                let deckUnit: DeckUnit | undefined
+                let gameUnit: GameUnit | undefined
                 if (playerMove.move.__typename === 'MoveLeader') {
                   primaryText = `Activated leader ${playerMove.move.leader.name} ability`
                   image = playerMove.move.leader.image
@@ -98,10 +109,12 @@ export default function GameHistory({
                   textClass += ' game-history-move-text-wrappable'
                 } else if (playerMove.move.__typename === 'MoveUnit') {
                   impacts = playerMove.move.impacts
-                  deckUnit = playerMove.move.unit
+                  gameUnit = playerMove.move.unit
                   pointable = true
                   primaryText = playerMove.move.unit.unit.name
-                  const placement = playerMove.move.row ? `as ${toTitleCase(playerMove.move.row)}` : 'to battlefield'
+                  const placement = playerMove.move.unit.row
+                    ? `as ${toTitleCase(playerMove.move.unit.row)}`
+                    : 'to battlefield'
                   secondaryText = `deployed ${placement}`
                   image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
                   imageTitle = playerMove.move.unit.unit.name
@@ -154,7 +167,23 @@ export default function GameHistory({
                     >
                       <div className={`game-history-move-overview ${playerClass}`}>
                         <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
-                          {image && <img className="game-history-move-image" src={image} title={imageTitle} />}
+                          {image && (
+                            <img
+                              className="game-history-move-image"
+                              src={image}
+                              title={imageTitle}
+                              onClick={(event) => {
+                                if (gameUnit) {
+                                  event.preventDefault()
+                                  event.stopPropagation()
+                                  setFullUnit({
+                                    playerId: gamePlayer.user.id,
+                                    unit: gameUnit,
+                                  })
+                                }
+                              }}
+                            />
+                          )}
                         </ContainerFixedAspectRatio>
                         <div className={descriptionClass}>
                           <div
@@ -185,16 +214,17 @@ export default function GameHistory({
                         </div>
                       </div>
                     </div>
-                    {deckUnit &&
+                    {gameUnit &&
                       hasImpactableEffect({
-                        deckUnit,
+                        gameUnit: gameUnit,
                       }) && (
                         <MoveUnitImpact
-                          deckUnit={deckUnit}
+                          gameUnit={gameUnit}
                           game={game}
                           historyCardSelected={historyCardSelected}
                           impacts={impacts}
                           self={self}
+                          setFullUnit={setFullUnit}
                           setHistoryCardSelected={setHistoryCardSelected}
                         />
                       )}
@@ -210,24 +240,26 @@ export default function GameHistory({
 }
 
 function MoveUnitImpact({
-  deckUnit,
+  gameUnit,
   game,
   historyCardSelected,
   impacts,
   self,
+  setFullUnit,
   setHistoryCardSelected,
 }: {
-  deckUnit: DeckUnit
+  gameUnit: GameUnit
   game: Game
   historyCardSelected: UnitForPlayer | undefined
   impacts: Impact[] | null | undefined
   self: GamePlayer
+  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const [expanded, setExpanded] = useState(false)
   const unitsImpacted = impacts ? impacts.length : 0
   const { effect, error } = getEffectForImpact({
-    deckUnit,
+    gameUnit: gameUnit,
   })
 
   if (!effect) {
@@ -263,6 +295,7 @@ function MoveUnitImpact({
                 historyCardSelected,
                 impacts,
                 self,
+                setFullUnit,
                 setHistoryCardSelected,
               })
             )}
@@ -282,6 +315,7 @@ function renderImpacts({
   historyCardSelected,
   impacts,
   self,
+  setFullUnit,
   setHistoryCardSelected,
 }: {
   effectKey: EffectKey
@@ -289,6 +323,7 @@ function renderImpacts({
   historyCardSelected: UnitForPlayer | undefined
   impacts: Impact[]
   self: GamePlayer
+  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const groups = groupBy({
@@ -364,6 +399,14 @@ function renderImpacts({
                     src={impactedUnit.unit.unit.images[impactedUnit.unit.artStyle - 1]}
                     className="move-impact-unit-image"
                     title={impactedUnit.unit.unit.name}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      setFullUnit({
+                        playerId: impactedUnit.user.id,
+                        unit: impactedUnit.unit,
+                      })
+                    }}
                   />
                 </ContainerFixedAspectRatio>
                 <div className={infoClass}>
@@ -394,11 +437,11 @@ interface EffectForImpact {
   error: string
 }
 
-function getEffectForImpact({ deckUnit }: { deckUnit: DeckUnit }): EffectForImpact {
+function getEffectForImpact({ gameUnit }: { gameUnit: GameUnit }): EffectForImpact {
   let error = ''
   const effects =
-    deckUnit.unit.effects &&
-    deckUnit.unit.effects.filter(
+    gameUnit.unit.effects &&
+    gameUnit.unit.effects.filter(
       (effect) => ![EffectKey.Agile, EffectKey.Avenger, EffectKey.Berserker].includes(effect.key)
     )
   if (!effects) {
@@ -437,7 +480,7 @@ function getNoImpactMessage({ effectKey }: { effectKey: EffectKey }): string {
   return noImpactMessage
 }
 
-function hasImpactableEffect({ deckUnit }: { deckUnit: DeckUnit }): boolean {
+function hasImpactableEffect({ gameUnit }: { gameUnit: GameUnit }): boolean {
   const effectsWithImpact = [
     EffectKey.Bond,
     EffectKey.Decoy,
@@ -451,7 +494,7 @@ function hasImpactableEffect({ deckUnit }: { deckUnit: DeckUnit }): boolean {
     EffectKey.Weather,
   ]
   return (
-    !!deckUnit.unit.effects &&
-    deckUnit.unit.effects.filter((effect) => effectsWithImpact.includes(effect.key)).length > 0
+    !!gameUnit.unit.effects &&
+    gameUnit.unit.effects.filter((effect) => effectsWithImpact.includes(effect.key)).length > 0
   )
 }

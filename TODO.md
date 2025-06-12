@@ -80,6 +80,8 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
+- allow flipping through history and/or impacts when in fullunit?
+- have FullUnit strength be red/green if effectiveStrength different
 - remove "renderXYZ" methods in favor of functional components always?
 - morale impact
 - click on impact to highlight battlefield card?

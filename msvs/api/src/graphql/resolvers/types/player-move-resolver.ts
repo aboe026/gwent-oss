@@ -1,12 +1,13 @@
-import { Combat, DeckUnit, Leader, Move } from '@gwent/graphql-schema/resolver-typings'
-import DeckUnitResolver from './deck-unit-resolver'
-import LeaderResolver from './leader-resolver'
+import { Leader, Move } from '@gwent/graphql-schema/resolver-typings'
 import {
+  GameUnit,
   MoveDbObject,
   MoveLeaderDbObject,
   MovePassDbObject,
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import GameUnitResolver from './game-unit-resolver'
+import LeaderResolver from './leader-resolver'
 import MoveImpactsResolver from './move-impacts-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 
@@ -27,11 +28,11 @@ export default class PlayerMoveResolver {
   static async fromObject({
     move,
     leader,
-    deckUnit,
+    gameUnit,
   }: {
     move: MoveDbObject
     leader?: Leader
-    deckUnit?: DeckUnit
+    gameUnit?: GameUnit
   }): Promise<Move> {
     if (move.type === MoveType.Leader) {
       const leaderMove = move as MoveLeaderDbObject
@@ -55,11 +56,10 @@ export default class PlayerMoveResolver {
       return {
         created: unitMove.created,
         unit:
-          deckUnit ||
-          (await DeckUnitResolver.fromObject({
-            deckUnit: unitMove.unit,
+          gameUnit ||
+          (await GameUnitResolver.fromObject({
+            gameUnit: unitMove.unit,
           })),
-        row: unitMove.row as Combat,
         impacts: await MoveImpactsResolver.fromObject({
           impacts: unitMove.impacts,
         }),

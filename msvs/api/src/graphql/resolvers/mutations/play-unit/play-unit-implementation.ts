@@ -4,6 +4,7 @@ import addMoveToCurrentPlayer from '../util/add-move-to-current-player'
 import CalculateGameEffectiveStrengths from './calculate-game-effective-strengths'
 import { GameDbObject, GameDeckDbObject, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
+import getGameUnit from './get-game-unit'
 import getRoundUnits from './get-round-units'
 import getUnitEffects from './get-unit-effects'
 import modifyBattlefieldWithNewUnit from './modify-battlefield-with-new-unit'
@@ -65,12 +66,19 @@ export default class PlayUnitImplementation {
 
     setGameScores(game)
 
+    const gameUnit = getGameUnit({
+      game,
+      unitId: deckUnit.unit,
+      userId: playerId,
+    })
     const move: MoveUnitDbObject = {
       created: new Date(),
-      row: combat,
       unit: {
         artStyle: deckUnit.artStyle,
         unit: deckUnit.unit,
+        effectiveStrength: gameUnit?.effectiveStrength,
+        effects: gameUnit?.effects,
+        row: combat,
       },
       impacts: modificationImpacts || strengthImpacts,
       type: MoveType.Unit,
