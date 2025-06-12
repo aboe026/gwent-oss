@@ -112,17 +112,12 @@ export default function GameHistory({
                   ) {
                     isSelected = true
                     const playerRound = gamePlayer.rounds[game.round - 1]
-                    const userUnitsOnBattlefield: string[] = []
-                    for (const closeUnit of playerRound.close.units) {
-                      userUnitsOnBattlefield.push(closeUnit.unit.id)
+                    const units = [...playerRound.close.units, ...playerRound.ranged.units, ...playerRound.siege.units]
+                    for (let i = 0; i < units.length && !isOnBattlefield; i++) {
+                      if (units[i].unit.id === playerMove.move.unit.unit.id) {
+                        isOnBattlefield = true
+                      }
                     }
-                    for (const rangedUnit of playerRound.ranged.units) {
-                      userUnitsOnBattlefield.push(rangedUnit.unit.id)
-                    }
-                    for (const siegeUnit of playerRound.siege.units) {
-                      userUnitsOnBattlefield.push(siegeUnit.unit.id)
-                    }
-                    isOnBattlefield = userUnitsOnBattlefield.includes(playerMove.move.unit.unit.id)
                   }
                 } else {
                   primaryText = `Invalid move type: "${playerMove.move.__typename}"`
@@ -193,7 +188,16 @@ export default function GameHistory({
                     {deckUnit &&
                       hasImpactableEffect({
                         deckUnit,
-                      }) && <MoveUnitImpact deckUnit={deckUnit} impacts={impacts} self={self} />}
+                      }) && (
+                        <MoveUnitImpact
+                          deckUnit={deckUnit}
+                          game={game}
+                          historyCardSelected={historyCardSelected}
+                          impacts={impacts}
+                          self={self}
+                          setHistoryCardSelected={setHistoryCardSelected}
+                        />
+                      )}
                   </div>
                 )
               })}
@@ -207,12 +211,18 @@ export default function GameHistory({
 
 function MoveUnitImpact({
   deckUnit,
+  game,
+  historyCardSelected,
   impacts,
   self,
+  setHistoryCardSelected,
 }: {
   deckUnit: DeckUnit
+  game: Game
+  historyCardSelected: UnitForPlayer | undefined
   impacts: Impact[] | null | undefined
   self: GamePlayer
+  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const [expanded, setExpanded] = useState(false)
   const unitsImpacted = impacts ? impacts.length : 0
@@ -248,9 +258,12 @@ function MoveUnitImpact({
               </div>
             ) : (
               renderImpacts({
+                effectKey: effect.key,
+                game,
+                historyCardSelected,
                 impacts,
                 self,
-                effectKey: effect.key,
+                setHistoryCardSelected,
               })
             )}
           </div>
@@ -263,7 +276,21 @@ function MoveUnitImpact({
   )
 }
 
-function renderImpacts({ impacts, self, effectKey }: { impacts: Impact[]; self: GamePlayer; effectKey: EffectKey }) {
+function renderImpacts({
+  effectKey,
+  game,
+  historyCardSelected,
+  impacts,
+  self,
+  setHistoryCardSelected,
+}: {
+  effectKey: EffectKey
+  game: Game
+  historyCardSelected: UnitForPlayer | undefined
+  impacts: Impact[]
+  self: GamePlayer
+  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+}) {
   const groups = groupBy({
     array: impacts,
     property: 'user.name',
@@ -293,9 +320,45 @@ function renderImpacts({ impacts, self, effectKey }: { impacts: Impact[]; self: 
             } else if (effectKey === EffectKey.Scorch) {
               description = 'scorched from battlefield'
             }
+            const isSelected =
+              historyCardSelected &&
+              historyCardSelected.playerId === impactedUnit.user.id &&
+              historyCardSelected.unit.unit.id === impactedUnit.unit.unit.id
+            let isOnBattlefield = false
+            if (isSelected) {
+              const gamePlayer = game.players.find((player) => player.user.id === impactedUnit.user.id)
+              const round = gamePlayer?.rounds[game.round - 1]
+              const units = [
+                ...(round?.close.units || []),
+                ...(round?.ranged.units || []),
+                ...(round?.siege.units || []),
+              ]
+              for (let i = 0; i < units.length && !isOnBattlefield; i++) {
+                if (units[i].unit.id === impactedUnit.unit.unit.id) {
+                  isOnBattlefield = true
+                }
+              }
+            }
 
             return (
-              <div key={index} className={`move-impact-unit-container ${playerClass}`}>
+              <div
+                key={index}
+                className={`move-impact-unit-container pointable ${playerClass} ${
+                  isSelected ? 'item-highlighted' : ''
+                }`}
+                style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
+                title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
+                onClick={() => {
+                  if (historyCardSelected && historyCardSelected.unit.unit.id === impactedUnit.unit.unit.id) {
+                    setHistoryCardSelected(undefined)
+                  } else {
+                    setHistoryCardSelected({
+                      playerId: impactedUnit.user.id,
+                      unit: impactedUnit.unit,
+                    })
+                  }
+                }}
+              >
                 <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
                   <img
                     src={impactedUnit.unit.unit.images[impactedUnit.unit.artStyle - 1]}
