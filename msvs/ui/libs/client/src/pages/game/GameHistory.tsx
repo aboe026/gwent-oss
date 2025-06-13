@@ -14,7 +14,7 @@ import {
   GameUnit,
 } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from '../../util/error-util'
-import { groupBy, sortObjectArray, toTitleCase } from '@gwent/utils'
+import { getImpactDescription, getNoImpactMessage, groupBy, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { MoveForRound, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
@@ -266,12 +266,12 @@ function MoveUnitImpact({
     return <div className="error-text">{error}</div>
   }
   return (
-    <div className="move-impact-container">
+    <div className={HTML_CLASSES.GameHistoryMoveImpactContainer}>
       <div
         className={`move-impact-effect-container pointable ${expanded ? '' : 'move-impact-effect-container-collapsed'}`}
         onClick={() => setExpanded(!expanded)}
       >
-        <div className="move-impact-effect-member">{unitsImpacted}</div>
+        <div className={`move-impact-effect-member ${HTML_CLASSES.GameHistoryMoveImpactCount}`}>{unitsImpacted}</div>
         <img src={effect.image} title={effect.name} className="move-impact-effect-member move-impact-effect-icon" />
         {expanded ? (
           <CgChevronUp className="move-impact-effect-member" color="black" title="Collapse" />
@@ -283,7 +283,7 @@ function MoveUnitImpact({
         <div className="move-impact-units-container">
           <div className="move-impact-units">
             {!impacts || impacts.length === 0 ? (
-              <div>
+              <div className={HTML_CLASSES.MoveImpactNoUnits}>
                 {getNoImpactMessage({
                   effectKey: effect.key,
                 })}
@@ -349,12 +349,9 @@ function renderImpacts({
             const infoClass = `move-impact-unit-info ${
               isSelf ? 'move-impact-unit-info-self' : 'move-impact-unit-info-opponent'
             }`
-            let description = ''
-            if (effectKey === EffectKey.Morale) {
-              description = 'moraled in strength'
-            } else if (effectKey === EffectKey.Scorch) {
-              description = 'scorched from battlefield'
-            }
+            const description = getImpactDescription({
+              effectKey,
+            })
             const isSelected =
               historyCardSelected &&
               historyCardSelected.playerId === impactedUnit.user.id &&
@@ -378,7 +375,7 @@ function renderImpacts({
             return (
               <div
                 key={index}
-                className={`move-impact-unit-container pointable ${playerClass} ${
+                className={`${HTML_CLASSES.GameHistoryMoveImpactUnitContainer} pointable ${playerClass} ${
                   isSelected ? 'item-highlighted' : ''
                 }`}
                 style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
@@ -410,14 +407,17 @@ function renderImpacts({
                   />
                 </ContainerFixedAspectRatio>
                 <div className={infoClass}>
-                  <div className={textClass} title={impactedUnit.user.name}>
+                  <div className={`${textClass} ${HTML_CLASSES.MoveImpactUserName}`} title={impactedUnit.user.name}>
                     {impactedUnit.user.name}
                   </div>
                   <div>
-                    <div className={textClass} title={impactedUnit.unit.unit.name}>
+                    <div
+                      className={`${textClass} ${HTML_CLASSES.MoveImpactUnitName}`}
+                      title={impactedUnit.unit.unit.name}
+                    >
                       {impactedUnit.unit.unit.name}
                     </div>
-                    <div className={textClass} title={description}>
+                    <div className={`${textClass} ${HTML_CLASSES.MoveImpactDescription}`} title={description}>
                       {description}
                     </div>
                   </div>
@@ -454,30 +454,6 @@ function getEffectForImpact({ gameUnit }: { gameUnit: GameUnit }): EffectForImpa
     effect: effects && effects[0],
     error,
   }
-}
-
-function getNoImpactMessage({ effectKey }: { effectKey: EffectKey }): string {
-  let noImpactMessage = ''
-  if (effectKey === EffectKey.Bond) {
-    noImpactMessage = 'No similar units in row to bond with.'
-  } else if (effectKey === EffectKey.Horn) {
-    noImpactMessage = 'No eligible units in row to strengthen.'
-  } else if (effectKey === EffectKey.Mardroeme) {
-    noImpactMessage = 'No Berserkers in row to transform.'
-  } else if (effectKey === EffectKey.Medic) {
-    noImpactMessage = 'No eligible units in Lost to revive.'
-  } else if (effectKey === EffectKey.Muster) {
-    noImpactMessage = 'No eligible units in Draw to muster.'
-  } else if (effectKey === EffectKey.Morale) {
-    noImpactMessage = 'No eligible units in row to strengthen.'
-  } else if (effectKey === EffectKey.Scorch) {
-    noImpactMessage = 'No eligible units on battlefield to scorch.'
-  } else if (effectKey === EffectKey.Spy) {
-    noImpactMessage = 'No units in Draw to add to Hand.'
-  } else if (effectKey === EffectKey.Weather) {
-    noImpactMessage = 'No eligible units on battlefield to weaken.'
-  }
-  return noImpactMessage
 }
 
 function hasImpactableEffect({ gameUnit }: { gameUnit: GameUnit }): boolean {

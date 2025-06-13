@@ -1,6 +1,6 @@
 import ApiClient from './api-client'
 import Banner from '../components/banner'
-import { Combat, Deck, DeckUnit, FactionKey, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, DeckUnit, EffectKey, FactionKey, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import GamePage, { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
@@ -344,6 +344,13 @@ export class E2eHelper {
         userName: player.name,
         unitName: deckUnit.unit.name,
         combatRow: row,
+        impacts:
+          scorching || moraling
+            ? {
+                effectKey: scorching ? EffectKey.Scorch : EffectKey.Morale,
+                number: (scorching || moraling)?.length || 0,
+              }
+            : undefined,
       })
     }
     if (switchTurnsWith) {

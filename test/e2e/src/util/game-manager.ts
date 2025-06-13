@@ -9,6 +9,7 @@ import GamePage, {
   HighlightedBattlefieldCard,
   HighlightedHandCard,
   HighlightedHistory,
+  HistoryImpactMoves,
   HistoryMove,
   HistoryPass,
   RoundScores,
@@ -216,6 +217,7 @@ export class GameManager {
     highlightedHandCard?: HighlightedHandCard
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHistory?: HighlightedHistory
+    impacts?: HistoryImpactMoves[]
   }) {
     await GamePage.verify({
       opponent: this.opponent.gamePlayer,

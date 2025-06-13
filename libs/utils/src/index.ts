@@ -3,7 +3,9 @@ import { humanizeDay, humanizeTime } from './humanize-date'
 import formatGameStatus from './format-game-status'
 import getCombatImage from './get-combat-image'
 import getDuplicateItems from './get-duplicate-items'
+import getImpactDescription from './get-impact-description'
 import getNestedProperty from './get-nested-property'
+import getNoImpactMessage from './get-no-impact-message'
 import getRandomSubset from './get-random-subset'
 import getUniqueItems from './get-unique-items'
 import getUnitStats from './get-unit-stats'
@@ -19,7 +21,9 @@ export {
   formatGameStatus,
   getCombatImage,
   getDuplicateItems,
+  getImpactDescription,
   getNestedProperty,
+  getNoImpactMessage,
   getRandomSubset,
   getUniqueItems,
   getUnitStats as getDeckStats,

@@ -1,15 +1,15 @@
 import { ObjectId } from 'mongodb'
 import { Selector, t } from 'testcafe'
 
-import { Combat, Deck, DeckUnit, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, DeckUnit, EffectKey, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import Confirm from '../components/confirm'
 import DeckEditor from '../components/deck-editor'
 import DeckList, { DeckInfo } from '../components/deck-list'
 import E2eUtil from '../util/e2e-util'
 import GamePlayerInfo, { PlayerTurn } from '../components/game-player-info'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
+import { getImpactDescription, getNoImpactMessage, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { Leader } from '@gwent/graphql-schema/resolver-typings'
-import { sortObjectArray, toTitleCase } from '@gwent/utils'
 
 const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)
 const existingGameContainer = Selector(`#${HTML_IDS.GameContainer}`)
@@ -294,6 +294,7 @@ export default class GamePage {
     highlightedMove?: HighlightedHistory
   }) {
     if (moves) {
+      let highlightedMoveFound = false
       const expected: string[] = []
       for (let i = 0; i < moves.length; i++) {
         expected.push(`Round ${i + 1}`)
@@ -308,13 +309,27 @@ export default class GamePage {
               highlightedMove.row === move.combatRow &&
               highlightedMove.unitName === move.unitName &&
               highlightedMove.round === i + 1
+            if (selected) {
+              highlightedMoveFound = true
+            }
             const dotted = selected && highlightedMove.dotted
-            expected.push(`${description}${selected ? ' selected' : ''}${dotted ? ' dotted' : ''}`)
+            const impacts = move.impacts === undefined ? '' : ` impacts: ${move.impacts.number}`
+            // TODO: verify impact type
+            expected.push(`${description}${impacts}${selected ? ' selected' : ''}${dotted ? ' dotted' : ''}`)
           } else {
             expected.push(`${move.userName}: Passed the rest of round ${move.round}`)
           }
         }
       }
+
+      if (highlightedMove && !highlightedMoveFound) {
+        throw Error(
+          `Could not find highlightedMove "${JSON.stringify(highlightedMove)}" in expected moves "${JSON.stringify(
+            moves
+          )}".`
+        )
+      }
+
       const actual: string[] = []
       const rounds = GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`)
       const roundCount = await rounds.count
@@ -341,8 +356,16 @@ export default class GamePage {
               styles['border-top-style'] === 'dotted' ||
               styles['border-left-style'] === 'dotted' ||
               styles['border-right-style'] === 'dotted'
+
+            let impactCount = ''
+            const impactContainer = await move.find(`.${HTML_CLASSES.GameHistoryMoveImpactContainer}`)
+            if (await impactContainer.exists) {
+              impactCount = ` impacts: ${await impactContainer.find(`.${HTML_CLASSES.GameHistoryMoveImpactCount}`)
+                .innerText}`
+            }
+
             actual.push(
-              `${movePlayerName}: ${moveUnitName}${moveReason}${highlighted ? ' selected' : ''}${
+              `${movePlayerName}: ${moveUnitName}${moveReason}${impactCount}${highlighted ? ' selected' : ''}${
                 isDotted ? ' dotted' : ''
               }`
             )
@@ -376,7 +399,8 @@ export default class GamePage {
     units: CombatUnit[]
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHandCard?: HighlightedHandCard
-  }) {
+  }): Promise<boolean> {
+    let highlightedBattlefieldCardFound = false
     await t.expect(rowSelector.exists).ok()
     await t.expect(rowSelector.visible).ok()
     const actualUnitNames: string[] = []
@@ -398,6 +422,7 @@ export default class GamePage {
         highlightedBattlefieldCard.unitName === unit.name &&
         highlightedBattlefieldCard.row === rowName
       ) {
+        highlightedBattlefieldCardFound = true
         expectedUnitName += ' selected'
       }
       return expectedUnitName
@@ -419,6 +444,7 @@ export default class GamePage {
       styles['border-right-style'] === 'dotted'
     const expectedDotted = expectedHighlighted && highlightedHandCard.dotted
     await t.expect(actualDotted).eql(expectedDotted || false, message)
+    return highlightedBattlefieldCardFound
   }
 
   static async verifyCenter({
@@ -507,7 +533,7 @@ export default class GamePage {
       await t
         .expect(GamePage.elements.BattlefieldOpponent.hasClass(HTML_CLASSES.GameUnitBoardSidePassed))
         .eql(!!opponent.passed)
-      await GamePage.verifyCombatRow({
+      const highlightedBattlefieldCardFoundCloseSelf = await GamePage.verifyCombatRow({
         rowName: Combat.Close,
         rowSelector: GamePage.elements.CombatRowCloseSelf,
         score: self.close?.score || 0,
@@ -516,7 +542,7 @@ export default class GamePage {
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
-      await GamePage.verifyCombatRow({
+      const highlightedBattlefieldCardFoundRangedSelf = await GamePage.verifyCombatRow({
         rowName: Combat.Ranged,
         rowSelector: GamePage.elements.CombatRowRangedSelf,
         score: self.ranged?.score || 0,
@@ -525,7 +551,7 @@ export default class GamePage {
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
-      await GamePage.verifyCombatRow({
+      const highlightedBattlefieldCardFoundSiegeSelf = await GamePage.verifyCombatRow({
         rowName: Combat.Siege,
         rowSelector: GamePage.elements.CombatRowSiegeSelf,
         score: self.siege?.score || 0,
@@ -534,7 +560,7 @@ export default class GamePage {
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
-      await GamePage.verifyCombatRow({
+      const highlightedBattlefieldCardFoundCloseOpponent = await GamePage.verifyCombatRow({
         rowName: Combat.Close,
         rowSelector: GamePage.elements.CombatRowCloseOpponent,
         score: opponent.close?.score || 0,
@@ -543,7 +569,7 @@ export default class GamePage {
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
-      await GamePage.verifyCombatRow({
+      const highlightedBattlefieldCardFoundRangedOpponent = await GamePage.verifyCombatRow({
         rowName: Combat.Ranged,
         rowSelector: GamePage.elements.CombatRowRangedOpponent,
         score: opponent.ranged?.score || 0,
@@ -552,7 +578,7 @@ export default class GamePage {
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
-      await GamePage.verifyCombatRow({
+      const highlightedBattlefieldCardFoundSiegeOpponent = await GamePage.verifyCombatRow({
         rowName: Combat.Siege,
         rowSelector: GamePage.elements.CombatRowSiegeOpponent,
         score: opponent.siege?.score || 0,
@@ -561,6 +587,20 @@ export default class GamePage {
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
+      const highlightedBattlefieldCardFound =
+        highlightedBattlefieldCardFoundCloseSelf ||
+        highlightedBattlefieldCardFoundRangedSelf ||
+        highlightedBattlefieldCardFoundSiegeSelf ||
+        highlightedBattlefieldCardFoundCloseOpponent ||
+        highlightedBattlefieldCardFoundRangedOpponent ||
+        highlightedBattlefieldCardFoundSiegeOpponent
+      if (highlightedBattlefieldCard && !highlightedBattlefieldCardFound) {
+        throw Error(
+          `Could not find highlightedBattlefieldCard: "${JSON.stringify(
+            highlightedBattlefieldCard
+          )}" among expected units`
+        )
+      }
     } else if (self.ready && !opponent.ready) {
       await t.expect(GamePage.elements.CenterContainer.innerText).eql('Waiting for opponent to be ready...')
     } else if (redraws) {
@@ -638,6 +678,48 @@ export default class GamePage {
       await t.click(GamePage.elements.CoinTossContainer)
     }
     await t.expect(GamePage.elements.CoinTossContainer.exists).notOk()
+  }
+
+  static async verifyImpacts({ moves: moves }: { moves: HistoryImpactMoves[] }) {
+    for (const move of moves) {
+      const moveElement = await this.getHistoryMove({
+        unitName: move.unitName,
+        userName: move.userName,
+        round: move.round,
+      })
+      if (move.impacts.length === 0) {
+        await t.expect(moveElement.find(`.${HTML_CLASSES.MoveImpactNoUnits}`).innerText).eql(
+          getNoImpactMessage({
+            effectKey: move.effectKey,
+          })
+        )
+      } else {
+        const expected: string[] = []
+        for (const impact of move.impacts) {
+          expected.push(
+            `${impact.username}: ${impact.unitName} ${getImpactDescription({
+              effectKey: move.effectKey,
+            })}`
+          )
+        }
+
+        const actual: string[] = []
+        const children = moveElement.find(`.${HTML_CLASSES.GameHistoryMoveImpactUnitContainer}`)
+        const childCount = await children.count
+        for (let i = 0; i < childCount; i++) {
+          const child = children.nth(i)
+          const userName = await child.find(`.${HTML_CLASSES.MoveImpactUserName}`).innerText
+          const unitName = await child.find(`.${HTML_CLASSES.MoveImpactUnitName}`).innerText
+          const description = getImpactDescription({
+            effectKey: move.effectKey,
+          })
+          actual.push(`${userName}: ${unitName} ${description}`)
+        }
+        await t
+          .expect(actual)
+          .eql(expected, `Impact for unit "${move.unitName}" by user "${move.userName}" in round "${move.round}"`)
+      }
+    }
   }
 
   static async verify({
@@ -1047,6 +1129,44 @@ export default class GamePage {
     })
     await t.click(card)
   }
+
+  static async getHistoryMove({
+    userName,
+    unitName,
+    round,
+  }: {
+    userName: string
+    unitName: string
+    round: number
+  }): Promise<Selector> {
+    const rounds = GamePage.elements.HistoryContainer.find(`.${HTML_CLASSES.GameHistoryRoundContainer}`)
+    const roundCount = await rounds.count
+    const roundContainer = rounds.nth(roundCount - round)
+    const moves = roundContainer.child()
+    const movesCount = await moves.count
+    let moveFound: Selector | undefined
+    for (let i = 1; i < movesCount && !moveFound; i++) {
+      const move = moves.nth(i)
+      const movePlayerName = await move.find(`.${HTML_CLASSES.GameHistoryMoveUsername}`).innerText
+      const moveUnitName = await move.find(`.${HTML_CLASSES.GameHistoryMovePrimaryText}`).innerText
+      if (movePlayerName === userName && moveUnitName === unitName) {
+        moveFound = move
+      }
+    }
+    if (!moveFound) {
+      throw Error(`Could not find move for unit "${unitName}" by user "${userName}" in round "${round}"`)
+    }
+    return moveFound
+  }
+
+  static async toggleImpacts({ userName, unitName, round }: { userName: string; unitName: string; round: number }) {
+    const move = await this.getHistoryMove({
+      unitName,
+      userName,
+      round,
+    })
+    await t.click(move.find(`.${HTML_CLASSES.GameHistoryMoveImpactContainer}`))
+  }
 }
 
 export interface GamePlayerExpected {
@@ -1076,6 +1196,21 @@ export interface HistoryMove {
   userName: string
   unitName: string
   combatRow?: Combat
+  impacts?: {
+    effectKey: EffectKey
+    number: number
+  }
+}
+
+export interface HistoryImpactMoves {
+  userName: string
+  unitName: string
+  round: number
+  effectKey: EffectKey
+  impacts: {
+    username: string
+    unitName: string
+  }[]
 }
 
 export interface HistoryPass {
