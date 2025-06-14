@@ -3,12 +3,11 @@ import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
-import HomePage from '../page-objects/home-page'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
 
-fixture('Game Effect Morale').page(HomePage.getUrl())
+fixture('Game Effect Morale')
 
 test('Morale unit does not effect itself', async (t) => {
   const unitName = 'Milva'
@@ -21,7 +20,7 @@ test('Morale unit does not effect itself', async (t) => {
   })
   await gameManager.initialize({})
 
-  const deckUnit = await gameManager.deploy({ unitName })
+  const deckUnit = await gameManager.deploy({ unitName, moraling: [] })
   await GamePage.fullscreenCombatCard({
     unitName,
     row: Combat.Ranged,
@@ -46,7 +45,7 @@ test('Morale unit does not effect hero', async (t) => {
   await gameManager.pass({})
   await gameManager.initialize({})
 
-  const deckUnit2 = await gameManager.deploy({ unitName: unitName2 })
+  const deckUnit2 = await gameManager.deploy({ unitName: unitName2, moraling: [] })
   await GamePage.fullscreenCombatCard({
     unitName: unitName1,
     row: Combat.Ranged,
@@ -71,7 +70,7 @@ test('Morale hero unit not effected by other morale', async (t) => {
       handUnitNames: [unitName1, unitName2],
     },
   })
-  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, moraling: [] })
   await gameManager.pass({})
   await gameManager.initialize({})
 
@@ -85,6 +84,7 @@ test('Morale hero unit not effected by other morale', async (t) => {
         row: Combat.Close,
       },
     ],
+    impacts: 0,
   })
   await GamePage.fullscreenCombatCard({
     unitName: unitName2,
@@ -122,7 +122,7 @@ test('Morale unit does not effect unit not in row', async (t) => {
   await gameManager.pass({})
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName2, moraling: [] })
   await GamePage.fullscreenCombatCard({
     unitName: unitName1,
     row: Combat.Close,
@@ -147,7 +147,7 @@ test('Morale unit does not effect opponent unit', async (t) => {
       handUnitNames: [unitName2],
     },
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, moraling: [] })
   await gameManager.initialize({})
 
   const deckUnit = await gameManager.deploy({ unitName: unitName2 })
@@ -171,7 +171,7 @@ test('Morale effects normal unit if morale played before', async (t) => {
       handUnitNames: [unitName1, unitName2],
     },
   })
-  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, moraling: [] })
   await gameManager.pass({})
   await gameManager.initialize({})
 
@@ -185,6 +185,7 @@ test('Morale effects normal unit if morale played before', async (t) => {
         player: gameManager.self.gamePlayer,
       },
     ],
+    impacts: -1,
   })
   await GamePage.fullscreenCombatCard({
     unitName: unitName2,
@@ -332,7 +333,7 @@ test('Multiple morales effect each other', async (t) => {
       handUnitNames: [unitName1, unitName2],
     },
   })
-  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, moraling: [] })
   await gameManager.pass({})
   await gameManager.initialize({})
 
@@ -353,6 +354,7 @@ test('Multiple morales effect each other', async (t) => {
         player: gameManager.self.gamePlayer,
       },
     ],
+    impacts: 1,
   })
   await GamePage.fullscreenCombatCard({
     unitName: unitName1,
@@ -447,6 +449,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
         player: gameManager.self.gamePlayer,
       },
     ],
+    impacts: 3,
   })
   await GamePage.fullscreenCombatCard({
     unitName: unitName1,
@@ -524,7 +527,7 @@ test('Multiple morales effect themselves and multiple standard units in differen
       handUnitNames: [unitName1, unitName2, unitName3, unitName4],
     },
   })
-  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, moraling: [] })
   await gameManager.pass({})
   const deckUnit2 = await gameManager.deploy({
     unitName: unitName2,
@@ -536,8 +539,9 @@ test('Multiple morales effect themselves and multiple standard units in differen
         player: gameManager.self.gamePlayer,
       },
     ],
+    impacts: -1,
   })
-  const deckUnit3 = await gameManager.deploy({ unitName: unitName3 })
+  const deckUnit3 = await gameManager.deploy({ unitName: unitName3, moraling: [] })
   await gameManager.initialize({})
 
   const deckUnit4 = await gameManager.deploy({
@@ -550,6 +554,7 @@ test('Multiple morales effect themselves and multiple standard units in differen
         player: gameManager.self.gamePlayer,
       },
     ],
+    impacts: -1,
   })
 
   await GamePage.fullscreenCombatCard({
@@ -663,7 +668,7 @@ test('Morale scores persist to end of game', async (t) => {
     },
   })
   // round 1
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, moraling: [] })
   await gameManager.deploy({ unitName: unitName3 })
   await gameManager.deploy({
     unitName: unitName2,
@@ -682,6 +687,7 @@ test('Morale scores persist to end of game', async (t) => {
         player: gameManager.self.gamePlayer,
       },
     ],
+    impacts: 1,
   })
   await gameManager.deploy({ unitName: unitName4 })
   await gameManager.pass({})

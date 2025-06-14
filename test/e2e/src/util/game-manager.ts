@@ -86,6 +86,9 @@ export class GameManager {
     effectiveStrength,
     scorching,
     moraling,
+    horning,
+    mustering,
+    impacts,
     verify,
   }: {
     unitName: string
@@ -93,6 +96,9 @@ export class GameManager {
     effectiveStrength?: number
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
+    horning?: MoralingExpected[]
+    mustering?: MoralingExpected[]
+    impacts?: number
     verify?: boolean
   }): Promise<DeckUnit> {
     const isSelfTurn = this.self.gamePlayer.turn === PlayerTurn.Current
@@ -126,6 +132,9 @@ export class GameManager {
       effectiveStrength,
       scorching,
       moraling,
+      horning,
+      mustering,
+      impacts,
     })
     if (this.shouldVerify || verify) {
       await GamePage.verify({
@@ -215,7 +224,7 @@ export class GameManager {
     highlightedHistory,
   }: {
     highlightedHandCard?: HighlightedHandCard
-    highlightedBattlefieldCard?: HighlightedBattlefieldCard
+    highlightedBattlefieldCard?: HighlightedBattlefieldCard // TODO: this should take into account player
     highlightedHistory?: HighlightedHistory
     impacts?: HistoryImpactMoves[]
   }) {

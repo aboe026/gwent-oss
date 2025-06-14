@@ -1,14 +1,13 @@
 import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
-import HomePage from '../page-objects/home-page'
 import { MoralingExpected } from '../util/e2e-helper'
 import { PlayerTurn } from '../components/game-player-info'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
 const test = getTestCtx<E2eCtx, E2eCtx>()
 
-fixture('Game Effect Scorch').page(HomePage.getUrl())
+fixture('Game Effect Scorch')
 
 test('Scorch does nothing if no other units on the battlefield', async (t) => {
   const unitName1 = 'Scorch'
@@ -21,7 +20,7 @@ test('Scorch does nothing if no other units on the battlefield', async (t) => {
   })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, scorching: [] })
 })
 
 test('Scorch does nothing if only other unit has no strength', async (t) => {
@@ -39,10 +38,10 @@ test('Scorch does nothing if only other unit has no strength', async (t) => {
     },
     opponentFirst: true,
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, horning: [] })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName2, scorching: [] })
 })
 
 test('Scorch removes strongest card if on opponents side', async (t) => {
@@ -158,7 +157,7 @@ test('Opponents scorch removes strongest card if on self side', async (t) => {
     opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName2, scorching: [] })
   await gameManager.initialize({})
 
   await gameManager.deploy({
@@ -344,7 +343,7 @@ test('Scorch does not effect heroes', async (t) => {
   await gameManager.deploy({ unitName: unitName1 })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName2, scorching: [] })
 })
 
 test('Scorch does not effect unit played after it', async (t) => {
@@ -361,7 +360,7 @@ test('Scorch does not effect unit played after it', async (t) => {
       handUnitNames: [unitName2],
     },
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, scorching: [] })
   await gameManager.initialize({})
 
   await gameManager.deploy({ unitName: unitName2 })
@@ -384,7 +383,7 @@ test('Scorch takes into account morale to determine strongest', async (t) => {
     },
     opponentFirst: true,
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, moraling: [] })
   await gameManager.deploy({ unitName: unitName2 })
   await gameManager.deploy({ unitName: unitName3, effectiveStrength: 7 })
   await gameManager.initialize({})
@@ -429,7 +428,7 @@ test('Scorch scoped to Close combat removes strongest Close combat card on oppon
   await gameManager.deploy({ unitName: unitName4 })
   await gameManager.deploy({ unitName: unitName5 })
   await gameManager.deploy({ unitName: unitName6 })
-  await gameManager.deploy({ unitName: unitName7, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName7, combat: Combat.Ranged, moraling: [] })
   await gameManager.initialize({})
 
   await gameManager.deploy({
@@ -467,7 +466,7 @@ test('Scorch scoped to Close combat does not remove opponents Close combat if it
   await gameManager.deploy({ unitName: unitName3 })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName4 })
+  await gameManager.deploy({ unitName: unitName4, scorching: [] })
 })
 
 test('Scorch scoped to Close combat does not remove opponents unit over 10 effective strength if not in Close combat row', async (t) => {
@@ -486,10 +485,10 @@ test('Scorch scoped to Close combat does not remove opponents unit over 10 effec
     },
   })
   await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName2, combat: Combat.Ranged, moraling: [] })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.deploy({ unitName: unitName3, scorching: [] })
 })
 
 test('Scorch scoped to Range combat removes strongest Ranged combat card on opponents side over 10 effective strength', async (t) => {
@@ -512,7 +511,7 @@ test('Scorch scoped to Range combat removes strongest Ranged combat card on oppo
     opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName2, moraling: [] })
   await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged })
   await gameManager.deploy({ unitName: unitName4 })
   await gameManager.deploy({ unitName: unitName5, combat: Combat.Ranged })
@@ -557,13 +556,13 @@ test('Scorch scoped to Ranged combat does not remove opponents Ranged combat if 
     opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName2, moraling: [] })
   await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged })
   await gameManager.deploy({ unitName: unitName4 })
   await gameManager.deploy({ unitName: unitName5, combat: Combat.Ranged })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName6 })
+  await gameManager.deploy({ unitName: unitName6, scorching: [] })
 })
 
 test('Scorch scoped to Ranged combat does not remove opponents unit over 10 effective strength if not in Ranged combat row', async (t) => {
@@ -586,13 +585,13 @@ test('Scorch scoped to Ranged combat does not remove opponents unit over 10 effe
     opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName2, moraling: [] })
   await gameManager.deploy({ unitName: unitName3 })
   await gameManager.deploy({ unitName: unitName4 })
   await gameManager.deploy({ unitName: unitName5 })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName6 })
+  await gameManager.deploy({ unitName: unitName6, scorching: [] })
 })
 
 test('Scorch scoped to Siege combat removes strongest Siege combat card on opponents side over 10 effective strength', async (t) => {
@@ -660,7 +659,7 @@ test('Scorch scoped to Siege combat does not remove opponents Siege combat if it
   await gameManager.deploy({ unitName: unitName5 })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName6 })
+  await gameManager.deploy({ unitName: unitName6, scorching: [] })
 })
 
 test('Clan Dimun Pirate removes strongest card if on opponents side', async (t) => {
@@ -679,7 +678,7 @@ test('Clan Dimun Pirate removes strongest card if on opponents side', async (t) 
     },
   })
   await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName2, moraling: [] })
   await gameManager.initialize({})
 
   await gameManager.deploy({
@@ -710,8 +709,8 @@ test('Clan Dimun Pirate removes strongest card if on own side', async (t) => {
       handUnitNames: [unitName2],
     },
   })
-  await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName1, moraling: [] })
+  await gameManager.deploy({ unitName: unitName2, moraling: [] })
   await gameManager.initialize({})
 
   await gameManager.deploy({
@@ -824,7 +823,7 @@ test('Villentretenmerth removes only opponents unit if self has same one', async
     optionalUnitPlayed = true
     await gameManager.deploy({ unitName: unitNameOptional })
   }
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, moraling: [] })
   await gameManager.deploy({
     unitName: unitName2,
     moraling: optionalUnitPlayed
@@ -963,8 +962,8 @@ test('Schirru removes only opponents unit if self has same one', async (t) => {
     opponentFirst: true,
   })
   await gameManager.deploy({ unitName: unitName1 })
-  await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.deploy({ unitName: unitName3 })
+  await gameManager.deploy({ unitName: unitName2, mustering: [] })
+  await gameManager.deploy({ unitName: unitName3, mustering: [] })
   await gameManager.initialize({})
 
   await gameManager.deploy({

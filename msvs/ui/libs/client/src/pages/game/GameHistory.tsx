@@ -169,7 +169,7 @@ export default function GameHistory({
                         <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
                           {image && (
                             <img
-                              className="game-history-move-image"
+                              className={HTML_CLASSES.GameHistoryMoveImage}
                               src={image}
                               title={imageTitle}
                               onClick={(event) => {
@@ -272,7 +272,11 @@ function MoveUnitImpact({
         onClick={() => setExpanded(!expanded)}
       >
         <div className={`move-impact-effect-member ${HTML_CLASSES.GameHistoryMoveImpactCount}`}>{unitsImpacted}</div>
-        <img src={effect.image} title={effect.name} className="move-impact-effect-member move-impact-effect-icon" />
+        <img
+          src={effect.image}
+          title={effect.name}
+          className={`move-impact-effect-member ${HTML_CLASSES.MoveImpactEffectIcon}`}
+        />
         {expanded ? (
           <CgChevronUp className="move-impact-effect-member" color="black" title="Collapse" />
         ) : (

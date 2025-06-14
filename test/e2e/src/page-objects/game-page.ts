@@ -5,6 +5,7 @@ import { Combat, Deck, DeckUnit, EffectKey, Faction, UnitStats } from '@gwent/gr
 import Confirm from '../components/confirm'
 import DeckEditor from '../components/deck-editor'
 import DeckList, { DeckInfo } from '../components/deck-list'
+import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
 import GamePlayerInfo, { PlayerTurn } from '../components/game-player-info'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
@@ -313,8 +314,10 @@ export default class GamePage {
               highlightedMoveFound = true
             }
             const dotted = selected && highlightedMove.dotted
-            const impacts = move.impacts === undefined ? '' : ` impacts: ${move.impacts.number}`
-            // TODO: verify impact type
+            const impacts =
+              move.impacts === undefined
+                ? ''
+                : ` impacts: ${move.impacts.number} ${toTitleCase(move.impacts.effectKey)}`
             expected.push(`${description}${impacts}${selected ? ' selected' : ''}${dotted ? ' dotted' : ''}`)
           } else {
             expected.push(`${move.userName}: Passed the rest of round ${move.round}`)
@@ -350,22 +353,20 @@ export default class GamePage {
               moveReason = ` ${await reasonDiv.innerText}`
             }
             const highlighted = await moveUnit.hasClass(HTML_CLASSES.ItemHighlighted)
-            const styles = await moveUnit.style
-            const isDotted =
-              styles['border-bottom-style'] === 'dotted' ||
-              styles['border-top-style'] === 'dotted' ||
-              styles['border-left-style'] === 'dotted' ||
-              styles['border-right-style'] === 'dotted'
+            const isDotted = await E2eHelper.hasDottedBorder(moveUnit)
 
-            let impactCount = ''
+            let impacts = ''
             const impactContainer = await move.find(`.${HTML_CLASSES.GameHistoryMoveImpactContainer}`)
             if (await impactContainer.exists) {
-              impactCount = ` impacts: ${await impactContainer.find(`.${HTML_CLASSES.GameHistoryMoveImpactCount}`)
-                .innerText}`
+              const impactEffect = await impactContainer
+                .find(`.${HTML_CLASSES.MoveImpactEffectIcon}`)
+                .getAttribute('title')
+              const impactCount = await impactContainer.find(`.${HTML_CLASSES.GameHistoryMoveImpactCount}`).innerText
+              impacts = ` impacts: ${impactCount} ${impactEffect}`
             }
 
             actual.push(
-              `${movePlayerName}: ${moveUnitName}${moveReason}${impactCount}${highlighted ? ' selected' : ''}${
+              `${movePlayerName}: ${moveUnitName}${moveReason}${impacts}${highlighted ? ' selected' : ''}${
                 isDotted ? ' dotted' : ''
               }`
             )
@@ -696,11 +697,12 @@ export default class GamePage {
       } else {
         const expected: string[] = []
         for (const impact of move.impacts) {
-          expected.push(
-            `${impact.username}: ${impact.unitName} ${getImpactDescription({
-              effectKey: move.effectKey,
-            })}`
-          )
+          const description = getImpactDescription({
+            effectKey: move.effectKey,
+          })
+          const selected = impact.highlighted ? ' selected' : ''
+          const dotted = impact.dotted ? ' dotted' : ''
+          expected.push(`${impact.username}: ${impact.unitName} ${description}${selected}${dotted}`)
         }
 
         const actual: string[] = []
@@ -713,7 +715,11 @@ export default class GamePage {
           const description = getImpactDescription({
             effectKey: move.effectKey,
           })
-          actual.push(`${userName}: ${unitName} ${description}`)
+          const highlighted = await child.hasClass(HTML_CLASSES.ItemHighlighted)
+          const dotted = await E2eHelper.hasDottedBorder(child)
+          actual.push(
+            `${userName}: ${unitName} ${description}${highlighted ? ' selected' : ''}${dotted ? ' dotted' : ''}`
+          )
         }
         await t
           .expect(actual)
@@ -1130,6 +1136,48 @@ export default class GamePage {
     await t.click(card)
   }
 
+  static async getImpactCard({ move, impact }: ImpactSelection) {
+    const historyMove = await this.getHistoryMove({
+      unitName: move.unitName,
+      userName: move.userName,
+      round: move.round,
+    })
+
+    const children = historyMove.find(`.${HTML_CLASSES.GameHistoryMoveImpactUnitContainer}`)
+    const childCount = await children.count
+    let impactFound: Selector | undefined = undefined
+    for (let i = 0; i < childCount && !impactFound; i++) {
+      const child = children.nth(i)
+      const userName = await child.find(`.${HTML_CLASSES.MoveImpactUserName}`).innerText
+      const unitName = await child.find(`.${HTML_CLASSES.MoveImpactUnitName}`).innerText
+      if (userName === impact.userName && unitName === impact.unitName) {
+        impactFound = child
+      }
+    }
+    if (!impactFound) {
+      throw Error(
+        `Could not find impact unit "${impact.unitName}" for user "${impact.userName}" for move "${move.unitName}" by user "${move.userName}" in round "${move.round}"`
+      )
+    }
+    return impactFound
+  }
+
+  static async selectImpactCard({ move, impact }: ImpactSelection) {
+    const impactCard = await this.getImpactCard({
+      move,
+      impact,
+    })
+    await t.click(impactCard)
+  }
+
+  static async selectImpactImage({ move, impact }: ImpactSelection) {
+    const impactCard = await this.getImpactCard({
+      move,
+      impact,
+    })
+    await t.click(impactCard.find(`.${HTML_CLASSES.MoveImpactUnitImage}`))
+  }
+
   static async getHistoryMove({
     userName,
     unitName,
@@ -1157,6 +1205,23 @@ export default class GamePage {
       throw Error(`Could not find move for unit "${unitName}" by user "${userName}" in round "${round}"`)
     }
     return moveFound
+  }
+
+  static async selectHistoryMoveImage({
+    userName,
+    unitName,
+    round,
+  }: {
+    userName: string
+    unitName: string
+    round: number
+  }) {
+    const move = await this.getHistoryMove({
+      userName,
+      unitName,
+      round,
+    })
+    await t.click(move.find(`.${HTML_CLASSES.GameHistoryMoveImage}`))
   }
 
   static async toggleImpacts({ userName, unitName, round }: { userName: string; unitName: string; round: number }) {
@@ -1192,6 +1257,18 @@ interface Redraws {
   to: string
 }
 
+interface ImpactSelection {
+  move: {
+    unitName: string
+    userName: string
+    round: number
+  }
+  impact: {
+    unitName: string
+    userName: string
+  }
+}
+
 export interface HistoryMove {
   userName: string
   unitName: string
@@ -1210,6 +1287,8 @@ export interface HistoryImpactMoves {
   impacts: {
     username: string
     unitName: string
+    highlighted?: boolean
+    dotted?: boolean
   }[]
 }
 

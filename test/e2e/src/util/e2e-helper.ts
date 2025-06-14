@@ -33,6 +33,16 @@ export class E2eHelper {
     return false
   }
 
+  static async hasDottedBorder(element: Selector): Promise<boolean> {
+    const styles = await element.style
+    return (
+      styles['border-bottom-style'] === 'dotted' ||
+      styles['border-top-style'] === 'dotted' ||
+      styles['border-left-style'] === 'dotted' ||
+      styles['border-right-style'] === 'dotted'
+    )
+  }
+
   static async switchUser({ username, password = 'password' }: { username: string; password?: string }) {
     await Banner.goTo(Banner.elements.MenuProfile)
     await ProfilePage.logout()
@@ -288,6 +298,9 @@ export class E2eHelper {
     switchTurnsWith,
     scorching,
     moraling,
+    horning,
+    mustering,
+    impacts,
   }: {
     player: GamePlayerExpected
     deckUnit: DeckUnit
@@ -298,6 +311,9 @@ export class E2eHelper {
     switchTurnsWith?: GamePlayerExpected
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
+    horning?: MoralingExpected[]
+    mustering?: MoralingExpected[]
+    impacts?: number
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
     if (!row) {
@@ -340,15 +356,25 @@ export class E2eHelper {
       }
     }
     if (moves) {
+      let effectKey: EffectKey | undefined = undefined
+      if (scorching) {
+        effectKey = EffectKey.Scorch
+      } else if (moraling) {
+        effectKey = EffectKey.Morale
+      } else if (horning) {
+        effectKey = EffectKey.Horn
+      } else if (mustering) {
+        effectKey = EffectKey.Muster
+      }
       moves.push({
         userName: player.name,
         unitName: deckUnit.unit.name,
         combatRow: row,
         impacts:
-          scorching || moraling
+          effectKey && impacts !== -1
             ? {
-                effectKey: scorching ? EffectKey.Scorch : EffectKey.Morale,
-                number: (scorching || moraling)?.length || 0,
+                effectKey,
+                number: impacts !== undefined ? impacts : (scorching || moraling)?.length || 0,
               }
             : undefined,
       })

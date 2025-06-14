@@ -83,8 +83,6 @@ New things that should be added to the codebase.
 - allow flipping through history and/or impacts when in fullunit?
 - have FullUnit strength be red/green if effectiveStrength different
 - remove "renderXYZ" methods in favor of functional components always?
-- morale impact
-- click on impact to highlight battlefield card?
 - unit tests
 - func tests
 - e2e tests
@@ -120,7 +118,7 @@ New things that should be added to the codebase.
   ```
 
 - Avenger
-  - How to handle duplicates on battlefield?
+  - How to handle duplicates on battlefield? Use "created" field as differentiator?
 - Better game summarization (graphs?)
   - points per round
   - time per round
