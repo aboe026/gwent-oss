@@ -390,11 +390,13 @@ export default class GamePage {
     rowName,
     score,
     units,
+    userName,
     highlightedBattlefieldCard,
     highlightedHandCard,
   }: {
     rowSelector: Selector
     isSelf: boolean
+    userName: string
     rowName: Combat
     score: number
     units: CombatUnit[]
@@ -421,7 +423,8 @@ export default class GamePage {
       if (
         highlightedBattlefieldCard &&
         highlightedBattlefieldCard.unitName === unit.name &&
-        highlightedBattlefieldCard.row === rowName
+        highlightedBattlefieldCard.row === rowName &&
+        highlightedBattlefieldCard.userName === userName
       ) {
         highlightedBattlefieldCardFound = true
         expectedUnitName += ' selected'
@@ -540,6 +543,7 @@ export default class GamePage {
         score: self.close?.score || 0,
         units: self.close?.units || [],
         isSelf: true,
+        userName: self.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
@@ -549,6 +553,7 @@ export default class GamePage {
         score: self.ranged?.score || 0,
         units: self.ranged?.units || [],
         isSelf: true,
+        userName: self.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
@@ -558,6 +563,7 @@ export default class GamePage {
         score: self.siege?.score || 0,
         units: self.siege?.units || [],
         isSelf: true,
+        userName: self.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
@@ -567,6 +573,7 @@ export default class GamePage {
         score: opponent.close?.score || 0,
         units: opponent.close?.units || [],
         isSelf: false,
+        userName: opponent.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
@@ -576,6 +583,7 @@ export default class GamePage {
         score: opponent.ranged?.score || 0,
         units: opponent.ranged?.units || [],
         isSelf: false,
+        userName: opponent.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
       })
@@ -586,6 +594,7 @@ export default class GamePage {
         units: opponent.siege?.units || [],
         isSelf: false,
         highlightedBattlefieldCard,
+        userName: opponent.name || '',
         highlightedHandCard,
       })
       const highlightedBattlefieldCardFound =
@@ -1311,6 +1320,7 @@ export interface HighlightedHandCard {
 export interface HighlightedBattlefieldCard {
   unitName: string
   row: Combat
+  userName: string
 }
 
 export interface HighlightedHistory {

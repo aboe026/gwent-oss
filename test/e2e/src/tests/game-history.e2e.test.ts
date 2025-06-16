@@ -37,6 +37,7 @@ test('Selecting self unit when not turn in history highlights it and card on bat
     highlightedBattlefieldCard: {
       unitName,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -75,6 +76,7 @@ test('Selecting self unit when not turn on combat row highlights it and move in 
     highlightedBattlefieldCard: {
       unitName,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -120,6 +122,7 @@ test('Selecting self unit when turn in history highlights it and card on battlef
     highlightedBattlefieldCard: {
       unitName: unitName2,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -165,6 +168,7 @@ test('Selecting self unit when turn on combat row highlights it and move in hist
     highlightedBattlefieldCard: {
       unitName: unitName2,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -204,6 +208,7 @@ test('Selecting opponent unit when turn in history highlights it and card on bat
     highlightedBattlefieldCard: {
       unitName: unitName,
       row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -243,6 +248,7 @@ test('Selecting opponent unit when turn on combat row highlights it and move in 
     highlightedBattlefieldCard: {
       unitName: unitName,
       row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -288,6 +294,7 @@ test('Selecting opponent unit when not turn in history highlights it and card on
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -333,6 +340,7 @@ test('Selecting opponent unit when not turn on combat row highlights it and move
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -371,6 +379,7 @@ test('Select card from history and deselect from battlefield', async (t) => {
     highlightedBattlefieldCard: {
       unitName,
       row: Combat.Ranged,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -408,6 +417,7 @@ test('Select card from battlefield and deselect from history', async (t) => {
     highlightedBattlefieldCard: {
       unitName,
       row: Combat.Siege,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -458,6 +468,7 @@ test('Select card from history deselects card selected in hand', async (t) => {
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
 })
@@ -500,6 +511,7 @@ test('Select card from battlefield deselects card selected in hand', async (t) =
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
 })
@@ -670,6 +682,7 @@ test('Selecting combat card whose history entry is offscreen scrolls it into vie
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.verifyHistoryUnitInViewport({

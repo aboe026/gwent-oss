@@ -398,6 +398,7 @@ test('Impact highlighted when unit selected on battlefield', async (t) => {
     highlightedBattlefieldCard: {
       row: Combat.Ranged,
       unitName: unitName1,
+      userName: gameManager.self.gamePlayer.name,
     },
     highlightedHistory: {
       playerName: gameManager.self.gamePlayer.name,
@@ -475,6 +476,7 @@ test('Battlefield and history unit highlighted when selected in impact', async (
     highlightedBattlefieldCard: {
       row: Combat.Ranged,
       unitName: unitName1,
+      userName: gameManager.self.gamePlayer.name,
     },
     highlightedHistory: {
       playerName: gameManager.self.gamePlayer.name,

@@ -224,7 +224,7 @@ export class GameManager {
     highlightedHistory,
   }: {
     highlightedHandCard?: HighlightedHandCard
-    highlightedBattlefieldCard?: HighlightedBattlefieldCard // TODO: this should take into account player
+    highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHistory?: HighlightedHistory
     impacts?: HistoryImpactMoves[]
   }) {

@@ -978,5 +978,3 @@ test('Schirru removes only opponents unit if self has same one', async (t) => {
     ],
   })
 })
-
-// TODO: can scorch after scorch
