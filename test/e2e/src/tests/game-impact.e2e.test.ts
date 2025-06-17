@@ -364,6 +364,359 @@ test('Shows multiple entries if Scorch impacts multiple units', async (t) => {
   })
 })
 
+test('Highlights separate for unit with same name in different rounds', async (t) => {
+  const unitName1 = 'Dol Blathanna Scout'
+  const unitName2 = 'Milva'
+  const unitName3 = 'Dol Blathanna Scout'
+  const unitName4 = 'Olgierd Von Everec'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName2, unitName3, unitName4],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    moraling: [
+      {
+        effectiveStrength: 7,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+  })
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+  })
+  await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName4,
+    combat: Combat.Ranged,
+    moraling: [
+      {
+        effectiveStrength: 7,
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  await GamePage.toggleImpacts({
+    unitName: unitName2,
+    userName: gameManager.self.gamePlayer.name,
+    round: 1,
+  })
+  await GamePage.toggleImpacts({
+    unitName: unitName4,
+    userName: gameManager.self.gamePlayer.name,
+    round: 2,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Morale,
+        round: 1,
+        unitName: unitName2,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+      {
+        effectKey: EffectKey.Medic,
+        round: 2,
+        unitName: unitName4,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName3,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+
+  await GamePage.selectImpactCard({
+    move: {
+      round: 1,
+      unitName: unitName2,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    impact: {
+      unitName: unitName1,
+      userName: gameManager.self.gamePlayer.name,
+    },
+  })
+  await gameManager.verify({
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: 1,
+      row: Combat.Ranged,
+      unitName: unitName1,
+      dotted: true,
+    },
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Morale,
+        round: 1,
+        unitName: unitName2,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+            highlighted: true,
+            dotted: true,
+          },
+        ],
+      },
+      {
+        effectKey: EffectKey.Medic,
+        round: 2,
+        unitName: unitName4,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName3,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+
+  await GamePage.selectBattlefieldCard({
+    unitName: unitName3,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await gameManager.verify({
+    highlightedBattlefieldCard: {
+      row: Combat.Ranged,
+      unitName: unitName3,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: 2,
+      row: Combat.Ranged,
+      unitName: unitName3,
+    },
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Morale,
+        round: 1,
+        unitName: unitName2,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+      {
+        effectKey: EffectKey.Medic,
+        round: 2,
+        unitName: unitName4,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName3,
+            username: gameManager.self.gamePlayer.name,
+            highlighted: true,
+          },
+        ],
+      },
+    ],
+  })
+})
+
+test('Unit impacted multiple times shown properly', async (t) => {
+  const unitName1 = 'Ballista'
+  const unitName2 = 'Kaedweni Siege Expert'
+  const unitName3 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2, unitName3],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Siege,
+    moraling: [
+      {
+        effectiveStrength: 7,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
+      },
+    ],
+  })
+  await gameManager.deploy({
+    unitName: unitName3,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
+        strength: 7,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  await GamePage.toggleImpacts({
+    unitName: unitName2,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+  })
+  await GamePage.toggleImpacts({
+    unitName: unitName3,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Morale,
+        round: gameManager.round,
+        unitName: unitName2,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+      {
+        effectKey: EffectKey.Medic,
+        round: gameManager.round,
+        unitName: unitName3,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+  await GamePage.selectImpactCard({
+    move: {
+      round: gameManager.round,
+      unitName: unitName2,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    impact: {
+      unitName: unitName1,
+      userName: gameManager.self.gamePlayer.name,
+    },
+  })
+  await gameManager.verify({
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      row: Combat.Siege,
+      unitName: unitName1,
+      dotted: true,
+    },
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Morale,
+        round: gameManager.round,
+        unitName: unitName2,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+            highlighted: true,
+            dotted: true,
+          },
+        ],
+      },
+      {
+        effectKey: EffectKey.Medic,
+        round: gameManager.round,
+        unitName: unitName3,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+            highlighted: true,
+            dotted: true,
+          },
+        ],
+      },
+    ],
+  })
+  await GamePage.selectImpactCard({
+    move: {
+      round: gameManager.round,
+      unitName: unitName3,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    impact: {
+      unitName: unitName1,
+      userName: gameManager.self.gamePlayer.name,
+    },
+  })
+  await gameManager.verify({})
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Morale,
+        round: gameManager.round,
+        unitName: unitName2,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+      {
+        effectKey: EffectKey.Medic,
+        round: gameManager.round,
+        unitName: unitName3,
+        userName: gameManager.self.gamePlayer.name,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+          },
+        ],
+      },
+    ],
+  })
+})
+
 test('Impact highlighted when unit selected on battlefield', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Milva'
@@ -721,7 +1074,4 @@ test('FullUnit for impact preserves effects in time', async (t) => {
   })
 })
 
-// TODO: test round 2/3?
-// TODO: test highlight works properly with multiple units with same name
-// TODO: test that impact that happens twice (moraled then scorched) shows up twice and each highlights the other
 // TODO: test that selecting battlefield unit still scrolls to first one (maybe edit existing text in the other fixture)
