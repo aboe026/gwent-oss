@@ -1,6 +1,7 @@
 import {
   EffectDbObject,
   EffectKey,
+  ImpactDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -12,135 +13,64 @@ import { ObjectId } from 'mongodb'
 
 describe('calculate-game-effective-strengths', () => {
   describe('calculateEffectiveStrengths', () => {
-    const logPrefix = 'log-prefix'
-    it('calls to calculateEffectiveStrengthsForRow for each combat type for each player', () => {
-      const calculateEffectiveStrengthsForRowSpy = jest
-        .spyOn(CalculateGameEffectiveStrengths as any, 'calculateEffectiveStrengthsForRow')
-        .mockImplementation()
-
-      const effects = [TestUtil.getDbEffect({})]
-      const units = [TestUtil.getDbUnit({})]
-      const game = TestUtil.getDbGame({
-        round: 2,
-        players: [
-          TestUtil.getDbGamePlayer({
-            rounds: [
-              TestUtil.getDbPlayerRound({}),
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
-                  units: [TestUtil.getDbGameUnit({})],
-                },
-                ranged: {
-                  score: 0,
-                  units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-                },
-                siege: {
-                  score: 0,
-                  units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
-                },
-              }),
-            ],
-          }),
-          TestUtil.getDbGamePlayer({
-            rounds: [
-              TestUtil.getDbPlayerRound({}),
-              TestUtil.getDbPlayerRound({
-                close: {
-                  score: 0,
-                  units: [
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                  ],
-                },
-                ranged: {
-                  score: 0,
-                  units: [
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                  ],
-                },
-                siege: {
-                  score: 0,
-                  units: [
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                    TestUtil.getDbGameUnit({}),
-                  ],
-                },
-              }),
-            ],
-          }),
-        ],
+    it('returns undefined if no impacts on any row', () => {
+      testCalculateEffectiveStrengths({
+        rowResults: [[], [], [], [], [], []],
+        expected: undefined,
       })
-
-      expect(
-        CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
-          logPrefix,
-          effects,
-          game,
-          units,
-        })
-      ).toEqual(undefined)
-
-      expect(calculateEffectiveStrengthsForRowSpy.mock.calls).toEqual([
-        [
-          {
-            row: game.players[0].rounds[1].close,
-            units,
-            effects,
-            logPrefix,
-          },
-        ],
-        [
-          {
-            row: game.players[0].rounds[1].ranged,
-            units,
-            effects,
-            logPrefix,
-          },
-        ],
-        [
-          {
-            row: game.players[0].rounds[1].siege,
-            units,
-            effects,
-            logPrefix,
-          },
-        ],
-        [
-          {
-            row: game.players[1].rounds[1].close,
-            units,
-            effects,
-            logPrefix,
-          },
-        ],
-        [
-          {
-            row: game.players[1].rounds[1].ranged,
-            units,
-            effects,
-            logPrefix,
-          },
-        ],
-        [
-          {
-            row: game.players[1].rounds[1].siege,
-            units,
-            effects,
-            logPrefix,
-          },
-        ],
-      ])
+    })
+    it('returns single impact', () => {
+      const impact: ImpactDbObject = {
+        unit: {
+          artStyle: 1,
+          unit: new ObjectId(),
+        },
+        user: new ObjectId(),
+      }
+      testCalculateEffectiveStrengths({
+        rowResults: [[], [], [], [impact], [], []],
+        expected: [impact],
+      })
+    })
+    it('returns multiple impacts from single row result', () => {
+      const impact1: ImpactDbObject = {
+        unit: {
+          artStyle: 1,
+          unit: new ObjectId(),
+        },
+        user: new ObjectId(),
+      }
+      const impact2: ImpactDbObject = {
+        unit: {
+          artStyle: 2,
+          unit: new ObjectId(),
+        },
+        user: new ObjectId(),
+      }
+      testCalculateEffectiveStrengths({
+        rowResults: [[], [], [], [impact1, impact2], [], []],
+        expected: [impact1, impact2],
+      })
+    })
+    it('returns multiple impacts from multiple row results', () => {
+      const impact1: ImpactDbObject = {
+        unit: {
+          artStyle: 1,
+          unit: new ObjectId(),
+        },
+        user: new ObjectId(),
+      }
+      const impact2: ImpactDbObject = {
+        unit: {
+          artStyle: 2,
+          unit: new ObjectId(),
+        },
+        user: new ObjectId(),
+      }
+      testCalculateEffectiveStrengths({
+        rowResults: [[], [], [], [impact1], [impact2], []],
+        expected: [impact1, impact2],
+      })
     })
   })
   describe('calculateEffectiveStrengthsForRow', () => {
@@ -1031,3 +961,149 @@ describe('calculate-game-effective-strengths', () => {
     })
   })
 })
+
+function testCalculateEffectiveStrengths({
+  rowResults,
+  expected,
+}: {
+  rowResults: (ImpactDbObject[] | undefined)[]
+  expected: ImpactDbObject[] | undefined
+}) {
+  const logPrefix = 'log-prefix'
+  const calculateEffectiveStrengthsForRowSpy = jest
+    .spyOn(CalculateGameEffectiveStrengths as any, 'calculateEffectiveStrengthsForRow')
+    .mockImplementation()
+
+  const effects = [TestUtil.getDbEffect({})]
+  const units = [TestUtil.getDbUnit({})]
+  const newDeckUnit = TestUtil.getDbDeckUnit({})
+  const gamePlayer1 = TestUtil.getDbGamePlayer({
+    rounds: [
+      TestUtil.getDbPlayerRound({}),
+      TestUtil.getDbPlayerRound({
+        close: {
+          score: 0,
+          units: [TestUtil.getDbGameUnit({})],
+        },
+        ranged: {
+          score: 0,
+          units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+        },
+        siege: {
+          score: 0,
+          units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+        },
+      }),
+    ],
+  })
+  const game = TestUtil.getDbGame({
+    round: 2,
+    players: [
+      gamePlayer1,
+      TestUtil.getDbGamePlayer({
+        rounds: [
+          TestUtil.getDbPlayerRound({}),
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 0,
+              units: [
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+              ],
+            },
+            ranged: {
+              score: 0,
+              units: [
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+              ],
+            },
+            siege: {
+              score: 0,
+              units: [
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+                TestUtil.getDbGameUnit({}),
+              ],
+            },
+          }),
+        ],
+      }),
+    ],
+    turn: gamePlayer1.user,
+  })
+  for (const rowResult of rowResults) {
+    jest
+      .spyOn(CalculateGameEffectiveStrengths as any, 'calculateEffectiveStrengthsForRow')
+      .mockReturnValueOnce(rowResult)
+  }
+
+  expect(
+    CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+      logPrefix,
+      effects,
+      game,
+      units,
+      newDeckUnit,
+    })
+  ).toEqual(expected)
+
+  const calculateEffectiveStrengthsForRowCall = {
+    units,
+    effects,
+    logPrefix,
+    newDeckUnit,
+  }
+  expect(calculateEffectiveStrengthsForRowSpy.mock.calls).toEqual([
+    [
+      {
+        ...calculateEffectiveStrengthsForRowCall,
+        player: game.players[0],
+        row: game.players[0].rounds[1].close,
+      },
+    ],
+    [
+      {
+        ...calculateEffectiveStrengthsForRowCall,
+        player: game.players[0],
+        row: game.players[0].rounds[1].ranged,
+      },
+    ],
+    [
+      {
+        ...calculateEffectiveStrengthsForRowCall,
+        player: game.players[0],
+        row: game.players[0].rounds[1].siege,
+      },
+    ],
+    [
+      {
+        ...calculateEffectiveStrengthsForRowCall,
+        player: game.players[1],
+        row: game.players[1].rounds[1].close,
+      },
+    ],
+    [
+      {
+        ...calculateEffectiveStrengthsForRowCall,
+        player: game.players[1],
+        row: game.players[1].rounds[1].ranged,
+      },
+    ],
+    [
+      {
+        ...calculateEffectiveStrengthsForRowCall,
+        player: game.players[1],
+        row: game.players[1].rounds[1].siege,
+      },
+    ],
+  ])
+}
