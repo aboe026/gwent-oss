@@ -81,7 +81,6 @@ Existing problems in the codebase that need to be fixed.
 New things that should be added to the codebase.
 
 - allow flipping through history and/or impacts when in fullunit?
-- have FullUnit strength be red/green if effectiveStrength different
 - remove "renderXYZ" methods in favor of functional components always?
 - unit tests
 - func tests
@@ -89,12 +88,6 @@ New things that should be added to the codebase.
 - increment minor version
 - changelog
 
-- click on impact to highlight battlefield card?
-- search bar for history?
-  - only show moves with matching unit name or impact with unit name
-- for "Move" type, have "impact" field
-  - cards removed/added
-  - effects applied to other cards
 - for "MoveUnit" type, have "reason" field
 
   ```
@@ -117,6 +110,8 @@ New things that should be added to the codebase.
   }
   ```
 
+- Medic
+  - How to handle brought back for HistoryMove/Impact? unique per created?
 - Avenger
   - How to handle duplicates on battlefield? Use "created" field as differentiator?
 - Better game summarization (graphs?)

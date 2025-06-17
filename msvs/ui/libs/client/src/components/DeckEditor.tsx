@@ -729,7 +729,7 @@ function renderUnits({
             setSelectedUnits((previous) =>
               previous.map((deckUnit) => deckUnit.unit.id).includes(fullUnitSelected.unit.id)
                 ? previous.filter((deckUnit) => deckUnit.unit.id !== fullUnitSelected.unit.id)
-                : [...previous, fullUnitSelected]
+                : [...previous, fullUnitSelected as DeckUnit]
             )
           }
           if (nextUnit) {
