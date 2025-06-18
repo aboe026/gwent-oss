@@ -1,11 +1,11 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
-import { DeckUnit, GameStatus } from '@gwent/graphql-schema/apollo-typings'
+import { DeckUnit, GamePlayer, GameStatus } from '@gwent/graphql-schema/apollo-typings'
+import { FullUnitCards, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { sortObjectArray } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
-import { UnitForPlayer } from './GameProps'
 
 export default function GameHand({
   gameStatus,
@@ -13,7 +13,8 @@ export default function GameHand({
   handCardSelected,
   isTurn,
   playUnitLoading,
-  setFullUnit,
+  self,
+  setFullUnits,
   setHandCardSelected,
   setHistoryCardSelected,
 }: {
@@ -22,7 +23,8 @@ export default function GameHand({
   handCardSelected: DeckUnit | undefined
   isTurn: boolean
   playUnitLoading: boolean
-  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  self: GamePlayer
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
@@ -46,7 +48,7 @@ export default function GameHand({
             </span>
           </Centered>
         ) : (
-          sortedUnits.map((deckUnit) => {
+          sortedUnits.map((deckUnit, index) => {
             const selected = deckUnit.unit.id === handCardSelected?.unit.id
             const notSelected = handCardSelected?.unit.id && !selected
             let title = deckUnit.unit.name
@@ -77,12 +79,19 @@ export default function GameHand({
                   selected={deckUnit.unit.id === handCardSelected?.unit.id}
                   dotted={gameStatus === GameStatus.Playing && !isTurn}
                   title={title}
-                  onFullscreen={() =>
-                    setFullUnit({
-                      unit: deckUnit,
-                      playerId: undefined,
+                  onFullscreen={() => {
+                    setFullUnits({
+                      currentIndex: index,
+                      units: sortedUnits.map((deckUnit) => {
+                        return {
+                          playerId: self.user.id,
+                          unit: deckUnit,
+                        }
+                      }),
                     })
-                  }
+                    setHandCardSelected(deckUnit)
+                    setHistoryCardSelected(undefined)
+                  }}
                 />
                 {notSelected && <div title={title} className={HTML_CLASSES.GameHandCardWrapperNotSelected}></div>}
               </div>

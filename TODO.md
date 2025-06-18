@@ -80,7 +80,9 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- allow flipping through history and/or impacts when in fullunit?
+- no need to show username in FullUnit when redrawing
+- fix redraw unit not selecting hand unit
+- fix scorch in redraw (shouldn't highligh whole battlefield)
 - remove "renderXYZ" methods in favor of functional components always?
 - unit tests
 - func tests

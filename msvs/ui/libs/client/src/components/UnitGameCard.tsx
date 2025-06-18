@@ -41,7 +41,11 @@ export default function UnitGameCard({
       <div
         className={`${HTML_CLASSES.UnitGameCardFullScreen} icon-container pointable`}
         title="Fullscreen"
-        onClick={() => onFullscreen(deckUnit)}
+        onClick={(event) => {
+          event.stopPropagation()
+          event.preventDefault()
+          onFullscreen(deckUnit)
+        }}
       >
         <CgMaximizeAlt className="unit-game-card-fullscreen-icon" />
       </div>

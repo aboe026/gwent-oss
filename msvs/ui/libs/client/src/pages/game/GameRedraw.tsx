@@ -4,11 +4,11 @@ import { Dispatch, SetStateAction } from 'react'
 import Centered from '../../components/Centered'
 import CoinToss from '../../components/CoinToss'
 import { DeckUnit, GamePlayer, Game, GameDeck } from '@gwent/graphql-schema/apollo-typings'
+import { FullUnitCards, ReadyProps, RedrawProps } from './GameProps'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent/constants'
 import { getApolloError, retryCheckingAuth } from '../../util/error-util'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
-import { ReadyProps, RedrawProps, UnitForPlayer } from './GameProps'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../App'
 
@@ -20,8 +20,8 @@ export default function GameRedraw({
   readyProps,
   redrawProps,
   self,
+  setFullUnits,
   setCoinTossVisible,
-  setFullUnit,
   setHandCardSelected,
 }: {
   coinTossVisible: boolean
@@ -32,7 +32,7 @@ export default function GameRedraw({
   redrawProps: RedrawProps
   self: GamePlayer
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
-  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
 }) {
   const { checkAuth } = useUserContext()
@@ -67,7 +67,14 @@ export default function GameRedraw({
                   : handCardSelected
               ) as DeckUnit
               const toCard = (gameDeck.redraws.length >= index + 1 && gameDeck.redraws[index].to) as DeckUnit
-              const handIds = gameDeck.hand.map((deckUnit) => deckUnit.unit.id)
+              const units = [fromCard, toCard]
+                .filter((deckUnit) => !!deckUnit)
+                .map((deckUnit) => {
+                  return {
+                    playerId: self.user.id,
+                    unit: deckUnit,
+                  }
+                })
               return (
                 <div className="game-deck-redraw-card-container" key={index}>
                   {index < gameDeck.redraws.length || (index === gameDeck.redraws.length && redrawProps.loading) ? (
@@ -76,13 +83,10 @@ export default function GameRedraw({
                         deckUnit={fromCard}
                         cursor={'unset'}
                         onFullscreen={() => {
-                          setFullUnit({
-                            unit: fromCard,
-                            playerId: self.user.id,
+                          setFullUnits({
+                            currentIndex: 0,
+                            units,
                           })
-                          if (handIds.includes(fromCard.unit.id)) {
-                            setHandCardSelected(fromCard)
-                          }
                         }}
                       />
                       <CgArrowLongRight color="black" title="Redrawn to" />
@@ -91,13 +95,10 @@ export default function GameRedraw({
                           deckUnit={toCard}
                           cursor={'unset'}
                           onFullscreen={() => {
-                            setFullUnit({
-                              unit: toCard,
-                              playerId: self.user.id,
+                            setFullUnits({
+                              currentIndex: 1,
+                              units,
                             })
-                            if (handIds.includes(toCard.unit.id)) {
-                              setHandCardSelected(toCard)
-                            }
                           }}
                         />
                       ) : (

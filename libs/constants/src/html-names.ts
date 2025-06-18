@@ -239,6 +239,7 @@ export const HTML_IDS = {
   ProfileUsername: 'profileUsername',
   ProfileCreated: 'profileCreated',
   UnitFullCardContainer: 'unitFullCardContainer',
+  UnitFullCardUsername: 'unitFullCardUsername',
   UnitFullCardImage: 'unitFullCardImage',
   UnitFullCardName: 'unitFullCardName',
   UnitFullCardQuote: 'unitFullCardQuote',

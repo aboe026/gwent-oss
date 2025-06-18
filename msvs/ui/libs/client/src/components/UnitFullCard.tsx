@@ -26,6 +26,7 @@ export default function UnitFullCard({
   onNext,
   onPrevious,
   onSelect,
+  userName,
 }: UnitFullCardProps) {
   useKeyDown([
     {
@@ -93,6 +94,7 @@ export default function UnitFullCard({
                   onClick={() => onSelect(fullUnit)}
                 />
                 <div id="unitFullCardInfo">
+                  {userName && <div className={HTML_IDS.UnitFullCardUsername}>{userName}</div>}
                   <div id="unitFullCardUpper">
                     <span id={HTML_IDS.UnitFullCardName}>{fullUnit.unit.name}</span>
                     <span id={HTML_IDS.UnitFullCardQuote}>{fullUnit.unit.quote}</span>
@@ -307,4 +309,5 @@ interface UnitFullCardProps {
   onNext: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   onPrevious: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   onSelect: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  userName?: string
 }

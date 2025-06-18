@@ -1,12 +1,13 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import { DeckUnit, GamePlayer, Game, Combat } from '@gwent/graphql-schema/apollo-typings'
+import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import GameCombatRow from './GameCombatRow'
 import { HTML_CLASSES } from '@gwent/constants'
-import { PlayUnitProps, UnitForPlayer } from './GameProps'
 import { useUserContext } from '../../App'
 
 export default function GameBattlefield({
+  fullUnits,
   game,
   handCardSelected,
   historyCardSelected,
@@ -14,10 +15,11 @@ export default function GameBattlefield({
   playUnitProps,
   scrollHistoryIntoView,
   self,
-  setFullUnit,
+  setFullUnits,
   setHandCardSelected,
   setHistoryCardSelected,
 }: {
+  fullUnits: FullUnitCards | undefined
   game: Game
   handCardSelected: DeckUnit | undefined
   historyCardSelected: UnitForPlayer | undefined
@@ -25,7 +27,7 @@ export default function GameBattlefield({
   playUnitProps: PlayUnitProps
   scrollHistoryIntoView: (args: UnitForPlayer) => void
   self: GamePlayer
-  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
@@ -49,10 +51,11 @@ export default function GameBattlefield({
   const sharedProps = {
     handCardSelected,
     playUnitProps,
+    fullUnits,
     checkAuth,
     game,
     isTurn,
-    setFullUnit,
+    setFullUnits,
     setHandCardSelected,
     historyCardSelected,
     setHistoryCardSelected,

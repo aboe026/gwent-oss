@@ -12,12 +12,13 @@ import {
   Effect,
   Impact,
   GameUnit,
+  MoveUnit,
 } from '@gwent/graphql-schema/apollo-typings'
+import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { getApolloError } from '../../util/error-util'
 import { getImpactDescription, getNoImpactMessage, groupBy, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
-import { MoveForRound, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import './GameHistory.css'
 
 export default function GameHistory({
@@ -30,7 +31,7 @@ export default function GameHistory({
   self,
   setHandCardSelected,
   setHistoryCardSelected,
-  setFullUnit,
+  setFullUnits,
 }: {
   game: Game
   handCardSelected: DeckUnit | undefined
@@ -41,7 +42,7 @@ export default function GameHistory({
   self: GamePlayer
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
-  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
@@ -54,6 +55,7 @@ export default function GameHistory({
     : 'Waiting for opponent to make their move'
   const resolvedPlayPassError = getApolloError(playPassProps.error)
   const resolvedPlayUnitError = getApolloError(playUnitProps.error)
+
   return (
     <div id={HTML_IDS.GameHistoryContainer} className="game-edge-container game-section">
       {game.round === 0 ? (
@@ -77,162 +79,187 @@ export default function GameHistory({
               <div className="error-text">{`Error playing unit "${handCardSelected?.unit.name}": ${resolvedPlayUnitError}`}</div>
             </div>
           )}
-          {movesByRounds.map((movesByRound) => (
-            <div className={HTML_CLASSES.GameHistoryRoundContainer} key={movesByRound.round}>
-              <div className={HTML_CLASSES.GameHistoryRoundName}>Round {movesByRound.round}</div>
-              {movesByRound.playerMoves.map((playerMove, index) => {
-                const gamePlayer = game.players[playerMove.playerIndex]
-                const isSelf = gamePlayer.user.name === self.user.name
-                let isSelected = false
-                let isOnBattlefield = false
-                let textClass = `game-history-move-text ${
-                  isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'
-                }`
-                const descriptionClass = `game-history-move-user-description ${
-                  isSelf ? 'game-history-move-user-description-self' : 'game-history-move-user-description-opponent'
-                }`
-                let primaryText = ''
-                let secondaryText = ''
-                let image = ''
-                let imageTitle = ''
-                let error = false
-                let pointable = false
-                let impacts: Impact[] | undefined | null
-                let gameUnit: GameUnit | undefined
-                if (playerMove.move.__typename === 'MoveLeader') {
-                  primaryText = `Activated leader ${playerMove.move.leader.name} ability`
-                  image = playerMove.move.leader.image
-                } else if (playerMove.move.__typename === 'MovePass') {
-                  primaryText = `Passed the rest of round ${movesByRound.round}`
-                  image = 'images/actions/pass.png'
-                  imageTitle = 'Passed'
-                  textClass += ' game-history-move-text-wrappable'
-                } else if (playerMove.move.__typename === 'MoveUnit') {
-                  impacts = playerMove.move.impacts
-                  gameUnit = playerMove.move.unit
-                  pointable = true
-                  primaryText = playerMove.move.unit.unit.name
-                  const placement = playerMove.move.unit.row
-                    ? `as ${toTitleCase(playerMove.move.unit.row)}`
-                    : 'to battlefield'
-                  secondaryText = `deployed ${placement}`
-                  image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
-                  imageTitle = playerMove.move.unit.unit.name
-                  if (
-                    historyCardSelected &&
-                    historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
-                    gamePlayer.user.id === historyCardSelected.playerId
-                  ) {
-                    isSelected = true
-                    const playerRound = gamePlayer.rounds[game.round - 1]
-                    const units = [...playerRound.close.units, ...playerRound.ranged.units, ...playerRound.siege.units]
-                    for (let i = 0; i < units.length && !isOnBattlefield; i++) {
-                      if (units[i].unit.id === playerMove.move.unit.unit.id) {
-                        isOnBattlefield = true
+          {movesByRounds.map((movesByRound) => {
+            const unitMoves = movesByRound.playerMoves.filter((playerMove) => playerMove.move.__typename === 'MoveUnit')
+            return (
+              <div className={HTML_CLASSES.GameHistoryRoundContainer} key={movesByRound.round}>
+                <div className={HTML_CLASSES.GameHistoryRoundName}>Round {movesByRound.round}</div>
+                {movesByRound.playerMoves.map((playerMove, index) => {
+                  const gamePlayer = game.players[playerMove.playerIndex]
+                  const isSelf = gamePlayer.user.name === self.user.name
+                  let isSelected = false
+                  let isOnBattlefield = false
+                  let textClass = `game-history-move-text ${
+                    isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'
+                  }`
+                  const descriptionClass = `game-history-move-user-description ${
+                    isSelf ? 'game-history-move-user-description-self' : 'game-history-move-user-description-opponent'
+                  }`
+                  let primaryText = ''
+                  let secondaryText = ''
+                  let image = ''
+                  let imageTitle = ''
+                  let unitMoveIndex = 0
+                  let error = false
+                  let pointable = false
+                  let impacts: Impact[] | undefined | null
+                  let gameUnit: GameUnit | undefined
+                  if (playerMove.move.__typename === 'MoveLeader') {
+                    primaryText = `Activated leader ${playerMove.move.leader.name} ability`
+                    image = playerMove.move.leader.image
+                  } else if (playerMove.move.__typename === 'MovePass') {
+                    primaryText = `Passed the rest of round ${movesByRound.round}`
+                    image = 'images/actions/pass.png'
+                    imageTitle = 'Passed'
+                    textClass += ' game-history-move-text-wrappable'
+                  } else if (playerMove.move.__typename === 'MoveUnit') {
+                    impacts = playerMove.move.impacts
+                    gameUnit = playerMove.move.unit
+                    unitMoveIndex = unitMoves.findIndex(
+                      (unitMove: PlayerMove) =>
+                        (unitMove.move as MoveUnit).unit.unit.id === gameUnit?.unit.id &&
+                        unitMove.playerIndex === playerMove.playerIndex
+                    )
+                    pointable = true
+                    primaryText = playerMove.move.unit.unit.name
+                    const placement = playerMove.move.unit.row
+                      ? `as ${toTitleCase(playerMove.move.unit.row)}`
+                      : 'to battlefield'
+                    secondaryText = `deployed ${placement}`
+                    image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
+                    imageTitle = playerMove.move.unit.unit.name
+
+                    if (
+                      historyCardSelected &&
+                      historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
+                      historyCardSelected.playerId === gamePlayer.user.id
+                    ) {
+                      isSelected = true
+                      const playerRound = gamePlayer.rounds[game.round - 1]
+                      const units = [
+                        ...playerRound.close.units,
+                        ...playerRound.ranged.units,
+                        ...playerRound.siege.units,
+                      ]
+                      for (let i = 0; i < units.length && !isOnBattlefield; i++) {
+                        if (units[i].unit.id === playerMove.move.unit.unit.id) {
+                          isOnBattlefield = true
+                        }
                       }
                     }
+                  } else {
+                    primaryText = `Invalid move type: "${playerMove.move.__typename}"`
+                    error = true
                   }
-                } else {
-                  primaryText = `Invalid move type: "${playerMove.move.__typename}"`
-                  error = true
-                }
-                const playerClass = isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
+                  const playerClass = isSelf ? 'game-history-move-self' : 'game-history-move-opponent'
 
-                return (
-                  <div key={`r${movesByRound.round}-i${index}`} className={HTML_CLASSES.GameHistoryMoveContainer}>
-                    <div
-                      ref={playerMove.ref}
-                      className={`game-history-move-unit ${isSelected ? 'item-highlighted' : ''} ${
-                        pointable ? 'pointable' : ''
-                      }`}
-                      style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
-                      title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
-                      onClick={() => {
-                        if (playerMove.move.__typename === 'MoveUnit') {
-                          if (
-                            historyCardSelected &&
-                            historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
-                            historyCardSelected.playerId === gamePlayer.user.id
-                          ) {
-                            setHistoryCardSelected(undefined)
-                          } else {
-                            setHistoryCardSelected({
-                              playerId: gamePlayer.user.id,
-                              unit: playerMove.move.unit,
-                            })
+                  return (
+                    <div key={`r${movesByRound.round}-i${index}`} className={HTML_CLASSES.GameHistoryMoveContainer}>
+                      <div
+                        ref={playerMove.ref}
+                        className={`game-history-move-unit ${isSelected ? 'item-highlighted' : ''} ${
+                          pointable ? 'pointable' : ''
+                        }`}
+                        style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
+                        title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
+                        onClick={() => {
+                          if (playerMove.move.__typename === 'MoveUnit') {
+                            if (
+                              historyCardSelected &&
+                              historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
+                              historyCardSelected.playerId === gamePlayer.user.id
+                            ) {
+                              setHistoryCardSelected(undefined)
+                            } else {
+                              setHistoryCardSelected({
+                                playerId: gamePlayer.user.id,
+                                unit: playerMove.move.unit,
+                              })
+                            }
+                            setHandCardSelected(undefined)
                           }
-                          setHandCardSelected(undefined)
-                        }
-                      }}
-                    >
-                      <div className={`game-history-move-overview ${playerClass}`}>
-                        <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
-                          {image && (
-                            <img
-                              className={HTML_CLASSES.GameHistoryMoveImage}
-                              src={image}
-                              title={imageTitle}
-                              onClick={(event) => {
-                                if (gameUnit) {
-                                  event.preventDefault()
-                                  event.stopPropagation()
-                                  setFullUnit({
-                                    playerId: gamePlayer.user.id,
-                                    unit: gameUnit,
-                                  })
-                                }
-                              }}
-                            />
-                          )}
-                        </ContainerFixedAspectRatio>
-                        <div className={descriptionClass}>
-                          <div
-                            className={`${textClass} ${HTML_CLASSES.GameHistoryMoveUsername}`}
-                            title={gamePlayer.user.name}
-                          >
-                            {gamePlayer.user.name}
-                          </div>
-                          <div className="game-history-move-texts">
-                            <div
-                              className={`${textClass} ${error ? 'error-text' : ''} ${
-                                HTML_CLASSES.GameHistoryMovePrimaryText
-                              }`}
-                              title={primaryText}
-                              style={{ fontWeight: secondaryText ? 'bold' : 'normal' }}
-                            >
-                              {primaryText}
-                            </div>
-                            {secondaryText && (
-                              <div
-                                className={`${textClass} ${HTML_CLASSES.GameHistoryMoveSecondaryText}`}
-                                title={secondaryText}
-                              >
-                                {secondaryText}
-                              </div>
+                        }}
+                      >
+                        <div className={`game-history-move-overview ${playerClass}`}>
+                          <ContainerFixedAspectRatio aspectRatio="309 / 444" width="25%">
+                            {image && (
+                              <img
+                                className={HTML_CLASSES.GameHistoryMoveImage}
+                                src={image}
+                                title={imageTitle}
+                                onClick={(event) => {
+                                  if (gameUnit) {
+                                    event.preventDefault()
+                                    event.stopPropagation()
+                                    setFullUnits({
+                                      currentIndex: unitMoveIndex,
+                                      units: unitMoves.map((unitMove) => {
+                                        return {
+                                          playerId: game.players[unitMove.playerIndex].user.id,
+                                          unit: (unitMove.move as MoveUnit).unit,
+                                        }
+                                      }),
+                                    })
+                                    setHistoryCardSelected({
+                                      playerId: gamePlayer.user.id,
+                                      unit: gameUnit,
+                                    })
+                                    setHandCardSelected(undefined)
+                                  }
+                                }}
+                              />
                             )}
+                          </ContainerFixedAspectRatio>
+                          <div className={descriptionClass}>
+                            <div
+                              className={`${textClass} ${HTML_CLASSES.GameHistoryMoveUsername}`}
+                              title={gamePlayer.user.name}
+                            >
+                              {gamePlayer.user.name}
+                            </div>
+                            <div className="game-history-move-texts">
+                              <div
+                                className={`${textClass} ${error ? 'error-text' : ''} ${
+                                  HTML_CLASSES.GameHistoryMovePrimaryText
+                                }`}
+                                title={primaryText}
+                                style={{ fontWeight: secondaryText ? 'bold' : 'normal' }}
+                              >
+                                {primaryText}
+                              </div>
+                              {secondaryText && (
+                                <div
+                                  className={`${textClass} ${HTML_CLASSES.GameHistoryMoveSecondaryText}`}
+                                  title={secondaryText}
+                                >
+                                  {secondaryText}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
+                      {gameUnit &&
+                        hasImpactableEffect({
+                          gameUnit: gameUnit,
+                        }) && (
+                          <MoveUnitImpact
+                            gameUnit={gameUnit}
+                            game={game}
+                            historyCardSelected={historyCardSelected}
+                            impacts={impacts}
+                            self={self}
+                            setFullUnits={setFullUnits}
+                            setHandCardSelected={setHandCardSelected}
+                            setHistoryCardSelected={setHistoryCardSelected}
+                          />
+                        )}
                     </div>
-                    {gameUnit &&
-                      hasImpactableEffect({
-                        gameUnit: gameUnit,
-                      }) && (
-                        <MoveUnitImpact
-                          gameUnit={gameUnit}
-                          game={game}
-                          historyCardSelected={historyCardSelected}
-                          impacts={impacts}
-                          self={self}
-                          setFullUnit={setFullUnit}
-                          setHistoryCardSelected={setHistoryCardSelected}
-                        />
-                      )}
-                  </div>
-                )
-              })}
-            </div>
-          ))}
+                  )
+                })}
+              </div>
+            )
+          })}
         </>
       )}
     </div>
@@ -245,7 +272,8 @@ function MoveUnitImpact({
   historyCardSelected,
   impacts,
   self,
-  setFullUnit,
+  setFullUnits,
+  setHandCardSelected,
   setHistoryCardSelected,
 }: {
   gameUnit: GameUnit
@@ -253,7 +281,8 @@ function MoveUnitImpact({
   historyCardSelected: UnitForPlayer | undefined
   impacts: Impact[] | null | undefined
   self: GamePlayer
-  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const [expanded, setExpanded] = useState(false)
@@ -299,7 +328,8 @@ function MoveUnitImpact({
                 historyCardSelected,
                 impacts,
                 self,
-                setFullUnit,
+                setFullUnits,
+                setHandCardSelected,
                 setHistoryCardSelected,
               })
             )}
@@ -319,7 +349,8 @@ function renderImpacts({
   historyCardSelected,
   impacts,
   self,
-  setFullUnit,
+  setFullUnits,
+  setHandCardSelected,
   setHistoryCardSelected,
 }: {
   effectKey: EffectKey
@@ -327,16 +358,30 @@ function renderImpacts({
   historyCardSelected: UnitForPlayer | undefined
   impacts: Impact[]
   self: GamePlayer
-  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const groups = groupBy({
     array: impacts,
     property: 'user.name',
   })
+  const units: UnitForPlayer[] = []
+  for (const group of groups) {
+    const sortedImpacts = sortObjectArray({
+      array: group,
+      sortProperties: ['unit.unit.name', 'unit.unit.id'],
+    })
+    for (const impact of sortedImpacts) {
+      units.push({
+        playerId: impact.user.id,
+        unit: impact.unit,
+      })
+    }
+  }
 
   return groups.map((group, groupIndex) => {
-    const sortedUnits = sortObjectArray({
+    const sortedImpacts = sortObjectArray({
       array: group,
       sortProperties: ['unit.unit.name', 'unit.unit.id'],
     })
@@ -344,7 +389,7 @@ function renderImpacts({
     return (
       <div key={groupIndex} className="move-impact-groups-container">
         <div className="move-impact-group-container">
-          {sortedUnits.map((impactedUnit, index) => {
+          {sortedImpacts.map((impactedUnit, index) => {
             const isSelf = impactedUnit.user.name === self.user.name
             const textClass = `game-history-move-text ${
               isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'
@@ -392,6 +437,7 @@ function renderImpacts({
                       playerId: impactedUnit.user.id,
                       unit: impactedUnit.unit,
                     })
+                    setHandCardSelected(undefined)
                   }
                 }}
               >
@@ -403,10 +449,18 @@ function renderImpacts({
                     onClick={(event) => {
                       event.preventDefault()
                       event.stopPropagation()
-                      setFullUnit({
+                      setFullUnits({
+                        currentIndex: units.findIndex(
+                          (unit) =>
+                            unit.playerId === impactedUnit.user.id && unit.unit.unit.id === impactedUnit.unit.unit.id
+                        ),
+                        units,
+                      })
+                      setHistoryCardSelected({
                         playerId: impactedUnit.user.id,
                         unit: impactedUnit.unit,
                       })
+                      setHandCardSelected(undefined)
                     }}
                   />
                 </ContainerFixedAspectRatio>

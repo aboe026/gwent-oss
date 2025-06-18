@@ -37,6 +37,7 @@ import DeckList from '../../components/DeckList'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import GameBattlefield from './GameBattlefield'
 import {
+  FullUnitCards,
   GameDeckProps,
   GameProps,
   MoveForRound,
@@ -326,7 +327,7 @@ function ExistingGame({
   const [deckEditorOpen, setDeckEditorOpen] = useState(false)
   const [historyCardSelected, setHistoryCardSelected] = useState<UnitForPlayer | undefined>()
   const [coinTossVisible, setCoinTossVisible] = useState(false)
-  const [fullUnit, setFullUnit] = useState<UnitForPlayer | undefined>()
+  const [fullUnits, setFullUnits] = useState<FullUnitCards | undefined>()
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
   const { game } = gameProps
   const resolvedGameError = getApolloError(gameProps.error)
@@ -341,21 +342,6 @@ function ExistingGame({
     self = game.players.find((player) => player.user.name === user.name)
   }
 
-  const potentialUnitArrays: (DeckUnit[] | GameUnit[] | undefined)[] = [gameDeckProps.deck?.hand]
-  if (game?.players && game.round > 0) {
-    for (const gamePlayer of game.players) {
-      if (!fullUnit?.playerId || fullUnit.playerId === gamePlayer.user.id) {
-        const playerRound = gamePlayer.rounds[game.round - 1]
-        potentialUnitArrays.push(playerRound.close.units)
-        potentialUnitArrays.push(playerRound.ranged.units)
-        potentialUnitArrays.push(playerRound.siege.units)
-      }
-    }
-  }
-  const { next: nextUnit, previous: previousUnit } = getNeighboringUnits({
-    deckUnit: fullUnit?.unit,
-    unitArrays: potentialUnitArrays,
-  })
   const battlefieldHighlighted = handCardSelected && handCardSelected.unit.name === 'Scorch'
   const isTurn = game?.turn?.user.id === self?.user.id
 
@@ -418,6 +404,11 @@ function ExistingGame({
       }
     }
   }
+  const fullUnit = fullUnits && fullUnits.units[fullUnits.currentIndex]
+  const fullGameUnit = fullUnit?.unit as GameUnit
+  const fullUnitUserName = fullUnit
+    ? game?.players.find((player) => player.user.id === fullUnit.playerId)?.user.name
+    : undefined
 
   return gameProps.loading || gameDeckProps.loading ? (
     <Centered>
@@ -452,36 +443,43 @@ function ExistingGame({
   ) : (
     <div id={HTML_IDS.GameContainer}>
       <UnitFullCard
-        fullUnit={fullUnit?.unit as DeckUnit}
-        effectiveStrength={(fullUnit?.unit as GameUnit)?.effectiveStrength}
-        effects={(fullUnit?.unit as GameUnit)?.effects}
-        hasNext={nextUnit !== undefined}
-        hasPrevious={previousUnit !== undefined}
+        fullUnit={fullGameUnit}
+        effectiveStrength={fullGameUnit?.effectiveStrength}
+        effects={fullGameUnit?.effects}
+        userName={fullUnitUserName}
+        hasNext={!!fullUnits && fullUnits.currentIndex < fullUnits.units.length - 1}
+        hasPrevious={!!fullUnits && fullUnits.currentIndex > 0}
         onSelect={() => {}}
         onPrevious={() => {
-          if (previousUnit) {
-            setFullUnit({
-              unit: previousUnit,
-              playerId: fullUnit?.playerId,
+          if (fullUnits && fullUnits.currentIndex > 0) {
+            setFullUnits({
+              units: fullUnits.units,
+              currentIndex: fullUnits.currentIndex - 1,
             })
-            setHandCardSelected(previousUnit)
-            setHistoryCardSelected(undefined)
+            if (handCardSelected) {
+              setHandCardSelected(fullUnits.units[fullUnits.currentIndex - 1].unit as DeckUnit)
+            }
+            if (historyCardSelected) {
+              setHistoryCardSelected(fullUnits.units[fullUnits.currentIndex - 1])
+            }
           }
         }}
         onNext={() => {
-          if (nextUnit) {
-            setFullUnit({
-              unit: nextUnit,
-              playerId: fullUnit?.playerId,
+          if (fullUnits && fullUnits.currentIndex <= fullUnits.units.length) {
+            setFullUnits({
+              units: fullUnits.units,
+              currentIndex: fullUnits.currentIndex + 1,
             })
-            setHandCardSelected(nextUnit)
-            setHistoryCardSelected(undefined)
+            if (handCardSelected) {
+              setHandCardSelected(fullUnits.units[fullUnits.currentIndex + 1].unit as DeckUnit)
+            }
+            if (historyCardSelected) {
+              setHistoryCardSelected(fullUnits.units[fullUnits.currentIndex + 1])
+            }
           }
         }}
         onClose={() => {
-          setFullUnit(undefined)
-          setHandCardSelected(undefined)
-          setHistoryCardSelected(undefined)
+          setFullUnits(undefined)
         }}
       />
       <Confirm
@@ -587,11 +585,12 @@ function ExistingGame({
               redrawProps={redrawProps}
               self={self}
               setCoinTossVisible={setCoinTossVisible}
-              setFullUnit={setFullUnit}
+              setFullUnits={setFullUnits}
               setHandCardSelected={setHandCardSelected}
             />
           ) : game.status === GameStatus.Playing ? (
             <GameBattlefield
+              fullUnits={fullUnits}
               game={game}
               handCardSelected={handCardSelected}
               historyCardSelected={historyCardSelected}
@@ -599,7 +598,7 @@ function ExistingGame({
               playUnitProps={playUnitProps}
               scrollHistoryIntoView={scrollHistoryIntoView}
               self={self}
-              setFullUnit={setFullUnit}
+              setFullUnits={setFullUnits}
               setHandCardSelected={setHandCardSelected}
               setHistoryCardSelected={setHistoryCardSelected}
             />
@@ -615,7 +614,7 @@ function ExistingGame({
           playPassProps={playPassProps}
           playUnitProps={playUnitProps}
           self={self}
-          setFullUnit={setFullUnit}
+          setFullUnits={setFullUnits}
           setHandCardSelected={setHandCardSelected}
           setHistoryCardSelected={setHistoryCardSelected}
         />
@@ -627,7 +626,8 @@ function ExistingGame({
           handCardSelected={handCardSelected}
           isTurn={game.turn?.user.name === self.user.name}
           playUnitLoading={playUnitProps.loading}
-          setFullUnit={setFullUnit}
+          self={self}
+          setFullUnits={setFullUnits}
           setHandCardSelected={setHandCardSelected}
           setHistoryCardSelected={setHistoryCardSelected}
         />
@@ -697,44 +697,4 @@ function ExistingGame({
       )}
     </div>
   )
-}
-
-function getNeighboringUnits({
-  unitArrays,
-  deckUnit,
-}: {
-  unitArrays: (DeckUnit[] | GameUnit[] | undefined)[]
-  deckUnit: DeckUnit | GameUnit | undefined
-}): NeighborUnits {
-  let previous: DeckUnit | undefined = undefined
-  let next: DeckUnit | undefined = undefined
-  if (deckUnit !== undefined) {
-    let found = false
-    for (let i = 0; i < unitArrays.length && !found; i++) {
-      const unitArray = unitArrays[i]
-      if (unitArray) {
-        const sortedArray = sortObjectArray({
-          sortProperties: [['effectiveStrength', 'unit.strength'], 'unit.name', 'unit.id'],
-          array: unitArray,
-        })
-        const unitIds = sortedArray.map((arrayDeckUnit) => arrayDeckUnit.unit.id)
-        if (unitIds?.includes(deckUnit.unit.id)) {
-          found = true
-          const deckUnitIndex = sortedArray.findIndex((arrayDeckUnit) => arrayDeckUnit.unit.id === deckUnit.unit.id)
-          next = sortedArray[deckUnitIndex + 1] as DeckUnit
-          previous = sortedArray[deckUnitIndex - 1] as DeckUnit
-        }
-      }
-    }
-  }
-
-  return {
-    previous,
-    next,
-  }
-}
-
-interface NeighborUnits {
-  previous: DeckUnit | undefined
-  next: DeckUnit | undefined
 }
