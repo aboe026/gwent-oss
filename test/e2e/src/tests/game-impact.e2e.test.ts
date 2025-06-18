@@ -1074,4 +1074,140 @@ test('FullUnit for impact preserves effects in time', async (t) => {
   })
 })
 
-// TODO: test that selecting battlefield unit still scrolls to first one (maybe edit existing text in the other fixture)
+test('Selecting battlefield card scrolls history to first appearance even if impact is more recent', async (t) => {
+  const unitName1 = 'Dennis Cranmer'
+  const unitName2 = 'Dol Blathanna Archer'
+  const unitName3 = 'Ida Emean aep Sivney'
+  const unitName4 = 'Riordain'
+  const unitName5 = 'Toruviel'
+  const unitName6 = 'Vrihedd Brigade Recruit'
+  const unitName7 = 'Yaevinn'
+  const unitName8 = 'Saesenthessis'
+  const unitName9 = 'Iorveth'
+  const unitName10 = 'Olgierd Von Everec'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [
+        unitName1,
+        unitName2,
+        unitName3,
+        unitName4,
+        unitName5,
+        unitName6,
+        unitName7,
+        unitName8,
+        unitName9,
+        unitName10,
+      ],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.deploy({ unitName: unitName2, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName4, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName5, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName6, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName7, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName8, combat: Combat.Ranged })
+  await gameManager.deploy({ unitName: unitName9, combat: Combat.Ranged })
+  await gameManager.deploy({
+    unitName: unitName10,
+    moraling: [
+      {
+        effectiveStrength: 7,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  await GamePage.verifyHistoryUnitInViewport({
+    historyItem: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      unitName: unitName1,
+      row: Combat.Close,
+    },
+    inViewport: false,
+  })
+  await GamePage.toggleImpacts({
+    unitName: unitName10,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Morale,
+        unitName: unitName10,
+        userName: gameManager.self.gamePlayer.name,
+        round: gameManager.round,
+        impacts: [
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName1,
+          },
+        ],
+      },
+    ],
+  })
+  await GamePage.verifyHistoryUnitInViewport({
+    historyItem: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      unitName: unitName1,
+      row: Combat.Close,
+    },
+    inViewport: false,
+  })
+
+  await GamePage.selectBattlefieldCard({
+    unitName: unitName1,
+    row: Combat.Close,
+    self: true,
+  })
+  await gameManager.verify({
+    highlightedBattlefieldCard: {
+      row: Combat.Close,
+      unitName: unitName1,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      row: Combat.Close,
+      unitName: unitName1,
+    },
+  })
+  await GamePage.verifyHistoryUnitInViewport({
+    historyItem: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: gameManager.round,
+      unitName: unitName1,
+      row: Combat.Close,
+    },
+    inViewport: true,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Morale,
+        unitName: unitName10,
+        userName: gameManager.self.gamePlayer.name,
+        round: gameManager.round,
+        impacts: [
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName1,
+            highlighted: true,
+          },
+        ],
+      },
+    ],
+  })
+})

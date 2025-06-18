@@ -1,8 +1,6 @@
 import { PropsWithChildren } from 'react'
 import './ContainerFixedAspectRatio.css'
 
-// TODO: make FullCard use this?
-
 /**
  * A Container with a fixed aspect ration
  *
