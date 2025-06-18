@@ -40,24 +40,23 @@ export default class CalculateGameEffectiveStrengths {
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
   }): ImpactDbObject[] | undefined {
-    let impacts: ImpactDbObject[] | undefined = undefined
+    const impacts: ImpactDbObject[] = []
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
       for (const row of [round.close, round.ranged, round.siege]) {
-        const rowImpacts = CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
-          row,
-          units,
-          effects,
-          logPrefix,
-          player,
-          newDeckUnit,
-        })
-        if (player.user.toString() === game.turn?.toString() && rowImpacts.length > 0) {
-          impacts = rowImpacts
-        }
+        impacts.push(
+          ...CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
+            row,
+            units,
+            effects,
+            logPrefix,
+            player,
+            newDeckUnit,
+          })
+        )
       }
     }
-    return impacts
+    return impacts.length > 0 ? impacts : undefined
   }
 
   /**
@@ -83,6 +82,8 @@ export default class CalculateGameEffectiveStrengths {
     player: GamePlayerDbObject
     newDeckUnit: DeckUnitDbObject
   }): ImpactDbObject[] {
+    // TODO: pass current turn player to calculateEffectiveStrengthsForRow
+    // so only counts for Morale if current player
     const impacts: ImpactDbObject[] = []
     const rowDbUnits: UnitDbObject[] = []
     for (const rowUnit of row.units) {
