@@ -14,8 +14,10 @@ export default function UnitGameCard({
   cursor = 'pointer',
   deckUnit,
   dotted,
+  dottedTitle,
   effectiveStrength,
   iconSize = '34px',
+  onClick,
   onFullscreen,
   selected,
   title,
@@ -28,11 +30,12 @@ export default function UnitGameCard({
   return (
     <div
       className={`${HTML_CLASSES.UnitGameCardContainer} ${selected ? HTML_CLASSES.ItemHighlighted : ''}`}
-      title={unitTitle}
+      title={dottedTitle || unitTitle}
       style={{
         cursor,
         borderStyle: selected ? (dotted ? 'dotted' : 'solid') : 'none',
       }}
+      onClick={() => (onClick ? onClick(deckUnit) : {})}
     >
       <img className="unit-game-card-image" title={unitTitle} src={deckUnit.unit.images[deckUnit.artStyle - 1]} />
       <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>
@@ -80,8 +83,10 @@ interface UnitGameCardProps {
   deckUnit: DeckUnit
   effectiveStrength?: number | null
   dotted?: boolean
+  dottedTitle?: string
   iconSize?: string
   onFullscreen: (deckUnit: DeckUnit) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClick?: (deckUnit: DeckUnit) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   selected?: boolean
   title?: string
 }

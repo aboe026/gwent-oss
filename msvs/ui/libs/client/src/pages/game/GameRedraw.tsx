@@ -18,22 +18,26 @@ export default function GameRedraw({
   gameDeck,
   handCardSelected,
   readyProps,
+  redrawCardSelected,
   redrawProps,
   self,
   setFullUnits,
   setCoinTossVisible,
   setHandCardSelected,
+  setRedrawCardSelected,
 }: {
   coinTossVisible: boolean
   game: Game
   gameDeck: GameDeck | undefined
   handCardSelected: DeckUnit | undefined
   readyProps: ReadyProps
+  redrawCardSelected: DeckUnit | undefined
   redrawProps: RedrawProps
   self: GamePlayer
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
 }) {
   const { checkAuth } = useUserContext()
   const redrawsLeft = MAX_REDRAWS - (gameDeck?.redraws || []).length
@@ -75,30 +79,70 @@ export default function GameRedraw({
                     unit: deckUnit,
                   }
                 })
+              const toCardSelected =
+                toCard && [redrawCardSelected?.unit.id, handCardSelected?.unit.id].includes(toCard.unit.id)
+              const toDotted = toCardSelected && !gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)
+              const fromCardSelected =
+                fromCard && [redrawCardSelected?.unit.id, handCardSelected?.unit.id].includes(fromCard.unit.id)
+              const fromDotted =
+                fromCardSelected && !gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)
+
               return (
                 <div className="game-deck-redraw-card-container" key={index}>
                   {index < gameDeck.redraws.length || (index === gameDeck.redraws.length && redrawProps.loading) ? (
                     <div className={HTML_CLASSES.GameDeckRedrawPair}>
                       <UnitGameCard
                         deckUnit={fromCard}
-                        cursor={'unset'}
+                        selected={fromCardSelected}
+                        dotted={fromDotted}
+                        dottedTitle={fromDotted ? 'This unit is no longer in your hand' : ''}
+                        onClick={() => {
+                          setRedrawCardSelected(fromCardSelected ? undefined : fromCard)
+                          if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)) {
+                            setHandCardSelected(fromCardSelected ? undefined : fromCard)
+                          } else {
+                            setHandCardSelected(undefined)
+                          }
+                        }}
                         onFullscreen={() => {
                           setFullUnits({
                             currentIndex: 0,
                             units,
                           })
+                          setRedrawCardSelected(fromCard)
+                          if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)) {
+                            setHandCardSelected(fromCard)
+                          } else {
+                            setHandCardSelected(undefined)
+                          }
                         }}
                       />
                       <CgArrowLongRight color="black" title="Redrawn to" />
                       {index < gameDeck.redraws.length ? (
                         <UnitGameCard
                           deckUnit={toCard}
-                          cursor={'unset'}
+                          selected={toCardSelected}
+                          dotted={toDotted}
+                          dottedTitle={toDotted ? 'This unit is no longer in your hand' : ''}
+                          onClick={() => {
+                            setRedrawCardSelected(toCardSelected ? undefined : toCard)
+                            if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)) {
+                              setHandCardSelected(toCardSelected ? undefined : toCard)
+                            } else {
+                              setHandCardSelected(undefined)
+                            }
+                          }}
                           onFullscreen={() => {
                             setFullUnits({
                               currentIndex: 1,
                               units,
                             })
+                            setRedrawCardSelected(toCard)
+                            if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)) {
+                              setHandCardSelected(toCard)
+                            } else {
+                              setHandCardSelected(undefined)
+                            }
                           }}
                         />
                       ) : (

@@ -61,6 +61,7 @@ import {
   GAME_ORDER_COIN_FLIP_DURATION_SECONDS,
   HTML_CLASSES,
   HTML_IDS,
+  MAX_REDRAWS,
   NOT_AUTHORIZED_MESSAGE,
   ROUTES,
 } from '@gwent/constants'
@@ -326,6 +327,7 @@ function ExistingGame({
   const [deckListOpen, setDeckListOpen] = useState(false)
   const [deckEditorOpen, setDeckEditorOpen] = useState(false)
   const [historyCardSelected, setHistoryCardSelected] = useState<UnitForPlayer | undefined>()
+  const [redrawCardSelected, setRedrawCardSelected] = useState<DeckUnit | undefined>()
   const [coinTossVisible, setCoinTossVisible] = useState(false)
   const [fullUnits, setFullUnits] = useState<FullUnitCards | undefined>()
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
@@ -342,7 +344,8 @@ function ExistingGame({
     self = game.players.find((player) => player.user.name === user.name)
   }
 
-  const battlefieldHighlighted = handCardSelected && handCardSelected.unit.name === 'Scorch'
+  const battlefieldHighlighted =
+    game?.status === GameStatus.Playing && handCardSelected && handCardSelected.unit.name === 'Scorch'
   const isTurn = game?.turn?.user.id === self?.user.id
 
   const previousGame = usePrevious(game)
@@ -446,7 +449,7 @@ function ExistingGame({
         fullUnit={fullGameUnit}
         effectiveStrength={fullGameUnit?.effectiveStrength}
         effects={fullGameUnit?.effects}
-        userName={fullUnitUserName}
+        userName={game.status === GameStatus.Playing ? fullUnitUserName : undefined}
         hasNext={!!fullUnits && fullUnits.currentIndex < fullUnits.units.length - 1}
         hasPrevious={!!fullUnits && fullUnits.currentIndex > 0}
         onSelect={() => {}}
@@ -462,6 +465,16 @@ function ExistingGame({
             if (historyCardSelected) {
               setHistoryCardSelected(fullUnits.units[fullUnits.currentIndex - 1])
             }
+            if (
+              redrawCardSelected ||
+              gameDeckProps.deck?.redraws.some(
+                (redraw) =>
+                  redraw.from.unit.id === fullUnits.units[fullUnits.currentIndex - 1].unit.unit.id ||
+                  redraw.to.unit.id === fullUnits.units[fullUnits.currentIndex - 1].unit.unit.id
+              )
+            ) {
+              setRedrawCardSelected(fullUnits.units[fullUnits.currentIndex - 1].unit as DeckUnit)
+            }
           }
         }}
         onNext={() => {
@@ -475,6 +488,16 @@ function ExistingGame({
             }
             if (historyCardSelected) {
               setHistoryCardSelected(fullUnits.units[fullUnits.currentIndex + 1])
+            }
+            if (
+              redrawCardSelected ||
+              gameDeckProps.deck?.redraws.some(
+                (redraw) =>
+                  redraw.from.unit.id === fullUnits.units[fullUnits.currentIndex + 1].unit.unit.id ||
+                  redraw.to.unit.id === fullUnits.units[fullUnits.currentIndex + 1].unit.unit.id
+              )
+            ) {
+              setRedrawCardSelected(fullUnits.units[fullUnits.currentIndex + 1].unit as DeckUnit)
             }
           }
         }}
@@ -582,11 +605,13 @@ function ExistingGame({
               gameDeck={gameDeckProps.deck}
               handCardSelected={handCardSelected}
               readyProps={readyProps}
+              redrawCardSelected={redrawCardSelected}
               redrawProps={redrawProps}
               self={self}
               setCoinTossVisible={setCoinTossVisible}
               setFullUnits={setFullUnits}
               setHandCardSelected={setHandCardSelected}
+              setRedrawCardSelected={setRedrawCardSelected}
             />
           ) : game.status === GameStatus.Playing ? (
             <GameBattlefield
@@ -622,14 +647,17 @@ function ExistingGame({
       <div id="gameContainerLower">
         <GameHand
           gameStatus={game.status}
-          hand={gameDeckProps.deck?.hand}
+          gameDeck={gameDeckProps.deck}
           handCardSelected={handCardSelected}
           isTurn={game.turn?.user.name === self.user.name}
           playUnitLoading={playUnitProps.loading}
+          redrawCardSelected={redrawCardSelected}
+          redrawsLeft={MAX_REDRAWS - (gameDeckProps.deck?.redraws || []).length}
           self={self}
           setFullUnits={setFullUnits}
           setHandCardSelected={setHandCardSelected}
           setHistoryCardSelected={setHistoryCardSelected}
+          setRedrawCardSelected={setRedrawCardSelected}
         />
       </div>
       {(deckListOpen || deckEditorOpen) && (
