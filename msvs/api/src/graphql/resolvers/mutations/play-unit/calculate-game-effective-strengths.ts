@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import {
   DeckUnitDbObject,
   EffectDbObject,
@@ -52,6 +54,7 @@ export default class CalculateGameEffectiveStrengths {
             logPrefix,
             player,
             newDeckUnit,
+            currentPlayerId: game.turn,
           })
         )
       }
@@ -74,6 +77,7 @@ export default class CalculateGameEffectiveStrengths {
     logPrefix,
     player,
     newDeckUnit,
+    currentPlayerId,
   }: {
     row: PlayerCombatRowDbObject
     units: UnitDbObject[]
@@ -81,9 +85,8 @@ export default class CalculateGameEffectiveStrengths {
     logPrefix: string
     player: GamePlayerDbObject
     newDeckUnit: DeckUnitDbObject
+    currentPlayerId: ObjectId | undefined
   }): ImpactDbObject[] {
-    // TODO: pass current turn player to calculateEffectiveStrengthsForRow
-    // so only counts for Morale if current player
     const impacts: ImpactDbObject[] = []
     const rowDbUnits: UnitDbObject[] = []
     for (const rowUnit of row.units) {
@@ -136,7 +139,10 @@ export default class CalculateGameEffectiveStrengths {
                 type: EffectReasonType.Unit,
                 unit: moraleDbUnit._id,
               }
-              if (moraleDbUnit._id.toString() === newDeckUnit.unit.toString()) {
+              if (
+                moraleDbUnit._id.toString() === newDeckUnit.unit.toString() &&
+                player.user.toString() === currentPlayerId?.toString()
+              ) {
                 impacts.push({
                   unit: rowUnit,
                   user: player.user,

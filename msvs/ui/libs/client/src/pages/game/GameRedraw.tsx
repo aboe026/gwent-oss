@@ -81,10 +81,11 @@ export default function GameRedraw({
                 })
               const toCardSelected =
                 toCard && [redrawCardSelected?.unit.id, handCardSelected?.unit.id].includes(toCard.unit.id)
-              const toDotted = toCardSelected && !gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)
+              const toCardDotted =
+                toCardSelected && !gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)
               const fromCardSelected =
                 fromCard && [redrawCardSelected?.unit.id, handCardSelected?.unit.id].includes(fromCard.unit.id)
-              const fromDotted =
+              const fromCardDotted =
                 fromCardSelected && !gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)
 
               return (
@@ -94,8 +95,8 @@ export default function GameRedraw({
                       <UnitGameCard
                         deckUnit={fromCard}
                         selected={fromCardSelected}
-                        dotted={fromDotted}
-                        dottedTitle={fromDotted ? 'This unit is no longer in your hand' : ''}
+                        dotted={fromCardDotted}
+                        dottedTitle={fromCardDotted ? 'This unit is no longer in your hand' : ''}
                         onClick={() => {
                           setRedrawCardSelected(fromCardSelected ? undefined : fromCard)
                           if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)) {
@@ -122,8 +123,8 @@ export default function GameRedraw({
                         <UnitGameCard
                           deckUnit={toCard}
                           selected={toCardSelected}
-                          dotted={toDotted}
-                          dottedTitle={toDotted ? 'This unit is no longer in your hand' : ''}
+                          dotted={toCardDotted}
+                          dottedTitle={toCardDotted ? 'This unit is no longer in your hand' : ''}
                           onClick={() => {
                             setRedrawCardSelected(toCardSelected ? undefined : toCard)
                             if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)) {
