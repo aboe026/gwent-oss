@@ -80,6 +80,7 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
+- expand/collapse all impacts?
 - remove "renderXYZ" methods in favor of functional components always?
 - unit tests
 - func tests

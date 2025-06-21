@@ -2,7 +2,7 @@ import ApiClient from './api-client'
 import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import { E2eHelper, MoralingExpected, ScorchingExpected } from './e2e-helper'
 import E2eUtil from './e2e-util'
-import { ensureUnitsInHand } from '@gwent/test-utils'
+import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
 import env from './e2e-env'
 import GamePage, {
   GamePlayerExpected,
@@ -339,15 +339,22 @@ export default async function createGameManager({
     gameId: game.id,
   })
 
+  const firstPlayerId = opponentFirst ? opponentUser.id : selfUser.id
+  const secondPlayerId = opponentFirst ? selfUser.id : opponentUser.id
   if (
     (selfFaction === FactionKey.ScoiaTael && opponentFaction !== FactionKey.ScoiaTael) ||
     (opponentFaction === FactionKey.ScoiaTael && selfFaction !== FactionKey.ScoiaTael)
   ) {
-    const firstPlayerId = opponentFirst ? opponentUser.id : selfUser.id
-    const secondPlayerId = opponentFirst ? selfUser.id : opponentUser.id
     const scoiataelClient = selfFaction === FactionKey.ScoiaTael ? selfClient : opponentClient
     await scoiataelClient.setOrder({
       gameId: game.id,
+      userIds: [firstPlayerId, secondPlayerId],
+    })
+  } else {
+    await setTurnOrder({
+      gameId: game.id,
+      mongoConnectionString: env.MONGO_URL,
+      mongoDatabaseName: env.MONGO_DB,
       userIds: [firstPlayerId, secondPlayerId],
     })
   }

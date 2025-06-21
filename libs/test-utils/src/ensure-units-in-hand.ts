@@ -1,6 +1,19 @@
-import { DeckDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { MongoClient, ObjectId } from 'mongodb'
 
+import { DeckDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { getGame, updateGame } from './db-util'
+
+/**
+ * Ensures all the desired units are in the game hand for the user, swapping out with units in their draw pile if necessary.
+ *
+ * @param config The configuration used to ensure the units are in the players game hand.
+ * @param config.gameId The ID of the game to set the hand for.
+ * @param config.mongoConnectionString The MongoDB Connection String used to communicate with the database.
+ * @param config.mongoDatabaseName The name of the MongoDB Database containing the game to modify.
+ * @param config.unitNames The names of the units to put in the players hand for the game.
+ * @param config.userId The ID of the user on the game to set the hand for.
+ * @returns The Game with updated hand for the user.
+ */
 export async function ensureUnitsInHand({
   gameId,
   mongoConnectionString,
@@ -138,31 +151,6 @@ export async function ensureUnitsInHand({
   })
 }
 
-export async function getGame({
-  gameId,
-  mongoConnectionString,
-  mongoDatabaseName,
-}: {
-  gameId: string | ObjectId
-  mongoConnectionString: string
-  mongoDatabaseName: string
-}): Promise<GameDbObject> {
-  const mongoClient = await MongoClient.connect(mongoConnectionString)
-  try {
-    const db = await mongoClient.db(mongoDatabaseName)
-    const collection = await db.collection('games')
-    const game: GameDbObject | null = await collection.findOne<GameDbObject>({
-      _id: new ObjectId(gameId),
-    })
-    if (!game) {
-      throw Error(`Could not find game with ID "${gameId}"`)
-    }
-    return game
-  } finally {
-    await mongoClient.close()
-  }
-}
-
 export async function getUnits({
   mongoConnectionString,
   mongoDatabaseName,
@@ -184,33 +172,6 @@ export async function getUnits({
       })
       .toArray()
     return units
-  } finally {
-    await mongoClient.close()
-  }
-}
-
-export async function updateGame({
-  game,
-  mongoConnectionString,
-  mongoDatabaseName,
-}: {
-  game: GameDbObject
-  mongoConnectionString: string
-  mongoDatabaseName: string
-}): Promise<GameDbObject> {
-  const mongoClient = await MongoClient.connect(mongoConnectionString)
-  try {
-    const db = await mongoClient.db(mongoDatabaseName)
-    const collection = await db.collection('games')
-    const updatedGame = await collection.findOneAndUpdate(
-      {
-        _id: new ObjectId(game._id),
-      },
-      {
-        $set: game,
-      }
-    )
-    return updatedGame as GameDbObject
   } finally {
     await mongoClient.close()
   }
