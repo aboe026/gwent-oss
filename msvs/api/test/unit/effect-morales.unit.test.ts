@@ -291,6 +291,50 @@ describe('effect-morales', () => {
         ],
       })
     })
+    it('applies single morale to unit that is newDeckUnit but not by current player', () => {
+      const moralingUnit = TestUtil.getDbUnit({})
+      const rowGameUnit = TestUtil.getDbGameUnit({
+        effects: [],
+      })
+      const moraleEffect = TestUtil.getDbEffect({
+        key: EffectKey.Morale,
+      })
+      testApplyMorales({
+        logPrefix,
+        moraleEffect,
+        moraleIdsInRow: [moralingUnit._id.toString()],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: moralingUnit._id,
+        }),
+        rowGameUnit,
+        rowUnit: TestUtil.getDbUnit({
+          id: rowGameUnit.unit,
+        }),
+        userId: new ObjectId(),
+        units: [moralingUnit],
+        expected: [],
+        modifiedRowGameUnit: {
+          ...deepClone(rowGameUnit),
+          effectiveStrength: 1,
+          effects: [
+            {
+              operator: '+1',
+              reason: {
+                effect: moraleEffect._id,
+                type: EffectReasonType.Unit,
+                unit: moralingUnit._id,
+              },
+              total: 1,
+            },
+          ],
+        },
+        debugCalls: [
+          [
+            `${logPrefix} adding morale boost to "${rowGameUnit.unit}" from "${moralingUnit._id}" for an effectiveStrength of "1"`,
+          ],
+        ],
+      })
+    })
     it('applies multiple morales to unit that is not newDeckUnit', () => {
       const moralingUnit1 = TestUtil.getDbUnit({})
       const moralingUnit2 = TestUtil.getDbUnit({})
@@ -346,7 +390,64 @@ describe('effect-morales', () => {
         ],
       })
     })
-    it('applies single morale to unit that is newDeckUnit', () => {
+    it('applies multiple morales to unit that is newDeckUnit but not current player', () => {
+      const moralingUnit1 = TestUtil.getDbUnit({})
+      const moralingUnit2 = TestUtil.getDbUnit({})
+      const rowGameUnit = TestUtil.getDbGameUnit({
+        effects: [],
+      })
+      const moraleEffect = TestUtil.getDbEffect({
+        key: EffectKey.Morale,
+      })
+      testApplyMorales({
+        logPrefix,
+        moraleEffect,
+        moraleIdsInRow: [moralingUnit1._id.toString(), moralingUnit2._id.toString()],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: moralingUnit2._id,
+        }),
+        rowGameUnit,
+        rowUnit: TestUtil.getDbUnit({
+          id: rowGameUnit.unit,
+        }),
+        userId: new ObjectId(),
+        units: [moralingUnit1, moralingUnit2],
+        expected: [],
+        modifiedRowGameUnit: {
+          ...deepClone(rowGameUnit),
+          effectiveStrength: 2,
+          effects: [
+            {
+              operator: '+1',
+              reason: {
+                effect: moraleEffect._id,
+                type: EffectReasonType.Unit,
+                unit: moralingUnit1._id,
+              },
+              total: 1,
+            },
+            {
+              operator: '+1',
+              reason: {
+                effect: moraleEffect._id,
+                type: EffectReasonType.Unit,
+                unit: moralingUnit2._id,
+              },
+              total: 2,
+            },
+          ],
+        },
+        debugCalls: [
+          [
+            `${logPrefix} adding morale boost to "${rowGameUnit.unit}" from "${moralingUnit1._id}" for an effectiveStrength of "1"`,
+          ],
+          [
+            `${logPrefix} adding morale boost to "${rowGameUnit.unit}" from "${moralingUnit2._id}" for an effectiveStrength of "2"`,
+          ],
+        ],
+      })
+    })
+    it('applies single morale to unit that is newDeckUnit by current player', () => {
       const moralingUnit = TestUtil.getDbUnit({})
       const rowGameUnit = TestUtil.getDbGameUnit({
         effects: [],
@@ -367,6 +468,7 @@ describe('effect-morales', () => {
           id: rowGameUnit.unit,
         }),
         userId,
+        currentPlayerId: userId,
         units: [moralingUnit],
         expected: [
           {
@@ -396,7 +498,7 @@ describe('effect-morales', () => {
         ],
       })
     })
-    it('applies multiple morales to unit that is newDeckUnit', () => {
+    it('applies multiple morales to unit that is newDeckUnit and current player', () => {
       const moralingUnit1 = TestUtil.getDbUnit({})
       const moralingUnit2 = TestUtil.getDbUnit({})
       const rowGameUnit = TestUtil.getDbGameUnit({
@@ -418,6 +520,7 @@ describe('effect-morales', () => {
           id: rowGameUnit.unit,
         }),
         userId,
+        currentPlayerId: userId,
         units: [moralingUnit1, moralingUnit2],
         expected: [
           {
@@ -497,6 +600,7 @@ describe('effect-morales', () => {
         rowGameUnit,
         rowUnit,
         userId,
+        currentPlayerId: userId,
         units: [moralingUnit],
         expected: [
           {
@@ -579,6 +683,7 @@ function testApplyMorales({
   rowUnit,
   units,
   userId,
+  currentPlayerId,
   expected,
   modifiedRowGameUnit,
   debugCalls = [],
@@ -593,6 +698,7 @@ function testApplyMorales({
   rowUnit: UnitDbObject
   units: UnitDbObject[]
   userId: ObjectId
+  currentPlayerId?: ObjectId | undefined
   expected: ImpactDbObject[]
   modifiedRowGameUnit: GameUnitDbObject
   debugCalls?: string[][]
@@ -617,6 +723,7 @@ function testApplyMorales({
       rowUnit,
       units,
       userId,
+      currentPlayerId,
     })
   ).toEqual(expected)
 
