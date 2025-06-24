@@ -1211,3 +1211,66 @@ test('Selecting battlefield card scrolls history to first appearance even if imp
     ],
   })
 })
+
+test('Impacts can include same unit from both players', async (t) => {
+  const unitName1 = 'Zoltan Chivay'
+  const unitName2 = 'Zoltan Chivay'
+  const unitName3 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3],
+    },
+    opponent: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName3,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        strength: 5,
+      },
+      {
+        name: unitName1,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+        strength: 5,
+      },
+    ],
+  })
+  await GamePage.toggleImpacts({
+    unitName: unitName3,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Scorch,
+        unitName: unitName3,
+        userName: gameManager.self.gamePlayer.name,
+        round: gameManager.round,
+        impacts: [
+          {
+            username: gameManager.opponent.gamePlayer.name,
+            unitName: unitName2,
+          },
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName1,
+          },
+        ],
+      },
+    ],
+  })
+})

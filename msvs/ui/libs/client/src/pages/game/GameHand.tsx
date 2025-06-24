@@ -69,7 +69,7 @@ export default function GameHand({
                 dottedTitle = `Cannot select other units while waiting for ${handCardSelected.unit.name} to be deployed`
                 cursor = 'not-allowed'
               }
-            } else if (noMoreRedraws) {
+            } else if (selected && noMoreRedraws) {
               dottedTitle = 'No more redraws left'
             }
             const dotted = (gameStatus === GameStatus.Playing && !isTurn) || noMoreRedraws

@@ -747,6 +747,12 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
     ],
   })
   await FullCard.close()
+  await GamePage.selectHistoryUnit({
+    playerName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+    row: Combat.Ranged,
+    unitName: unitName1,
+  })
 
   await gameManager.deploy({
     unitName: unitName4,

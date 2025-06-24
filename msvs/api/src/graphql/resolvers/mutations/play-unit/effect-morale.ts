@@ -65,6 +65,7 @@ export default class EffectMorale {
     rowUnit,
     units,
     userId,
+    currentPlayerId,
   }: {
     logPrefix: string
     unitIdsWithMoraleInRow: string[]
@@ -74,6 +75,7 @@ export default class EffectMorale {
     rowUnit: UnitDbObject
     units: UnitDbObject[]
     userId: ObjectId
+    currentPlayerId: ObjectId | undefined
   }): ImpactDbObject[] {
     const impacts: ImpactDbObject[] = []
 
@@ -109,7 +111,10 @@ export default class EffectMorale {
           }
           rowGameUnit.effects.push(gameUnitEffect)
 
-          if (moralingUnit._id.toString() === newDeckUnit.unit.toString()) {
+          if (
+            moralingUnit._id.toString() === newDeckUnit.unit.toString() &&
+            userId.toString() === currentPlayerId?.toString()
+          ) {
             const impact: ImpactDbObject = {
               unit: rowGameUnit,
               user: userId,

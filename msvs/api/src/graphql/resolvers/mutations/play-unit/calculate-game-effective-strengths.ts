@@ -59,6 +59,7 @@ export default class CalculateGameEffectiveStrengths {
             moraleEffect,
             newDeckUnit,
             userId: player.user,
+            currentPlayerId: game.turn,
           })
         )
       }
@@ -81,6 +82,7 @@ export default class CalculateGameEffectiveStrengths {
     moraleEffect,
     newDeckUnit,
     userId,
+    currentPlayerId,
   }: {
     row: PlayerCombatRowDbObject
     units: UnitDbObject[]
@@ -88,6 +90,7 @@ export default class CalculateGameEffectiveStrengths {
     moraleEffect: EffectDbObject | undefined
     newDeckUnit: DeckUnitDbObject
     userId: ObjectId
+    currentPlayerId: ObjectId | undefined
   }): ImpactDbObject[] {
     const impacts: ImpactDbObject[] = []
 
@@ -123,6 +126,7 @@ export default class CalculateGameEffectiveStrengths {
             rowUnit: rowUnit,
             units,
             userId,
+            currentPlayerId,
           })
         )
       }
