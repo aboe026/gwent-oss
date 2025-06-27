@@ -1033,6 +1033,8 @@ test('FullUnit for impact preserves effects in time', async (t) => {
     },
   })
   await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 3,
     effects: [
       {
@@ -1041,7 +1043,6 @@ test('FullUnit for impact preserves effects in time', async (t) => {
         reason: `Morale from ${unitName2}`,
       },
     ],
-    unit: deckUnit1.unit,
   })
   await FullCard.close()
 
@@ -1057,6 +1058,8 @@ test('FullUnit for impact preserves effects in time', async (t) => {
     },
   })
   await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 4,
     effects: [
       {
@@ -1070,7 +1073,6 @@ test('FullUnit for impact preserves effects in time', async (t) => {
         reason: `Morale from ${unitName3}`,
       },
     ],
-    unit: deckUnit1.unit,
   })
 })
 

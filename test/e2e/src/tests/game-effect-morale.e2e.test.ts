@@ -28,6 +28,7 @@ test('Morale unit does not effect itself', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit.unit,
+    username: gameManager.self.gamePlayer.name,
   })
 })
 
@@ -53,10 +54,12 @@ test('Morale unit does not effect hero', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
   })
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
   })
 })
 
@@ -93,6 +96,7 @@ test('Morale hero unit not effected by other morale', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 7,
     effects: [
       {
@@ -105,6 +109,7 @@ test('Morale hero unit not effected by other morale', async (t) => {
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
   })
 })
 
@@ -130,6 +135,7 @@ test('Morale unit does not effect unit not in row', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit.unit,
+    username: gameManager.self.gamePlayer.name,
   })
 })
 
@@ -158,6 +164,7 @@ test('Morale unit does not effect opponent unit', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit.unit,
+    username: gameManager.opponent.gamePlayer.name,
   })
 })
 
@@ -194,6 +201,7 @@ test('Morale effects normal unit if morale played before', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 3,
     effects: [
       {
@@ -206,6 +214,7 @@ test('Morale effects normal unit if morale played before', async (t) => {
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
   })
 })
 
@@ -241,6 +250,7 @@ test('Morale effects normal unit if morale played after', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 3,
     effects: [
       {
@@ -253,6 +263,7 @@ test('Morale effects normal unit if morale played after', async (t) => {
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
   })
 })
 
@@ -296,6 +307,7 @@ test('Morale effects multiple normal units', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 3,
     effects: [
       {
@@ -308,6 +320,7 @@ test('Morale effects multiple normal units', async (t) => {
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 7,
     effects: [
       {
@@ -320,6 +333,7 @@ test('Morale effects multiple normal units', async (t) => {
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
   })
 })
 
@@ -363,6 +377,7 @@ test('Multiple morales effect each other', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 11,
     effects: [
       {
@@ -375,6 +390,7 @@ test('Multiple morales effect each other', async (t) => {
   await FullCard.previous()
   await FullCard.verify({
     unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 7,
     effects: [
       {
@@ -458,6 +474,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
   })
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 3,
     effects: [
       {
@@ -475,6 +492,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit4.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 7,
     effects: [
       {
@@ -487,6 +505,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 8,
     effects: [
       {
@@ -504,6 +523,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 11,
     effects: [
       {
@@ -564,10 +584,12 @@ test('Multiple morales effect themselves and multiple standard units in differen
   })
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
   })
   await FullCard.previous()
   await FullCard.verify({
     unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 3,
     effects: [
       {
@@ -585,10 +607,12 @@ test('Multiple morales effect themselves and multiple standard units in differen
   })
   await FullCard.verify({
     unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
   })
   await FullCard.previous()
   await FullCard.verify({
     unit: deckUnit4.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 7,
     effects: [
       {
@@ -636,6 +660,7 @@ test('Can see reason for morale in opponents fullcard details', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.opponent.gamePlayer.name,
     effectiveStrength: 3,
     effects: [
       {
@@ -648,6 +673,7 @@ test('Can see reason for morale in opponents fullcard details', async (t) => {
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit2.unit,
+    username: gameManager.opponent.gamePlayer.name,
   })
 })
 
@@ -737,6 +763,7 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
   })
   await FullCard.verify({
     unit: deckUnit.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 3,
     effects: [
       {
@@ -780,5 +807,6 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
   })
   await FullCard.verify({
     unit: deckUnit.unit,
+    username: gameManager.self.gamePlayer.name,
   })
 })

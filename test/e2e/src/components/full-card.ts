@@ -10,6 +10,7 @@ export default class FullCard {
   static elements = {
     Container: container,
     Image: container.find(`#${HTML_IDS.UnitFullCardImage}`),
+    Username: container.find(`#${HTML_IDS.UnitFullCardUsername}`),
     Name: container.find(`#${HTML_IDS.UnitFullCardName}`),
     Quote: container.find(`#${HTML_IDS.UnitFullCardQuote}`),
     Faction: container.find(`#${HTML_IDS.UnitFullCardFaction}`),
@@ -196,16 +197,25 @@ export default class FullCard {
     }
   }
 
+  static async verifyUser({ username }: { username?: string }) {
+    await t.expect(FullCard.elements.Username.exists).eql(!!username)
+    if (username) {
+      await t.expect(FullCard.elements.Username.innerText).eql(username)
+    }
+  }
+
   static async verify({
     artStyle = 1,
     unit,
     effectiveStrength,
     effects,
+    username,
   }: {
     unit?: Unit | undefined
     artStyle?: number
     effectiveStrength?: number
     effects?: ExpectedEffect[]
+    username?: string
   }) {
     if (unit) {
       await t.expect(FullCard.elements.Container.exists).ok()
@@ -214,6 +224,10 @@ export default class FullCard {
         unit,
         artStyle,
       })
+      await FullCard.verifyUser({
+        username,
+      })
+      await FullCard.verifyName(unit)
       await FullCard.verifyQuote(unit)
       await FullCard.verifyFaction(unit)
       await FullCard.verifyStrength({

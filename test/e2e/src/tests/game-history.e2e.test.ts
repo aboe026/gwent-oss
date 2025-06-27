@@ -615,6 +615,7 @@ test('FullUnit for move preserves effects in time', async (t) => {
   })
   await FullCard.verify({
     unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
     effectiveStrength: 3,
     effects: [
       {
