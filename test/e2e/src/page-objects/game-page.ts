@@ -8,9 +8,10 @@ import DeckList, { DeckInfo } from '../components/deck-list'
 import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
 import GamePlayerInfo, { PlayerTurn } from '../components/game-player-info'
-import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS, ROUTES } from '@gwent/constants'
+import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import { getImpactDescription, getNoImpactMessage, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { Leader } from '@gwent/graphql-schema/resolver-typings'
+import RedrawUnits, { RedrawPair } from '../components/redraw-units'
 
 const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)
 const existingGameContainer = Selector(`#${HTML_IDS.GameContainer}`)
@@ -37,10 +38,6 @@ export default class GamePage {
     Ready: existingGameContainer.find(`#${HTML_IDS.GameReady}`),
     Round: existingGameContainer.find(`#${HTML_IDS.GameRound}`),
     UnitBoard: existingGameContainer.find(`.${HTML_CLASSES.GameUnitBoardSide}`),
-    RedrawCard: existingGameContainer.find(`.${HTML_CLASSES.GameDeckRedrawCard}`),
-    RedrawAvailable: existingGameContainer.find(`.${HTML_CLASSES.ItemHighlighted}`),
-    RedrawPair: existingGameContainer.find(`.${HTML_CLASSES.GameDeckRedrawPair}`),
-    RedrawInstructions: existingGameContainer.find(`#${HTML_IDS.GameDeckRedrawInstructions}`),
     DeckError: existingGameContainer.find(`#${HTML_IDS.GameDeckError}`),
     OrderError: existingGameContainer.find(`#${HTML_IDS.GameOrderError}`),
     RedrawError: existingGameContainer.find(`#${HTML_IDS.GameRedrawError}`),
@@ -242,12 +239,7 @@ export default class GamePage {
         const card = await GamePage.elements.Hand.child(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
         const cardName = await card.getAttribute('title')
         const isSelected = await card.hasClass(HTML_CLASSES.ItemHighlighted)
-        const styles = await card.style
-        const isDotted =
-          styles['border-bottom-style'] === 'dotted' ||
-          styles['border-top-style'] === 'dotted' ||
-          styles['border-left-style'] === 'dotted' ||
-          styles['border-right-style'] === 'dotted'
+        const isDotted = await E2eHelper.hasDottedBorder(card)
         actualNames.push(`${cardName}${isSelected ? ' selected' : ''}${isDotted ? ' dotted' : ''}`)
       }
       const expectedNames = names.map((name) => {
@@ -440,12 +432,7 @@ export default class GamePage {
     const expectedHighlighted =
       isSelf && highlightedHandCard && highlightedHandCard.rows && highlightedHandCard.rows.includes(rowName)
     await t.expect(cardsContainer.hasClass(HTML_CLASSES.ItemHighlighted)).eql(expectedHighlighted || false, message)
-    const styles = await cardsContainer.style
-    const actualDotted =
-      styles['border-bottom-style'] === 'dotted' ||
-      styles['border-top-style'] === 'dotted' ||
-      styles['border-left-style'] === 'dotted' ||
-      styles['border-right-style'] === 'dotted'
+    const actualDotted = await E2eHelper.hasDottedBorder(cardsContainer)
     const expectedDotted = expectedHighlighted && highlightedHandCard.dotted
     await t.expect(actualDotted).eql(expectedDotted || false, message)
     return highlightedBattlefieldCardFound
@@ -463,10 +450,7 @@ export default class GamePage {
   }: {
     self: CenterPlayer
     opponent: CenterPlayer
-    redraws?: {
-      from: string
-      to: string
-    }[]
+    redraws?: RedrawPair[]
     turnOrder?: string[] | boolean
     victors?: string[]
     rounds?: RoundScores[]
@@ -614,28 +598,9 @@ export default class GamePage {
     } else if (self.ready && !opponent.ready) {
       await t.expect(GamePage.elements.CenterContainer.innerText).eql('Waiting for opponent to be ready...')
     } else if (redraws) {
-      await t.expect(GamePage.elements.RedrawPair.count).eql(redraws.length)
-      for (let i = 0; i < redraws.length; i++) {
-        const pair = await GamePage.elements.RedrawPair.nth(i)
-        const from = await pair.find(`.${HTML_CLASSES.UnitGameCardContainer}`).nth(0)
-        await t.expect(from.getAttribute('title')).eql(redraws[i].from)
-        const to = await pair.find(`.${HTML_CLASSES.UnitGameCardContainer}`).nth(1)
-        await t.expect(to.getAttribute('title')).eql(redraws[i].to)
-      }
-      if (redraws.length < MAX_REDRAWS) {
-        await t.expect(GamePage.elements.RedrawCard.exists).ok()
-        await t.expect(GamePage.elements.RedrawCard.visible).ok()
-        await t.expect(GamePage.elements.RedrawCard.count).eql(MAX_REDRAWS - redraws.length)
-      }
-      await t
-        .expect(GamePage.elements.RedrawInstructions.innerText)
-        .eql(
-          redraws.length === MAX_REDRAWS
-            ? 'All allowed redraws made. To begin the game:'
-            : `Optionally select up to ${MAX_REDRAWS - redraws.length} card${
-                MAX_REDRAWS - redraws.length === 1 ? '' : 's'
-              } from your hand to redraw. When satisfied with deck:`
-        )
+      await RedrawUnits.verify({
+        redraws,
+      })
     } else if (turnOrder !== undefined) {
       await GamePage.verifyOrder({
         turnOrder,
@@ -754,7 +719,7 @@ export default class GamePage {
     self: GamePlayerExpected
     opponent: GamePlayerExpected
     hand?: string[] | DeckUnit[]
-    redraws?: Redraws[]
+    redraws?: RedrawPair[]
     turnOrder?: string[] | boolean
     moves?: (HistoryMove | HistoryPass)[][]
     round?: number
@@ -929,10 +894,10 @@ export default class GamePage {
     await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
     await t.click(card)
     await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
-    await t.expect(GamePage.elements.RedrawCard.exists).ok()
-    await t.expect(GamePage.elements.RedrawCard.visible).ok()
-    await t.expect(GamePage.elements.RedrawCard.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
-    await t.click(GamePage.elements.RedrawCard)
+    await t.expect(RedrawUnits.elements.RedrawCard.exists).ok()
+    await t.expect(RedrawUnits.elements.RedrawCard.visible).ok()
+    await t.expect(RedrawUnits.elements.RedrawCard.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+    await t.click(RedrawUnits.elements.RedrawCard)
   }
 
   static async fullscreenHandCard(name: string) {
@@ -1259,11 +1224,6 @@ export interface GamePlayerExpected {
   close?: CombatRow
   ranged?: CombatRow
   siege?: CombatRow
-}
-
-interface Redraws {
-  from: string
-  to: string
 }
 
 interface ImpactSelection {

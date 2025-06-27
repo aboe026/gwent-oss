@@ -243,11 +243,10 @@ export class GameManager {
   }
 
   getHandUnit({ name, opponent }: { name: string; opponent?: boolean }): DeckUnit {
-    const unit = (opponent ? this.opponent : this.self).deck.hand.find((deckUnit) => deckUnit.unit.name === name)
-    if (!unit) {
-      throw Error(`Could not find unit "${name}" in hand.`)
-    }
-    return unit
+    return E2eHelper.getHandUnit({
+      deck: opponent ? this.opponent.deck : this.self.deck,
+      name,
+    })
   }
 
   switchPlayers() {

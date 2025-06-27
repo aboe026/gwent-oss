@@ -14,17 +14,19 @@ import { getGame, updateGame } from './db-util'
  * @param config.userId The ID of the user on the game to set the hand for.
  * @returns The Game with updated hand for the user.
  */
-export async function ensureUnitsInHand({
+export default async function ensureUnitsInHand({
   gameId,
   mongoConnectionString,
   mongoDatabaseName,
   unitNames,
+  excludeNames,
   userId,
 }: {
   gameId: string | ObjectId
   mongoConnectionString: string
   mongoDatabaseName: string
   unitNames: string[]
+  excludeNames?: string[]
   userId: string | ObjectId
 }): Promise<GameDbObject> {
   const game = await getGame({
@@ -53,6 +55,70 @@ export async function ensureUnitsInHand({
     mongoDatabaseName,
     unitIds: (deck as DeckDbObject).units.map((unit) => unit.unit),
   })
+
+  if (excludeNames) {
+    game.players = game.players.map((player) => {
+      if (player.user.toString() === userId.toString()) {
+        if (!player.deck.from) {
+          throw Error(`Player "${player.user.toString()}" does not have deck set`)
+        }
+
+        const handUnits = player.deck.hand.map((handUnit) => {
+          const matchingUnit = deckUnits.find((deckUnit) => deckUnit._id.toString() === handUnit.unit.toString())
+          if (!matchingUnit) {
+            throw Error(`Could not find deck unit for hand unit "${handUnit.unit}"`)
+          }
+          return matchingUnit
+        })
+        const undrawnUnits = player.deck.undrawn.map((undrawnUnit) => {
+          const matchingUnit = deckUnits.find((deckUnit) => deckUnit._id.toString() === undrawnUnit.unit.toString())
+          if (!matchingUnit) {
+            throw Error(`Could not find deck unit for undrawn unit "${undrawnUnit.unit}"`)
+          }
+          return matchingUnit
+        })
+
+        const unitsToRemoveFromHand: UnitDbObject[] = []
+        const eligibleUndrawns: UnitDbObject[] = []
+
+        for (const excludeName of excludeNames) {
+          for (const handUnit of handUnits) {
+            if (handUnit.name === excludeName) {
+              unitsToRemoveFromHand.push(handUnit)
+              let eligibleFound = false
+              for (let i = 0; i < undrawnUnits.length && !eligibleFound; i++) {
+                const potentialUndrawn = undrawnUnits[i]
+                if (!excludeNames.includes(potentialUndrawn.name)) {
+                  eligibleFound = true
+                  eligibleUndrawns.push(potentialUndrawn)
+                }
+              }
+            }
+          }
+        }
+
+        for (let i = 0; i < unitsToRemoveFromHand.length; i++) {
+          const unitToRemoveFromHand = unitsToRemoveFromHand[i]
+          const undrawnToAddToHand = eligibleUndrawns[i]
+
+          const positionInHand = handUnits
+            .map((unit) => unit._id.toString())
+            .indexOf(unitToRemoveFromHand._id.toString())
+          const positionInUndrawn = undrawnUnits
+            .map((unit) => unit._id.toString())
+            .indexOf(undrawnToAddToHand._id.toString())
+
+          const handUnitToMoveToUndrawn = player.deck.hand[positionInHand]
+          const undrawnUnitToMoveToHand = player.deck.undrawn[positionInUndrawn]
+
+          player.deck.hand[positionInHand] = undrawnUnitToMoveToHand
+          player.deck.undrawn[positionInUndrawn] = handUnitToMoveToUndrawn
+        }
+      }
+
+      return player
+    })
+  }
 
   game.players = game.players.map((player) => {
     if (player.user.toString() === userId.toString()) {
@@ -137,9 +203,9 @@ export async function ensureUnitsInHand({
         }
 
         const undrawnUnitToMoveToHand = player.deck.undrawn[positionInUndrawn]
-        const handUnitToMoveToUndranw = player.deck.hand[positionInHand]
+        const handUnitToMoveToUndrawn = player.deck.hand[positionInHand]
         player.deck.hand[positionInHand] = undrawnUnitToMoveToHand
-        player.deck.undrawn[positionInUndrawn] = handUnitToMoveToUndranw
+        player.deck.undrawn[positionInUndrawn] = handUnitToMoveToUndrawn
       }
     }
     return player

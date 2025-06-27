@@ -93,6 +93,22 @@ export class E2eHelper {
     return unitNames
   }
 
+  static getHandUnit({ name, deck }: { name: string; deck: GameDeck }): DeckUnit {
+    const unit = deck.hand.find((deckUnit) => deckUnit.unit.name === name)
+    if (!unit) {
+      throw Error(`Could not find unit "${name}" in hand.`)
+    }
+    return unit
+  }
+
+  static getUndrawnUnit({ name, deck }: { name: string; deck: GameDeck }): DeckUnit {
+    const unit = deck.undrawn.find((deckUnit) => deckUnit.unit.name === name)
+    if (!unit) {
+      throw Error(`Could not find unit "${name}" in undrawn.`)
+    }
+    return unit
+  }
+
   static async switchToUser({ username, password = 'password' }: { username: string; password?: string }) {
     await Banner.goTo(Banner.elements.MenuProfile)
     await ProfilePage.logout()

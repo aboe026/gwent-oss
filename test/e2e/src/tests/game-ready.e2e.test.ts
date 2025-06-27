@@ -246,8 +246,12 @@ test('Set ready after redrawing once before opponent is ready', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [
       {
-        from: unitToRedraw.name,
-        to: redraw.unit.name,
+        from: {
+          unitName: unitToRedraw.name,
+        },
+        to: {
+          unitName: redraw.unit.name,
+        },
       },
     ],
   })
@@ -296,8 +300,12 @@ test('Set ready after redrawing once after opponent is ready', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [
       {
-        from: unitToRedraw.name,
-        to: redraw.unit.name,
+        from: {
+          unitName: unitToRedraw.name,
+        },
+        to: {
+          unitName: redraw.unit.name,
+        },
       },
     ],
   })
@@ -354,12 +362,20 @@ test('Set ready after redrawing twice before opponent is ready', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [
       {
-        from: unitToRedraw1.name,
-        to: redraw1.unit.name,
+        from: {
+          unitName: unitToRedraw1.name,
+        },
+        to: {
+          unitName: redraw1.unit.name,
+        },
       },
       {
-        from: unitToRedraw2.name,
-        to: redraw2.unit.name,
+        from: {
+          unitName: unitToRedraw2.name,
+        },
+        to: {
+          unitName: redraw2.unit.name,
+        },
       },
     ],
   })
@@ -417,12 +433,20 @@ test('Set ready after redrawing twice after opponent is ready', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [
       {
-        from: unitToRedraw1.name,
-        to: redraw1.unit.name,
+        from: {
+          unitName: unitToRedraw1.name,
+        },
+        to: {
+          unitName: redraw1.unit.name,
+        },
       },
       {
-        from: unitToRedraw2.name,
-        to: redraw2.unit.name,
+        from: {
+          unitName: unitToRedraw2.name,
+        },
+        to: {
+          unitName: redraw2.unit.name,
+        },
       },
     ],
   })

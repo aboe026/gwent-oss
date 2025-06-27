@@ -13,7 +13,7 @@ import { getGame, updateGame } from './db-util'
  * @param config.userIds The IDs of the users in turn order.
  * @returns The game with turn orders set.
  */
-export async function setTurnOrder({
+export default async function setTurnOrder({
   gameId,
   mongoConnectionString,
   mongoDatabaseName,

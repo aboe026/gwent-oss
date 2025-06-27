@@ -172,8 +172,12 @@ test('Redraw 1 card before opponent redraws or ready', async (t) => {
     hand: updatedGameDeck.hand,
     redraws: [
       {
-        from: unitToRedraw,
-        to: updatedGameDeck.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw,
+        },
+        to: {
+          unitName: updatedGameDeck.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -212,8 +216,12 @@ test('Redraw 1 card after opponent redraws', async (t) => {
     hand: updatedGameDeck.hand,
     redraws: [
       {
-        from: unitToRedraw,
-        to: updatedGameDeck.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw,
+        },
+        to: {
+          unitName: updatedGameDeck.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -249,8 +257,12 @@ test('Redraw 1 card after opponent ready', async (t) => {
     hand: updatedGameDeck.hand,
     redraws: [
       {
-        from: unitToRedraw,
-        to: updatedGameDeck.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw,
+        },
+        to: {
+          unitName: updatedGameDeck.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -286,8 +298,12 @@ test('Redraw 2 cards before opponent ready', async (t) => {
     hand: updatedGameDeck1.hand,
     redraws: [
       {
-        from: unitToRedraw1,
-        to: updatedGameDeck1.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw1,
+        },
+        to: {
+          unitName: updatedGameDeck1.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -299,12 +315,20 @@ test('Redraw 2 cards before opponent ready', async (t) => {
     hand: updatedGameDeck2.hand,
     redraws: [
       {
-        from: unitToRedraw1,
-        to: updatedGameDeck2.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw1,
+        },
+        to: {
+          unitName: updatedGameDeck2.redraws[0].to.unit.name,
+        },
       },
       {
-        from: unitToRedraw2,
-        to: updatedGameDeck2.redraws[1].to.unit.name,
+        from: {
+          unitName: unitToRedraw2,
+        },
+        to: {
+          unitName: updatedGameDeck2.redraws[1].to.unit.name,
+        },
       },
     ],
   })
@@ -344,8 +368,12 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
     hand: updatedGameDeck1.hand,
     redraws: [
       {
-        from: unitToRedraw1,
-        to: updatedGameDeck1.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw1,
+        },
+        to: {
+          unitName: updatedGameDeck1.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -359,8 +387,12 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
     hand: updatedGameDeck1.hand,
     redraws: [
       {
-        from: unitToRedraw1,
-        to: updatedGameDeck1.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw1,
+        },
+        to: {
+          unitName: updatedGameDeck1.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -372,12 +404,20 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
     hand: updatedGameDeck2.hand,
     redraws: [
       {
-        from: unitToRedraw1,
-        to: updatedGameDeck2.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw1,
+        },
+        to: {
+          unitName: updatedGameDeck2.redraws[0].to.unit.name,
+        },
       },
       {
-        from: unitToRedraw2,
-        to: updatedGameDeck2.redraws[1].to.unit.name,
+        from: {
+          unitName: unitToRedraw2,
+        },
+        to: {
+          unitName: updatedGameDeck2.redraws[1].to.unit.name,
+        },
       },
     ],
   })
@@ -415,8 +455,12 @@ test('Redraw 2 cards after opponent ready', async (t) => {
     hand: updatedGameDeck1.hand,
     redraws: [
       {
-        from: unitToRedraw1,
-        to: updatedGameDeck1.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw1,
+        },
+        to: {
+          unitName: updatedGameDeck1.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -428,12 +472,20 @@ test('Redraw 2 cards after opponent ready', async (t) => {
     hand: updatedGameDeck2.hand,
     redraws: [
       {
-        from: unitToRedraw1,
-        to: updatedGameDeck2.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw1,
+        },
+        to: {
+          unitName: updatedGameDeck2.redraws[0].to.unit.name,
+        },
       },
       {
-        from: unitToRedraw2,
-        to: updatedGameDeck2.redraws[1].to.unit.name,
+        from: {
+          unitName: unitToRedraw2,
+        },
+        to: {
+          unitName: updatedGameDeck2.redraws[1].to.unit.name,
+        },
       },
     ],
   })
@@ -471,8 +523,12 @@ test('Page automatically updates after first redraw via API', async (t) => {
     hand: updatedGameDeck.hand,
     redraws: [
       {
-        from: unitToRedraw.name,
-        to: updatedGameDeck.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw.name,
+        },
+        to: {
+          unitName: updatedGameDeck.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -505,8 +561,12 @@ test('Page automatically updates after second redraw via API', async (t) => {
     hand: updatedGameDeck1.hand,
     redraws: [
       {
-        from: unitToRedraw1.name,
-        to: updatedGameDeck1.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw1.name,
+        },
+        to: {
+          unitName: updatedGameDeck1.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -521,12 +581,20 @@ test('Page automatically updates after second redraw via API', async (t) => {
     hand: updatedGameDeck2.hand,
     redraws: [
       {
-        from: unitToRedraw1.name,
-        to: updatedGameDeck1.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw1.name,
+        },
+        to: {
+          unitName: updatedGameDeck1.redraws[0].to.unit.name,
+        },
       },
       {
-        from: unitToRedraw2.name,
-        to: updatedGameDeck2.redraws[1].to.unit.name,
+        from: {
+          unitName: unitToRedraw2.name,
+        },
+        to: {
+          unitName: updatedGameDeck2.redraws[1].to.unit.name,
+        },
       },
     ],
   })

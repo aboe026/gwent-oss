@@ -118,6 +118,7 @@ New things that should be added to the codebase.
   - points per round
   - time per round
   - efficiency per round?
+- Add link to GitHub repo in about page
 - Limit user creation
   - activation code?
   - manual review?

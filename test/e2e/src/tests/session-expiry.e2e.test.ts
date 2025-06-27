@@ -765,8 +765,12 @@ test('Redraw unit for game after session expires', async (t) => {
     hand: updatedGameDeck.hand,
     redraws: [
       {
-        from: unitToRedraw,
-        to: updatedGameDeck.redraws[0].to.unit.name,
+        from: {
+          unitName: unitToRedraw,
+        },
+        to: {
+          unitName: updatedGameDeck.redraws[0].to.unit.name,
+        },
       },
     ],
   })
