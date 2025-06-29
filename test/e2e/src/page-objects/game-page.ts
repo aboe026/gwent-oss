@@ -1042,10 +1042,13 @@ export default class GamePage {
       const move = roundContainer.child().nth(j)
       const movePlayerName = await move.find(`.${HTML_CLASSES.GameHistoryMoveUsername}`).innerText
       const moveUnitName = await move.find(`.${HTML_CLASSES.GameHistoryMovePrimaryText}`).innerText
-      const moveReason = await move.find(`.${HTML_CLASSES.GameHistoryMoveSecondaryText}`).innerText
-      const moveText = `${movePlayerName}: ${moveUnitName} ${moveReason}`
-      if (moveText === expectedMoveText) {
-        historyMove = move
+      const secondaryTextDiv = move.find(`.${HTML_CLASSES.GameHistoryMoveSecondaryText}`)
+      if (await secondaryTextDiv.exists) {
+        const moveReason = await secondaryTextDiv.innerText
+        const moveText = `${movePlayerName}: ${moveUnitName} ${moveReason}`
+        if (moveText === expectedMoveText) {
+          historyMove = move
+        }
       }
     }
     if (!historyMove) {
