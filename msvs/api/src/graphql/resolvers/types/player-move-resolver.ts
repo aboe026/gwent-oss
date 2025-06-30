@@ -8,7 +8,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from './game-unit-resolver'
 import LeaderResolver from './leader-resolver'
-import MoveImpactsResolver from './move-impacts-resolver'
+import MoveImpactResolver from './move-impact-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 
 /**
@@ -59,7 +59,7 @@ export default class PlayerMoveResolver {
           gameUnit: unitMove.unit,
           unit: gameUnit ? gameUnit.unit : undefined,
         }),
-        impacts: await MoveImpactsResolver.fromObject({
+        impacts: await MoveImpactResolver.fromArray({
           impacts: unitMove.impacts,
         }),
         __typename: 'MoveUnit',

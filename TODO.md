@@ -85,6 +85,7 @@ New things that should be added to the codebase.
 - unit tests
 - func tests
 - e2e tests
+- ts-docs
 - increment minor version
 - changelog
 

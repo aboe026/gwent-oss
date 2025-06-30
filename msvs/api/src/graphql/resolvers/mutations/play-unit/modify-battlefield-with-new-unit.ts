@@ -31,6 +31,37 @@ export default function modifyBattlefieldWithNewUnit({
   logPrefix: string
   newDeckUnit: DeckUnitDbObject
 }): ImpactDbObject[] | undefined {
+  addNewUnitToBattlefield({
+    game,
+    newDeckUnit,
+    combat,
+  })
+
+  const impacts: ImpactDbObject[] = []
+  impacts.push(
+    ...ScorchBattlefield.scorchBattlefield({
+      battlefieldUnits,
+      effects,
+      game,
+      logPrefix,
+      newDeckUnit,
+    })
+  )
+
+  if (impacts.length > 0) {
+    return impacts
+  }
+}
+
+export function addNewUnitToBattlefield({
+  combat,
+  game,
+  newDeckUnit,
+}: {
+  combat?: Combat | null
+  game: GameDbObject
+  newDeckUnit: DeckUnitDbObject
+}) {
   for (const player of game.players) {
     if (player.user.toString() === game.turn?.toString()) {
       player.deck.hand = player.deck.hand.filter((handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString())
@@ -43,16 +74,5 @@ export default function modifyBattlefieldWithNewUnit({
         round.siege.units.push(newDeckUnit)
       }
     }
-  }
-
-  const scorches = ScorchBattlefield.scorchBattlefield({
-    battlefieldUnits,
-    effects,
-    game,
-    logPrefix,
-    newDeckUnit,
-  })
-  if (scorches.length > 0) {
-    return scorches
   }
 }

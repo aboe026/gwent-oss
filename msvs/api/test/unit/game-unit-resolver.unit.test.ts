@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
+import { Combat, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { GameUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
-import { GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
@@ -25,6 +25,36 @@ describe('game-unit-resolver', () => {
           artStyle: 1,
           effectiveStrength: 2,
           unit: new ObjectId(),
+        },
+      })
+    })
+    it('row used if gameUnit row is Close', async () => {
+      await testFromObject({
+        gameUnit: {
+          artStyle: 1,
+          effectiveStrength: 2,
+          unit: new ObjectId(),
+          row: Combat.Close,
+        },
+      })
+    })
+    it('row used if gameUnit row is Ranged', async () => {
+      await testFromObject({
+        gameUnit: {
+          artStyle: 1,
+          effectiveStrength: 2,
+          unit: new ObjectId(),
+          row: Combat.Ranged,
+        },
+      })
+    })
+    it('row used if gameUnit row is Siege', async () => {
+      await testFromObject({
+        gameUnit: {
+          artStyle: 1,
+          effectiveStrength: 2,
+          unit: new ObjectId(),
+          row: Combat.Siege,
         },
       })
     })
@@ -70,6 +100,7 @@ async function testFromObject({ gameUnit, unit }: { gameUnit: GameUnitDbObject; 
     effectiveStrength: gameUnit.effectiveStrength,
     effects: [],
     unit: resolvedUnit,
+    row: gameUnit.row ? (gameUnit.row as Combat) : undefined,
   }
   await expect(
     GameUnitResolver.fromObject({

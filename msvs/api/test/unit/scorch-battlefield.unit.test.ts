@@ -8,6 +8,7 @@ import {
   GameDbObject,
   GamePlayerDbObject,
   GameUnitDbObject,
+  ImpactDbObject,
   PlayerCombatRowDbObject,
   PlayerRoundDbObject,
   UnitDbObject,
@@ -53,7 +54,7 @@ describe('scorch-battlefield', () => {
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
-    it('does not call to scorchUnitsForPlayers if newDeckUnit does not have scorch effect', () => {
+    it('does not call to scorchPlayer if newDeckUnit does not have scorch effect', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
       })
@@ -79,7 +80,7 @@ describe('scorch-battlefield', () => {
         game,
       })
     })
-    it('calls to scorchUnitsForPlayers if newDeckUnit has scorch effect with no scorchScope and first player', () => {
+    it('calls to scorchPlayer if newDeckUnit has scorch effect with no scorchScope and first player', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
       })
@@ -111,7 +112,7 @@ describe('scorch-battlefield', () => {
         ],
       })
     })
-    it('calls to scorchUnitsForPlayers if newDeckUnit has scorch effect with no scorchScope and second player', () => {
+    it('calls to scorchPlayer if newDeckUnit has scorch effect with no scorchScope and second player', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
       })
@@ -143,7 +144,7 @@ describe('scorch-battlefield', () => {
         ],
       })
     })
-    it('calls to scorchUnitsForPlayers if newDeckUnit has scorch effect with scorchScope and first player', () => {
+    it('calls to scorchPlayer if newDeckUnit has scorch effect with scorchScope and first player', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
       })
@@ -176,7 +177,7 @@ describe('scorch-battlefield', () => {
         ],
       })
     })
-    it('calls to scorchUnitsForPlayers if newDeckUnit has scorch effect with scorchScope and first player', () => {
+    it('calls to scorchPlayer if newDeckUnit has scorch effect with scorchScope and second player', () => {
       const scorchEffect = TestUtil.getDbEffect({
         key: EffectKey.Scorch,
       })
@@ -203,6 +204,196 @@ describe('scorch-battlefield', () => {
             {
               combat: Combat.Close,
               players: [game.players[0]],
+              round: game.round,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns single scorch from single player', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+        scorchScope: Combat.Close,
+      })
+      const game = TestUtil.getDbGame({
+        players: [self, TestUtil.getDbGamePlayer({})],
+        turn: self.user,
+        round: 1,
+      })
+
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
+        scorchEffect,
+        game,
+        scorchPlayerResponses: [
+          [
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: self.user,
+            },
+          ],
+          [],
+        ],
+        getGameUnitsCalls: [
+          [
+            {
+              combat: Combat.Close,
+              players: [game.players[1]],
+              round: game.round,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns multiple scorchs from single player', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+        scorchScope: Combat.Close,
+      })
+      const game = TestUtil.getDbGame({
+        players: [self, TestUtil.getDbGamePlayer({})],
+        turn: self.user,
+        round: 1,
+      })
+
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
+        scorchEffect,
+        game,
+        scorchPlayerResponses: [
+          [
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: self.user,
+            },
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: self.user,
+            },
+          ],
+          [],
+        ],
+        getGameUnitsCalls: [
+          [
+            {
+              combat: Combat.Close,
+              players: [game.players[1]],
+              round: game.round,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns single scorch from multiple players', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+        scorchScope: Combat.Close,
+      })
+      const game = TestUtil.getDbGame({
+        players: [self, TestUtil.getDbGamePlayer({})],
+        turn: self.user,
+        round: 1,
+      })
+
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
+        scorchEffect,
+        game,
+        scorchPlayerResponses: [
+          [
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: self.user,
+            },
+          ],
+          [
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: self.user,
+            },
+          ],
+        ],
+        getGameUnitsCalls: [
+          [
+            {
+              combat: Combat.Close,
+              players: [game.players[1]],
+              round: game.round,
+            },
+          ],
+        ],
+      })
+    })
+    it('returns multiple scorches from multiple players', () => {
+      const scorchEffect = TestUtil.getDbEffect({
+        key: EffectKey.Scorch,
+      })
+      const unit = TestUtil.getDbUnit({
+        effects: [scorchEffect._id],
+        scorchScope: Combat.Close,
+      })
+      const game = TestUtil.getDbGame({
+        players: [self, TestUtil.getDbGamePlayer({})],
+        turn: self.user,
+        round: 1,
+      })
+
+      testScorchBattlefield({
+        logPrefix,
+        battlefieldUnits: [unit],
+        newDeckUnit: TestUtil.getDbDeckUnit({
+          id: unit._id,
+        }),
+        scorchEffect,
+        game,
+        scorchPlayerResponses: [
+          [
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: self.user,
+            },
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: self.user,
+            },
+          ],
+          [
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: self.user,
+            },
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: self.user,
+            },
+          ],
+        ],
+        getGameUnitsCalls: [
+          [
+            {
+              combat: Combat.Close,
+              players: [game.players[1]],
               round: game.round,
             },
           ],
@@ -325,6 +516,12 @@ describe('scorch-battlefield', () => {
           scorchingDeckUnit,
           scorchingUnit,
           turn: player.user,
+          impacts: [
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: new ObjectId(),
+            },
+          ],
           callScorchUnitsForPlayer: true,
         })
       })
@@ -342,6 +539,12 @@ describe('scorch-battlefield', () => {
           scorchingDeckUnit,
           scorchingUnit,
           turn: new ObjectId(),
+          impacts: [
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: new ObjectId(),
+            },
+          ],
           callScorchUnitsForPlayer: true,
         })
       })
@@ -361,6 +564,12 @@ describe('scorch-battlefield', () => {
           scorchingDeckUnit,
           scorchingUnit,
           turn: new ObjectId(),
+          impacts: [
+            {
+              unit: TestUtil.getDbGameUnit({}),
+              user: new ObjectId(),
+            },
+          ],
           callScorchUnitsForPlayer: true,
         })
       })
@@ -407,6 +616,7 @@ describe('scorch-battlefield', () => {
         logPrefix,
         rowsToScorch: [],
         scorchingUnit,
+        expected: [],
       })
     })
     it('does not move anything to discard if scorchUnitsInRow is empty', () => {
@@ -436,6 +646,7 @@ describe('scorch-battlefield', () => {
         logPrefix,
         rowsToScorch: [player.rounds[0].close, player.rounds[0].ranged, player.rounds[0].siege],
         scorchingUnit,
+        expected: [],
       })
     })
     it('uses scoped strongest unit ids if scorchingUnit has scorchScope', () => {
@@ -472,6 +683,7 @@ describe('scorch-battlefield', () => {
             `${logPrefix} scorchingUnit "${scorchingUnit.name}" has scorchScope of "${scorchingUnit.scorchScope}" so getting strongest units in just that row to scorch`,
           ],
         ],
+        expected: [],
       })
     })
     it('discards units if scorchUnitsInRow returns only 1 in Close row', () => {
@@ -506,6 +718,12 @@ describe('scorch-battlefield', () => {
             discard: [gameUnitToScorch],
           },
         },
+        expected: [
+          {
+            unit: gameUnitToScorch,
+            user: origPlayer.user,
+          },
+        ],
         debugCalls: [
           [`${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([unitToScorch.unit])}"`],
         ],
@@ -543,6 +761,12 @@ describe('scorch-battlefield', () => {
             discard: [gameUnitToScorch],
           },
         },
+        expected: [
+          {
+            unit: gameUnitToScorch,
+            user: origPlayer.user,
+          },
+        ],
         debugCalls: [
           [`${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([unitToScorch.unit])}"`],
         ],
@@ -580,6 +804,12 @@ describe('scorch-battlefield', () => {
             discard: [gameUnitToScorch],
           },
         },
+        expected: [
+          {
+            unit: gameUnitToScorch,
+            user: origPlayer.user,
+          },
+        ],
         debugCalls: [
           [`${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([unitToScorch.unit])}"`],
         ],
@@ -621,6 +851,16 @@ describe('scorch-battlefield', () => {
             discard: [gameUnitToScorch1, gameUnitToScorch2],
           },
         },
+        expected: [
+          {
+            unit: gameUnitToScorch1,
+            user: origPlayer.user,
+          },
+          {
+            unit: gameUnitToScorch2,
+            user: origPlayer.user,
+          },
+        ],
         debugCalls: [
           [
             `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
@@ -667,6 +907,16 @@ describe('scorch-battlefield', () => {
             discard: [gameUnitToScorch1, gameUnitToScorch2],
           },
         },
+        expected: [
+          {
+            unit: gameUnitToScorch1,
+            user: origPlayer.user,
+          },
+          {
+            unit: gameUnitToScorch2,
+            user: origPlayer.user,
+          },
+        ],
         debugCalls: [
           [
             `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
@@ -713,6 +963,16 @@ describe('scorch-battlefield', () => {
             discard: [gameUnitToScorch1, gameUnitToScorch2],
           },
         },
+        expected: [
+          {
+            unit: gameUnitToScorch1,
+            user: origPlayer.user,
+          },
+          {
+            unit: gameUnitToScorch2,
+            user: origPlayer.user,
+          },
+        ],
         debugCalls: [
           [
             `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
@@ -771,6 +1031,20 @@ describe('scorch-battlefield', () => {
             discard: [gameUnitToScorch1, gameUnitToScorch2, gameUnitToScorch3],
           },
         },
+        expected: [
+          {
+            unit: gameUnitToScorch1,
+            user: origPlayer.user,
+          },
+          {
+            unit: gameUnitToScorch2,
+            user: origPlayer.user,
+          },
+          {
+            unit: gameUnitToScorch3,
+            user: origPlayer.user,
+          },
+        ],
         debugCalls: [
           [
             `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([
@@ -814,6 +1088,12 @@ describe('scorch-battlefield', () => {
             discard: [gameUnitToScorch],
           },
         },
+        expected: [
+          {
+            unit: gameUnitToScorch,
+            user: origPlayer.user,
+          },
+        ],
         debugCalls: [
           [`${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify([unitToScorch.unit])}"`],
         ],
@@ -1209,6 +1489,7 @@ function testScorchBattlefield({
   scorchEffect,
   game,
   newDeckUnit,
+  scorchPlayerResponses,
   error,
   getGameUnitsCalls = [],
   errorCalls = [],
@@ -1219,6 +1500,7 @@ function testScorchBattlefield({
   scorchEffect: EffectDbObject | undefined
   game: GameDbObject
   newDeckUnit: DeckUnitDbObject
+  scorchPlayerResponses?: ImpactDbObject[][]
   error?: Error
   getGameUnitsCalls?: any[][]
   errorCalls?: string[][]
@@ -1234,7 +1516,14 @@ function testScorchBattlefield({
   if (getGameUnitsCalls.length > 0) {
     getStrongestNonHeroUnitIdsSpy.mockReturnValue(strongestGameUnits.map((gameUnit) => gameUnit.unit.toString()))
   }
-  const scorchPlayerSpy = jest.spyOn(ScorchBattelfield as any, 'scorchPlayer').mockImplementation()
+  const scorchPlayerSpy = jest.spyOn(ScorchBattelfield as any, 'scorchPlayer')
+  if (scorchPlayerResponses) {
+    for (const scorchPlayerResponse of scorchPlayerResponses) {
+      scorchPlayerSpy.mockReturnValueOnce(scorchPlayerResponse)
+    }
+  } else {
+    scorchPlayerSpy.mockReturnValue([])
+  }
   const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
@@ -1244,6 +1533,14 @@ function testScorchBattlefield({
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
+  const impacts: ImpactDbObject[] = []
+  if (scorchPlayerResponses) {
+    for (const scorchPlayerResponse of scorchPlayerResponses) {
+      for (const impact of scorchPlayerResponse) {
+        impacts.push(impact)
+      }
+    }
+  }
 
   if (error instanceof Error) {
     expect(() =>
@@ -1264,7 +1561,7 @@ function testScorchBattlefield({
         game,
         newDeckUnit,
       })
-    ).toEqual(undefined)
+    ).toEqual(impacts)
   }
 
   expect(getEffectWithKeySpy.mock.calls).toEqual(
@@ -1347,6 +1644,7 @@ function testScorchPlayer({
   scorchingUnit,
   scorchingDeckUnit,
   changedPlayer,
+  impacts = [],
   callScorchUnitsForPlayer,
 }: {
   player: GamePlayerDbObject
@@ -1355,13 +1653,14 @@ function testScorchPlayer({
   scorchingUnit: UnitDbObject
   scorchingDeckUnit: DeckUnitDbObject
   changedPlayer?: GamePlayerDbObject
+  impacts?: ImpactDbObject[]
   callScorchUnitsForPlayer: boolean
 }) {
   const origPlayer = deepClone(player)
   const battlefieldUnits = [TestUtil.getDbUnit({})]
   const strongestUnitIdsOnBattlefield = battlefieldUnits.map((unit) => unit._id.toString())
   const round = 1
-  const scorchUnitsForPlayerSpy = jest.spyOn(ScorchBattelfield as any, 'scorchUnitsForPlayer').mockImplementation()
+  const scorchPlayerpy = jest.spyOn(ScorchBattelfield as any, 'scorchUnitsForPlayer').mockReturnValue(impacts)
   const traceSpy = jest.fn().mockImplementation()
   ScorchBattelfield['logger'] = {
     trace: traceSpy,
@@ -1378,10 +1677,10 @@ function testScorchPlayer({
       strongestUnitIdsOnBattlefield,
       turn,
     })
-  ).toEqual(undefined)
+  ).toEqual(impacts)
 
   expect(player).toEqual(changedPlayer || origPlayer)
-  expect(scorchUnitsForPlayerSpy.mock.calls).toEqual(
+  expect(scorchPlayerpy.mock.calls).toEqual(
     callScorchUnitsForPlayer
       ? [
           [
@@ -1415,6 +1714,7 @@ function testScorchUnitsForPlayer({
   scorchUnitsInRowResponses,
   rowsToScorch,
   changedPlayer,
+  expected,
   debugCalls = [],
   traceCalls = [],
   traceEnabled,
@@ -1426,6 +1726,7 @@ function testScorchUnitsForPlayer({
   scorchUnitsInRowResponses?: GameUnitDbObject[][]
   rowsToScorch: PlayerCombatRowDbObject[]
   changedPlayer?: GamePlayerDbObject
+  expected: ImpactDbObject[]
   debugCalls?: string[][]
   traceCalls?: string[][]
   traceEnabled?: boolean
@@ -1464,7 +1765,7 @@ function testScorchUnitsForPlayer({
       scorchingUnit,
       strongestUnitIdsOnBattlefield,
     })
-  ).toEqual(undefined)
+  ).toEqual(expected)
   expect(player).toEqual(changedPlayer || origPlayer)
 
   expect(getRowsToScorchSpy.mock.calls).toEqual(

@@ -1,15 +1,16 @@
+import { ObjectId } from 'mongodb'
+
+import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
+import deepClone from '../util/deep-clone'
 import {
-  EffectDbObject,
   EffectKey,
   ImpactDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
+import EffectMorale from '../../src/graphql/resolvers/mutations/play-unit/effect-morale'
+import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import TestUtil from '../util/test-util'
-import deepClone from '../util/deep-clone'
-import { EffectReasonType } from '@gwent/graphql-schema'
-import { ObjectId } from 'mongodb'
 
 describe('calculate-game-effective-strengths', () => {
   describe('calculateEffectiveStrengths', () => {
@@ -74,889 +75,333 @@ describe('calculate-game-effective-strengths', () => {
     })
   })
   describe('calculateEffectiveStrengthsForRow', () => {
-    const logPrefix = 'log-prefix'
-    describe('no effects', () => {
-      it('throws error if unit with ID not contained in units', () => {
-        const id = new ObjectId()
-        const row: PlayerCombatRowDbObject = {
+    it('throws error if matching unit not found', () => {
+      const rowUnit = TestUtil.getDbGameUnit({})
+      testCalculateEffectiveStrengthsForRow({
+        row: {
           score: 0,
-          units: [
-            TestUtil.getDbGameUnit({
-              id,
-            }),
-          ],
-        }
-
-        expect(() =>
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects: [],
-            row,
-            units: [],
-          })
-        ).toThrow(`Could not find Unit with ID "${id}"`)
-      })
-      it('does nothing if no units in the row', () => {
-        const row: PlayerCombatRowDbObject = {
+          units: [rowUnit],
+        },
+        units: [],
+        expected: Error(`Could not find Unit with ID "${rowUnit.unit}"`),
+        modifiedRow: {
           score: 0,
-          units: [],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects: [],
-            row,
-            units: [],
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual(origRow)
-      })
-      it('sets effectiveStrength to undefined if strength is undefined and no effective strength', () => {
-        const units: UnitDbObject[] = [TestUtil.getDbUnit({})]
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects: [],
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual(origRow)
-      })
-      it('sets effectiveStrength to strength if zero and no effective strength', () => {
-        const units: UnitDbObject[] = [
-          TestUtil.getDbUnit({
-            strength: 0,
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects: [],
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
-            {
-              ...origRow.units[0],
-              effectiveStrength: 0,
-            },
-          ],
-        })
-      })
-      it('sets effectiveStrength to strength if non-zero and no effective strength', () => {
-        const units: UnitDbObject[] = [
-          TestUtil.getDbUnit({
-            strength: 1,
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects: [],
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
-            {
-              ...origRow.units[0],
-              effectiveStrength: 1,
-            },
-          ],
-        })
+          units: [deepClone(rowUnit)],
+        },
       })
     })
-    describe('morale', () => {
-      it('morale does not increment its own effectiveStrength', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
+    it('returns empty array if no units', () => {
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [],
+        },
+        units: [],
+        expected: [],
+        modifiedRow: {
+          score: 0,
+          units: [],
+        },
+      })
+    })
+    it('does not set effectiveStrength for unit with undefined strength', () => {
+      const rowUnit = TestUtil.getDbGameUnit({})
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowUnit],
+        },
+        units: [
           TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
+            id: rowUnit.unit,
           }),
-        ]
-        const row: PlayerCombatRowDbObject = {
+        ],
+        expected: [],
+
+        modifiedRow: {
+          score: 0,
+          units: [deepClone(rowUnit)],
+        },
+      })
+    })
+    it('does not set effectiveStrength for unit with null strength', () => {
+      const rowUnit = TestUtil.getDbGameUnit({})
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowUnit],
+        },
+        units: [
+          TestUtil.getDbUnit({
+            id: rowUnit.unit,
+            strength: null as any,
+          }),
+        ],
+        expected: [],
+        modifiedRow: {
+          score: 0,
+          units: [deepClone(rowUnit)],
+        },
+      })
+    })
+    it('sets effectiveStrength for unit with strength zero', () => {
+      const rowUnit = TestUtil.getDbGameUnit({})
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowUnit],
+        },
+        units: [
+          TestUtil.getDbUnit({
+            id: rowUnit.unit,
+            strength: 0,
+          }),
+        ],
+        expected: [],
+        modifiedRow: {
           score: 0,
           units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
             {
-              ...origRow.units[0],
+              ...deepClone(rowUnit),
               effectiveStrength: 0,
+              effects: [],
             },
           ],
-        })
+        },
       })
-      it('morale increments effectiveStrength of neighbor with zero strength before it by 1', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
+    })
+    it('sets effectiveStrength for unit with strength non zero', () => {
+      const rowUnit = TestUtil.getDbGameUnit({})
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowUnit],
+        },
+        units: [
           TestUtil.getDbUnit({
-            strength: 0,
+            id: rowUnit.unit,
+            strength: 1,
           }),
-          TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
+        ],
+        expected: [],
+        modifiedRow: {
           score: 0,
           units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
             {
-              ...origRow.units[0],
+              ...deepClone(rowUnit),
               effectiveStrength: 1,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 1,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
-            },
-            {
-              ...origRow.units[1],
-              effectiveStrength: 0,
+              effects: [],
             },
           ],
-        })
+        },
       })
-      it('morale increments effectiveStrength of neighbor with non-zero strength before it by 1', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
+    })
+    it('adds single impact from morale for single unit', () => {
+      const rowUnit = TestUtil.getDbGameUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowUnit],
+        },
+        units: [
           TestUtil.getDbUnit({
+            id: rowUnit.unit,
             strength: 1,
           }),
-          TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
+        ],
+        applyMoralesResponses: [[impact]],
+        expected: [impact],
+        modifiedRow: {
           score: 0,
           units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
             {
-              ...origRow.units[0],
-              effectiveStrength: 2,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 2,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
-            },
-            {
-              ...origRow.units[1],
-              effectiveStrength: 0,
-            },
-          ],
-        })
-      })
-      it('morale increments effectiveStrength of neighbor with zero strength after it by 1', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
-          TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-          }),
-          TestUtil.getDbUnit({
-            strength: 0,
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
-            {
-              ...origRow.units[0],
-              effectiveStrength: 0,
-            },
-            {
-              ...origRow.units[1],
+              ...deepClone(rowUnit),
               effectiveStrength: 1,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 1,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[0]._id,
-                  },
-                },
-              ],
+              effects: [],
             },
           ],
-        })
+        },
       })
-      it('morale increments effectiveStrength of neighbor with non-zero strength after it by 1', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
+    })
+    it('adds multiple impacts from morale for single unit', () => {
+      const rowUnit = TestUtil.getDbGameUnit({})
+      const impact1: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const impact2: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowUnit],
+        },
+        units: [
           TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-          }),
-          TestUtil.getDbUnit({
+            id: rowUnit.unit,
             strength: 1,
           }),
-        ]
-        const row: PlayerCombatRowDbObject = {
+        ],
+        applyMoralesResponses: [[impact1, impact2]],
+        expected: [impact1, impact2],
+        modifiedRow: {
           score: 0,
           units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
             {
-              ...origRow.units[0],
-              effectiveStrength: 0,
-            },
-            {
-              ...origRow.units[1],
-              effectiveStrength: 2,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 2,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[0]._id,
-                  },
-                },
-              ],
-            },
-          ],
-        })
-      })
-      it('morale increments effectiveStrength of neighbors with same strengths surrounding it by 1', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
-          TestUtil.getDbUnit({
-            strength: 1,
-          }),
-          TestUtil.getDbUnit({
-            strength: 1,
-            effects: [effects[0]._id],
-          }),
-          TestUtil.getDbUnit({
-            strength: 1,
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[2]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
-            {
-              ...origRow.units[0],
-              effectiveStrength: 2,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 2,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
-            },
-            {
-              ...origRow.units[1],
+              ...deepClone(rowUnit),
               effectiveStrength: 1,
-            },
-            {
-              ...origRow.units[2],
-              effectiveStrength: 2,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 2,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
+              effects: [],
             },
           ],
-        })
+        },
       })
-      it('morale increments effectiveStrength of neighbors with different strengths surrounding it by 1', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
+    })
+    it('adds single impact from morale for one of many', () => {
+      const rowUnit1 = TestUtil.getDbGameUnit({})
+      const rowUnit2 = TestUtil.getDbGameUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowUnit1, rowUnit2],
+        },
+        units: [
           TestUtil.getDbUnit({
+            id: rowUnit1.unit,
             strength: 1,
           }),
           TestUtil.getDbUnit({
+            id: rowUnit2.unit,
             strength: 2,
-            effects: [effects[0]._id],
           }),
-          TestUtil.getDbUnit({
-            strength: 3,
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
+        ],
+        applyMoralesResponses: [[], [impact]],
+        expected: [impact],
+        modifiedRow: {
           score: 0,
           units: [
-            TestUtil.getDbGameUnit({
-              id: units[2]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
             {
-              ...origRow.units[0],
-              effectiveStrength: 4,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 4,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
+              ...deepClone(rowUnit1),
+              effectiveStrength: 1,
+              effects: [],
             },
             {
-              ...origRow.units[1],
+              ...deepClone(rowUnit2),
               effectiveStrength: 2,
+              effects: [],
+            },
+          ],
+        },
+      })
+    })
+    it('adds single impact from morale for each of many', () => {
+      const rowUnit1 = TestUtil.getDbGameUnit({})
+      const rowUnit2 = TestUtil.getDbGameUnit({})
+      const impact1: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const impact2: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowUnit1, rowUnit2],
+        },
+        units: [
+          TestUtil.getDbUnit({
+            id: rowUnit1.unit,
+            strength: 1,
+          }),
+          TestUtil.getDbUnit({
+            id: rowUnit2.unit,
+            strength: 2,
+          }),
+        ],
+        applyMoralesResponses: [[impact1], [impact2]],
+        expected: [impact1, impact2],
+        modifiedRow: {
+          score: 0,
+          units: [
+            {
+              ...deepClone(rowUnit1),
+              effectiveStrength: 1,
+              effects: [],
             },
             {
-              ...origRow.units[2],
+              ...deepClone(rowUnit2),
               effectiveStrength: 2,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 2,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
+              effects: [],
             },
           ],
-        })
+        },
       })
-      it('morale does not effect hero', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
+    })
+    it('adds multiple impacts from morale for each of many', () => {
+      const rowUnit1 = TestUtil.getDbGameUnit({})
+      const rowUnit2 = TestUtil.getDbGameUnit({})
+      const impact1: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const impact2: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const impact3: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const impact4: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testCalculateEffectiveStrengthsForRow({
+        row: {
+          score: 0,
+          units: [rowUnit1, rowUnit2],
+        },
+        units: [
           TestUtil.getDbUnit({
-            strength: 10,
-            hero: true,
+            id: rowUnit1.unit,
+            strength: 1,
           }),
           TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
+            id: rowUnit2.unit,
+            strength: 2,
           }),
-        ]
-        const row: PlayerCombatRowDbObject = {
+        ],
+        applyMoralesResponses: [
+          [impact1, impact2],
+          [impact3, impact4],
+        ],
+        expected: [impact1, impact2, impact3, impact4],
+        modifiedRow: {
           score: 0,
           units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
             {
-              ...origRow.units[0],
-              effectiveStrength: 10,
-            },
-            {
-              ...origRow.units[1],
-              effectiveStrength: 0,
-            },
-          ],
-        })
-      })
-      it('morale effects other morales', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
-          TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-          }),
-          TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
-            {
-              ...origRow.units[0],
+              ...deepClone(rowUnit1),
               effectiveStrength: 1,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 1,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
+              effects: [],
             },
             {
-              ...origRow.units[1],
-              effectiveStrength: 1,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 1,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[0]._id,
-                  },
-                },
-              ],
-            },
-          ],
-        })
-      })
-      it('morale does not effect other hero morale', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
-          TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-          }),
-          TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-            hero: true,
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            logPrefix,
-            effects,
-            row,
-            units,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
-            {
-              ...origRow.units[0],
-              effectiveStrength: 1,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 1,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
-            },
-            {
-              ...origRow.units[1],
-              effectiveStrength: 0,
-            },
-          ],
-        })
-      })
-      it('morale effect stacks', () => {
-        const effects: EffectDbObject[] = [
-          TestUtil.getDbEffect({
-            key: EffectKey.Morale,
-          }),
-        ]
-        const units: UnitDbObject[] = [
-          TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-          }),
-          TestUtil.getDbUnit({
-            strength: 0,
-            effects: [effects[0]._id],
-          }),
-          TestUtil.getDbUnit({
-            strength: 0,
-          }),
-        ]
-        const row: PlayerCombatRowDbObject = {
-          score: 0,
-          units: [
-            TestUtil.getDbGameUnit({
-              id: units[0]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[1]._id,
-            }),
-            TestUtil.getDbGameUnit({
-              id: units[2]._id,
-            }),
-          ],
-        }
-        const origRow = deepClone(row)
-
-        expect(
-          CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
-            effects,
-            row,
-            units,
-            logPrefix,
-          })
-        ).toEqual(undefined)
-
-        expect(row).toEqual({
-          ...origRow,
-          units: [
-            {
-              ...origRow.units[0],
-              effectiveStrength: 1,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 1,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
-            },
-            {
-              ...origRow.units[1],
-              effectiveStrength: 1,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 1,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[0]._id,
-                  },
-                },
-              ],
-            },
-            {
-              ...origRow.units[2],
+              ...deepClone(rowUnit2),
               effectiveStrength: 2,
-              effects: [
-                {
-                  operator: '+1',
-                  total: 1,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[0]._id,
-                  },
-                },
-                {
-                  operator: '+1',
-                  total: 2,
-                  reason: {
-                    effect: effects[0]._id,
-                    type: EffectReasonType.Unit,
-                    unit: units[1]._id,
-                  },
-                },
-              ],
+              effects: [],
             },
           ],
-        })
+        },
       })
     })
   })
@@ -970,6 +415,8 @@ function testCalculateEffectiveStrengths({
   expected: ImpactDbObject[] | undefined
 }) {
   const logPrefix = 'log-prefix'
+  const moraleEffect = TestUtil.getDbEffect({})
+  const getEffectWithKeySpy = jest.spyOn(GetEffectWithKey, 'getEffectWithKey').mockReturnValue(moraleEffect)
   const calculateEffectiveStrengthsForRowSpy = jest
     .spyOn(CalculateGameEffectiveStrengths as any, 'calculateEffectiveStrengthsForRow')
     .mockImplementation()
@@ -1056,54 +503,134 @@ function testCalculateEffectiveStrengths({
     })
   ).toEqual(expected)
 
+  expect(getEffectWithKeySpy.mock.calls).toEqual([
+    [
+      {
+        effectKey: EffectKey.Morale,
+        effects,
+        logPrefix,
+      },
+    ],
+  ])
   const calculateEffectiveStrengthsForRowCall = {
     units,
-    effects,
     logPrefix,
     newDeckUnit,
+    moraleEffect,
+    currentPlayerTurn: game.turn,
   }
   expect(calculateEffectiveStrengthsForRowSpy.mock.calls).toEqual([
     [
       {
         ...calculateEffectiveStrengthsForRowCall,
-        player: game.players[0],
+        userId: game.players[0].user,
         row: game.players[0].rounds[1].close,
       },
     ],
     [
       {
         ...calculateEffectiveStrengthsForRowCall,
-        player: game.players[0],
+        userId: game.players[0].user,
         row: game.players[0].rounds[1].ranged,
       },
     ],
     [
       {
         ...calculateEffectiveStrengthsForRowCall,
-        player: game.players[0],
+        userId: game.players[0].user,
         row: game.players[0].rounds[1].siege,
       },
     ],
     [
       {
         ...calculateEffectiveStrengthsForRowCall,
-        player: game.players[1],
+        userId: game.players[1].user,
         row: game.players[1].rounds[1].close,
       },
     ],
     [
       {
         ...calculateEffectiveStrengthsForRowCall,
-        player: game.players[1],
+        userId: game.players[1].user,
         row: game.players[1].rounds[1].ranged,
       },
     ],
     [
       {
         ...calculateEffectiveStrengthsForRowCall,
-        player: game.players[1],
+        userId: game.players[1].user,
         row: game.players[1].rounds[1].siege,
       },
     ],
   ])
+}
+
+function testCalculateEffectiveStrengthsForRow({
+  row,
+  units,
+  expected,
+  applyMoralesResponses,
+  modifiedRow,
+}: {
+  row: PlayerCombatRowDbObject
+  units: UnitDbObject[]
+  expected: ImpactDbObject[] | Error
+  applyMoralesResponses?: ImpactDbObject[][]
+  modifiedRow: PlayerCombatRowDbObject
+}) {
+  const logPrefix = 'log-prefix'
+  const currentPlayerId = new ObjectId()
+  const userId = new ObjectId()
+  const moraleEffect = TestUtil.getDbEffect({})
+  const moraleIdsInRow = [moraleEffect?._id.toString()]
+  const newDeckUnit = TestUtil.getDbDeckUnit({})
+
+  const getUnitsWithMoraleSpy = jest.spyOn(EffectMorale, 'getUnitsWithMorale').mockReturnValue(moraleIdsInRow)
+  const applyMoralesSpy = jest.spyOn(EffectMorale, 'applyMorales')
+  if (applyMoralesResponses) {
+    for (const applyMoralesResponse of applyMoralesResponses) {
+      applyMoralesSpy.mockReturnValueOnce(applyMoralesResponse)
+    }
+  }
+
+  if (expected instanceof Error) {
+    expect(() =>
+      CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+        currentPlayerId,
+        logPrefix,
+        moraleEffect,
+        newDeckUnit,
+        row,
+        units,
+        userId,
+      })
+    ).toThrow(expected)
+  } else {
+    expect(
+      CalculateGameEffectiveStrengths['calculateEffectiveStrengthsForRow']({
+        currentPlayerId,
+        logPrefix,
+        moraleEffect,
+        newDeckUnit,
+        row,
+        units,
+        userId,
+      })
+    ).toEqual(expected)
+  }
+
+  expect(getUnitsWithMoraleSpy.mock.calls).toEqual(
+    expected instanceof Error
+      ? []
+      : [
+          [
+            {
+              logPrefix,
+              moraleEffect,
+              units,
+            },
+          ],
+        ]
+  )
+  expect(row).toEqual(modifiedRow)
 }
