@@ -517,7 +517,7 @@ function testCalculateEffectiveStrengths({
     logPrefix,
     newDeckUnit,
     moraleEffect,
-    currentPlayerTurn: game.turn,
+    currentPlayerId: game.turn,
   }
   expect(calculateEffectiveStrengthsForRowSpy.mock.calls).toEqual([
     [

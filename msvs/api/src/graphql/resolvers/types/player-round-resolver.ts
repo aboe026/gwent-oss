@@ -35,18 +35,8 @@ export default class PlayerRoundResolver {
     if (gameUnits) {
       resolvedGameUnits = gameUnits
     } else {
-      const gameUnits: GameUnitDbObject[] = []
-      for (const close of round.close.units) {
-        gameUnits.push(close)
-      }
-      for (const ranged of round.ranged.units) {
-        gameUnits.push(ranged)
-      }
-      for (const siege of round.siege.units) {
-        gameUnits.push(siege)
-      }
       resolvedGameUnits = await GameUnitResolver.fromArray({
-        gameUnits,
+        gameUnits: [...round.close.units, ...round.ranged.units, ...round.siege.units],
       })
     }
     const moves: Move[] = []
@@ -123,15 +113,7 @@ export default class PlayerRoundResolver {
   }): Promise<PlayerRound[]> {
     const gameUnits: GameUnitDbObject[] = []
     for (const round of rounds) {
-      for (const close of round.close.units) {
-        gameUnits.push(close)
-      }
-      for (const ranged of round.ranged.units) {
-        gameUnits.push(ranged)
-      }
-      for (const siege of round.siege.units) {
-        gameUnits.push(siege)
-      }
+      gameUnits.push(...round.close.units, ...round.ranged.units, ...round.siege.units)
     }
     const resolvedGameUnits = await GameUnitResolver.fromArray({
       gameUnits,
