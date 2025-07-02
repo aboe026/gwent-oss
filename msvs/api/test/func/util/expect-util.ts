@@ -11,6 +11,7 @@ import {
   GameStatus,
   Leader,
   Move,
+  MoveUnit,
   PlayerCombatRow,
   PlayerRound,
   RoundResult,
@@ -500,7 +501,16 @@ export function expectizePlayerRound({
 }): PlayerRound {
   return {
     close,
-    moves,
+    moves: moves.map((move) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((move as any).unit) {
+        const unitMove = move as MoveUnit
+        if (!unitMove.impacts) {
+          unitMove.impacts = null
+        }
+      }
+      return move
+    }),
     passed,
     ranged,
     score,

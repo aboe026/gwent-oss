@@ -172,10 +172,23 @@ export function getMoveFragment() {
     }
     ... on MoveUnit {
       created
-      row
       unit {
         ${getDeckUnitFragment()}
       }
+      impacts {
+        ${getImpactFragment()}
+      }
+    }
+  `
+}
+
+export function getImpactFragment(): string {
+  return `
+    unit {
+      ${getGameUnitFragment()}
+    }
+    user {
+      ${getUserFragment()}
     }
   `
 }

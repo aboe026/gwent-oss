@@ -100,7 +100,6 @@ describe('effect-morale', () => {
     if (!unitSelf1) {
       throw Error(`Could not find unit "${unitName1}" in hand`)
     }
-    const combatUnit1 = unitSelf1.unit.combats ? unitSelf1.unit.combats[0] : Combat.Close
 
     gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
     const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
@@ -137,7 +136,6 @@ describe('effect-morale', () => {
                   moves: [
                     {
                       created: expect.any(Date),
-                      row: combatUnit1,
                       unit: unitSelf1,
                     } as MoveUnit,
                   ],
@@ -214,7 +212,6 @@ describe('effect-morale', () => {
     if (!unitSelf2) {
       throw Error(`Could not find unit "${unitName2}" in hand`)
     }
-    const combatUnit2 = unitSelf2.unit.combats ? unitSelf2.unit.combats[0] : Combat.Close
 
     const expectedCombatRowOpponent: PlayerCombatRow = {
       score: unitOpponent1.unit.strength || 0,
@@ -236,7 +233,6 @@ describe('effect-morale', () => {
           moves: [
             {
               created: expect.any(Date),
-              row: combatUnitOpponent,
               unit: unitOpponent1,
             } as MoveUnit,
           ],
@@ -280,12 +276,10 @@ describe('effect-morale', () => {
                   moves: [
                     {
                       created: expect.any(Date),
-                      row: combatUnit1,
                       unit: unitSelf1,
                     } as MoveUnit,
                     {
                       created: expect.any(Date),
-                      row: combatUnit2,
                       unit: unitSelf2,
                     } as MoveUnit,
                   ],
@@ -372,7 +366,6 @@ describe('effect-morale', () => {
     if (!unitSelf2) {
       throw Error(`Could not find unit "${unitName2}" in hand`)
     }
-    const combatUnit2 = unitSelf2.unit.combats ? unitSelf2.unit.combats[0] : Combat.Close
     const effectMorale = unitSelf2.unit.effects?.find((effect) => effect.key === EffectKey.Morale)
     if (!effectMorale) {
       throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName2}" unit`)
@@ -398,7 +391,6 @@ describe('effect-morale', () => {
           moves: [
             {
               created: expect.any(Date),
-              row: combatUnitOpponent,
               unit: unitOpponent1,
             } as MoveUnit,
           ],
@@ -442,13 +434,30 @@ describe('effect-morale', () => {
                   moves: [
                     {
                       created: expect.any(Date),
-                      row: combatUnit1,
                       unit: unitSelf1,
                     } as MoveUnit,
                     {
                       created: expect.any(Date),
-                      row: combatUnit2,
                       unit: unitSelf2,
+                      impacts: [
+                        {
+                          unit: {
+                            ...unitSelf1,
+                            effectiveStrength: 3,
+                            effects: [
+                              {
+                                operator: '+1',
+                                reason: {
+                                  effect: effectMorale,
+                                  unit: unitSelf2.unit,
+                                },
+                                total: 3,
+                              },
+                            ],
+                          },
+                          user: self,
+                        },
+                      ],
                     } as MoveUnit,
                   ],
                   ranged: {
@@ -560,7 +569,6 @@ describe('effect-morale', () => {
           moves: [
             {
               created: expect.any(Date),
-              row: combatUnitOpponent,
               unit: unitOpponent1,
             } as MoveUnit,
           ],
@@ -604,12 +612,10 @@ describe('effect-morale', () => {
                   moves: [
                     {
                       created: expect.any(Date),
-                      row: combatUnit1,
                       unit: unitSelf1,
                     } as MoveUnit,
                     {
                       created: expect.any(Date),
-                      row: combatUnit2,
                       unit: unitSelf2,
                     } as MoveUnit,
                   ],
