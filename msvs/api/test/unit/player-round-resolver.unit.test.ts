@@ -104,7 +104,6 @@ async function testFromObject({
     moves: [
       {
         created: new Date(),
-        row: Combat.Close,
         unit: {
           artStyle: close.units[0].artStyle,
           unit: close.units[0].unit,
@@ -113,7 +112,6 @@ async function testFromObject({
       },
       {
         created: new Date(),
-        row: Combat.Ranged,
         unit: {
           artStyle: ranged.units[0].artStyle,
           unit: ranged.units[0].unit,
@@ -122,7 +120,6 @@ async function testFromObject({
       },
       {
         created: new Date(),
-        row: Combat.Siege,
         unit: {
           artStyle: siege.units[0].artStyle,
           unit: siege.units[0].unit,
@@ -140,7 +137,6 @@ async function testFromObject({
   })
   const resolvedCloseMove: Move = {
     created: round.moves[0].created,
-    row: Combat.Close,
     unit: {
       artStyle: closeUnit.artStyle,
       unit: closeUnit.unit,
@@ -149,7 +145,6 @@ async function testFromObject({
   }
   const resolvedRangedMove: Move = {
     created: round.moves[1].created,
-    row: Combat.Close,
     unit: {
       artStyle: closeUnit.artStyle,
       unit: closeUnit.unit,
@@ -158,7 +153,6 @@ async function testFromObject({
   }
   const resolvedSiegeMove: Move = {
     created: round.moves[2].created,
-    row: Combat.Close,
     unit: {
       artStyle: closeUnit.artStyle,
       unit: closeUnit.unit,
@@ -222,9 +216,10 @@ async function testFromObject({
     [
       {
         move: round.moves[0],
-        deckUnit: {
+        gameUnit: {
           artStyle: closeUnit.artStyle,
           unit: closeUnit.unit,
+          effectiveStrength: closeUnit.effectiveStrength,
         },
         leader: undefined,
       },
@@ -232,9 +227,10 @@ async function testFromObject({
     [
       {
         move: round.moves[1],
-        deckUnit: {
+        gameUnit: {
           artStyle: rangedUnit.artStyle,
           unit: rangedUnit.unit,
+          effectiveStrength: rangedUnit.effectiveStrength,
         },
         leader: undefined,
       },
@@ -242,9 +238,10 @@ async function testFromObject({
     [
       {
         move: round.moves[2],
-        deckUnit: {
+        gameUnit: {
           artStyle: siegeUnit.artStyle,
           unit: siegeUnit.unit,
+          effectiveStrength: siegeUnit.effectiveStrength,
         },
         leader: undefined,
       },
@@ -252,7 +249,7 @@ async function testFromObject({
     [
       {
         move: round.moves[3],
-        deckUnit: undefined,
+        gameUnit: undefined,
         leader,
       },
     ],
@@ -322,7 +319,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     moves: [
       {
         created: new Date(),
-        row: Combat.Close,
         unit: {
           artStyle: close.units[0].artStyle,
           unit: close.units[0].unit,
@@ -331,7 +327,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
       },
       {
         created: new Date(),
-        row: Combat.Ranged,
         unit: {
           artStyle: ranged.units[0].artStyle,
           unit: ranged.units[0].unit,
@@ -340,7 +335,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
       },
       {
         created: new Date(),
-        row: Combat.Siege,
         unit: {
           artStyle: siege.units[0].artStyle,
           unit: siege.units[0].unit,
@@ -363,7 +357,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     moves: [
       {
         created: new Date(),
-        row: Combat.Close,
         unit: {
           artStyle: close.units[0].artStyle,
           unit: close.units[0].unit,
@@ -372,7 +365,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
       },
       {
         created: new Date(),
-        row: Combat.Ranged,
         unit: {
           artStyle: ranged.units[0].artStyle,
           unit: ranged.units[0].unit,
@@ -381,7 +373,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
       },
       {
         created: new Date(),
-        row: Combat.Siege,
         unit: {
           artStyle: siege.units[0].artStyle,
           unit: siege.units[0].unit,
@@ -399,7 +390,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
   })
   const resolvedCloseMove: Move = {
     created: round1.moves[0].created,
-    row: Combat.Close,
     unit: {
       artStyle: closeUnit.artStyle,
       unit: closeUnit.unit,
@@ -408,7 +398,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
   }
   const resolvedRangedMove: Move = {
     created: round1.moves[1].created,
-    row: Combat.Close,
     unit: {
       artStyle: closeUnit.artStyle,
       unit: closeUnit.unit,
@@ -417,7 +406,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
   }
   const resolvedSiegeMove: Move = {
     created: round1.moves[2].created,
-    row: Combat.Close,
     unit: {
       artStyle: closeUnit.artStyle,
       unit: closeUnit.unit,
@@ -500,9 +488,10 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     [
       {
         move: round1.moves[0],
-        deckUnit: {
+        gameUnit: {
           artStyle: closeUnit.artStyle,
           unit: closeUnit.unit,
+          effectiveStrength: closeUnit.effectiveStrength,
         },
         leader: undefined,
       },
@@ -510,9 +499,10 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     [
       {
         move: round1.moves[1],
-        deckUnit: {
+        gameUnit: {
           artStyle: rangedUnit.artStyle,
           unit: rangedUnit.unit,
+          effectiveStrength: rangedUnit.effectiveStrength,
         },
         leader: undefined,
       },
@@ -520,9 +510,10 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     [
       {
         move: round1.moves[2],
-        deckUnit: {
+        gameUnit: {
           artStyle: siegeUnit.artStyle,
           unit: siegeUnit.unit,
+          effectiveStrength: siegeUnit.effectiveStrength,
         },
         leader: undefined,
       },
@@ -530,16 +521,17 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     [
       {
         move: round1.moves[3],
-        deckUnit: undefined,
+        gameUnit: undefined,
         leader,
       },
     ],
     [
       {
         move: round2.moves[0],
-        deckUnit: {
+        gameUnit: {
           artStyle: closeUnit.artStyle,
           unit: closeUnit.unit,
+          effectiveStrength: closeUnit.effectiveStrength,
         },
         leader: undefined,
       },
@@ -547,9 +539,10 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     [
       {
         move: round2.moves[1],
-        deckUnit: {
+        gameUnit: {
           artStyle: rangedUnit.artStyle,
           unit: rangedUnit.unit,
+          effectiveStrength: rangedUnit.effectiveStrength,
         },
         leader: undefined,
       },
@@ -557,9 +550,10 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     [
       {
         move: round2.moves[2],
-        deckUnit: {
+        gameUnit: {
           artStyle: siegeUnit.artStyle,
           unit: siegeUnit.unit,
+          effectiveStrength: siegeUnit.effectiveStrength,
         },
         leader: undefined,
       },
@@ -567,7 +561,7 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     [
       {
         move: round2.moves[3],
-        deckUnit: undefined,
+        gameUnit: undefined,
         leader,
       },
     ],

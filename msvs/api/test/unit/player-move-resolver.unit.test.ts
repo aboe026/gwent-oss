@@ -1,14 +1,16 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, DeckUnit, Leader, Move, MoveLeader, MovePass, MoveUnit } from '@gwent/graphql-schema/resolver-typings'
-import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolver'
-import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
+import { Combat, Impact, Leader, Move, MoveLeader, MovePass, MoveUnit } from '@gwent/graphql-schema/resolver-typings'
 import {
+  GameUnit,
   MoveDbObject,
   MoveLeaderDbObject,
   MovePassDbObject,
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
+import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
+import MoveImpactResolver from '../../src/graphql/resolvers/types/move-impact-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 import PlayerMoveResolver from '../../src/graphql/resolvers/types/player-move-resolver'
 import TestUtil from '../util/test-util'
@@ -72,56 +74,96 @@ describe('player-move-resolver', () => {
         } as MovePass,
       })
     })
-    it('calls to resolve deckUnit if UnitMove and no deckUnit provided', async () => {
-      const deckUnit: DeckUnit = {
-        artStyle: 1,
-        unit: TestUtil.getUnit({
-          combats: [Combat.Close],
-        }),
-      }
+    it('calls to resolve gameUnit if UnitMove and no gameUnit provided', async () => {
+      const gameUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({}),
+      })
       const move: MoveUnitDbObject = {
         created: new Date(),
-        row: Combat.Close,
-        unit: {
-          artStyle: deckUnit.artStyle,
-          unit: new ObjectId(deckUnit.unit.id),
-        },
+        unit: TestUtil.getDbGameUnit({
+          artStyle: gameUnit.artStyle,
+          effectiveStrength: gameUnit.effectiveStrength,
+          effects: [],
+          id: new ObjectId(gameUnit.unit.id),
+        }),
         type: MoveType.Unit,
       }
       await testFromObject({
         move,
-        deckUnitFromObjectResponse: deckUnit,
+        gameUnitFromObjectResponse: gameUnit,
         expected: {
           created: move.created,
-          row: Combat.Close,
-          unit: deckUnit,
+          unit: gameUnit,
+          impacts: [],
           __typename: 'MoveUnit',
         } as MoveUnit,
       })
     })
-    it('does not call to resolve deckUnit if UnitMove and deckUnit provided', async () => {
-      const deckUnit: DeckUnit = {
-        artStyle: 1,
-        unit: TestUtil.getUnit({
-          combats: [Combat.Close],
-        }),
-      }
+    it('does not call to resolve gameUnit if UnitMove and gameUnit provided', async () => {
+      const gameUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({}),
+      })
       const move: MoveUnitDbObject = {
         created: new Date(),
-        row: Combat.Close,
-        unit: {
-          artStyle: deckUnit.artStyle,
-          unit: new ObjectId(deckUnit.unit.id),
-        },
+        unit: TestUtil.getDbGameUnit({
+          artStyle: gameUnit.artStyle,
+          effectiveStrength: gameUnit.effectiveStrength,
+          effects: [],
+          id: new ObjectId(gameUnit.unit.id),
+        }),
         type: MoveType.Unit,
       }
       await testFromObject({
         move,
-        deckUnit,
+        gameUnit,
         expected: {
           created: move.created,
-          row: Combat.Close,
-          unit: deckUnit,
+          unit: gameUnit,
+          impacts: [],
+          __typename: 'MoveUnit',
+        } as MoveUnit,
+      })
+    })
+    it('resolved impact if returned from MoveImpactResolver', async () => {
+      const gameUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({}),
+      })
+      const impact: Impact = {
+        unit: TestUtil.getGameUnit({
+          unit: TestUtil.getUnit({}),
+        }),
+        user: TestUtil.getUser({}),
+      }
+      const move: MoveUnitDbObject = {
+        created: new Date(),
+        unit: TestUtil.getDbGameUnit({
+          artStyle: gameUnit.artStyle,
+          effectiveStrength: gameUnit.effectiveStrength,
+          effects: [],
+          id: new ObjectId(gameUnit.unit.id),
+        }),
+        impacts: [
+          {
+            unit: {
+              artStyle: impact.unit.artStyle,
+              unit: new ObjectId(impact.unit.unit.id),
+              effectiveStrength: impact.unit.effectiveStrength,
+              effects: [],
+              row: Combat.Close,
+            },
+            user: new ObjectId(impact.user.id),
+          },
+        ],
+        type: MoveType.Unit,
+      }
+      await testFromObject({
+        move,
+        gameUnitFromObjectResponse: gameUnit,
+        impactFromArrayResponse: [impact],
+        expected: {
+          created: move.created,
+          unit: gameUnit,
+          impacts: [impact],
           __typename: 'MoveUnit',
         } as MoveUnit,
       })
@@ -132,17 +174,19 @@ describe('player-move-resolver', () => {
 async function testFromObject({
   move,
   leader,
-  deckUnit,
+  gameUnit,
   leaderFromIdResponse,
-  deckUnitFromObjectResponse,
+  gameUnitFromObjectResponse,
+  impactFromArrayResponse = [],
   error,
   expected,
 }: {
   move: MoveDbObject
   leader?: Leader
-  deckUnit?: DeckUnit
+  gameUnit?: GameUnit
   leaderFromIdResponse?: Leader
-  deckUnitFromObjectResponse?: DeckUnit
+  gameUnitFromObjectResponse?: GameUnit
+  impactFromArrayResponse?: Impact[]
   error?: Error
   expected?: Move
 }) {
@@ -150,14 +194,15 @@ async function testFromObject({
   if (leaderFromIdResponse) {
     leaderFromIdSpy.mockResolvedValue(leaderFromIdResponse)
   }
-  const deckUnitFromObjectSpy = jest.spyOn(DeckUnitResolver, 'fromObject')
-  if (deckUnitFromObjectResponse) {
-    deckUnitFromObjectSpy.mockResolvedValue(deckUnitFromObjectResponse)
+  const gameUnitFromObjectSpy = jest.spyOn(GameUnitResolver, 'fromObject')
+  if (gameUnitFromObjectResponse) {
+    gameUnitFromObjectSpy.mockResolvedValue(gameUnitFromObjectResponse)
   }
+  const impactFromArraySpy = jest.spyOn(MoveImpactResolver, 'fromArray').mockResolvedValue(impactFromArrayResponse)
 
   const promise = PlayerMoveResolver.fromObject({
     move,
-    deckUnit,
+    gameUnit,
     leader,
   })
   if (error) {
@@ -177,12 +222,23 @@ async function testFromObject({
         ]
       : []
   )
-  expect(deckUnitFromObjectSpy.mock.calls).toEqual(
-    deckUnitFromObjectResponse
+  expect(gameUnitFromObjectSpy.mock.calls).toEqual(
+    gameUnitFromObjectResponse
       ? [
           [
             {
-              deckUnit: (move as MoveUnitDbObject).unit,
+              gameUnit: (move as MoveUnitDbObject).unit,
+            },
+          ],
+        ]
+      : []
+  )
+  expect(impactFromArraySpy.mock.calls).toEqual(
+    gameUnit || gameUnitFromObjectResponse
+      ? [
+          [
+            {
+              impacts: (move as MoveUnitDbObject).impacts,
             },
           ],
         ]

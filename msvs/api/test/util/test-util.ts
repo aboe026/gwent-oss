@@ -159,17 +159,20 @@ export default class TestUtil {
     id,
     effectiveStrength,
     effects = [],
+    row,
   }: {
     artStyle?: number
     id?: ObjectId
     effectiveStrength?: number | null
     effects?: GameUnitEffectDbObject[]
+    row?: Combat
   }): GameUnitDbObject {
     return {
       artStyle,
       unit: id ? new ObjectId(id) : new ObjectId(),
       effectiveStrength,
       effects,
+      row,
     }
   }
 
@@ -824,17 +827,20 @@ export default class TestUtil {
     artStyle = 1,
     effectiveStrength,
     effects = [],
+    row,
   }: {
     unit: Unit
     artStyle?: number
     effectiveStrength?: number
     effects?: GameUnitEffect[]
+    row?: Combat
   }): GameUnit {
     return {
       artStyle,
       unit,
       effectiveStrength: effectiveStrength || (unit.strength === undefined ? null : unit.strength),
       effects,
+      row,
     }
   }
 }
