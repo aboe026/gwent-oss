@@ -22,7 +22,7 @@ import {
 import dlcs from '../../../src/database/upgrades/resources/dlcs.json'
 import effects from '../../../src/database/upgrades/resources/effects.json'
 import factions from '../../../src/database/upgrades/resources/factions.json'
-import { getDeckStats, sortObjectArray } from '@gwent/utils'
+import { getUnitStats, sortObjectArray } from '@gwent/utils'
 import leaders from '../../../src/database/upgrades/resources/leaders.json'
 import { STARTING_HAND_SIZE } from '@gwent/constants'
 import UnitResolver from '../../../src/graphql/resolvers/types/unit-resolver'
@@ -206,7 +206,7 @@ export function expectizeDeck({ factionKey, leaderName, name, unitNames, user, m
     id: expect.any(String),
     leader: expectizeLeaders().find((leader) => leader.name === leaderName),
     name,
-    stats: getDeckStats(expectedUnits),
+    stats: getUnitStats(expectedUnits),
     units: expectizeDeckUnits({
       unitNames,
       maxArtStyle,

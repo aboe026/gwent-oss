@@ -1,7 +1,16 @@
 import { GameDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { ObjectId } from 'mongodb'
 
-export default function getGameUnit({
+/**
+ * Get a unit if it is on the battlefield.
+ *
+ * @param config The configuration used to get the battlefield unit.
+ * @param config.game The Game to search the battlefield for the unit.
+ * @param config.unitId The ID of the Unit to find on the battlefield of the game.
+ * @param config.userId The ID of the User to scope the search for the battlefield unit to.
+ * @returns The unit if it exists on the battlefield.
+ */
+export default function getBattlefieldUnit({
   game,
   unitId,
   userId,

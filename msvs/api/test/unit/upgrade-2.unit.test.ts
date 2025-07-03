@@ -88,7 +88,7 @@ describe('upgrade-2', () => {
       const createUnitsSpy = jest.spyOn(upgrade2, 'createUnits').mockResolvedValue(factionUnits)
       const editFactionSpy = jest.spyOn(FactionStore, 'edit').mockImplementation()
       const stats = TestUtil.getStats()
-      const getDeckStatsSpy = jest.spyOn(utils, 'getDeckStats').mockReturnValue(stats)
+      const getUnitStatsSpy = jest.spyOn(utils, 'getUnitStats').mockReturnValue(stats)
 
       await expect(upgrade2.run()).resolves.toEqual(undefined)
 
@@ -134,7 +134,7 @@ describe('upgrade-2', () => {
           },
         ],
       ])
-      expect(getDeckStatsSpy.mock.calls).toEqual([
+      expect(getUnitStatsSpy.mock.calls).toEqual([
         [
           [
             {

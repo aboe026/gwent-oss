@@ -5,7 +5,7 @@ import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 /**
  * Retrieves the desired game from the database.
  *
- * @param config The configuraiton used to retrieve the game.
+ * @param config The configuration used to retrieve the game.
  * @param config.gameId The ID of the game to retrieve.
  * @param config.mongoConnectionString The MongoDB Connection String used to communicate with the database.
  * @param config.mongoDatabaseName The name of the MongoDB Database containing the game to retrieve.

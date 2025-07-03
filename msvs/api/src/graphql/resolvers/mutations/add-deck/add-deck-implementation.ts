@@ -2,7 +2,7 @@ import { getLogger } from 'log4js'
 
 import { DeckDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckStore from '../../../../database/stores/deck-store'
-import { getDeckStats } from '@gwent/utils'
+import { getUnitStats } from '@gwent/utils'
 import PresentableError from '../../../../util/presentable-error'
 import { ValidatedAddDeck } from './add-deck-validation'
 
@@ -40,7 +40,7 @@ export default class AddDeckImplementation {
         factionId: faction._id,
         leaderId: leader._id,
         name,
-        stats: getDeckStats(deckUnits),
+        stats: getUnitStats(deckUnits),
         units: deckUnits.map((deckUnit) => {
           return {
             unit: deckUnit.unit.id,

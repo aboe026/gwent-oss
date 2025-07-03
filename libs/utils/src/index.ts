@@ -26,7 +26,7 @@ export {
   getNoImpactMessage,
   getRandomSubset,
   getUniqueItems,
-  getUnitStats as getDeckStats,
+  getUnitStats,
   getWeatherImage,
   groupBy,
   humanizeDay,

@@ -12,9 +12,21 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import { EffectReasonType } from '@gwent/graphql-schema'
 
+/**
+ * A class for determining the impact the Morale effect has on units effectiveStrength.
+ */
 export default class EffectMorale {
   private static logger = getLogger('EffectMorale')
 
+  /**
+   * Gets a list of the IDs of the supplied units which have a Morale effect ability.
+   *
+   * @param config The configuration used to determine which units have the Morale ability.
+   * @param config.logPrefix The prefix to prepend to log statements.
+   * @param config.moraleEffect The Morale Effect database document used to check against units.
+   * @param config.units The list of units to check if they contain the Morale effect in their abilities.
+   * @returns A list of IDs of units which have the Morale effect ability.
+   */
   static getUnitsWithMorale({
     logPrefix,
     moraleEffect,
@@ -56,6 +68,21 @@ export default class EffectMorale {
     return unitIdsWithMorale
   }
 
+  /**
+   * Applies Morale effect to eligible units, increasing their effectiveStrenth by 1 for each Morale effecting them.
+   *
+   * @param config The configuration used to determine which units are eligible for Morale boost and how to change their effectiveStrength.
+   * @param config.logPrefix The prefix to prepend to log statements.
+   * @param config.unitIdsWithMoraleInRow A list of IDs of units which contain the Morale effect ability in the battlefield row under consideration.
+   * @param config.moraleEffect The Effect database document for the Morale effect.
+   * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
+   * @param config.rowGameUnit The GameUnit under consideration to be moraled.
+   * @param config.rowUnit The Unit under consideration to be moraled.
+   * @param config.units A list of all units on the battlefield.
+   * @param config.userId The ID of the user whose unit is under consideration to be moraled.
+   * @param config.currentPlayerId The ID of the user who played the newDeckUnit.
+   * @returns An array of morale impacts for the unit under consideration.
+   */
   static applyMorales({
     logPrefix,
     unitIdsWithMoraleInRow,

@@ -6,9 +6,21 @@ import { ImpactDbObject } from '@gwent/graphql-schema/database-typings'
 import UnitResolver from './unit-resolver'
 import UserResolver from './user-resolver'
 
+/**
+ * A class to convert Impact database objects to their GraphQL equivalent.
+ */
 export default class MoveImpactResolver {
   private static logger = getLogger('MoveImpactResolver')
 
+  /**
+   * Converts a single Impact database object to a single Impact GraphQL object.
+   *
+   * @param config The configuration used to convert the Impact.
+   * @param config.impact The Impact to convert.
+   * @param config.gameUnit The resolved GameUnit for the Impact. If not provided, will be retrieved.
+   * @param config.user The resolved User for the Impact. If not provided, will be retrieved.
+   * @returns The resolved Impact object matching its GraphQL schema definition.
+   */
   static async fromObject({
     impact,
     gameUnit,
@@ -28,6 +40,13 @@ export default class MoveImpactResolver {
     }
   }
 
+  /**
+   * Converts an array of Impact database objects to an array of Impact GraphQL objects.
+   *
+   * @param config The configuration used to convert the array.
+   * @param config.impacts The array of Impact database objects to convert.
+   * @returns The resolved Impact array matching the GraphQL schema definition.
+   */
   static async fromArray({ impacts }: { impacts: ImpactDbObject[] | undefined }): Promise<Impact[] | undefined> {
     if (MoveImpactResolver.logger.isTraceEnabled()) {
       MoveImpactResolver.logger.trace(`impacts: "${JSON.stringify(impacts)}"`)

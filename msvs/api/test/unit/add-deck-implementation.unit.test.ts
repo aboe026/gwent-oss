@@ -101,7 +101,7 @@ async function testAddDeckImplementation({
   } else {
     addSpy.mockResolvedValue(deck)
   }
-  const statsSpy = jest.spyOn(utils, 'getDeckStats').mockReturnValue({} as any)
+  const statsSpy = jest.spyOn(utils, 'getUnitStats').mockReturnValue({} as any)
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()

@@ -1,15 +1,23 @@
 import getNestedProperty from './get-nested-property'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function groupBy<T extends any[]>({
+/**
+ * Split an object array into groups based on the value of a specific property.
+ *
+ * @param config The configuration used to split the object array into groups.
+ * @param config.array The array of objects to separate into groups.
+ * @param config.property The name of the property to split groups into based on the value.
+ * @param config.reverse Whether or not the resulting list of groups should be returned in reversed order.
+ * @returns An array containing arrays of objects that share the same value for a specific property.
+ */
+export default function groupBy<T>({
   array,
   property,
   reverse,
 }: {
-  array: T
+  array: T[]
   property: string
   reverse?: boolean
-}): T[] {
+}): T[][] {
   const groupKeys: string[] = []
   for (const item of array) {
     const key = getNestedProperty({
@@ -26,7 +34,7 @@ export default function groupBy<T extends any[]>({
     sortedKeys = sortedKeys.reverse()
   }
 
-  const groups: T[] = []
+  const groups: T[][] = []
   for (const item of array) {
     const key = getNestedProperty({
       obj: item,
@@ -34,7 +42,7 @@ export default function groupBy<T extends any[]>({
     }).toLowerCase()
     const index = sortedKeys.indexOf(key)
     if (!groups[index]) {
-      groups[index] = [] as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      groups[index] = []
     }
     groups[index].push(item)
   }

@@ -2,7 +2,7 @@ import { PropsWithChildren } from 'react'
 import './ContainerFixedAspectRatio.css'
 
 /**
- * A Container with a fixed aspect ration
+ * A Container with a fixed aspect ratio
  *
  * @returns The container with fixed aspect ratio
  */

@@ -3,7 +3,7 @@ import { Dispatch, SetStateAction } from 'react'
 
 import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
-import { getDeckStats, toTitleCase } from '@gwent/utils'
+import { getUnitStats, toTitleCase } from '@gwent/utils'
 import { HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
 import ProgressRing from '../components/ProgressRing'
 import { UnitStats } from '@gwent/graphql-schema/apollo-typings'
@@ -39,7 +39,7 @@ export default function UnitsStats({
   setSortFilterLocked,
   sortFilterLocked,
 }: UnitsStatsProps) {
-  const selectedStats = getDeckStats(selectedUnits)
+  const selectedStats = getUnitStats(selectedUnits)
   const buttonColor = disabled ? 'gray' : 'black'
 
   return (

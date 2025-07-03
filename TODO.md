@@ -21,6 +21,7 @@ Existing problems in the codebase that need to be fixed.
   - search for better pics
   - use AI upscaler?
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
+- rename "undrawn" to "draw" (since its the draw pile?)
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)

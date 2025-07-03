@@ -3,6 +3,18 @@ import { ObjectId } from 'mongodb'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import { getGame, updateGame } from './db-util'
 
+/**
+ * Redraw a specific unit to a users game hand.
+ *
+ * @param config The configuration used to perform the redraw.
+ * @param config.gameId The ID of the game to redraw the unit on.
+ * @param config.mongoConnectionString The MongoDB Connection String used to communicate with the database.
+ * @param config.mongoDatabaseName The name of the MongoDB Database containing the game to modify.
+ * @param config.userId The ID of the user on the game to redraw the unit for.
+ * @param config.fromId The ID of the unit currently in the users hand to redraw and send to the undrawn pile.
+ * @param config.toId The ID of the unit currently in the users undrawn pile to send to their hand.
+ * @returns The game updated with the redraw.
+ */
 export default async function redrawExactUnit({
   gameId,
   mongoConnectionString,

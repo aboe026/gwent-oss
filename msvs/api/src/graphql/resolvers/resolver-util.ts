@@ -76,7 +76,7 @@ export default class ResolverUtil {
   /**
    * Outputs to the logger the information about a GraphQL request.
    *
-   * @param config The configuraiton used to print the GraphQL request information.
+   * @param config The configuration used to print the GraphQL request information.
    * @param config.args The potential arguments on the given GraphQL request.
    * @param config.info The information on the GraphQL request.
    * @param secureKeys Any keys on the args that contain sensitive information and whose value should be redacted.

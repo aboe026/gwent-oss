@@ -1,5 +1,13 @@
 import { EffectKey } from '@gwent/graphql-schema/resolver-typings'
 
+/**
+ * Gets the description text for an impact on a unit due to a given effect.
+ *
+ * @param config The configuration to use to determine the description.
+ * @param config.effectKey The Key of the Effect which caused the impact.
+ * @returns The description of the impact on a unit from the effect.
+ * @throws Error if Effect cannot have impact (Agile, Avenger, Berserker)
+ */
 export default function getImpactDescription({ effectKey }: { effectKey: EffectKey }): string {
   if (effectKey === EffectKey.Bond) {
     return 'bonded in strength'

@@ -53,6 +53,14 @@ export default function modifyBattlefieldWithNewUnit({
   }
 }
 
+/**
+ * Adds a new DeckUnit to the battlefield.
+ *
+ * @param config The configuration used to add the DeckUnit to the battlefield.
+ * @param config.combat The row on the battlefield to add the DeckUnit to.
+ * @param config.game The Game whose battlefield the DeckUnit should be added to.
+ * @param config.newDeckUnit The DeckUnit to add to the battlefield.
+ */
 export function addNewUnitToBattlefield({
   combat,
   game,

@@ -1,5 +1,13 @@
 import { EffectKey } from '@gwent/graphql-schema/resolver-typings'
 
+/**
+ * Gets the message text for when an impact of a given effect does not modify any units. Used to help user identify why no units impacted.
+ *
+ * @param config The configuration used to determine the message.
+ * @param config.effectKey The Key of the Effect which caused the impact.
+ * @returns The message of why the impact did not modify any units.
+ * @throws Error if Effect cannot have impact (Agile, Avenger, Berserker)
+ */
 export default function getNoImpactMessage({ effectKey }: { effectKey: EffectKey }): string {
   if (effectKey === EffectKey.Bond) {
     return 'No similar units in row to bond with.'
