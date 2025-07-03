@@ -1,0 +1,8 @@
+- [ ] [TSDoc](https://tsdoc.org/)
+- [ ] [Tests](../README.md#test)
+  - [ ] [Unit](../README.md#unit)
+  - [ ] [Functional](../README.md#functional)
+  - [ ] [E2E](../README.md#end-to-end)
+- [ ] Versioning
+  - [ ] Increment all `package.json` versions based on [Semantic Versioning](https://semver.org/) depending on the nature of the change.
+  - [ ] Update [Changelog](../CHANGELOG.md) with new version.

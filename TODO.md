@@ -83,12 +83,6 @@ New things that should be added to the codebase.
 
 - expand/collapse all impacts?
 - remove "renderXYZ" methods in favor of functional components always?
-- unit tests
-- func tests
-- e2e tests
-- ts-docs
-- increment minor version
-- changelog
 
 - for "MoveUnit" type, have "reason" field
 
