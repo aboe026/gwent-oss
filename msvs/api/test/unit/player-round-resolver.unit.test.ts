@@ -233,7 +233,6 @@ async function testFromObject({ units, leader, result }: { units?: boolean; lead
           ],
         ]
   )
-  console.log(`TEST gameUnitFromObject.mock.calls.length: "${gameUnitFromObject.mock.calls.length}"`)
   expect(gameUnitFromObject.mock.calls).toEqual([
     [
       {
