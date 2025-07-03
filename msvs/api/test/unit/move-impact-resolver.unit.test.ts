@@ -40,6 +40,12 @@ describe('move-impact-resolver', () => {
     })
   })
   describe('fromArray', () => {
+    it('returns undefined if given undefined', async () => {
+      await testFromArray({
+        impacts: undefined,
+        expected: undefined,
+      })
+    })
     it('returns empty array if given empty array', async () => {
       await testFromArray({
         impacts: [],
@@ -306,7 +312,7 @@ async function testFromArray({
   impacts: ImpactDbObject[] | undefined
   resolvedUnits?: Unit[]
   resolvedUsers?: User[]
-  expected: Impact[] | Error
+  expected: Impact[] | Error | undefined
   errorCalls?: string[][]
   traceEnabled?: boolean
 }) {

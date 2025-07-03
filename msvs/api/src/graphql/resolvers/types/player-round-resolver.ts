@@ -1,4 +1,4 @@
-import { GameUnit, Leader, Move, PlayerRound, RoundResult } from '@gwent/graphql-schema/resolver-typings'
+import { GameUnit, Leader, Move, PlayerRound, RoundResult, Unit } from '@gwent/graphql-schema/resolver-typings'
 import {
   GameUnitDbObject,
   MoveLeaderDbObject,
@@ -6,8 +6,9 @@ import {
   PlayerRoundDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from './game-unit-resolver'
+import MoveResolver from './move-resolver'
 import { MoveType } from '@gwent/graphql-schema'
-import PlayerMoveResolver from './player-move-resolver'
+import UnitResolver from './unit-resolver'
 
 /**
  * A class to convert PlayerRound database objects to their GraphQL equivalent.
@@ -24,28 +25,32 @@ export default class PlayerRoundResolver {
    */
   static async fromObject({
     round,
-    gameUnits,
+    units,
     leader,
   }: {
     round: PlayerRoundDbObject
-    gameUnits?: GameUnit[]
+    units?: Unit[]
     leader?: Leader
   }): Promise<PlayerRound> {
-    let resolvedGameUnits: GameUnit[] = []
-    if (gameUnits) {
-      resolvedGameUnits = gameUnits
+    let resolvedUnits: Unit[] = []
+    if (units) {
+      resolvedUnits = units
     } else {
-      resolvedGameUnits = await GameUnitResolver.fromArray({
-        gameUnits: [...round.close.units, ...round.ranged.units, ...round.siege.units],
+      const gameUnits = [...round.close.units, ...round.ranged.units, ...round.siege.units]
+      resolvedUnits = await UnitResolver.fromIds({
+        ids: gameUnits.map((gameUnit) => gameUnit.unit),
       })
     }
     const moves: Move[] = []
     for (const move of round.moves) {
       let gameUnit: GameUnit | undefined = undefined
       if (move.type === MoveType.Unit) {
-        gameUnit = resolvedGameUnits.find(
-          (gameUnit) => gameUnit.unit.id === (move as MoveUnitDbObject).unit.unit.toString()
-        )
+        const moveUnit = (move as MoveUnitDbObject).unit
+        const matchingUnit = resolvedUnits.find((unit) => unit.id === moveUnit.unit.toString())
+        gameUnit = await GameUnitResolver.fromObject({
+          gameUnit: moveUnit,
+          unit: matchingUnit,
+        })
       }
       let moveLeader: Leader | undefined = undefined
       if (move.type === MoveType.Leader) {
@@ -54,7 +59,7 @@ export default class PlayerRoundResolver {
         }
       }
       moves.push(
-        await PlayerMoveResolver.fromObject({
+        await MoveResolver.fromObject({
           move,
           gameUnit,
           leader: moveLeader,
@@ -64,30 +69,24 @@ export default class PlayerRoundResolver {
     return {
       close: {
         score: round.close.score,
-        units: round.close.units.map(
-          (gameUnit) =>
-            resolvedGameUnits.find(
-              (resolvedGameUnit) => resolvedGameUnit.unit.id === gameUnit.unit.toString()
-            ) as GameUnit
-        ),
+        units: await GameUnitResolver.fromArray({
+          gameUnits: round.close.units,
+          units: resolvedUnits,
+        }),
       },
       ranged: {
         score: round.ranged.score,
-        units: round.ranged.units.map(
-          (gameUnit) =>
-            resolvedGameUnits.find(
-              (resolvedGameUnit) => resolvedGameUnit.unit.id === gameUnit.unit.toString()
-            ) as GameUnit
-        ),
+        units: await GameUnitResolver.fromArray({
+          gameUnits: round.ranged.units,
+          units: resolvedUnits,
+        }),
       },
       siege: {
         score: round.siege.score,
-        units: round.siege.units.map(
-          (gameUnit) =>
-            resolvedGameUnits.find(
-              (resolvedGameUnit) => resolvedGameUnit.unit.id === gameUnit.unit.toString()
-            ) as GameUnit
-        ),
+        units: await GameUnitResolver.fromArray({
+          gameUnits: round.siege.units,
+          units: resolvedUnits,
+        }),
       },
       score: round.score,
       result: round.result ? (round.result as RoundResult) : undefined,
@@ -115,8 +114,8 @@ export default class PlayerRoundResolver {
     for (const round of rounds) {
       gameUnits.push(...round.close.units, ...round.ranged.units, ...round.siege.units)
     }
-    const resolvedGameUnits = await GameUnitResolver.fromArray({
-      gameUnits,
+    const units = await UnitResolver.fromIds({
+      ids: gameUnits.map((gameUnit) => gameUnit.unit),
     })
 
     const resolvedPlayerRounds: PlayerRound[] = []
@@ -124,7 +123,7 @@ export default class PlayerRoundResolver {
       resolvedPlayerRounds.push(
         await PlayerRoundResolver.fromObject({
           round,
-          gameUnits: resolvedGameUnits,
+          units,
           leader,
         })
       )

@@ -38,21 +38,26 @@ export default class GameUnitResolver {
    * @param gameUnits The database objects to resolve to their GraphQL types.
    * @returns The resolved GameUnit array matching the GraphQL schema definition.
    */
-  static async fromArray({ gameUnits }: { gameUnits: GameUnitDbObject[] }): Promise<GameUnit[]> {
+  static async fromArray({ gameUnits, units }: { gameUnits: GameUnitDbObject[]; units?: Unit[] }): Promise<GameUnit[]> {
     if (gameUnits.length === 0) {
       return []
     }
 
-    const units = await UnitResolver.fromIds({
-      ids: gameUnits.map((gameUnit) => gameUnit.unit),
-    })
+    let resolvedUnits: Unit[] = []
+    if (units) {
+      resolvedUnits = units
+    } else {
+      resolvedUnits = await UnitResolver.fromIds({
+        ids: gameUnits.map((gameUnit) => gameUnit.unit),
+      })
+    }
 
     const resolvedGameUnits: GameUnit[] = []
     for (const gameUnit of gameUnits) {
       resolvedGameUnits.push(
         await GameUnitResolver.fromObject({
           gameUnit,
-          unit: units.find((unit) => unit.id.toString() === gameUnit.unit.toString()),
+          unit: resolvedUnits.find((unit) => unit.id.toString() === gameUnit.unit.toString()),
         })
       )
     }

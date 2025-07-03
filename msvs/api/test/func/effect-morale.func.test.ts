@@ -543,7 +543,6 @@ describe('effect-morale', () => {
     if (!unitSelf2) {
       throw Error(`Could not find unit "${unitName2}" in hand`)
     }
-    const combatUnit2 = unitSelf2.unit.combats ? unitSelf2.unit.combats[0] : Combat.Close
     const effectMorale = unitSelf2.unit.effects?.find((effect) => effect.key === EffectKey.Morale)
     if (!effectMorale) {
       throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName2}" unit`)

@@ -9,8 +9,8 @@ import UserResolver from './user-resolver'
 /**
  * A class to convert Impact database objects to their GraphQL equivalent.
  */
-export default class MoveImpactResolver {
-  private static logger = getLogger('MoveImpactResolver')
+export default class ImpactResolver {
+  private static logger = getLogger('ImpactResolver')
 
   /**
    * Converts a single Impact database object to a single Impact GraphQL object.
@@ -48,60 +48,60 @@ export default class MoveImpactResolver {
    * @returns The resolved Impact array matching the GraphQL schema definition.
    */
   static async fromArray({ impacts }: { impacts: ImpactDbObject[] | undefined }): Promise<Impact[] | undefined> {
-    if (MoveImpactResolver.logger.isTraceEnabled()) {
-      MoveImpactResolver.logger.trace(`impacts: "${JSON.stringify(impacts)}"`)
+    if (ImpactResolver.logger.isTraceEnabled()) {
+      ImpactResolver.logger.trace(`impacts: "${JSON.stringify(impacts)}"`)
     }
-    const resolvedImpacts: Impact[] = []
     if (impacts) {
+      const resolvedImpacts: Impact[] = []
       const units = await UnitResolver.fromIds({
         ids: impacts.map((impact) => impact.unit.unit),
       })
-      if (MoveImpactResolver.logger.isTraceEnabled()) {
-        MoveImpactResolver.logger.trace(`units: "${JSON.stringify(units)}"`)
+      if (ImpactResolver.logger.isTraceEnabled()) {
+        ImpactResolver.logger.trace(`units: "${JSON.stringify(units)}"`)
       }
 
       const users = await UserResolver.fromIds(impacts.map((impact) => impact.user))
-      if (MoveImpactResolver.logger.isTraceEnabled()) {
-        MoveImpactResolver.logger.trace(`users: "${JSON.stringify(users)}"`)
+      if (ImpactResolver.logger.isTraceEnabled()) {
+        ImpactResolver.logger.trace(`users: "${JSON.stringify(users)}"`)
       }
 
       for (const impact of impacts) {
-        if (MoveImpactResolver.logger.isTraceEnabled()) {
-          MoveImpactResolver.logger.trace(`impact: "${JSON.stringify(impact)}"`)
+        if (ImpactResolver.logger.isTraceEnabled()) {
+          ImpactResolver.logger.trace(`impact: "${JSON.stringify(impact)}"`)
         }
         const matchingUnits = units.filter((unit) => unit.id === impact.unit.unit.toString())
-        if (MoveImpactResolver.logger.isTraceEnabled()) {
-          MoveImpactResolver.logger.trace(`matchingUnits: "${JSON.stringify(matchingUnits)}"`)
+        if (ImpactResolver.logger.isTraceEnabled()) {
+          ImpactResolver.logger.trace(`matchingUnits: "${JSON.stringify(matchingUnits)}"`)
         }
 
         if (matchingUnits.length === 0) {
           const message = `Could not find unit with ID "${impact.unit.unit}" for move Impact`
-          MoveImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
+          ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
           throw Error(`${message}.`)
         } else if (matchingUnits.length > 1) {
           const message = `Found more than 1 unit with ID "${impact.unit.unit}" for move Impact`
-          MoveImpactResolver.logger.error(
+          ImpactResolver.logger.error(
             `${message}, impact: "${JSON.stringify(impact)}", matchingUnits "${JSON.stringify(matchingUnits)}"`
           )
           throw Error(`${message}.`)
         }
         const matchingUsers = users.filter((user) => user.id === impact.user.toString())
-        if (MoveImpactResolver.logger.isTraceEnabled()) {
-          MoveImpactResolver.logger.trace(`matchingUsers: "${JSON.stringify(matchingUsers)}"`)
+        if (ImpactResolver.logger.isTraceEnabled()) {
+          ImpactResolver.logger.trace(`matchingUsers: "${JSON.stringify(matchingUsers)}"`)
         }
         if (matchingUsers.length === 0) {
           const message = `Could not find user with ID "${impact.user}" for move Impact`
-          MoveImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
+          ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
           throw Error(`${message}.`)
         } else if (matchingUsers.length > 1) {
           const message = `Found more than 1 user with ID "${impact.user}" for move Impact`
-          MoveImpactResolver.logger.error(
+          ImpactResolver.logger.error(
             `${message}, impact: "${JSON.stringify(impact)}", matchingUsers: "${JSON.stringify(matchingUsers)}"`
           )
           throw Error(`${message}.`)
         }
         resolvedImpacts.push(
-          await MoveImpactResolver.fromObject({
+          await ImpactResolver.fromObject({
             impact,
             gameUnit: await GameUnitResolver.fromObject({
               gameUnit: impact.unit,
@@ -111,11 +111,11 @@ export default class MoveImpactResolver {
           })
         )
       }
-    }
 
-    if (MoveImpactResolver.logger.isTraceEnabled()) {
-      MoveImpactResolver.logger.trace(`resolvedImpacts: "${JSON.stringify(resolvedImpacts)}"`)
+      if (ImpactResolver.logger.isTraceEnabled()) {
+        ImpactResolver.logger.trace(`resolvedImpacts: "${JSON.stringify(resolvedImpacts)}"`)
+      }
+      return resolvedImpacts
     }
-    return resolvedImpacts
   }
 }

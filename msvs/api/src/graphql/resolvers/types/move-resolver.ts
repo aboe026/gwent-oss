@@ -8,21 +8,21 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from './game-unit-resolver'
 import LeaderResolver from './leader-resolver'
-import MoveImpactResolver from './move-impact-resolver'
+import ImpactResolver from './impact-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 
 /**
- * A class to convert PlayerMove database objects to their GraphQL equivalent.
+ * A class to convert Move database objects to their GraphQL equivalent.
  */
-export default class PlayerMoveResolver {
+export default class MoveResolver {
   /**
-   * Converts a single PlayerMove database object to a single PlayerMove GraphQL object.
+   * Converts a single Move database object to a single Move GraphQL object.
    *
-   * @param config The configuration used to resolve the PlayerMove.
+   * @param config The configuration used to resolve the Move.
    * @param config.move The database object to resolve to its GraphQL type.
    * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
    * @param config.gameUnit An optional pre-resolved GameUnit. If not specified, will retreive the GameUnit from the databae to resolve.
-   * @returns The resolved PlayerMove object matching its GraphQL schema definition.
+   * @returns The resolved Move object matching its GraphQL schema definition.
    * @throws Error if the move type is invalid.
    */
   static async fromObject({
@@ -60,7 +60,7 @@ export default class PlayerMoveResolver {
           (await GameUnitResolver.fromObject({
             gameUnit: unitMove.unit,
           })),
-        impacts: await MoveImpactResolver.fromArray({
+        impacts: await ImpactResolver.fromArray({
           impacts: unitMove.impacts,
         }),
         __typename: 'MoveUnit',
