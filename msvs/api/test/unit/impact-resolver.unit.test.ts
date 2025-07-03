@@ -3,12 +3,12 @@ import { ObjectId } from 'mongodb'
 import { Combat, GameUnit, Impact, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import { ImpactDbObject } from '@gwent/graphql-schema/database-typings'
-import MoveImpactResolver from '../../src/graphql/resolvers/types/move-impact-resolver'
+import ImpactResolver from '../../src/graphql/resolvers/types/impact-resolver'
 import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
-describe('move-impact-resolver', () => {
+describe('impact-resolver', () => {
   describe('fromObject', () => {
     it('reaches out to resolve GameUnit and User if not provided', async () => {
       await testFromObject({
@@ -280,7 +280,7 @@ async function testFromObject({
   const userResolverSpy = jest.spyOn(UserResolver, 'fromId').mockResolvedValue(resolvedUser)
 
   await expect(
-    MoveImpactResolver.fromObject({
+    ImpactResolver.fromObject({
       impact,
       gameUnit,
       user,
@@ -340,13 +340,13 @@ async function testFromArray({
   }
   const errorSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
-  MoveImpactResolver['logger'] = {
+  ImpactResolver['logger'] = {
     error: errorSpy,
     trace: traceSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
-  const promise = MoveImpactResolver.fromArray({
+  const promise = ImpactResolver.fromArray({
     impacts,
   })
   if (expected instanceof Error) {

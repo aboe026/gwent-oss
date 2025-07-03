@@ -5,7 +5,7 @@ import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutatio
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GameDeckDbObject, ImpactDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
-import * as getGameUnit from '../../src/graphql/resolvers/mutations/play-unit/get-game-unit'
+import * as getBattlefieldUnit from '../../src/graphql/resolvers/mutations/play-unit/get-battlefield-unit'
 import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
 import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
 import * as modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
@@ -181,7 +181,7 @@ async function testPlayUnitImplementation({
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
     .mockReturnValue(strengthImpacts)
   const setGameScoresSpy = jest.spyOn(setGameScores, 'default').mockImplementation()
-  const getGameUnitSpy = jest.spyOn(getGameUnit, 'default').mockReturnValue(gameUnit)
+  const getBattlefieldUnitSpy = jest.spyOn(getBattlefieldUnit, 'default').mockReturnValue(gameUnit)
   const addMoveToCurrentPlayerSpy = jest.spyOn(addMoveToCurrentPlayer, 'default').mockImplementation()
   const setNextTurnForCurrentRoundSpy = jest
     .spyOn(SetNextTurnForCurrentRound, 'setNextTurnForCurrentRound')
@@ -244,7 +244,7 @@ async function testPlayUnitImplementation({
     ],
   ])
   expect(setGameScoresSpy.mock.calls).toEqual([[game]])
-  expect(getGameUnitSpy.mock.calls).toEqual([
+  expect(getBattlefieldUnitSpy.mock.calls).toEqual([
     [
       {
         game,

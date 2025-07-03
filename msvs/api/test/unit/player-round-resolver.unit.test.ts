@@ -1,12 +1,13 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, PlayerCombatRowDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
+import { Combat, MoveUnitDbObject, PlayerCombatRowDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
 import { GameUnit, Leader, Move, PlayerRound } from '@gwent/graphql-schema/resolver-typings'
 import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import { MoveType } from '@gwent/graphql-schema'
-import PlayerMoveResolver from '../../src/graphql/resolvers/types/player-move-resolver'
+import MoveResolver from '../../src/graphql/resolvers/types/move-resolver'
 import PlayerRoundResolver from '../../src/graphql/resolvers/types/player-round-resolver'
 import TestUtil from '../util/test-util'
+import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
 
 describe('player-round-resolver', () => {
   describe('fromObject', () => {
@@ -15,7 +16,7 @@ describe('player-round-resolver', () => {
     })
     it('does not resolve game units if provided', async () => {
       await testFromObject({
-        gameUnits: true,
+        units: true,
         leader: TestUtil.getLeader({}),
         result: RoundResult.Won,
       })
@@ -33,15 +34,7 @@ describe('player-round-resolver', () => {
   })
 })
 
-async function testFromObject({
-  gameUnits,
-  leader,
-  result,
-}: {
-  gameUnits?: boolean
-  leader?: Leader
-  result?: RoundResult
-}) {
+async function testFromObject({ units, leader, result }: { units?: boolean; leader?: Leader; result?: RoundResult }) {
   const closeUnit: GameUnit = {
     artStyle: 1,
     effectiveStrength: 2,
@@ -49,6 +42,8 @@ async function testFromObject({
       combats: [Combat.Close],
       strength: 1,
     }),
+    effects: [],
+    row: undefined,
   }
   const rangedUnit: GameUnit = {
     artStyle: 2,
@@ -57,6 +52,8 @@ async function testFromObject({
       combats: [Combat.Close],
       strength: 2,
     }),
+    effects: [],
+    row: undefined,
   }
   const siegeUnit: GameUnit = {
     artStyle: 3,
@@ -65,6 +62,8 @@ async function testFromObject({
       combats: [Combat.Close],
       strength: 3,
     }),
+    effects: [],
+    row: undefined,
   }
   const close: PlayerCombatRowDbObject = {
     score: 1,
@@ -107,6 +106,8 @@ async function testFromObject({
         unit: {
           artStyle: close.units[0].artStyle,
           unit: close.units[0].unit,
+          effects: [],
+          row: undefined,
         },
         type: MoveType.Unit,
       },
@@ -115,6 +116,8 @@ async function testFromObject({
         unit: {
           artStyle: ranged.units[0].artStyle,
           unit: ranged.units[0].unit,
+          effects: [],
+          row: undefined,
         },
         type: MoveType.Unit,
       },
@@ -123,6 +126,8 @@ async function testFromObject({
         unit: {
           artStyle: siege.units[0].artStyle,
           unit: siege.units[0].unit,
+          effects: [],
+          row: undefined,
         },
         type: MoveType.Unit,
       },
@@ -140,6 +145,8 @@ async function testFromObject({
     unit: {
       artStyle: closeUnit.artStyle,
       unit: closeUnit.unit,
+      effects: [],
+      row: undefined,
     },
     __typename: 'MoveUnit',
   }
@@ -148,6 +155,8 @@ async function testFromObject({
     unit: {
       artStyle: closeUnit.artStyle,
       unit: closeUnit.unit,
+      effects: [],
+      row: undefined,
     },
     __typename: 'MoveUnit',
   }
@@ -156,6 +165,8 @@ async function testFromObject({
     unit: {
       artStyle: closeUnit.artStyle,
       unit: closeUnit.unit,
+      effects: [],
+      row: undefined,
     },
     __typename: 'MoveUnit',
   }
@@ -165,15 +176,25 @@ async function testFromObject({
     __typename: 'MoveLeader',
   }
 
-  const gameUnitsFromArraySpy = jest
-    .spyOn(GameUnitResolver, 'fromArray')
-    .mockResolvedValue([closeUnit, rangedUnit, siegeUnit])
+  const unitsFromIdsSpy = jest
+    .spyOn(UnitResolver, 'fromIds')
+    .mockResolvedValue([closeUnit.unit, rangedUnit.unit, siegeUnit.unit])
+  const gameUnitFromObject = jest
+    .spyOn(GameUnitResolver, 'fromObject')
+    .mockResolvedValueOnce(closeUnit)
+    .mockResolvedValueOnce(rangedUnit)
+    .mockResolvedValueOnce(siegeUnit)
   const playerMoveFromObjectSpy = jest
-    .spyOn(PlayerMoveResolver, 'fromObject')
+    .spyOn(MoveResolver, 'fromObject')
     .mockResolvedValueOnce(resolvedCloseMove)
     .mockResolvedValueOnce(resolvedRangedMove)
     .mockResolvedValueOnce(resolvedSiegeMove)
     .mockResolvedValueOnce(resolvedLeaderMove)
+  const gameUnitFromArraySpy = jest
+    .spyOn(GameUnitResolver, 'fromArray')
+    .mockResolvedValueOnce([closeUnit])
+    .mockResolvedValueOnce([rangedUnit])
+    .mockResolvedValueOnce([siegeUnit])
 
   const expected: PlayerRound = {
     close: {
@@ -196,53 +217,62 @@ async function testFromObject({
   await expect(
     PlayerRoundResolver.fromObject({
       round,
-      gameUnits: gameUnits ? [closeUnit, rangedUnit, siegeUnit] : undefined,
+      units: units ? [closeUnit.unit, rangedUnit.unit, siegeUnit.unit] : undefined,
       leader: leader,
     })
   ).resolves.toEqual(expected)
 
-  expect(gameUnitsFromArraySpy.mock.calls).toEqual(
-    gameUnits
+  expect(unitsFromIdsSpy.mock.calls).toEqual(
+    units
       ? []
       : [
           [
             {
-              gameUnits: [close.units[0], ranged.units[0], siege.units[0]],
+              ids: [new ObjectId(closeUnit.unit.id), new ObjectId(rangedUnit.unit.id), new ObjectId(siegeUnit.unit.id)],
             },
           ],
         ]
   )
+  console.log(`TEST gameUnitFromObject.mock.calls.length: "${gameUnitFromObject.mock.calls.length}"`)
+  expect(gameUnitFromObject.mock.calls).toEqual([
+    [
+      {
+        gameUnit: (round.moves[0] as MoveUnitDbObject).unit,
+        unit: closeUnit.unit,
+      },
+    ],
+    [
+      {
+        gameUnit: (round.moves[1] as MoveUnitDbObject).unit,
+        unit: rangedUnit.unit,
+      },
+    ],
+    [
+      {
+        gameUnit: (round.moves[2] as MoveUnitDbObject).unit,
+        unit: siegeUnit.unit,
+      },
+    ],
+  ])
   expect(playerMoveFromObjectSpy.mock.calls).toEqual([
     [
       {
         move: round.moves[0],
-        gameUnit: {
-          artStyle: closeUnit.artStyle,
-          unit: closeUnit.unit,
-          effectiveStrength: closeUnit.effectiveStrength,
-        },
+        gameUnit: closeUnit,
         leader: undefined,
       },
     ],
     [
       {
         move: round.moves[1],
-        gameUnit: {
-          artStyle: rangedUnit.artStyle,
-          unit: rangedUnit.unit,
-          effectiveStrength: rangedUnit.effectiveStrength,
-        },
+        gameUnit: rangedUnit,
         leader: undefined,
       },
     ],
     [
       {
         move: round.moves[2],
-        gameUnit: {
-          artStyle: siegeUnit.artStyle,
-          unit: siegeUnit.unit,
-          effectiveStrength: siegeUnit.effectiveStrength,
-        },
+        gameUnit: siegeUnit,
         leader: undefined,
       },
     ],
@@ -251,6 +281,26 @@ async function testFromObject({
         move: round.moves[3],
         gameUnit: undefined,
         leader,
+      },
+    ],
+  ])
+  expect(gameUnitFromArraySpy.mock.calls).toEqual([
+    [
+      {
+        gameUnits: round.close.units,
+        units: [closeUnit.unit, rangedUnit.unit, siegeUnit.unit],
+      },
+    ],
+    [
+      {
+        gameUnits: round.ranged.units,
+        units: [closeUnit.unit, rangedUnit.unit, siegeUnit.unit],
+      },
+    ],
+    [
+      {
+        gameUnits: round.siege.units,
+        units: [closeUnit.unit, rangedUnit.unit, siegeUnit.unit],
       },
     ],
   ])
@@ -418,20 +468,6 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     __typename: 'MoveLeader',
   }
 
-  const gameUnitsFromArraySpy = jest
-    .spyOn(GameUnitResolver, 'fromArray')
-    .mockResolvedValue([closeUnit, rangedUnit, siegeUnit])
-  const playerMoveFromObjectSpy = jest
-    .spyOn(PlayerMoveResolver, 'fromObject')
-    .mockResolvedValueOnce(resolvedCloseMove)
-    .mockResolvedValueOnce(resolvedRangedMove)
-    .mockResolvedValueOnce(resolvedSiegeMove)
-    .mockResolvedValueOnce(resolvedLeaderMove)
-    .mockResolvedValueOnce(resolvedCloseMove)
-    .mockResolvedValueOnce(resolvedRangedMove)
-    .mockResolvedValueOnce(resolvedSiegeMove)
-    .mockResolvedValueOnce(resolvedLeaderMove)
-
   const expected: PlayerRound[] = [
     {
       close: {
@@ -470,6 +506,15 @@ async function testFromArray({ leader }: { leader?: Leader }) {
       result: RoundResult.Lost,
     },
   ]
+
+  const unitsFromIdsSpy = jest
+    .spyOn(UnitResolver, 'fromIds')
+    .mockResolvedValue([closeUnit.unit, rangedUnit.unit, siegeUnit.unit])
+  const playerMoveFromObjectSpy = jest
+    .spyOn(PlayerRoundResolver, 'fromObject')
+    .mockResolvedValueOnce(expected[0])
+    .mockResolvedValueOnce(expected[1])
+
   await expect(
     PlayerRoundResolver.fromArray({
       rounds: [round1, round2],
@@ -477,91 +522,32 @@ async function testFromArray({ leader }: { leader?: Leader }) {
     })
   ).resolves.toEqual(expected)
 
-  expect(gameUnitsFromArraySpy.mock.calls).toEqual([
+  expect(unitsFromIdsSpy.mock.calls).toEqual([
     [
       {
-        gameUnits: [close.units[0], ranged.units[0], siege.units[0], close.units[0], ranged.units[0], siege.units[0]],
+        ids: [
+          close.units[0].unit,
+          ranged.units[0].unit,
+          siege.units[0].unit,
+          close.units[0].unit,
+          ranged.units[0].unit,
+          siege.units[0].unit,
+        ],
       },
     ],
   ])
   expect(playerMoveFromObjectSpy.mock.calls).toEqual([
     [
       {
-        move: round1.moves[0],
-        gameUnit: {
-          artStyle: closeUnit.artStyle,
-          unit: closeUnit.unit,
-          effectiveStrength: closeUnit.effectiveStrength,
-        },
-        leader: undefined,
-      },
-    ],
-    [
-      {
-        move: round1.moves[1],
-        gameUnit: {
-          artStyle: rangedUnit.artStyle,
-          unit: rangedUnit.unit,
-          effectiveStrength: rangedUnit.effectiveStrength,
-        },
-        leader: undefined,
-      },
-    ],
-    [
-      {
-        move: round1.moves[2],
-        gameUnit: {
-          artStyle: siegeUnit.artStyle,
-          unit: siegeUnit.unit,
-          effectiveStrength: siegeUnit.effectiveStrength,
-        },
-        leader: undefined,
-      },
-    ],
-    [
-      {
-        move: round1.moves[3],
-        gameUnit: undefined,
+        round: round1,
+        units: [closeUnit.unit, rangedUnit.unit, siegeUnit.unit],
         leader,
       },
     ],
     [
       {
-        move: round2.moves[0],
-        gameUnit: {
-          artStyle: closeUnit.artStyle,
-          unit: closeUnit.unit,
-          effectiveStrength: closeUnit.effectiveStrength,
-        },
-        leader: undefined,
-      },
-    ],
-    [
-      {
-        move: round2.moves[1],
-        gameUnit: {
-          artStyle: rangedUnit.artStyle,
-          unit: rangedUnit.unit,
-          effectiveStrength: rangedUnit.effectiveStrength,
-        },
-        leader: undefined,
-      },
-    ],
-    [
-      {
-        move: round2.moves[2],
-        gameUnit: {
-          artStyle: siegeUnit.artStyle,
-          unit: siegeUnit.unit,
-          effectiveStrength: siegeUnit.effectiveStrength,
-        },
-        leader: undefined,
-      },
-    ],
-    [
-      {
-        move: round2.moves[3],
-        gameUnit: undefined,
+        round: round2,
+        units: [closeUnit.unit, rangedUnit.unit, siegeUnit.unit],
         leader,
       },
     ],

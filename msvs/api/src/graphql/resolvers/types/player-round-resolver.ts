@@ -19,7 +19,7 @@ export default class PlayerRoundResolver {
    *
    * @param config The configuration for resolving the PlayerRound.
    * @param config.round The database object to resolve to its GraphQL type.
-   * @param config.gameUnits An optional pre-resolved GameUnits. If not specified, will retreive the GameUnits from the databae to resolve.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
    * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
    * @returns The resolved PlayerRound object matching its GraphQL schema definition.
    */

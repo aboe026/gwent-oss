@@ -9,13 +9,13 @@ import {
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
+import ImpactResolver from '../../src/graphql/resolvers/types/impact-resolver'
 import LeaderResolver from '../../src/graphql/resolvers/types/leader-resolver'
-import MoveImpactResolver from '../../src/graphql/resolvers/types/move-impact-resolver'
+import MoveResolver from '../../src/graphql/resolvers/types/move-resolver'
 import { MoveType } from '@gwent/graphql-schema'
-import PlayerMoveResolver from '../../src/graphql/resolvers/types/player-move-resolver'
 import TestUtil from '../util/test-util'
 
-describe('player-move-resolver', () => {
+describe('move-resolver', () => {
   describe('fromObject', () => {
     it('throws error if invalid move type', async () => {
       const type = 'invalid'
@@ -198,9 +198,9 @@ async function testFromObject({
   if (gameUnitFromObjectResponse) {
     gameUnitFromObjectSpy.mockResolvedValue(gameUnitFromObjectResponse)
   }
-  const impactFromArraySpy = jest.spyOn(MoveImpactResolver, 'fromArray').mockResolvedValue(impactFromArrayResponse)
+  const impactFromArraySpy = jest.spyOn(ImpactResolver, 'fromArray').mockResolvedValue(impactFromArrayResponse)
 
-  const promise = PlayerMoveResolver.fromObject({
+  const promise = MoveResolver.fromObject({
     move,
     gameUnit,
     leader,

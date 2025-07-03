@@ -1,13 +1,13 @@
 import { GameDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
-import getGameUnit from '../../src/graphql/resolvers/mutations/play-unit/get-game-unit'
+import getBattlefieldUnit from '../../src/graphql/resolvers/mutations/play-unit/get-battlefield-unit'
 import { ObjectId } from 'mongodb'
 import TestUtil from '../util/test-util'
 
-describe('get-game-unit', () => {
+describe('get-battlefield-unit', () => {
   it('throws error if user not no game', () => {
     const userId = new ObjectId().toString()
     const game = TestUtil.getDbGame({})
-    testGetGameUnit({
+    testGetBattlefieldUnit({
       game,
       unitId: new ObjectId(),
       userId,
@@ -26,7 +26,7 @@ describe('get-game-unit', () => {
         }),
       ],
     })
-    testGetGameUnit({
+    testGetBattlefieldUnit({
       game,
       unitId: new ObjectId(),
       userId,
@@ -55,7 +55,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: new ObjectId(),
         userId,
@@ -81,7 +81,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: unit.unit,
         userId,
@@ -107,7 +107,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: unit.unit,
         userId,
@@ -133,7 +133,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: unit.unit,
         userId,
@@ -162,7 +162,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: new ObjectId(),
         userId,
@@ -189,7 +189,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: unit.unit,
         userId,
@@ -216,7 +216,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: unit.unit,
         userId,
@@ -243,7 +243,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: unit.unit,
         userId,
@@ -273,7 +273,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: new ObjectId(),
         userId,
@@ -301,7 +301,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: unit.unit,
         userId,
@@ -329,7 +329,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: unit.unit,
         userId,
@@ -357,7 +357,7 @@ describe('get-game-unit', () => {
           }),
         ],
       })
-      testGetGameUnit({
+      testGetBattlefieldUnit({
         game,
         unitId: unit.unit,
         userId,
@@ -367,7 +367,7 @@ describe('get-game-unit', () => {
   })
 })
 
-function testGetGameUnit({
+function testGetBattlefieldUnit({
   game,
   unitId,
   userId,
@@ -380,7 +380,7 @@ function testGetGameUnit({
 }) {
   if (expected instanceof Error) {
     expect(() =>
-      getGameUnit({
+      getBattlefieldUnit({
         game,
         unitId,
         userId,
@@ -388,7 +388,7 @@ function testGetGameUnit({
     ).toThrow(expected)
   } else {
     expect(
-      getGameUnit({
+      getBattlefieldUnit({
         game,
         unitId,
         userId,

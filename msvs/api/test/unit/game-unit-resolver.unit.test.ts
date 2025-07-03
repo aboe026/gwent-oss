@@ -60,12 +60,12 @@ describe('game-unit-resolver', () => {
     })
   })
   describe('fromArray', () => {
-    it('does not call to UnitResolver or fromObject if empty gameUnits', async () => {
+    it('does not call to anything if empty gameUnits', async () => {
       await testFromArray({
         gameUnits: [],
       })
     })
-    it('calls to UnitResolver and fromObject if gameUnits not empty', async () => {
+    it('calls to UnitResolver if no units provided', async () => {
       const unit1 = TestUtil.getUnit({})
       const unit2 = TestUtil.getUnit({})
       await testFromArray({
@@ -82,6 +82,25 @@ describe('game-unit-resolver', () => {
           },
         ],
         resolvedUnits: [unit1, unit2],
+      })
+    })
+    it('does not call to UnitResolver if units provided', async () => {
+      const unit1 = TestUtil.getUnit({})
+      const unit2 = TestUtil.getUnit({})
+      await testFromArray({
+        gameUnits: [
+          {
+            artStyle: 1,
+            effectiveStrength: 2,
+            unit: new ObjectId(unit1.id),
+          },
+          {
+            artStyle: 3,
+            effectiveStrength: 4,
+            unit: new ObjectId(unit2.id),
+          },
+        ],
+        units: [unit1, unit2],
       })
     })
   })
@@ -122,7 +141,15 @@ async function testFromObject({ gameUnit, unit }: { gameUnit: GameUnitDbObject; 
   )
 }
 
-async function testFromArray({ gameUnits, resolvedUnits }: { gameUnits: GameUnitDbObject[]; resolvedUnits?: Unit[] }) {
+async function testFromArray({
+  gameUnits,
+  units,
+  resolvedUnits,
+}: {
+  gameUnits: GameUnitDbObject[]
+  units?: Unit[]
+  resolvedUnits?: Unit[]
+}) {
   const unitFromIdsSpy = jest.spyOn(UnitResolver, 'fromIds')
   if (resolvedUnits) {
     unitFromIdsSpy.mockResolvedValue(resolvedUnits)
@@ -133,7 +160,7 @@ async function testFromArray({ gameUnits, resolvedUnits }: { gameUnits: GameUnit
     const resolvedGameUnit: GameUnit = {
       artStyle: gameUnit.artStyle,
       effectiveStrength: gameUnit.effectiveStrength,
-      unit: (resolvedUnits || [])[index],
+      unit: (units || resolvedUnits || [])[index],
     }
     fromObjectSpy.mockResolvedValueOnce(resolvedGameUnit)
     expected.push(resolvedGameUnit)
@@ -142,11 +169,12 @@ async function testFromArray({ gameUnits, resolvedUnits }: { gameUnits: GameUnit
   await expect(
     GameUnitResolver.fromArray({
       gameUnits,
+      units,
     })
   ).resolves.toEqual(expected)
 
   expect(unitFromIdsSpy.mock.calls).toEqual(
-    gameUnits.length > 0
+    gameUnits.length > 0 && !units
       ? [
           [
             {
@@ -162,7 +190,7 @@ async function testFromArray({ gameUnits, resolvedUnits }: { gameUnits: GameUnit
           return [
             {
               gameUnit,
-              unit: (resolvedUnits || [])[index],
+              unit: (units || resolvedUnits || [])[index],
             },
           ]
         })
