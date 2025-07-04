@@ -1,4 +1,3 @@
-- [ ] [TSDoc](https://tsdoc.org/)
 - [ ] [Tests](../README.md#test)
   - [ ] [Unit](../README.md#unit)
   - [ ] [Functional](../README.md#functional)

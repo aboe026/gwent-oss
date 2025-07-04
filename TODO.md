@@ -81,7 +81,6 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- expand/collapse all impacts?
 - remove "renderXYZ" methods in favor of functional components always?
 
 - for "MoveUnit" type, have "reason" field
@@ -122,6 +121,11 @@ New things that should be added to the codebase.
 - Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
+- game history improvements
+  - search bar (unit name?)
+  - expand/collapse all
+  - filter by entrance type
+  - filter by player
 - games list improvements
   - progress bar for game status
   - highlight games waiting on you?

@@ -33,6 +33,7 @@ export default class ScorchBattlefield {
    * @param config.game The game which is potentially being scorched.
    * @param config.logPrefix What to prepend log output statements with.
    * @param config.newDeckUnit The new DeckUnit database document currently being played and which may potentially have a scorching effect.
+   * @returns The impacts of any units scorched.
    */
   static scorchBattlefield({
     battlefieldUnits,
@@ -126,6 +127,7 @@ export default class ScorchBattlefield {
    * @param config.scorchingUnit The Unit being deployed to the battlefield with a scorching effect.
    * @param config.scorchingDeckUnit The DeckUnit being deployed to the battlefield with a scorching effect.
    * @param config.strongestUnitIdsOnBattlefield A list of the strongest units across the entire battlefield which may be used to determine which of the players units should be scorched.
+   * @returns The impacts of any units scorched.
    */
   private static scorchPlayer({
     battlefieldUnits,
@@ -176,10 +178,12 @@ export default class ScorchBattlefield {
    *
    * @param config The configuration used to determine which units to scorch for a player.
    * @param config.battlefieldUnits battlefieldUnits The Unit database documents currently on the battlefield for all players.
+   * @param config.player The player under consideration for their units to be scorched.
    * @param config.round The current round of the game.
    * @param config.logPrefix What to prepend log output statements with.
    * @param config.scorchingUnit The Unit being deployed to the battlefield with a scorching effect.
    * @param config.strongestUnitIdsOnBattlefield A list of the strongest units across the entire battlefield which may be used to determine which of the players units should be scorched.
+   * @returns The impacts of any units scorched.
    */
   private static scorchUnitsForPlayer({
     battlefieldUnits,

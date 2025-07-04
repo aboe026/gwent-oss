@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router'
 import { Game, RoundResult } from '@gwent/graphql-schema/apollo-typings'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 
+/**
+ * A breakdown of the results of a finished Game.
+ */
 export default function GameSummary({ game }: { game: Game }) {
   const navigate = useNavigate()
   const victorNames = game.victors.map((victor) => victor.name)

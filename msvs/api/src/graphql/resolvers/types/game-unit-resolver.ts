@@ -35,7 +35,8 @@ export default class GameUnitResolver {
    * Converts an array of GameUnit database objects to an array of GameUnit GraphQL objects.
    *
    * @param config The configuration used to resolve the array of GameUnits.
-   * @param gameUnits The database objects to resolve to their GraphQL types.
+   * @param config.gameUnits The database objects to resolve to their GraphQL types.
+   * @param config.units The resolved Units for the GameUnits. If not provided, will be retrieved.
    * @returns The resolved GameUnit array matching the GraphQL schema definition.
    */
   static async fromArray({ gameUnits, units }: { gameUnits: GameUnitDbObject[]; units?: Unit[] }): Promise<GameUnit[]> {

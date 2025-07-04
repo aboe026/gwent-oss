@@ -1,7 +1,7 @@
-import { MongoClient, ObjectId } from 'mongodb'
+import { ObjectId } from 'mongodb'
 
 import { DeckDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
-import { getGame, updateGame } from './db-util'
+import { getGame, getUnits, updateGame } from './db-util'
 
 /**
  * Ensures all the desired units are in the game hand for the user, swapping out with units in their draw pile if necessary.
@@ -12,6 +12,7 @@ import { getGame, updateGame } from './db-util'
  * @param config.mongoDatabaseName The name of the MongoDB Database containing the game to modify.
  * @param config.unitNames The names of the units to put in the players hand for the game.
  * @param config.userId The ID of the user on the game to set the hand for.
+ * @param config.excludeNames A list of unit names which should be replaced in hand before unitNames added to hand.
  * @returns The Game with updated hand for the user.
  */
 export default async function ensureUnitsInHand({
@@ -215,30 +216,4 @@ export default async function ensureUnitsInHand({
     mongoConnectionString,
     mongoDatabaseName,
   })
-}
-
-export async function getUnits({
-  mongoConnectionString,
-  mongoDatabaseName,
-  unitIds,
-}: {
-  mongoConnectionString: string
-  mongoDatabaseName: string
-  unitIds: (string | ObjectId)[]
-}): Promise<UnitDbObject[]> {
-  const mongoClient = await MongoClient.connect(mongoConnectionString)
-  try {
-    const db = await mongoClient.db(mongoDatabaseName)
-    const collection = await db.collection('units')
-    const units = await collection
-      .find<UnitDbObject>({
-        _id: {
-          $in: unitIds.map((unitId) => new ObjectId(unitId)),
-        },
-      })
-      .toArray()
-    return units
-  } finally {
-    await mongoClient.close()
-  }
 }

@@ -7,6 +7,9 @@ import { HTML_IDS, PLAYER_COUNTS, ROUTES } from '@gwent/constants'
 import { retryCheckingAuth } from '../../util/error-util'
 import { useUserContext } from '../../App'
 
+/**
+ * Form for creating a new Game.
+ */
 export default function NewGame({ addGameProps }: { addGameProps: AddGameProps }) {
   const { checkAuth, user } = useUserContext()
   const navigate = useNavigate()

@@ -14,10 +14,10 @@ export default class DlcStore extends Store {
   /**
    * Adds a DLC to the database.
    *
-   * @param {Object} dlc The DLC to add.
-   * @param dlc.image The name of the DLC to add.
-   * @param dlc.key The key of the DLC to add.
-   * @param dlc.name The name of the DLC to add.
+   * @param config The configuration used to add the DLC.
+   * @param config.image The name of the DLC to add.
+   * @param config.key The key of the DLC to add.
+   * @param config.name The name of the DLC to add.
    * @returns The DLC database document.
    */
   static async add({ image, key, name }: AddDlcInput): Promise<DlcDbObject> {

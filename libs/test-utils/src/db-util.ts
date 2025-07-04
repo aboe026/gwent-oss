@@ -1,6 +1,6 @@
 import { MongoClient, ObjectId } from 'mongodb'
 
-import { GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 
 /**
  * Retrieves the desired game from the database.
@@ -67,6 +67,41 @@ export async function updateGame({
       }
     )
     return updatedGame as GameDbObject
+  } finally {
+    await mongoClient.close()
+  }
+}
+
+/**
+ * Get Units from the database by their IDs.
+ *
+ * @param config The configuration used to get the Units.
+ * @param config.mongoConnectionString The MongoDB Connection String used to communicate with the database.
+ * @param config.mongoDatabaseName The name of the MongoDB Database containing the units to retrieve.
+ * @param config.unitIds The IDs of the Units to get.
+ * @returns An array of Unit database objects with the specified IDs.
+ */
+export async function getUnits({
+  mongoConnectionString,
+  mongoDatabaseName,
+  unitIds,
+}: {
+  mongoConnectionString: string
+  mongoDatabaseName: string
+  unitIds: (string | ObjectId)[]
+}): Promise<UnitDbObject[]> {
+  const mongoClient = await MongoClient.connect(mongoConnectionString)
+  try {
+    const db = await mongoClient.db(mongoDatabaseName)
+    const collection = await db.collection('units')
+    const units = await collection
+      .find<UnitDbObject>({
+        _id: {
+          $in: unitIds.map((unitId) => new ObjectId(unitId)),
+        },
+      })
+      .toArray()
+    return units
   } finally {
     await mongoClient.close()
   }

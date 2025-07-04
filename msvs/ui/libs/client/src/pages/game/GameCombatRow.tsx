@@ -8,6 +8,9 @@ import { sortObjectArray, toTitleCase } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../App'
 
+/**
+ * A row of combat for a Game player and the units that make up that row.
+ */
 export default function GameCombatRow({
   combat,
   fullUnits,

@@ -79,7 +79,7 @@ export default class ResolverUtil {
    * @param config The configuration used to print the GraphQL request information.
    * @param config.args The potential arguments on the given GraphQL request.
    * @param config.info The information on the GraphQL request.
-   * @param secureKeys Any keys on the args that contain sensitive information and whose value should be redacted.
+   * @param config.secureKeys Any keys on the args that contain sensitive information and whose value should be redacted.
    */
   logRequestInfo({
     args,
@@ -113,7 +113,6 @@ export default class ResolverUtil {
    * @param config The configuration to get the Game and the player on it.
    * @param config.gameId The ID of the game to get.
    * @param config.userId The ID of the player to get on the game.
-   * @param config.logPrefix The prefix to add to the beginning of log statements.
    * @param config.status An optional status to require the game to have, otherwise return an error.
    * @param config.turn Whether or not to enforce that the given game player should be the player with the current turn, otherwise return an error.
    * @param config.label The label to use when logging and returning errors.

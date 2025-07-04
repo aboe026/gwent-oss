@@ -81,9 +81,11 @@ export default class DeckStore extends Store {
   }
 
   /**
-   * Get decks for the given IDs.
+   * Get Deck with the given ID.
    *
-   * @param ids The ObjectIds of the decks to retrieve.
+   * @param config The configuration used to retrieve the Deck.
+   * @param config.id The ObjectId of the Deck to retrieve.
+   * @param config.options The options to use when retrieving the Deck.
    * @returns The decks of the given IDs.
    * @throws Error if more than 1 deck found.
    */

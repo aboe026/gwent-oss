@@ -344,6 +344,9 @@ export default function UnitsStats({
   )
 }
 
+/**
+ * Information about how many of a particular Combat or Effect has been selected for a Deck.
+ */
 function renderSmallStat({
   completed,
   field,

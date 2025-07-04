@@ -12,6 +12,7 @@ export default class IsRoundOver {
    *
    * @param config The configuration to determine if the round is over or not.
    * @param config.game The game to check if the current round is over.
+   * @param config.logPrefix What to prepend log statements with.
    * @returns True if the current round is over, false otherwise.
    */
   static isRoundOver({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): boolean {

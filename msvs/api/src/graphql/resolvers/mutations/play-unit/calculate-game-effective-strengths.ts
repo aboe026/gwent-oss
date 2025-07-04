@@ -26,6 +26,9 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.game The Game to calculate effective strengths on for the active round.
    * @param config.units All the database Unit objects present in the round for the game.
    * @param config.effects All the database Effect objects for any unit effect present in the round for the game.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.newDeckUnit The new unit being introduced to the battlefield.
+   * @returns Any impacts the new unit has on other units.
    */
   static calculateEffectiveStrengths({
     game,
@@ -73,7 +76,12 @@ export default class CalculateGameEffectiveStrengths {
    * @param config The configuration used to determine effective strengths for the units in the combat row.
    * @param config.row The combat row contianing the units to calculate effective strengths for.
    * @param config.units All the database Unit objects present in the round for the game.
-   * @param config.effects All the database Effect objects for any unit effect present in the round for the game.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.moraleEffect The Effect database document for the Morale effect.
+   * @param config.newDeckUnit The new unit being introduced to the battlefield.
+   * @param config.userId The ID of the user for the combat row.
+   * @param config.currentPlayerId The ID of the current game turn user.
+   * @returns Any impacts the new unit has on other units.
    */
   private static calculateEffectiveStrengthsForRow({
     row,

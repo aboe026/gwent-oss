@@ -12,9 +12,13 @@ import ScorchBattlefield from './scorch-battlefield'
  * Modifies the battlefield of the current round in a game due to the deployment of a new unit. Other units on or off the battlefield may be impacted by unit effects.
  *
  * @param config The configuration used to determine the impact the new unit has on the battlefield.
- * @param config.game The game whose battlefield should have the units deployment applied to it.
- * @param config.deckUnit The new unit being deployed to the battlefield.
+ * @param config.battlefieldUnits All of the Units currently on the battlefield.
  * @param config.combat The combat row the unit is being deployed to.
+ * @param config.effects The effects that any unit might have.
+ * @param config.game The game whose battlefield should have the units deployment applied to it.
+ * @param config.logPrefix What to prepend log statements with.
+ * @param config.newDeckUnit The new unit being introduced to the battlefield.
+ * @returns Any impacts the new unit has on the battlefield.
  */
 export default function modifyBattlefieldWithNewUnit({
   battlefieldUnits,

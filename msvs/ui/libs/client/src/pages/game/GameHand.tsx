@@ -7,6 +7,9 @@ import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { sortObjectArray } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
 
+/**
+ * The Users hand of unit cards for the Game.
+ */
 export default function GameHand({
   gameStatus,
   gameDeck,

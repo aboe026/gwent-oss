@@ -18,6 +18,7 @@ export default class UnitsQuery {
   /**
    * Gets all Units a user can build a Deck with.
    *
+   * @param args The arguments the user supplied to the query.
    * @param context The session containing the user getting the units.
    * @param info The information about the GraphQL request.
    * @returns The Units a user can build a Deck with.

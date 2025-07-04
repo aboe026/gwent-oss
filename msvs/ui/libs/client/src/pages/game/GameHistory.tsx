@@ -21,6 +21,9 @@ import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import './GameHistory.css'
 
+/**
+ * A list of historical moves made in a Game.
+ */
 export default function GameHistory({
   game,
   handCardSelected,
@@ -266,6 +269,9 @@ export default function GameHistory({
   )
 }
 
+/**
+ * The units impacted by a specific unit.
+ */
 function MoveUnitImpact({
   gameUnit,
   game,
@@ -343,6 +349,9 @@ function MoveUnitImpact({
   )
 }
 
+/**
+ * A list of the impacts made by a specific unit.
+ */
 function renderImpacts({
   effectKey,
   game,
@@ -495,6 +504,9 @@ interface EffectForImpact {
   error: string
 }
 
+/**
+ * Gets the single Effect a GameUnit could potentially have on other units on the battlefield.
+ */
 function getEffectForImpact({ gameUnit }: { gameUnit: GameUnit }): EffectForImpact {
   let error = ''
   const effects =
@@ -514,6 +526,9 @@ function getEffectForImpact({ gameUnit }: { gameUnit: GameUnit }): EffectForImpa
   }
 }
 
+/**
+ * Whether or not a specific GameUnit is able to have an Impact on other units in the battlefield.
+ */
 function hasImpactableEffect({ gameUnit }: { gameUnit: GameUnit }): boolean {
   const effectsWithImpact = [
     EffectKey.Bond,

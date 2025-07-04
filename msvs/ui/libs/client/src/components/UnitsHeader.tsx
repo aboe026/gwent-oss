@@ -199,6 +199,9 @@ export default function UnitsHeader({
   )
 }
 
+/**
+ * The checkboxes a user can toggle to filter which Units are displayed.
+ */
 function renderFilterCheckboxes({
   fields,
   filterFieldsSelected,

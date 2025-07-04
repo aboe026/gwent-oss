@@ -23,7 +23,7 @@ export default class SetGameTurnOrder {
    *
    * @param config The configuration for setting game turn order.
    * @param config.game The Game to set the turn order of.
-   * @param config.player The Player setting the turn order for the Game.
+   * @param config.gameDeck The GameDeck of the user attempting to set the turn order.
    * @param config.userIds The ObjectIds of the users to set the turn order for in the game, in order.
    * @param config.logPrefix The prefix to put before logging statements. Overrides class-level logPrefix.
    * @param config.allowImplicit Whether or not the User is allowed to implicitly set game turn order (without explicitly setting "userIds" input).

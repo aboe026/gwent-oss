@@ -15,12 +15,12 @@ export default class FactionStore extends Store {
   /**
    * Adds a Faction to the database.
    *
-   * @param {Object} faction The Faction to add.
-   * @param faction.ability The potential Ability the Faction possesses.
-   * @param faction.dlc The potential DLC that the Faction was added in.
-   * @param faction.image The image for the Faction.
-   * @param faction.key The key the Faction corresponds to.
-   * @param faction.name The name of the Faction to add.
+   * @param config The configuration used to add the Faction.
+   * @param config.ability The potential Ability the Faction possesses.
+   * @param config.dlc The potential DLC that the Faction was added in.
+   * @param config.image The image for the Faction.
+   * @param config.key The key the Faction corresponds to.
+   * @param config.name The name of the Faction to add.
    * @returns The Faction database document.
    */
   static async add({ ability, dlc, image, key, name }: AddFactionInput): Promise<FactionDbObject> {

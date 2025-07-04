@@ -213,6 +213,9 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   )
 }
 
+/**
+ * The headers for the Deck list table.
+ */
 function renderHeader({
   filterFields,
   filtersExpanded,
@@ -384,6 +387,9 @@ function renderHeader({
   )
 }
 
+/**
+ * A button used to create a new Deck.
+ */
 function renderCreateDeckButton({
   id,
   navigate,
@@ -413,6 +419,15 @@ function renderCreateDeckButton({
   )
 }
 
+/**
+ * Whether or not a specific Deck should be displayed based on the selected filters.
+ *
+ * @param config The configuration used to determine if the Deck should be shown or not.
+ * @param config.deck The Deck under consideration of whether or not to show.
+ * @param config.fields The fields the user is currently filtering on.
+ * @param config.name The name that Decks should be filtered on, and substring matches.
+ * @returns True if the Deck should be shown, false otherwise.
+ */
 function isFilteredIn({ deck, fields, name }: { deck: Deck; fields: FILTER_FIELD[]; name: string }): boolean {
   const filteredByFaction =
     fields.length === 0 ||
@@ -425,6 +440,9 @@ function isFilteredIn({ deck, fields, name }: { deck: Deck; fields: FILTER_FIELD
   return filteredByFaction && filteredByName
 }
 
+/**
+ * Checkboxes that a user can toggle to filter the list of Decks.
+ */
 function renderFilterCheckboxes({
   fields,
   filterFields,
@@ -467,6 +485,9 @@ function renderFilterCheckboxes({
   )
 }
 
+/**
+ * A group of all statistics for the Deck.
+ */
 function renderDeckStats({
   deck,
   neutralLoading,
@@ -552,6 +573,9 @@ function renderDeckStats({
   )
 }
 
+/**
+ * A progress bar indicating how many of a certain statistic is present in the Deck.
+ */
 function renderDeckStat({
   deck,
   label,

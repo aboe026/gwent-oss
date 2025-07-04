@@ -293,6 +293,9 @@ export default function GamePage() {
   )
 }
 
+/**
+ * A Game which has been previously created.
+ */
 function ExistingGame({
   checkAuth,
   gameDeckProps,
@@ -386,6 +389,13 @@ function ExistingGame({
     }
   }
 
+  /**
+   * Force the browser to scroll a specific Units entrance to the battlefield in the History panel.
+   *
+   * @param config The configuration used to scroll the History entry into view.
+   * @param config.playerId The ID of the player the Unit belongs to.
+   * @param config.unit The Unit whose entrance to the battlefield should be scrolled to in the History panel.
+   */
   function scrollHistoryIntoView({ playerId, unit }: UnitForPlayer) {
     if (game && playerId) {
       const roundIndex = game.round - 1

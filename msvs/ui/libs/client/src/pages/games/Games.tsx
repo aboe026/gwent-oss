@@ -162,6 +162,9 @@ export default function GamesPage() {
   )
 }
 
+/**
+ * The Header of the Games table.
+ */
 function renderHeader({
   filterFields,
   filtersExpanded,
@@ -340,6 +343,15 @@ function renderHeader({
   )
 }
 
+/**
+ * Whether or not a Game is apart of the current filters applied.
+ *
+ * @param config The configuration used to determine if a Game should be filtered or not.
+ * @param config.fields The fields the user is currently filtering on.
+ * @param config.game The Game in question of whether it should be filtered or not.
+ * @param config.user The Username that games should be filtered to, only matching if a game includes a player whose name is a substring.
+ * @returns True if the game passes the current filters and should be visible, false otherwise.
+ */
 function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Game; user: string }): boolean {
   const filteringAnyFaction =
     fields.includes(FILTER_FIELD.Monsters) ||
@@ -382,6 +394,9 @@ function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Ga
   return !!filteredByFaction && !!filteredByStatus && !!filteredByUser
 }
 
+/**
+ * Button to create a new Game.
+ */
 function renderCreateGameButton({ id, navigate }: { id: string; navigate: NavigateFunction }) {
   const newDeckPath = ROUTES.Game.path.replace(':gameId', 'new')
 
@@ -403,6 +418,9 @@ function renderCreateGameButton({ id, navigate }: { id: string; navigate: Naviga
   )
 }
 
+/**
+ * The checkboxes to filter games by criteria.
+ */
 function renderFilterCheckboxes({
   fields,
   filterFields,

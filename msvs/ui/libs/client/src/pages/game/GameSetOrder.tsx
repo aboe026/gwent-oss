@@ -10,6 +10,9 @@ import LoadingSpinner from '../../components/LoadingSpinner'
 import { SetOrderProps } from './GameProps'
 import { useUserContext } from '../../App'
 
+/**
+ * Allows user to set the turn order for a Game.
+ */
 export default function GameSetOrder({
   game,
   playerOrder,

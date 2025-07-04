@@ -96,6 +96,12 @@ export default function App() {
   return (
     <ApolloConsumer>
       {(client: ApolloClient<object>) => {
+        /**
+         * Verifies the user is still authenticated. If not, present dialog for them to re-authenticate.
+         *
+         * @param error The error thrown by the request.
+         * @param callbackAfterReauth The functions to re-perform if user re-authenticates.
+         */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
         function checkAuth(error: ApolloError | undefined, callbackAfterReauth?: Function) {
           const resolvedError = getApolloError(error)

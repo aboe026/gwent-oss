@@ -3,10 +3,10 @@ import getNestedProperty from './get-nested-property'
 /**
  * Sorts an array of objects by the specified property.
  *
- * @param sortConfig The object containing the configuration required for sorting.
- * @param sortConfig.array The Array to sort.
- * @param sortConfig.sortProperty The property on each object to sort them by.
- * @param sortConfig.reverse Whether or not the array should be sorted in reverse order.
+ * @param config The configuration used to sort the array.
+ * @param config.array The Array to sort.
+ * @param config.sortProperties The properties on each object to sort them by.
+ * @param config.reverse Whether or not the array should be sorted in reverse order.
  * @returns A clone of the sorted array (does not modify original array).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

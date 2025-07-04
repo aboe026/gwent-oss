@@ -16,6 +16,9 @@ import { GameDeckProps, GameProps } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { humanizeDay, humanizeTime } from '@gwent/utils'
 
+/**
+ * Information about the Game and players in it.
+ */
 export default function GameInfo({
   coinTossVisible,
   gameProps,
@@ -79,6 +82,9 @@ export default function GameInfo({
   )
 }
 
+/**
+ * Information about the Game that is not specific to a certain player.
+ */
 function renderSharedInfo({ gameDeckProps, gameProps }: { gameDeckProps: GameDeckProps; gameProps: GameProps }) {
   const game = gameProps.game
   if (game)
@@ -114,6 +120,9 @@ function renderSharedInfo({ gameDeckProps, gameProps }: { gameDeckProps: GameDec
     )
 }
 
+/**
+ * Information about the player in the Game.
+ */
 function renderPlayerInfo({
   coinTossVisible,
   deckName,
@@ -232,6 +241,9 @@ function renderPlayerInfo({
   )
 }
 
+/**
+ * Information about the score of the current round as well as losses for the Game.
+ */
 function renderScore({
   game,
   handCardSelected,
@@ -387,6 +399,9 @@ function renderScore({
   )
 }
 
+/**
+ * Information about the Faction the Deck belongs to for the Game player.
+ */
 function renderFaction({ faction }: { faction?: Faction | null }) {
   return (
     <div className="game-player-faction">
@@ -402,6 +417,9 @@ function renderFaction({ faction }: { faction?: Faction | null }) {
   )
 }
 
+/**
+ * Information about the Leader on the Deck for the Game player.
+ */
 function renderLeader({ leader }: { leader?: Leader | null }) {
   return (
     <div className="game-player-leader">
@@ -417,6 +435,9 @@ function renderLeader({ leader }: { leader?: Leader | null }) {
   )
 }
 
+/**
+ * Information about the units in the Game for a player, and whether they have been drawn, are in hand, or have been lost.
+ */
 function renderDeckInfo({ discard, hand, undrawn }: { discard?: number; hand?: number; undrawn?: number }) {
   return (
     <>
@@ -436,6 +457,9 @@ function renderDeckInfo({ discard, hand, undrawn }: { discard?: number; hand?: n
   )
 }
 
+/**
+ * Information about the Deck that was chosen to play for the Game.
+ */
 function renderDeckFrom({ name, updated }: { name: string; updated: Date }) {
   const isoString = new Date(updated).toISOString()
   return (

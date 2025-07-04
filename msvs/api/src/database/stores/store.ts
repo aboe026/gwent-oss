@@ -47,7 +47,7 @@ export default abstract class Store {
   /**
    * Retrieves documents from a MongoDB collection matching filter criteria.
    *
-   * @param {Object} config The configuration for what documents to return.
+   * @param config The configuration for what documents to return.
    * @param config.filter The MongoDB filter which determines what documents should be returned.
    * @param config.options The options for how the find operation should work when returning documents.
    * @returns The documents from the MongoDB collection matching the filter criteria.
@@ -64,11 +64,15 @@ export default abstract class Store {
   }
 
   /**
-   * Edit a document from a MongoDB collection based off its "_id" field.
+   * Edit a document in a MongoDB collection.
    *
-   * @param doc The document to edit based off its "_id" field.
+   * @param config The configuration used to update the document.
+   * @param config.filter The filter used to scope the update document to.
+   * @param config.update The update operation to apply to the document.
+   * @param config.options The options to use when updating the document.
+   * @param config.verifyExistence Whether or not an Error should be thrown if no document updated.
    * @returns The updated document.
-   * @throws Error if the document does not exist.
+   * @throws Error if the document do not exist and verifyExistence is true.
    */
   protected static async update<T extends WithId<Document>>({
     filter,
@@ -111,7 +115,7 @@ export default abstract class Store {
   /**
    * Whether or not an Error is a MongoError (i.e. returned from the MongoDB driver).
    *
-   * @param {Object} config The configuration for determining if the Error is a MongoError.
+   * @param config The configuration for determining if the Error is a MongoError.
    * @param config.error The Error object to check.
    * @param config.code An optional error code to validate against. If supplied, will only return true if the code on the error matches the code expected.
    * @returns True if the Error is a MongoError, false otherwise.

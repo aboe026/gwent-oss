@@ -12,6 +12,9 @@ import LoadingSpinner from '../../components/LoadingSpinner'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../App'
 
+/**
+ * Allows user to Redraw units for a Game.
+ */
 export default function GameRedraw({
   coinTossVisible,
   game,
@@ -238,6 +241,9 @@ export default function GameRedraw({
   )
 }
 
+/**
+ * The coint toss animation to inform the user which player will go first in a Game.
+ */
 function renderCoinToss({
   setCoinTossVisible,
   winFlip,

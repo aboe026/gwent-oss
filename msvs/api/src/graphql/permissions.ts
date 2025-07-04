@@ -18,8 +18,14 @@ export default class Permissions {
   private static logger = getLogger('Permissions')
 
   /**
-   * Throws error if rule is not defined for Query/Mutation.
-   * Prevents a Query/Mutation without an explicit rule.
+   * Throws error if rule is not defined for Query/Mutation. Prevents a Query/Mutation without an explicit rule.
+   *
+   * @param parent The parent of the request being made.
+   * @param args The arguments supplied to the user for the request being made.
+   * @param ctx The context for the request being made.
+   * @param info Information about the request being made.
+   * @throws Error if no rule has been defined for the Query/Mutation.
+   * @returns true if a rule has been defined for the Query/Mutation, otherwise throw an Error.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
   private static fallback(parent: any, args: any, ctx: any, info: GraphQLResolveInfo) {
@@ -35,13 +41,20 @@ export default class Permissions {
 
   /**
    * Check if a user is authenticated (has logged in).
+   *
+   * @param parent The parent of the request being made.
+   * @param args The arguments supplied to the user for the request being made.
+   * @param ctx The context for the request being made.
+   * @param info Information about the request being made.
+   * @throws Error if user is not authenticated.
+   * @returns true if the user is authenticated, otherwise throw an Error.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  private static isAuthenticated(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
-    if (!context.session?.user?._id) {
+  private static isAuthenticated(parent: any, args: any, ctx: Context, info: GraphQLResolveInfo) {
+    if (!ctx.session?.user?._id) {
       Permissions.logger.warn(
         `isAuthenticated failed operation "${info.fieldName}": No user on session: "${JSON.stringify(
-          context.session?.user
+          ctx.session?.user
         )}"`
       )
       return Error(NOT_AUTHENTICATED_MESSAGE)
@@ -51,15 +64,22 @@ export default class Permissions {
 
   /**
    * Check if a user is apart of a Game.
+   *
+   * @param parent The parent of the request being made.
+   * @param args The arguments supplied to the user for the request being made.
+   * @param ctx The context for the request being made.
+   * @param info Information about the request being made.
+   * @throws Error if user is not a player on the game.
+   * @returns true if the user is a player on the game, otherwise throw an Error.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  private static async isPlayer(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
-    const userId = context.session?.user?._id
+  private static async isPlayer(parent: any, args: any, ctx: Context, info: GraphQLResolveInfo) {
+    const userId = ctx.session?.user?._id
     const gameId = args.game || args.id
     const logPrefix = `isPlayer check failed operation "${info.fieldName}":`
     if (!userId) {
       Permissions.logger.warn(
-        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context.session?.user)}"`
+        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(ctx.session?.user)}"`
       )
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
@@ -98,15 +118,22 @@ export default class Permissions {
 
   /**
    * Check if a user is the creator of a Deck.
+   *
+   * @param parent The parent of the request being made.
+   * @param args The arguments supplied to the user for the request being made.
+   * @param ctx The context for the request being made.
+   * @param info Information about the request being made.
+   * @throws Error if user does not own the Deck.
+   * @returns true if the user owns the deck, otherwise throw an Error.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
-  private static async ownsDeck(parent: any, args: any, context: Context, info: GraphQLResolveInfo) {
-    const userId = context.session?.user?._id
+  private static async ownsDeck(parent: any, args: any, ctx: Context, info: GraphQLResolveInfo) {
+    const userId = ctx.session?.user?._id
     const deckId = args.deck || args.id
     const logPrefix = `ownsDeck check failed operation "${info.fieldName}":`
     if (!userId) {
       Permissions.logger.warn(
-        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(context.session?.user)}"`
+        `${logPrefix} Could not extract user ID from context: "${JSON.stringify(ctx.session?.user)}"`
       )
       return Error(NOT_AUTHORIZED_MESSAGE)
     }
@@ -142,6 +169,13 @@ export default class Permissions {
 
   /**
    * Ensure no unwanted Errors make it back to the client. Only allow known PresentableErrors to be returned.
+   *
+   * @param err The uncaught error being thrown.
+   * @param parent The parent of the request throwing the error.
+   * @param args The arguments the user supplied to the request throwing the error.
+   * @param ctx The context of the request which threw the error.
+   * @param info The information related to the request which threw the error.
+   * @returns Error to present to the user who made the request.
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-explicit-any
   private static fallbackError(err: unknown, parent: object, args: object, ctx: any, info: GraphQLResolveInfo) {
@@ -154,6 +188,8 @@ export default class Permissions {
 
   /**
    * The GraphQL Shield configuration to apply to the GraphQL server to enforce permissions.
+   *
+   * @returns The field configuration used to enforce permissions.
    */
   static shield() {
     const fallbackRule = rule({ cache: false })(Permissions.fallback)

@@ -100,7 +100,7 @@ export default class PlayerRoundResolver {
    *
    * @param config The configuration used to resolve the PlayerRounds.
    * @param config.rounds The database objects to resolve to their GraphQL types.
-   * @param leaders An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
+   * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
    * @returns The resolved PlayerRound array matching the GraphQL schema definition.
    */
   static async fromArray({

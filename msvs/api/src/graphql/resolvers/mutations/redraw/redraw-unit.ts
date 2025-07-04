@@ -19,7 +19,7 @@ export default class RedrawUnit {
    * @param config.logPrefix What each log statement should be prefixed with to help identify output.
    * @param config.unitId The ID of the Unit to redraw, replacing it with a random unit from the discard pile.
    * @param config.userId The ID of the player on the game to redraw the unit for.
-   * @returns
+   * @returns The unit chosen to redraw as well as the random unit chosen to take its place in the players hand.
    */
   static redrawUnit({
     game,

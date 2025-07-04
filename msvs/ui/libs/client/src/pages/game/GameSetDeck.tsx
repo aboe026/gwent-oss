@@ -8,6 +8,9 @@ import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { SetDeckProps } from './GameProps'
 
+/**
+ * A dialog where a User can set the Deck they want to play with in a Game.
+ */
 export default function GameSetDeck({
   alreadySet,
   game,

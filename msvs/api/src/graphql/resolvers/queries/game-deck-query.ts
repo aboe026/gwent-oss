@@ -15,6 +15,7 @@ export default class GameDeckQuery {
   /**
    * Gets the GameDeck that has potentially been set for a Game.
    *
+   * @param args The arguments the user supplied to the query.
    * @param context The session containing the user getting the game deck.
    * @param info The information about the GraphQL request.
    * @returns The GameDeck that has potentially been set for a Game.

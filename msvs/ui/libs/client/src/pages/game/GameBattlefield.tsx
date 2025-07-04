@@ -6,6 +6,9 @@ import GameCombatRow from './GameCombatRow'
 import { HTML_CLASSES } from '@gwent/constants'
 import { useUserContext } from '../../App'
 
+/**
+ * The active battlefield of a Game.
+ */
 export default function GameBattlefield({
   fullUnits,
   game,

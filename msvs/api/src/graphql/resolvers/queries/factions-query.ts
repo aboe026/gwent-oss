@@ -16,6 +16,7 @@ export default class FactionsQuery {
   /**
    * Gets all Factions available.
    *
+   * @param args The arguments the user supplied to the query.
    * @param context The session containing the user getting the factions.
    * @param info The information about the GraphQL request.
    * @returns The Factions available.
