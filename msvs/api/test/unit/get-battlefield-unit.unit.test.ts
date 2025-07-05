@@ -1,6 +1,7 @@
+import { ObjectId } from 'mongodb'
+
 import { GameDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import getBattlefieldUnit from '../../src/graphql/resolvers/mutations/play-unit/get-battlefield-unit'
-import { ObjectId } from 'mongodb'
 import TestUtil from '../util/test-util'
 
 describe('get-battlefield-unit', () => {

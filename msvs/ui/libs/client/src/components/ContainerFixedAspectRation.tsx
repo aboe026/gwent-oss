@@ -4,7 +4,6 @@ import './ContainerFixedAspectRatio.css'
 /**
  * A Container with a fixed aspect ratio
  *
- * @returns The container with fixed aspect ratio
  */
 export default function ContainerFixedAspectRatio({ aspectRatio, width, children }: ContainerFixedAspectRatioProps) {
   return (

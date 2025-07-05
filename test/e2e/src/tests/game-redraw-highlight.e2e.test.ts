@@ -1,16 +1,16 @@
 import ApiClient from '../util/api-client'
-import { FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
+import { ContextGamePlayer, E2eHelper } from '../util/e2e-helper'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
+import { ensureUnitsInHand, redrawExactUnit } from '@gwent/test-utils'
+import env from '../util/e2e-env'
+import { FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
+import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
-import { ContextGamePlayer, E2eHelper } from '../util/e2e-helper'
 import { PlayerTurn } from '../components/game-player-info'
-import { ensureUnitsInHand, redrawExactUnit } from '@gwent/test-utils'
-import env from '../util/e2e-env'
 import RedrawUnits from '../components/redraw-units'
-import FullCard from '../components/full-card'
 
 interface GameRedrawHighlightTestCtx extends E2eCtx {
   scenario: string
