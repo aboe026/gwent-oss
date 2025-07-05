@@ -2,7 +2,7 @@
   "extends": [
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
-    "plugin:jsdoc/recommended-typescript"
+    "plugin:jsdoc/recommended-typescript-error"
   ],
   "ignorePatterns": [
     ".env",
@@ -94,6 +94,6 @@
   },
   "plugins": ["jsdoc"],
   "rules": {
-    "jsdoc/tag-lines": ["warn", "any", { "startLines": 1 }]
+    "jsdoc/tag-lines": ["error", "any", { "startLines": 1 }]
   }
 }
