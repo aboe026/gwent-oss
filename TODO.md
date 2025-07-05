@@ -34,7 +34,7 @@ Existing problems in the codebase that need to be fixed.
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
 - rename "redraw" mutation to "redrawUnit"? and "ready" to "readyGame"? Have mutation name convention by "verbNoun"?
-- do not store yarn binary in source
+- remove "renderXYZ" methods in favor of functional components always?
 - do not store yarn sdks in source?
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
 - stop subscription reconnect attempts if auth times out
@@ -80,8 +80,6 @@ Existing problems in the codebase that need to be fixed.
 ## Features
 
 New things that should be added to the codebase.
-
-- remove "renderXYZ" methods in favor of functional components always?
 
 - for "MoveUnit" type, have "reason" field
 
