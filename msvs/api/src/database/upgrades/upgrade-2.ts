@@ -486,7 +486,6 @@ export default class Upgrade2 extends Upgrade {
   }
 
   normalizeSpecial(unit: UnitJson): boolean {
-    // TODO: Verify in video game which units are "special"
     return (
       ["Commander's Horn", 'Decoy', 'Mardroeme', 'Scorch'].includes(unit.Name) ||
       [unit['Effect 1'], unit['Effect 2']].includes('Weather')
