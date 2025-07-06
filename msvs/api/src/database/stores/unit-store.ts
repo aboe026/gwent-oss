@@ -76,7 +76,7 @@ export default class UnitStore extends Store {
    *
    * @param options The optionst to scope Units to.
    * @param options.deckable Whether or not the Unit is allowed to be added to a Deck.
-   * @param options.factions The Faction ObjectIds to scope Units to.
+   * @param options.factionIds The Faction ObjectIds to scope Units to.
    * @param options.ids The ObjectIds to scope Units to.
    * @returns Units matching criteria.
    */

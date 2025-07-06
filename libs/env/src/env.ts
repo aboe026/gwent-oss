@@ -4,7 +4,7 @@ import { config } from 'dotenv'
 /**
  * Get environment variables while enforcing how values should be parsed.
  *
- * @param {Object} config Configuration for how the environment variables should be parsed.
+ * @param config Configuration for how the environment variables should be parsed.
  * @param config.dotEnvFilePath The path on the filesystem to check for an existing ".env" file containing key=value environment variable pairs. Defaults to ".env", can be overwritten with the "DOT_ENV_FILE_PATH" environment variable.
  * @param config.environment The environment variables to parse. Defaults to "process.env".
  * @param config.specs The specifications for what environment variables to parse and how they should be parsed.

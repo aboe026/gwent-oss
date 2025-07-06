@@ -1,5 +1,14 @@
 import { DeckUnit, GameDeckQuery } from '@gwent/graphql-schema/apollo-typings'
 
+/**
+ * Updates the Apollo cache for GameDeck when redraw made.
+ *
+ * @param config The configuration used to update the cache.
+ * @param config.previous The previous query to update.
+ * @param config.from The DeckUnit that was chosen to redraw for a new, random unit.
+ * @param config.to The DeckUnit that was randomly chosen to replace the from DeckUnit.
+ * @returns The updated GameDeck with redraw changes reflected.
+ */
 export default function updateGameDeckCacheOnRedraw({
   previous,
   from,

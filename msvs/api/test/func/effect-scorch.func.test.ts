@@ -11,16 +11,7 @@ import {
   setDeck,
   setOrder,
 } from './util/graphql-util'
-import {
-  Combat,
-  Deck,
-  FactionKey,
-  Game,
-  GamePlayer,
-  GameStatus,
-  MoveUnit,
-  User,
-} from '@gwent/graphql-schema/resolver-typings'
+import { Deck, FactionKey, Game, GamePlayer, GameStatus, MoveUnit, User } from '@gwent/graphql-schema/resolver-typings'
 import { ensureUnitsInHand } from '@gwent/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
@@ -86,7 +77,6 @@ describe('effect-scorch', () => {
                   moves: [
                     {
                       created: expect.any(Date),
-                      row: null,
                       unit: unitSelf1,
                     } as MoveUnit,
                   ],
@@ -187,7 +177,6 @@ describe('effect-scorch', () => {
                   moves: [
                     {
                       created: expect.any(Date),
-                      row: Combat.Close,
                       unit: unitOpponent1,
                     } as MoveUnit,
                   ],
@@ -219,7 +208,6 @@ describe('effect-scorch', () => {
           moves: [
             {
               created: expect.any(Date),
-              row: Combat.Close,
               unit: unitOpponent1,
             } as MoveUnit,
           ],
@@ -262,8 +250,17 @@ describe('effect-scorch', () => {
                   moves: [
                     {
                       created: expect.any(Date),
-                      row: null,
                       unit: unitSelf1,
+                      impacts: [
+                        {
+                          unit: {
+                            ...unitOpponent1,
+                            effectiveStrength: 5,
+                            effects: [],
+                          },
+                          user: opponent,
+                        },
+                      ],
                     } as MoveUnit,
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
@@ -340,7 +337,6 @@ describe('effect-scorch', () => {
           moves: [
             {
               created: expect.any(Date),
-              row: Combat.Close,
               unit: unitOpponent1,
             } as MoveUnit,
           ],
@@ -415,7 +411,6 @@ describe('effect-scorch', () => {
                   moves: [
                     {
                       created: expect.any(Date),
-                      row: null,
                       unit: unitSelf1,
                     } as MoveUnit,
                   ],

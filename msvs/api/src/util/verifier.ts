@@ -60,7 +60,7 @@ export default class Verifier {
    * @param config The configuration used to find the missing keys.
    * @param config.expectedKeys The keys which should comprise the array objects.
    * @param config.objects The array of objects to verify the keys of.
-   * @param field The field on the objects to check the expected keys against.
+   * @param config.field The field on the objects to check the expected keys against.
    * @returns The list of keys for which there is not an object in the array for.
    */
   private static getMissingKeys({
@@ -91,7 +91,7 @@ export default class Verifier {
    * @param config The configuration used to find the missing keys.
    * @param config.expectedKeys The keys which should comprise the array objects.
    * @param config.objects The array of objects to verify the keys of.
-   * @param field The field on the objects to check the expected keys against.
+   * @param config.field The field on the objects to check the expected keys against.
    * @returns The list of keys for which there is an unexpected object in the array for.
    */
   private static getExtraKeys({

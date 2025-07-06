@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.0 - 2025-07-05
+
+### Added
+
+- History and Impacts ([#37](https://github.com/aboe026/gwent/pull/37)) (Adam Boe)
+
 ## 0.12.2 - 2025-06-04
 
 ### Fixed

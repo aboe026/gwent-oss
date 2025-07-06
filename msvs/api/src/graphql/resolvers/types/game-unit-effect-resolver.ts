@@ -25,8 +25,10 @@ export default class GameUnitEffectResolver {
    * Converts a single GameUnit database object to a single GameUnit GraphQL object.
    *
    * @param config The configuration to use when resolving the GameUnit object.
-   * @param config.gameUnit The database object to resolve to its GraphQL type.
-   * @param config.unit An optional pre-resolved unit. If not specified, will retreive the Unit from the databae to resolve.
+   * @param config.gameUnitEffect The database object to resolve to its GraphQL type.
+   * @param config.unit The resolved Unit for the GameUnitEffect. If not provided, will be retrieved.
+   * @param config.effect The resolved Effect for the GameUnitEffect. If not provided, will be retrieved.
+   * @param config.leader The resolved Leader for the GameUnitEffect. If not provided, will be retrieved.
    * @returns The resolved GameUnit object matching its GraphQL schema definition.
    * @throws Error if the effect reason type is invalid.
    */
@@ -79,7 +81,7 @@ export default class GameUnitEffectResolver {
    * Converts an array of GameUnit database objects to an array of GameUnit GraphQL objects.
    *
    * @param config The configuration used to resolve the array of GameUnits.
-   * @param gameUnits The database objects to resolve to their GraphQL types.
+   * @param config.gameUnitEffects The database objects to resolve to their GraphQL types.
    * @returns The resolved GameUnit array matching the GraphQL schema definition.
    */
   static async fromArray({

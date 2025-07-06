@@ -139,4 +139,5 @@ button {
   border-radius: 10px;
   border-color: #e9a018;
   margin: -4px;
+  z-index: 1;
 }

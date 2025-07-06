@@ -219,9 +219,9 @@ export default class Api {
   /**
    * Set context of user on requests.
    *
-   * @param {Object} connection The connection being made.
-   * @param connection.req The incoming request.
-   * @param connection.res The outgoing response.
+   * @param config The configuration used to set the context.
+   * @param config.req The incoming request.
+   * @param config.res The outgoing response.
    * @returns An object to set as the context.
    */
   private static async setContext({ req, res }: { req: Request; res: Response }) {

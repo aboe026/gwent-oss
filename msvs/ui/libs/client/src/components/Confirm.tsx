@@ -8,7 +8,7 @@ import './Confirm.css'
 /**
  * A dialog asking a user if they really want to perform an action.
  *
- * @param {Object} config The configuration of the confirmation dialog.
+ * @param config The configuration of the confirmation dialog.
  * @param config.id The id to give the HTML form element.
  * @param config.cancelLabel The text the button which exits out of the confirmation without performing the action should have.
  * @param config.onClose A function the confirmation will call when closed by the user without perfomring the action.
@@ -19,6 +19,7 @@ import './Confirm.css'
  * @param config.loading Whether or not the confirmation is waiting on data from the confimation action.
  * @param config.message The text to present to the user explaining the confirmation implications.
  * @param config.open Whether or not the confirmation dialog should be shown to the user.
+ * @param config.title The Title the Confirmation dialog should show.
  * @returns A confirmation dialog for the user to accept or reject.
  */
 export default function Confirm({

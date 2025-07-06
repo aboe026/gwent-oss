@@ -109,8 +109,9 @@ export default class UpgradeStore extends Store {
   /**
    * Adds an upgrade attempt document to the database.
    *
-   * @param {Object} attempt The upgrade attempt to add.
-   * @param attempt.version The upgrade version the attempt is trying to run.
+   * @param config The configuration used to add the Attempt.
+   * @param config.version The upgrade version the attempt is trying to run.
+   * @param config.time The timestamp the attempt was made.
    * @returns The attempt database document.
    */
   static async addAttempt({ version, time }: { version: number; time: Date }): Promise<AttemptDbObject> {
@@ -147,10 +148,10 @@ export default class UpgradeStore extends Store {
   /**
    * Adds an upgrade document to the database.
    *
-   * @param upgrade The upgrade document to add.
-   * @param version The upgrade version the database was successfully upgraded to.
-   * @param start The time the upgrade was started.
-   * @param end The time the upgrade finished.
+   * @param config The configuration used to add the Upgrade.
+   * @param config.version The upgrade version the database was successfully upgraded to.
+   * @param config.start The time the upgrade was started.
+   * @param config.end The time the upgrade finished.
    * @returns The upgrade database document.
    */
   static async addUpgrade({

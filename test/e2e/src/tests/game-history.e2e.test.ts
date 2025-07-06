@@ -1,6 +1,7 @@
 import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
@@ -36,6 +37,7 @@ test('Selecting self unit when not turn in history highlights it and card on bat
     highlightedBattlefieldCard: {
       unitName,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -74,6 +76,7 @@ test('Selecting self unit when not turn on combat row highlights it and move in 
     highlightedBattlefieldCard: {
       unitName,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -119,6 +122,7 @@ test('Selecting self unit when turn in history highlights it and card on battlef
     highlightedBattlefieldCard: {
       unitName: unitName2,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -164,6 +168,7 @@ test('Selecting self unit when turn on combat row highlights it and move in hist
     highlightedBattlefieldCard: {
       unitName: unitName2,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -203,6 +208,7 @@ test('Selecting opponent unit when turn in history highlights it and card on bat
     highlightedBattlefieldCard: {
       unitName: unitName,
       row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -242,6 +248,7 @@ test('Selecting opponent unit when turn on combat row highlights it and move in 
     highlightedBattlefieldCard: {
       unitName: unitName,
       row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -287,6 +294,7 @@ test('Selecting opponent unit when not turn in history highlights it and card on
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -332,6 +340,7 @@ test('Selecting opponent unit when not turn on combat row highlights it and move
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.opponent.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -370,6 +379,7 @@ test('Select card from history and deselect from battlefield', async (t) => {
     highlightedBattlefieldCard: {
       unitName,
       row: Combat.Ranged,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectBattlefieldCard({
@@ -407,6 +417,7 @@ test('Select card from battlefield and deselect from history', async (t) => {
     highlightedBattlefieldCard: {
       unitName,
       row: Combat.Siege,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.selectHistoryUnit({
@@ -457,6 +468,7 @@ test('Select card from history deselects card selected in hand', async (t) => {
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
 })
@@ -499,6 +511,7 @@ test('Select card from battlefield deselects card selected in hand', async (t) =
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
 })
@@ -533,10 +546,6 @@ test('Selecting history unit that is no longer on battlefield is dotted', async 
       row: Combat.Close,
       dotted: true,
     },
-    highlightedBattlefieldCard: {
-      unitName,
-      row: Combat.Close,
-    },
   })
   await GamePage.selectHistoryUnit({
     playerName: gameManager.self.gamePlayer.name,
@@ -545,6 +554,77 @@ test('Selecting history unit that is no longer on battlefield is dotted', async 
     round: 1,
   })
   await gameManager.verify({})
+})
+
+test('FullUnit for move preserves effects in time', async (t) => {
+  const unitName1 = 'Olgierd Von Everec'
+  const unitName2 = 'Toruviel'
+  const unitName3 = 'Milva'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName2, unitName3],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged, moraling: [] })
+  await gameManager.pass({})
+  const deckUnit1 = await gameManager.deploy({
+    unitName: unitName2,
+    moraling: [
+      {
+        effectiveStrength: 3,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+    impacts: -1,
+  })
+  await gameManager.deploy({
+    unitName: unitName3,
+    combat: Combat.Ranged,
+    moraling: [
+      {
+        effectiveStrength: 7,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+      {
+        effectiveStrength: 4,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+      {
+        effectiveStrength: 11,
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+    impacts: 2,
+  })
+  await gameManager.initialize({})
+
+  await GamePage.selectHistoryMoveImage({
+    unitName: unitName2,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: '+1',
+        strength: 3,
+        reason: `Morale from ${unitName1}`,
+      },
+    ],
+  })
 })
 
 test('Selecting combat card whose history entry is offscreen scrolls it into view', async (t) => {
@@ -603,6 +683,7 @@ test('Selecting combat card whose history entry is offscreen scrolls it into vie
     highlightedBattlefieldCard: {
       unitName: unitName1,
       row: Combat.Close,
+      userName: gameManager.self.gamePlayer.name,
     },
   })
   await GamePage.verifyHistoryUnitInViewport({

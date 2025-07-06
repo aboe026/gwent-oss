@@ -2,6 +2,7 @@ import { GameStatus } from '@gwent/graphql-schema/resolver-typings'
 
 /**
  * Convert a GameStatus enum to a human readable string.
+ *
  * @param status The GameStatus enum to convert to a human readable string.
  * @returns The human redeable representation of the GameStatus enum.
  */

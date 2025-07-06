@@ -1,6 +1,6 @@
 {
   "name": "@gwent/core",
-  "version": "0.12.2",
+  "version": "0.13.0",
   "author": "Adam Boe",
   "description": "A recreation of the card game Gwent from The Witcher 3: Wild Hunt",
   "scripts": {
@@ -52,6 +52,7 @@
     "cross-env": "7.0.3",
     "eslint": "8.57.1",
     "eslint-config-prettier": "10.1.5",
+    "eslint-plugin-jsdoc": "51.3.3",
     "eslint-plugin-prettier": "4.2.1",
     "fs-extra": "11.3.0",
     "jest": "29.7.0",

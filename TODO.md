@@ -21,6 +21,7 @@ Existing problems in the codebase that need to be fixed.
   - search for better pics
   - use AI upscaler?
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
+- rename "undrawn" to "draw" (since its the draw pile?)
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)
@@ -33,7 +34,7 @@ Existing problems in the codebase that need to be fixed.
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
 - rename "redraw" mutation to "redrawUnit"? and "ready" to "readyGame"? Have mutation name convention by "verbNoun"?
-- do not store yarn binary in source
+- remove "renderXYZ" methods in favor of functional components always?
 - do not store yarn sdks in source?
 - figure out why "deck-resolver fromArray" unit tests sometimes fail on units created dates off by a millisecond
 - stop subscription reconnect attempts if auth times out
@@ -80,9 +81,37 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- for "Move" type, have "impact" field
-  - cards removed/added
-  - effects applied to other cards
+- for "MoveUnit" type, have "reason" field
+
+  ```
+  enum MoveType {
+    "Deployment by a game player to the battlefield."
+    DEPLOY
+    "Mustered when matching Muster unit added to battlefield."
+    MUSTER
+    "Revived after Medic added to battlefield."
+    REVIVE
+    "Summoned when matching Avenger unit removed from battlefield."
+    SUMMON
+    "Transformed when Mardroeme unit added to battlefield row."
+    TRANSFORM
+  }
+
+  type MoveUnitReason @entity {
+    type: MoveType! @column
+    unit: DeckUnit! @column(overrideType: "DeckUnitDbObject")
+  }
+  ```
+
+- Medic
+  - How to handle brought back for HistoryMove/Impact? unique per created?
+- Avenger
+  - How to handle duplicates on battlefield? Use "created" field as differentiator?
+- Better game summarization (graphs?)
+  - points per round
+  - time per round
+  - efficiency per round?
+- Add link to GitHub repo in about page
 - Limit user creation
   - activation code?
   - manual review?
@@ -90,6 +119,11 @@ New things that should be added to the codebase.
 - Animations of cards entering battlefield?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
+- game history improvements
+  - search bar (unit name?)
+  - expand/collapse all
+  - filter by entrance type
+  - filter by player
 - games list improvements
   - progress bar for game status
   - highlight games waiting on you?

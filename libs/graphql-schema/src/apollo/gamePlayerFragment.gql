@@ -28,13 +28,16 @@ fragment GamePlayerFragment on GamePlayer {
       }
       ... on MoveUnit {
         created
-        row
         unit {
-          artStyle
+          ...GameUnitFragment
+        }
+        impacts {
           unit {
-            name
+            ...GameUnitFragment
+          }
+          user {
             id
-            images
+            name
           }
         }
       }

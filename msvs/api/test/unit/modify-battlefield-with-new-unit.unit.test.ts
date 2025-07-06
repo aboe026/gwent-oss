@@ -1,12 +1,52 @@
+import { ObjectId } from 'mongodb'
+
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
-import { DeckUnitDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckUnitDbObject, GameDbObject, ImpactDbObject } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
-import modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
+import modifyBattlefieldWithNewUnit, {
+  addNewUnitToBattlefield,
+} from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
 import ScorchBattlefield from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
 import TestUtil from '../util/test-util'
 
 describe('modify-battlefield-with-new-unit', () => {
   describe('modifyBattlefieldWithNewUnit', () => {
+    it('returns undefined if not scorch impacts', () => {
+      testModifyBattlefieldWithNewUnit({
+        scorchImpacts: [],
+        expected: undefined,
+      })
+    })
+    it('returns single impact if single scorch impact', () => {
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      testModifyBattlefieldWithNewUnit({
+        scorchImpacts: impacts,
+        expected: impacts,
+      })
+    })
+    it('returns multiple impacts if multiple scorch impacts', () => {
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      testModifyBattlefieldWithNewUnit({
+        scorchImpacts: impacts,
+        expected: impacts,
+      })
+    })
+  })
+  describe('addNewUnitToBattlefield', () => {
     describe('close combat', () => {
       const combat = Combat.Close
       describe('only unit', () => {
@@ -54,12 +94,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -110,12 +145,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -176,12 +206,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -240,12 +265,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -299,12 +319,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -356,12 +371,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -417,12 +427,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -473,12 +478,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -539,12 +539,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -603,12 +598,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -662,12 +652,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -719,12 +704,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -780,12 +760,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -836,12 +811,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -902,12 +872,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -966,12 +931,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -1025,12 +985,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -1082,12 +1037,7 @@ describe('modify-battlefield-with-new-unit', () => {
             ],
           }
 
-          testModifyBattlefieldWithNewUnit({
-            battlefieldUnits: self.deck.hand.map((handUnit) =>
-              TestUtil.getDbUnit({
-                id: handUnit.unit,
-              })
-            ),
+          testAddNewUnitToBattlefield({
             combat,
             game,
             newDeckUnit,
@@ -1100,34 +1050,32 @@ describe('modify-battlefield-with-new-unit', () => {
 })
 
 function testModifyBattlefieldWithNewUnit({
-  combat,
-  battlefieldUnits,
-  newDeckUnit,
-  game,
+  scorchImpacts = [],
   expected,
 }: {
-  combat: Combat
-  battlefieldUnits: UnitDbObject[]
-  newDeckUnit: DeckUnitDbObject
-  game: GameDbObject
-  expected: GameDbObject
+  scorchImpacts?: ImpactDbObject[]
+  expected: ImpactDbObject[] | undefined
 }) {
-  const logPrefix = 'log-prefix'
+  const battlefieldUnits = [TestUtil.getDbUnit({})]
+  const combat = Combat.Close
   const effects = [TestUtil.getDbEffect({})]
-  const scorchBattlefieldSpy = jest.spyOn(ScorchBattlefield, 'scorchBattlefield').mockImplementation()
+  const game = TestUtil.getDbGame({})
+  const logPrefix = 'log-prefix'
+  const newDeckUnit = TestUtil.getDbDeckUnit({})
+
+  const scorchBattlefieldSpy = jest.spyOn(ScorchBattlefield, 'scorchBattlefield').mockReturnValue(scorchImpacts)
 
   expect(
     modifyBattlefieldWithNewUnit({
       battlefieldUnits,
-      combat,
       effects,
       game,
       logPrefix,
       newDeckUnit,
+      combat,
     })
-  ).toEqual(undefined)
+  ).toEqual(expected)
 
-  expect(game).toEqual(expected)
   expect(scorchBattlefieldSpy.mock.calls).toEqual([
     [
       {
@@ -1139,4 +1087,26 @@ function testModifyBattlefieldWithNewUnit({
       },
     ],
   ])
+}
+
+function testAddNewUnitToBattlefield({
+  combat,
+  newDeckUnit,
+  game,
+  expected,
+}: {
+  combat: Combat
+  newDeckUnit: DeckUnitDbObject
+  game: GameDbObject
+  expected: GameDbObject
+}) {
+  expect(
+    addNewUnitToBattlefield({
+      combat,
+      game,
+      newDeckUnit,
+    })
+  ).toEqual(undefined)
+
+  expect(game).toEqual(expected)
 }

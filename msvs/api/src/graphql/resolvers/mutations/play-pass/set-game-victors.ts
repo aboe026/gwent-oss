@@ -14,7 +14,7 @@ export default class SetGameVictors {
    *
    * @param config The configuration used to set the victors on the game.
    * @param config.game The game to set the victors for.
-   * @param logPrefix What to prefix log statements with to help identify log output.
+   * @param config.logPrefix What to prefix log statements with to help identify log output.
    */
   static setGameVictors({ game, logPrefix }: { game: GameDbObject; logPrefix: string }) {
     let highestWins = 0

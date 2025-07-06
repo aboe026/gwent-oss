@@ -6,7 +6,7 @@ import UnitStore from '../../../../database/stores/unit-store'
  *
  * @param config The configuration used to get the Units.
  * @param config.game The game whose currently deployed battlefield units on the current round should be retreived.
- * @param confing.unitBeingPlayed The current unit being played and for which the database object has already been retreived, making it unnecessary to retreive it again.
+ * @param config.unitBeingPlayed The current unit being played and for which the database object has already been retreived, making it unnecessary to retreive it again.
  * @returns An array of all database Units on the battlefield in the current round of the game, including the unitBeingPlayed.
  */
 export default async function getRoundUnits({

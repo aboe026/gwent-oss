@@ -1,8 +1,11 @@
+import { ObjectId } from 'mongodb'
+
 import * as addMoveToCurrentPlayer from '../../src/graphql/resolvers/mutations/util/add-move-to-current-player'
 import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameDeckDbObject, ImpactDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
+import * as getBattlefieldUnit from '../../src/graphql/resolvers/mutations/play-unit/get-battlefield-unit'
 import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
 import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
 import * as modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
@@ -60,6 +63,56 @@ describe('play-unit-implementation', () => {
       expectedGameDeck: player.deck,
     })
   })
+  it('passes battlefield modification impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      battlefieldImpacts: impacts,
+      expectedGameDeck: player.deck,
+    })
+  })
+  it('passes strength impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      strengthImpacts: impacts,
+      expectedGameDeck: player.deck,
+    })
+  })
   it('logs to trace if enabled', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
@@ -85,6 +138,8 @@ async function testPlayUnitImplementation({
   game,
   updatedGame,
   logPrefix,
+  battlefieldImpacts,
+  strengthImpacts,
   error,
   expectedGameDeck,
   errorCalls = [],
@@ -93,6 +148,8 @@ async function testPlayUnitImplementation({
   game: GameDbObject
   updatedGame?: GameDbObject
   logPrefix: string
+  battlefieldImpacts?: ImpactDbObject[] | undefined
+  strengthImpacts?: ImpactDbObject[] | undefined
   error?: Error
   expectedGameDeck?: GameDeckDbObject
   errorCalls?: string[][]
@@ -109,15 +166,22 @@ async function testPlayUnitImplementation({
     }),
   ]
   const effects = [TestUtil.getDbEffect({})]
+  const gameUnit = TestUtil.getDbGameUnit({
+    id: deckUnit.unit,
+    row: combat,
+  })
   const created = new Date()
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => created)
   const getRoundUnitsSpy = jest.spyOn(getRoundUnits, 'default').mockResolvedValue(units)
   const getUnitEffectsSpy = jest.spyOn(getUnitEffects, 'default').mockResolvedValue(effects)
-  const modifyBattlefieldWithNewUnitSpy = jest.spyOn(modifyBattlefieldWithNewUnit, 'default').mockImplementation()
+  const modifyBattlefieldWithNewUnitSpy = jest
+    .spyOn(modifyBattlefieldWithNewUnit, 'default')
+    .mockReturnValue(battlefieldImpacts)
   const calculateEffectiveStrengthsSpy = jest
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
-    .mockImplementation()
+    .mockReturnValue(strengthImpacts)
   const setGameScoresSpy = jest.spyOn(setGameScores, 'default').mockImplementation()
+  const getBattlefieldUnitSpy = jest.spyOn(getBattlefieldUnit, 'default').mockReturnValue(gameUnit)
   const addMoveToCurrentPlayerSpy = jest.spyOn(addMoveToCurrentPlayer, 'default').mockImplementation()
   const setNextTurnForCurrentRoundSpy = jest
     .spyOn(SetNextTurnForCurrentRound, 'setNextTurnForCurrentRound')
@@ -175,21 +239,28 @@ async function testPlayUnitImplementation({
         units: [unit, ...units],
         effects: effects,
         logPrefix,
+        newDeckUnit: deckUnit,
       },
     ],
   ])
   expect(setGameScoresSpy.mock.calls).toEqual([[game]])
+  expect(getBattlefieldUnitSpy.mock.calls).toEqual([
+    [
+      {
+        game,
+        unitId: deckUnit.unit,
+        userId: game.turn?.toString(),
+      },
+    ],
+  ])
   expect(addMoveToCurrentPlayerSpy.mock.calls).toEqual([
     [
       {
         game,
         move: {
           created,
-          row: combat,
-          unit: {
-            artStyle: deckUnit.artStyle,
-            unit: deckUnit.unit,
-          },
+          unit: gameUnit,
+          impacts: battlefieldImpacts || strengthImpacts,
           type: MoveType.Unit,
         },
       },

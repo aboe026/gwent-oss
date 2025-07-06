@@ -4,6 +4,7 @@ import addMoveToCurrentPlayer from '../util/add-move-to-current-player'
 import CalculateGameEffectiveStrengths from './calculate-game-effective-strengths'
 import { GameDbObject, GameDeckDbObject, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
+import getBattlefieldUnit from './get-battlefield-unit'
 import getRoundUnits from './get-round-units'
 import getUnitEffects from './get-unit-effects'
 import modifyBattlefieldWithNewUnit from './modify-battlefield-with-new-unit'
@@ -46,7 +47,7 @@ export default class PlayUnitImplementation {
     })
     const unitEffects = await getUnitEffects(roundUnits)
 
-    modifyBattlefieldWithNewUnit({
+    const modificationImpacts = modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
       combat,
       effects: unitEffects,
@@ -55,26 +56,36 @@ export default class PlayUnitImplementation {
       newDeckUnit: deckUnit,
     })
 
-    CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+    const strengthImpacts = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits],
       effects: unitEffects,
       logPrefix,
+      newDeckUnit: deckUnit,
     })
 
     setGameScores(game)
 
+    const gameUnit = getBattlefieldUnit({
+      game,
+      unitId: deckUnit.unit,
+      userId: playerId,
+    })
+    const move: MoveUnitDbObject = {
+      created: new Date(),
+      unit: {
+        artStyle: deckUnit.artStyle,
+        unit: deckUnit.unit,
+        effectiveStrength: gameUnit?.effectiveStrength,
+        effects: gameUnit?.effects,
+        row: combat,
+      },
+      impacts: modificationImpacts || strengthImpacts,
+      type: MoveType.Unit,
+    }
     addMoveToCurrentPlayer({
       game,
-      move: {
-        created: new Date(),
-        row: combat,
-        unit: {
-          artStyle: deckUnit.artStyle,
-          unit: deckUnit.unit,
-        },
-        type: MoveType.Unit,
-      } as MoveUnitDbObject,
+      move,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

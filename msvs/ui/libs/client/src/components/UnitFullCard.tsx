@@ -1,7 +1,7 @@
 import { CgChevronLeft, CgChevronRight } from 'react-icons/cg'
 
 import CloseButton from './CloseButton'
-import { DeckUnit, EffectKey, FactionKey, GameUnitEffect } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, EffectKey, FactionKey, GameUnit, GameUnitEffect } from '@gwent/graphql-schema/resolver-typings'
 import { getCombatImage, getWeatherImage, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
 import { Key, useKeyDown } from '../util/keyboard-listener'
@@ -26,6 +26,7 @@ export default function UnitFullCard({
   onNext,
   onPrevious,
   onSelect,
+  userName,
 }: UnitFullCardProps) {
   useKeyDown([
     {
@@ -93,6 +94,7 @@ export default function UnitFullCard({
                   onClick={() => onSelect(fullUnit)}
                 />
                 <div id="unitFullCardInfo">
+                  {userName && <div id={HTML_IDS.UnitFullCardUsername}>{userName}</div>}
                   <div id="unitFullCardUpper">
                     <span id={HTML_IDS.UnitFullCardName}>{fullUnit.unit.name}</span>
                     <span id={HTML_IDS.UnitFullCardQuote}>{fullUnit.unit.quote}</span>
@@ -118,6 +120,7 @@ export default function UnitFullCard({
                             effectiveStrength={effectiveStrength}
                             size="50px"
                             ignoreHero={true}
+                            effectHighlight={true}
                           />
                           <span id={HTML_IDS.UnitFullCardStrength}>{`Provides a strength of ${
                             effectiveStrength || fullUnit.unit.strength
@@ -297,13 +300,14 @@ export default function UnitFullCard({
 interface UnitFullCardProps {
   effectiveStrength?: number | null
   effects?: GameUnitEffect[] | null
-  fullUnit: DeckUnit | undefined
+  fullUnit: DeckUnit | GameUnit | undefined
   hasNext: boolean
   hasPrevious: boolean
-  onArtDecrement?: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onArtIncrement?: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClose: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onNext: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onPrevious: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onSelect: (unit: DeckUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onArtDecrement?: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onArtIncrement?: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onNext: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onPrevious: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSelect: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  userName?: string
 }

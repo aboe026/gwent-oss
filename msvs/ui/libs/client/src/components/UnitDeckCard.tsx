@@ -19,6 +19,9 @@ export default function UnitDeckCard({
   setSelectedUnits,
   setUnits,
 }: UnitDeckCardProps) {
+  /**
+   * When a User selects a Unit, toggles between available and selected.
+   */
   function selectUnit(event: React.MouseEvent<HTMLImageElement>) {
     event.preventDefault()
 
@@ -32,6 +35,9 @@ export default function UnitDeckCard({
       })
     }
   }
+  /**
+   * Changes alternative artwork. 1-based indexing
+   */
   function changeArtStyle(change: number) {
     setUnits((previous: DeckUnit[]) =>
       previous.map((newCard) => {
@@ -42,6 +48,9 @@ export default function UnitDeckCard({
       })
     )
   }
+  /**
+   * Changes alternative artwork to next one if available.
+   */
   function incrementArtStyle(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
@@ -50,6 +59,9 @@ export default function UnitDeckCard({
       changeArtStyle(1)
     }
   }
+  /**
+   * Changes alternative artwork to previous one if available.
+   */
   function decrementArtStyle(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
@@ -58,11 +70,17 @@ export default function UnitDeckCard({
       changeArtStyle(-1)
     }
   }
+  /**
+   * Opens a Units FullCard dialog with detailed information about the Unit.
+   */
   function openFullscreen(event: React.MouseEvent<SVGElement>) {
     event.preventDefault()
     event.stopPropagation()
     setFullUnit(deckUnit)
   }
+  /**
+   * When a unit name is selected, stop propogation so card isn't selected. Allows for user to highlight and copy name.
+   */
   function nameSelect(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()

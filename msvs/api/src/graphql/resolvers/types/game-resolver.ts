@@ -21,7 +21,7 @@ export default class GameResolver {
    * @param config The configuration used to convert the Game.
    * @param config.creator The resolved User who created the Game. If not provided, will be retrieved.
    * @param config.game The Game to convert.
-   * @param config.user The resolved Users for the players on the Game. If not provided, will be retrieved.
+   * @param config.users The resolved Users for the players on the Game. If not provided, will be retrieved.
    * @returns The resolved Game object matching its GraphQL schema definition.
    */
   static async fromObject({

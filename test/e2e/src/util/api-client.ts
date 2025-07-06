@@ -424,6 +424,41 @@ export default class ApiClient {
     `
   }
 
+  private fieldsOnGameUnit(): string {
+    return gql`
+      artStyle
+      effectiveStrength
+      effects {
+        ${this.fieldsOnGameEffect()}
+      }
+      unit {
+        ${this.fieldsOnUnit()}
+      }
+    `
+  }
+
+  private fieldsOnGameEffect(): string {
+    return gql`
+      operator
+      reason {
+        ... on EffectFromUnit {
+          effect {
+            ${this.fieldsOnEffect()}
+          }
+          unit {
+            ${this.fieldsOnUnit()}
+          }
+        }
+        ... on EffectFromLeader {
+          leader {
+            ${this.fieldsOnLeader()}
+          }
+        }
+      }
+      total
+    `
+  }
+
   private fieldsOnDlc(): string {
     return gql`
       created
@@ -536,9 +571,8 @@ export default class ApiClient {
       }
       ... on MoveUnit {
         created
-        row
         unit {
-          ${this.fieldsOnDeckUnit()}
+          ${this.fieldsOnGameUnit()}
         }
       }
     `
@@ -548,11 +582,7 @@ export default class ApiClient {
     return gql`
       score
       units {
-        artStyle
-        effectiveStrength
-        unit {
-          ${this.fieldsOnUnit()}
-        }
+        ${this.fieldsOnGameUnit()}
       }
     `
   }

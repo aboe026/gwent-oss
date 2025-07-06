@@ -2,6 +2,7 @@
  * Sleep/wait/pause execution for a specified number of seconds.
  *
  * @param seconds The number of seconds to wait.
+ * @returns Nothing once the specified amount of time has ellapsed.
  */
 export default async function sleep(seconds: number): Promise<void> {
   return new Promise((resolve) => {

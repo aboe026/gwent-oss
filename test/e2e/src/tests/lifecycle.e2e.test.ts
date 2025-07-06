@@ -718,8 +718,12 @@ test('Scenic Route', async (t) => {
     hand: redraw1GameDeck2.hand,
     redraws: [
       {
-        from: redraw1,
-        to: redraw1GameDeck2.redraws[0].to.unit.name,
+        from: {
+          unitName: redraw1,
+        },
+        to: {
+          unitName: redraw1GameDeck2.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -732,12 +736,20 @@ test('Scenic Route', async (t) => {
     hand: redraw2GameDeck2.hand,
     redraws: [
       {
-        from: redraw1,
-        to: redraw1GameDeck2.redraws[0].to.unit.name,
+        from: {
+          unitName: redraw1,
+        },
+        to: {
+          unitName: redraw1GameDeck2.redraws[0].to.unit.name,
+        },
       },
       {
-        from: redraw2,
-        to: redraw2GameDeck2.redraws[1].to.unit.name,
+        from: {
+          unitName: redraw2,
+        },
+        to: {
+          unitName: redraw2GameDeck2.redraws[1].to.unit.name,
+        },
       },
     ],
   })
@@ -749,12 +761,20 @@ test('Scenic Route', async (t) => {
     hand: redraw2GameDeck2.hand,
     redraws: [
       {
-        from: redraw1,
-        to: redraw1GameDeck2.redraws[0].to.unit.name,
+        from: {
+          unitName: redraw1,
+        },
+        to: {
+          unitName: redraw1GameDeck2.redraws[0].to.unit.name,
+        },
       },
       {
-        from: redraw2,
-        to: redraw2GameDeck2.redraws[1].to.unit.name,
+        from: {
+          unitName: redraw2,
+        },
+        to: {
+          unitName: redraw2GameDeck2.redraws[1].to.unit.name,
+        },
       },
     ],
   })
@@ -797,8 +817,12 @@ test('Scenic Route', async (t) => {
     hand: redraw3GameDeck1.hand,
     redraws: [
       {
-        from: redraw3,
-        to: redraw3GameDeck1.redraws[0].to.unit.name,
+        from: {
+          unitName: redraw3,
+        },
+        to: {
+          unitName: redraw3GameDeck1.redraws[0].to.unit.name,
+        },
       },
     ],
   })
@@ -811,12 +835,20 @@ test('Scenic Route', async (t) => {
     hand: redraw4GameDeck1.hand,
     redraws: [
       {
-        from: redraw3,
-        to: redraw3GameDeck1.redraws[0].to.unit.name,
+        from: {
+          unitName: redraw3,
+        },
+        to: {
+          unitName: redraw3GameDeck1.redraws[0].to.unit.name,
+        },
       },
       {
-        from: redraw4,
-        to: redraw4GameDeck1.redraws[1].to.unit.name,
+        from: {
+          unitName: redraw4,
+        },
+        to: {
+          unitName: redraw4GameDeck1.redraws[1].to.unit.name,
+        },
       },
     ],
   })

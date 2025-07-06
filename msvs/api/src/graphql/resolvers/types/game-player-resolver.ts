@@ -16,11 +16,11 @@ export default class GamePlayerResolver {
    * Converts a single GamePlayer database object to a single GamePlayer GraphQL object.
    *
    * @param config The configuration used to convert the GamePlayer.
-   * @param config.everyoneReady Whether or not every player on the game is marked as Ready. If not, do not return details about the GamePlayer that would provide competetive advantage to other players.
    * @param config.faction The resolved Faction for the GamePlayer. If not provided, will be retrieved.
    * @param config.leader The resolved Leader for the GamePlayer. If not provided, will be retrieved.
    * @param config.player The GamePlayer to convert.
    * @param config.user The resolved User for the GamePlayer. If not provided, will be retrieved.
+   * @param config.gameStatus The current status of the Game.
    * @returns The resolved GamePlayer object matching its GraphQL schema definition.
    */
   static async fromObject({
@@ -73,9 +73,9 @@ export default class GamePlayerResolver {
    * Converts an array of GamePlayer database objects to an array of GamePlayer GraphQL objects.
    *
    * @param config The configuration used to convert the array.
-   * @param config.everyoneReady Whether or not every player on the game is marked as Ready. If not, do not return details about the GamePlayers that would provide competetive advantage to other players.
    * @param config.players The array of GamePlayer database objects to convert.
-   * @param config.user The resolved Users for the GamePlayers. If not provided, will be retrieved.
+   * @param config.users The resolved Users for the GamePlayers. If not provided, will be retrieved.
+   * @param config.gameStatus The current status of the Game.
    * @returns The resolved Deck array matching the GraphQL schema definition.
    */
   static async fromArray({

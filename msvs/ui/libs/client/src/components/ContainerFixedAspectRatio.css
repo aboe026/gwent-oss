@@ -1,0 +1,9 @@
+.container-fixed-aspect-ratio-outer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.container-fixed-aspect-ratio-inner {
+  width: 100%;
+}

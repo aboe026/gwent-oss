@@ -15,6 +15,7 @@ export default class GameQuery {
   /**
    * Gets a specific Game by ID.
    *
+   * @param args The arguments the user supplied to the query.
    * @param context The session containing the user getting the game.
    * @param info The information about the GraphQL request.
    * @returns The Game with the given ID.

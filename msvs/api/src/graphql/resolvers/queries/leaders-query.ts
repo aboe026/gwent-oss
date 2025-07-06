@@ -18,6 +18,7 @@ export default class LeadersQuery {
   /**
    * Gets Leaders available to build Decks with.
    *
+   * @param args The arguments the user supplied to the query.
    * @param context The session containing the user getting the leaders.
    * @param info The information about the GraphQL request.
    * @returns The Leaders available to build Decks with.

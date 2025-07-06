@@ -19,7 +19,7 @@ export default class SetGameDeck {
    * @param config.game The game to set the deck on.
    * @param config.userId The ID of the player on the game to set the deck for.
    * @param config.deck The Deck that should be set for the player on the game.
-   * @param logPrefix What to prefix log statements with to help identify log output.
+   * @param config.logPrefix What to prefix log statements with to help identify log output.
    */
   static setGameDeck({
     game,

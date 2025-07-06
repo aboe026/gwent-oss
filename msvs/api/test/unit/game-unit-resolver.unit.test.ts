@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
+import { Combat, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { GameUnit, Unit } from '@gwent/graphql-schema/resolver-typings'
-import { GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
@@ -28,14 +28,44 @@ describe('game-unit-resolver', () => {
         },
       })
     })
+    it('row used if gameUnit row is Close', async () => {
+      await testFromObject({
+        gameUnit: {
+          artStyle: 1,
+          effectiveStrength: 2,
+          unit: new ObjectId(),
+          row: Combat.Close,
+        },
+      })
+    })
+    it('row used if gameUnit row is Ranged', async () => {
+      await testFromObject({
+        gameUnit: {
+          artStyle: 1,
+          effectiveStrength: 2,
+          unit: new ObjectId(),
+          row: Combat.Ranged,
+        },
+      })
+    })
+    it('row used if gameUnit row is Siege', async () => {
+      await testFromObject({
+        gameUnit: {
+          artStyle: 1,
+          effectiveStrength: 2,
+          unit: new ObjectId(),
+          row: Combat.Siege,
+        },
+      })
+    })
   })
   describe('fromArray', () => {
-    it('does not call to UnitResolver or fromObject if empty gameUnits', async () => {
+    it('does not call to anything if empty gameUnits', async () => {
       await testFromArray({
         gameUnits: [],
       })
     })
-    it('calls to UnitResolver and fromObject if gameUnits not empty', async () => {
+    it('calls to UnitResolver if no units provided', async () => {
       const unit1 = TestUtil.getUnit({})
       const unit2 = TestUtil.getUnit({})
       await testFromArray({
@@ -54,6 +84,25 @@ describe('game-unit-resolver', () => {
         resolvedUnits: [unit1, unit2],
       })
     })
+    it('does not call to UnitResolver if units provided', async () => {
+      const unit1 = TestUtil.getUnit({})
+      const unit2 = TestUtil.getUnit({})
+      await testFromArray({
+        gameUnits: [
+          {
+            artStyle: 1,
+            effectiveStrength: 2,
+            unit: new ObjectId(unit1.id),
+          },
+          {
+            artStyle: 3,
+            effectiveStrength: 4,
+            unit: new ObjectId(unit2.id),
+          },
+        ],
+        units: [unit1, unit2],
+      })
+    })
   })
 })
 
@@ -70,6 +119,7 @@ async function testFromObject({ gameUnit, unit }: { gameUnit: GameUnitDbObject; 
     effectiveStrength: gameUnit.effectiveStrength,
     effects: [],
     unit: resolvedUnit,
+    row: gameUnit.row ? (gameUnit.row as Combat) : undefined,
   }
   await expect(
     GameUnitResolver.fromObject({
@@ -91,7 +141,15 @@ async function testFromObject({ gameUnit, unit }: { gameUnit: GameUnitDbObject; 
   )
 }
 
-async function testFromArray({ gameUnits, resolvedUnits }: { gameUnits: GameUnitDbObject[]; resolvedUnits?: Unit[] }) {
+async function testFromArray({
+  gameUnits,
+  units,
+  resolvedUnits,
+}: {
+  gameUnits: GameUnitDbObject[]
+  units?: Unit[]
+  resolvedUnits?: Unit[]
+}) {
   const unitFromIdsSpy = jest.spyOn(UnitResolver, 'fromIds')
   if (resolvedUnits) {
     unitFromIdsSpy.mockResolvedValue(resolvedUnits)
@@ -102,7 +160,7 @@ async function testFromArray({ gameUnits, resolvedUnits }: { gameUnits: GameUnit
     const resolvedGameUnit: GameUnit = {
       artStyle: gameUnit.artStyle,
       effectiveStrength: gameUnit.effectiveStrength,
-      unit: (resolvedUnits || [])[index],
+      unit: (units || resolvedUnits || [])[index],
     }
     fromObjectSpy.mockResolvedValueOnce(resolvedGameUnit)
     expected.push(resolvedGameUnit)
@@ -111,11 +169,12 @@ async function testFromArray({ gameUnits, resolvedUnits }: { gameUnits: GameUnit
   await expect(
     GameUnitResolver.fromArray({
       gameUnits,
+      units,
     })
   ).resolves.toEqual(expected)
 
   expect(unitFromIdsSpy.mock.calls).toEqual(
-    gameUnits.length > 0
+    gameUnits.length > 0 && !units
       ? [
           [
             {
@@ -131,7 +190,7 @@ async function testFromArray({ gameUnits, resolvedUnits }: { gameUnits: GameUnit
           return [
             {
               gameUnit,
-              unit: (resolvedUnits || [])[index],
+              unit: (units || resolvedUnits || [])[index],
             },
           ]
         })

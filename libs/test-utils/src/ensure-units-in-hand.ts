@@ -1,17 +1,33 @@
-import { DeckDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
-import { MongoClient, ObjectId } from 'mongodb'
+import { ObjectId } from 'mongodb'
 
-export async function ensureUnitsInHand({
+import { DeckDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { getGame, getUnits, updateGame } from './db-util'
+
+/**
+ * Ensures all the desired units are in the game hand for the user, swapping out with units in their draw pile if necessary.
+ *
+ * @param config The configuration used to ensure the units are in the players game hand.
+ * @param config.gameId The ID of the game to set the hand for.
+ * @param config.mongoConnectionString The MongoDB Connection String used to communicate with the database.
+ * @param config.mongoDatabaseName The name of the MongoDB Database containing the game to modify.
+ * @param config.unitNames The names of the units to put in the players hand for the game.
+ * @param config.userId The ID of the user on the game to set the hand for.
+ * @param config.excludeNames A list of unit names which should be replaced in hand before unitNames added to hand.
+ * @returns The Game with updated hand for the user.
+ */
+export default async function ensureUnitsInHand({
   gameId,
   mongoConnectionString,
   mongoDatabaseName,
   unitNames,
+  excludeNames,
   userId,
 }: {
   gameId: string | ObjectId
   mongoConnectionString: string
   mongoDatabaseName: string
   unitNames: string[]
+  excludeNames?: string[]
   userId: string | ObjectId
 }): Promise<GameDbObject> {
   const game = await getGame({
@@ -40,6 +56,70 @@ export async function ensureUnitsInHand({
     mongoDatabaseName,
     unitIds: (deck as DeckDbObject).units.map((unit) => unit.unit),
   })
+
+  if (excludeNames) {
+    game.players = game.players.map((player) => {
+      if (player.user.toString() === userId.toString()) {
+        if (!player.deck.from) {
+          throw Error(`Player "${player.user.toString()}" does not have deck set`)
+        }
+
+        const handUnits = player.deck.hand.map((handUnit) => {
+          const matchingUnit = deckUnits.find((deckUnit) => deckUnit._id.toString() === handUnit.unit.toString())
+          if (!matchingUnit) {
+            throw Error(`Could not find deck unit for hand unit "${handUnit.unit}"`)
+          }
+          return matchingUnit
+        })
+        const undrawnUnits = player.deck.undrawn.map((undrawnUnit) => {
+          const matchingUnit = deckUnits.find((deckUnit) => deckUnit._id.toString() === undrawnUnit.unit.toString())
+          if (!matchingUnit) {
+            throw Error(`Could not find deck unit for undrawn unit "${undrawnUnit.unit}"`)
+          }
+          return matchingUnit
+        })
+
+        const unitsToRemoveFromHand: UnitDbObject[] = []
+        const eligibleUndrawns: UnitDbObject[] = []
+
+        for (const excludeName of excludeNames) {
+          for (const handUnit of handUnits) {
+            if (handUnit.name === excludeName) {
+              unitsToRemoveFromHand.push(handUnit)
+              let eligibleFound = false
+              for (let i = 0; i < undrawnUnits.length && !eligibleFound; i++) {
+                const potentialUndrawn = undrawnUnits[i]
+                if (!excludeNames.includes(potentialUndrawn.name)) {
+                  eligibleFound = true
+                  eligibleUndrawns.push(potentialUndrawn)
+                }
+              }
+            }
+          }
+        }
+
+        for (let i = 0; i < unitsToRemoveFromHand.length; i++) {
+          const unitToRemoveFromHand = unitsToRemoveFromHand[i]
+          const undrawnToAddToHand = eligibleUndrawns[i]
+
+          const positionInHand = handUnits
+            .map((unit) => unit._id.toString())
+            .indexOf(unitToRemoveFromHand._id.toString())
+          const positionInUndrawn = undrawnUnits
+            .map((unit) => unit._id.toString())
+            .indexOf(undrawnToAddToHand._id.toString())
+
+          const handUnitToMoveToUndrawn = player.deck.hand[positionInHand]
+          const undrawnUnitToMoveToHand = player.deck.undrawn[positionInUndrawn]
+
+          player.deck.hand[positionInHand] = undrawnUnitToMoveToHand
+          player.deck.undrawn[positionInUndrawn] = handUnitToMoveToUndrawn
+        }
+      }
+
+      return player
+    })
+  }
 
   game.players = game.players.map((player) => {
     if (player.user.toString() === userId.toString()) {
@@ -124,9 +204,9 @@ export async function ensureUnitsInHand({
         }
 
         const undrawnUnitToMoveToHand = player.deck.undrawn[positionInUndrawn]
-        const handUnitToMoveToUndranw = player.deck.hand[positionInHand]
+        const handUnitToMoveToUndrawn = player.deck.hand[positionInHand]
         player.deck.hand[positionInHand] = undrawnUnitToMoveToHand
-        player.deck.undrawn[positionInUndrawn] = handUnitToMoveToUndranw
+        player.deck.undrawn[positionInUndrawn] = handUnitToMoveToUndrawn
       }
     }
     return player
@@ -136,82 +216,4 @@ export async function ensureUnitsInHand({
     mongoConnectionString,
     mongoDatabaseName,
   })
-}
-
-export async function getGame({
-  gameId,
-  mongoConnectionString,
-  mongoDatabaseName,
-}: {
-  gameId: string | ObjectId
-  mongoConnectionString: string
-  mongoDatabaseName: string
-}): Promise<GameDbObject> {
-  const mongoClient = await MongoClient.connect(mongoConnectionString)
-  try {
-    const db = await mongoClient.db(mongoDatabaseName)
-    const collection = await db.collection('games')
-    const game: GameDbObject | null = await collection.findOne<GameDbObject>({
-      _id: new ObjectId(gameId),
-    })
-    if (!game) {
-      throw Error(`Could not find game with ID "${gameId}"`)
-    }
-    return game
-  } finally {
-    await mongoClient.close()
-  }
-}
-
-export async function getUnits({
-  mongoConnectionString,
-  mongoDatabaseName,
-  unitIds,
-}: {
-  mongoConnectionString: string
-  mongoDatabaseName: string
-  unitIds: (string | ObjectId)[]
-}): Promise<UnitDbObject[]> {
-  const mongoClient = await MongoClient.connect(mongoConnectionString)
-  try {
-    const db = await mongoClient.db(mongoDatabaseName)
-    const collection = await db.collection('units')
-    const units = await collection
-      .find<UnitDbObject>({
-        _id: {
-          $in: unitIds.map((unitId) => new ObjectId(unitId)),
-        },
-      })
-      .toArray()
-    return units
-  } finally {
-    await mongoClient.close()
-  }
-}
-
-export async function updateGame({
-  game,
-  mongoConnectionString,
-  mongoDatabaseName,
-}: {
-  game: GameDbObject
-  mongoConnectionString: string
-  mongoDatabaseName: string
-}): Promise<GameDbObject> {
-  const mongoClient = await MongoClient.connect(mongoConnectionString)
-  try {
-    const db = await mongoClient.db(mongoDatabaseName)
-    const collection = await db.collection('games')
-    const updatedGame = await collection.findOneAndUpdate(
-      {
-        _id: new ObjectId(game._id),
-      },
-      {
-        $set: game,
-      }
-    )
-    return updatedGame as GameDbObject
-  } finally {
-    await mongoClient.close()
-  }
 }

@@ -29,7 +29,7 @@ export default class DeckUnitResolver {
    * Converts an array of DeckUnit database objects to an array of DeckUnit GraphQL objects.
    *
    * @param config The configuration used to convert the array.
-   * @param config.decks The array of DeckUnit database objects to convert.
+   * @param config.deckUnits The array of DeckUnit database objects to convert.
    * @returns The resolved DeckUnit array matching the GraphQL schema definition.
    */
   static async fromArray({ deckUnits }: { deckUnits: DeckUnitDbObject[] }): Promise<DeckUnit[]> {

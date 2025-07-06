@@ -109,6 +109,7 @@ export default class UserStore extends Store {
    * Retrieve users from the database by their names.
    *
    * @param names The names of the users to retrieve.
+   * @param options The options used when retrieving the Users.
    * @returns An array of user database documents found with the given names.
    */
   static async getByNames(names: string[], options?: FindOptions<Document>): Promise<UserDbObject[]> {

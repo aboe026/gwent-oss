@@ -9,6 +9,7 @@ import {
   GameDbObject,
   GamePlayerDbObject,
   GameUnitDbObject,
+  ImpactDbObject,
   PlayerCombatRowDbObject,
   PlayerRoundDbObject,
   UnitDbObject,
@@ -32,6 +33,7 @@ export default class ScorchBattlefield {
    * @param config.game The game which is potentially being scorched.
    * @param config.logPrefix What to prepend log output statements with.
    * @param config.newDeckUnit The new DeckUnit database document currently being played and which may potentially have a scorching effect.
+   * @returns The impacts of any units scorched.
    */
   static scorchBattlefield({
     battlefieldUnits,
@@ -45,7 +47,8 @@ export default class ScorchBattlefield {
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
-  }) {
+  }): ImpactDbObject[] {
+    const scorched: ImpactDbObject[] = []
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
       const message = `Could not find unit for new deck unit "${newDeckUnit.unit}".`
@@ -95,18 +98,21 @@ export default class ScorchBattlefield {
       }
 
       for (const player of game.players) {
-        ScorchBattlefield.scorchPlayer({
-          battlefieldUnits,
-          player,
-          round: game.round,
-          turn: game.turn,
-          logPrefix: `${logPrefix} player "${player.user}"`,
-          scorchingDeckUnit: newDeckUnit,
-          scorchingUnit: newUnit,
-          strongestUnitIdsOnBattlefield: strongestUnitIds,
-        })
+        scorched.push(
+          ...ScorchBattlefield.scorchPlayer({
+            battlefieldUnits,
+            player,
+            round: game.round,
+            turn: game.turn,
+            logPrefix: `${logPrefix} player "${player.user}"`,
+            scorchingDeckUnit: newDeckUnit,
+            scorchingUnit: newUnit,
+            strongestUnitIdsOnBattlefield: strongestUnitIds,
+          })
+        )
       }
     }
+    return scorched
   }
 
   /**
@@ -121,6 +127,7 @@ export default class ScorchBattlefield {
    * @param config.scorchingUnit The Unit being deployed to the battlefield with a scorching effect.
    * @param config.scorchingDeckUnit The DeckUnit being deployed to the battlefield with a scorching effect.
    * @param config.strongestUnitIdsOnBattlefield A list of the strongest units across the entire battlefield which may be used to determine which of the players units should be scorched.
+   * @returns The impacts of any units scorched.
    */
   private static scorchPlayer({
     battlefieldUnits,
@@ -140,7 +147,7 @@ export default class ScorchBattlefield {
     scorchingUnit: UnitDbObject
     scorchingDeckUnit: DeckUnitDbObject
     strongestUnitIdsOnBattlefield: string[]
-  }) {
+  }): ImpactDbObject[] {
     if (scorchingUnit.name === 'Scorch' && player.user.toString() === turn?.toString()) {
       // the named "Scorch" card does not stay on the battlefield
       player.deck.discard.push(scorchingDeckUnit)
@@ -154,16 +161,16 @@ export default class ScorchBattlefield {
     const scorchablePlayer = !scorchingUnit.scorchScope || player.user.toString() !== turn?.toString()
     ScorchBattlefield.logger.trace(`${logPrefix} scorchablePlayer: "${scorchablePlayer}"`)
 
-    if (scorchablePlayer) {
-      ScorchBattlefield.scorchUnitsForPlayer({
-        battlefieldUnits,
-        logPrefix,
-        player,
-        round,
-        scorchingUnit,
-        strongestUnitIdsOnBattlefield,
-      })
-    }
+    return scorchablePlayer
+      ? ScorchBattlefield.scorchUnitsForPlayer({
+          battlefieldUnits,
+          logPrefix,
+          player,
+          round,
+          scorchingUnit,
+          strongestUnitIdsOnBattlefield,
+        })
+      : []
   }
 
   /**
@@ -171,10 +178,12 @@ export default class ScorchBattlefield {
    *
    * @param config The configuration used to determine which units to scorch for a player.
    * @param config.battlefieldUnits battlefieldUnits The Unit database documents currently on the battlefield for all players.
+   * @param config.player The player under consideration for their units to be scorched.
    * @param config.round The current round of the game.
    * @param config.logPrefix What to prepend log output statements with.
    * @param config.scorchingUnit The Unit being deployed to the battlefield with a scorching effect.
    * @param config.strongestUnitIdsOnBattlefield A list of the strongest units across the entire battlefield which may be used to determine which of the players units should be scorched.
+   * @returns The impacts of any units scorched.
    */
   private static scorchUnitsForPlayer({
     battlefieldUnits,
@@ -190,7 +199,7 @@ export default class ScorchBattlefield {
     logPrefix: string
     scorchingUnit: UnitDbObject
     strongestUnitIdsOnBattlefield: string[]
-  }) {
+  }): ImpactDbObject[] {
     const unitsScorched: GameUnitDbObject[] = []
     const playerRound = player.rounds[round - 1]
     const rows = ScorchBattlefield.getRowsToScorch({
@@ -229,6 +238,13 @@ export default class ScorchBattlefield {
       )
       player.deck.discard.push(...unitsScorched)
     }
+
+    return unitsScorched.map((unitScorched) => {
+      return {
+        unit: unitScorched,
+        user: player.user,
+      }
+    })
   }
 
   /**

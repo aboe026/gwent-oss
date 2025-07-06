@@ -1,6 +1,6 @@
 import ApiClient from './api-client'
 import Banner from '../components/banner'
-import { Combat, Deck, DeckUnit, FactionKey, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, DeckUnit, EffectKey, FactionKey, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
 import GamePage, { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
@@ -31,6 +31,16 @@ export class E2eHelper {
       }
     }
     return false
+  }
+
+  static async hasDottedBorder(element: Selector): Promise<boolean> {
+    const styles = await element.style
+    return (
+      styles['border-bottom-style'] === 'dotted' ||
+      styles['border-top-style'] === 'dotted' ||
+      styles['border-left-style'] === 'dotted' ||
+      styles['border-right-style'] === 'dotted'
+    )
   }
 
   static async switchUser({ username, password = 'password' }: { username: string; password?: string }) {
@@ -81,6 +91,22 @@ export class E2eHelper {
       }
     }
     return unitNames
+  }
+
+  static getHandUnit({ name, deck }: { name: string; deck: GameDeck }): DeckUnit {
+    const unit = deck.hand.find((deckUnit) => deckUnit.unit.name === name)
+    if (!unit) {
+      throw Error(`Could not find unit "${name}" in hand.`)
+    }
+    return unit
+  }
+
+  static getUndrawnUnit({ name, deck }: { name: string; deck: GameDeck }): DeckUnit {
+    const unit = deck.undrawn.find((deckUnit) => deckUnit.unit.name === name)
+    if (!unit) {
+      throw Error(`Could not find unit "${name}" in undrawn.`)
+    }
+    return unit
   }
 
   static async switchToUser({ username, password = 'password' }: { username: string; password?: string }) {
@@ -288,6 +314,9 @@ export class E2eHelper {
     switchTurnsWith,
     scorching,
     moraling,
+    horning,
+    mustering,
+    impacts,
   }: {
     player: GamePlayerExpected
     deckUnit: DeckUnit
@@ -298,6 +327,9 @@ export class E2eHelper {
     switchTurnsWith?: GamePlayerExpected
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
+    horning?: MoralingExpected[]
+    mustering?: MoralingExpected[]
+    impacts?: number
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
     if (!row) {
@@ -340,10 +372,27 @@ export class E2eHelper {
       }
     }
     if (moves) {
+      let effectKey: EffectKey | undefined = undefined
+      if (scorching) {
+        effectKey = EffectKey.Scorch
+      } else if (moraling) {
+        effectKey = EffectKey.Morale
+      } else if (horning) {
+        effectKey = EffectKey.Horn
+      } else if (mustering) {
+        effectKey = EffectKey.Muster
+      }
       moves.push({
         userName: player.name,
         unitName: deckUnit.unit.name,
         combatRow: row,
+        impacts:
+          effectKey && impacts !== -1
+            ? {
+                effectKey,
+                number: impacts !== undefined ? impacts : (scorching || moraling)?.length || 0,
+              }
+            : undefined,
       })
     }
     if (switchTurnsWith) {

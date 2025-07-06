@@ -216,6 +216,7 @@ export default gql`
     artStyle: Int! @column
     effectiveStrength: Int @column
     effects: [GameUnitEffect!] @column(overrideType: "Array<GameUnitEffectDbObject>")
+    row: Combat @column
     unit: Unit! @column(overrideType: "ObjectId")
   }
 
@@ -247,6 +248,12 @@ export default gql`
     quote: String! @column
   }
 
+  "A unit which was impacted by another unit."
+  type Impact @entity {
+    unit: GameUnit! @column(overrideType: "GameUnitDbObject")
+    user: User! @column(overrideType: "ObjectId")
+  }
+
   type MoveLeader @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
     created: DateTime! @column
     leader: Leader! @column(overrideType: "ObjectId")
@@ -258,8 +265,8 @@ export default gql`
 
   type MoveUnit @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
     created: DateTime! @column
-    row: Combat @column
-    unit: DeckUnit! @column(overrideType: "DeckUnitDbObject")
+    unit: GameUnit! @column(overrideType: "GameUnitDbObject")
+    impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
   }
 
   union Move @union(discriminatorField: "type") = MoveLeader | MovePass | MoveUnit

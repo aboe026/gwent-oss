@@ -2,13 +2,14 @@ import ApiClient from './api-client'
 import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import { E2eHelper, MoralingExpected, ScorchingExpected } from './e2e-helper'
 import E2eUtil from './e2e-util'
-import { ensureUnitsInHand } from '@gwent/test-utils'
+import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
 import env from './e2e-env'
 import GamePage, {
   GamePlayerExpected,
   HighlightedBattlefieldCard,
   HighlightedHandCard,
   HighlightedHistory,
+  HistoryImpactMoves,
   HistoryMove,
   HistoryPass,
   RoundScores,
@@ -85,6 +86,9 @@ export class GameManager {
     effectiveStrength,
     scorching,
     moraling,
+    horning,
+    mustering,
+    impacts,
     verify,
   }: {
     unitName: string
@@ -92,6 +96,9 @@ export class GameManager {
     effectiveStrength?: number
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
+    horning?: MoralingExpected[]
+    mustering?: MoralingExpected[]
+    impacts?: number
     verify?: boolean
   }): Promise<DeckUnit> {
     const isSelfTurn = this.self.gamePlayer.turn === PlayerTurn.Current
@@ -125,6 +132,9 @@ export class GameManager {
       effectiveStrength,
       scorching,
       moraling,
+      horning,
+      mustering,
+      impacts,
     })
     if (this.shouldVerify || verify) {
       await GamePage.verify({
@@ -216,6 +226,7 @@ export class GameManager {
     highlightedHandCard?: HighlightedHandCard
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHistory?: HighlightedHistory
+    impacts?: HistoryImpactMoves[]
   }) {
     await GamePage.verify({
       opponent: this.opponent.gamePlayer,
@@ -232,11 +243,10 @@ export class GameManager {
   }
 
   getHandUnit({ name, opponent }: { name: string; opponent?: boolean }): DeckUnit {
-    const unit = (opponent ? this.opponent : this.self).deck.hand.find((deckUnit) => deckUnit.unit.name === name)
-    if (!unit) {
-      throw Error(`Could not find unit "${name}" in hand.`)
-    }
-    return unit
+    return E2eHelper.getHandUnit({
+      deck: opponent ? this.opponent.deck : this.self.deck,
+      name,
+    })
   }
 
   switchPlayers() {
@@ -328,15 +338,22 @@ export default async function createGameManager({
     gameId: game.id,
   })
 
+  const firstPlayerId = opponentFirst ? opponentUser.id : selfUser.id
+  const secondPlayerId = opponentFirst ? selfUser.id : opponentUser.id
   if (
     (selfFaction === FactionKey.ScoiaTael && opponentFaction !== FactionKey.ScoiaTael) ||
     (opponentFaction === FactionKey.ScoiaTael && selfFaction !== FactionKey.ScoiaTael)
   ) {
-    const firstPlayerId = opponentFirst ? opponentUser.id : selfUser.id
-    const secondPlayerId = opponentFirst ? selfUser.id : opponentUser.id
     const scoiataelClient = selfFaction === FactionKey.ScoiaTael ? selfClient : opponentClient
     await scoiataelClient.setOrder({
       gameId: game.id,
+      userIds: [firstPlayerId, secondPlayerId],
+    })
+  } else {
+    await setTurnOrder({
+      gameId: game.id,
+      mongoConnectionString: env.MONGO_URL,
+      mongoDatabaseName: env.MONGO_DB,
       userIds: [firstPlayerId, secondPlayerId],
     })
   }

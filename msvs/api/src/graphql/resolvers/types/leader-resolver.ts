@@ -19,7 +19,7 @@ export default class LeaderResolver {
    * Converts a single Leader database object to a single Leader GraphQL object.
    *
    * @param config The configuration used to convert the Leader.
-   * @param config.unit The resolved DLC for the Leader. If not provided, will be retrieved.
+   * @param config.dlc The resolved DLC for the Leader. If not provided, will be retrieved.
    * @param config.faction The resolved Faction for the Leader. If not provided, will be retrieved.
    * @param config.leader The Leader to convert.
    * @returns The resolved Leader object matching its GraphQL schema definition.
@@ -52,7 +52,8 @@ export default class LeaderResolver {
   /**
    * Retrieves a Leader with the given ID and converts it to the GraphQL object equivalent.
    *
-   * @param id The ObjectId of the Leader to convert.
+   * @param config The configuration used to resolve the Leader.
+   * @param config.id The ObjectId of the Leader to convert.
    * @returns The resolved Leader object with the given ID.
    * @throws Error if a Leader with the given ID does not exist.
    */
@@ -66,7 +67,10 @@ export default class LeaderResolver {
   /**
    * Retrieves Leaders with the given IDs and converts them to their GraphQL object equivalents.
    *
-   * @param ids The ObjectIds of the Leaders to convert.
+   * @param config The configuration used to resolve the Leaders.
+   * @param config.ids The ObjectIds of the Leaders to convert.
+   * @param config.factions The Factions for the Leaders. If not provided, will be retrieved.
+   * @param config.resolvedFactions The resolved Factions for the Leaders. If not provided, will be retrieved.
    * @returns The resolved Leaders array for the given IDs.
    * @throws Error if a Leader with the given IDs does not exist.
    */
@@ -106,7 +110,7 @@ export default class LeaderResolver {
    * Converts an array of Leader database objects to an array of Leader GraphQL objects.
    *
    * @param config The configuration used to convert the array.
-   * @param config.factions The resolved Factions for the Leaders. If not provided, will be retrieved.
+   * @param config.factions The Factions for the Leaders. If not provided, will be retrieved.
    * @param config.leaders The array of Leader database objects to convert.
    * @param config.resolvedFactions The resolved Factions for the Leaders. If not provided, will be retrieved.
    * @returns The resolved Leader array matching the GraphQL schema definition.

@@ -10,7 +10,6 @@ export default class LogoutMutation {
   /**
    * Remove a user's session.
    *
-   * @param args The arguments for logging out a user.
    * @param context The session to remove the user from valid.
    * @param info The information about the GraphQL request.
    * @returns True if the user was successfully removed from the session, false otherwise.

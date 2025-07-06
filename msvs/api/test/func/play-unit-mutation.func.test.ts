@@ -452,7 +452,6 @@ describe('play-unit-mutation', () => {
         if (!singleCombatDeckUnit) {
           throw Error(`Could not find unit "${unitName}" in hand`)
         }
-        const combat = singleCombatDeckUnit.unit.combats ? singleCombatDeckUnit.unit.combats[0] : Combat.Close
 
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== singleCombatDeckUnit.unit.id)
         const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
@@ -496,7 +495,6 @@ describe('play-unit-mutation', () => {
                       moves: [
                         {
                           created: expect.any(Date),
-                          row: combat,
                           unit: singleCombatDeckUnit,
                         } as MoveUnit,
                       ],
@@ -578,7 +576,6 @@ describe('play-unit-mutation', () => {
                       moves: [
                         {
                           created: expect.any(Date),
-                          row: combat,
                           unit: singleCombatDeckUnit,
                         } as MoveUnit,
                       ],
@@ -659,7 +656,6 @@ describe('play-unit-mutation', () => {
                       moves: [
                         {
                           created: expect.any(Date),
-                          row: combat,
                           unit: multiCombatDeckUnit,
                         } as MoveUnit,
                       ],

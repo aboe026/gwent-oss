@@ -637,24 +637,28 @@ test('Moving to previous and next units works for a hand card', async (t) => {
     unit: gameManager.getHandUnit({
       name: unitName2,
     }).unit,
+    username: gameManager.self.gamePlayer.name,
   })
   await FullCard.next()
   await FullCard.verify({
     unit: gameManager.getHandUnit({
       name: unitName3,
     }).unit,
+    username: gameManager.self.gamePlayer.name,
   })
   await FullCard.previous()
   await FullCard.verify({
     unit: gameManager.getHandUnit({
       name: unitName2,
     }).unit,
+    username: gameManager.self.gamePlayer.name,
   })
   await FullCard.previous()
   await FullCard.verify({
     unit: gameManager.getHandUnit({
       name: unitName1,
     }).unit,
+    username: gameManager.self.gamePlayer.name,
   })
   await FullCard.close()
   await FullCard.verify({})
@@ -683,13 +687,13 @@ test('Moving to previous and next units works for a combat row card', async (t) 
     row: Combat.Close,
     self: true,
   })
-  await FullCard.verify({ unit: unit2.unit })
+  await FullCard.verify({ unit: unit2.unit, username: gameManager.self.gamePlayer.name })
   await FullCard.next()
-  await FullCard.verify({ unit: unit3.unit })
+  await FullCard.verify({ unit: unit3.unit, username: gameManager.self.gamePlayer.name })
   await FullCard.previous()
-  await FullCard.verify({ unit: unit2.unit })
+  await FullCard.verify({ unit: unit2.unit, username: gameManager.self.gamePlayer.name })
   await FullCard.previous()
-  await FullCard.verify({ unit: unit1.unit })
+  await FullCard.verify({ unit: unit1.unit, username: gameManager.self.gamePlayer.name })
   await FullCard.close()
   await FullCard.verify({})
 })

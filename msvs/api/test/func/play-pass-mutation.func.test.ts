@@ -409,7 +409,6 @@ describe('play-pass-mutation', () => {
                         {
                           created: expect.any(Date),
                           unit: deckUnit,
-                          row: deckUnitCombat,
                         } as MoveUnit,
                         {
                           created: expect.any(Date),
@@ -477,7 +476,6 @@ describe('play-pass-mutation', () => {
                 {
                   created: expect.any(Date),
                   unit: deckUnit,
-                  row: deckUnitCombat,
                 } as MoveUnit,
                 {
                   created: expect.any(Date),

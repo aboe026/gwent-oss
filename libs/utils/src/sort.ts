@@ -1,10 +1,12 @@
+import getNestedProperty from './get-nested-property'
+
 /**
  * Sorts an array of objects by the specified property.
  *
- * @param sortConfig The object containing the configuration required for sorting.
- * @param sortConfig.array The Array to sort.
- * @param sortConfig.sortProperty The property on each object to sort them by.
- * @param sortConfig.reverse Whether or not the array should be sorted in reverse order.
+ * @param config The configuration used to sort the array.
+ * @param config.array The Array to sort.
+ * @param config.sortProperties The properties on each object to sort them by.
+ * @param config.reverse Whether or not the array should be sorted in reverse order.
  * @returns A clone of the sorted array (does not modify original array).
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,29 +32,6 @@ export default function sortObjectArray<T extends any[]>({
       sortProperties,
     })
   ) as T
-}
-
-/**
- * Gets a nested element within an object.
- *
- * @param options The options for getting the nested property.
- * @param options.obj The object to get the nested property for.
- * @param options.nestedProperty The path of deeply nested properties to get in the object, separated by periods.
- * @returns The nested property within the object.
- */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function getNestedProperty({ obj, nestedProperty }: { nestedProperty: string; obj: any }): any {
-  let value
-  if (obj) {
-    for (const property of nestedProperty.split('.')) {
-      if (value === undefined) {
-        value = obj[property]
-      } else {
-        value = value[property]
-      }
-    }
-  }
-  return value
 }
 
 /**

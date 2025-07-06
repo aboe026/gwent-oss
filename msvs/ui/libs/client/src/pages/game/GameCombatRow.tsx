@@ -1,15 +1,19 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import { DeckUnit, GamePlayer, Game, Combat } from '@gwent/graphql-schema/apollo-typings'
+import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import { PlayUnitProps, UnitForPlayer } from './GameProps'
 import { retryCheckingAuth } from '../../util/error-util'
 import { sortObjectArray, toTitleCase } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../App'
 
+/**
+ * A row of combat for a Game player and the units that make up that row.
+ */
 export default function GameCombatRow({
   combat,
+  fullUnits,
   game,
   handCardSelected,
   historyCardSelected,
@@ -18,11 +22,12 @@ export default function GameCombatRow({
   player,
   playUnitProps,
   scrollHistoryIntoView,
-  setFullUnit,
+  setFullUnits,
   setHandCardSelected,
   setHistoryCardSelected,
 }: {
   combat: Combat
+  fullUnits: FullUnitCards | undefined
   game: Game
   handCardSelected: DeckUnit | undefined
   historyCardSelected: UnitForPlayer | undefined
@@ -31,7 +36,7 @@ export default function GameCombatRow({
   player: GamePlayer
   playUnitProps: PlayUnitProps
   scrollHistoryIntoView: (args: UnitForPlayer) => void
-  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
@@ -80,6 +85,7 @@ export default function GameCombatRow({
   } else {
     id = isSelf ? HTML_IDS.GameCombatRowSiegeSelf : HTML_IDS.GameCombatRowSiegeOpponent
   }
+  const fullUnit = fullUnits && fullUnits.units[fullUnits.currentIndex]
 
   return (
     <div id={id} className="game-unit-board-combat-row">
@@ -118,11 +124,17 @@ export default function GameCombatRow({
           }
         }}
       >
-        {sortedUnits.map((gameUnit) => {
+        {sortedUnits.map((gameUnit, index) => {
+          const selectedAsFullCard =
+            fullUnit && fullUnit.unit.unit.id === gameUnit.unit.id && fullUnit.playerId === player.user.id
           const selectedInHistory =
             historyCardSelected &&
             historyCardSelected.unit.unit.id === gameUnit.unit.id &&
             historyCardSelected.playerId === player.user.id
+          const unitForPlayer: UnitForPlayer = {
+            playerId: player.user.id,
+            unit: gameUnit,
+          }
 
           return (
             <div
@@ -137,10 +149,6 @@ export default function GameCombatRow({
                   if (selectedInHistory) {
                     setHistoryCardSelected(undefined)
                   } else {
-                    const unitForPlayer: UnitForPlayer = {
-                      playerId: player.user.id,
-                      unit: gameUnit,
-                    }
                     setHistoryCardSelected(unitForPlayer)
                     scrollHistoryIntoView(unitForPlayer)
                   }
@@ -154,14 +162,22 @@ export default function GameCombatRow({
                   unit: gameUnit.unit,
                 }}
                 effectiveStrength={gameUnit.effectiveStrength}
-                selected={gameUnit.unit.id === handCardSelected?.unit.id || selectedInHistory}
+                selected={selectedAsFullCard || selectedInHistory}
                 dotted={!isTurn && !selectedInHistory}
-                onFullscreen={() =>
-                  setFullUnit({
-                    unit: gameUnit,
-                    playerId: player.user.id,
+                onFullscreen={() => {
+                  setFullUnits({
+                    currentIndex: index,
+                    units: sortedUnits.map((deckUnit) => {
+                      return {
+                        playerId: player.user.id,
+                        unit: deckUnit,
+                      }
+                    }),
                   })
-                }
+                  setHistoryCardSelected(unitForPlayer)
+                  scrollHistoryIntoView(unitForPlayer)
+                  setHandCardSelected(undefined)
+                }}
               />
             </div>
           )

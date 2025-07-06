@@ -188,6 +188,11 @@ export interface UnitForPlayer {
   playerId: string | undefined
 }
 
+export interface FullUnitCards {
+  units: UnitForPlayer[]
+  currentIndex: number
+}
+
 export interface PlayerMove {
   move: Move
   playerIndex: number

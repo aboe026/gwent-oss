@@ -14,6 +14,7 @@ export default class IsGameOver {
    *
    * @param config The configuration to determine if the game is over or not.
    * @param config.game The game to check if is finished.
+   * @param config.logPrefix What to prepend log statements with.
    * @returns True if the game is over, false otherwise.
    */
   static isGameOver({ game, logPrefix }: { game: GameDbObject; logPrefix: string }): boolean {

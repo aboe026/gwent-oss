@@ -4,36 +4,43 @@ import { Dispatch, SetStateAction } from 'react'
 import Centered from '../../components/Centered'
 import CoinToss from '../../components/CoinToss'
 import { DeckUnit, GamePlayer, Game, GameDeck } from '@gwent/graphql-schema/apollo-typings'
+import { FullUnitCards, ReadyProps, RedrawProps } from './GameProps'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent/constants'
 import { getApolloError, retryCheckingAuth } from '../../util/error-util'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
-import { ReadyProps, RedrawProps, UnitForPlayer } from './GameProps'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../App'
 
+/**
+ * Allows user to Redraw units for a Game.
+ */
 export default function GameRedraw({
   coinTossVisible,
   game,
   gameDeck,
   handCardSelected,
   readyProps,
+  redrawCardSelected,
   redrawProps,
   self,
+  setFullUnits,
   setCoinTossVisible,
-  setFullUnit,
   setHandCardSelected,
+  setRedrawCardSelected,
 }: {
   coinTossVisible: boolean
   game: Game
   gameDeck: GameDeck | undefined
   handCardSelected: DeckUnit | undefined
   readyProps: ReadyProps
+  redrawCardSelected: DeckUnit | undefined
   redrawProps: RedrawProps
   self: GamePlayer
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
-  setFullUnit: Dispatch<SetStateAction<UnitForPlayer | undefined>>
+  setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
 }) {
   const { checkAuth } = useUserContext()
   const redrawsLeft = MAX_REDRAWS - (gameDeck?.redraws || []).length
@@ -67,21 +74,50 @@ export default function GameRedraw({
                   : handCardSelected
               ) as DeckUnit
               const toCard = (gameDeck.redraws.length >= index + 1 && gameDeck.redraws[index].to) as DeckUnit
-              const handIds = gameDeck.hand.map((deckUnit) => deckUnit.unit.id)
+              const units = [fromCard, toCard]
+                .filter((deckUnit) => !!deckUnit)
+                .map((deckUnit) => {
+                  return {
+                    playerId: self.user.id,
+                    unit: deckUnit,
+                  }
+                })
+              const toCardSelected =
+                toCard && [redrawCardSelected?.unit.id, handCardSelected?.unit.id].includes(toCard.unit.id)
+              const toCardDotted =
+                toCardSelected && !gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)
+              const fromCardSelected =
+                fromCard && [redrawCardSelected?.unit.id, handCardSelected?.unit.id].includes(fromCard.unit.id)
+              const fromCardDotted =
+                fromCardSelected && !gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)
+
               return (
                 <div className="game-deck-redraw-card-container" key={index}>
                   {index < gameDeck.redraws.length || (index === gameDeck.redraws.length && redrawProps.loading) ? (
                     <div className={HTML_CLASSES.GameDeckRedrawPair}>
                       <UnitGameCard
                         deckUnit={fromCard}
-                        cursor={'unset'}
+                        selected={fromCardSelected}
+                        dotted={fromCardDotted}
+                        dottedTitle={fromCardDotted ? 'This unit is no longer in your hand' : ''}
+                        onClick={() => {
+                          setRedrawCardSelected(fromCardSelected ? undefined : fromCard)
+                          if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)) {
+                            setHandCardSelected(fromCardSelected ? undefined : fromCard)
+                          } else {
+                            setHandCardSelected(undefined)
+                          }
+                        }}
                         onFullscreen={() => {
-                          setFullUnit({
-                            unit: fromCard,
-                            playerId: self.user.id,
+                          setFullUnits({
+                            currentIndex: 0,
+                            units,
                           })
-                          if (handIds.includes(fromCard.unit.id)) {
+                          setRedrawCardSelected(fromCard)
+                          if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)) {
                             setHandCardSelected(fromCard)
+                          } else {
+                            setHandCardSelected(undefined)
                           }
                         }}
                       />
@@ -89,14 +125,27 @@ export default function GameRedraw({
                       {index < gameDeck.redraws.length ? (
                         <UnitGameCard
                           deckUnit={toCard}
-                          cursor={'unset'}
+                          selected={toCardSelected}
+                          dotted={toCardDotted}
+                          dottedTitle={toCardDotted ? 'This unit is no longer in your hand' : ''}
+                          onClick={() => {
+                            setRedrawCardSelected(toCardSelected ? undefined : toCard)
+                            if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)) {
+                              setHandCardSelected(toCardSelected ? undefined : toCard)
+                            } else {
+                              setHandCardSelected(undefined)
+                            }
+                          }}
                           onFullscreen={() => {
-                            setFullUnit({
-                              unit: toCard,
-                              playerId: self.user.id,
+                            setFullUnits({
+                              currentIndex: 1,
+                              units,
                             })
-                            if (handIds.includes(toCard.unit.id)) {
+                            setRedrawCardSelected(toCard)
+                            if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)) {
                               setHandCardSelected(toCard)
+                            } else {
+                              setHandCardSelected(undefined)
                             }
                           }}
                         />
@@ -192,6 +241,9 @@ export default function GameRedraw({
   )
 }
 
+/**
+ * The coint toss animation to inform the user which player will go first in a Game.
+ */
 function renderCoinToss({
   setCoinTossVisible,
   winFlip,

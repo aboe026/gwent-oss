@@ -1,7 +1,7 @@
 /**
  * Get a random subset of items in an array.
  *
- * @param {Object} config The configuration of the operation to run.
+ * @param config The configuration of the operation to run.
  * @param config.items The items to get the subset of.
  * @param config.size The number of random items in the list to return.
  * @returns The specified number of random items from the list provided.

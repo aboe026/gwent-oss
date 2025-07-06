@@ -40,6 +40,7 @@ export default class LcovDarkMode implements Reporter {
  * Adds dark mode to all HTML files in the coverageDirectory.
  *
  * @param config The configuration required to add dark mode.
+ * @param config.checkDurationMilliseconds How often (in milliseconds) to check whether or not the file exists.
  * @param config.coverageDirectory The directory containing the lcov-report directory which contains the HTML coverage files.
  * @param config.maxWaitMilliseconds The maximum amount of time (in milliseconds) to wait for lcov to generate HTML files.
  */
@@ -119,6 +120,8 @@ async function fileExists(filePath: string): Promise<boolean> {
  * Sleep/wait/pause the desired amount of time (in milliseconds).
  *
  * @param milliseconds The amount of time (in milliseconds) to sleep/wait/pause execution.
+ *
+ * @returns Nothing when the specified number of milliseconds have elapsed.
  */
 async function sleep(milliseconds: number): Promise<void> {
   return new Promise((resolve) => {

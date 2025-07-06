@@ -1,12 +1,15 @@
+import { ObjectId } from 'mongodb'
+
 import {
+  DeckUnitDbObject,
   EffectDbObject,
-  EffectFromUnitDbObject,
   EffectKey,
   GameDbObject,
+  ImpactDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import { EffectReasonType } from '@gwent/graphql-schema'
+import EffectMorale from './effect-morale'
 import GetEffectWithKey from './get-effect-with-key'
 import PresentableError from '../../../../util/presentable-error'
 
@@ -23,38 +26,48 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.game The Game to calculate effective strengths on for the active round.
    * @param config.units All the database Unit objects present in the round for the game.
    * @param config.effects All the database Effect objects for any unit effect present in the round for the game.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.newDeckUnit The new unit being introduced to the battlefield.
+   * @returns Any impacts the new unit has on other units.
    */
   static calculateEffectiveStrengths({
     game,
     units,
     effects,
     logPrefix,
+    newDeckUnit,
   }: {
     game: GameDbObject
     units: UnitDbObject[]
     effects: EffectDbObject[]
     logPrefix: string
-  }) {
+    newDeckUnit: DeckUnitDbObject
+  }): ImpactDbObject[] | undefined {
+    const impacts: ImpactDbObject[] = []
+
+    const moraleEffect = GetEffectWithKey.getEffectWithKey({
+      effectKey: EffectKey.Morale,
+      effects,
+      logPrefix,
+    })
+
     for (const player of game.players) {
-      CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
-        row: player.rounds[game.round - 1].close,
-        units,
-        effects,
-        logPrefix,
-      })
-      CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
-        row: player.rounds[game.round - 1].ranged,
-        units,
-        effects,
-        logPrefix,
-      })
-      CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
-        row: player.rounds[game.round - 1].siege,
-        units,
-        effects,
-        logPrefix,
-      })
+      const round = player.rounds[game.round - 1]
+      for (const row of [round.close, round.ranged, round.siege]) {
+        impacts.push(
+          ...CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
+            row,
+            units,
+            logPrefix,
+            moraleEffect,
+            newDeckUnit,
+            userId: player.user,
+            currentPlayerId: game.turn,
+          })
+        )
+      }
     }
+    return impacts.length > 0 ? impacts : undefined
   }
 
   /**
@@ -63,19 +76,32 @@ export default class CalculateGameEffectiveStrengths {
    * @param config The configuration used to determine effective strengths for the units in the combat row.
    * @param config.row The combat row contianing the units to calculate effective strengths for.
    * @param config.units All the database Unit objects present in the round for the game.
-   * @param config.effects All the database Effect objects for any unit effect present in the round for the game.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.moraleEffect The Effect database document for the Morale effect.
+   * @param config.newDeckUnit The new unit being introduced to the battlefield.
+   * @param config.userId The ID of the user for the combat row.
+   * @param config.currentPlayerId The ID of the current game turn user.
+   * @returns Any impacts the new unit has on other units.
    */
   private static calculateEffectiveStrengthsForRow({
     row,
     units,
-    effects,
     logPrefix,
+    moraleEffect,
+    newDeckUnit,
+    userId,
+    currentPlayerId,
   }: {
     row: PlayerCombatRowDbObject
     units: UnitDbObject[]
-    effects: EffectDbObject[]
     logPrefix: string
-  }) {
+    moraleEffect: EffectDbObject | undefined
+    newDeckUnit: DeckUnitDbObject
+    userId: ObjectId
+    currentPlayerId: ObjectId | undefined
+  }): ImpactDbObject[] {
+    const impacts: ImpactDbObject[] = []
+
     const rowDbUnits: UnitDbObject[] = []
     for (const rowUnit of row.units) {
       const matchingUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
@@ -86,56 +112,34 @@ export default class CalculateGameEffectiveStrengths {
       }
     }
 
-    const moraleEffect = GetEffectWithKey.getEffectWithKey({
-      effectKey: EffectKey.Morale,
-      effects,
+    const moraleIdsInRow = EffectMorale.getUnitsWithMorale({
       logPrefix,
+      moraleEffect,
+      units: rowDbUnits,
     })
 
-    const moraleIdsInRow: string[] = []
-    if (moraleEffect) {
-      for (const rowDbUnit of rowDbUnits) {
-        if (rowDbUnit.effects) {
-          let unitHasMorale = false
-          for (let i = 0; i < rowDbUnit.effects.length && !unitHasMorale; i++) {
-            const effect = rowDbUnit.effects[i]
-            if (effect.toString() === moraleEffect._id.toString()) {
-              unitHasMorale = true
-            }
-          }
-          if (unitHasMorale) {
-            moraleIdsInRow.push(rowDbUnit._id.toString())
-          }
-        }
+    for (const rowGameUnit of row.units) {
+      const rowUnit = units.find((unit) => unit._id.toString() === rowGameUnit.unit.toString())
+      if (rowUnit && rowUnit.strength !== undefined && rowUnit.strength !== null) {
+        rowGameUnit.effectiveStrength = rowUnit.strength
+        rowGameUnit.effects = []
+
+        impacts.push(
+          ...EffectMorale.applyMorales({
+            logPrefix,
+            moraleEffect,
+            unitIdsWithMoraleInRow: moraleIdsInRow,
+            newDeckUnit,
+            rowGameUnit: rowGameUnit,
+            rowUnit: rowUnit,
+            units,
+            userId,
+            currentPlayerId,
+          })
+        )
       }
     }
 
-    for (const rowUnit of row.units) {
-      const dbUnit = units.find((unit) => unit._id.toString() === rowUnit.unit.toString())
-      if (dbUnit && dbUnit.strength !== undefined && dbUnit.strength !== null) {
-        rowUnit.effectiveStrength = dbUnit.strength
-        rowUnit.effects = []
-
-        if (!dbUnit.hero) {
-          const moralesToApply = moraleIdsInRow.filter((id) => id !== rowUnit.unit.toString())
-          for (const moraleId of moralesToApply) {
-            rowUnit.effectiveStrength += 1
-            const moraleDbUnit = units.find((unit) => unit._id.toString() === moraleId)
-            if (moraleEffect && moraleDbUnit) {
-              const reason: EffectFromUnitDbObject = {
-                effect: moraleEffect._id,
-                type: EffectReasonType.Unit,
-                unit: moraleDbUnit._id,
-              }
-              rowUnit.effects.push({
-                operator: '+1',
-                reason,
-                total: rowUnit.effectiveStrength,
-              })
-            }
-          }
-        }
-      }
-    }
+    return impacts
   }
 }

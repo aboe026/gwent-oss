@@ -1,7 +1,9 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useState } from 'react'
 
+import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
+import { combineUnitStats, sortObjectArray } from '@gwent/utils'
 import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 import {
   DecksQuery,
@@ -33,12 +35,10 @@ import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ProgressBar from '../components/ProgressBar'
-import { combineUnitStats, sortObjectArray } from '@gwent/utils'
 import UnitDeckCard from './UnitDeckCard'
 import UnitFullCard from './UnitFullCard'
 import UnitsHeader from '../components/UnitsHeader'
 import UnitsStats from '../components/UnitsStats'
-import addToCacheList from '../util/add-to-cache-list'
 import { useUserContext } from '../App'
 import { validateDeck } from '@gwent/validators'
 import WholeScreenDialog from '../components/WholeScreenDialog'
@@ -176,6 +176,9 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
   )
 }
 
+/**
+ * Information about the Deck name and Faction chosen.
+ */
 function renderNameAndFaction({
   disabledOverride,
   faction,
@@ -371,6 +374,9 @@ function renderNameAndFaction({
   )
 }
 
+/**
+ * A user changes the Faction for the Deck.
+ */
 function changeFaction({
   factionsData,
   newFactionKey,
@@ -399,6 +405,9 @@ function changeFaction({
   setFactionPickerOpen(false)
 }
 
+/**
+ * Information about the Leader chosen for the Deck.
+ */
 function renderLeader({
   disabledOverride,
   faction,
@@ -543,6 +552,9 @@ function renderLeader({
   )
 }
 
+/**
+ * The available and selected Units for the Deck.
+ */
 function renderUnits({
   deckUnits,
   disabledOverride,
@@ -677,6 +689,9 @@ function renderUnits({
       previousUnit = filteredAvailableUnits[fullUnitPosition - 1]
     }
   }
+  /**
+   * Change to an alternative art style for a Unit
+   */
   function changeArtStyle(change: number) {
     setDeckUnits((previous: DeckUnit[]) =>
       previous.map((deckUnit) => {
@@ -729,7 +744,7 @@ function renderUnits({
             setSelectedUnits((previous) =>
               previous.map((deckUnit) => deckUnit.unit.id).includes(fullUnitSelected.unit.id)
                 ? previous.filter((deckUnit) => deckUnit.unit.id !== fullUnitSelected.unit.id)
-                : [...previous, fullUnitSelected]
+                : [...previous, fullUnitSelected as DeckUnit]
             )
           }
           if (nextUnit) {
@@ -853,6 +868,9 @@ function renderUnits({
   )
 }
 
+/**
+ * A loading spinner indicating that Units are being retrieved.
+ */
 function renderUnitsLoading() {
   return (
     <Centered>
@@ -861,6 +879,14 @@ function renderUnitsLoading() {
   )
 }
 
+/**
+ * Whether or not the given DeckUnit should be shown.
+ *
+ * @param deckUnit The DeckUnit under consideration of whether or not it should be shown.
+ * @param fields The fields the user is currently filtering on.
+ * @param name The Unit name the user is currently filtering on. Matches substrings.
+ * @returns True if the DeckUnit should be shown, false if not.
+ */
 function isFilteredIn(deckUnit: DeckUnit, fields: FILTER_FIELD[], name: string): boolean {
   const selected: FilterField[] = []
   for (const field of fields) {
