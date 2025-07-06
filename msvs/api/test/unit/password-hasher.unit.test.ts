@@ -51,28 +51,33 @@ describe('password-hasher', () => {
   })
   describe('match', () => {
     it('returns true if timingsSafeEqual returns true', async () => {
-      const password = 'password'
-      const storedPassword = 'hash:salt'
-      const buffer = 'buffer'
-      const scryptAsyncSpy = jest.spyOn(PasswordHasher as any, 'scryptAsync').mockResolvedValue(buffer)
-      const timingSafeEqualSpy = jest.spyOn(crypto, 'timingSafeEqual').mockReturnValue(true)
-
-      await expect(PasswordHasher.match(password, storedPassword)).resolves.toEqual(true)
-
-      expect(scryptAsyncSpy.mock.calls).toEqual([[password, 'salt', 64]])
-      expect(timingSafeEqualSpy.mock.calls).toEqual([[Buffer.from('hash', 'hex'), buffer]])
+      await testMatch({
+        timingSafeEqualResponse: true,
+      })
     })
-    it('returns true if timingsSafeEqual returns true', async () => {
-      const password = 'password'
-      const storedPassword = 'hash:salt'
-      const buffer = 'buffer'
-      const scryptAsyncSpy = jest.spyOn(PasswordHasher as any, 'scryptAsync').mockResolvedValue(buffer)
-      const timingSafeEqualSpy = jest.spyOn(crypto, 'timingSafeEqual').mockReturnValue(false)
-
-      await expect(PasswordHasher.match(password, storedPassword)).resolves.toEqual(false)
-
-      expect(scryptAsyncSpy.mock.calls).toEqual([[password, 'salt', 64]])
-      expect(timingSafeEqualSpy.mock.calls).toEqual([[Buffer.from('hash', 'hex'), buffer]])
+    it('returns false if timingsSafeEqual returns false', async () => {
+      await testMatch({
+        timingSafeEqualResponse: false,
+      })
     })
   })
 })
+
+async function testMatch({ timingSafeEqualResponse }: { timingSafeEqualResponse: boolean }) {
+  const password = 'password'
+  const storedPassword = 'hash:salt'
+  const hashedPasswordBuf = Buffer.from('hash', 'hex')
+  const suppliedPasswordBuf = Buffer.from('buffer', 'hex')
+  const scryptAsyncSpy = jest.spyOn(PasswordHasher as any, 'scryptAsync').mockResolvedValue(suppliedPasswordBuf)
+  const timingSafeEqualSpy = jest.spyOn(crypto, 'timingSafeEqual').mockReturnValue(timingSafeEqualResponse)
+
+  await expect(PasswordHasher.match(password, storedPassword)).resolves.toEqual(timingSafeEqualResponse)
+
+  expect(scryptAsyncSpy.mock.calls).toEqual([[password, 'salt', 64]])
+  expect(timingSafeEqualSpy.mock.calls).toEqual([
+    [
+      new Uint8Array(hashedPasswordBuf.buffer, hashedPasswordBuf.byteOffset, hashedPasswordBuf.byteLength),
+      new Uint8Array(suppliedPasswordBuf.buffer, suppliedPasswordBuf.byteOffset, suppliedPasswordBuf.byteLength),
+    ],
+  ])
+}

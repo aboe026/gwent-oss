@@ -268,6 +268,12 @@ This will start Gwent for you. To only run the tests (without starting Gwent), g
 yarn test
 ```
 
+### Upgrade Node.js
+
+To upgrade [NodeJS](https://nodejs.org/), edit the [.nvmrc](./.nvmrc) file.
+
+Also, change `package.json` references of `@types/node` to match the new version.
+
 ### Upgrade Dependencies
 
 To upgrade dependencies, run

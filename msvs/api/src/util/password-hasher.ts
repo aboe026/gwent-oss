@@ -49,6 +49,9 @@ export default class PasswordHasher {
     const [hashedPassword, salt] = stored.split(PasswordHasher.HEX_SALT_SEPARATOR)
     const hashedPasswordBuf = Buffer.from(hashedPassword, 'hex')
     const suppliedPasswordBuf = await PasswordHasher.scryptAsync(password, salt, 64)
-    return timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf)
+    return timingSafeEqual(
+      new Uint8Array(hashedPasswordBuf.buffer, hashedPasswordBuf.byteOffset, hashedPasswordBuf.byteLength),
+      new Uint8Array(suppliedPasswordBuf.buffer, suppliedPasswordBuf.byteOffset, suppliedPasswordBuf.byteLength)
+    )
   }
 }

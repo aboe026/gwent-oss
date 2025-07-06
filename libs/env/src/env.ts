@@ -24,6 +24,7 @@ export default function getEnv<T>({
 }): CleanedEnv<T> {
   config({
     path: process.env.DOT_ENV_FILE_PATH || dotEnvFilePath || '.env',
+    quiet: true,
   })
   return cleanEnv<T>(environment || process.env, specs, options)
 }

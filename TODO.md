@@ -12,6 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- automate check in build process to ensure package.json versions incremented (and all same)?
 - remove need for classes just for log4js spying
   - have "getLogger" method
     - keeps loggers in memory by name

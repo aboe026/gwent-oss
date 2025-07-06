@@ -26,6 +26,7 @@ describe('env', () => {
             [
               {
                 path: customPath,
+                quiet: true,
               },
             ],
           ])
@@ -45,6 +46,7 @@ describe('env', () => {
             [
               {
                 path: customPath,
+                quiet: true,
               },
             ],
           ])
@@ -65,6 +67,7 @@ describe('env', () => {
             [
               {
                 path: customPath,
+                quiet: true,
               },
             ],
           ])
@@ -81,6 +84,7 @@ describe('env', () => {
           [
             {
               path: '.env',
+              quiet: true,
             },
           ],
         ])
@@ -98,6 +102,7 @@ describe('env', () => {
             [
               {
                 path: customPath,
+                quiet: true,
               },
             ],
           ])
@@ -118,6 +123,7 @@ describe('env', () => {
             [
               {
                 path: customPath,
+                quiet: true,
               },
             ],
           ])
@@ -136,6 +142,7 @@ describe('env', () => {
             [
               {
                 path: '.env',
+                quiet: true,
               },
             ],
           ])
