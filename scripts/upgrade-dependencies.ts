@@ -11,7 +11,6 @@ const DENY_LIST: string[] = [
   'eslint', // 9.0 breaks with TypeError: [ERR_IMPORT_ASSERTION_TYPE_MISSING]: Module "file:///.eslintrc.json?mtime=1714512618315" needs an import assertion of type "json"
   'eslint-plugin-prettier', // 5.0 breaks if using 2.0 of prettier (TypeError: prettier.resolveConfig is not a function)
   'graphql-request', // 7.0.0 switched to ESM, need to switch to ESM to be able to use
-  'npm-groovy-lint', // 15.0.1 breaks imports (NglParseError)
   'open', // 9.0 switched to ESM, need to switch to ESM to be able to use
   'prettier', // 3.0 broke auto pretty on save (TypeError: Invalid host defined options)
   'replace-in-file', // 8.0.0 switched to ESM, need to switch to ESM to be able to use

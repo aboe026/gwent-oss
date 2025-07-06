@@ -4278,7 +4278,7 @@ __metadata:
     jest-junit: "npm:16.0.0"
     jest-util: "npm:30.0.2"
     nodemon: "npm:3.1.10"
-    npm-groovy-lint: "npm:15.0.0"
+    npm-groovy-lint: "npm:15.2.0"
     npm-run-all: "npm:4.1.5"
     open: "npm:8.4.2"
     prettier: "npm:2.8.8"
@@ -6961,14 +6961,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.6.2":
-  version: 1.6.8
-  resolution: "axios@npm:1.6.8"
+"axios@npm:^1.9.0":
+  version: 1.10.0
+  resolution: "axios@npm:1.10.0"
   dependencies:
     follow-redirects: "npm:^1.15.6"
     form-data: "npm:^4.0.0"
     proxy-from-env: "npm:^1.1.0"
-  checksum: 10/3f9a79eaf1d159544fca9576261ff867cbbff64ed30017848e4210e49f3b01e97cf416390150e6fdf6633f336cd43dc1151f890bbd09c3c01ad60bb0891eee63
+  checksum: 10/d43c80316a45611fd395743e15d16ea69a95f2b7f7095f2bb12cb78f9ca0a905194a02e52a3bf4e0db9f85fd1186d6c690410644c10ecd8bb0a468e57c2040e4
   languageName: node
   linkType: hard
 
@@ -11660,15 +11660,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"java-caller@npm:^4.0.0":
-  version: 4.1.1
-  resolution: "java-caller@npm:4.1.1"
+"java-caller@npm:^4.2.1":
+  version: 4.2.1
+  resolution: "java-caller@npm:4.2.1"
   dependencies:
     debug: "npm:^4.3.4"
     fs-extra: "npm:^11.1.1"
-    njre: "npm:^1.4.0"
+    njre: "npm:^1.4.2"
     semver: "npm:^7.5.4"
-  checksum: 10/d44ce2fc0297f07fb0ceaa53cf3f68263c45197c547841f7182a5fd724dbca0c1ed2381be294f08e7777dedfa159ca8b37759f7e80d475e533834379a79d067e
+  checksum: 10/77198d941ba7624d52942de399eb96ce3603bd3fc5513a74092745401ce9b3fb7e3022bc96ee8326f394575ca590eea37e37abd64509d3d734caad3b29e2fb08
   languageName: node
   linkType: hard
 
@@ -13350,16 +13350,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"njre@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "njre@npm:1.4.0"
+"njre@npm:^1.4.2":
+  version: 1.4.2
+  resolution: "njre@npm:1.4.2"
   dependencies:
     command-exists-promise: "npm:^2.0.2"
     debug: "npm:^4.3.4"
     node-fetch: "npm:2.7.0"
     tar: "npm:^7.1.0"
     yauzl: "npm:^3.1.3"
-  checksum: 10/3323b005f754b70fdeb0542e05861aee918544defed2c0d245a86b0dc5064879d6d131125624df7ee21d8ded6ba7cf3b9ef47b95e5d56246d15b2d5402a80966
+  checksum: 10/92ae202d83033e3761af870c096d9575bbf4381408dd5c43f6579984f53a2346846cae0ee0cb3f0e93e667f5ec71330c252f48131f81e15cef385418a6d8fb65
   languageName: node
   linkType: hard
 
@@ -13542,12 +13542,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"npm-groovy-lint@npm:15.0.0":
-  version: 15.0.0
-  resolution: "npm-groovy-lint@npm:15.0.0"
+"npm-groovy-lint@npm:15.2.0":
+  version: 15.2.0
+  resolution: "npm-groovy-lint@npm:15.2.0"
   dependencies:
     ansi-colors: "npm:^4.1.1"
-    axios: "npm:^1.6.2"
+    axios: "npm:^1.9.0"
     chalk: "npm:^5.3.0"
     cli-progress: "npm:^3.12.0"
     commondir: "npm:^1.0.1"
@@ -13557,7 +13557,7 @@ __metadata:
     fs-extra: "npm:^11.0.0"
     glob: "npm:^11.0.0"
     import-fresh: "npm:^3.2.1"
-    java-caller: "npm:^4.0.0"
+    java-caller: "npm:^4.2.1"
     js-yaml: "npm:^4.1.0"
     node-sarif-builder: "npm:^3.0.0"
     optionator: "npm:^0.9.0"
@@ -13565,7 +13565,7 @@ __metadata:
     uuid: "npm:^10.0.0"
   bin:
     npm-groovy-lint: lib/index.js
-  checksum: 10/a51b731c457c9205619b598a867ee7991ffc270c88c7a81d43cbea892cc0478d448f010de0ec2679ad739a705b1f27270f39a6b2282f05d42e9e76f7155152a6
+  checksum: 10/8be67a05b11278799f2cd8e7eeb0f3819ff012409beb108812068f362fbb2b8596f2eb833fc5d17d12963dcaeb84842aa0b68ae03a016245b8e605d0838d9b25
   languageName: node
   linkType: hard
 
