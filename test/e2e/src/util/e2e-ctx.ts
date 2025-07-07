@@ -12,10 +12,10 @@ export interface E2ETestController<FixtureCtxType, TestCtxType> extends TestCont
 
 // @ts-expect-error Used to override the default TestController with E2eTestController
 interface E2eTest<FixtureCtxType, TestCtxType> extends TestFn {
-  (name: string, fn: (t: E2ETestController<FixtureCtxType, TestCtxType>) => Promise<any>): E2eTest<
-    FixtureCtxType,
-    TestCtxType
-  >
+  (
+    name: string,
+    fn: (t: E2ETestController<FixtureCtxType, TestCtxType>) => Promise<any>
+  ): E2eTest<FixtureCtxType, TestCtxType>
   page(url: string): this
   httpAuth(credentials: HTTPAuthCredentials): this
   before(fn: (t: E2ETestController<FixtureCtxType, TestCtxType>) => Promise<any>): this

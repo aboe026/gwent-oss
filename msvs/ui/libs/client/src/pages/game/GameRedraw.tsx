@@ -168,8 +168,8 @@ export default function GameRedraw({
                         handCardSelected && index === gameDeck.redraws.length
                           ? 'Place here to redraw'
                           : !handCardSelected
-                          ? 'Select card from hand to redraw'
-                          : ''
+                            ? 'Select card from hand to redraw'
+                            : ''
                       }
                       onClick={async () => {
                         if (handCardSelected && index === gameDeck.redraws.length) {

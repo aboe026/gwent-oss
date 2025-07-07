@@ -54,8 +54,8 @@ export default function GameHistory({
   const loadingTitle = playUnitProps.loading
     ? `Waiting for ${handCardSelected?.unit.name || 'unit'} to be deployed to the battlefield`
     : playPassProps.loading
-    ? 'Waiting for Pass to be recognized on the battlefield'
-    : 'Waiting for opponent to make their move'
+      ? 'Waiting for Pass to be recognized on the battlefield'
+      : 'Waiting for opponent to make their move'
   const resolvedPlayPassError = getApolloError(playPassProps.error)
   const resolvedPlayUnitError = getApolloError(playUnitProps.error)
 

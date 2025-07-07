@@ -561,15 +561,15 @@ function ExistingGame({
               battlefieldHighlighted && isTurn
                 ? 'pointer'
                 : battlefieldHighlighted && !isTurn
-                ? 'not-allowed'
-                : 'default',
+                  ? 'not-allowed'
+                  : 'default',
           }}
           title={
             battlefieldHighlighted && isTurn
               ? 'Place here to destroy the strongest unit(s) on the battlefield (including your own)'
               : battlefieldHighlighted && !isTurn
-              ? 'It is not your turn to play'
-              : ''
+                ? 'It is not your turn to play'
+                : ''
           }
           onClick={async () => {
             if (
