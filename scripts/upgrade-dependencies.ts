@@ -5,7 +5,7 @@ import { replaceInFile } from 'replace-in-file'
 import execa from './execute-async'
 
 const DENY_LIST: string[] = [
-  '@types/express', // 5.0.0 breaks typing with error Argument of type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to parameter of type 'PathParams'
+  '@types/express', // 5.0.0 breaks, waiting for @apollo/server to become compatible
   '@types/node', // manually keep in sync with Node.js version
   '@types/url-join', // 5.0 breaks and is not needed for url-join 5.0
   'graphql-request', // 7.0.0 switched to ESM, need to switch to ESM to be able to use
