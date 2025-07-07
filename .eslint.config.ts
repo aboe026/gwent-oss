@@ -12,6 +12,7 @@ export default tseslint.config(
       '**/coverage/**',
       '**/generated/**',
       '**/results/**',
+      '**/screenshots/**',
       '**/perf/**',
       '**/.vscode/**',
       '**/.yarn/**',
