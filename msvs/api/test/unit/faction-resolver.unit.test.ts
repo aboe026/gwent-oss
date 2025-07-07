@@ -256,6 +256,5 @@ async function testResolveFromArray({
         dlc: faction.dlc ? dlcResolveResponse[0] : undefined,
       }
     }),
-    ,
   ])
 }

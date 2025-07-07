@@ -87,7 +87,8 @@ export default function GameInfo({
  */
 function renderSharedInfo({ gameDeckProps, gameProps }: { gameDeckProps: GameDeckProps; gameProps: GameProps }) {
   const game = gameProps.game
-  if (game)
+  if (game) {
+    const loading = gameProps.loading || gameDeckProps.loading
     return (
       <div id="gameInfoSharedContainer">
         <div id="gameInfoSharedDetails" className="game-section">
@@ -99,15 +100,11 @@ function renderSharedInfo({ gameDeckProps, gameProps }: { gameDeckProps: GameDec
           <div
             id={HTML_IDS.GameRefresh}
             className={game.status === GameStatus.Playing ? 'playing' : 'decking'}
-            style={{ cursor: gameProps.loading || gameDeckProps.loading ? 'not-allowed' : 'pointer' }}
+            style={{ cursor: loading ? 'not-allowed' : 'pointer' }}
             title="Refresh"
-            onClick={async () =>
-              !gameProps.loading &&
-              !gameDeckProps.loading &&
-              (await Promise.all([gameProps.refetch(), gameDeckProps.refetch()]))
-            }
+            onClick={async () => !loading && (await Promise.all([gameProps.refetch(), gameDeckProps.refetch()]))}
           >
-            <CgSync color={false ? 'gray' : 'black'} />
+            <CgSync color={loading ? 'gray' : 'black'} />
           </div>
         </div>
         {game.status === GameStatus.Playing && (
@@ -118,6 +115,7 @@ function renderSharedInfo({ gameDeckProps, gameProps }: { gameDeckProps: GameDec
         )}
       </div>
     )
+  }
 }
 
 /**

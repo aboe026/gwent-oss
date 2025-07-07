@@ -105,10 +105,8 @@ export async function getLeaderId({ name, faction }: { name?: string; faction?: 
   }
   let leader: Leader | undefined = undefined
   if (name) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     leader = (response.data?.leaders as any).find((leader: any) => leader.name === name)
   } else if (faction) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     leader = (response.data?.leaders as any).find((leader: any) => leader.faction.key === faction)
   } else {
     throw Error('No leader or faction specified to scope leader to')

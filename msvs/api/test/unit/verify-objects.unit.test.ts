@@ -178,7 +178,7 @@ function testVerifiyObjects({
   error,
 }: {
   expectedKeys: (ObjectId | string)[]
-  objects: any[] // eslint-disable-line @typescript-eslint/no-explicit-any
+  objects: any[]
   field: string
   label: string
   getMissingKeysResponse?: string[]

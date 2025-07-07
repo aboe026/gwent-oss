@@ -27,7 +27,7 @@ export default class Permissions {
    * @throws Error if no rule has been defined for the Query/Mutation.
    * @returns true if a rule has been defined for the Query/Mutation, otherwise throw an Error.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static fallback(parent: any, args: any, ctx: any, info: GraphQLResolveInfo) {
     if (info.parentType.name === 'Query') {
       Permissions.logger.error(`fallback hit because no rule defined for Query "${info.fieldName}"`)
@@ -49,7 +49,7 @@ export default class Permissions {
    * @throws Error if user is not authenticated.
    * @returns true if the user is authenticated, otherwise throw an Error.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static isAuthenticated(parent: any, args: any, ctx: Context, info: GraphQLResolveInfo) {
     if (!ctx.session?.user?._id) {
       Permissions.logger.warn(
@@ -72,7 +72,7 @@ export default class Permissions {
    * @throws Error if user is not a player on the game.
    * @returns true if the user is a player on the game, otherwise throw an Error.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static async isPlayer(parent: any, args: any, ctx: Context, info: GraphQLResolveInfo) {
     const userId = ctx.session?.user?._id
     const gameId = args.game || args.id
@@ -126,7 +126,7 @@ export default class Permissions {
    * @throws Error if user does not own the Deck.
    * @returns true if the user owns the deck, otherwise throw an Error.
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static async ownsDeck(parent: any, args: any, ctx: Context, info: GraphQLResolveInfo) {
     const userId = ctx.session?.user?._id
     const deckId = args.deck || args.id

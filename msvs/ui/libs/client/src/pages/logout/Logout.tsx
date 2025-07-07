@@ -16,6 +16,7 @@ import './Logout.css'
 export default function LogoutPage() {
   const navigate = useNavigate()
   const [logout, { loading: logoutLoading, error: logoutError, data: logoutData }] = useLogoutMutation({
+    // eslint-disable-next-line no-empty-pattern
     update(cache, {}) {
       const existingUser = cache.readQuery<CurrentUserQuery>({ query: CurrentUserDocument })
       if (existingUser?.currentUser) {

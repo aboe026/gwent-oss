@@ -8,8 +8,6 @@ const DENY_LIST: string[] = [
   '@types/express', // 5.0.0 breaks typing with error Argument of type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to parameter of type 'PathParams'
   '@types/node', // manually keep in sync with Node.js version
   '@types/url-join', // 5.0 breaks and is not needed for url-join 5.0
-  'eslint', // 9.0 breaks with TypeError: [ERR_IMPORT_ASSERTION_TYPE_MISSING]: Module "file:///.eslintrc.json?mtime=1714512618315" needs an import assertion of type "json"
-  'eslint-plugin-prettier', // 5.0 breaks if using 2.0 of prettier (TypeError: prettier.resolveConfig is not a function)
   'graphql-request', // 7.0.0 switched to ESM, need to switch to ESM to be able to use
   'open', // 9.0 switched to ESM, need to switch to ESM to be able to use
   'prettier', // 3.0 broke auto pretty on save (TypeError: Invalid host defined options)

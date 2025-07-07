@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb'
 
 export default function deepClone<T>(item: T): T {
-  let newItem: any // eslint-disable-line @typescript-eslint/no-explicit-any
+  let newItem: any
   if (item instanceof ObjectId) {
     newItem = new ObjectId(item)
   } else if (item instanceof Date) {
@@ -15,7 +15,7 @@ export default function deepClone<T>(item: T): T {
     newItem = {}
     const itemObj = item as object
     for (const key of Object.keys(itemObj)) {
-      newItem[key] = deepClone((itemObj as any)[key]) // eslint-disable-line @typescript-eslint/no-explicit-any
+      newItem[key] = deepClone((itemObj as any)[key])
     }
   } else if (typeof item === 'number') {
     newItem = Number(item)

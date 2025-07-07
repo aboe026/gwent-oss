@@ -14,9 +14,11 @@ const config: any = {
   concurrency: env.CONCURRENCY,
   hooks: {
     testRun: {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       before: async (ctx: any) => {
         await profiler.start()
       },
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       after: async (ctx: any) => {
         const profilerFile = path.join(__dirname, '..', 'perf', 'profiling.json')
         await profiler.stop()

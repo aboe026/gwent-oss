@@ -153,7 +153,6 @@ describe('game-unit-effect-resolver', () => {
             {
               ids: [unit.id],
             },
-            ,
           ],
         ],
         fromObjectCalls: [

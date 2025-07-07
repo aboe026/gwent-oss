@@ -55,7 +55,6 @@ export async function verifyCollectionNames({
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function verifyMongoIds(item: any, idKey = 'id') {
   if (item) {
     if (Array.isArray(item)) {
@@ -144,11 +143,11 @@ export function expectizeLeaders() {
 
 export function expectizeUnits(): Unit[] {
   const expectedFactions = expectizeFactions()
-  const expectedUnits: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
+  const expectedUnits: any[] = []
   for (const unit of units) {
     for (let i = 0; i < unit.Occurrences; i++) {
       const expectedEffects = expectizeEffects() // NOTE: needs to be inside for loop so effects from different units do not effect each other (get overwritten)
-      const unitEffects: any[] = [] // eslint-disable-line @typescript-eslint/no-explicit-any
+      const unitEffects: any[] = []
       for (const effect of [unit['Effect 1'], unit['Effect 2']]) {
         if (effect) {
           const unitEffect = expectedEffects.find((expectedEffect) => expectedEffect.name === effect)
@@ -176,7 +175,7 @@ export function expectizeUnits(): Unit[] {
       }
       expectedUnits.push({
         ...expectedUnit,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
         effects: UnitResolver.effectAbilities(expectedUnit as any, unitEffects),
       })
     }
@@ -215,10 +214,9 @@ export function expectizeDeck({ factionKey, leaderName, name, unitNames, user, m
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function getDlc(item: any) {
   const expectedDlcs = expectizeDlcs()
-  let dlc: any = null // eslint-disable-line @typescript-eslint/no-explicit-any
+  let dlc: any = null
   if (item.DLC) {
     dlc = expectedDlcs.find((dlc) => dlc.name === item.DLC)
   }
@@ -502,7 +500,6 @@ export function expectizePlayerRound({
   return {
     close,
     moves: moves.map((move) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((move as any).unit) {
         const unitMove = move as MoveUnit
         if (!unitMove.impacts) {
