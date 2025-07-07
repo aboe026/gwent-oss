@@ -48,6 +48,7 @@ export default class DbUpgrader {
           DbUpgrader.logger.debug(`Found "${newUpgradesCount}" new upgrade(s) to run`)
           let finished = false
           await Promise.all([
+            // eslint-disable-next-line no-async-promise-executor
             new Promise(async (resolve, reject) => {
               let version: number = current + 1
               try {
@@ -80,6 +81,7 @@ export default class DbUpgrader {
                 finished = true
               }
             }),
+            // eslint-disable-next-line no-async-promise-executor
             new Promise(async (resolve, reject) => {
               try {
                 while (!finished) {
