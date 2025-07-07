@@ -171,7 +171,6 @@ For quick cycle time on changes, it is recommended to run the project in [Watch]
 All the [Local Prereqs](#prereqs-1) apply, along with:
 
 - [VSCode](https://code.visualstudio.com/)
-
   - To enable [Editor SDK](https://yarnpkg.com/getting-started/editor-sdks), run
 
     ```sh
@@ -270,7 +269,7 @@ yarn test
 
 ### Upgrade Node.js
 
-To upgrade [NodeJS](https://nodejs.org/), edit the [.nvmrc](./.nvmrc) file.
+To upgrade [NodeJS](https://nodejs.org/), edit the [.nvmrc](./.nvmrc) file as well as any `Dockerfile`.
 
 Also, change `package.json` references of `@types/node` to match the new version.
 

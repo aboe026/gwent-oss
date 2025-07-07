@@ -66,6 +66,7 @@ Existing problems in the codebase that need to be fixed.
   - save config in database?
     - save config in memory as well to reduce database reads?
       - how to handle changes when multiple instances running?
+- move all config files (prettier, eslint, docker, jest) to `.config` directory
 - look into why cookie doesn't persist with first "yarn start" but does with "yarn watch" (or "yarn start" after "yarn watch")
 - dynamically set scenario name for e2e tests based on their fixture name, have it set on context
 - run index analyzer during func tests?
