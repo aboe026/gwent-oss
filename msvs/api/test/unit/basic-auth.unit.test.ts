@@ -14,6 +14,16 @@ describe('basic-auth', () => {
         nextCalls: [[]],
       })
     })
+    it('does not call next if not defined', async () => {
+      await testBasicAuth({
+        req: {
+          headers: {},
+        },
+        next: false,
+        validateUserCalls: [],
+        nextCalls: [],
+      })
+    })
     it('throws error if validate user fails', async () => {
       const name = 'name'
       const password = 'password'
@@ -68,6 +78,7 @@ describe('basic-auth', () => {
 
 async function testBasicAuth({
   req,
+  next = true,
   validateUserError,
   validateUserResponse,
   validateUserCalls = [],
@@ -76,6 +87,7 @@ async function testBasicAuth({
   error,
 }: {
   req: any
+  next?: boolean
   validateUserResponse?: UserDbObject
   validateUserError?: Error
   validateUserCalls?: string[][]
@@ -92,7 +104,7 @@ async function testBasicAuth({
   }
   const nextSpy = jest.fn().mockImplementation()
 
-  const promise = BasicAuth.authenticate(req, res, nextSpy)
+  const promise = next ? BasicAuth.authenticate(req, res, nextSpy) : BasicAuth.authenticate(req, res)
   if (error) {
     await expect(promise).rejects.toThrow(error)
   } else {

@@ -120,93 +120,236 @@ describe('game-unit-effect-resolver', () => {
         expected: [],
       })
     })
-    it('calls to effect and unit resolvers if EffectFromUnit', async () => {
-      const effect = TestUtil.getEffect({})
-      const unit = TestUtil.getUnit({})
-      const gameUnitEffect = {
-        operator: '+1',
-        reason: {
-          effect: new ObjectId(effect.id),
-          type: EffectReasonType.Unit,
-          unit: new ObjectId(unit.id),
-        } as EffectFromUnitDbObject,
-        total: 1,
-      }
-      await testFromArray({
-        gameUnitEffects: [gameUnitEffect],
-        effectsResponse: [effect],
-        unitsResponse: [unit],
-        expected: [
-          {
-            operator: '+1',
-            reason: {
-              effect,
-              unit,
-              __typename: 'EffectFromUnit',
-            } as EffectFromUnit,
-            total: 1,
-          },
-        ],
-        effectCalls: [[[effect.id]]],
-        unitCalls: [
-          [
+    describe('EffectFromUnit', () => {
+      it('calls to effect and unit resolvers if single effect', async () => {
+        const effect = TestUtil.getEffect({})
+        const unit = TestUtil.getUnit({})
+        const gameUnitEffect = {
+          operator: '+1',
+          reason: {
+            effect: new ObjectId(effect.id),
+            type: EffectReasonType.Unit,
+            unit: new ObjectId(unit.id),
+          } as EffectFromUnitDbObject,
+          total: 1,
+        }
+        await testFromArray({
+          gameUnitEffects: [gameUnitEffect],
+          effectsResponse: [effect],
+          unitsResponse: [unit],
+          expected: [
             {
-              ids: [unit.id],
+              operator: '+1',
+              reason: {
+                effect,
+                unit,
+                __typename: 'EffectFromUnit',
+              } as EffectFromUnit,
+              total: 1,
             },
           ],
-        ],
-        fromObjectCalls: [
-          [
+          effectCalls: [[[effect.id]]],
+          unitCalls: [
+            [
+              {
+                ids: [unit.id],
+              },
+            ],
+          ],
+          fromObjectCalls: [
+            [
+              {
+                gameUnitEffect,
+                effect,
+                unit,
+                leader: undefined,
+              },
+            ],
+          ],
+        })
+      })
+      it('calls to effect and unit resolvers if multiple effects', async () => {
+        const effect = TestUtil.getEffect({})
+        const unit = TestUtil.getUnit({})
+        const gameUnitEffect1 = {
+          operator: '+1',
+          reason: {
+            effect: new ObjectId(effect.id),
+            type: EffectReasonType.Unit,
+            unit: new ObjectId(unit.id),
+          } as EffectFromUnitDbObject,
+          total: 1,
+        }
+        const gameUnitEffect2 = {
+          operator: '+1',
+          reason: {
+            effect: new ObjectId(effect.id),
+            type: EffectReasonType.Unit,
+            unit: new ObjectId(unit.id),
+          } as EffectFromUnitDbObject,
+          total: 1,
+        }
+        await testFromArray({
+          gameUnitEffects: [gameUnitEffect1, gameUnitEffect2],
+          effectsResponse: [effect],
+          unitsResponse: [unit],
+          expected: [
             {
-              gameUnitEffect,
-              effect,
-              unit,
-              leader: undefined,
+              operator: '+1',
+              reason: {
+                effect,
+                unit,
+                __typename: 'EffectFromUnit',
+              } as EffectFromUnit,
+              total: 1,
+            },
+            {
+              operator: '+1',
+              reason: {
+                effect,
+                unit,
+                __typename: 'EffectFromUnit',
+              } as EffectFromUnit,
+              total: 1,
             },
           ],
-        ],
+          effectCalls: [[[effect.id]]],
+          unitCalls: [
+            [
+              {
+                ids: [unit.id],
+              },
+            ],
+          ],
+          fromObjectCalls: [
+            [
+              {
+                gameUnitEffect: gameUnitEffect1,
+                effect,
+                unit,
+                leader: undefined,
+              },
+            ],
+            [
+              {
+                gameUnitEffect: gameUnitEffect2,
+                effect,
+                unit,
+                leader: undefined,
+              },
+            ],
+          ],
+        })
       })
     })
-    it('calls to leader resolver if EffectFromLeader', async () => {
-      const leader = TestUtil.getLeader({})
-      const gameUnitEffect = {
-        operator: '+1',
-        reason: {
-          leader: new ObjectId(leader.id),
-          type: EffectReasonType.Leader,
-        } as EffectFromLeaderDbObject,
-        total: 1,
-      }
-      await testFromArray({
-        gameUnitEffects: [gameUnitEffect],
-        leadersResponse: [leader],
-        expected: [
-          {
-            operator: '+1',
-            reason: {
-              leader,
-              __typename: 'EffectFromLeader',
-            } as EffectFromLeader,
-            total: 1,
-          },
-        ],
-        leaderCalls: [
-          [
+    describe('EffectFromLeader', () => {
+      it('calls to leader resolver if single effect', async () => {
+        const leader = TestUtil.getLeader({})
+        const gameUnitEffect = {
+          operator: '+1',
+          reason: {
+            leader: new ObjectId(leader.id),
+            type: EffectReasonType.Leader,
+          } as EffectFromLeaderDbObject,
+          total: 1,
+        }
+        await testFromArray({
+          gameUnitEffects: [gameUnitEffect],
+          leadersResponse: [leader],
+          expected: [
             {
-              ids: [leader.id],
+              operator: '+1',
+              reason: {
+                leader,
+                __typename: 'EffectFromLeader',
+              } as EffectFromLeader,
+              total: 1,
             },
           ],
-        ],
-        fromObjectCalls: [
-          [
+          leaderCalls: [
+            [
+              {
+                ids: [leader.id],
+              },
+            ],
+          ],
+          fromObjectCalls: [
+            [
+              {
+                gameUnitEffect,
+                effect: undefined,
+                unit: undefined,
+                leader,
+              },
+            ],
+          ],
+        })
+      })
+      it('calls to leader resolver if multiple effects', async () => {
+        const leader = TestUtil.getLeader({})
+        const gameUnitEffect1 = {
+          operator: '+1',
+          reason: {
+            leader: new ObjectId(leader.id),
+            type: EffectReasonType.Leader,
+          } as EffectFromLeaderDbObject,
+          total: 1,
+        }
+        const gameUnitEffect2 = {
+          operator: '+1',
+          reason: {
+            leader: new ObjectId(leader.id),
+            type: EffectReasonType.Leader,
+          } as EffectFromLeaderDbObject,
+          total: 1,
+        }
+        await testFromArray({
+          gameUnitEffects: [gameUnitEffect1, gameUnitEffect2],
+          leadersResponse: [leader],
+          expected: [
             {
-              gameUnitEffect,
-              effect: undefined,
-              unit: undefined,
-              leader,
+              operator: '+1',
+              reason: {
+                leader,
+                __typename: 'EffectFromLeader',
+              } as EffectFromLeader,
+              total: 1,
+            },
+            {
+              operator: '+1',
+              reason: {
+                leader,
+                __typename: 'EffectFromLeader',
+              } as EffectFromLeader,
+              total: 1,
             },
           ],
-        ],
+          leaderCalls: [
+            [
+              {
+                ids: [leader.id],
+              },
+            ],
+          ],
+          fromObjectCalls: [
+            [
+              {
+                gameUnitEffect: gameUnitEffect1,
+                effect: undefined,
+                unit: undefined,
+                leader,
+              },
+            ],
+            [
+              {
+                gameUnitEffect: gameUnitEffect2,
+                effect: undefined,
+                unit: undefined,
+                leader,
+              },
+            ],
+          ],
+        })
       })
     })
   })

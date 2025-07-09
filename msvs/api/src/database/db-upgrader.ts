@@ -12,6 +12,7 @@ export default class DbUpgrader {
   private static LOCK_TIMEOUT_SECONDS = 30
   private static LOCK_REFRESH_SECONDS = 1
   private static running = false
+  private static finished = false
   private static logger = getLogger('DbUpgrader')
 
   /**
@@ -46,63 +47,12 @@ export default class DbUpgrader {
         if (upgrades.length > current) {
           const newUpgradesCount = upgrades.length - current
           DbUpgrader.logger.debug(`Found "${newUpgradesCount}" new upgrade(s) to run`)
-          let finished = false
-          await Promise.all([
-            // eslint-disable-next-line no-async-promise-executor
-            new Promise(async (resolve, reject) => {
-              let version: number = current + 1
-              try {
-                for (let i = current; i < upgrades.length && !finished; i++) {
-                  version = i + 1
-                  DbUpgrader.logger.info(`Running upgrade "${version}"...`)
-                  const start = new Date()
-
-                  await UpgradeStore.addAttempt({
-                    version,
-                    time: start,
-                  })
-
-                  await upgrades[i].run()
-
-                  await UpgradeStore.addUpgrade({
-                    version,
-                    start,
-                    end: new Date(),
-                  })
-
-                  DbUpgrader.logger.info(`...upgrade "${version}" complete`)
-                }
-                resolve(undefined)
-              } catch (err: unknown) {
-                DbUpgrader.logger.error(`Error while running upgrade "${version}": "${err}"`)
-                reject(err)
-              } finally {
-                DbUpgrader.logger.debug('setting finished to true')
-                finished = true
-              }
+          await Promise.race([
+            DbUpgrader.upgrade({
+              current,
+              upgrades,
             }),
-            // eslint-disable-next-line no-async-promise-executor
-            new Promise(async (resolve, reject) => {
-              try {
-                while (!finished) {
-                  DbUpgrader.logger.debug(
-                    `sleeping "${DbUpgrader.LOCK_REFRESH_SECONDS}" second(s) before updating lock timeout`
-                  )
-                  await sleep(DbUpgrader.LOCK_REFRESH_SECONDS)
-                  DbUpgrader.logger.debug(`finished: "${finished}"`)
-                  if (!finished) {
-                    DbUpgrader.logger.debug('Updating lock timeout')
-                    await UpgradeStore.updateLock()
-                  }
-                }
-                resolve(undefined)
-              } catch (err: unknown) {
-                DbUpgrader.logger.error(`Error while waiting and updating lock: "${err}"`)
-                DbUpgrader.logger.debug('setting finished to true due to lock update error')
-                finished = true
-                reject(err)
-              }
-            }),
+            DbUpgrader.keepLockUpdated(),
           ])
         } else {
           DbUpgrader.logger.debug('No new upgrades to run')
@@ -187,6 +137,60 @@ export default class DbUpgrader {
       DbUpgrader.logger.debug(`Lock aquired in "${durationSeconds}" second(s)`)
     } else {
       throw Error(`Could not aquire lock after "${durationSeconds}" seconds`)
+    }
+  }
+
+  private static async upgrade({ current, upgrades }: { current: number; upgrades: Upgrade[] }): Promise<void> {
+    let version: number = current + 1
+    try {
+      for (let i = current; i < upgrades.length && !DbUpgrader.finished; i++) {
+        version = i + 1
+        DbUpgrader.logger.info(`Running upgrade "${version}"...`)
+        const start = new Date()
+
+        await UpgradeStore.addAttempt({
+          version,
+          time: start,
+        })
+
+        await upgrades[i].run()
+
+        const end = new Date()
+        await UpgradeStore.addUpgrade({
+          version,
+          start,
+          end,
+        })
+
+        DbUpgrader.logger.info(
+          `...upgrade "${version}" completed in "${(end.getTime() - start.getTime()) / 1000}" second(s).`
+        )
+      }
+    } catch (err: unknown) {
+      DbUpgrader.logger.error(`Error while running upgrade "${version}": "${err}"`)
+      throw err
+    } finally {
+      DbUpgrader.logger.debug('setting finished to true')
+      DbUpgrader.finished = true
+    }
+  }
+
+  private static async keepLockUpdated(): Promise<void> {
+    try {
+      while (!DbUpgrader.finished) {
+        DbUpgrader.logger.debug(`sleeping "${DbUpgrader.LOCK_REFRESH_SECONDS}" second(s) before updating lock timeout`)
+        await sleep(DbUpgrader.LOCK_REFRESH_SECONDS)
+        DbUpgrader.logger.debug(`finished: "${DbUpgrader.finished}"`)
+        if (!DbUpgrader.finished) {
+          DbUpgrader.logger.debug('Updating lock timeout')
+          await UpgradeStore.updateLock()
+        }
+      }
+    } catch (err: unknown) {
+      DbUpgrader.logger.error(`Error while waiting and updating lock: "${err}"`)
+      DbUpgrader.logger.debug('setting finished to true due to lock update error')
+      DbUpgrader.finished = true
+      throw err
     }
   }
 }

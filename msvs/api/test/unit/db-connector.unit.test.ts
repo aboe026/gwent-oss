@@ -63,7 +63,17 @@ describe('db-connector', () => {
         initializeCalled: true,
       })
     })
-    it('outputs trace logs if trace enabled', async () => {
+    it('does not outputs trace logs if trace enabled and already connected', async () => {
+      await testConnect({
+        client: true,
+        connected: true,
+        debugCalls: [],
+        traceEnabled: true,
+        traceCalls: [],
+        initializeCalled: false,
+      })
+    })
+    it('outputs trace logs if trace enabled and not connected', async () => {
       await testConnect({
         client: false,
         connected: false,

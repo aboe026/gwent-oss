@@ -45,6 +45,19 @@ describe('getUnitStats', () => {
   it('returns all zeros if no units', () => {
     expect(getUnitStats([])).toEqual(zeroStats)
   })
+  it('ignores units which are not deckable', () => {
+    expect(
+      getUnitStats([
+        {
+          artStyle: 1,
+          unit: {
+            ...unit,
+            deckable: false,
+          },
+        },
+      ])
+    ).toEqual(zeroStats)
+  })
   it('returns 1 for units if unit without anything', () => {
     expect(
       getUnitStats([

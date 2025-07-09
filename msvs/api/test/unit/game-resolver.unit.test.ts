@@ -90,7 +90,7 @@ describe('game-resolver', () => {
     })
   })
   describe('fromArray', () => {
-    it('calls to fromObject with resolved users', async () => {
+    it('calls to fromObject with resolved users for single game', async () => {
       const gameId = new ObjectId()
       const creator = TestUtil.getUser({})
       const player = TestUtil.getUser({})
@@ -117,6 +117,55 @@ describe('game-resolver', () => {
             {
               creator,
               game,
+              users: [player],
+            },
+          ],
+        ],
+      })
+    })
+    it('calls to fromObject with resolved users for multiple games', async () => {
+      const creator = TestUtil.getUser({})
+      const player = TestUtil.getUser({})
+      const game1 = TestUtil.getDbGame({
+        creator: creator.id,
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: player.id,
+          }),
+        ],
+      })
+      const game2 = TestUtil.getDbGame({
+        creator: creator.id,
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: player.id,
+          }),
+        ],
+      })
+      await testResolveFromArray({
+        games: [game1, game2],
+        resolvedUsers: [creator, player],
+        resolvedGames: [
+          TestUtil.getGameFromDbGame({
+            game: game1,
+          }),
+          TestUtil.getGameFromDbGame({
+            game: game2,
+          }),
+        ],
+        userResolverCalls: [[[creator.id, player.id]]],
+        gameResolverCalls: [
+          [
+            {
+              creator,
+              game: game1,
+              users: [player],
+            },
+          ],
+          [
+            {
+              creator,
+              game: game2,
               users: [player],
             },
           ],

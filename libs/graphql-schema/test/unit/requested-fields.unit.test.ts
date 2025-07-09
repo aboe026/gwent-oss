@@ -209,9 +209,7 @@ describe('RequestedFields', () => {
             ],
             fragments: {
               PieFragment: {
-                selectionSet: {
-                  selections: [],
-                },
+                selectionSet: {},
               },
             },
           } as any as GraphQLResolveInfo)
@@ -698,6 +696,22 @@ describe('RequestedFields', () => {
             },
           } as any as GraphQLResolveInfo)
         ).toEqual(['pie.filling', 'pie.crust', 'cake.flavor', 'cake.icing'])
+      })
+    })
+    describe('invalid', () => {
+      it('returns empty array if invalid node Kind', () => {
+        expect(
+          RequestedFields.getFieldsRequested({
+            fieldNodes: [
+              {
+                kind: 'invalid',
+                name: {
+                  value: 'pie',
+                },
+              },
+            ],
+          } as any as GraphQLResolveInfo)
+        ).toEqual([])
       })
     })
   })
@@ -1360,8 +1374,56 @@ describe('RequestedFields', () => {
           ])
         })
       })
+      describe('invalid', () => {
+        it('returns empty array if invalid Kind', () => {
+          expect(
+            RequestedFields.getArguments({
+              fieldNodes: [
+                {
+                  kind: Kind.FIELD,
+                  name: {
+                    value: 'pie',
+                  },
+                  arguments: [
+                    {
+                      kind: Kind.ARGUMENT,
+                      name: {
+                        kind: Kind.NAME,
+                        value: 'filling',
+                      },
+                      value: {
+                        kind: 'invalid',
+                        value: 'fruit',
+                      },
+                    },
+                  ],
+                },
+              ],
+            } as any as GraphQLResolveInfo)
+          ).toEqual([])
+        })
+      })
     })
     describe('FragmentSpreadNode', () => {
+      describe('no fragments', () => {
+        it('returns empty array if no fragment', () => {
+          expect(
+            RequestedFields.getArguments({
+              fieldNodes: [
+                {
+                  kind: Kind.FRAGMENT_SPREAD,
+                  name: {
+                    value: 'PieFragment',
+                  },
+                },
+              ],
+              fragments: {
+                PieFragment: undefined,
+              },
+            } as any as GraphQLResolveInfo)
+          ).toEqual([])
+        })
+      })
       describe('BooleanValue', () => {
         it('returns single item if single fragment node with true boolean argument', () => {
           expect(
@@ -2346,6 +2408,35 @@ describe('RequestedFields', () => {
             },
           ])
         })
+      })
+    })
+    describe('invalid', () => {
+      it('returns empty array if invalid node Kind', () => {
+        expect(
+          RequestedFields.getArguments({
+            fieldNodes: [
+              {
+                kind: 'invalid',
+                name: {
+                  value: 'pie',
+                },
+                arguments: [
+                  {
+                    kind: Kind.ARGUMENT,
+                    name: {
+                      kind: Kind.NAME,
+                      value: 'filling',
+                    },
+                    value: {
+                      kind: Kind.STRING,
+                      value: 'fruit',
+                    },
+                  },
+                ],
+              },
+            ],
+          } as any as GraphQLResolveInfo)
+        ).toEqual([])
       })
     })
   })

@@ -18,7 +18,7 @@ describe('db-upgrader', () => {
   })
   describe('run', () => {
     it('throws error if running is true', async () => {
-      await testDbUpgrader({
+      await testRun({
         running: true,
         error: 'Already attempting to run an upgrade',
         aquireLockCalls: [],
@@ -29,7 +29,7 @@ describe('db-upgrader', () => {
     })
     it('throws error and sets running to false if aquireLock throws error', async () => {
       const error = 'connection refused'
-      await testDbUpgrader({
+      await testRun({
         aquireLockError: error,
         error: error,
         currentVersionCalls: [],
@@ -44,7 +44,7 @@ describe('db-upgrader', () => {
     it('does not run upgrades if current version is 0 and no upgrades', async () => {
       const currentVersion = 0
       const upgrades: Upgrade[] = []
-      await testDbUpgrader({
+      await testRun({
         currentVersion,
         upgrades,
         debugCalls: [
@@ -60,7 +60,7 @@ describe('db-upgrader', () => {
     it('does not run upgrades if current version is 1 and single upgrade', async () => {
       const currentVersion = 1
       const upgrades = [new TestUpgrade()]
-      await testDbUpgrader({
+      await testRun({
         currentVersion,
         upgrades,
         debugCalls: [
@@ -73,183 +73,132 @@ describe('db-upgrader', () => {
         ],
       })
     })
-    it('runs single upgrade if one to run and none run before', async () => {
+    it('throws error and sets running to false if upgrade throws error', async () => {
       const currentVersion = 0
       const upgrades = [new TestUpgrade()]
-      const start = new Date()
-      const end = new Date(start.getTime() + 1000 * 60) // 1 second
-      await testDbUpgrader({
+      const error = 'bad'
+      await testRun({
         currentVersion,
         upgrades,
-        debugCalls: [
-          ['Setting running to true to prevent concurrent upgrade runs'],
-          ['Current version: "0"'],
-          ['allUpgrades has "1" upgrade(s)'],
-          ['Found "1" new upgrade(s) to run'],
-          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
-          ['finished: "false"'],
-          ['Updating lock timeout'],
-          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
-          ['finished: "false"'],
-          ['Updating lock timeout'],
-          ['setting finished to true'],
-          ['Deleting lock'],
-          ['Setting running to false so other upgrade runs can occur'],
-        ],
-        infoCalls: [['Running upgrade "1"...'], ['...upgrade "1" complete']],
-        dates: [start, end],
-        addAttemptCalls: [
+        upgrade: new Promise((resolve, reject) => {
+          reject(Error(error))
+        }),
+        keepLockUpdated: new Promise((resolve, reject) => {
+          setTimeout(resolve, 10)
+        }),
+        upgradeCalls: [
           [
             {
-              version: 1,
-              time: start,
+              current: 0,
+              upgrades,
             },
           ],
         ],
-        addUpgradeCalls: [
-          [
-            {
-              version: 1,
-              start,
-              end,
-            },
-          ],
-        ],
-        sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']], [DbUpgrader['LOCK_REFRESH_SECONDS']]],
-        updateLockCalls: [[], []],
-      })
-    })
-    it('runs single upgrade if one to run and one run before', async () => {
-      const currentVersion = 1
-      const upgrades = [new TestUpgrade(), new TestUpgrade()]
-      const start = new Date()
-      const end = new Date(start.getTime() + 1000 * 60) // 1 second
-      await testDbUpgrader({
-        currentVersion,
-        upgrades,
-        debugCalls: [
-          ['Setting running to true to prevent concurrent upgrade runs'],
-          ['Current version: "1"'],
-          ['allUpgrades has "2" upgrade(s)'],
-          ['Found "1" new upgrade(s) to run'],
-          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
-          ['finished: "false"'],
-          ['Updating lock timeout'],
-          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
-          ['finished: "false"'],
-          ['Updating lock timeout'],
-          ['setting finished to true'],
-          ['Deleting lock'],
-          ['Setting running to false so other upgrade runs can occur'],
-        ],
-        infoCalls: [['Running upgrade "2"...'], ['...upgrade "2" complete']],
-        dates: [start, end],
-        addAttemptCalls: [
-          [
-            {
-              version: 2,
-              time: start,
-            },
-          ],
-        ],
-        addUpgradeCalls: [
-          [
-            {
-              version: 2,
-              start,
-              end,
-            },
-          ],
-        ],
-        sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']], [DbUpgrader['LOCK_REFRESH_SECONDS']]],
-        updateLockCalls: [[], []],
-      })
-    })
-    it('throws error if upgrade throws error', async () => {
-      const error = 'bad upgrade'
-      const currentVersion = 0
-      const upgrade = new TestUpgrade()
-      jest.spyOn(upgrade, 'run').mockRejectedValue(Error(error))
-      const upgrades = [upgrade]
-      const start = new Date()
-      await testDbUpgrader({
-        currentVersion,
-        upgrades,
+        keepLockUpdatedCalls: [[]],
         error,
         debugCalls: [
           ['Setting running to true to prevent concurrent upgrade runs'],
           ['Current version: "0"'],
           ['allUpgrades has "1" upgrade(s)'],
           ['Found "1" new upgrade(s) to run'],
-          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
-          ['finished: "false"'],
-          ['Updating lock timeout'],
-          ['setting finished to true'],
           ['Deleting lock'],
           ['Setting running to false so other upgrade runs can occur'],
         ],
-        infoCalls: [['Running upgrade "1"...']],
-        errorCalls: [[`Error while running upgrade "1": "${Error(error)}"`]],
-        dates: [start],
-        addAttemptCalls: [
+      })
+    })
+    it('throws error and sets running to false if keepLockUpdated throws error', async () => {
+      const currentVersion = 0
+      const upgrades = [new TestUpgrade()]
+      const error = 'bad'
+      await testRun({
+        currentVersion,
+        upgrades,
+        upgrade: new Promise((resolve, reject) => {
+          setTimeout(resolve, 10)
+        }),
+        keepLockUpdated: new Promise((resolve, reject) => {
+          reject(Error(error))
+        }),
+        upgradeCalls: [
           [
             {
-              version: 1,
-              time: start,
+              current: 0,
+              upgrades,
             },
           ],
         ],
-        addUpgradeCalls: [],
-        sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']]],
-        updateLockCalls: [[]],
-      })
-    })
-    it('throws error if lock update throws error', async () => {
-      const error = 'document does not exist'
-      const currentVersion = 0
-      const upgrades = [new TestUpgrade(), new TestUpgrade()]
-      const start = new Date()
-      const end = new Date(start.getTime() + 1000 * 60) // 1 second
-      await testDbUpgrader({
-        currentVersion,
-        upgrades,
+        keepLockUpdatedCalls: [[]],
         error,
         debugCalls: [
           ['Setting running to true to prevent concurrent upgrade runs'],
           ['Current version: "0"'],
-          ['allUpgrades has "2" upgrade(s)'],
-          ['Found "2" new upgrade(s) to run'],
-          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
-          ['finished: "false"'],
-          ['Updating lock timeout'],
-          ['setting finished to true due to lock update error'],
-          ['setting finished to true'],
+          ['allUpgrades has "1" upgrade(s)'],
+          ['Found "1" new upgrade(s) to run'],
           ['Deleting lock'],
           ['Setting running to false so other upgrade runs can occur'],
         ],
-        infoCalls: [['Running upgrade "1"...'], ['...upgrade "1" complete']],
-        errorCalls: [[`Error while waiting and updating lock: "${Error(error)}"`]],
-        dates: [start, end],
-        addAttemptCalls: [
+      })
+    })
+    it('runs upgrades where upgrade finishes before keepLockUpdated', async () => {
+      const currentVersion = 0
+      const upgrades = [new TestUpgrade()]
+      await testRun({
+        currentVersion,
+        upgrades,
+        upgrade: new Promise((resolve, reject) => {
+          resolve('')
+        }),
+        keepLockUpdated: new Promise((resolve, reject) => {
+          setTimeout(resolve, 10)
+        }),
+        upgradeCalls: [
           [
             {
-              version: 1,
-              time: start,
+              current: 0,
+              upgrades,
             },
           ],
         ],
-        addUpgradeCalls: [
+        keepLockUpdatedCalls: [[]],
+        debugCalls: [
+          ['Setting running to true to prevent concurrent upgrade runs'],
+          ['Current version: "0"'],
+          ['allUpgrades has "1" upgrade(s)'],
+          ['Found "1" new upgrade(s) to run'],
+          ['Deleting lock'],
+          ['Setting running to false so other upgrade runs can occur'],
+        ],
+      })
+    })
+    it('runs upgrades where upgrade finishes after keepLockUpdated', async () => {
+      const currentVersion = 0
+      const upgrades = [new TestUpgrade()]
+      await testRun({
+        currentVersion,
+        upgrades,
+        upgrade: new Promise((resolve, reject) => {
+          setTimeout(resolve, 10)
+        }),
+        keepLockUpdated: new Promise((resolve, reject) => {
+          resolve('')
+        }),
+        upgradeCalls: [
           [
             {
-              version: 1,
-              start,
-              end,
+              current: 0,
+              upgrades,
             },
           ],
         ],
-        sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']]],
-        updateLockCalls: [[]],
-        updateLockResponses: [() => Promise.reject(Error(error))],
+        keepLockUpdatedCalls: [[]],
+        debugCalls: [
+          ['Setting running to true to prevent concurrent upgrade runs'],
+          ['Current version: "0"'],
+          ['allUpgrades has "1" upgrade(s)'],
+          ['Found "1" new upgrade(s) to run'],
+          ['Deleting lock'],
+          ['Setting running to false so other upgrade runs can occur'],
+        ],
       })
     })
   })
@@ -575,24 +524,23 @@ describe('db-upgrader', () => {
       })
     })
   })
+  describe('upgrade', () => {})
 })
 
-async function testDbUpgrader({
+async function testRun({
   running = false,
   currentVersion,
   upgrades,
-  dates = [],
   error,
   aquireLockCalls = [[]],
   currentVersionCalls = [[]],
   getUpgradesCalls = [[]],
   deleteLockCalls = [[]],
-  addAttemptCalls = [],
-  addUpgradeCalls = [],
-  sleepCalls = [],
-  updateLockCalls = [],
-  updateLockResponses,
   aquireLockError,
+  upgrade,
+  upgradeCalls = [],
+  keepLockUpdated,
+  keepLockUpdatedCalls = [],
   debugCalls = [],
   infoCalls = [],
   errorCalls = [],
@@ -600,18 +548,16 @@ async function testDbUpgrader({
   running?: boolean
   currentVersion?: number
   upgrades?: Upgrade[]
-  dates?: Date[]
   error?: string
   aquireLockCalls?: any[][]
   currentVersionCalls?: any[][]
   getUpgradesCalls?: any[][]
   deleteLockCalls?: any[][]
-  addAttemptCalls?: any[][]
-  addUpgradeCalls?: any[][]
-  sleepCalls?: any[][]
-  updateLockCalls?: any[][]
-  updateLockResponses?: any[]
   aquireLockError?: string
+  upgrade?: Promise<any>
+  upgradeCalls?: any[][]
+  keepLockUpdated?: Promise<any>
+  keepLockUpdatedCalls?: any[][]
   debugCalls?: string[][]
   infoCalls?: string[][]
   errorCalls?: string[][]
@@ -637,22 +583,15 @@ async function testDbUpgrader({
   })
   const currentVersionSpy = jest.spyOn(UpgradeStore, 'getCurrentVersion').mockResolvedValue(currentVersion as any)
   const getUpgradesSpy = jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue(upgrades)
+  const upgradeSpy = jest.spyOn(DbUpgrader as any, 'upgrade')
+  if (upgrade) {
+    upgradeSpy.mockImplementation(() => upgrade)
+  }
+  const keepLockUpdatedSpy = jest.spyOn(DbUpgrader as any, 'keepLockUpdated')
+  if (keepLockUpdated) {
+    keepLockUpdatedSpy.mockImplementation(() => keepLockUpdated)
+  }
   const deleteLockSpy = jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
-  const dateSpy = jest.spyOn(global, 'Date')
-  for (const date of dates) {
-    dateSpy.mockImplementationOnce(() => date)
-  }
-  const addAttemptSpy = jest.spyOn(UpgradeStore, 'addAttempt').mockImplementation()
-  const addUpgradeSpy = jest.spyOn(UpgradeStore, 'addUpgrade').mockImplementation()
-  const sleepSpy = jest.spyOn(utils, 'sleep').mockImplementation()
-  const updateLockSpy = jest.spyOn(UpgradeStore, 'updateLock')
-  if (updateLockResponses) {
-    for (const updateLockResponse of updateLockResponses) {
-      updateLockSpy.mockImplementationOnce(updateLockResponse)
-    }
-  } else {
-    updateLockSpy.mockImplementation()
-  }
 
   const promise = DbUpgrader.run()
   if (error) {
@@ -667,12 +606,9 @@ async function testDbUpgrader({
   expect(aquireLockSpy.mock.calls).toEqual(aquireLockCalls)
   expect(currentVersionSpy.mock.calls).toEqual(currentVersionCalls)
   expect(getUpgradesSpy.mock.calls).toEqual(getUpgradesCalls)
+  expect(upgradeSpy.mock.calls).toEqual(upgradeCalls)
+  expect(keepLockUpdatedSpy.mock.calls).toEqual(keepLockUpdatedCalls)
   expect(deleteLockSpy.mock.calls).toEqual(deleteLockCalls)
-  expect(dateSpy.mock.calls).toEqual(dates.length === 0 ? [] : dates.map(() => []))
-  expect(addAttemptSpy.mock.calls).toEqual(addAttemptCalls)
-  expect(addUpgradeSpy.mock.calls).toEqual(addUpgradeCalls)
-  expect(sleepSpy.mock.calls).toEqual(sleepCalls)
-  expect(updateLockSpy.mock.calls).toEqual(updateLockCalls)
 }
 
 async function testAquireLock({
@@ -754,6 +690,31 @@ async function testAquireLock({
   expect(getLockSpy.mock.calls).toEqual(getLockResponses.map(() => []))
   expect(deleteLockSpy.mock.calls).toEqual(deleteLockResponses.map(() => []))
   expect(sleepSpy.mock.calls).toEqual(sleepCalls)
+}
+
+async function testUpgrade({
+  current,
+  upgrades,
+  dates = [],
+  addAttemptCalls,
+  addUpgradeCalls,
+}: {
+  current: number
+  upgrades: Upgrade[]
+  dates?: Date[]
+  addAttemptCalls?: any[][]
+  addUpgradeCalls?: any[][]
+  debugCalls?: string[][]
+  infoCalls?: string[][]
+  errorCalls?: string[][]
+}) {
+  const dateSpy = jest.spyOn(global, 'Date')
+  for (const date of dates) {
+    dateSpy.mockImplementationOnce(() => date)
+  }
+  const addAttemptSpy = jest.spyOn(UpgradeStore, 'addAttempt').mockImplementation()
+  const addUpgradeSpy = jest.spyOn(UpgradeStore, 'addUpgrade').mockImplementation()
+  const sleepSpy = jest.spyOn(utils, 'sleep').mockImplementation()
 }
 
 class TestUpgrade extends Upgrade {
