@@ -148,13 +148,16 @@ export default class DbUpgrader {
         DbUpgrader.logger.info(`Running upgrade "${version}"...`)
         const start = new Date()
 
+        DbUpgrader.logger.debug(`Adding attempt for upgrade "${version}"`)
         await UpgradeStore.addAttempt({
           version,
           time: start,
         })
 
+        DbUpgrader.logger.debug(`Executing run function for upgrade "${version}"`)
         await upgrades[i].run()
 
+        DbUpgrader.logger.debug(`Adding completed for upgrade "${version}"`)
         const end = new Date()
         await UpgradeStore.addUpgrade({
           version,
@@ -191,6 +194,8 @@ export default class DbUpgrader {
       DbUpgrader.logger.debug('setting finished to true due to lock update error')
       DbUpgrader.finished = true
       throw err
+    } finally {
+      DbUpgrader.logger.debug('Finished keeping lock updated')
     }
   }
 }

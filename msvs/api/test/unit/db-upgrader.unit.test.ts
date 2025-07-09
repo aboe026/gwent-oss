@@ -524,7 +524,45 @@ describe('db-upgrader', () => {
       })
     })
   })
-  describe('upgrade', () => {})
+  describe('upgrade', () => {
+    it('runs single upgrade', async () => {
+      const start = new Date(Date.now() - 1000)
+      const end = new Date()
+      await testUpgrade({
+        current: 0,
+        upgradeResponses: [undefined],
+        dates: [start, end],
+        addAttemptCalls: [
+          [
+            {
+              version: 1,
+              time: start,
+            },
+          ],
+        ],
+        upgradeCalls: [[[]]],
+        addUpgradeCalls: [
+          [
+            {
+              version: 1,
+              start,
+              end,
+            },
+          ],
+        ],
+        infoCalls: [
+          [`Running upgrade "1"...`],
+          [`...upgrade "1" completed in "${(end.getTime() - start.getTime()) / 1000}" second(s).`],
+        ],
+        debugCalls: [
+          ['Adding attempt for upgrade "1"'],
+          ['Executing run function for upgrade "1"'],
+          ['Adding completed for upgrade "1"'],
+          ['setting finished to true'],
+        ],
+      })
+    })
+  })
 })
 
 async function testRun({
@@ -694,18 +732,25 @@ async function testAquireLock({
 
 async function testUpgrade({
   current,
-  upgrades,
+  upgradeResponses,
   dates = [],
-  addAttemptCalls,
-  addUpgradeCalls,
+  error,
+  addAttemptCalls = [],
+  addUpgradeCalls = [],
+  upgradeCalls = [],
+  infoCalls = [],
+  debugCalls = [],
+  errorCalls = [],
 }: {
   current: number
-  upgrades: Upgrade[]
+  upgradeResponses: (Error | undefined)[]
   dates?: Date[]
+  error?: Error
   addAttemptCalls?: any[][]
   addUpgradeCalls?: any[][]
-  debugCalls?: string[][]
+  upgradeCalls?: any[][]
   infoCalls?: string[][]
+  debugCalls?: string[][]
   errorCalls?: string[][]
 }) {
   const dateSpy = jest.spyOn(global, 'Date')
@@ -714,7 +759,48 @@ async function testUpgrade({
   }
   const addAttemptSpy = jest.spyOn(UpgradeStore, 'addAttempt').mockImplementation()
   const addUpgradeSpy = jest.spyOn(UpgradeStore, 'addUpgrade').mockImplementation()
-  const sleepSpy = jest.spyOn(utils, 'sleep').mockImplementation()
+  const upgrades: Upgrade[] = []
+  const upgradeSpies: jest.Mock[] = []
+  for (const upgradeResponse of upgradeResponses) {
+    const upgradeSpy = jest.fn()
+    if (upgradeResponse instanceof Error) {
+      upgradeSpy.mockRejectedValue(upgradeResponse)
+    } else {
+      upgradeSpy.mockResolvedValue(upgradeResponse)
+    }
+    upgradeSpies.push(upgradeSpy)
+    upgrades.push({
+      run: upgradeSpy,
+    })
+  }
+  DbUpgrader['finished'] = false
+  const infoSpy = jest.fn().mockImplementation()
+  const debugSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  DbUpgrader['logger'] = {
+    info: infoSpy,
+    debug: debugSpy,
+    error: errorSpy,
+  } as any
+
+  const promise = DbUpgrader['upgrade']({
+    current,
+    upgrades,
+  })
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
+  } else {
+    await expect(promise).resolves.toEqual(undefined)
+  }
+
+  expect(DbUpgrader['finished']).toEqual(true)
+  expect(dateSpy.mock.calls).toEqual(dates.length === 0 ? [] : dates.map(() => []))
+  expect(addAttemptSpy.mock.calls).toEqual(addAttemptCalls)
+  expect(addUpgradeSpy.mock.calls).toEqual(addUpgradeCalls)
+  expect(upgradeSpies.map((upgradeSpy) => upgradeSpy.mock.calls)).toEqual(upgradeCalls)
+  expect(infoSpy.mock.calls).toEqual(infoCalls)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
 
 class TestUpgrade extends Upgrade {
