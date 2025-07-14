@@ -538,7 +538,9 @@ function renderDeckStats({
             })}
             <div>
               <span>Strength Average:</span>
-              <span className="deck-stat-strengthAverage-value">{deck.stats.strengthAverage.toFixed(1)}</span>
+              <span className="deck-stat-strengthAverage-value deck-stat-value">
+                {deck.stats.strengthAverage.toFixed(1)}
+              </span>
             </div>
           </div>
           <div className="deck-list-deck-stats-group">
@@ -594,7 +596,7 @@ function renderDeckStat({
     <div>
       <div>
         <span>{`${label}:`}</span>
-        <span className={`deck-stat-${stat}-value`}>
+        <span className={`deck-stat-${stat}-value deck-stat-value`}>
           {chosen}/{available}
         </span>
       </div>
