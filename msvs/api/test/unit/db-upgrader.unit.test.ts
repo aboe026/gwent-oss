@@ -562,6 +562,249 @@ describe('db-upgrader', () => {
         ],
       })
     })
+    it('runs multiple upgrades', async () => {
+      const start1 = new Date(Date.now() - 3000)
+      const end1 = new Date(Date.now() - 2000)
+      const start2 = new Date(Date.now() - 1000)
+      const end2 = new Date()
+      await testUpgrade({
+        current: 0,
+        upgradeResponses: [undefined, undefined],
+        dates: [start1, end1, start2, end2],
+        addAttemptCalls: [
+          [
+            {
+              version: 1,
+              time: start1,
+            },
+          ],
+          [
+            {
+              version: 2,
+              time: start2,
+            },
+          ],
+        ],
+        upgradeCalls: [[[]], [[]]],
+        addUpgradeCalls: [
+          [
+            {
+              version: 1,
+              start: start1,
+              end: end1,
+            },
+          ],
+          [
+            {
+              version: 2,
+              start: start2,
+              end: end2,
+            },
+          ],
+        ],
+        infoCalls: [
+          [`Running upgrade "1"...`],
+          [`...upgrade "1" completed in "${(end1.getTime() - start1.getTime()) / 1000}" second(s).`],
+          [`Running upgrade "2"...`],
+          [`...upgrade "2" completed in "${(end2.getTime() - start2.getTime()) / 1000}" second(s).`],
+        ],
+        debugCalls: [
+          ['Adding attempt for upgrade "1"'],
+          ['Executing run function for upgrade "1"'],
+          ['Adding completed for upgrade "1"'],
+          ['Adding attempt for upgrade "2"'],
+          ['Executing run function for upgrade "2"'],
+          ['Adding completed for upgrade "2"'],
+          ['setting finished to true'],
+        ],
+      })
+    })
+    it('throws error for single upgrade', async () => {
+      const start = new Date()
+      const error = Error('bad')
+      await testUpgrade({
+        current: 0,
+        upgradeResponses: [error],
+        dates: [start],
+        addAttemptCalls: [
+          [
+            {
+              version: 1,
+              time: start,
+            },
+          ],
+        ],
+        upgradeCalls: [[[]]],
+        error: error,
+        errorCalls: [[`Upgrade "1" failed: ${error}`]],
+        infoCalls: [[`Running upgrade "1"...`]],
+        debugCalls: [
+          ['Adding attempt for upgrade "1"'],
+          ['Executing run function for upgrade "1"'],
+          ['setting finished to true'],
+        ],
+      })
+    })
+    it('throws error for first of many upgrades', async () => {
+      const start1 = new Date()
+      const error = Error('bad')
+      await testUpgrade({
+        current: 0,
+        upgradeResponses: [error, undefined],
+        dates: [start1],
+        error,
+        addAttemptCalls: [
+          [
+            {
+              version: 1,
+              time: start1,
+            },
+          ],
+        ],
+        upgradeCalls: [[[]], []],
+        errorCalls: [[`Upgrade "1" failed: ${error}`]],
+        infoCalls: [[`Running upgrade "1"...`]],
+        debugCalls: [
+          ['Adding attempt for upgrade "1"'],
+          ['Executing run function for upgrade "1"'],
+          ['setting finished to true'],
+        ],
+      })
+    })
+    it('throws error for last of many upgrades', async () => {
+      const start1 = new Date(Date.now() - 3000)
+      const end1 = new Date(Date.now() - 2000)
+      const start2 = new Date(Date.now() - 1000)
+      const error = Error('bad')
+      await testUpgrade({
+        current: 0,
+        upgradeResponses: [undefined, error],
+        dates: [start1, end1, start2],
+        error,
+        addAttemptCalls: [
+          [
+            {
+              version: 1,
+              time: start1,
+            },
+          ],
+          [
+            {
+              version: 2,
+              time: start2,
+            },
+          ],
+        ],
+        upgradeCalls: [[[]], [[]]],
+        addUpgradeCalls: [
+          [
+            {
+              version: 1,
+              start: start1,
+              end: end1,
+            },
+          ],
+        ],
+        errorCalls: [[`Upgrade "2" failed: ${error}`]],
+        infoCalls: [
+          [`Running upgrade "1"...`],
+          [`...upgrade "1" completed in "${(end1.getTime() - start1.getTime()) / 1000}" second(s).`],
+          [`Running upgrade "2"...`],
+        ],
+        debugCalls: [
+          ['Adding attempt for upgrade "1"'],
+          ['Executing run function for upgrade "1"'],
+          ['Adding completed for upgrade "1"'],
+          ['Adding attempt for upgrade "2"'],
+          ['Executing run function for upgrade "2"'],
+          ['setting finished to true'],
+        ],
+      })
+    })
+  })
+  describe('keepLockUpdated', () => {
+    it('does not sleep or update lock if already finished', async () => {
+      await testKeepLockUpdated({
+        finished: true,
+        debugCalls: [['Finished keeping lock updated']],
+      })
+    })
+    it('sleeps but does not update if finished after sleep', async () => {
+      await testKeepLockUpdated({
+        sleepImplementations: [() => (DbUpgrader['finished'] = true)],
+        sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']]],
+        debugCalls: [
+          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
+          ['finished: "true"'],
+          ['Finished keeping lock updated'],
+        ],
+      })
+    })
+    it('sleeps and updates if not finished after sleep', async () => {
+      await testKeepLockUpdated({
+        sleepImplementations: [() => {}],
+        sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']]],
+        updateLockResponses: [true],
+        updateLockCalls: [[]],
+        debugCalls: [
+          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
+          ['finished: "false"'],
+          ['updating lock timeout'],
+          ['Finished keeping lock updated'],
+        ],
+      })
+    })
+    it('sleeps and updates and sleeps again if not finished after update', async () => {
+      await testKeepLockUpdated({
+        sleepImplementations: [() => {}, () => (DbUpgrader['finished'] = true)],
+        sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']], [DbUpgrader['LOCK_REFRESH_SECONDS']]],
+        updateLockResponses: [false],
+        updateLockCalls: [[]],
+        debugCalls: [
+          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
+          ['finished: "false"'],
+          ['updating lock timeout'],
+          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
+          ['finished: "true"'],
+          ['Finished keeping lock updated'],
+        ],
+      })
+    })
+    it('updates through twice', async () => {
+      await testKeepLockUpdated({
+        sleepImplementations: [() => {}, () => []],
+        sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']], [DbUpgrader['LOCK_REFRESH_SECONDS']]],
+        updateLockResponses: [false, true],
+        updateLockCalls: [[], []],
+        debugCalls: [
+          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
+          ['finished: "false"'],
+          ['updating lock timeout'],
+          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
+          ['finished: "false"'],
+          ['updating lock timeout'],
+          ['Finished keeping lock updated'],
+        ],
+      })
+    })
+    it('throws error and sets finished to true if error in updateLock', async () => {
+      const error = Error('bad')
+      await testKeepLockUpdated({
+        sleepImplementations: [() => {}],
+        sleepCalls: [[DbUpgrader['LOCK_REFRESH_SECONDS']]],
+        updateLockResponses: [error],
+        error,
+        updateLockCalls: [[]],
+        errorCalls: [[`Error while keeping lock updated: ${error}`]],
+        debugCalls: [
+          [`sleeping "${DbUpgrader['LOCK_REFRESH_SECONDS']}" second(s) before updating lock timeout`],
+          ['finished: "false"'],
+          ['updating lock timeout'],
+          ['setting finished to true due to lock update error'],
+          ['Finished keeping lock updated'],
+        ],
+      })
+    })
   })
 })
 
@@ -799,6 +1042,72 @@ async function testUpgrade({
   expect(addUpgradeSpy.mock.calls).toEqual(addUpgradeCalls)
   expect(upgradeSpies.map((upgradeSpy) => upgradeSpy.mock.calls)).toEqual(upgradeCalls)
   expect(infoSpy.mock.calls).toEqual(infoCalls)
+  expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
+async function testKeepLockUpdated({
+  finished = false,
+  sleepImplementations,
+  updateLockResponses,
+  error,
+  sleepCalls = [],
+  updateLockCalls = [],
+  debugCalls = [],
+  errorCalls = [],
+}: {
+  finished?: boolean
+  sleepImplementations?: (() => any)[]
+  updateLockResponses?: (Error | boolean)[]
+  error?: Error
+  sleepCalls?: any[]
+  updateLockCalls?: any[]
+  debugCalls?: string[][]
+  errorCalls?: string[][]
+}) {
+  const sleepSpy = jest.spyOn(utils, 'sleep')
+  if (sleepImplementations) {
+    for (const sleepImplementation of sleepImplementations) {
+      sleepSpy.mockImplementationOnce(() => {
+        sleepImplementation()
+        return new Promise((resolve) => resolve())
+      })
+    }
+  }
+  const updateLockSpy = jest.spyOn(UpgradeStore, 'updateLock')
+  if (updateLockResponses) {
+    for (const updateLockResponse of updateLockResponses) {
+      updateLockSpy.mockImplementationOnce(
+        () =>
+          new Promise((resolve, reject) => {
+            if (updateLockResponse instanceof Error) {
+              reject(updateLockResponse)
+            } else {
+              DbUpgrader['finished'] = updateLockResponse
+              resolve('' as any)
+            }
+          })
+      )
+    }
+  }
+  DbUpgrader['finished'] = finished
+  const debugSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
+  DbUpgrader['logger'] = {
+    debug: debugSpy,
+    error: errorSpy,
+  } as any
+
+  const promise = DbUpgrader['keepLockUpdated']()
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
+  } else {
+    await expect(promise).resolves.toEqual(undefined)
+  }
+
+  expect(DbUpgrader['finished']).toEqual(true)
+  expect(sleepSpy.mock.calls).toEqual(sleepCalls)
+  expect(updateLockSpy.mock.calls).toEqual(updateLockCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

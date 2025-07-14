@@ -170,7 +170,7 @@ export default class DbUpgrader {
         )
       }
     } catch (err: unknown) {
-      DbUpgrader.logger.error(`Error while running upgrade "${version}": "${err}"`)
+      DbUpgrader.logger.error(`Upgrade "${version}" failed: ${err}`)
       throw err
     } finally {
       DbUpgrader.logger.debug('setting finished to true')
@@ -185,12 +185,12 @@ export default class DbUpgrader {
         await sleep(DbUpgrader.LOCK_REFRESH_SECONDS)
         DbUpgrader.logger.debug(`finished: "${DbUpgrader.finished}"`)
         if (!DbUpgrader.finished) {
-          DbUpgrader.logger.debug('Updating lock timeout')
+          DbUpgrader.logger.debug('updating lock timeout')
           await UpgradeStore.updateLock()
         }
       }
     } catch (err: unknown) {
-      DbUpgrader.logger.error(`Error while waiting and updating lock: "${err}"`)
+      DbUpgrader.logger.error(`Error while keeping lock updated: ${err}`)
       DbUpgrader.logger.debug('setting finished to true due to lock update error')
       DbUpgrader.finished = true
       throw err
