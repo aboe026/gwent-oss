@@ -10,7 +10,7 @@ import open from 'open'
   try {
     await fs.access(filePath)
   } catch (error: unknown) {
-    throw Error(`File "${filePath}" either does not exist or cannot access.`)
+    throw Error(`File "${filePath}" either does not exist or cannot access: ${error}`)
   }
   await open(process.argv[2], {
     wait: false,

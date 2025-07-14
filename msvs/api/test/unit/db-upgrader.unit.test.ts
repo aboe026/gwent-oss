@@ -83,6 +83,7 @@ describe('db-upgrader', () => {
         upgrade: new Promise((resolve, reject) => {
           reject(Error(error))
         }),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         keepLockUpdated: new Promise((resolve, reject) => {
           setTimeout(resolve, 10)
         }),
@@ -113,6 +114,7 @@ describe('db-upgrader', () => {
       await testRun({
         currentVersion,
         upgrades,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         upgrade: new Promise((resolve, reject) => {
           setTimeout(resolve, 10)
         }),
@@ -145,9 +147,11 @@ describe('db-upgrader', () => {
       await testRun({
         currentVersion,
         upgrades,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         upgrade: new Promise((resolve, reject) => {
           resolve('')
         }),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         keepLockUpdated: new Promise((resolve, reject) => {
           setTimeout(resolve, 10)
         }),
@@ -176,9 +180,11 @@ describe('db-upgrader', () => {
       await testRun({
         currentVersion,
         upgrades,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         upgrade: new Promise((resolve, reject) => {
           setTimeout(resolve, 10)
         }),
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         keepLockUpdated: new Promise((resolve, reject) => {
           resolve('')
         }),
