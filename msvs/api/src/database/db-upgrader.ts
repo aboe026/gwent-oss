@@ -46,8 +46,8 @@ export default class DbUpgrader {
     DbUpgrader.logger.debug('Setting running to true to prevent concurrent upgrade runs')
     DbUpgrader.running = true
     this.finished = false
-    const start = new Date()
-    this.start = start
+    const started = new Date()
+    this.start = started
 
     try {
       await this.aquireLock()
@@ -56,7 +56,7 @@ export default class DbUpgrader {
         const current = await UpgradeStore.getCurrentVersion()
         DbUpgrader.logger.debug(`Current version: "${current}"`)
 
-        DbUpgrader.logger.debug(`upgrades length: "${upgrades.length}"`)
+        DbUpgrader.logger.debug(`Upgrades length: "${upgrades.length}"`)
 
         if (upgrades.length > current) {
           const newUpgradesCount = upgrades.length - current
@@ -65,8 +65,9 @@ export default class DbUpgrader {
             this.execute({
               current,
               upgrades,
+              started,
             }),
-            this.keepLockUpdated(start),
+            this.keepLockUpdated(started),
           ])
         } else {
           DbUpgrader.logger.debug('No new upgrades to run')
@@ -162,10 +163,18 @@ export default class DbUpgrader {
    * @param config.upgrades The upgrade scripts to run. Any before current are not run.
    * @throws Error if a script throws an error or problems communicating with database while storing upgrade status.
    */
-  private async execute({ current, upgrades }: { current: number; upgrades: Upgrade[] }): Promise<void> {
+  private async execute({
+    current,
+    upgrades,
+    started,
+  }: {
+    current: number
+    upgrades: Upgrade[]
+    started: Date
+  }): Promise<void> {
     let version: number = current + 1
     try {
-      for (let i = current; i < upgrades.length && !this.finished; i++) {
+      for (let i = current; i < upgrades.length && this.isStillRunning(started); i++) {
         version = i + 1
         DbUpgrader.logger.info(`Running upgrade "${version}"...`)
         const start = new Date()
@@ -202,18 +211,24 @@ export default class DbUpgrader {
 
   /**
    * Keep lock up to date. Ensures other processes do not run upgrades at the same time.
+   *
+   * @param started The date the run was started. Used to ensure the lock updating does not conflict with future runs.
    * @throws Error if problem updating lock.
    */
   private async keepLockUpdated(started: Date): Promise<void> {
-    DbUpgrader.logger.trace(`started: "${started}"`)
+    let stillRunning = this.isStillRunning(started)
+    DbUpgrader.logger.trace(`started "${started}", stillRunning: "${stillRunning}"`)
     try {
-      while (this.isStillRunning(started)) {
+      while (stillRunning) {
         DbUpgrader.logger.debug(`sleeping "${this.lockRefreshSeconds}" second(s) before updating lock timeout`)
         await sleep(this.lockRefreshSeconds)
-        DbUpgrader.logger.debug(`finished: "${this.finished}"`)
-        if (this.isStillRunning(started)) {
+        stillRunning = this.isStillRunning(started)
+        DbUpgrader.logger.trace(`started "${started}", stillRunning: "${stillRunning}"`)
+        if (stillRunning) {
           DbUpgrader.logger.debug('updating lock timeout')
           await UpgradeStore.updateLock()
+          stillRunning = this.isStillRunning(started)
+          DbUpgrader.logger.trace(`started "${started}", stillRunning: "${stillRunning}"`)
         }
       }
     } catch (err: unknown) {
