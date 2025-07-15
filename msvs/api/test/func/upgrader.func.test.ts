@@ -16,9 +16,11 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([])
-
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        new DbUpgrader({}).run({
+          upgrades: [],
+        })
+      ).resolves.toEqual(undefined)
 
       const collections = await db.listCollections().toArray()
       expect(collections?.map((collection) => collection.name)).toEqual(
@@ -33,10 +35,13 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
       const start = Date.now()
 
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        new DbUpgrader({}).run({
+          upgrades: [new TestUpgrade()],
+        })
+      ).resolves.toEqual(undefined)
 
       const end = Date.now()
       const collections = await db.listCollections().toArray()
@@ -78,10 +83,13 @@ describe('upgrader', () => {
 
       const testUpgrade = new TestUpgrade()
       jest.spyOn(testUpgrade, 'run').mockRejectedValue(Error(error))
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([testUpgrade])
       const start = Date.now()
 
-      await expect(DbUpgrader.run()).rejects.toThrow(error)
+      await expect(
+        new DbUpgrader({}).run({
+          upgrades: [testUpgrade],
+        })
+      ).rejects.toThrow(error)
 
       const end = Date.now()
       const collections = await db.listCollections().toArray()
@@ -108,10 +116,13 @@ describe('upgrader', () => {
         const db = await DbConnector.connect()
         await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-        jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([])
         DbUpgrader['running'] = true
 
-        await expect(DbUpgrader.run()).rejects.toThrow('Already attempting to run an upgrade')
+        await expect(
+          new DbUpgrader({}).run({
+            upgrades: [],
+          })
+        ).rejects.toThrow('Other upgrades currently running')
 
         await expect(db.listCollections().toArray()).resolves.toEqual([])
       } finally {
@@ -119,98 +130,100 @@ describe('upgrader', () => {
       }
     })
     it('creates no attempts or upgrades if lock already taken and never relinquished', async () => {
-      const origTimeout = DbUpgrader['LOCK_TIMEOUT_SECONDS']
-      const newTimeout = 2
-      try {
-        DbUpgrader['LOCK_TIMEOUT_SECONDS'] = newTimeout
-        const db = await DbConnector.connect()
-        await expect(db.listCollections().toArray()).resolves.toEqual([])
+      const lockTimeoutSeconds = 2 // speed up test by allowing upgrader to delete expired lock sooner
+      const db = await DbConnector.connect()
+      await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-        jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
-        const start = Date.now()
-        const expires = new Date(start + 1000 * newTimeout * 2)
+      const start = Date.now()
+      const expires = new Date(start + 1000 * lockTimeoutSeconds * 2)
 
-        await FuncTestLock.addLockOverride(expires) // manually add lock that expires after the timeout threshold
+      await FuncTestLock.addLockOverride(expires) // manually add lock that expires after the timeout threshold
 
-        await expect(DbUpgrader.run()).rejects.toThrow(/Could not aquire lock after "2\.\d+" seconds/)
-
-        const collections = await db.listCollections().toArray()
-        expect(collections?.map((collection) => collection.name)).toEqual(
-          expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
-        )
-        await expect(UpgradeStore.getLock()).resolves.toEqual({
-          _id: UpgradeStore['LOCK_ID'],
-          updated: expires,
+      await expect(
+        new DbUpgrader({
+          lockTimeoutSeconds,
+          lockRefreshSeconds: 0.25,
+        }).run({
+          upgrades: [new TestUpgrade()],
         })
-        const attempts = await UpgradeStore.getAttempts()
-        expect(attempts).toEqual([])
-        const upgrades = await UpgradeStore.getUpgrades()
-        expect(upgrades).toEqual([])
-        await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(0)
-      } finally {
-        DbUpgrader['LOCK_TIMEOUT_SECONDS'] = origTimeout
-        await UpgradeStore.deleteLock()
-      }
+      ).rejects.toThrow(/Could not aquire lock after "2\.\d+" seconds/)
+
+      const collections = await db.listCollections().toArray()
+      expect(collections?.map((collection) => collection.name)).toEqual(
+        expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
+      )
+      await expect(UpgradeStore.getLock()).resolves.toEqual({
+        _id: UpgradeStore['LOCK_ID'],
+        updated: expires,
+      })
+      const attempts = await UpgradeStore.getAttempts()
+      expect(attempts).toEqual([])
+      const upgrades = await UpgradeStore.getUpgrades()
+      expect(upgrades).toEqual([])
+      await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(0)
     })
     it('creates attempt and upgrade if previous lock expired', async () => {
-      const origTimeout = DbUpgrader['LOCK_TIMEOUT_SECONDS']
-      const newTimeout = 2 // speed up test by allowing upgrader to delete expired lock sooner
-      try {
-        DbUpgrader['LOCK_TIMEOUT_SECONDS'] = newTimeout
-        const db = await DbConnector.connect()
-        await expect(db.listCollections().toArray()).resolves.toEqual([])
+      const lockTimeoutSeconds = 2 // speed up test by allowing upgrader to delete expired lock sooner
+      const db = await DbConnector.connect()
+      await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-        jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
-        const start = Date.now()
+      const start = Date.now()
 
-        await FuncTestLock.addLockOverride(new Date(start - 1000)) // manually add lock that expired before upgrade is run
+      await FuncTestLock.addLockOverride(new Date(start - 1000)) // manually add lock that expired before upgrade is run
 
-        await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        new DbUpgrader({
+          lockTimeoutSeconds,
+          lockRefreshSeconds: 0.25,
+        }).run({
+          upgrades: [new TestUpgrade()],
+        })
+      ).resolves.toEqual(undefined)
 
-        const end = Date.now()
-        const collections = await db.listCollections().toArray()
-        expect(collections?.map((collection) => collection.name)).toEqual(
-          expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
-        )
-        await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
-        const attempts = await UpgradeStore.getAttempts()
-        expect(attempts).toEqual([
-          {
-            _id: expect.any(ObjectId),
-            version: 1,
-            time: expect.any(Date),
-          },
-        ])
-        const upgrades = await UpgradeStore.getUpgrades()
-        expect(upgrades).toEqual([
-          {
-            _id: expect.any(ObjectId),
-            version: 1,
-            start: expect.any(Date),
-            end: expect.any(Date),
-          },
-        ])
-        await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(1)
-        expect(attempts[0].time.getTime()).toBeGreaterThan(start)
-        expect(attempts[0].time.getTime()).toBeLessThan(end)
-        expect(upgrades[0].start.getTime()).toBeGreaterThan(start)
-        expect(upgrades[0].start.getTime()).toBeLessThan(end)
-        expect(upgrades[0].end.getTime()).toBeGreaterThan(start)
-        expect(upgrades[0].end.getTime()).toBeLessThan(end)
-        expect(upgrades[0].start.getTime()).toBeLessThan(upgrades[0].end.getTime())
-        expect(attempts[0].time.getTime()).toEqual(upgrades[0].start.getTime())
-      } finally {
-        DbUpgrader['LOCK_TIMEOUT_SECONDS'] = origTimeout
-      }
+      const end = Date.now()
+      const collections = await db.listCollections().toArray()
+      expect(collections?.map((collection) => collection.name)).toEqual(
+        expect.arrayContaining([UpgradeStore.COLLECTION_NAME])
+      )
+      await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
+      const attempts = await UpgradeStore.getAttempts()
+      expect(attempts).toEqual([
+        {
+          _id: expect.any(ObjectId),
+          version: 1,
+          time: expect.any(Date),
+        },
+      ])
+      const upgrades = await UpgradeStore.getUpgrades()
+      expect(upgrades).toEqual([
+        {
+          _id: expect.any(ObjectId),
+          version: 1,
+          start: expect.any(Date),
+          end: expect.any(Date),
+        },
+      ])
+      await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(1)
+      expect(attempts[0].time.getTime()).toBeGreaterThan(start)
+      expect(attempts[0].time.getTime()).toBeLessThan(end)
+      expect(upgrades[0].start.getTime()).toBeGreaterThan(start)
+      expect(upgrades[0].start.getTime()).toBeLessThan(end)
+      expect(upgrades[0].end.getTime()).toBeGreaterThan(start)
+      expect(upgrades[0].end.getTime()).toBeLessThan(end)
+      expect(upgrades[0].start.getTime()).toBeLessThan(upgrades[0].end.getTime())
+      expect(attempts[0].time.getTime()).toEqual(upgrades[0].start.getTime())
     })
     it('creates two attempts and upgrades if double successful upgrade', async () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade(), new TestUpgrade()])
       const start = Date.now()
 
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        new DbUpgrader({}).run({
+          upgrades: [new TestUpgrade(), new TestUpgrade()],
+        })
+      ).resolves.toEqual(undefined)
 
       const end = Date.now()
       const collections = await db.listCollections().toArray()
@@ -273,10 +286,13 @@ describe('upgrader', () => {
 
       const testUpgrade = new TestUpgrade()
       jest.spyOn(testUpgrade, 'run').mockRejectedValue(Error(error))
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([testUpgrade, new TestUpgrade()])
       const start = Date.now()
 
-      await expect(DbUpgrader.run()).rejects.toThrow(error)
+      await expect(
+        new DbUpgrader({}).run({
+          upgrades: [testUpgrade, new TestUpgrade()],
+        })
+      ).rejects.toThrow(error)
 
       const end = Date.now()
       const collections = await db.listCollections().toArray()
@@ -305,10 +321,13 @@ describe('upgrader', () => {
 
       const testUpgrade = new TestUpgrade()
       jest.spyOn(testUpgrade, 'run').mockRejectedValue(Error(error))
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade(), testUpgrade])
       const start = Date.now()
 
-      await expect(DbUpgrader.run()).rejects.toThrow(error)
+      await expect(
+        new DbUpgrader({}).run({
+          upgrades: [new TestUpgrade(), testUpgrade],
+        })
+      ).rejects.toThrow(error)
 
       const end = Date.now()
       const collections = await db.listCollections().toArray()
@@ -356,9 +375,13 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([])
+      const upgrader = new DbUpgrader({})
 
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        upgrader.run({
+          upgrades: [],
+        })
+      ).resolves.toEqual(undefined)
 
       const collections = await db.listCollections().toArray()
       expect(collections?.map((collection) => collection.name)).toEqual(
@@ -369,7 +392,11 @@ describe('upgrader', () => {
       await expect(UpgradeStore.getUpgrades()).resolves.toEqual([])
       await expect(UpgradeStore.getCurrentVersion()).resolves.toEqual(0)
 
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        upgrader.run({
+          upgrades: [],
+        })
+      ).resolves.toEqual(undefined)
 
       const reRanCollections = await db.listCollections().toArray()
       expect(reRanCollections?.map((collection) => collection.name)).toEqual(
@@ -383,11 +410,15 @@ describe('upgrader', () => {
     it('does not create more attempts or upgrades if rerun after single upgrade', async () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
+      const upgrader = new DbUpgrader({})
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
       const start = Date.now()
 
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        upgrader.run({
+          upgrades: [new TestUpgrade()],
+        })
+      ).resolves.toEqual(undefined)
 
       const end = Date.now()
       const collections = await db.listCollections().toArray()
@@ -422,7 +453,11 @@ describe('upgrader', () => {
       expect(upgrades[0].start.getTime()).toBeLessThan(upgrades[0].end.getTime())
       expect(attempts[0].time.getTime()).toEqual(upgrades[0].start.getTime())
 
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        upgrader.run({
+          upgrades: [new TestUpgrade()],
+        })
+      ).resolves.toEqual(undefined)
 
       const reRanCollections = await db.listCollections().toArray()
       expect(reRanCollections?.map((collection) => collection.name)).toEqual(
@@ -437,10 +472,14 @@ describe('upgrader', () => {
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
+      const upgrader = new DbUpgrader({})
       const start = Date.now()
 
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        upgrader.run({
+          upgrades: [new TestUpgrade()],
+        })
+      ).resolves.toEqual(undefined)
 
       const end = Date.now()
       const collections = await db.listCollections().toArray()
@@ -475,10 +514,13 @@ describe('upgrader', () => {
       expect(upgrades[0].start.getTime()).toBeLessThan(upgrades[0].end.getTime())
       expect(attempts[0].time.getTime()).toEqual(upgrades[0].start.getTime())
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade(), new TestUpgrade()])
       const secondStart = Date.now()
 
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        upgrader.run({
+          upgrades: [new TestUpgrade(), new TestUpgrade()],
+        })
+      ).resolves.toEqual(undefined)
 
       const secondEnd = Date.now()
       const reRanCollections = await db.listCollections().toArray()
@@ -542,13 +584,17 @@ describe('upgrader', () => {
       const error = 'first-fail'
       const db = await DbConnector.connect()
       await expect(db.listCollections().toArray()).resolves.toEqual([])
+      const upgrader = new DbUpgrader({})
 
       const testUpgrade = new TestUpgrade()
       jest.spyOn(testUpgrade, 'run').mockRejectedValue(Error(error))
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([testUpgrade])
       const start = Date.now()
 
-      await expect(DbUpgrader.run()).rejects.toThrow(error)
+      await expect(
+        upgrader.run({
+          upgrades: [testUpgrade],
+        })
+      ).rejects.toThrow(error)
 
       const end = Date.now()
       const collections = await db.listCollections().toArray()
@@ -570,10 +616,13 @@ describe('upgrader', () => {
       expect(attempts[0].time.getTime()).toBeGreaterThan(start)
       expect(attempts[0].time.getTime()).toBeLessThan(end)
 
-      jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([new TestUpgrade()])
       const secondStart = Date.now()
 
-      await expect(DbUpgrader.run()).resolves.toEqual(undefined)
+      await expect(
+        upgrader.run({
+          upgrades: [new TestUpgrade()],
+        })
+      ).resolves.toEqual(undefined)
 
       const secondEnd = Date.now()
       const reRanCollections = await db.listCollections().toArray()

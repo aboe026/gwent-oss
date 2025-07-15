@@ -19,7 +19,7 @@ describe('upgrade-store', () => {
       })
       await expect(UpgradeStore.getLock()).resolves.toEqual(lock)
     })
-    it('throws error if lock already exist', async () => {
+    it('throws error if lock already exists', async () => {
       await expect(UpgradeStore.getLock()).resolves.toEqual(undefined)
 
       const lock = await UpgradeStore.addLock()

@@ -1,10 +1,13 @@
+import allUpgrades from '../../../src/database/upgrades/all-upgrades'
 import DbConnector from '../../../src/database/db-connector'
 import DbUpgrader from '../../../src/database/db-upgrader'
 import DbUtil from './db-util'
 
 beforeEach(async () => {
   await DbUtil.deleteDatabase()
-  await DbUpgrader.run()
+  await new DbUpgrader({}).run({
+    upgrades: allUpgrades,
+  })
 })
 afterAll(async () => {
   await DbConnector.disconnect()

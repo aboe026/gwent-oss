@@ -1,6 +1,5 @@
 import { getLogger } from 'log4js'
 
-import allUpgrades from './upgrades/all-upgrades'
 import { sleep } from '@gwent/utils'
 import Upgrade from './upgrades/upgrade'
 import UpgradeStore from './stores/upgrade-store'
@@ -9,50 +8,65 @@ import UpgradeStore from './stores/upgrade-store'
  * A class which handles upgrades to the MongoDB database.
  */
 export default class DbUpgrader {
-  private static LOCK_TIMEOUT_SECONDS = 30
-  private static LOCK_REFRESH_SECONDS = 1
-  private static running = false
-  private static finished = false
   private static logger = getLogger('DbUpgrader')
+  private static running = false // whether or not the database upgrader is currently running upgrades. Ensures no multiple runs in same process.
+  private lockTimeoutSeconds: number // maximum amount of time to wait for aquiring lock
+  private lockRefreshSeconds: number // how long to wait between lock aquisition attempts
+  private finished = false // whether or not the currently running upgrades have finished. Used for communication between upgrades being run and lockout to short circuit either.
+  private start: Date = new Date() // the time the run was started. Used to ensure locks do not overwrite each other on sucesssive runs. Allows run to stop/return as soon as upgrades finish, without needing to wait for keepLockUpdated to finish.
 
   /**
-   * Get all upgrade functions that have been defined for the application.
+   * Create a new instance of DbUpgrader.
    *
-   * @returns An array of upgrade functions.
+   * @param config The configuration to assign the DbUpgrader.
+   * @param config.lockTimeoutSeconds The maximum amount of time (in seconds) to wait when attempting to aquire lock. If exceeded, an error is thrown.
+   * @param config.lockRefreshSeconds How long to wait (in seconds) between lock aquisition attempts.
    */
-  private static getUpgrades(): Upgrade[] {
-    return allUpgrades
+  constructor({
+    lockTimeoutSeconds = 30,
+    lockRefreshSeconds = 1,
+  }: {
+    lockTimeoutSeconds?: number
+    lockRefreshSeconds?: number
+  }) {
+    this.lockTimeoutSeconds = lockTimeoutSeconds
+    this.lockRefreshSeconds = lockRefreshSeconds
   }
 
   /**
    * Attempt to run database upgrades for the application.
+   *
+   * @param config The configuration used to upgrade the database.
+   * @param config.upgrades The list of upgrades to be applied to the database. Only those which have not been run before will be ran.
    */
-  static async run() {
+  async run({ upgrades }: { upgrades: Upgrade[] }) {
     if (DbUpgrader.running) {
-      throw Error('Already attempting to run an upgrade')
+      throw Error('Other upgrades currently running')
     }
     DbUpgrader.logger.debug('Setting running to true to prevent concurrent upgrade runs')
     DbUpgrader.running = true
+    this.finished = false
+    const start = new Date()
+    this.start = start
 
     try {
-      await DbUpgrader.aquireLock()
+      await this.aquireLock()
 
       try {
         const current = await UpgradeStore.getCurrentVersion()
         DbUpgrader.logger.debug(`Current version: "${current}"`)
 
-        const upgrades = DbUpgrader.getUpgrades()
-        DbUpgrader.logger.debug(`allUpgrades has "${upgrades.length}" upgrade(s)`)
+        DbUpgrader.logger.debug(`upgrades length: "${upgrades.length}"`)
 
         if (upgrades.length > current) {
           const newUpgradesCount = upgrades.length - current
           DbUpgrader.logger.debug(`Found "${newUpgradesCount}" new upgrade(s) to run`)
           await Promise.race([
-            DbUpgrader.upgrade({
+            this.execute({
               current,
               upgrades,
             }),
-            DbUpgrader.keepLockUpdated(),
+            this.keepLockUpdated(start),
           ])
         } else {
           DbUpgrader.logger.debug('No new upgrades to run')
@@ -70,13 +84,13 @@ export default class DbUpgrader {
   /**
    * Attempt to aquire a lock on the database. This lock ensures no other upgrades are run concurrently, guaranteeing upgrades only run once.
    */
-  private static async aquireLock() {
+  private async aquireLock() {
     const start = Date.now()
     let aquired = false
     let sleepBeforeNextTry = true
     let attempt = 1
-    DbUpgrader.logger.debug(`Attempting for "${DbUpgrader.LOCK_TIMEOUT_SECONDS}" seconds to aquire lock`)
-    while (!aquired && (Date.now() - start) / 1000 < DbUpgrader.LOCK_TIMEOUT_SECONDS) {
+    DbUpgrader.logger.debug(`Attempting for "${this.lockTimeoutSeconds}" seconds to aquire lock`)
+    while (!aquired && (Date.now() - start) / 1000 < this.lockTimeoutSeconds) {
       DbUpgrader.logger.debug(`Attempt "${attempt}" to aquire lock`)
       try {
         const initialLock = await UpgradeStore.addLock()
@@ -102,9 +116,9 @@ export default class DbUpgrader {
           }
           const secondsSinceLastUpdate = (Date.now() - potentiallyExpiredLock.updated.getTime()) / 1000
           DbUpgrader.logger.trace(`secondsSinceLastUpdate: "${secondsSinceLastUpdate}"`)
-          if (secondsSinceLastUpdate > DbUpgrader.LOCK_TIMEOUT_SECONDS) {
+          if (secondsSinceLastUpdate > this.lockTimeoutSeconds) {
             DbUpgrader.logger.debug(
-              `Greater than "${DbUpgrader.LOCK_TIMEOUT_SECONDS}" seconds since lock last updated, deleting expired lock`
+              `Greater than "${this.lockTimeoutSeconds}" seconds since lock last updated, deleting expired lock`
             )
             try {
               await UpgradeStore.deleteLock()
@@ -125,10 +139,10 @@ export default class DbUpgrader {
       if (!aquired && sleepBeforeNextTry) {
         DbUpgrader.logger.debug(
           `Lock not aquired after "${(Date.now() - start) / 1000}" second(s), sleeping for "${
-            DbUpgrader.LOCK_REFRESH_SECONDS
+            this.lockRefreshSeconds
           }" second(s)`
         )
-        await sleep(DbUpgrader.LOCK_REFRESH_SECONDS)
+        await sleep(this.lockRefreshSeconds)
       }
       attempt++
     }
@@ -140,10 +154,18 @@ export default class DbUpgrader {
     }
   }
 
-  private static async upgrade({ current, upgrades }: { current: number; upgrades: Upgrade[] }): Promise<void> {
+  /**
+   * Execute new upgrade scripts which have not yet been run.
+   *
+   * @param config The configuration used to run the upgrades.
+   * @param config.current The current upgrade version the database is on. Only upgrades greater than this version are run.
+   * @param config.upgrades The upgrade scripts to run. Any before current are not run.
+   * @throws Error if a script throws an error or problems communicating with database while storing upgrade status.
+   */
+  private async execute({ current, upgrades }: { current: number; upgrades: Upgrade[] }): Promise<void> {
     let version: number = current + 1
     try {
-      for (let i = current; i < upgrades.length && !DbUpgrader.finished; i++) {
+      for (let i = current; i < upgrades.length && !this.finished; i++) {
         version = i + 1
         DbUpgrader.logger.info(`Running upgrade "${version}"...`)
         const start = new Date()
@@ -174,17 +196,22 @@ export default class DbUpgrader {
       throw err
     } finally {
       DbUpgrader.logger.debug('setting finished to true')
-      DbUpgrader.finished = true
+      this.finished = true
     }
   }
 
-  private static async keepLockUpdated(): Promise<void> {
+  /**
+   * Keep lock up to date. Ensures other processes do not run upgrades at the same time.
+   * @throws Error if problem updating lock.
+   */
+  private async keepLockUpdated(started: Date): Promise<void> {
+    DbUpgrader.logger.trace(`started: "${started}"`)
     try {
-      while (!DbUpgrader.finished) {
-        DbUpgrader.logger.debug(`sleeping "${DbUpgrader.LOCK_REFRESH_SECONDS}" second(s) before updating lock timeout`)
-        await sleep(DbUpgrader.LOCK_REFRESH_SECONDS)
-        DbUpgrader.logger.debug(`finished: "${DbUpgrader.finished}"`)
-        if (!DbUpgrader.finished) {
+      while (this.isStillRunning(started)) {
+        DbUpgrader.logger.debug(`sleeping "${this.lockRefreshSeconds}" second(s) before updating lock timeout`)
+        await sleep(this.lockRefreshSeconds)
+        DbUpgrader.logger.debug(`finished: "${this.finished}"`)
+        if (this.isStillRunning(started)) {
           DbUpgrader.logger.debug('updating lock timeout')
           await UpgradeStore.updateLock()
         }
@@ -192,10 +219,32 @@ export default class DbUpgrader {
     } catch (err: unknown) {
       DbUpgrader.logger.error(`Error while keeping lock updated: ${err}`)
       DbUpgrader.logger.debug('setting finished to true due to lock update error')
-      DbUpgrader.finished = true
+      this.finished = true
       throw err
     } finally {
       DbUpgrader.logger.debug('Finished keeping lock updated')
     }
+  }
+
+  /**
+   * Whether or not the upgrade is still running, based off when the run started.
+   *
+   * @param started The Date that the run started, used to compare if the run is still going.
+   * @returns True if the upgrade is still running, false if not.
+   */
+  private isStillRunning(started: Date): boolean {
+    if (this.finished) {
+      DbUpgrader.logger.debug('finished is true so not still running')
+    } else {
+      if (this.start.getTime() === started.getTime()) {
+        DbUpgrader.logger.debug('start time matches original start time, so still running')
+        return true
+      } else {
+        DbUpgrader.logger.debug(
+          `current start time "${this.start}" does not match original start time "${started}" so not still running`
+        )
+      }
+    }
+    return false
   }
 }

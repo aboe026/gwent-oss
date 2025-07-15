@@ -8,14 +8,6 @@ import UpgradeStore from '../../src/database/stores/upgrade-store'
 import * as utils from '@gwent/utils'
 
 describe('db-upgrader', () => {
-  describe('getUpgrades', () => {
-    it('returns the same length as there are upgrade scripts', async () => {
-      const upgradeFiles = await fs.readdir(path.join(__dirname, '..', '..', 'src', 'database', 'upgrades'))
-      const upgradeScripts = upgradeFiles.filter((upgradeFile) => upgradeFile.match(/^upgrade-\d+\.ts$/))
-
-      expect(DbUpgrader['getUpgrades']()).toHaveLength(upgradeScripts.length)
-    })
-  })
   describe('run', () => {
     it('throws error if running is true', async () => {
       await testRun({
@@ -225,7 +217,7 @@ describe('db-upgrader', () => {
             }),
         ],
         debugCalls: [
-          [`Attempting for "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds to aquire lock`],
+          [`Attempting for "30" seconds to aquire lock`],
           [`Attempt "1" to aquire lock`],
           [`Lock aquired in "1" second(s)`],
         ],
@@ -234,7 +226,7 @@ describe('db-upgrader', () => {
     })
     it('aquires lock if expired lock exists', async () => {
       const start = Date.now()
-      const expired = new Date(start - DbUpgrader['LOCK_TIMEOUT_SECONDS'] * 1000 * 2)
+      const expired = new Date(start - 30 * 1000 * 2)
       const error = new MongoError('duplicate key')
       await testAquireLock({
         dates: [
@@ -270,12 +262,10 @@ describe('db-upgrader', () => {
         ],
         deleteLockResponses: [() => Promise.resolve()],
         debugCalls: [
-          [`Attempting for "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds to aquire lock`],
+          [`Attempting for "30" seconds to aquire lock`],
           [`Attempt "1" to aquire lock`],
           ['Lock already exists, checking if expired'],
-          [
-            `Greater than "${DbUpgrader['LOCK_TIMEOUT_SECONDS']}" seconds since lock last updated, deleting expired lock`,
-          ],
+          [`Greater than "30" seconds since lock last updated, deleting expired lock`],
           ['Expired lock deleted'],
           [`Attempt "2" to aquire lock`],
           [`Lock aquired in "2" second(s)`],
@@ -289,7 +279,7 @@ describe('db-upgrader', () => {
         ],
       })
     })
-    it('aquires lock if previous lock expires before LOCK_TIMEOUT_SECONDS', async () => {
+    it('aquires lock if previous lock expires before lockTimeoutSeconds', async () => {
       const start = Date.now()
       const error = new MongoError('duplicate key')
       await testAquireLock({
@@ -313,7 +303,7 @@ describe('db-upgrader', () => {
           () =>
             Promise.resolve({
               _id: UpgradeStore['LOCK_ID'],
-              updated: new Date(start + DbUpgrader['LOCK_TIMEOUT_SECONDS'] * 1000),
+              updated: new Date(start + 30 * 1000),
             }),
         ],
         isMongoErrorResponses: [true],
@@ -869,7 +859,6 @@ async function testRun({
     })
   })
   const currentVersionSpy = jest.spyOn(UpgradeStore, 'getCurrentVersion').mockResolvedValue(currentVersion as any)
-  const getUpgradesSpy = jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue(upgrades)
   const upgradeSpy = jest.spyOn(DbUpgrader as any, 'upgrade')
   if (upgrade) {
     upgradeSpy.mockImplementation(() => upgrade)
@@ -880,7 +869,9 @@ async function testRun({
   }
   const deleteLockSpy = jest.spyOn(UpgradeStore, 'deleteLock').mockImplementation()
 
-  const promise = DbUpgrader.run()
+  const promise = new DbUpgrader({}).run({
+    upgrades: upgrades || [],
+  })
   if (error) {
     await expect(promise).rejects.toThrow(error)
   } else {
@@ -892,7 +883,6 @@ async function testRun({
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(aquireLockSpy.mock.calls).toEqual(aquireLockCalls)
   expect(currentVersionSpy.mock.calls).toEqual(currentVersionCalls)
-  expect(getUpgradesSpy.mock.calls).toEqual(getUpgradesCalls)
   expect(upgradeSpy.mock.calls).toEqual(upgradeCalls)
   expect(keepLockUpdatedSpy.mock.calls).toEqual(keepLockUpdatedCalls)
   expect(deleteLockSpy.mock.calls).toEqual(deleteLockCalls)
