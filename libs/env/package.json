@@ -15,8 +15,8 @@
     "watch": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "dotenv": "17.0.1",
-    "envalid": "8.0.0"
+    "dotenv": "17.2.0",
+    "envalid": "8.1.0"
   },
   "devDependencies": {
     "@types/jest": "30.0.0",
