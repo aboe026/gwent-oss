@@ -6,6 +6,7 @@ import {
   FindOptions,
   MongoError,
   ObjectId,
+  ReturnDocument,
   UpdateFilter,
   WithId,
 } from 'mongodb'
@@ -87,7 +88,7 @@ export default abstract class Store {
   }): Promise<T> {
     const collection = await Store.getCollection<T>(this.COLLECTION_NAME)
     if (!options.returnDocument) {
-      options.returnDocument = 'after'
+      options.returnDocument = ReturnDocument.AFTER
     }
     const response = await collection.findOneAndUpdate(filter, update, options)
     if (verifyExistence && response === null && filter._id) {

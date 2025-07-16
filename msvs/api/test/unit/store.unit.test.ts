@@ -1,4 +1,4 @@
-import { MongoError, ObjectId } from 'mongodb'
+import { MongoError, ObjectId, ReturnDocument } from 'mongodb'
 
 import DbConnector from '../../src/database/db-connector'
 import Store from '../../src/database/stores/store'
@@ -122,7 +122,42 @@ describe('store', () => {
           },
           doc,
           {
-            returnDocument: 'after',
+            returnDocument: ReturnDocument.AFTER,
+          },
+        ],
+      ])
+    })
+    it('can set override returnDocument to be before', async () => {
+      const doc = {
+        _id: new ObjectId(),
+        name: 'unit-test',
+      }
+      const value = 'toast'
+      const findOneAndUpdateSpy = jest.fn().mockResolvedValue(value)
+      jest.spyOn(Store as any, 'getCollection').mockResolvedValue({
+        findOneAndUpdate: findOneAndUpdateSpy,
+      })
+
+      await expect(
+        Store['update']({
+          filter: {
+            _id: doc._id,
+          },
+          update: doc,
+          options: {
+            returnDocument: ReturnDocument.BEFORE,
+          },
+        })
+      ).resolves.toEqual(value)
+
+      expect(findOneAndUpdateSpy.mock.calls).toEqual([
+        [
+          {
+            _id: doc._id,
+          },
+          doc,
+          {
+            returnDocument: ReturnDocument.BEFORE,
           },
         ],
       ])
@@ -153,7 +188,7 @@ describe('store', () => {
           },
           doc,
           {
-            returnDocument: 'after',
+            returnDocument: ReturnDocument.AFTER,
           },
         ],
       ])

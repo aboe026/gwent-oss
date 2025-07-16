@@ -18,10 +18,7 @@ export default class RequestedFields {
     if (node) {
       nodes.push(node)
     } else if (info?.fieldNodes) {
-      const fieldNodes = info.fieldNodes as SelectionNode[]
-      if (fieldNodes) {
-        nodes.push(...fieldNodes)
-      }
+      nodes.push(...info.fieldNodes)
     }
     for (const node of nodes) {
       if (node.kind === Kind.FIELD && node.name.value) {

@@ -449,17 +449,17 @@ async function setupGame({ opponentFirst }: { opponentFirst?: boolean }): Promis
     faction: FactionKey.ScoiaTael,
     name: `deck-self-${scenario}-${Date.now()}`,
     userId: self.id,
-    unitIds: (
-      await getStrengthUnits({ faction: FactionKey.ScoiaTael, unitNames: ['Scorch'] })
-    ).map((deckUnit) => deckUnit.unit.id),
+    unitIds: (await getStrengthUnits({ faction: FactionKey.ScoiaTael, unitNames: ['Scorch'] })).map(
+      (deckUnit) => deckUnit.unit.id
+    ),
   })
   const deckOpponent = await addDeck({
     faction: FactionKey.NorthernRealms,
     name: `deck-opponent-${scenario}-${Date.now()}`,
     userId: opponent.id,
-    unitIds: (
-      await getStrengthUnits({ faction: FactionKey.NorthernRealms, unitNames: ['Scorch'] })
-    ).map((deckUnit) => deckUnit.unit.id),
+    unitIds: (await getStrengthUnits({ faction: FactionKey.NorthernRealms, unitNames: ['Scorch'] })).map(
+      (deckUnit) => deckUnit.unit.id
+    ),
   })
   await setDeck({
     deckId: deckSelf.id,

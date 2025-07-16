@@ -1,6 +1,6 @@
 {
   "name": "@gwent/graphql-schema",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "author": "Adam Boe",
   "description": "Schema definitions for GraphQL API",
   "main": "build/src/index.js",
@@ -47,25 +47,25 @@
     "graphql": "16.11.0",
     "graphql-tag": "2.12.6",
     "moment": "2.30.1",
-    "mongodb": "6.16.0",
+    "mongodb": "6.17.0",
     "react": "19.1.0",
     "semver": "7.7.2"
   },
   "devDependencies": {
     "@graphql-codegen/add": "5.0.3",
-    "@graphql-codegen/cli": "5.0.6",
+    "@graphql-codegen/cli": "5.0.7",
     "@graphql-codegen/typescript": "4.1.6",
     "@graphql-codegen/typescript-operations": "4.6.1",
     "@graphql-codegen/typescript-react-apollo": "4.3.3",
     "@graphql-codegen/typescript-resolvers": "4.5.1",
     "@parcel/watcher": "2.5.1",
     "@types/fs-extra": "11.0.4",
-    "@types/jest": "29.5.14",
+    "@types/jest": "30.0.0",
     "@types/node": "22.15.29",
     "@types/semver": "7.7.0",
     "eol": "0.10.0",
     "fs-extra": "11.3.0",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.3.4"
+    "ts-jest": "29.4.0"
   }
 }

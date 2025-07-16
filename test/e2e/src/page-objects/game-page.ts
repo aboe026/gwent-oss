@@ -1007,8 +1007,8 @@ export default class GamePage {
         row === Combat.Close
           ? HTML_IDS.GameCombatRowCloseSelf
           : row === Combat.Ranged
-          ? HTML_IDS.GameCombatRowRangedSelf
-          : HTML_IDS.GameCombatRowSiegeSelf
+            ? HTML_IDS.GameCombatRowRangedSelf
+            : HTML_IDS.GameCombatRowSiegeSelf
       }`
     ).find(`.${HTML_CLASSES.GameCombatRowCards}`)
     await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()

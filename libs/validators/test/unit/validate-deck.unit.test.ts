@@ -47,7 +47,7 @@ describe('validateDeck', () => {
     },
   }
   const deckUnits: DeckUnit[] = new Array(22).fill(deckUnit)
-  it('returns empty array if deck is valid', () => {
+  it('returns empty array if deck is valid with number artStyle', () => {
     const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(deckUnit.artStyle)
 
     expect(
@@ -65,6 +65,40 @@ describe('validateDeck', () => {
         },
       ]),
     ])
+  })
+  it('returns empty array if deck is valid with undefined artyStyle', () => {
+    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(deckUnit.artStyle)
+
+    expect(
+      validateDeck({
+        deckUnits: deckUnits.map((deckUnit) => {
+          return {
+            ...deckUnit,
+            artStyle: undefined as any,
+          }
+        }),
+        faction: deckUnit.unit.faction.key,
+      })
+    ).toEqual([])
+
+    expect(validatePositiveIntegerSpy.mock.calls).toEqual([])
+  })
+  it('returns empty array if deck is valid with null artyStyle', () => {
+    const validatePositiveIntegerSpy = jest.spyOn(validatePositiveInteger, 'default').mockReturnValue(deckUnit.artStyle)
+
+    expect(
+      validateDeck({
+        deckUnits: deckUnits.map((deckUnit) => {
+          return {
+            ...deckUnit,
+            artStyle: null as any,
+          }
+        }),
+        faction: deckUnit.unit.faction.key,
+      })
+    ).toEqual([])
+
+    expect(validatePositiveIntegerSpy.mock.calls).toEqual([])
   })
   it('returns error if unit faction does not equal faction or neutral', () => {
     const invalidUnit: DeckUnit = {

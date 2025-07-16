@@ -40,6 +40,11 @@ export default class PlayUnitImplementation {
     unit,
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const playerId = game.turn?.toString() // save current player before any modifications to game turn
+    if (!playerId) {
+      const message = `No current player for turn on game "${game._id}".`
+      PlayUnitImplementation.logger.error(`${logPrefix} failed: ${message}`)
+      throw Error(message)
+    }
 
     const roundUnits = await getRoundUnits({
       game,

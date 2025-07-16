@@ -116,8 +116,6 @@ export default class DeckList {
       const possible = (deckFaction.stats[stat] as number) + (neutralFaction.stats[stat] as number)
       const chosen = stats[stat]
       await t.expect(deck.find(`.deck-stat-${stat}-value`).innerText).eql(`${chosen}/${possible}`)
-      if (stat !== undefined) {
-      }
     }
     const avgStr = stats.strengthAverage.toFixed(1).toString()
     await t.expect(deck.find('.deck-stat-strengthAverage-value').innerText).eql(avgStr)

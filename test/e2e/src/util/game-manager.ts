@@ -299,13 +299,13 @@ export default async function createGameManager({
   const selfFaction = self?.faction
     ? self.faction
     : opponent?.faction === FactionKey.ScoiaTael
-    ? FactionKey.NorthernRealms
-    : FactionKey.ScoiaTael
+      ? FactionKey.NorthernRealms
+      : FactionKey.ScoiaTael
   const opponentFaction = opponent?.faction
     ? opponent.faction
     : selfFaction === FactionKey.ScoiaTael
-    ? FactionKey.NorthernRealms
-    : FactionKey.ScoiaTael
+      ? FactionKey.NorthernRealms
+      : FactionKey.ScoiaTael
   const selfDeck = await selfClient.addDeck({
     faction: selfFaction,
     leaderName: self?.leader || getDefaultLeaderName(selfFaction),

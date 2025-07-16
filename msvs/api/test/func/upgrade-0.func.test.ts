@@ -15,8 +15,9 @@ describe('upgrade-0', () => {
       names: [],
     })
 
-    jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue([])
-    await DbUpgrader.run()
+    await new DbUpgrader({}).run({
+      upgrades: [],
+    })
 
     await verifyCollectionNames({
       db,

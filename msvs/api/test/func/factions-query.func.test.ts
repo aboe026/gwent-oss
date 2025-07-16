@@ -89,8 +89,8 @@ describe('factions-query', () => {
         source: `{
           factions(
             keys: [${FactionKey.Monsters}, ${FactionKey.Neutral}, ${FactionKey.NilfgaardianEmpire}, ${
-          FactionKey.NorthernRealms
-        }, ${FactionKey.ScoiaTael}, ${FactionKey.Skellige}]
+              FactionKey.NorthernRealms
+            }, ${FactionKey.ScoiaTael}, ${FactionKey.Skellige}]
           ) {
             ${getFactionFragment()}
           }

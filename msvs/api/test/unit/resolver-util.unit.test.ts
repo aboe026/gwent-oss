@@ -335,7 +335,7 @@ describe('resolver-util', () => {
         warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
       })
     })
-    it('returns game and player if no errors', async () => {
+    it('returns game and player if no errors and no status or turn specified', async () => {
       const game = TestUtil.getDbGame({
         players: [
           TestUtil.getDbGamePlayer({
@@ -346,6 +346,29 @@ describe('resolver-util', () => {
       await testGetGamePlayer({
         gameId: game._id.toString(),
         userId,
+        logPrefix,
+        getGameResponse: game,
+        expected: {
+          game,
+          player: game.players[0],
+        },
+      })
+    })
+    it('returns game and player if no errors and status and turn specified', async () => {
+      const game = TestUtil.getDbGame({
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: userId,
+          }),
+        ],
+        status: GameStatus.Playing,
+        turn: userId,
+      })
+      await testGetGamePlayer({
+        gameId: game._id.toString(),
+        userId,
+        turn: true,
+        status: GameStatus.Playing,
         logPrefix,
         getGameResponse: game,
         expected: {

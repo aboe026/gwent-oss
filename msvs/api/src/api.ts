@@ -15,6 +15,7 @@ import session, { CookieOptions } from 'express-session'
 import { useServer } from 'graphql-ws/use/ws'
 import { WebSocketServer } from 'ws'
 
+import allUpgrades from './database/upgrades/all-upgrades'
 import AppInfo from './app-info'
 import BasicAuth from './auth/basic-auth'
 import DbConnector from './database/db-connector'
@@ -40,7 +41,9 @@ export default class Api {
    */
   static async run() {
     await Api.printStartupInfo()
-    await DbUpgrader.run()
+    await new DbUpgrader({}).run({
+      upgrades: allUpgrades,
+    })
 
     Api.app = express()
     Api.httpServer = createServer(Api.app)

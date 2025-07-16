@@ -23,8 +23,10 @@ describe('upgrade-2', () => {
     await DbUtil.deleteDatabase()
   })
   it('creates resources', async () => {
-    jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue(allUpgrades.slice(0, upgradeNumber - 1))
-    await DbUpgrader.run()
+    const upgrader = new DbUpgrader({})
+    await upgrader.run({
+      upgrades: allUpgrades.slice(0, upgradeNumber - 1),
+    })
 
     await expect(DlcStore.get({})).resolves.toEqual([])
     await expect(EffectStore.get({})).resolves.toEqual([])
@@ -32,8 +34,9 @@ describe('upgrade-2', () => {
     await expect(LeaderStore.get({})).resolves.toEqual([])
     await expect(UnitStore.get({})).resolves.toEqual([])
 
-    jest.spyOn(DbUpgrader as any, 'getUpgrades').mockReturnValue(allUpgrades.slice(0, upgradeNumber))
-    await DbUpgrader.run()
+    await upgrader.run({
+      upgrades: allUpgrades.slice(0, upgradeNumber),
+    })
 
     const dlcs = await DlcStore.get({})
     expect(dlcs).toEqual(

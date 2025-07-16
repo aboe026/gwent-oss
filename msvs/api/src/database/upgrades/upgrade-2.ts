@@ -482,7 +482,7 @@ export default class Upgrade2 extends Upgrade {
   }
 
   normalizeImagePath({ name, type, suffix = '' }: { type: ImageType; name: string; suffix?: string }) {
-    return `images/${type}/${name.toLowerCase().replaceAll(/\ /g, '_').replaceAll(/:/g, '')}${suffix}.png`
+    return `images/${type}/${name.toLowerCase().replaceAll(/ /g, '_').replaceAll(/:/g, '')}${suffix}.png`
   }
 
   normalizeSpecial(unit: UnitJson): boolean {

@@ -37,23 +37,21 @@ export default class SetNextTurnForCurrentRound {
     }
     for (let i = 0; i < game.players.length && nextPlayerId === undefined; i++) {
       SetNextTurnForCurrentRound.logger.trace(`${logPrefix} i: "${i}"`)
-      if (currentPlayer.order !== undefined) {
-        const potentialNextPlayer = usersByOrder[(currentPlayerOrder + i + 1) % game.players.length]
-        if (SetNextTurnForCurrentRound.logger.isTraceEnabled()) {
-          SetNextTurnForCurrentRound.logger.trace(
-            `${logPrefix} potentialNextPlayer: "${JSON.stringify(potentialNextPlayer)}"`
-          )
-        }
-        if (potentialNextPlayer.rounds[game.round - 1].passed) {
-          SetNextTurnForCurrentRound.logger.trace(
-            `${logPrefix} player "${potentialNextPlayer.user}" has already passed, ignoring for next player.`
-          )
-        } else {
-          SetNextTurnForCurrentRound.logger.debug(
-            `${logPrefix} player "${potentialNextPlayer.user}" has not yet passed, setting as next player.`
-          )
-          nextPlayerId = potentialNextPlayer.user
-        }
+      const potentialNextPlayer = usersByOrder[(currentPlayerOrder + i + 1) % game.players.length]
+      if (SetNextTurnForCurrentRound.logger.isTraceEnabled()) {
+        SetNextTurnForCurrentRound.logger.trace(
+          `${logPrefix} potentialNextPlayer: "${JSON.stringify(potentialNextPlayer)}"`
+        )
+      }
+      if (potentialNextPlayer.rounds[game.round - 1].passed) {
+        SetNextTurnForCurrentRound.logger.trace(
+          `${logPrefix} player "${potentialNextPlayer.user}" has already passed, ignoring for next player.`
+        )
+      } else {
+        SetNextTurnForCurrentRound.logger.debug(
+          `${logPrefix} player "${potentialNextPlayer.user}" has not yet passed, setting as next player.`
+        )
+        nextPlayerId = potentialNextPlayer.user
       }
     }
     if (!nextPlayerId) {

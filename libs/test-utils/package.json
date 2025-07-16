@@ -1,6 +1,6 @@
 {
   "name": "@gwent/test-utils",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "author": "Adam Boe",
   "description": "Utility functions for tests",
   "main": "build/src/index.js",
@@ -14,12 +14,12 @@
   },
   "dependencies": {
     "@gwent/graphql-schema": "workspace:*",
-    "mongodb": "6.16.0"
+    "mongodb": "6.17.0"
   },
   "devDependencies": {
-    "@types/jest": "29.5.14",
+    "@types/jest": "30.0.0",
     "@types/node": "22.15.29",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.3.4"
+    "ts-jest": "29.4.0"
   }
 }

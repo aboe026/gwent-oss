@@ -46,6 +46,7 @@ async function testSubscriptionError({
     }
   }
 
+  // eslint-disable-next-line no-async-promise-executor
   return new Promise(async (resolve) => {
     // ensure promise is resolved if connection not rejected
     setTimeout(() => resolve(`Subscription not rejected within ${timeoutSeconds} seconds`), timeoutSeconds * 1000)

@@ -146,7 +146,7 @@ export default class GameUnitEffectResolver {
         const unitEffectReason = gameUnitEffect.reason as EffectFromUnitDbObject
         matchingEffect = effects.find((effect) => effect.id === unitEffectReason.effect.toString())
         matchingUnit = units.find((unit) => unit.id === unitEffectReason.unit.toString())
-      } else if (gameUnitEffect.reason.type === EffectReasonType.Leader) {
+      } else {
         const leaderEffectReason = gameUnitEffect.reason as EffectFromLeaderDbObject
         matchingLeader = leaders.find((leader) => leader.id === leaderEffectReason.leader.toString())
       }

@@ -275,6 +275,65 @@ describe('unit-resolver', () => {
         ],
       })
     })
+    it('resolves multiple units with same effects', async () => {
+      const faction = TestUtil.getDbFaction({})
+      const effect = TestUtil.getDbEffect({})
+      const unit1 = TestUtil.getDbUnit({
+        faction: faction._id,
+        effects: [effect._id],
+      })
+      const unit2 = TestUtil.getDbUnit({
+        faction: faction._id,
+        effects: [effect._id],
+      })
+      await testResolveFromArray({
+        units: [unit1, unit2],
+        factionGetResponses: [[faction]],
+        effectGetResponse: [effect],
+        resolvedUnits: [
+          TestUtil.getUnitFromDbUnit({
+            unit: unit1,
+            effects: [effect],
+          }),
+          TestUtil.getUnitFromDbUnit({
+            unit: unit2,
+            effects: [effect],
+          }),
+        ],
+        factionGetCalls: [
+          [
+            {
+              ids: [faction._id],
+            },
+          ],
+        ],
+        effectGetCalls: [
+          [
+            {
+              ids: [effect._id.toString()],
+            },
+          ],
+        ],
+        fromObjectCalls: [
+          [
+            {
+              unit: unit1,
+              dlc: undefined,
+              effects: [effect],
+              faction: faction,
+            },
+          ],
+          [
+            {
+              unit: unit2,
+              dlc: undefined,
+              effects: [effect],
+              faction: faction,
+            },
+          ],
+        ],
+      })
+    })
   })
   describe('effectAbilities', () => {
     it('returns null if effects are null', () => {

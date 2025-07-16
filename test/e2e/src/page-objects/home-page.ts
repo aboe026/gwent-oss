@@ -24,7 +24,7 @@ export default class HomePage {
     await t.expect(HomePage.elements.CreateDeck.exists).eql(!!username)
     await t.expect(HomePage.elements.ViewDecks.exists).eql(!!username)
     await t.expect(HomePage.elements.ViewProfile.exists).eql(!!username)
-    if (!!username) {
+    if (username) {
       await t.expect(HomePage.elements.Welcome.visible).ok()
       await t.expect(HomePage.elements.Welcome.innerText).eql(`Welcome ${username}!`)
       await t.expect(HomePage.elements.Options.visible).ok()

@@ -81,6 +81,50 @@ describe('game-player-resolver', () => {
     })
   })
   describe('fromArray', () => {
+    it('returns resolved objects if no deck chosen', async () => {
+      const user = TestUtil.getUser({})
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({}),
+        user: user.id,
+      })
+      await testResolveFromArray({
+        gameStatus: GameStatus.Decking,
+        players: [player],
+        resolvedUsers: [user],
+        resolvedGamePlayers: [
+          TestUtil.getGamePlayer({
+            user,
+          }),
+        ],
+        userResolverCalls: [[[new ObjectId(user.id)]]],
+        factionResolverCalls: [
+          [
+            {
+              ids: [],
+            },
+          ],
+        ],
+        leaderResolverCalls: [
+          [
+            {
+              ids: [],
+              resolvedFactions: [],
+            },
+          ],
+        ],
+        gamePlayerResolverCalls: [
+          [
+            {
+              player,
+              user,
+              faction: undefined,
+              leader: undefined,
+              gameStatus: GameStatus.Decking,
+            },
+          ],
+        ],
+      })
+    })
     it('returns resolved objects if none provided', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
@@ -98,7 +142,7 @@ describe('game-player-resolver', () => {
         user: user.id,
       })
       await testResolveFromArray({
-        gameStatus: GameStatus.Decking,
+        gameStatus: GameStatus.Ordering,
         players: [player],
         resolvedUsers: [user],
         resolvedFactions: [faction],
@@ -131,7 +175,7 @@ describe('game-player-resolver', () => {
               user,
               faction,
               leader,
-              gameStatus: GameStatus.Decking,
+              gameStatus: GameStatus.Ordering,
             },
           ],
         ],
@@ -154,7 +198,7 @@ describe('game-player-resolver', () => {
         user: user.id,
       })
       await testResolveFromArray({
-        gameStatus: GameStatus.Decking,
+        gameStatus: GameStatus.Ordering,
         players: [player],
         users: [user],
         resolvedFactions: [faction],
@@ -186,7 +230,7 @@ describe('game-player-resolver', () => {
               user,
               faction,
               leader,
-              gameStatus: GameStatus.Decking,
+              gameStatus: GameStatus.Ordering,
             },
           ],
         ],

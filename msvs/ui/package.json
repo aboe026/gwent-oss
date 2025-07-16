@@ -1,6 +1,6 @@
 {
   "name": "@gwent/msvs-ui",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "author": "Adam Boe",
   "description": "React frontend to play Gwent.",
   "main": "src/index.ts",
@@ -33,12 +33,12 @@
   },
   "devDependencies": {
     "@gwent/client": "workspace:*",
-    "@types/express": "5.0.0",
+    "@types/express": "4.17.21",
     "@types/fs-extra": "11.0.4",
-    "@types/jest": "29.5.14",
+    "@types/jest": "30.0.0",
     "cross-env": "7.0.3",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.3.4"
+    "ts-jest": "29.4.0"
   },
   "workspaces": [
     "libs/*"

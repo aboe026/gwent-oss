@@ -15,7 +15,9 @@ import { sleep } from '@gwent/utils'
         await fs.access(path.join(__dirname, '..', 'build', '.testcaferc.js'))
         builtExists = true
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (err: unknown) {}
+      } catch (err: unknown) {
+        // swallow error
+      }
     }
     if (!builtExists) {
       throw Error(`Files successfully compiled after "${timeoutSeconds}" seconds`)

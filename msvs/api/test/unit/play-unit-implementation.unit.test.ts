@@ -17,10 +17,23 @@ import TestUtil from '../util/test-util'
 
 describe('play-unit-implementation', () => {
   const logPrefix = 'log-prefix'
+  it('throws error if no turn on game', async () => {
+    const game = TestUtil.getDbGame({})
+    const message = `No current player for turn on game "${game._id}".`
+    await testPlayUnitImplementation({
+      game,
+      logPrefix,
+      error: Error(message),
+      getRoundUnitsCalls: [],
+      errorCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
   it('throws error if no updated game from save', async () => {
     const message = 'Could not play unit in probable race condition collision.'
     await testPlayUnitImplementation({
-      game: TestUtil.getDbGame({}),
+      game: TestUtil.getDbGame({
+        turn: new ObjectId(),
+      }),
       logPrefix,
       error: Error(message),
       errorCalls: [[`${logPrefix} failed: ${message}`]],
@@ -142,6 +155,7 @@ async function testPlayUnitImplementation({
   strengthImpacts,
   error,
   expectedGameDeck,
+  getRoundUnitsCalls,
   errorCalls = [],
   traceEnabled,
 }: {
@@ -152,6 +166,7 @@ async function testPlayUnitImplementation({
   strengthImpacts?: ImpactDbObject[] | undefined
   error?: Error
   expectedGameDeck?: GameDeckDbObject
+  getRoundUnitsCalls?: any[][]
   errorCalls?: string[][]
   traceEnabled?: boolean
 }) {
@@ -211,71 +226,93 @@ async function testPlayUnitImplementation({
     })
   }
 
-  expect(getRoundUnitsSpy.mock.calls).toEqual([
-    [
-      {
-        game,
-        unitBeingPlayed: unit,
-      },
-    ],
-  ])
-  expect(getUnitEffectsSpy.mock.calls).toEqual([[units]])
-  expect(modifyBattlefieldWithNewUnitSpy.mock.calls).toEqual([
-    [
-      {
-        battlefieldUnits: units,
-        combat,
-        effects,
-        game,
-        logPrefix,
-        newDeckUnit: deckUnit,
-      },
-    ],
-  ])
-  expect(calculateEffectiveStrengthsSpy.mock.calls).toEqual([
-    [
-      {
-        game,
-        units: [unit, ...units],
-        effects: effects,
-        logPrefix,
-        newDeckUnit: deckUnit,
-      },
-    ],
-  ])
-  expect(setGameScoresSpy.mock.calls).toEqual([[game]])
-  expect(getBattlefieldUnitSpy.mock.calls).toEqual([
-    [
-      {
-        game,
-        unitId: deckUnit.unit,
-        userId: game.turn?.toString(),
-      },
-    ],
-  ])
-  expect(addMoveToCurrentPlayerSpy.mock.calls).toEqual([
-    [
-      {
-        game,
-        move: {
-          created,
-          unit: gameUnit,
-          impacts: battlefieldImpacts || strengthImpacts,
-          type: MoveType.Unit,
+  expect(getRoundUnitsSpy.mock.calls).toEqual(
+    getRoundUnitsCalls || [
+      [
+        {
+          game,
+          unitBeingPlayed: unit,
         },
-      },
-    ],
-  ])
-  expect(dateSpy.mock.calls).toEqual([[]])
-  expect(setNextTurnForCurrentRoundSpy.mock.calls).toEqual([
-    [
-      {
-        game,
-        logPrefix,
-      },
-    ],
-  ])
-  expect(gameStoreSaveSpy.mock.calls).toEqual([[game]])
+      ],
+    ]
+  )
+  expect(getUnitEffectsSpy.mock.calls).toEqual(getRoundUnitsCalls ? [] : [[units]])
+  expect(modifyBattlefieldWithNewUnitSpy.mock.calls).toEqual(
+    getRoundUnitsCalls
+      ? []
+      : [
+          [
+            {
+              battlefieldUnits: units,
+              combat,
+              effects,
+              game,
+              logPrefix,
+              newDeckUnit: deckUnit,
+            },
+          ],
+        ]
+  )
+  expect(calculateEffectiveStrengthsSpy.mock.calls).toEqual(
+    getRoundUnitsCalls
+      ? []
+      : [
+          [
+            {
+              game,
+              units: [unit, ...units],
+              effects: effects,
+              logPrefix,
+              newDeckUnit: deckUnit,
+            },
+          ],
+        ]
+  )
+  expect(setGameScoresSpy.mock.calls).toEqual(getRoundUnitsCalls ? [] : [[game]])
+  expect(getBattlefieldUnitSpy.mock.calls).toEqual(
+    getRoundUnitsCalls
+      ? []
+      : [
+          [
+            {
+              game,
+              unitId: deckUnit.unit,
+              userId: game.turn?.toString(),
+            },
+          ],
+        ]
+  )
+  expect(addMoveToCurrentPlayerSpy.mock.calls).toEqual(
+    getRoundUnitsCalls
+      ? []
+      : [
+          [
+            {
+              game,
+              move: {
+                created,
+                unit: gameUnit,
+                impacts: battlefieldImpacts || strengthImpacts,
+                type: MoveType.Unit,
+              },
+            },
+          ],
+        ]
+  )
+  expect(dateSpy.mock.calls).toEqual(getRoundUnitsCalls ? [] : [[]])
+  expect(setNextTurnForCurrentRoundSpy.mock.calls).toEqual(
+    getRoundUnitsCalls
+      ? []
+      : [
+          [
+            {
+              game,
+              logPrefix,
+            },
+          ],
+        ]
+  )
+  expect(gameStoreSaveSpy.mock.calls).toEqual(getRoundUnitsCalls ? [] : [[game]])
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled ? [[`${logPrefix} updatedGame: "${JSON.stringify(updatedGame)}"`]] : []

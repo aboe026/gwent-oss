@@ -34,7 +34,14 @@ describe('set-deck-resolution', () => {
       setGameTurnOrderError: error,
     })
   })
-  it('returns resolved game deck if no errors thrown', async () => {
+  it('returns resolved game deck if no errors thrown and game status is decking', async () => {
+    await testSetDeckResolution({
+      game: TestUtil.getDbGame({
+        status: GameStatus.Decking,
+      }),
+    })
+  })
+  it('returns resolved game deck if no errors thrown and game status is ordering', async () => {
     await testSetDeckResolution({
       game: TestUtil.getDbGame({
         status: GameStatus.Ordering,

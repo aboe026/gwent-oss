@@ -5,16 +5,13 @@ import { replaceInFile } from 'replace-in-file'
 import execa from './execute-async'
 
 const DENY_LIST: string[] = [
-  '@types/express', // 5.0.0 breaks typing with error Argument of type 'RequestHandler<ParamsDictionary, any, any, ParsedQs, Record<string, any>>' is not assignable to parameter of type 'PathParams'
-  'eslint', // 9.0 breaks with TypeError: [ERR_IMPORT_ASSERTION_TYPE_MISSING]: Module "file:///.eslintrc.json?mtime=1714512618315" needs an import assertion of type "json"
-  'eslint-plugin-prettier', // 5.0 breaks if using 2.0 of prettier (TypeError: prettier.resolveConfig is not a function)
+  '@types/express', // 5.0.0 breaks, waiting for @apollo/server to become compatible
+  '@types/node', // manually keep in sync with Node.js version
+  '@types/url-join', // 5.0 breaks and is not needed for url-join 5.0
   'graphql-request', // 7.0.0 switched to ESM, need to switch to ESM to be able to use
-  'npm-groovy-lint', // 15.0.1 breaks imports (NglParseError)
   'open', // 9.0 switched to ESM, need to switch to ESM to be able to use
-  'prettier', // 3.0 broke auto pretty on save (TypeError: Invalid host defined options)
   'replace-in-file', // 8.0.0 switched to ESM, need to switch to ESM to be able to use
   'url-join', // 5.0 switched to ESM, need to switch to ESM to be able to use
-  '@types/url-join', // 5.0 breaks and is not needed for url-join 5.0
 ]
 
 //

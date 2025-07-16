@@ -10,6 +10,7 @@ import session, { CookieOptions } from 'express-session'
 import * as useWs from 'graphql-ws/use/ws'
 import ws from 'ws'
 
+import allUpgrades from '../../src/database/upgrades/all-upgrades'
 import Api from '../../src/api'
 import AppInfo from '../../src/app-info'
 import BasicAuth from '../../src/auth/basic-auth'
@@ -89,7 +90,7 @@ describe('Api', () => {
   describe('run', () => {
     it('calls to appropriate methods', async () => {
       const printStartupInfoSpy = jest.spyOn(Api as any, 'printStartupInfo').mockImplementation()
-      const dbUpgraderRunSpy = jest.spyOn(DbUpgrader, 'run').mockImplementation()
+      const dbUpgraderRunSpy = jest.spyOn(DbUpgrader.prototype, 'run').mockImplementation()
       const createServerSpy = jest.spyOn(http, 'createServer').mockImplementation()
       const configureSessionSpy = jest.spyOn(Api as any, 'configureSession').mockImplementation()
       const exposePlainSchemaSpy = jest.spyOn(Api as any, 'exposePlainSchema').mockImplementation()
@@ -105,7 +106,13 @@ describe('Api', () => {
       await expect(Api.run()).resolves.toEqual(undefined)
 
       expect(printStartupInfoSpy.mock.calls).toEqual([[]])
-      expect(dbUpgraderRunSpy.mock.calls).toEqual([[]])
+      expect(dbUpgraderRunSpy.mock.calls).toEqual([
+        [
+          {
+            upgrades: allUpgrades,
+          },
+        ],
+      ])
       expect((express as any).mock.calls).toEqual([[]])
       expect(createServerSpy.mock.calls).toEqual([[undefined]])
       expect(configureSessionSpy.mock.calls).toEqual([[]])
