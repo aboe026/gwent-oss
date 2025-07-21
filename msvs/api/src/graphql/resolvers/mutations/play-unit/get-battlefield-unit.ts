@@ -1,4 +1,4 @@
-import { GameDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, GameDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { ObjectId } from 'mongodb'
 
 /**
@@ -18,7 +18,7 @@ export default function getBattlefieldUnit({
   game: GameDbObject
   unitId: ObjectId
   userId: string
-}): GameUnitDbObject | undefined {
+}): BattlefieldUnit | undefined {
   const players = game.players.filter((player) => player.user.toString() === userId)
   if (players.length === 0) {
     throw Error(`Could not find player "${userId}" on game "${game._id}"`)
@@ -26,10 +26,45 @@ export default function getBattlefieldUnit({
     throw Error(`Found more than 1 player with ID "${userId}" on game "${game._id}": "${JSON.stringify(players)}"`)
   }
   const playerRound = players[0].rounds[game.round - 1]
-  const units = [...playerRound.close.units, ...playerRound.ranged.units, ...playerRound.siege.units]
+  return (
+    getRowUnit({
+      row: Combat.Close,
+      unitId,
+      units: playerRound.close.units,
+    }) ||
+    getRowUnit({
+      row: Combat.Ranged,
+      unitId,
+      units: playerRound.ranged.units,
+    }) ||
+    getRowUnit({
+      row: Combat.Siege,
+      unitId,
+      units: playerRound.siege.units,
+    })
+  )
+}
+
+function getRowUnit({
+  unitId,
+  units,
+  row,
+}: {
+  unitId: ObjectId
+  units: GameUnitDbObject[]
+  row: Combat
+}): BattlefieldUnit | undefined {
   for (const unit of units) {
     if (unit.unit.toString() === unitId.toString()) {
-      return unit
+      return {
+        unit,
+        row,
+      }
     }
   }
+}
+
+interface BattlefieldUnit {
+  unit: GameUnitDbObject
+  row: Combat
 }

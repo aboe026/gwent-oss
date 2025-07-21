@@ -47,7 +47,7 @@ export default class ScorchBattlefield {
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
-  }): ImpactDbObject[] {
+  }): ImpactDbObject[] | undefined {
     const scorched: ImpactDbObject[] = []
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
@@ -112,7 +112,7 @@ export default class ScorchBattlefield {
         )
       }
     }
-    return scorched
+    return scorched.length > 0 ? scorched : undefined
   }
 
   /**

@@ -302,11 +302,31 @@ export type MovePass = {
   created: Scalars['DateTime']['output'];
 };
 
+export enum MoveReasonType {
+  /** Deployment by a game player to the battlefield. */
+  Deploy = 'DEPLOY',
+  /** Mustered when matching Muster unit added to battlefield. */
+  Muster = 'MUSTER',
+  /** Revived after Medic added to battlefield. */
+  Revive = 'REVIVE',
+  /** Summoned when matching Avenger unit removed from battlefield. */
+  Summon = 'SUMMON',
+  /** Transformed when Mardroeme unit added to battlefield row. */
+  Transform = 'TRANSFORM'
+}
+
 export type MoveUnit = {
   __typename?: 'MoveUnit';
   created: Scalars['DateTime']['output'];
   impacts?: Maybe<Array<Impact>>;
+  reason: MoveUnitReason;
   unit: GameUnit;
+};
+
+export type MoveUnitReason = {
+  __typename?: 'MoveUnitReason';
+  type: MoveReasonType;
+  unit?: Maybe<DeckUnit>;
 };
 
 export type Mutation = {
@@ -702,7 +722,9 @@ export type ResolversTypes = {
   Move: ResolverTypeWrapper<ResolversUnionTypes<ResolversTypes>['Move']>;
   MoveLeader: ResolverTypeWrapper<MoveLeader>;
   MovePass: ResolverTypeWrapper<MovePass>;
+  MoveReasonType: MoveReasonType;
   MoveUnit: ResolverTypeWrapper<Omit<MoveUnit, 'impacts' | 'unit'> & { impacts?: Maybe<Array<ResolversTypes['Impact']>>, unit: ResolversTypes['GameUnit'] }>;
+  MoveUnitReason: ResolverTypeWrapper<MoveUnitReason>;
   Mutation: ResolverTypeWrapper<{}>;
   PlayerCombatRow: ResolverTypeWrapper<Omit<PlayerCombatRow, 'units'> & { units: Array<ResolversTypes['GameUnit']> }>;
   PlayerRound: ResolverTypeWrapper<Omit<PlayerRound, 'close' | 'moves' | 'ranged' | 'siege'> & { close: ResolversTypes['PlayerCombatRow'], moves: Array<ResolversTypes['Move']>, ranged: ResolversTypes['PlayerCombatRow'], siege: ResolversTypes['PlayerCombatRow'] }>;
@@ -755,6 +777,7 @@ export type ResolversParentTypes = {
   MoveLeader: MoveLeader;
   MovePass: MovePass;
   MoveUnit: Omit<MoveUnit, 'impacts' | 'unit'> & { impacts?: Maybe<Array<ResolversParentTypes['Impact']>>, unit: ResolversParentTypes['GameUnit'] };
+  MoveUnitReason: MoveUnitReason;
   Mutation: {};
   PlayerCombatRow: Omit<PlayerCombatRow, 'units'> & { units: Array<ResolversParentTypes['GameUnit']> };
   PlayerRound: Omit<PlayerRound, 'close' | 'moves' | 'ranged' | 'siege'> & { close: ResolversParentTypes['PlayerCombatRow'], moves: Array<ResolversParentTypes['Move']>, ranged: ResolversParentTypes['PlayerCombatRow'], siege: ResolversParentTypes['PlayerCombatRow'] };
@@ -959,7 +982,14 @@ export type MovePassResolvers<ContextType = Context, ParentType extends Resolver
 export type MoveUnitResolvers<ContextType = Context, ParentType extends ResolversParentTypes['MoveUnit'] = ResolversParentTypes['MoveUnit']> = {
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   impacts?: Resolver<Maybe<Array<ResolversTypes['Impact']>>, ParentType, ContextType>;
+  reason?: Resolver<ResolversTypes['MoveUnitReason'], ParentType, ContextType>;
   unit?: Resolver<ResolversTypes['GameUnit'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MoveUnitReasonResolvers<ContextType = Context, ParentType extends ResolversParentTypes['MoveUnitReason'] = ResolversParentTypes['MoveUnitReason']> = {
+  type?: Resolver<ResolversTypes['MoveReasonType'], ParentType, ContextType>;
+  unit?: Resolver<Maybe<ResolversTypes['DeckUnit']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -1137,6 +1167,7 @@ export type Resolvers<ContextType = Context> = {
   MoveLeader?: MoveLeaderResolvers<ContextType>;
   MovePass?: MovePassResolvers<ContextType>;
   MoveUnit?: MoveUnitResolvers<ContextType>;
+  MoveUnitReason?: MoveUnitReasonResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
   PlayerCombatRow?: PlayerCombatRowResolvers<ContextType>;
   PlayerRound?: PlayerRoundResolvers<ContextType>;

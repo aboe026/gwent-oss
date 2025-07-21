@@ -89,6 +89,19 @@ export default gql`
     SET
   }
 
+  enum MoveReasonType {
+    "Deployment by a game player to the battlefield."
+    DEPLOY
+    "Mustered when matching Muster unit added to battlefield."
+    MUSTER
+    "Revived after Medic added to battlefield."
+    REVIVE
+    "Summoned when matching Avenger unit removed from battlefield."
+    SUMMON
+    "Transformed when Mardroeme unit added to battlefield row."
+    TRANSFORM
+  }
+
   enum RoundResult {
     "Beat all other players in the round."
     WON
@@ -267,6 +280,12 @@ export default gql`
     created: DateTime! @column
     unit: GameUnit! @column(overrideType: "GameUnitDbObject")
     impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
+    reason: MoveUnitReason! @column(overrideType: "MoveUnitReasonDbObject")
+  }
+
+  type MoveUnitReason @entity {
+    type: MoveReasonType! @column
+    unit: DeckUnit @column(overrideType: "DeckUnitDbObject")
   }
 
   union Move @union(discriminatorField: "type") = MoveLeader | MovePass | MoveUnit

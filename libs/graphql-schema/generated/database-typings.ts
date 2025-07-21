@@ -300,11 +300,31 @@ export type MovePass = {
   created: Scalars['DateTime']['output'];
 };
 
+export enum MoveReasonType {
+  /** Deployment by a game player to the battlefield. */
+  Deploy = 'DEPLOY',
+  /** Mustered when matching Muster unit added to battlefield. */
+  Muster = 'MUSTER',
+  /** Revived after Medic added to battlefield. */
+  Revive = 'REVIVE',
+  /** Summoned when matching Avenger unit removed from battlefield. */
+  Summon = 'SUMMON',
+  /** Transformed when Mardroeme unit added to battlefield row. */
+  Transform = 'TRANSFORM'
+}
+
 export type MoveUnit = {
   __typename?: 'MoveUnit';
   created: Scalars['DateTime']['output'];
   impacts?: Maybe<Array<Impact>>;
+  reason: MoveUnitReason;
   unit: GameUnit;
+};
+
+export type MoveUnitReason = {
+  __typename?: 'MoveUnitReason';
+  type: MoveReasonType;
+  unit?: Maybe<DeckUnit>;
 };
 
 export type Mutation = {
@@ -732,8 +752,14 @@ export type MovePassDbObject = {
 export type MoveUnitDbObject = {
   created: any,
   impacts?: Array<ImpactDbObject>,
+  reason: MoveUnitReasonDbObject,
   unit: GameUnitDbObject,
   type: MoveType,
+};
+
+export type MoveUnitReasonDbObject = {
+  type: string,
+  unit?: DeckUnitDbObject,
 };
 
 export type PlayerCombatRowDbObject = {

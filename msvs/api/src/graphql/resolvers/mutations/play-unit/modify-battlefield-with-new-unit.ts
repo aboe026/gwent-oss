@@ -7,6 +7,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import ScorchBattlefield from './scorch-battlefield'
+import MusterBattlefield from './muster-battlefield'
 
 /**
  * Modifies the battlefield of the current round in a game due to the deployment of a new unit. Other units on or off the battlefield may be impacted by unit effects.
@@ -20,7 +21,7 @@ import ScorchBattlefield from './scorch-battlefield'
  * @param config.newDeckUnit The new unit being introduced to the battlefield.
  * @returns Any impacts the new unit has on the battlefield.
  */
-export default function modifyBattlefieldWithNewUnit({
+export default async function modifyBattlefieldWithNewUnit({
   battlefieldUnits,
   combat,
   effects,
@@ -34,26 +35,30 @@ export default function modifyBattlefieldWithNewUnit({
   game: GameDbObject
   logPrefix: string
   newDeckUnit: DeckUnitDbObject
-}): ImpactDbObject[] | undefined {
+}): Promise<ModificationImpacts> {
   addNewUnitToBattlefield({
     game,
     newDeckUnit,
     combat,
   })
 
-  const impacts: ImpactDbObject[] = []
-  impacts.push(
-    ...ScorchBattlefield.scorchBattlefield({
+  const { impacts: musterImpacts, musteredUnits } = await MusterBattlefield.musterBattlefield({
+    battlefieldUnits,
+    effects,
+    game,
+    logPrefix,
+    newDeckUnit,
+  })
+  return {
+    scorches: ScorchBattlefield.scorchBattlefield({
       battlefieldUnits,
       effects,
       game,
       logPrefix,
       newDeckUnit,
-    })
-  )
-
-  if (impacts.length > 0) {
-    return impacts
+    }),
+    musters: musterImpacts,
+    musteredUnits,
   }
 }
 
@@ -87,4 +92,10 @@ export function addNewUnitToBattlefield({
       }
     }
   }
+}
+
+interface ModificationImpacts {
+  scorches: ImpactDbObject[] | undefined
+  musters: ImpactDbObject[] | undefined
+  musteredUnits: UnitDbObject[]
 }

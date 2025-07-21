@@ -1,17 +1,15 @@
 import { getLogger } from 'log4js'
 
-import addMoveToCurrentPlayer from '../util/add-move-to-current-player'
 import CalculateGameEffectiveStrengths from './calculate-game-effective-strengths'
-import { GameDbObject, GameDeckDbObject, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
-import getBattlefieldUnit from './get-battlefield-unit'
 import getRoundUnits from './get-round-units'
 import getUnitEffects from './get-unit-effects'
 import modifyBattlefieldWithNewUnit from './modify-battlefield-with-new-unit'
-import { MoveType } from '@gwent/graphql-schema'
 import PresentableError from '../../../../util/presentable-error'
 import setGameScores from './set-game-scores'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
+import UpdateHistory from './update-history'
 import { ValidatedPlayUnit } from './play-unit-validation'
 
 /**
@@ -52,7 +50,7 @@ export default class PlayUnitImplementation {
     })
     const unitEffects = await getUnitEffects(roundUnits)
 
-    const modificationImpacts = modifyBattlefieldWithNewUnit({
+    const { musters, musteredUnits, scorches } = await modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
       combat,
       effects: unitEffects,
@@ -61,9 +59,9 @@ export default class PlayUnitImplementation {
       newDeckUnit: deckUnit,
     })
 
-    const strengthImpacts = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+    const strengths = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
-      units: [unit, ...roundUnits],
+      units: [unit, ...roundUnits, ...musteredUnits],
       effects: unitEffects,
       logPrefix,
       newDeckUnit: deckUnit,
@@ -71,26 +69,14 @@ export default class PlayUnitImplementation {
 
     setGameScores(game)
 
-    const gameUnit = getBattlefieldUnit({
+    UpdateHistory.updateHistory({
+      combat,
+      deckUnit,
       game,
-      unitId: deckUnit.unit,
-      userId: playerId,
-    })
-    const move: MoveUnitDbObject = {
-      created: new Date(),
-      unit: {
-        artStyle: deckUnit.artStyle,
-        unit: deckUnit.unit,
-        effectiveStrength: gameUnit?.effectiveStrength,
-        effects: gameUnit?.effects,
-        row: combat,
-      },
-      impacts: modificationImpacts || strengthImpacts,
-      type: MoveType.Unit,
-    }
-    addMoveToCurrentPlayer({
-      game,
-      move,
+      musters,
+      playerId,
+      scorches,
+      strengths,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

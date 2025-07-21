@@ -1,4 +1,4 @@
-import { Document, Filter, FindOptions, ObjectId } from 'mongodb'
+import { Document, Filter, FilterOperators, FindOptions, ObjectId } from 'mongodb'
 import { getLogger } from 'log4js'
 
 import { Combat, UnitDbObject } from '@gwent/graphql-schema/database-typings'
@@ -72,15 +72,17 @@ export default class UnitStore extends Store {
   }
 
   /**
-   * Get units matching optinal criteria.
+   * Get units matching optional criteria.
    *
-   * @param options The optionst to scope Units to.
+   * @param options The options to scope Units to.
    * @param options.deckable Whether or not the Unit is allowed to be added to a Deck.
    * @param options.factionIds The Faction ObjectIds to scope Units to.
    * @param options.ids The ObjectIds to scope Units to.
+   * @param options.ignoreIds List of ObjectIds to ignore in the database.
+   * @param options.namePrefix Scope units to those whose name start with the given string.
    * @returns Units matching criteria.
    */
-  static async get({ deckable, factionIds, ids }: GetUnitsInput): Promise<UnitDbObject[]> {
+  static async get({ deckable, factionIds, ids, namePrefix, ignoreIds }: GetUnitsInput): Promise<UnitDbObject[]> {
     if (UnitStore.logger.isDebugEnabled()) {
       UnitStore.logger.debug(
         `Getting units with factions "${JSON.stringify(factionIds)}" and ids "${JSON.stringify(ids)}"`
@@ -99,6 +101,17 @@ export default class UnitStore extends Store {
       filter._id = {
         $in: ids.map((id) => new ObjectId(id)),
       }
+    }
+    if (namePrefix) {
+      filter.$text = {
+        $search: namePrefix,
+      }
+    }
+    if (ignoreIds) {
+      if (!filter._id) {
+        filter._id = {}
+      }
+      ;(filter._id as FilterOperators<ObjectId>).$nin = ignoreIds.map((ignoreId) => new ObjectId(ignoreId))
     }
     const options: FindOptions<Document> = {
       collation: {
@@ -141,4 +154,6 @@ export interface GetUnitsInput {
   deckable?: boolean
   factionIds?: (string | ObjectId)[]
   ids?: (string | ObjectId)[]
+  ignoreIds?: (string | ObjectId)[]
+  namePrefix?: string
 }

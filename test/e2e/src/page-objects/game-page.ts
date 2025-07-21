@@ -1,7 +1,15 @@
 import { ObjectId } from 'mongodb'
 import { Selector, t } from 'testcafe'
 
-import { Combat, Deck, DeckUnit, EffectKey, Faction, UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import {
+  Combat,
+  Deck,
+  DeckUnit,
+  EffectKey,
+  Faction,
+  MoveReasonType,
+  UnitStats,
+} from '@gwent/graphql-schema/resolver-typings'
 import Confirm from '../components/confirm'
 import DeckEditor from '../components/deck-editor'
 import DeckList, { DeckInfo } from '../components/deck-list'
@@ -295,7 +303,14 @@ export default class GamePage {
           const move = moves[i][j]
           if ('unitName' in move) {
             const row = move.combatRow ? `as ${toTitleCase(move.combatRow)}` : 'to battlefield'
-            const description = `${move.userName}: ${move.unitName} deployed ${row}`
+            let action = 'deployed'
+            if (move.reason?.type === MoveReasonType.Muster) {
+              action = 'mustered'
+            }
+            let description = `${move.userName}: ${move.unitName} ${action} ${row}`
+            if (move.reason) {
+              description += ` by ${move.reason.name}`
+            }
             const selected =
               highlightedMove &&
               highlightedMove.playerName === move.userName &&
@@ -1248,6 +1263,10 @@ export interface HistoryMove {
   impacts?: {
     effectKey: EffectKey
     number: number
+  }
+  reason?: {
+    type: MoveReasonType
+    name: string
   }
 }
 

@@ -40,6 +40,14 @@ fragment GamePlayerFragment on GamePlayer {
             name
           }
         }
+        reason {
+          type
+          unit {
+            unit {
+              name
+            }
+          }
+        }
       }
     }
     passed

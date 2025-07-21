@@ -13,6 +13,7 @@ import {
   Impact,
   GameUnit,
   MoveUnit,
+  MoveReasonType,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { getApolloError } from '../../util/error-util'
@@ -125,10 +126,17 @@ export default function GameHistory({
                     )
                     pointable = true
                     primaryText = playerMove.move.unit.unit.name
-                    const placement = playerMove.move.unit.row
+                    let placement = playerMove.move.unit.row
                       ? `as ${toTitleCase(playerMove.move.unit.row)}`
                       : 'to battlefield'
-                    secondaryText = `deployed ${placement}`
+                    if (playerMove.move.reason.unit?.unit.name) {
+                      placement += ` by ${playerMove.move.reason.unit?.unit.name}`
+                    }
+                    let reason = 'deployed'
+                    if (playerMove.move.reason.type === MoveReasonType.Muster) {
+                      reason = 'mustered'
+                    }
+                    secondaryText = `${reason} ${placement}`
                     image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
                     imageTitle = playerMove.move.unit.unit.name
 

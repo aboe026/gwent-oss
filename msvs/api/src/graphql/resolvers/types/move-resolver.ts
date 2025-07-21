@@ -1,4 +1,4 @@
-import { Leader, Move } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, Leader, Move, MoveReasonType } from '@gwent/graphql-schema/resolver-typings'
 import {
   GameUnit,
   MoveDbObject,
@@ -10,6 +10,7 @@ import GameUnitResolver from './game-unit-resolver'
 import LeaderResolver from './leader-resolver'
 import ImpactResolver from './impact-resolver'
 import { MoveType } from '@gwent/graphql-schema'
+import DeckUnitResolver from './deck-unit-resolver'
 
 /**
  * A class to convert Move database objects to their GraphQL equivalent.
@@ -29,10 +30,12 @@ export default class MoveResolver {
     move,
     leader,
     gameUnit,
+    reasonUnit,
   }: {
     move: MoveDbObject
     leader?: Leader
     gameUnit?: GameUnit
+    reasonUnit?: DeckUnit
   }): Promise<Move> {
     if (move.type === MoveType.Leader) {
       const leaderMove = move as MoveLeaderDbObject
@@ -63,6 +66,15 @@ export default class MoveResolver {
         impacts: await ImpactResolver.fromArray({
           impacts: unitMove.impacts,
         }),
+        reason: {
+          type: unitMove.reason.type as MoveReasonType,
+          unit:
+            unitMove.reason.unit &&
+            (reasonUnit ||
+              (await DeckUnitResolver.fromObject({
+                deckUnit: unitMove.reason.unit,
+              }))),
+        },
         __typename: 'MoveUnit',
       }
     }

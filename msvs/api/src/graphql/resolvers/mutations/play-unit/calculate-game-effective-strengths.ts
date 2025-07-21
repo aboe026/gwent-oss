@@ -1,3 +1,4 @@
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import {
@@ -19,6 +20,7 @@ import PresentableError from '../../../../util/presentable-error'
  * function calls from the default exported function calculateEffectiveStrengths
  */
 export default class CalculateGameEffectiveStrengths {
+  private static logger = getLogger('CalculateGameEffectiveStrengths')
   /**
    * Set the effective strengths for all units played in the current round of a game, taking into account unit effects and leader abilities present.
    *
@@ -108,7 +110,9 @@ export default class CalculateGameEffectiveStrengths {
       if (matchingUnit) {
         rowDbUnits.push(matchingUnit)
       } else {
-        throw new PresentableError(`Could not find Unit with ID "${rowUnit.unit}"`)
+        const message = `Could not find Unit with ID "${rowUnit.unit}"`
+        CalculateGameEffectiveStrengths.logger.error(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(`${message}.`)
       }
     }
 
