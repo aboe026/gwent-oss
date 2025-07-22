@@ -123,6 +123,7 @@ New things that should be added to the codebase.
   - manual review?
 - rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
+- "Randomize" button for creating deck?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - game history improvements

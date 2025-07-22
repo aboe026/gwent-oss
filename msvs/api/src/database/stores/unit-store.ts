@@ -82,7 +82,14 @@ export default class UnitStore extends Store {
    * @param options.namePrefix Scope units to those whose name start with the given string.
    * @returns Units matching criteria.
    */
-  static async get({ deckable, factionIds, ids, namePrefix, ignoreIds }: GetUnitsInput): Promise<UnitDbObject[]> {
+  static async get({
+    deckable,
+    factionIds,
+    ids,
+    namePrefix,
+    names,
+    ignoreIds,
+  }: GetUnitsInput): Promise<UnitDbObject[]> {
     if (UnitStore.logger.isDebugEnabled()) {
       UnitStore.logger.debug(
         `Getting units with factions "${JSON.stringify(factionIds)}" and ids "${JSON.stringify(ids)}"`
@@ -105,6 +112,11 @@ export default class UnitStore extends Store {
     if (namePrefix) {
       filter.$text = {
         $search: namePrefix,
+      }
+    }
+    if (names) {
+      filter.name = {
+        $in: names,
       }
     }
     if (ignoreIds) {
@@ -156,4 +168,5 @@ export interface GetUnitsInput {
   ids?: (string | ObjectId)[]
   ignoreIds?: (string | ObjectId)[]
   namePrefix?: string
+  names?: string[]
 }

@@ -117,8 +117,21 @@ export default class Upgrade1 extends Upgrade {
       deckable: 1,
     })
     Upgrade1.logger.debug(
-      `Creating index on collection "${UnitStore.COLLECTION_NAME}" for name:1 with collation locale:en`
+      `Creating index on collection "${UnitStore.COLLECTION_NAME}" for name:1,_id:1 with collation locale:en`
     )
+    await db.createIndex(
+      UnitStore.COLLECTION_NAME,
+      {
+        name: 1,
+        _id: 1,
+      },
+      {
+        collation: {
+          locale: 'en',
+        },
+      }
+    )
+    Upgrade1.logger.debug(`Creating index on collection "${UnitStore.COLLECTION_NAME}" for name:text`)
     await db.createIndex(UnitStore.COLLECTION_NAME, {
       name: 'text',
     })

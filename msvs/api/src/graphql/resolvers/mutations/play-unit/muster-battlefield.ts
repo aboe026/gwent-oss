@@ -28,7 +28,7 @@ export default class MusterBattlefield {
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
   }): Promise<{
-    impacts: ImpactDbObject[]
+    impacts: ImpactDbObject[] | undefined
     musteredUnits: UnitDbObject[]
   }> {
     const impacts: ImpactDbObject[] = []
@@ -64,7 +64,8 @@ export default class MusterBattlefield {
       MusterBattlefield.logger.debug(`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`)
 
       const musterableUnits = await UnitStore.get({
-        namePrefix: newUnit.effectPrefix || newUnit.name,
+        namePrefix: newUnit.effectPrefix ? newUnit.effectPrefix : undefined,
+        names: newUnit.effectPrefix ? undefined : [newUnit.name],
         ignoreIds: [newUnit._id],
       })
 
@@ -87,7 +88,7 @@ export default class MusterBattlefield {
     }
 
     return {
-      impacts,
+      impacts: impacts.length > 0 ? impacts : undefined,
       musteredUnits,
     }
   }
