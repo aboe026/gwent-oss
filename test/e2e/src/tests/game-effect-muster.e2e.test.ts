@@ -658,3 +658,46 @@ test('Mustered unit with morale shows morale in history', async (t) => {
     ],
   })
 })
+
+test('Does not muster units in Lost pile', async (t) => {
+  const unitName1 = "Gaunter O'Dimm"
+  const unitName2 = "Gaunter O'Dimm Darkness"
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1, unitName2],
+      excludeHandUnitNames: [unitName2, unitName2],
+    },
+  })
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    mustering: [
+      {
+        effectiveStrength: 4,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        impactable: true,
+      },
+      {
+        effectiveStrength: 4,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        impactable: true,
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await gameManager.pass({
+    switchTurnsWith: gameManager.self.gamePlayer,
+  })
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [],
+  })
+})
