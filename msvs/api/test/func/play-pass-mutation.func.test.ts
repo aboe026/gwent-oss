@@ -19,15 +19,20 @@ import {
   Game,
   GamePlayer,
   GameStatus,
-  MovePass,
-  MoveUnit,
   RoundResult,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
-import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
+import { ensureUnitsInHand } from '@gwent/test-utils'
+import {
+  expectizeGame,
+  expectizeGamePlayer,
+  expectizeMovePass,
+  expectizeMoveUnit,
+  expectizePlayerRound,
+} from './util/expect-util'
+import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
-import { sortObjectArray } from '@gwent/utils'
 import TestUtil from '../util/test-util'
 
 describe('play-pass-mutation', () => {
@@ -325,11 +330,7 @@ describe('play-pass-mutation', () => {
                   ready: true,
                   rounds: [
                     expectizePlayerRound({
-                      moves: [
-                        {
-                          created: expect.any(Date),
-                        } as MovePass,
-                      ],
+                      moves: [expectizeMovePass()],
                       passed: true,
                     }),
                   ],
@@ -344,12 +345,23 @@ describe('play-pass-mutation', () => {
         })
       })
       it('plays pass if second turn', async () => {
+        const unitName = 'Toruviel'
+        await ensureUnitsInHand({
+          gameId: game.id,
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+          unitNames: [unitName],
+          userId: self.id,
+        })
         const gameDeckSelf = await getGameDeck({
           gameId: game.id,
           userId: self.id,
         })
-        const deckUnit = gameDeckSelf.hand[0]
-        const deckUnitCombat = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
+        const deckUnit = gameDeckSelf.hand.find((handUnit) => handUnit.unit.name === unitName)
+        if (!deckUnit) {
+          throw Error(`Could not find unit "${unitName}" in hand`)
+        }
+        const deckUnitCombat = Combat.Ranged
         await playUnit({
           gameId: game.id,
           userId: self.id,
@@ -406,13 +418,10 @@ describe('play-pass-mutation', () => {
                   rounds: [
                     expectizePlayerRound({
                       moves: [
-                        {
-                          created: expect.any(Date),
+                        expectizeMoveUnit({
                           unit: deckUnit,
-                        } as MoveUnit,
-                        {
-                          created: expect.any(Date),
-                        } as MovePass,
+                        }),
+                        expectizeMovePass(),
                       ],
                       passed: true,
                       score: selfRound.score,
@@ -432,18 +441,23 @@ describe('play-pass-mutation', () => {
         })
       })
       it('plays pass after opponent has passed', async () => {
-        const gameDeckSelf = sortObjectArray({
-          array: (
-            await getGameDeck({
-              gameId: game.id,
-              userId: self.id,
-            })
-          ).hand,
-          sortProperties: ['unit.strength', 'unit.name'],
-          reverse: true,
+        const unitName = 'Toruviel'
+        await ensureUnitsInHand({
+          gameId: game.id,
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+          unitNames: [unitName],
+          userId: self.id,
         })
-        const deckUnit = gameDeckSelf[0]
-        const deckUnitCombat = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
+        const gameDeckSelf = await getGameDeck({
+          gameId: game.id,
+          userId: self.id,
+        })
+        const deckUnit = gameDeckSelf.hand.find((handUnit) => handUnit.unit.name === unitName)
+        if (!deckUnit) {
+          throw Error(`Could not find unit "${unitName}" in hand`)
+        }
+        const deckUnitCombat = Combat.Ranged
         await playUnit({
           gameId: game.id,
           userId: self.id,
@@ -473,13 +487,10 @@ describe('play-pass-mutation', () => {
           rounds: [
             expectizePlayerRound({
               moves: [
-                {
-                  created: expect.any(Date),
+                expectizeMoveUnit({
                   unit: deckUnit,
-                } as MoveUnit,
-                {
-                  created: expect.any(Date),
-                } as MovePass,
+                }),
+                expectizeMovePass(),
               ],
               passed: true,
               result: RoundResult.Won,
@@ -525,11 +536,7 @@ describe('play-pass-mutation', () => {
                     expectizePlayerRound({
                       passed: true,
                       result: RoundResult.Lost,
-                      moves: [
-                        {
-                          created: expect.any(Date),
-                        } as MovePass,
-                      ],
+                      moves: [expectizeMovePass()],
                     }),
                     expectizePlayerRound({}),
                   ],

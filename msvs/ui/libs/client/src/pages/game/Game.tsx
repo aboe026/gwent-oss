@@ -218,7 +218,7 @@ export default function GamePage() {
           },
           (previous) => {
             if (previous?.gameDeck && gameData?.game) {
-              let battlefieldUnitIds: string[] = []
+              const battlefieldUnitIds: string[] = []
               const player = data.playUnit.players.find((player) => player.user.name === user.name)
               if (!player) {
                 throw Error(

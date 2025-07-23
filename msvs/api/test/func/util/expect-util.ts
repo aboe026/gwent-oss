@@ -9,9 +9,13 @@ import {
   GamePlayer,
   GamePlayerUnitCounts,
   GameStatus,
+  GameUnit,
+  Impact,
   Leader,
   Move,
+  MoveReasonType,
   MoveUnit,
+  MoveUnitReason,
   PlayerCombatRow,
   PlayerRound,
   RoundResult,
@@ -566,6 +570,33 @@ export function expectizeDeckUnits({ unitNames, maxArtStyle }: { unitNames?: str
         unit: expect.any(Object),
       }),
     ])
+  }
+}
+
+export function expectizeMoveUnit({
+  unit,
+  reason = {
+    type: MoveReasonType.Deploy,
+    unit: null,
+  },
+  impacts,
+}: {
+  unit: DeckUnit | GameUnit
+  reason?: MoveUnitReason
+  impacts?: Impact[]
+}) {
+  const move: MoveUnit = {
+    created: expect.any(Date),
+    unit: unit as GameUnit,
+    reason,
+    impacts,
+  }
+  return move
+}
+
+export function expectizeMovePass() {
+  return {
+    created: expect.any(Date),
   }
 }
 

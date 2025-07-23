@@ -19,12 +19,11 @@ import {
   Game,
   GamePlayer,
   GameStatus,
-  MoveUnit,
   PlayerCombatRow,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
 import { ensureUnitsInHand } from '@gwent/test-utils'
-import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
+import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
@@ -134,10 +133,9 @@ describe('effect-morale', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: {
                     score: unitSelf1.unit.strength || 0,
@@ -231,10 +229,9 @@ describe('effect-morale', () => {
         expectizePlayerRound({
           close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           moves: [
-            {
-              created: expect.any(Date),
+            expectizeMoveUnit({
               unit: unitOpponent1,
-            } as MoveUnit,
+            }),
           ],
           ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
@@ -274,14 +271,12 @@ describe('effect-morale', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
-                    {
-                      created: expect.any(Date),
+                    }),
+                    expectizeMoveUnit({
                       unit: unitSelf2,
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: {
                     score: 13,
@@ -389,10 +384,9 @@ describe('effect-morale', () => {
         expectizePlayerRound({
           close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           moves: [
-            {
-              created: expect.any(Date),
+            expectizeMoveUnit({
               unit: unitOpponent1,
-            } as MoveUnit,
+            }),
           ],
           ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
@@ -432,17 +426,15 @@ describe('effect-morale', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
-                    {
-                      created: expect.any(Date),
+                    }),
+                    expectizeMoveUnit({
                       unit: unitSelf2,
                       impacts: [
                         {
-                          unit: {
-                            ...unitSelf1,
+                          unit: TestUtil.getGameUnit({
+                            unit: unitSelf1.unit,
                             effectiveStrength: 3,
                             effects: [
                               {
@@ -454,11 +446,11 @@ describe('effect-morale', () => {
                                 total: 3,
                               },
                             ],
-                          },
+                          }),
                           user: self,
                         },
                       ],
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: {
                     score: 13,
@@ -566,10 +558,9 @@ describe('effect-morale', () => {
         expectizePlayerRound({
           close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           moves: [
-            {
-              created: expect.any(Date),
+            expectizeMoveUnit({
               unit: unitOpponent1,
-            } as MoveUnit,
+            }),
           ],
           ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
@@ -609,14 +600,12 @@ describe('effect-morale', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
-                    {
-                      created: expect.any(Date),
+                    }),
+                    expectizeMoveUnit({
                       unit: unitSelf2,
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: {
                     score: 20,

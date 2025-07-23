@@ -178,6 +178,12 @@ export function getMoveFragment() {
       impacts {
         ${getImpactFragment()}
       }
+      reason {
+        type
+        unit {
+          ${getDeckUnitFragment()}
+        }
+      }
     }
   `
 }
