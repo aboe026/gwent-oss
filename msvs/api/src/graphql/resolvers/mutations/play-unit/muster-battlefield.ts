@@ -111,27 +111,38 @@ export default class MusterBattlefield {
         const undrawnUnit = player.deck.undrawn.find(
           (undrawnUnit) => undrawnUnit.unit.toString() === potentialMuster._id.toString()
         )
+        const handUnit = player.deck.hand.find(
+          (handUnit) => handUnit.unit.toString() === potentialMuster._id.toString()
+        )
+        // throw error if both?
 
+        const unitToMuster = undrawnUnit || handUnit
         if (MusterBattlefield.logger.isTraceEnabled()) {
-          MusterBattlefield.logger.trace(`${logPrefix} undrawnUnit: "${JSON.stringify(undrawnUnit)}"`)
+          MusterBattlefield.logger.trace(`${logPrefix} unitToMuster: "${JSON.stringify(unitToMuster)}"`)
         }
 
-        if (undrawnUnit) {
+        if (unitToMuster) {
           impact = {
-            unit: undrawnUnit,
+            unit: unitToMuster,
             user: player.user,
           }
           MusterBattlefield.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`)
-          // TODO: get from hand too?
-          player.deck.undrawn = player.deck.undrawn.filter(
-            (undrawnUnit) => undrawnUnit.unit.toString() !== potentialMuster._id.toString()
-          )
+          if (undrawnUnit) {
+            player.deck.undrawn = player.deck.undrawn.filter(
+              (deckUnit) => deckUnit.unit.toString() !== potentialMuster._id.toString()
+            )
+          }
+          if (handUnit) {
+            player.deck.hand = player.deck.hand.filter(
+              (deckUnit) => deckUnit.unit.toString() !== potentialMuster._id.toString()
+            )
+          }
           if (combat === Combat.Close) {
-            round.close.units.push(undrawnUnit)
+            round.close.units.push(unitToMuster)
           } else if (combat === Combat.Ranged) {
-            round.ranged.units.push(undrawnUnit)
+            round.ranged.units.push(unitToMuster)
           } else if (combat === Combat.Siege) {
-            round.siege.units.push(undrawnUnit)
+            round.siege.units.push(unitToMuster)
           }
         }
       }

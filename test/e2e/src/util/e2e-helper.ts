@@ -366,8 +366,13 @@ export class E2eHelper {
           row: muster.row,
           strength: muster.effectiveStrength,
         })
-        gameDeck.undrawn = gameDeck.undrawn.filter((deckUnit) => deckUnit.unit.name !== muster.name)
-        player.undrawn = gameDeck.undrawn.length
+        if (muster.hand) {
+          gameDeck.hand = gameDeck.hand.filter((deckUnit) => deckUnit.unit.name !== muster.name)
+          player.hand = gameDeck.hand.length
+        } else {
+          gameDeck.undrawn = gameDeck.undrawn.filter((deckUnit) => deckUnit.unit.name !== muster.name)
+          player.undrawn = gameDeck.undrawn.length
+        }
       }
     }
     if (moraling) {
@@ -762,4 +767,5 @@ export interface MusteringExpected {
   row: Combat
   effectiveStrength: number
   impactable?: boolean
+  hand?: boolean
 }

@@ -9,7 +9,7 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effect Muster')
 
-test('Muster works for single of same unit', async (t) => {
+test('Muster works for single of same unit in undrawn', async (t) => {
   const unitName = 'Nekker'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
@@ -37,7 +37,34 @@ test('Muster works for single of same unit', async (t) => {
   })
 })
 
-test('Muster works for single of different unit', async (t) => {
+test('Muster works for single of same unit in hand', async (t) => {
+  const unitName = 'Nekker'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName, unitName],
+      ignoreUnitNames: [unitName],
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName,
+    mustering: [
+      {
+        effectiveStrength: 2,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impactable: true,
+        hand: true,
+      },
+    ],
+  })
+})
+
+test('Muster works for single of different unit in undrawn', async (t) => {
   const unitName1 = 'Geralt of Rivia'
   const unitName2 = 'Roach'
   const gameManager = await createGameManager({
@@ -63,7 +90,33 @@ test('Muster works for single of different unit', async (t) => {
   })
 })
 
-test('Muster works for multiple of same units', async (t) => {
+test('Muster works for single of different unit in hand', async (t) => {
+  const unitName1 = 'Geralt of Rivia'
+  const unitName2 = 'Roach'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        effectiveStrength: 3,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        hand: true,
+      },
+    ],
+  })
+})
+
+test('Muster works for multiple of same units in undrawn', async (t) => {
   const unitName = 'Nekker'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
@@ -96,7 +149,75 @@ test('Muster works for multiple of same units', async (t) => {
   })
 })
 
-test('Muster works for multiple of different units', async (t) => {
+test('Muster works for multiple of same units in hand', async (t) => {
+  const unitName = 'Nekker'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName, unitName, unitName],
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName,
+    mustering: [
+      {
+        effectiveStrength: 2,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impactable: true,
+        hand: true,
+      },
+      {
+        effectiveStrength: 2,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impactable: true,
+        hand: true,
+      },
+    ],
+  })
+})
+
+test('Muster works for multiple of same units in hand and undrawn', async (t) => {
+  const unitName = 'Nekker'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName, unitName],
+      excludeHandUnitNames: [unitName],
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName,
+    mustering: [
+      {
+        effectiveStrength: 2,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impactable: true,
+        hand: true,
+      },
+      {
+        effectiveStrength: 2,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impactable: true,
+      },
+    ],
+  })
+})
+
+test('Muster works for multiple of different units in undrawn', async (t) => {
   const unitName1 = 'Crone Brewess'
   const unitName2 = 'Crone Weavess'
   const unitName3 = 'Crone Whispess'
@@ -120,6 +241,79 @@ test('Muster works for multiple of different units', async (t) => {
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
         impactable: true,
+      },
+      {
+        effectiveStrength: 6,
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impactable: true,
+      },
+    ],
+  })
+})
+
+test('Muster works for multiple of different units in hand', async (t) => {
+  const unitName1 = 'Crone Brewess'
+  const unitName2 = 'Crone Weavess'
+  const unitName3 = 'Crone Whispess'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1, unitName2, unitName3],
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        effectiveStrength: 6,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impactable: true,
+        hand: true,
+      },
+      {
+        effectiveStrength: 6,
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impactable: true,
+        hand: true,
+      },
+    ],
+  })
+})
+
+test('Muster works for multiple of different units in hand and undrawn', async (t) => {
+  const unitName1 = 'Crone Brewess'
+  const unitName2 = 'Crone Weavess'
+  const unitName3 = 'Crone Whispess'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1, unitName2],
+      specialUnitNames: [unitName3],
+      excludeHandUnitNames: [unitName3],
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        effectiveStrength: 6,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impactable: true,
+        hand: true,
       },
       {
         effectiveStrength: 6,

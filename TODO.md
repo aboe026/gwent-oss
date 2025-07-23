@@ -105,8 +105,7 @@ New things that should be added to the codebase.
   }
   ```
 
-- Muster
-  - does it pull from hand as well?
+- For MoveUnitReason, include "source"? (hand, undrawn, lost, opponent)
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
 - Avenger

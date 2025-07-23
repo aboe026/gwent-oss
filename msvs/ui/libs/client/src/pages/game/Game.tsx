@@ -217,11 +217,29 @@ export default function GamePage() {
             variables: gameDeckQueryVariables,
           },
           (previous) => {
-            if (previous?.gameDeck) {
+            if (previous?.gameDeck && gameData?.game) {
+              let battlefieldUnitIds: string[] = []
+              const player = data.playUnit.players.find((player) => player.user.name === user.name)
+              if (!player) {
+                throw Error(
+                  `Could not find player "${user.name}" among game players "${JSON.stringify(data.playUnit.players)}`
+                )
+              }
+              const playerRound = player.rounds[gameData.game.round - 1]
+              for (const unit of [
+                ...playerRound.close.units,
+                ...playerRound.ranged.units,
+                ...playerRound.siege.units,
+              ]) {
+                battlefieldUnitIds.push(unit.unit.id)
+              }
               return {
                 gameDeck: {
                   ...previous.gameDeck,
-                  hand: previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== handCardSelected.unit.id),
+                  hand: previous.gameDeck.hand.filter(
+                    (deckUnit) =>
+                      deckUnit.unit.id !== handCardSelected.unit.id && !battlefieldUnitIds.includes(deckUnit.unit.id)
+                  ),
                 },
               }
             }
