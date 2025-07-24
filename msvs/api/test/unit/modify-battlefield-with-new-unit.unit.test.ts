@@ -1,23 +1,73 @@
 import { ObjectId } from 'mongodb'
 
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
-import { DeckUnitDbObject, GameDbObject, ImpactDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  DeckUnitDbObject,
+  GameDbObject,
+  GameUnitOrigin,
+  ImpactDbObject,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import modifyBattlefieldWithNewUnit, {
   addNewUnitToBattlefield,
 } from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
+import MusterBattlefield, { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/muster-battlefield'
 import ScorchBattlefield from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
 import TestUtil from '../util/test-util'
 
 describe('modify-battlefield-with-new-unit', () => {
   describe('modifyBattlefieldWithNewUnit', () => {
-    it('returns undefined if not scorch impacts', () => {
-      testModifyBattlefieldWithNewUnit({
-        scorchImpacts: [],
-        expected: undefined,
+    it('returns undefined if no impacts', async () => {
+      await testModifyBattlefieldWithNewUnit({})
+    })
+    it('returns single impact for muster', async () => {
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      await testModifyBattlefieldWithNewUnit({
+        musterImpacts: impacts,
+        musteredUnits: [
+          TestUtil.getDbUnit({
+            id: impacts[0].unit.unit,
+          }),
+        ],
+        musteredOrigins: {
+          [impacts[0].unit.unit.toString()]: GameUnitOrigin.Hand,
+        },
       })
     })
-    it('returns single impact if single scorch impact', () => {
+    it('returns multiple impacts for muster', async () => {
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      await testModifyBattlefieldWithNewUnit({
+        musterImpacts: impacts,
+        musteredUnits: [
+          TestUtil.getDbUnit({
+            id: impacts[0].unit.unit,
+          }),
+          TestUtil.getDbUnit({
+            id: impacts[1].unit.unit,
+          }),
+        ],
+        musteredOrigins: {
+          [impacts[0].unit.unit.toString()]: GameUnitOrigin.Hand,
+          [impacts[1].unit.unit.toString()]: GameUnitOrigin.Undrawn,
+        },
+      })
+    })
+    it('returns single impact for scorch', () => {
       const impacts: ImpactDbObject[] = [
         {
           unit: TestUtil.getDbGameUnit({}),
@@ -26,10 +76,9 @@ describe('modify-battlefield-with-new-unit', () => {
       ]
       testModifyBattlefieldWithNewUnit({
         scorchImpacts: impacts,
-        expected: impacts,
       })
     })
-    it('returns multiple impacts if multiple scorch impacts', () => {
+    it('returns multiple impacts for scorch', async () => {
       const impacts: ImpactDbObject[] = [
         {
           unit: TestUtil.getDbGameUnit({}),
@@ -40,9 +89,8 @@ describe('modify-battlefield-with-new-unit', () => {
           user: new ObjectId(),
         },
       ]
-      testModifyBattlefieldWithNewUnit({
+      await testModifyBattlefieldWithNewUnit({
         scorchImpacts: impacts,
-        expected: impacts,
       })
     })
   })
@@ -1332,12 +1380,16 @@ describe('modify-battlefield-with-new-unit', () => {
   })
 })
 
-function testModifyBattlefieldWithNewUnit({
-  scorchImpacts = [],
-  expected,
+async function testModifyBattlefieldWithNewUnit({
+  musterImpacts = undefined,
+  musteredUnits = [],
+  musteredOrigins = {},
+  scorchImpacts = undefined,
 }: {
-  scorchImpacts?: ImpactDbObject[]
-  expected: ImpactDbObject[] | undefined
+  musterImpacts?: ImpactDbObject[] | undefined
+  musteredUnits?: UnitDbObject[]
+  musteredOrigins?: MusteredOrigins
+  scorchImpacts?: ImpactDbObject[] | undefined
 }) {
   const battlefieldUnits = [TestUtil.getDbUnit({})]
   const combat = Combat.Close
@@ -1346,9 +1398,14 @@ function testModifyBattlefieldWithNewUnit({
   const logPrefix = 'log-prefix'
   const newDeckUnit = TestUtil.getDbDeckUnit({})
 
+  const musterBattlefieldSpy = jest.spyOn(MusterBattlefield, 'musterBattlefield').mockResolvedValue({
+    impacts: musterImpacts,
+    musteredUnits,
+    musteredOrigins,
+  })
   const scorchBattlefieldSpy = jest.spyOn(ScorchBattlefield, 'scorchBattlefield').mockReturnValue(scorchImpacts)
 
-  expect(
+  await expect(
     modifyBattlefieldWithNewUnit({
       battlefieldUnits,
       effects,
@@ -1357,8 +1414,24 @@ function testModifyBattlefieldWithNewUnit({
       newDeckUnit,
       combat,
     })
-  ).toEqual(expected)
+  ).resolves.toEqual({
+    scorches: scorchImpacts,
+    musters: musterImpacts,
+    musteredUnits,
+    musteredOrigins,
+  })
 
+  expect(musterBattlefieldSpy.mock.calls).toEqual([
+    [
+      {
+        battlefieldUnits,
+        effects,
+        game,
+        logPrefix,
+        newDeckUnit,
+      },
+    ],
+  ])
   expect(scorchBattlefieldSpy.mock.calls).toEqual([
     [
       {

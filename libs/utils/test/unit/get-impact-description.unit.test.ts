@@ -1,4 +1,4 @@
-import { EffectKey } from '@gwent/graphql-schema/resolver-typings'
+import { EffectKey, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typings'
 import getImpactDescription from '../../src/get-impact-description'
 
 describe('getImpactDescription', () => {
@@ -65,12 +65,50 @@ describe('getImpactDescription', () => {
       })
     ).toEqual('moraled in strength')
   })
-  it('returns correct text for Muster', () => {
-    expect(
+  it('throws error if Muster with no origin', () => {
+    expect(() =>
       getImpactDescription({
         effectKey: EffectKey.Muster,
       })
-    ).toEqual('mustered to battlefield')
+    ).toThrow(
+      `Invalid source "undefined" for "${EffectKey.Muster}" impact. Must be either "${GameUnitOrigin.Hand}" or "${GameUnitOrigin.Undrawn}".`
+    )
+  })
+  it('throws error if Muster with Discard origin', () => {
+    expect(() =>
+      getImpactDescription({
+        effectKey: EffectKey.Muster,
+        origin: GameUnitOrigin.Discard,
+      })
+    ).toThrow(
+      `Invalid source "${GameUnitOrigin.Discard}" for "${EffectKey.Muster}" impact. Must be either "${GameUnitOrigin.Hand}" or "${GameUnitOrigin.Undrawn}".`
+    )
+  })
+  it('throws error if Muster with Opponent origin', () => {
+    expect(() =>
+      getImpactDescription({
+        effectKey: EffectKey.Muster,
+        origin: GameUnitOrigin.Opponent,
+      })
+    ).toThrow(
+      `Invalid source "${GameUnitOrigin.Opponent}" for "${EffectKey.Muster}" impact. Must be either "${GameUnitOrigin.Hand}" or "${GameUnitOrigin.Undrawn}".`
+    )
+  })
+  it('returns correct text for Muster with Hand origin', () => {
+    expect(
+      getImpactDescription({
+        effectKey: EffectKey.Muster,
+        origin: GameUnitOrigin.Hand,
+      })
+    ).toEqual('mustered from Hand')
+  })
+  it('returns correct text for Muster with Undrawn origin', () => {
+    expect(
+      getImpactDescription({
+        effectKey: EffectKey.Muster,
+        origin: GameUnitOrigin.Undrawn,
+      })
+    ).toEqual('mustered from Draw pile')
   })
   it('returns correct text for Scorch', () => {
     expect(

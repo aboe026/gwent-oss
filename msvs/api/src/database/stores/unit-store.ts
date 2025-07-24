@@ -80,6 +80,7 @@ export default class UnitStore extends Store {
    * @param options.ids The ObjectIds to scope Units to.
    * @param options.ignoreIds List of ObjectIds to ignore in the database.
    * @param options.namePrefix Scope units to those whose name start with the given string.
+   * @param options.names Scope units to those which have the exact names.
    * @returns Units matching criteria.
    */
   static async get({

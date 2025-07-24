@@ -8,7 +8,7 @@ import {
   GameUnitOrigin,
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import getBattlefieldUnit from './get-battlefield-unit'
+import GetBattlefieldUnit from './get-battlefield-unit'
 import { MoveType } from '@gwent/graphql-schema'
 import { MusteredOrigins } from './muster-battlefield'
 
@@ -32,7 +32,7 @@ export default class UpdateHistory {
     strengths: ImpactDbObject[] | undefined
     musteredOrigins: MusteredOrigins | undefined
   }) {
-    const battlefieldUnit = getBattlefieldUnit({
+    const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
       game,
       unitId: deckUnit.unit,
       userId: playerId,
@@ -65,7 +65,7 @@ export default class UpdateHistory {
         throw Error('No origins provided for musters.')
       }
       for (const muster of musters) {
-        const musteredBattlefieldUnit = getBattlefieldUnit({
+        const musteredBattlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
           game,
           unitId: muster.unit.unit,
           userId: playerId,

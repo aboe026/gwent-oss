@@ -76,18 +76,22 @@ describe('calculate-game-effective-strengths', () => {
   })
   describe('calculateEffectiveStrengthsForRow', () => {
     it('throws error if matching unit not found', () => {
+      const logPrefix = 'log-prefix'
       const rowUnit = TestUtil.getDbGameUnit({})
+      const message = `Could not find Unit with ID "${rowUnit.unit}"`
       testCalculateEffectiveStrengthsForRow({
         row: {
           score: 0,
           units: [rowUnit],
         },
         units: [],
-        expected: Error(`Could not find Unit with ID "${rowUnit.unit}"`),
+        logPrefix,
+        expected: Error(`${message}.`),
         modifiedRow: {
           score: 0,
           units: [deepClone(rowUnit)],
         },
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
     it('returns empty array if no units', () => {
@@ -568,17 +572,20 @@ function testCalculateEffectiveStrengths({
 function testCalculateEffectiveStrengthsForRow({
   row,
   units,
+  logPrefix = 'log-prefix',
   expected,
   applyMoralesResponses,
   modifiedRow,
+  errorCalls = [],
 }: {
   row: PlayerCombatRowDbObject
   units: UnitDbObject[]
+  logPrefix?: string
   expected: ImpactDbObject[] | Error
   applyMoralesResponses?: ImpactDbObject[][]
   modifiedRow: PlayerCombatRowDbObject
+  errorCalls?: string[][]
 }) {
-  const logPrefix = 'log-prefix'
   const currentPlayerId = new ObjectId()
   const userId = new ObjectId()
   const moraleEffect = TestUtil.getDbEffect({})
@@ -592,6 +599,10 @@ function testCalculateEffectiveStrengthsForRow({
       applyMoralesSpy.mockReturnValueOnce(applyMoralesResponse)
     }
   }
+  const errorSpy = jest.fn().mockImplementation()
+  CalculateGameEffectiveStrengths['logger'] = {
+    error: errorSpy,
+  } as any
 
   if (expected instanceof Error) {
     expect(() =>
@@ -633,4 +644,5 @@ function testCalculateEffectiveStrengthsForRow({
         ]
   )
   expect(row).toEqual(modifiedRow)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

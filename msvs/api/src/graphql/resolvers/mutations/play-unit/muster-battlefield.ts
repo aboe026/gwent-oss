@@ -29,20 +29,18 @@ export default class MusterBattlefield {
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
-  }): Promise<{
-    impacts: ImpactDbObject[] | undefined
-    musteredUnits: UnitDbObject[]
-    musteredOrigins: MusteredOrigins
-  }> {
+  }): Promise<Musterings> {
     const impacts: ImpactDbObject[] = []
     const musteredUnits: UnitDbObject[] = []
     const musteredOrigins: MusteredOrigins = {}
 
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
-      const message = `Could not find unit for new deck unit "${newDeckUnit.unit}".`
-      MusterBattlefield.logger.error(`${logPrefix} failed: ${message}`)
-      throw Error(message)
+      const message = `Could not find unit for new deck unit "${newDeckUnit.unit}"`
+      MusterBattlefield.logger.error(
+        `${logPrefix} failed: ${message}, battlefieldUnits: "${JSON.stringify(battlefieldUnits)}"`
+      )
+      throw Error(`${message}.`)
     }
     if (MusterBattlefield.logger.isTraceEnabled()) {
       MusterBattlefield.logger.trace(`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`)
@@ -178,4 +176,10 @@ export default class MusterBattlefield {
 
 export interface MusteredOrigins {
   [id: string]: GameUnitOrigin
+}
+
+export interface Musterings {
+  impacts: ImpactDbObject[] | undefined
+  musteredUnits: UnitDbObject[]
+  musteredOrigins: MusteredOrigins
 }
