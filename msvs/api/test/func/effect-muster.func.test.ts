@@ -7,6 +7,7 @@ import {
   Game,
   GamePlayer,
   GameStatus,
+  GameUnitOrigin,
   MoveReasonType,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
@@ -161,28 +162,25 @@ describe('effect-muster', () => {
                     expectizeMoveUnit({
                       unit: unitSelf1,
                       impacts: [
-                        {
-                          unit: TestUtil.getGameUnit({
-                            unit: unitSelf3.unit,
-                            effectiveStrength: 1,
-                          }),
-                          user: self,
-                        },
-                        {
+                        TestUtil.getImpact({
                           unit: TestUtil.getGameUnit({
                             unit: unitSelf2.unit,
                             effectiveStrength: 1,
                           }),
                           user: self,
-                        },
+                          source: TestUtil.getSource({}),
+                        }),
+                        TestUtil.getImpact({
+                          unit: TestUtil.getGameUnit({
+                            unit: unitSelf3.unit,
+                            effectiveStrength: 1,
+                          }),
+                          user: self,
+                          source: TestUtil.getSource({
+                            origin: GameUnitOrigin.Undrawn,
+                          }),
+                        }),
                       ],
-                    }),
-                    expectizeMoveUnit({
-                      unit: unitSelf3,
-                      reason: {
-                        type: MoveReasonType.Muster,
-                        unit: unitSelf1,
-                      },
                     }),
                     expectizeMoveUnit({
                       unit: unitSelf2,
@@ -190,6 +188,16 @@ describe('effect-muster', () => {
                         type: MoveReasonType.Muster,
                         unit: unitSelf1,
                       },
+                    }),
+                    expectizeMoveUnit({
+                      unit: unitSelf3,
+                      reason: {
+                        type: MoveReasonType.Muster,
+                        unit: unitSelf1,
+                      },
+                      source: TestUtil.getSource({
+                        origin: GameUnitOrigin.Undrawn,
+                      }),
                     }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
@@ -326,34 +334,42 @@ describe('effect-muster', () => {
                     expectizeMoveUnit({
                       unit: unitSelf1,
                       impacts: [
-                        {
+                        TestUtil.getImpact({
                           unit: TestUtil.getGameUnit({
                             unit: unitSelf2.unit,
                             effectiveStrength: 4,
                           }),
                           user: self,
-                        },
-                        {
+                          source: TestUtil.getSource({}),
+                        }),
+                        TestUtil.getImpact({
                           unit: TestUtil.getGameUnit({
                             unit: unitSelf3.unit,
                             effectiveStrength: 4,
                           }),
                           user: self,
-                        },
-                        {
+                          source: TestUtil.getSource({}),
+                        }),
+                        TestUtil.getImpact({
                           unit: TestUtil.getGameUnit({
                             unit: unitSelf4.unit,
                             effectiveStrength: 4,
                           }),
                           user: self,
-                        },
-                        {
+                          source: TestUtil.getSource({
+                            origin: GameUnitOrigin.Undrawn,
+                          }),
+                        }),
+                        TestUtil.getImpact({
                           unit: TestUtil.getGameUnit({
                             unit: unitSelf5.unit,
                             effectiveStrength: 5,
                           }),
                           user: self,
-                        },
+                          source: TestUtil.getSource({
+                            origin: GameUnitOrigin.Undrawn,
+                          }),
+                        }),
                       ],
                     }),
                     expectizeMoveUnit({
@@ -376,6 +392,9 @@ describe('effect-muster', () => {
                         type: MoveReasonType.Muster,
                         unit: unitSelf1,
                       },
+                      source: TestUtil.getSource({
+                        origin: GameUnitOrigin.Undrawn,
+                      }),
                     }),
                     expectizeMoveUnit({
                       unit: unitSelf5,
@@ -383,6 +402,9 @@ describe('effect-muster', () => {
                         type: MoveReasonType.Muster,
                         unit: unitSelf1,
                       },
+                      source: TestUtil.getSource({
+                        origin: GameUnitOrigin.Undrawn,
+                      }),
                     }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),

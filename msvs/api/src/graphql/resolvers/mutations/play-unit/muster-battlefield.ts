@@ -11,6 +11,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GetEffectWithKey from './get-effect-with-key'
+import { sortObjectArray } from '@gwent/utils'
 import UnitStore from '../../../../database/stores/unit-store'
 
 export default class MusterBattlefield {
@@ -92,7 +93,14 @@ export default class MusterBattlefield {
     }
 
     return {
-      impacts: impacts.length > 0 ? impacts : undefined,
+      impacts:
+        impacts.length > 0
+          ? // sort to ensure units from hand show first in history/impacts (reduces non-deterministic behavior in tests)
+            sortObjectArray({
+              array: impacts,
+              sortProperties: ['source.origin'],
+            })
+          : undefined,
       musteredUnits,
       musteredOrigins,
     }

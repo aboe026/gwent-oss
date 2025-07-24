@@ -10,6 +10,8 @@ import {
   GamePlayerUnitCounts,
   GameStatus,
   GameUnit,
+  GameUnitOrigin,
+  GameUnitSource,
   Impact,
   Leader,
   Move,
@@ -580,16 +582,22 @@ export function expectizeMoveUnit({
     unit: null,
   },
   impacts,
+  source = {
+    origin: GameUnitOrigin.Hand,
+    user: null,
+  },
 }: {
   unit: DeckUnit | GameUnit
   reason?: MoveUnitReason
   impacts?: Impact[]
+  source?: GameUnitSource
 }) {
   const move: MoveUnit = {
     created: expect.any(Date),
     unit: unit as GameUnit,
     reason,
     impacts,
+    source,
   }
   return move
 }

@@ -248,13 +248,13 @@ describe('effect-scorch', () => {
                     expectizeMoveUnit({
                       unit: unitSelf1,
                       impacts: [
-                        {
+                        TestUtil.getImpact({
                           unit: TestUtil.getGameUnit({
                             unit: unitOpponent1.unit,
                             effectiveStrength: 5,
                           }),
                           user: opponent,
-                        },
+                        }),
                       ],
                     }),
                   ],

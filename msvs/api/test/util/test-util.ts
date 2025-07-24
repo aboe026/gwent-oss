@@ -15,6 +15,9 @@ import {
   GameStatus,
   GameUnit,
   GameUnitEffect,
+  GameUnitOrigin,
+  GameUnitSource,
+  Impact,
   Leader,
   PlayerCombatRow,
   Redraw,
@@ -827,13 +830,13 @@ export default class TestUtil {
     artStyle = 1,
     effectiveStrength,
     effects = [],
-    row,
+    row = null,
   }: {
     unit: Unit
     artStyle?: number
     effectiveStrength?: number
     effects?: GameUnitEffect[]
-    row?: Combat
+    row?: Combat | null
   }): GameUnit {
     return {
       artStyle,
@@ -841,6 +844,35 @@ export default class TestUtil {
       effectiveStrength: effectiveStrength || (unit.strength === undefined ? null : unit.strength),
       effects,
       row,
+    }
+  }
+
+  static getImpact({
+    unit,
+    user,
+    source = null,
+  }: {
+    unit: GameUnit
+    user: User
+    source?: GameUnitSource | null
+  }): Impact {
+    return {
+      unit,
+      user,
+      source,
+    }
+  }
+
+  static getSource({
+    origin = GameUnitOrigin.Hand,
+    user = null,
+  }: {
+    origin?: GameUnitOrigin
+    user?: User | null
+  }): GameUnitSource {
+    return {
+      origin,
+      user,
     }
   }
 }
