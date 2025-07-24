@@ -14,6 +14,7 @@ Existing problems in the codebase that need to be fixed.
 
 - fix lint for vscode eslint extension
   - need to wait for vscode to upgrade to version 24 of node?
+- jsdocs linting not working?
 - automate check in build process to ensure package.json versions incremented (and all same)?
 - remove need for classes just for log4js spying
   - have "getLogger" method
