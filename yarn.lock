@@ -4400,9 +4400,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/msvs-api@workspace:msvs/api":
+"@gwent/msv-api@workspace:msvs/api":
   version: 0.0.0-use.local
-  resolution: "@gwent/msvs-api@workspace:msvs/api"
+  resolution: "@gwent/msv-api@workspace:msvs/api"
   dependencies:
     "@apollo/server": "npm:4.12.2"
     "@graphql-tools/schema": "npm:10.0.23"
@@ -4447,9 +4447,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/msvs-ui@workspace:msvs/ui":
+"@gwent/msv-ui@workspace:msvs/ui":
   version: 0.0.0-use.local
-  resolution: "@gwent/msvs-ui@workspace:msvs/ui"
+  resolution: "@gwent/msv-ui@workspace:msvs/ui"
   dependencies:
     "@gwent/client": "workspace:*"
     "@gwent/env": "workspace:*"
