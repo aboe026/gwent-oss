@@ -39,6 +39,9 @@ fragment GamePlayerFragment on GamePlayer {
             id
             name
           }
+          source {
+            origin
+          }
         }
         reason {
           type
@@ -47,6 +50,9 @@ fragment GamePlayerFragment on GamePlayer {
               name
             }
           }
+        }
+        source {
+          origin
         }
       }
     }

@@ -102,6 +102,17 @@ export default gql`
     TRANSFORM
   }
 
+  enum GameUnitOrigin {
+    "Unit came from the users Hand."
+    HAND
+    "Unit came from the users Lost pile."
+    Discard
+    "Unit came from an opponent placing it on their battlefield."
+    OPPONENT
+    "Unit came from the users Draw pile."
+    UNDRAWN
+  }
+
   enum RoundResult {
     "Beat all other players in the round."
     WON
@@ -265,6 +276,7 @@ export default gql`
   type Impact @entity {
     unit: GameUnit! @column(overrideType: "GameUnitDbObject")
     user: User! @column(overrideType: "ObjectId")
+    source: GameUnitSource @column(overrideType: "GameUnitSourceDbObject")
   }
 
   type MoveLeader @entity(additionalFields: [{ path: "type", type: "MoveType" }]) {
@@ -281,11 +293,17 @@ export default gql`
     unit: GameUnit! @column(overrideType: "GameUnitDbObject")
     impacts: [Impact!] @column(overrideType: "Array<ImpactDbObject>")
     reason: MoveUnitReason! @column(overrideType: "MoveUnitReasonDbObject")
+    source: GameUnitSource! @column(overrideType: "GameUnitSourceDbObject")
   }
 
   type MoveUnitReason @entity {
     type: MoveReasonType! @column
     unit: DeckUnit @column(overrideType: "DeckUnitDbObject")
+  }
+
+  type GameUnitSource @entity {
+    origin: GameUnitOrigin! @column
+    user: User @column(overrideType: "ObjectId")
   }
 
   union Move @union(discriminatorField: "type") = MoveLeader | MovePass | MoveUnit

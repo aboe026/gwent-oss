@@ -4,6 +4,7 @@ import {
   EffectDbObject,
   GameDbObject,
   ImpactDbObject,
+  GameUnitOrigin,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import ScorchBattlefield from './scorch-battlefield'
@@ -42,7 +43,11 @@ export default async function modifyBattlefieldWithNewUnit({
     combat,
   })
 
-  const { impacts: musterImpacts, musteredUnits } = await MusterBattlefield.musterBattlefield({
+  const {
+    impacts: musterImpacts,
+    musteredUnits,
+    musteredOrigins,
+  } = await MusterBattlefield.musterBattlefield({
     battlefieldUnits,
     effects,
     game,
@@ -59,6 +64,7 @@ export default async function modifyBattlefieldWithNewUnit({
     }),
     musters: musterImpacts,
     musteredUnits,
+    musteredOrigins,
   }
 }
 
@@ -98,4 +104,7 @@ interface ModificationImpacts {
   scorches: ImpactDbObject[] | undefined
   musters: ImpactDbObject[] | undefined
   musteredUnits: UnitDbObject[]
+  musteredOrigins: {
+    [id: string]: GameUnitOrigin
+  }
 }

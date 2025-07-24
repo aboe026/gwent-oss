@@ -14,6 +14,7 @@ import {
   GameUnit,
   MoveUnit,
   MoveReasonType,
+  GameUnitOrigin,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { getApolloError } from '../../util/error-util'
@@ -133,10 +134,16 @@ export default function GameHistory({
                       placement += ` by ${playerMove.move.reason.unit?.unit.name}`
                     }
                     let reason = 'deployed'
+                    let source = ''
                     if (playerMove.move.reason.type === MoveReasonType.Muster) {
                       reason = 'mustered'
+                      if (playerMove.move.source.origin === GameUnitOrigin.Hand) {
+                        source = ' from Hand'
+                      } else if (playerMove.move.source.origin === GameUnitOrigin.Undrawn) {
+                        source = ' from Draw pile'
+                      }
                     }
-                    secondaryText = `${reason} ${placement}`
+                    secondaryText = `${reason} ${placement}${source}`
                     image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
                     imageTitle = playerMove.move.unit.unit.name
 
@@ -417,6 +424,7 @@ function renderImpacts({
             }`
             const description = getImpactDescription({
               effectKey,
+              origin: impactedUnit.source?.origin,
             })
             const isSelected =
               historyCardSelected &&

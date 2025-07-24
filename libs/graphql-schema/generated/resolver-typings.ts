@@ -262,6 +262,17 @@ export type GameUnitEffect = {
   total: Scalars['Int']['output'];
 };
 
+export enum GameUnitOrigin {
+  /** Unit came from the users Lost pile. */
+  Discard = 'Discard',
+  /** Unit came from the users Hand. */
+  Hand = 'HAND',
+  /** Unit came from an opponent placing it on their battlefield. */
+  Opponent = 'OPPONENT',
+  /** Unit came from the users Draw pile. */
+  Undrawn = 'UNDRAWN'
+}
+
 export type GameUnitRedrawn = {
   __typename?: 'GameUnitRedrawn';
   deck: GameDeck;
@@ -270,9 +281,16 @@ export type GameUnitRedrawn = {
   to: DeckUnit;
 };
 
+export type GameUnitSource = {
+  __typename?: 'GameUnitSource';
+  origin: GameUnitOrigin;
+  user?: Maybe<User>;
+};
+
 /** A unit which was impacted by another unit. */
 export type Impact = {
   __typename?: 'Impact';
+  source?: Maybe<GameUnitSource>;
   unit: GameUnit;
   user: User;
 };
@@ -320,6 +338,7 @@ export type MoveUnit = {
   created: Scalars['DateTime']['output'];
   impacts?: Maybe<Array<Impact>>;
   reason: MoveUnitReason;
+  source: GameUnitSource;
   unit: GameUnit;
 };
 
@@ -714,7 +733,9 @@ export type ResolversTypes = {
   GameStatus: GameStatus;
   GameUnit: ResolverTypeWrapper<Omit<GameUnit, 'effects'> & { effects?: Maybe<Array<ResolversTypes['GameUnitEffect']>> }>;
   GameUnitEffect: ResolverTypeWrapper<Omit<GameUnitEffect, 'reason'> & { reason: ResolversTypes['EffectReason'] }>;
+  GameUnitOrigin: GameUnitOrigin;
   GameUnitRedrawn: ResolverTypeWrapper<Omit<GameUnitRedrawn, 'game'> & { game: ResolversTypes['Game'] }>;
+  GameUnitSource: ResolverTypeWrapper<GameUnitSource>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Impact: ResolverTypeWrapper<Omit<Impact, 'unit'> & { unit: ResolversTypes['GameUnit'] }>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
@@ -769,6 +790,7 @@ export type ResolversParentTypes = {
   GameUnit: Omit<GameUnit, 'effects'> & { effects?: Maybe<Array<ResolversParentTypes['GameUnitEffect']>> };
   GameUnitEffect: Omit<GameUnitEffect, 'reason'> & { reason: ResolversParentTypes['EffectReason'] };
   GameUnitRedrawn: Omit<GameUnitRedrawn, 'game'> & { game: ResolversParentTypes['Game'] };
+  GameUnitSource: GameUnitSource;
   ID: Scalars['ID']['output'];
   Impact: Omit<Impact, 'unit'> & { unit: ResolversParentTypes['GameUnit'] };
   Int: Scalars['Int']['output'];
@@ -946,7 +968,14 @@ export type GameUnitRedrawnResolvers<ContextType = Context, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type GameUnitSourceResolvers<ContextType = Context, ParentType extends ResolversParentTypes['GameUnitSource'] = ResolversParentTypes['GameUnitSource']> = {
+  origin?: Resolver<ResolversTypes['GameUnitOrigin'], ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ImpactResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Impact'] = ResolversParentTypes['Impact']> = {
+  source?: Resolver<Maybe<ResolversTypes['GameUnitSource']>, ParentType, ContextType>;
   unit?: Resolver<ResolversTypes['GameUnit'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -983,6 +1012,7 @@ export type MoveUnitResolvers<ContextType = Context, ParentType extends Resolver
   created?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   impacts?: Resolver<Maybe<Array<ResolversTypes['Impact']>>, ParentType, ContextType>;
   reason?: Resolver<ResolversTypes['MoveUnitReason'], ParentType, ContextType>;
+  source?: Resolver<ResolversTypes['GameUnitSource'], ParentType, ContextType>;
   unit?: Resolver<ResolversTypes['GameUnit'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -1161,6 +1191,7 @@ export type Resolvers<ContextType = Context> = {
   GameUnit?: GameUnitResolvers<ContextType>;
   GameUnitEffect?: GameUnitEffectResolvers<ContextType>;
   GameUnitRedrawn?: GameUnitRedrawnResolvers<ContextType>;
+  GameUnitSource?: GameUnitSourceResolvers<ContextType>;
   Impact?: ImpactResolvers<ContextType>;
   Leader?: LeaderResolvers<ContextType>;
   Move?: MoveResolvers<ContextType>;

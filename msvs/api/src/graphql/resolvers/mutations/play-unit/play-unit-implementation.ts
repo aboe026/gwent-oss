@@ -50,7 +50,7 @@ export default class PlayUnitImplementation {
     })
     const unitEffects = await getUnitEffects(roundUnits)
 
-    const { musters, musteredUnits, scorches } = await modifyBattlefieldWithNewUnit({
+    const { musters, musteredUnits, musteredOrigins, scorches } = await modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
       combat,
       effects: unitEffects,
@@ -74,6 +74,7 @@ export default class PlayUnitImplementation {
       deckUnit,
       game,
       musters,
+      musteredOrigins,
       playerId,
       scorches,
       strengths,

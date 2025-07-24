@@ -260,6 +260,17 @@ export type GameUnitEffect = {
   total: Scalars['Int']['output'];
 };
 
+export enum GameUnitOrigin {
+  /** Unit came from the users Lost pile. */
+  Discard = 'Discard',
+  /** Unit came from the users Hand. */
+  Hand = 'HAND',
+  /** Unit came from an opponent placing it on their battlefield. */
+  Opponent = 'OPPONENT',
+  /** Unit came from the users Draw pile. */
+  Undrawn = 'UNDRAWN'
+}
+
 export type GameUnitRedrawn = {
   __typename?: 'GameUnitRedrawn';
   deck: GameDeck;
@@ -268,9 +279,16 @@ export type GameUnitRedrawn = {
   to: DeckUnit;
 };
 
+export type GameUnitSource = {
+  __typename?: 'GameUnitSource';
+  origin: GameUnitOrigin;
+  user?: Maybe<User>;
+};
+
 /** A unit which was impacted by another unit. */
 export type Impact = {
   __typename?: 'Impact';
+  source?: Maybe<GameUnitSource>;
   unit: GameUnit;
   user: User;
 };
@@ -318,6 +336,7 @@ export type MoveUnit = {
   created: Scalars['DateTime']['output'];
   impacts?: Maybe<Array<Impact>>;
   reason: MoveUnitReason;
+  source: GameUnitSource;
   unit: GameUnit;
 };
 
@@ -718,7 +737,13 @@ export type GameUnitEffectDbObject = {
   total: number,
 };
 
+export type GameUnitSourceDbObject = {
+  origin: string,
+  user?: ObjectId,
+};
+
 export type ImpactDbObject = {
+  source?: GameUnitSourceDbObject,
   unit: GameUnitDbObject,
   user: ObjectId,
 };
@@ -753,6 +778,7 @@ export type MoveUnitDbObject = {
   created: any,
   impacts?: Array<ImpactDbObject>,
   reason: MoveUnitReasonDbObject,
+  source: GameUnitSourceDbObject,
   unit: GameUnitDbObject,
   type: MoveType,
 };

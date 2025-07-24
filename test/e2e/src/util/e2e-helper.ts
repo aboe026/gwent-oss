@@ -8,6 +8,7 @@ import {
   FactionKey,
   GameDeck,
   MoveReasonType,
+  GameUnitOrigin,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
 import GamePage, { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
@@ -438,6 +439,7 @@ export class E2eHelper {
                 number: 0,
               }
             : undefined,
+          origin: muster.hand ? GameUnitOrigin.Hand : GameUnitOrigin.Undrawn,
         })
       }
     }

@@ -1,4 +1,5 @@
-import { DeckUnit, Leader, Move, MoveReasonType } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, Leader, Move, MoveReasonType, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typings'
+import DeckUnitResolver from './deck-unit-resolver'
 import {
   GameUnit,
   MoveDbObject,
@@ -10,7 +11,7 @@ import GameUnitResolver from './game-unit-resolver'
 import LeaderResolver from './leader-resolver'
 import ImpactResolver from './impact-resolver'
 import { MoveType } from '@gwent/graphql-schema'
-import DeckUnitResolver from './deck-unit-resolver'
+import UserResolver from './user-resolver'
 
 /**
  * A class to convert Move database objects to their GraphQL equivalent.
@@ -74,6 +75,10 @@ export default class MoveResolver {
               (await DeckUnitResolver.fromObject({
                 deckUnit: unitMove.reason.unit,
               }))),
+        },
+        source: {
+          origin: unitMove.source.origin as GameUnitOrigin,
+          user: unitMove.source.user ? await UserResolver.fromId(unitMove.source.user) : undefined,
         },
         __typename: 'MoveUnit',
       }

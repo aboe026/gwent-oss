@@ -5,10 +5,12 @@ import {
   GameDbObject,
   ImpactDbObject,
   MoveReasonType,
+  GameUnitOrigin,
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import getBattlefieldUnit from './get-battlefield-unit'
 import { MoveType } from '@gwent/graphql-schema'
+import { MusteredOrigins } from './muster-battlefield'
 
 export default class UpdateHistory {
   static updateHistory({
@@ -19,6 +21,7 @@ export default class UpdateHistory {
     scorches,
     musters,
     strengths,
+    musteredOrigins,
   }: {
     game: GameDbObject
     deckUnit: DeckUnitDbObject
@@ -27,6 +30,7 @@ export default class UpdateHistory {
     scorches: ImpactDbObject[] | undefined
     musters: ImpactDbObject[] | undefined
     strengths: ImpactDbObject[] | undefined
+    musteredOrigins: MusteredOrigins | undefined
   }) {
     const battlefieldUnit = getBattlefieldUnit({
       game,
@@ -46,6 +50,9 @@ export default class UpdateHistory {
       reason: {
         type: MoveReasonType.Deploy,
       },
+      source: {
+        origin: GameUnitOrigin.Hand,
+      },
       type: MoveType.Unit,
     }
     addMoveToCurrentPlayer({
@@ -54,6 +61,9 @@ export default class UpdateHistory {
     })
 
     if (musters) {
+      if (!musteredOrigins) {
+        throw Error('No origins provided for musters.')
+      }
       for (const muster of musters) {
         const musteredBattlefieldUnit = getBattlefieldUnit({
           game,
@@ -62,6 +72,10 @@ export default class UpdateHistory {
         })
         if (!musteredBattlefieldUnit) {
           throw Error(`Could not find mustered unit "${muster.unit.unit}" on battlefield`)
+        }
+        const origin = musteredOrigins[muster.unit.unit.toString()]
+        if (!origin) {
+          throw Error(`Could not find origin for mustered unit "${muster.unit.unit}"`)
         }
         const musterMove: MoveUnitDbObject = {
           created: move.created,
@@ -76,6 +90,9 @@ export default class UpdateHistory {
             effectiveStrength: musteredBattlefieldUnit.unit.effectiveStrength,
             effects: musteredBattlefieldUnit.unit.effects,
             row: musteredBattlefieldUnit.row,
+          },
+          source: {
+            origin,
           },
         }
         addMoveToCurrentPlayer({

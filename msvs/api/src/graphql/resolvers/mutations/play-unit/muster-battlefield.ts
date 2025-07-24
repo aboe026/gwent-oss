@@ -7,6 +7,7 @@ import {
   EffectKey,
   GameDbObject,
   ImpactDbObject,
+  GameUnitOrigin,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GetEffectWithKey from './get-effect-with-key'
@@ -30,9 +31,11 @@ export default class MusterBattlefield {
   }): Promise<{
     impacts: ImpactDbObject[] | undefined
     musteredUnits: UnitDbObject[]
+    musteredOrigins: MusteredOrigins
   }> {
     const impacts: ImpactDbObject[] = []
     const musteredUnits: UnitDbObject[] = []
+    const musteredOrigins: MusteredOrigins = {}
 
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
@@ -74,15 +77,16 @@ export default class MusterBattlefield {
       }
 
       for (const musterableUnit of musterableUnits) {
-        const impact = MusterBattlefield.musterUnitForCurrentPlayer({
+        const { impact, origin } = MusterBattlefield.musterUnitForCurrentPlayer({
           combat: musterableUnit.combats ? (musterableUnit.combats[0] as Combat) : undefined,
           game,
           logPrefix,
           potentialMuster: musterableUnit,
         })
-        if (impact) {
+        if (impact && origin) {
           impacts.push(impact)
           musteredUnits.push(musterableUnit)
+          musteredOrigins[musterableUnit._id.toString()] = origin
         }
       }
     }
@@ -90,6 +94,7 @@ export default class MusterBattlefield {
     return {
       impacts: impacts.length > 0 ? impacts : undefined,
       musteredUnits,
+      musteredOrigins,
     }
   }
 
@@ -103,8 +108,12 @@ export default class MusterBattlefield {
     game: GameDbObject
     logPrefix: string
     potentialMuster: UnitDbObject
-  }): ImpactDbObject | undefined {
+  }): {
+    impact: ImpactDbObject | undefined
+    origin: GameUnitOrigin | undefined
+  } {
     let impact: ImpactDbObject | undefined = undefined
+    let origin: GameUnitOrigin | undefined = undefined
     for (const player of game.players) {
       if (player.user.toString() === game.turn?.toString()) {
         const round = player.rounds[game.round - 1]
@@ -122,17 +131,14 @@ export default class MusterBattlefield {
         }
 
         if (unitToMuster) {
-          impact = {
-            unit: unitToMuster,
-            user: player.user,
-          }
           MusterBattlefield.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`)
           if (undrawnUnit) {
+            origin = GameUnitOrigin.Undrawn
             player.deck.undrawn = player.deck.undrawn.filter(
               (deckUnit) => deckUnit.unit.toString() !== potentialMuster._id.toString()
             )
-          }
-          if (handUnit) {
+          } else {
+            origin = GameUnitOrigin.Hand
             player.deck.hand = player.deck.hand.filter(
               (deckUnit) => deckUnit.unit.toString() !== potentialMuster._id.toString()
             )
@@ -144,9 +150,24 @@ export default class MusterBattlefield {
           } else if (combat === Combat.Siege) {
             round.siege.units.push(unitToMuster)
           }
+
+          impact = {
+            unit: unitToMuster,
+            user: player.user,
+            source: {
+              origin,
+            },
+          }
         }
       }
     }
-    return impact
+    return {
+      impact,
+      origin,
+    }
   }
+}
+
+export interface MusteredOrigins {
+  [id: string]: GameUnitOrigin
 }

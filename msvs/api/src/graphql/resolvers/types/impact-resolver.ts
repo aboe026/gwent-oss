@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
 import GameUnitResolver from './game-unit-resolver'
-import { GameUnit, Impact, User } from '@gwent/graphql-schema/resolver-typings'
+import { GameUnit, GameUnitOrigin, Impact, User } from '@gwent/graphql-schema/resolver-typings'
 import { ImpactDbObject } from '@gwent/graphql-schema/database-typings'
 import UnitResolver from './unit-resolver'
 import UserResolver from './user-resolver'
@@ -37,6 +37,12 @@ export default class ImpactResolver {
           gameUnit: impact.unit,
         })),
       user: user || (await UserResolver.fromId(impact.user)),
+      source: impact.source
+        ? {
+            origin: impact.source.origin as GameUnitOrigin,
+            user: impact.source.user ? await UserResolver.fromId(impact.source.user) : undefined,
+          }
+        : undefined,
     }
   }
 

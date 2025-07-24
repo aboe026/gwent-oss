@@ -8,6 +8,7 @@ import {
   EffectKey,
   Faction,
   MoveReasonType,
+  GameUnitOrigin,
   UnitStats,
 } from '@gwent/graphql-schema/resolver-typings'
 import Confirm from '../components/confirm'
@@ -304,12 +305,18 @@ export default class GamePage {
           if ('unitName' in move) {
             const row = move.combatRow ? `as ${toTitleCase(move.combatRow)}` : 'to battlefield'
             let action = 'deployed'
+            let source = ''
             if (move.reason?.type === MoveReasonType.Muster) {
               action = 'mustered'
+              if (move.origin === GameUnitOrigin.Hand) {
+                source = ' from Hand'
+              } else {
+                source = ' from Draw pile'
+              }
             }
             let description = `${move.userName}: ${move.unitName} ${action} ${row}`
             if (move.reason) {
-              description += ` by ${move.reason.name}`
+              description += ` by ${move.reason.name}${source}`
             }
             const selected =
               highlightedMove &&
@@ -688,6 +695,7 @@ export default class GamePage {
         for (const impact of move.impacts) {
           const description = getImpactDescription({
             effectKey: move.effectKey,
+            origin: impact.origin,
           })
           const selected = impact.highlighted ? ' selected' : ''
           const dotted = impact.dotted ? ' dotted' : ''
@@ -701,9 +709,7 @@ export default class GamePage {
           const child = children.nth(i)
           const userName = await child.find(`.${HTML_CLASSES.MoveImpactUserName}`).innerText
           const unitName = await child.find(`.${HTML_CLASSES.MoveImpactUnitName}`).innerText
-          const description = getImpactDescription({
-            effectKey: move.effectKey,
-          })
+          const description = await child.find(`.${HTML_CLASSES.MoveImpactDescription}`).innerText
           const highlighted = await child.hasClass(HTML_CLASSES.ItemHighlighted)
           const dotted = await E2eHelper.hasDottedBorder(child)
           actual.push(
@@ -1268,6 +1274,7 @@ export interface HistoryMove {
     type: MoveReasonType
     name: string
   }
+  origin?: GameUnitOrigin
 }
 
 export interface HistoryImpactMoves {
@@ -1280,6 +1287,7 @@ export interface HistoryImpactMoves {
     unitName: string
     highlighted?: boolean
     dotted?: boolean
+    origin?: GameUnitOrigin
   }[]
 }
 
