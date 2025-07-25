@@ -257,7 +257,6 @@ describe('muster-battlefield', () => {
       })
     })
     it('returns values for multiple musters and sorts by origin', async () => {
-      // TODO: fix
       const newDeckUnit = TestUtil.getDbDeckUnit({})
       const musterEffect = TestUtil.getDbEffect({})
       const newUnit = TestUtil.getDbUnit({
@@ -269,12 +268,18 @@ describe('muster-battlefield', () => {
         unit: TestUtil.getDbGameUnit({
           id: musterableUnit1._id,
         }),
+        source: {
+          origin: GameUnitOrigin.Undrawn,
+        },
       })
       const musterableUnit2 = TestUtil.getDbUnit({})
       const impact2 = TestUtil.getDbImpact({
         unit: TestUtil.getDbGameUnit({
           id: musterableUnit2._id,
         }),
+        source: {
+          origin: GameUnitOrigin.Hand,
+        },
       })
       await testMusterBattlefield({
         logPrefix,
@@ -318,6 +323,8 @@ describe('muster-battlefield', () => {
               logPrefix,
               potentialMuster: musterableUnit1,
             },
+          ],
+          [
             {
               combat: undefined,
               game,
@@ -327,6 +334,115 @@ describe('muster-battlefield', () => {
           ],
         ],
         debugCalls: [[`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`]],
+      })
+    })
+    it('logs to trace if enabled', async () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const musterEffect = TestUtil.getDbEffect({})
+      const newUnit = TestUtil.getDbUnit({
+        id: newDeckUnit.unit,
+        effects: [musterEffect._id],
+      })
+      const musterableUnit = TestUtil.getDbUnit({})
+      const impact = TestUtil.getDbImpact({
+        unit: TestUtil.getDbGameUnit({
+          id: musterableUnit._id,
+        }),
+      })
+      await testMusterBattlefield({
+        logPrefix,
+        game,
+        battlefieldUnits: [newUnit],
+        newDeckUnit,
+        musterEffect,
+        musterableUnits: [musterableUnit],
+        musterUnitForCurrentPlayerResponses: [
+          {
+            impact: undefined,
+            origin: undefined,
+          },
+        ],
+        expected: {
+          impacts: undefined,
+          musteredUnits: [],
+          musteredOrigins: {},
+        },
+        unitStoreGetCalls: [
+          [
+            {
+              namePrefix: undefined,
+              names: [newUnit.name],
+              ignoreIds: [newUnit._id],
+            },
+          ],
+        ],
+        musterUnitForCurrentPlayerCalls: [
+          [
+            {
+              combat: undefined,
+              game,
+              logPrefix,
+              potentialMuster: musterableUnit,
+            },
+          ],
+        ],
+        debugCalls: [[`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`]],
+        traceCalls: [
+          [`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`],
+          [`${logPrefix} musterEffect: "${JSON.stringify(musterEffect)}"`],
+          [`${logPrefix} hasMusterEffect: "true"`],
+          [`${logPrefix} musterableUnits: "${JSON.stringify([musterableUnit])}"`],
+        ],
+        traceEnabled: true,
+      })
+    })
+  })
+  describe('musterUnitForCurrentPlayer', () => {
+    const logPrefix = 'log-prefix'
+    it('throws error if potential muster found in both hand and undrawn', () => {
+      const potentialMuster = TestUtil.getDbUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          hand: [
+            TestUtil.getDbDeckUnit({
+              id: potentialMuster._id,
+            }),
+          ],
+          undrawn: [
+            TestUtil.getDbDeckUnit({
+              id: potentialMuster._id,
+            }),
+          ],
+        }),
+      })
+      const message = `Unit "${potentialMuster._id}" found in both hand and undrawn`
+      testMusterUnitForCurrentPlayer({
+        game: TestUtil.getDbGame({
+          players: [player],
+          turn: player.user,
+        }),
+        potentialMuster,
+        logPrefix,
+        expected: Error(`${message}.`),
+        errorCalls: [[`${logPrefix} failed: ${message}`]],
+      })
+    })
+    it('returns undefineds if no unit to muster', () => {
+      const potentialMuster = TestUtil.getDbUnit({})
+      const player = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({}),
+      })
+      testMusterUnitForCurrentPlayer({
+        game: TestUtil.getDbGame({
+          players: [player],
+          turn: player.user,
+        }),
+        potentialMuster,
+        logPrefix,
+        expected: {
+          impact: undefined,
+          origin: undefined,
+        },
       })
     })
   })
@@ -345,6 +461,7 @@ async function testMusterBattlefield({
   musterUnitForCurrentPlayerCalls = [],
   errorCalls = [],
   debugCalls = [],
+  traceCalls = [],
   traceEnabled,
 }: {
   battlefieldUnits: UnitDbObject[]
@@ -359,6 +476,7 @@ async function testMusterBattlefield({
   musterUnitForCurrentPlayerCalls?: any[][]
   errorCalls?: string[][]
   debugCalls?: string[][]
+  traceCalls?: string[][]
   traceEnabled?: boolean
 }) {
   const effects = [TestUtil.getDbEffect({})]
@@ -408,5 +526,54 @@ async function testMusterBattlefield({
   expect(musterUnitForCurrentPlayerSpy.mock.calls).toEqual(musterUnitForCurrentPlayerCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
+  expect(traceSpy.mock.calls).toEqual(traceCalls)
+}
+
+async function testMusterUnitForCurrentPlayer({
+  combat,
+  game,
+  logPrefix,
+  potentialMuster,
+  expected,
+  errorCalls = [],
+  traceEnabled,
+}: {
+  combat?: Combat | null
+  game: GameDbObject
+  logPrefix: string
+  potentialMuster: UnitDbObject
+  expected: MusterForPlayer | Error
+  errorCalls?: string[][]
+  traceEnabled?: boolean
+}) {
+  const errorSpy = jest.fn().mockImplementation()
+  const traceSpy = jest.fn().mockImplementation()
+  MusterBattlefield['logger'] = {
+    error: errorSpy,
+    trace: traceSpy,
+    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
+  } as any
+
+  if (expected instanceof Error) {
+    expect(() =>
+      MusterBattlefield['musterUnitForCurrentPlayer']({
+        game,
+        logPrefix,
+        potentialMuster,
+        combat,
+      })
+    ).toThrow(expected)
+  } else {
+    expect(
+      MusterBattlefield['musterUnitForCurrentPlayer']({
+        game,
+        logPrefix,
+        potentialMuster,
+        combat,
+      })
+    ).toEqual(expected)
+  }
+
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(traceSpy.mock.calls).toEqual(traceEnabled ? [] : [])
 }

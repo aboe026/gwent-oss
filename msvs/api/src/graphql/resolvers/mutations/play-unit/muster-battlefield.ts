@@ -59,7 +59,7 @@ export default class MusterBattlefield {
       newUnit.effects &&
       newUnit.effects.map((id) => id.toString()).includes(musterEffect._id.toString())
     if (MusterBattlefield.logger.isTraceEnabled()) {
-      MusterBattlefield.logger.trace(`${logPrefix} hasScorchEffect: "${hasMusterEffect}"`)
+      MusterBattlefield.logger.trace(`${logPrefix} hasMusterEffect: "${hasMusterEffect}"`)
     }
 
     if (hasMusterEffect) {
@@ -119,14 +119,17 @@ export default class MusterBattlefield {
     let origin: GameUnitOrigin | undefined = undefined
     for (const player of game.players) {
       if (player.user.toString() === game.turn?.toString()) {
-        const round = player.rounds[game.round - 1]
         const undrawnUnit = player.deck.undrawn.find(
           (undrawnUnit) => undrawnUnit.unit.toString() === potentialMuster._id.toString()
         )
         const handUnit = player.deck.hand.find(
           (handUnit) => handUnit.unit.toString() === potentialMuster._id.toString()
         )
-        // throw error if both?
+        if (undrawnUnit && handUnit) {
+          const message = `Unit "${potentialMuster._id}" found in both hand and undrawn`
+          MusterBattlefield.logger.error(`${logPrefix} failed: ${message}`)
+          throw Error(`${message}.`)
+        }
 
         const unitToMuster = undrawnUnit || handUnit
         if (MusterBattlefield.logger.isTraceEnabled()) {
@@ -146,6 +149,7 @@ export default class MusterBattlefield {
               (deckUnit) => deckUnit.unit.toString() !== potentialMuster._id.toString()
             )
           }
+          const round = player.rounds[game.round - 1]
           if (combat === Combat.Close) {
             round.close.units.push(unitToMuster)
           } else if (combat === Combat.Ranged) {
