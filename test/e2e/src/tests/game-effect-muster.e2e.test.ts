@@ -701,3 +701,46 @@ test('Does not muster units in Lost pile', async (t) => {
     mustering: [],
   })
 })
+
+test('Can muster same units as opponent', async (t) => {
+  const unitName1 = 'Cirilla Fiona Elen Riannon'
+  const unitName2 = 'Roach'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1],
+      excludeHandUnitNames: [unitName2],
+    },
+    opponent: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1],
+      excludeHandUnitNames: [unitName2],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        name: unitName2,
+        effectiveStrength: 3,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        name: unitName2,
+        effectiveStrength: 3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+})
