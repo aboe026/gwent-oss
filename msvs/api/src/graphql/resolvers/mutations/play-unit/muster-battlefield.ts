@@ -114,10 +114,7 @@ export default class MusterBattlefield {
     game: GameDbObject
     logPrefix: string
     potentialMuster: UnitDbObject
-  }): {
-    impact: ImpactDbObject | undefined
-    origin: GameUnitOrigin | undefined
-  } {
+  }): MusterForPlayer {
     let impact: ImpactDbObject | undefined = undefined
     let origin: GameUnitOrigin | undefined = undefined
     for (const player of game.players) {
@@ -176,6 +173,11 @@ export default class MusterBattlefield {
 
 export interface MusteredOrigins {
   [id: string]: GameUnitOrigin
+}
+
+export interface MusterForPlayer {
+  impact: ImpactDbObject | undefined
+  origin: GameUnitOrigin | undefined
 }
 
 export interface Musterings {

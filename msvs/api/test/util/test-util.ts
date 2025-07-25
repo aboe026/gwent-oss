@@ -37,6 +37,8 @@ import {
   GamePlayerDbObject,
   GameUnitDbObject,
   GameUnitEffectDbObject,
+  GameUnitSourceDbObject,
+  ImpactDbObject,
   LeaderDbObject,
   MoveDbObject,
   PlayerCombatRowDbObject,
@@ -844,6 +846,22 @@ export default class TestUtil {
       effectiveStrength: effectiveStrength || (unit.strength === undefined ? null : unit.strength),
       effects,
       row,
+    }
+  }
+
+  static getDbImpact({
+    unit = TestUtil.getDbGameUnit({}),
+    user = new ObjectId(),
+    source,
+  }: {
+    unit?: GameUnitDbObject
+    user?: ObjectId
+    source?: GameUnitSourceDbObject
+  }): ImpactDbObject {
+    return {
+      unit,
+      user,
+      source,
     }
   }
 
