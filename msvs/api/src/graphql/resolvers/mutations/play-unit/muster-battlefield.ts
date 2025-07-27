@@ -76,8 +76,14 @@ export default class MusterBattlefield {
       }
 
       for (const musterableUnit of musterableUnits) {
+        const combat = musterableUnit.combats ? (musterableUnit.combats[0] as Combat) : undefined
+        if (!combat) {
+          const message = `Cannot muster unit "${musterableUnit._id}" without combat`
+          MusterBattlefield.logger.error(`${logPrefix} failed: ${message}`)
+          throw Error(`${message}.`)
+        }
         const { impact, origin } = MusterBattlefield.musterUnitForCurrentPlayer({
-          combat: musterableUnit.combats ? (musterableUnit.combats[0] as Combat) : undefined,
+          combat,
           game,
           logPrefix,
           potentialMuster: musterableUnit,
@@ -110,7 +116,7 @@ export default class MusterBattlefield {
     logPrefix,
     potentialMuster,
   }: {
-    combat?: Combat | null
+    combat?: Combat
     game: GameDbObject
     logPrefix: string
     potentialMuster: UnitDbObject
@@ -137,13 +143,14 @@ export default class MusterBattlefield {
         }
 
         if (unitToMuster) {
-          MusterBattlefield.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`)
           if (undrawnUnit) {
+            MusterBattlefield.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`)
             origin = GameUnitOrigin.Undrawn
             player.deck.undrawn = player.deck.undrawn.filter(
               (deckUnit) => deckUnit.unit.toString() !== potentialMuster._id.toString()
             )
           } else {
+            MusterBattlefield.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`)
             origin = GameUnitOrigin.Hand
             player.deck.hand = player.deck.hand.filter(
               (deckUnit) => deckUnit.unit.toString() !== potentialMuster._id.toString()
@@ -154,7 +161,7 @@ export default class MusterBattlefield {
             round.close.units.push(unitToMuster)
           } else if (combat === Combat.Ranged) {
             round.ranged.units.push(unitToMuster)
-          } else if (combat === Combat.Siege) {
+          } else {
             round.siege.units.push(unitToMuster)
           }
 
