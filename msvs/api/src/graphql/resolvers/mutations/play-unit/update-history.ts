@@ -1,4 +1,5 @@
-import addMoveToCurrentPlayer from '../util/add-move-to-current-player'
+import { getLogger } from 'log4js'
+
 import {
   Combat,
   DeckUnitDbObject,
@@ -7,16 +8,21 @@ import {
   MoveReasonType,
   GameUnitOrigin,
   MoveUnitDbObject,
+  MoveDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GetBattlefieldUnit from './get-battlefield-unit'
 import { MoveType } from '@gwent/graphql-schema'
 import { MusteredOrigins } from './muster-battlefield'
+import PresentableError from '../../../../util/presentable-error'
 
 export default class UpdateHistory {
-  static updateHistory({
+  private static logger = getLogger('UpdateHistory')
+
+  static newUnitDeployed({
     game,
     deckUnit,
     playerId,
+    logPrefix,
     combat,
     scorches,
     musters,
@@ -26,6 +32,7 @@ export default class UpdateHistory {
     game: GameDbObject
     deckUnit: DeckUnitDbObject
     playerId: string
+    logPrefix: string
     combat: Combat | null | undefined
     scorches: ImpactDbObject[] | undefined
     musters: ImpactDbObject[] | undefined
@@ -55,14 +62,16 @@ export default class UpdateHistory {
       },
       type: MoveType.Unit,
     }
-    addMoveToCurrentPlayer({
+    UpdateHistory.addMoveToCurrentPlayer({
       game,
       move,
     })
 
     if (musters) {
       if (!musteredOrigins) {
-        throw Error('No origins provided for musters.')
+        const message = 'No origins provided for musters'
+        UpdateHistory.logger.error(`${logPrefix} failed: ${message}, musters: "${JSON.stringify(musters)}"`)
+        throw Error(`${message}.`)
       }
       for (const muster of musters) {
         const musteredBattlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
@@ -95,11 +104,21 @@ export default class UpdateHistory {
             origin,
           },
         }
-        addMoveToCurrentPlayer({
+        UpdateHistory.addMoveToCurrentPlayer({
           game,
           move: musterMove,
         })
       }
+    }
+  }
+
+  // TODO: remoe standalone addMoveToCurrentPlayer file
+  static addMoveToCurrentPlayer({ game, move }: { game: GameDbObject; move: MoveDbObject }) {
+    const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
+    if (player) {
+      player.rounds[game.round - 1].moves.push(move)
+    } else {
+      throw new PresentableError(`Could not find player "${game.turn}" on game "${game._id}" to add move to.`)
     }
   }
 }

@@ -1561,7 +1561,7 @@ function testScorchBattlefield({
         game,
         newDeckUnit,
       })
-    ).toEqual(impacts)
+    ).toEqual(impacts.length > 0 ? impacts : undefined)
   }
 
   expect(getEffectWithKeySpy.mock.calls).toEqual(

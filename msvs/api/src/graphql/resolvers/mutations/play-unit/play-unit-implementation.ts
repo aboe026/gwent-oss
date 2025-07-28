@@ -69,13 +69,14 @@ export default class PlayUnitImplementation {
 
     setGameScores(game)
 
-    UpdateHistory.updateHistory({
+    UpdateHistory.newUnitDeployed({
       combat,
       deckUnit,
       game,
       musters,
       musteredOrigins,
       playerId,
+      logPrefix,
       scorches,
       strengths,
     })
@@ -105,7 +106,7 @@ export default class PlayUnitImplementation {
     }
 
     return {
-      game,
+      game: updatedGame,
       gameDeck: player.deck,
     }
   }
