@@ -80,11 +80,15 @@ export default class UpdateHistory {
           userId: playerId,
         })
         if (!musteredBattlefieldUnit) {
-          throw Error(`Could not find mustered unit "${muster.unit.unit}" on battlefield`)
+          const message = `Could not find mustered unit "${muster.unit.unit}" on battlefield`
+          UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
+          throw Error(`${message}.`)
         }
         const origin = musteredOrigins[muster.unit.unit.toString()]
         if (!origin) {
-          throw Error(`Could not find origin for mustered unit "${muster.unit.unit}"`)
+          const message = `Could not find origin for mustered unit "${muster.unit.unit}"`
+          UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
+          throw Error(`${message}.`)
         }
         const musterMove: MoveUnitDbObject = {
           created: move.created,
@@ -112,7 +116,6 @@ export default class UpdateHistory {
     }
   }
 
-  // TODO: remoe standalone addMoveToCurrentPlayer file
   static addMoveToCurrentPlayer({ game, move }: { game: GameDbObject; move: MoveDbObject }) {
     const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
     if (player) {

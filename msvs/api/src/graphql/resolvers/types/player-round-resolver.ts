@@ -32,6 +32,7 @@ export default class PlayerRoundResolver {
     units?: Unit[]
     leader?: Leader
   }): Promise<PlayerRound> {
+    // TODO: pre-fetch reasonUnit and source user
     let resolvedUnits: Unit[] = []
     if (units) {
       resolvedUnits = units

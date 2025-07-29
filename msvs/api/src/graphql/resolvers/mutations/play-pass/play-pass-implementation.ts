@@ -1,6 +1,5 @@
 import { getLogger } from 'log4js'
 
-import addMoveToCurrentPlayer from '../util/add-move-to-current-player'
 import clearBattlefieldUnits from './clear-battlefield-units'
 import { GameDbObject, MovePassDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
@@ -14,6 +13,7 @@ import SetGameVictors from './set-game-victors'
 import SetNextTurnForCurrentRound from '../util/set-next-turn-for-current-round'
 import SetRoundResults from './set-round-results'
 import SetTurnForNextRound from './set-turn-for-next-round'
+import UpdateHistory from '../play-unit/update-history'
 import { ValidatedPlayPass } from './play-pass-validation'
 
 /**
@@ -34,7 +34,7 @@ export default class PlayPassImplementation {
   static async playPassImplementation({ game, logPrefix }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
     passCurrentPlayer(game)
 
-    addMoveToCurrentPlayer({
+    UpdateHistory.addMoveToCurrentPlayer({
       game,
       move: {
         created: new Date(),

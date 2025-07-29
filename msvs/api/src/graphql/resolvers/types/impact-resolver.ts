@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import GameUnitResolver from './game-unit-resolver'
 import { GameUnit, GameUnitOrigin, Impact, User } from '@gwent/graphql-schema/resolver-typings'
@@ -30,17 +31,46 @@ export default class ImpactResolver {
     gameUnit?: GameUnit
     user?: User
   }): Promise<Impact> {
+    const users: User[] = []
+    const userIds: ObjectId[] = []
+    if (user) {
+      users.push(user)
+    } else {
+      userIds.push(impact.user)
+    }
+    if (impact.source?.user) {
+      userIds.push(impact.source.user)
+    }
+
+    if (userIds.length > 0) {
+      users.push(...(await UserResolver.fromIds(userIds)))
+    }
+    const impactUser = users.find((user) => user.id === impact.user.toString())
+    if (!impactUser) {
+      const message = `Could not find impact user "${impact.user}"`
+      ImpactResolver.logger.error(`failed: ${message}, impact: "${JSON.stringify(impact)}"`)
+      throw Error(`${message}.`)
+    }
+    let sourceUser: User | undefined = undefined
+    if (impact.source?.user) {
+      sourceUser = users.find((user) => user.id === impact.source?.user?.toString())
+      if (!sourceUser) {
+        const message = `Could not find impact source user "${impact.source.user}"`
+        ImpactResolver.logger.error(`failed: ${message}, impact: "${JSON.stringify(impact)}"`)
+        throw Error(`${message}.`)
+      }
+    }
     return {
       unit:
         gameUnit ||
         (await GameUnitResolver.fromObject({
           gameUnit: impact.unit,
         })),
-      user: user || (await UserResolver.fromId(impact.user)),
+      user: impactUser,
       source: impact.source
         ? {
             origin: impact.source.origin as GameUnitOrigin,
-            user: impact.source.user ? await UserResolver.fromId(impact.source.user) : undefined,
+            user: sourceUser,
           }
         : undefined,
     }

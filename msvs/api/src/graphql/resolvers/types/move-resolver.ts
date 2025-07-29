@@ -1,4 +1,4 @@
-import { DeckUnit, Leader, Move, MoveReasonType, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, Leader, Move, MoveReasonType, GameUnitOrigin, User } from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from './deck-unit-resolver'
 import {
   GameUnit,
@@ -32,11 +32,13 @@ export default class MoveResolver {
     leader,
     gameUnit,
     reasonUnit,
+    sourceUser,
   }: {
     move: MoveDbObject
     leader?: Leader
     gameUnit?: GameUnit
     reasonUnit?: DeckUnit
+    sourceUser?: User
   }): Promise<Move> {
     if (move.type === MoveType.Leader) {
       const leaderMove = move as MoveLeaderDbObject
@@ -57,6 +59,10 @@ export default class MoveResolver {
       }
     } else if (move.type === MoveType.Unit) {
       const unitMove = move as MoveUnitDbObject
+      let resolvedSourceUser: User | undefined = undefined
+      if (unitMove.source.user) {
+        resolvedSourceUser = sourceUser || (await UserResolver.fromId(unitMove.source.user))
+      }
       return {
         created: unitMove.created,
         unit:
@@ -78,7 +84,7 @@ export default class MoveResolver {
         },
         source: {
           origin: unitMove.source.origin as GameUnitOrigin,
-          user: unitMove.source.user ? await UserResolver.fromId(unitMove.source.user) : undefined,
+          user: resolvedSourceUser,
         },
         __typename: 'MoveUnit',
       }

@@ -1,4 +1,3 @@
-import * as addMoveToCurrentPlayer from '../../src/graphql/resolvers/mutations/util/add-move-to-current-player'
 import * as clearBattlefieldUnits from '../../src/graphql/resolvers/mutations/play-pass/clear-battlefield-units'
 import GameStore from '../../src/database/stores/game-store'
 import * as initializeNewRound from '../../src/graphql/resolvers/mutations/util/initialize-new-round'
@@ -12,6 +11,7 @@ import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/ut
 import SetRoundResults from '../../src/graphql/resolvers/mutations/play-pass/set-round-results'
 import SetTurnForNextRound from '../../src/graphql/resolvers/mutations/play-pass/set-turn-for-next-round'
 import TestUtil from '../util/test-util'
+import UpdateHistory from '../../src/graphql/resolvers/mutations/play-unit/update-history'
 
 describe('play-pass-implementation', () => {
   const logPrefix = 'log-prefix'
@@ -71,7 +71,7 @@ async function testPlayPassImplementation({
   const passCurrentPlayerSpy = jest.spyOn(passCurrentPlayer, 'default').mockImplementation()
   const moveCreated = new Date()
   const dateSpy = jest.spyOn(global, 'Date').mockImplementation(() => moveCreated)
-  const addMoveToCurrentPlayerSpy = jest.spyOn(addMoveToCurrentPlayer, 'default').mockImplementation()
+  const addMoveToCurrentPlayerSpy = jest.spyOn(UpdateHistory, 'addMoveToCurrentPlayer').mockImplementation()
   const isRoundOverSpy = jest.spyOn(IsRoundOver, 'isRoundOver').mockReturnValue(roundOver)
   const setRoundResultsSpy = jest.spyOn(SetRoundResults, 'setRoundResults').mockImplementation()
   const clearBattlefieldUnitsSpy = jest.spyOn(clearBattlefieldUnits, 'default').mockImplementation()

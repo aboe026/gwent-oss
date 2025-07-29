@@ -12,6 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- override DateTime in schema to Date?
 - fix lint for vscode eslint extension
   - need to wait for vscode to upgrade to version 24 of node?
 - jsdocs linting not working?

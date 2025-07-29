@@ -1,8 +1,8 @@
 import { ObjectId } from 'mongodb'
 
 import { Combat, GameUnit, Impact, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { GameUnitOrigin, ImpactDbObject } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
-import { ImpactDbObject } from '@gwent/graphql-schema/database-typings'
 import ImpactResolver from '../../src/graphql/resolvers/types/impact-resolver'
 import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
@@ -10,32 +10,227 @@ import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('impact-resolver', () => {
   describe('fromObject', () => {
-    it('reaches out to resolve GameUnit and User if not provided', async () => {
+    it('throws error if impact user not found', async () => {
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const message = `Could not find impact user "${impact.user}"`
       await testFromObject({
-        impact: {
-          unit: TestUtil.getDbGameUnit({}),
+        impact,
+        resolvedUsers: [],
+        expected: Error(`${message}.`),
+        userResolerCalls: [[[impact.user]]],
+        errorCalls: [[`failed: ${message}, impact: "${JSON.stringify(impact)}"`]],
+      })
+    })
+    it('throws error if source user not found', async () => {
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+        source: {
+          origin: GameUnitOrigin.Hand,
           user: new ObjectId(),
         },
+      }
+      const message = `Could not find impact source user "${impact.source?.user}"`
+      await testFromObject({
+        impact,
+        resolvedUsers: [
+          TestUtil.getUser({
+            id: impact.user,
+          }),
+        ],
+        expected: Error(`${message}.`),
+        userResolerCalls: [[[impact.user, impact.source?.user]]],
+        errorCalls: [[`failed: ${message}, impact: "${JSON.stringify(impact)}"`]],
+      })
+    })
+    it('reaches out to resolve GameUnit and User if not provided', async () => {
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const gameUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({
+          id: impact.unit.unit,
+        }),
+        effectiveStrength: impact.unit.effectiveStrength ? impact.unit.effectiveStrength : undefined,
+        artStyle: impact.unit.artStyle,
+        effects: [],
+      })
+      const impactUser = TestUtil.getUser({
+        id: impact.user,
+      })
+      await testFromObject({
+        impact,
+        resolvedUsers: [impactUser],
+        resolvedGameUnit: gameUnit,
+        expected: {
+          unit: gameUnit,
+          user: impactUser,
+        },
+        userResolerCalls: [[[impact.user]]],
+        gameUnitResolverCalls: [
+          [
+            {
+              gameUnit: impact.unit,
+            },
+          ],
+        ],
       })
     })
     it('does not reach out to resolve GameUnit and User if provided', async () => {
-      const gameUnit = TestUtil.getDbGameUnit({})
-      const user = TestUtil.getDbUser({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const gameUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({
+          id: impact.unit.unit,
+        }),
+        effectiveStrength: impact.unit.effectiveStrength ? impact.unit.effectiveStrength : undefined,
+        artStyle: impact.unit.artStyle,
+        effects: [],
+      })
+      const impactUser = TestUtil.getUser({
+        id: impact.user,
+      })
       await testFromObject({
-        impact: {
+        impact,
+        gameUnit,
+        user: impactUser,
+        expected: {
           unit: gameUnit,
-          user: user._id,
+          user: impactUser,
         },
-        gameUnit: {
-          artStyle: gameUnit.artStyle,
-          unit: TestUtil.getUnit({
-            id: gameUnit.unit,
-          }),
-          effectiveStrength: gameUnit.effectiveStrength,
-          effects: [],
-          row: gameUnit.row ? (gameUnit.row as Combat) : undefined,
+        userResolerCalls: [],
+      })
+    })
+    it('does not reach out to resolve second user if source without user', async () => {
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+        source: {
+          origin: GameUnitOrigin.Hand,
         },
-        user: TestUtil.getUserFromDbUser(user),
+      }
+      const gameUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({
+          id: impact.unit.unit,
+        }),
+        effectiveStrength: impact.unit.effectiveStrength ? impact.unit.effectiveStrength : undefined,
+        artStyle: impact.unit.artStyle,
+        effects: [],
+      })
+      const impactUser = TestUtil.getUser({
+        id: impact.user,
+      })
+      await testFromObject({
+        impact,
+        resolvedUsers: [impactUser],
+        resolvedGameUnit: gameUnit,
+        expected: {
+          unit: gameUnit,
+          user: impactUser,
+          source: {
+            origin: GameUnitOrigin.Hand,
+          },
+        },
+        userResolerCalls: [[[impact.user]]],
+        gameUnitResolverCalls: [
+          [
+            {
+              gameUnit: impact.unit,
+            },
+          ],
+        ],
+      })
+    })
+    it('reaches out to resolve source user', async () => {
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+        source: {
+          origin: GameUnitOrigin.Hand,
+          user: new ObjectId(),
+        },
+      }
+      const gameUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({
+          id: impact.unit.unit,
+        }),
+        effectiveStrength: impact.unit.effectiveStrength ? impact.unit.effectiveStrength : undefined,
+        artStyle: impact.unit.artStyle,
+        effects: [],
+      })
+      const impactUser = TestUtil.getUser({
+        id: impact.user,
+      })
+      const sourceUser = TestUtil.getUser({
+        id: impact.source?.user,
+      })
+      await testFromObject({
+        impact,
+        user: impactUser,
+        gameUnit,
+        resolvedUsers: [sourceUser],
+        resolvedGameUnit: gameUnit,
+        expected: {
+          unit: gameUnit,
+          user: impactUser,
+          source: {
+            origin: GameUnitOrigin.Hand,
+            user: sourceUser,
+          },
+        },
+        userResolerCalls: [[[impact.source?.user]]],
+        gameUnitResolverCalls: [],
+      })
+    })
+    it('resolved both impact and source user', async () => {
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+        source: {
+          origin: GameUnitOrigin.Hand,
+          user: new ObjectId(),
+        },
+      }
+      const gameUnit = TestUtil.getGameUnit({
+        unit: TestUtil.getUnit({
+          id: impact.unit.unit,
+        }),
+        effectiveStrength: impact.unit.effectiveStrength ? impact.unit.effectiveStrength : undefined,
+        artStyle: impact.unit.artStyle,
+        effects: [],
+      })
+      const impactUser = TestUtil.getUser({
+        id: impact.user,
+      })
+      const sourceUser = TestUtil.getUser({
+        id: impact.source?.user,
+      })
+      await testFromObject({
+        impact,
+        resolvedUsers: [sourceUser, impactUser],
+        resolvedGameUnit: gameUnit,
+        expected: {
+          unit: gameUnit,
+          user: impactUser,
+          source: {
+            origin: GameUnitOrigin.Hand,
+            user: sourceUser,
+          },
+        },
+        userResolerCalls: [[[impact.user, impact.source?.user]]],
+        gameUnitResolverCalls: [
+          [
+            {
+              gameUnit: impact.unit,
+            },
+          ],
+        ],
       })
     })
   })
@@ -255,50 +450,50 @@ async function testFromObject({
   impact,
   gameUnit,
   user,
+  resolvedUsers,
+  resolvedGameUnit,
+  expected,
+  userResolerCalls = [],
+  gameUnitResolverCalls = [],
+  errorCalls = [],
 }: {
   impact: ImpactDbObject
   gameUnit?: GameUnit
   user?: User
+  resolvedUsers?: User[]
+  resolvedGameUnit?: GameUnit
+  expected?: Impact | Error
+  userResolerCalls?: any[][]
+  gameUnitResolverCalls?: any[][]
+  errorCalls?: string[][]
 }) {
-  const resolvedGameUnit = TestUtil.getGameUnit({
-    unit: TestUtil.getUnit({
-      id: impact.unit.unit,
-    }),
-    effectiveStrength: impact.unit.effectiveStrength ? impact.unit.effectiveStrength : undefined,
-    artStyle: impact.unit.artStyle,
-    effects: [],
+  const gameUnitResolverSpy = jest.spyOn(GameUnitResolver, 'fromObject')
+  if (resolvedGameUnit) {
+    gameUnitResolverSpy.mockResolvedValue(resolvedGameUnit)
+  }
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds')
+  if (resolvedUsers) {
+    userResolverSpy.mockResolvedValue(resolvedUsers)
+  }
+  const errorSpy = jest.fn().mockImplementation()
+  ImpactResolver['logger'] = {
+    error: errorSpy,
+  } as any
+
+  const promise = ImpactResolver.fromObject({
+    impact,
+    gameUnit,
+    user,
   })
-  const resolvedUser = TestUtil.getUser({
-    id: impact.user,
-  })
-  const resolvedImpact: Impact = {
-    unit: gameUnit || resolvedGameUnit,
-    user: user || resolvedUser,
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
   }
 
-  const gameUnitResolverSpy = jest.spyOn(GameUnitResolver, 'fromObject').mockResolvedValue(resolvedGameUnit)
-  const userResolverSpy = jest.spyOn(UserResolver, 'fromId').mockResolvedValue(resolvedUser)
-
-  await expect(
-    ImpactResolver.fromObject({
-      impact,
-      gameUnit,
-      user,
-    })
-  ).resolves.toEqual(resolvedImpact)
-
-  expect(gameUnitResolverSpy.mock.calls).toEqual(
-    gameUnit
-      ? []
-      : [
-          [
-            {
-              gameUnit: impact.unit,
-            },
-          ],
-        ]
-  )
-  expect(userResolverSpy.mock.calls).toEqual(user ? [] : [[impact.user]])
+  expect(gameUnitResolverSpy.mock.calls).toEqual(gameUnitResolverCalls)
+  expect(userResolverSpy.mock.calls).toEqual(userResolerCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
 
 async function testFromArray({
