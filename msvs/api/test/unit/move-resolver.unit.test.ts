@@ -88,7 +88,7 @@ describe('move-resolver', () => {
         } as MovePass,
       })
     })
-    it('calls to resolve inputs if inputs not provided', async () => {
+    it('calls to resolve inputs for UnitMove if inputs not provided', async () => {
       const gameUnit = TestUtil.getGameUnit({
         unit: TestUtil.getUnit({}),
       })
@@ -136,7 +136,7 @@ describe('move-resolver', () => {
         } as MoveUnit,
       })
     })
-    it('does not call to resolve inputs if inputs provided', async () => {
+    it('does not call to resolve inputs for UnitMove if inputs provided', async () => {
       const gameUnit = TestUtil.getGameUnit({
         unit: TestUtil.getUnit({}),
       })
@@ -166,7 +166,7 @@ describe('move-resolver', () => {
       await testFromObject({
         move,
         gameUnit,
-        reasonUnit,
+        reasonDeckUnit: reasonUnit,
         sourceUser,
         expected: {
           created: move.created,
@@ -247,7 +247,7 @@ async function testFromObject({
   move,
   leader,
   gameUnit,
-  reasonUnit,
+  reasonDeckUnit,
   sourceUser,
   leaderFromIdResponse,
   gameUnitFromObjectResponse,
@@ -260,7 +260,7 @@ async function testFromObject({
   move: MoveDbObject
   leader?: Leader
   gameUnit?: GameUnit
-  reasonUnit?: DeckUnit
+  reasonDeckUnit?: DeckUnit
   sourceUser?: User
   leaderFromIdResponse?: Leader
   gameUnitFromObjectResponse?: GameUnit
@@ -292,7 +292,7 @@ async function testFromObject({
     move,
     gameUnit,
     leader,
-    reasonUnit,
+    reasonDeckUnit,
     sourceUser,
   })
   if (error) {

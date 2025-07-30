@@ -63,7 +63,6 @@ export default class GamePlayerResolver {
       ready: player.ready,
       rounds: await PlayerRoundResolver.fromArray({
         rounds: player.rounds,
-        leader,
       }),
       user: user || (await UserResolver.fromId(player.user)),
     }

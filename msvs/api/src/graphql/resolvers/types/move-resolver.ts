@@ -1,4 +1,12 @@
-import { DeckUnit, Leader, Move, MoveReasonType, GameUnitOrigin, User } from '@gwent/graphql-schema/resolver-typings'
+import {
+  DeckUnit,
+  Leader,
+  Move,
+  MoveReasonType,
+  GameUnitOrigin,
+  User,
+  Unit,
+} from '@gwent/graphql-schema/resolver-typings'
 import DeckUnitResolver from './deck-unit-resolver'
 import {
   GameUnit,
@@ -11,6 +19,7 @@ import GameUnitResolver from './game-unit-resolver'
 import LeaderResolver from './leader-resolver'
 import ImpactResolver from './impact-resolver'
 import { MoveType } from '@gwent/graphql-schema'
+import UnitResolver from './unit-resolver'
 import UserResolver from './user-resolver'
 
 /**
@@ -31,13 +40,13 @@ export default class MoveResolver {
     move,
     leader,
     gameUnit,
-    reasonUnit,
+    reasonDeckUnit,
     sourceUser,
   }: {
     move: MoveDbObject
     leader?: Leader
     gameUnit?: GameUnit
-    reasonUnit?: DeckUnit
+    reasonDeckUnit?: DeckUnit
     sourceUser?: User
   }): Promise<Move> {
     if (move.type === MoveType.Leader) {
@@ -59,6 +68,14 @@ export default class MoveResolver {
       }
     } else if (move.type === MoveType.Unit) {
       const unitMove = move as MoveUnitDbObject
+      let resolvedReasonDeckUnit: DeckUnit | undefined = undefined
+      if (unitMove.reason.unit) {
+        resolvedReasonDeckUnit =
+          reasonDeckUnit ||
+          (await DeckUnitResolver.fromObject({
+            deckUnit: unitMove.reason.unit,
+          }))
+      }
       let resolvedSourceUser: User | undefined = undefined
       if (unitMove.source.user) {
         resolvedSourceUser = sourceUser || (await UserResolver.fromId(unitMove.source.user))
@@ -75,12 +92,7 @@ export default class MoveResolver {
         }),
         reason: {
           type: unitMove.reason.type as MoveReasonType,
-          unit:
-            unitMove.reason.unit &&
-            (reasonUnit ||
-              (await DeckUnitResolver.fromObject({
-                deckUnit: unitMove.reason.unit,
-              }))),
+          unit: resolvedReasonDeckUnit,
         },
         source: {
           origin: unitMove.source.origin as GameUnitOrigin,
@@ -90,5 +102,130 @@ export default class MoveResolver {
       }
     }
     throw Error(`Invalid Move type "${move.type}".`)
+  }
+
+  static async fromArray({
+    moves,
+    units,
+    users,
+  }: {
+    moves: MoveDbObject[]
+    leader?: Leader
+    units?: Unit[]
+    users?: User[]
+  }): Promise<Move[]> {
+    if (moves.length === 0) {
+      return []
+    }
+
+    const resolvedUnits: Unit[] = []
+    if (units) {
+      resolvedUnits.push(...units)
+    } else {
+      const unitIdsToResolve: string[] = []
+      for (const move of moves) {
+        if (move.type === MoveType.Unit) {
+          const moveUnit = move as MoveUnitDbObject
+          const gameUnitId = moveUnit.unit.unit.toString()
+          if (!unitIdsToResolve.includes(gameUnitId)) {
+            unitIdsToResolve.push(gameUnitId)
+          }
+          if (moveUnit.reason.unit) {
+            const reasonUnitId = moveUnit.reason.unit.unit.toString()
+            if (!unitIdsToResolve.includes(reasonUnitId)) {
+              unitIdsToResolve.push(reasonUnitId)
+            }
+          }
+        }
+      }
+      resolvedUnits.push(
+        ...(await UnitResolver.fromIds({
+          ids: unitIdsToResolve,
+        }))
+      )
+    }
+
+    const resolvedUsers: User[] = []
+    if (users) {
+      resolvedUsers.push(...users)
+    } else {
+      const sourceUserIds: string[] = []
+      for (const move of moves) {
+        if (move.type === MoveType.Unit) {
+          const moveUnit = move as MoveUnitDbObject
+          if (moveUnit.source.user) {
+            const userId = moveUnit.source.user.toString()
+            if (!sourceUserIds.includes(userId)) {
+              sourceUserIds.push(userId)
+            }
+          }
+        }
+      }
+      resolvedUsers.push(...(await UserResolver.fromIds(sourceUserIds)))
+    }
+
+    const leaderIds: string[] = []
+    for (const move of moves) {
+      if (move.type === MoveType.Leader) {
+        const leaderMove = move as MoveLeaderDbObject
+        const leaderId = leaderMove.leader.toString()
+        if (!leaderIds.includes(leaderId)) {
+          leaderIds.push(leaderId)
+        }
+      }
+    }
+    const resolvedLeaders = await LeaderResolver.fromIds({
+      ids: leaderIds,
+    })
+
+    const resolvedMoves: Move[] = []
+    for (const move of moves) {
+      let gameUnit: GameUnit | undefined = undefined
+      let sourceUser: User | undefined = undefined
+      let reasonDeckUnit: DeckUnit | undefined = undefined
+      if (move.type === MoveType.Unit) {
+        const unitMove = move as MoveUnitDbObject
+        const matchingUnit = resolvedUnits.find((unit) => unit.id === unitMove.unit.toString())
+        gameUnit = await GameUnitResolver.fromObject({
+          gameUnit: unitMove.unit,
+          unit: matchingUnit,
+        })
+        if (unitMove.reason.unit) {
+          const reasonUnit = resolvedUnits.find((unit) => unit.id === unitMove.reason.unit?.unit.toString())
+          if (!reasonUnit) {
+            throw Error(`Could not find reason unit "${unitMove.reason.unit?.unit}"`)
+          }
+          reasonDeckUnit = await DeckUnitResolver.fromObject({
+            deckUnit: unitMove.reason.unit,
+            unit: reasonUnit,
+          })
+        }
+        if (unitMove.source.user) {
+          sourceUser = resolvedUsers.find((user) => user.id === unitMove.source.user?.toString())
+          if (!sourceUser) {
+            throw Error(`Could not find source user "${unitMove.source.user}"`)
+          }
+        }
+      }
+
+      let leader: Leader | undefined = undefined
+      if (move.type === MoveType.Leader) {
+        const leaderMove = move as MoveLeaderDbObject
+        const moveLeader = resolvedLeaders.find((leader) => leader.id === leaderMove.leader.toString())
+        if (!moveLeader) {
+          throw Error(`Could not find move leader "${leaderMove.leader}"`)
+        }
+      }
+      resolvedMoves.push(
+        await MoveResolver.fromObject({
+          move,
+          gameUnit,
+          leader,
+          sourceUser,
+          reasonDeckUnit,
+        })
+      )
+    }
+    return resolvedMoves
   }
 }

@@ -41,6 +41,11 @@ import {
   ImpactDbObject,
   LeaderDbObject,
   MoveDbObject,
+  MoveLeaderDbObject,
+  MovePassDbObject,
+  MoveReasonType,
+  MoveUnitDbObject,
+  MoveUnitReasonDbObject,
   PlayerCombatRowDbObject,
   PlayerRoundDbObject,
   RedrawDbObject,
@@ -48,6 +53,7 @@ import {
   UnitDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { MoveType } from '@gwent/graphql-schema'
 import { STARTING_HAND_SIZE, STARTING_LIVES } from '@gwent/constants'
 
 export default class TestUtil {
@@ -178,6 +184,20 @@ export default class TestUtil {
       effectiveStrength,
       effects,
       row,
+    }
+  }
+
+  static getGameUnitFromDbGameUnit({ gameUnit, unit }: { gameUnit: GameUnitDbObject; unit?: Unit }): GameUnit {
+    return {
+      artStyle: gameUnit.artStyle,
+      unit:
+        unit ||
+        TestUtil.getUnit({
+          id: gameUnit.unit,
+        }),
+      effectiveStrength: gameUnit.effectiveStrength,
+      effects: [],
+      row: gameUnit.row ? (gameUnit.row as Combat) : undefined,
     }
   }
 
@@ -671,6 +691,48 @@ export default class TestUtil {
     return {
       score,
       units,
+    }
+  }
+
+  static getDbMove({
+    type,
+    reason = {
+      type: MoveReasonType.Deploy,
+    },
+    source = {
+      origin: GameUnitOrigin.Hand,
+    },
+    unit = TestUtil.getDbGameUnit({}),
+    leaderId = new ObjectId(),
+  }: {
+    type: MoveType
+    reason?: MoveUnitReasonDbObject
+    source?: GameUnitSourceDbObject
+    unit?: GameUnitDbObject
+    leaderId?: ObjectId
+  }): MoveDbObject {
+    if (type === MoveType.Unit) {
+      const unitMove: MoveUnitDbObject = {
+        created: new Date(),
+        reason,
+        source,
+        type: MoveType.Unit,
+        unit,
+      }
+      return unitMove
+    } else if (type === MoveType.Leader) {
+      const leaderMove: MoveLeaderDbObject = {
+        created: new Date(),
+        leader: leaderId,
+        type: MoveType.Leader,
+      }
+      return leaderMove
+    } else {
+      const passMove: MovePassDbObject = {
+        created: new Date(),
+        type: MoveType.Pass,
+      }
+      return passMove
     }
   }
 
