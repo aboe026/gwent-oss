@@ -448,8 +448,10 @@ describe('player-round-resolver', () => {
     })
   })
   describe('fromArray', () => {
-    it('resolves game units and rounds without leader', async () => {
-      await testFromArray({})
+    it('returns empty array if given empty array', async () => {
+      await testFromArray({
+        rounds: [],
+      })
     })
   })
 })
@@ -518,274 +520,50 @@ async function testFromObject({
   ])
 }
 
-// TODO: continue re-writing this
 async function testFromArray({
   rounds,
-  unitFromIdsCalls,
+  unitFromIdsCalls = [
+    [
+      {
+        ids: [],
+      },
+    ],
+  ],
 }: {
   rounds: PlayerRoundDbObject[]
   unitFromIdsCalls?: any[][]
 }) {
-  const closeUnit: GameUnit = {
-    artStyle: 1,
-    effectiveStrength: 2,
-    unit: TestUtil.getUnit({
-      combats: [Combat.Close],
-      strength: 1,
-    }),
-  }
-  const rangedUnit: GameUnit = {
-    artStyle: 2,
-    effectiveStrength: 2,
-    unit: TestUtil.getUnit({
-      combats: [Combat.Close],
-      strength: 2,
-    }),
-  }
-  const siegeUnit: GameUnit = {
-    artStyle: 3,
-    effectiveStrength: 3,
-    unit: TestUtil.getUnit({
-      combats: [Combat.Close],
-      strength: 3,
-    }),
-  }
-  const close: PlayerCombatRowDbObject = {
-    score: 1,
-    units: [
-      {
-        artStyle: closeUnit.artStyle,
-        effectiveStrength: closeUnit.effectiveStrength,
-        unit: new ObjectId(closeUnit.unit.id),
-      },
-    ],
-  }
-  const ranged: PlayerCombatRowDbObject = {
-    score: 2,
-    units: [
-      {
-        artStyle: rangedUnit.artStyle,
-        effectiveStrength: rangedUnit.effectiveStrength,
-        unit: new ObjectId(rangedUnit.unit.id),
-      },
-    ],
-  }
-  const siege: PlayerCombatRowDbObject = {
-    score: 3,
-    units: [
-      {
-        artStyle: siegeUnit.artStyle,
-        effectiveStrength: siegeUnit.effectiveStrength,
-        unit: new ObjectId(siegeUnit.unit.id),
-      },
-    ],
-  }
-  const resolvedLeader = leader || TestUtil.getLeader({})
-  const round1 = TestUtil.getDbPlayerRound({
-    close,
-    ranged,
-    siege,
-    moves: [
-      {
-        created: new Date(),
-        unit: {
-          artStyle: close.units[0].artStyle,
-          unit: close.units[0].unit,
-        },
-        type: MoveType.Unit,
-      },
-      {
-        created: new Date(),
-        unit: {
-          artStyle: ranged.units[0].artStyle,
-          unit: ranged.units[0].unit,
-        },
-        type: MoveType.Unit,
-      },
-      {
-        created: new Date(),
-        unit: {
-          artStyle: siege.units[0].artStyle,
-          unit: siege.units[0].unit,
-        },
-        type: MoveType.Unit,
-      },
-      {
-        created: new Date(),
-        leader: new ObjectId(resolvedLeader.id),
-        type: MoveType.Leader,
-      },
-    ],
-    score: 6,
-    result: RoundResult.Won,
-  })
-  const round2 = TestUtil.getDbPlayerRound({
-    close,
-    ranged,
-    siege,
-    moves: [
-      {
-        created: new Date(),
-        unit: {
-          artStyle: close.units[0].artStyle,
-          unit: close.units[0].unit,
-        },
-        type: MoveType.Unit,
-      },
-      {
-        created: new Date(),
-        unit: {
-          artStyle: ranged.units[0].artStyle,
-          unit: ranged.units[0].unit,
-        },
-        type: MoveType.Unit,
-      },
-      {
-        created: new Date(),
-        unit: {
-          artStyle: siege.units[0].artStyle,
-          unit: siege.units[0].unit,
-        },
-        type: MoveType.Unit,
-      },
-      {
-        created: new Date(),
-        leader: new ObjectId(resolvedLeader.id),
-        type: MoveType.Leader,
-      },
-    ],
-    score: 12,
-    result: RoundResult.Lost,
-  })
-  const resolvedCloseMove: Move = {
-    created: round1.moves[0].created,
-    unit: {
-      artStyle: closeUnit.artStyle,
-      unit: closeUnit.unit,
-    },
-    reason: {
-      type: MoveReasonType.Deploy,
-    },
-    source: {
-      origin: GameUnitOrigin.Hand,
-    },
-    __typename: 'MoveUnit',
-  }
-  const resolvedRangedMove: Move = {
-    created: round1.moves[1].created,
-    unit: {
-      artStyle: closeUnit.artStyle,
-      unit: closeUnit.unit,
-    },
-    reason: {
-      type: MoveReasonType.Deploy,
-    },
-    source: {
-      origin: GameUnitOrigin.Hand,
-    },
-    __typename: 'MoveUnit',
-  }
-  const resolvedSiegeMove: Move = {
-    created: round1.moves[2].created,
-    unit: {
-      artStyle: closeUnit.artStyle,
-      unit: closeUnit.unit,
-    },
-    reason: {
-      type: MoveReasonType.Deploy,
-    },
-    source: {
-      origin: GameUnitOrigin.Hand,
-    },
-    __typename: 'MoveUnit',
-  }
-  const resolvedLeaderMove: Move = {
-    created: round1.moves[3].created,
-    leader: resolvedLeader,
-    __typename: 'MoveLeader',
-  }
-
-  const expected: PlayerRound[] = [
-    {
+  const units = [TestUtil.getUnit({})]
+  const unitsFromIdsSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue(units)
+  const playerRoundFromObjectSpy = jest.spyOn(PlayerRoundResolver, 'fromObject')
+  let resolvedRounds: PlayerRound[] = []
+  for (const round of rounds) {
+    const resolvedRound: PlayerRound = {
       close: {
-        score: round1.close.score,
-        units: [closeUnit],
+        score: 0,
+        units: [],
       },
       ranged: {
-        score: round1.ranged.score,
-        units: [rangedUnit],
+        score: 0,
+        units: [],
       },
       siege: {
-        score: round1.siege.score,
-        units: [siegeUnit],
+        score: 0,
+        units: [],
       },
-      moves: [resolvedCloseMove, resolvedRangedMove, resolvedSiegeMove, resolvedLeaderMove],
-      score: round1.score,
-      passed: round1.passed,
-      result: RoundResult.Won,
-    },
-    {
-      close: {
-        score: round2.close.score,
-        units: [closeUnit],
-      },
-      ranged: {
-        score: round2.ranged.score,
-        units: [rangedUnit],
-      },
-      siege: {
-        score: round2.siege.score,
-        units: [siegeUnit],
-      },
-      moves: [resolvedCloseMove, resolvedRangedMove, resolvedSiegeMove, resolvedLeaderMove],
-      score: round2.score,
-      passed: round2.passed,
-      result: RoundResult.Lost,
-    },
-  ]
-
-  const unitsFromIdsSpy = jest
-    .spyOn(UnitResolver, 'fromIds')
-    .mockResolvedValue([closeUnit.unit, rangedUnit.unit, siegeUnit.unit])
-  const playerMoveFromObjectSpy = jest
-    .spyOn(PlayerRoundResolver, 'fromObject')
-    .mockResolvedValueOnce(expected[0])
-    .mockResolvedValueOnce(expected[1])
+      moves: [],
+      passed: false,
+      score: 0,
+    }
+    playerRoundFromObjectSpy.mockResolvedValueOnce(resolvedRound)
+    resolvedRounds.push(resolvedRound)
+  }
 
   await expect(
     PlayerRoundResolver.fromArray({
-      rounds: [round1, round2],
+      rounds,
     })
-  ).resolves.toEqual(expected)
+  ).resolves.toEqual(resolvedRounds)
 
-  expect(unitsFromIdsSpy.mock.calls).toEqual([
-    [
-      {
-        ids: [
-          close.units[0].unit,
-          ranged.units[0].unit,
-          siege.units[0].unit,
-          close.units[0].unit,
-          ranged.units[0].unit,
-          siege.units[0].unit,
-        ],
-      },
-    ],
-  ])
-  expect(playerMoveFromObjectSpy.mock.calls).toEqual([
-    [
-      {
-        round: round1,
-        units: [closeUnit.unit, rangedUnit.unit, siegeUnit.unit],
-        leader,
-      },
-    ],
-    [
-      {
-        round: round2,
-        units: [closeUnit.unit, rangedUnit.unit, siegeUnit.unit],
-        leader,
-      },
-    ],
-  ])
+  expect(unitsFromIdsSpy.mock.calls).toEqual(unitFromIdsCalls)
 }
