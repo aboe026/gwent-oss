@@ -204,6 +204,7 @@ test('Muster works for multiple of same units in hand and undrawn', async (t) =>
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
         impactable: true,
+        hand: true,
       },
       {
         effectiveStrength: 2,
@@ -211,7 +212,6 @@ test('Muster works for multiple of same units in hand and undrawn', async (t) =>
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
         impactable: true,
-        hand: true,
       },
     ],
   })
