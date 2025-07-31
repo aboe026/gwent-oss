@@ -1,3 +1,5 @@
+import { getLogger } from 'log4js'
+
 import {
   DeckUnit,
   Leader,
@@ -16,8 +18,8 @@ import {
   MoveUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from './game-unit-resolver'
-import LeaderResolver from './leader-resolver'
 import ImpactResolver from './impact-resolver'
+import LeaderResolver from './leader-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 import UnitResolver from './unit-resolver'
 import UserResolver from './user-resolver'
@@ -26,6 +28,8 @@ import UserResolver from './user-resolver'
  * A class to convert Move database objects to their GraphQL equivalent.
  */
 export default class MoveResolver {
+  private static logger = getLogger('MoveResolver')
+
   /**
    * Converts a single Move database object to a single Move GraphQL object.
    *
@@ -110,7 +114,6 @@ export default class MoveResolver {
     users,
   }: {
     moves: MoveDbObject[]
-    leader?: Leader
     units?: Unit[]
     users?: User[]
   }): Promise<Move[]> {
@@ -185,7 +188,12 @@ export default class MoveResolver {
       let reasonDeckUnit: DeckUnit | undefined = undefined
       if (move.type === MoveType.Unit) {
         const unitMove = move as MoveUnitDbObject
-        const matchingUnit = resolvedUnits.find((unit) => unit.id === unitMove.unit.toString())
+        const matchingUnit = resolvedUnits.find((unit) => unit.id === unitMove.unit.unit.toString())
+        if (!matchingUnit) {
+          const message = `Could not find move unit "${unitMove.unit.unit}"`
+          MoveResolver.logger.error(`${message}: move: "${JSON.stringify(move)}"`)
+          throw Error(`${message}.`)
+        }
         gameUnit = await GameUnitResolver.fromObject({
           gameUnit: unitMove.unit,
           unit: matchingUnit,
@@ -193,7 +201,9 @@ export default class MoveResolver {
         if (unitMove.reason.unit) {
           const reasonUnit = resolvedUnits.find((unit) => unit.id === unitMove.reason.unit?.unit.toString())
           if (!reasonUnit) {
-            throw Error(`Could not find reason unit "${unitMove.reason.unit?.unit}"`)
+            const message = `Could not find reason unit "${unitMove.reason.unit?.unit}"`
+            MoveResolver.logger.error(`${message}, move: "${JSON.stringify(move)}"`)
+            throw Error(`${message}.`)
           }
           reasonDeckUnit = await DeckUnitResolver.fromObject({
             deckUnit: unitMove.reason.unit,
@@ -203,7 +213,9 @@ export default class MoveResolver {
         if (unitMove.source.user) {
           sourceUser = resolvedUsers.find((user) => user.id === unitMove.source.user?.toString())
           if (!sourceUser) {
-            throw Error(`Could not find source user "${unitMove.source.user}"`)
+            const message = `Could not find source user "${unitMove.source.user}"`
+            MoveResolver.logger.error(`${message}, move: "${JSON.stringify(move)}"`)
+            throw Error(`${message}.`)
           }
         }
       }
@@ -211,9 +223,11 @@ export default class MoveResolver {
       let leader: Leader | undefined = undefined
       if (move.type === MoveType.Leader) {
         const leaderMove = move as MoveLeaderDbObject
-        const moveLeader = resolvedLeaders.find((leader) => leader.id === leaderMove.leader.toString())
-        if (!moveLeader) {
-          throw Error(`Could not find move leader "${leaderMove.leader}"`)
+        leader = resolvedLeaders.find((leader) => leader.id === leaderMove.leader.toString())
+        if (!leader) {
+          const message = `Could not find move leader "${leaderMove.leader}"`
+          MoveResolver.logger.error(`${message}, move: "${JSON.stringify(move)}"`)
+          throw Error(`${message}.`)
         }
       }
       resolvedMoves.push(

@@ -20,8 +20,16 @@ export default class PlayerRoundResolver {
    */
   static async fromObject({ round, units }: { round: PlayerRoundDbObject; units?: Unit[] }): Promise<PlayerRound> {
     const resolvedUnitIds = units ? units.map((unit) => unit.id) : []
-
     const unitIdsToResolve: string[] = []
+
+    const gameUnits = [...round.close.units, ...round.ranged.units, ...round.siege.units]
+    for (const gameUnit of gameUnits) {
+      const unitId = gameUnit.unit.toString()
+      if (!resolvedUnitIds.includes(unitId)) {
+        unitIdsToResolve.push(unitId)
+      }
+    }
+
     for (const move of round.moves) {
       if (move.type === MoveType.Unit) {
         const moveUnit = move as MoveUnitDbObject
@@ -35,14 +43,6 @@ export default class PlayerRoundResolver {
             unitIdsToResolve.push(reasonUnitId)
           }
         }
-      }
-    }
-
-    const gameUnits = [...round.close.units, ...round.ranged.units, ...round.siege.units]
-    for (const gameUnit of gameUnits) {
-      const unitId = gameUnit.unit.toString()
-      if (!resolvedUnitIds.includes(unitId)) {
-        unitIdsToResolve.push(unitId)
       }
     }
 
@@ -80,6 +80,7 @@ export default class PlayerRoundResolver {
       moves: await MoveResolver.fromArray({
         moves: round.moves,
         units: resolvedUnits,
+        // TODO: pre-fetch users?
       }),
       passed: round.passed,
     }
@@ -96,6 +97,14 @@ export default class PlayerRoundResolver {
   static async fromArray({ rounds }: { rounds: PlayerRoundDbObject[] }): Promise<PlayerRound[]> {
     const unitIdsToResolve: string[] = []
     for (const round of rounds) {
+      const gameUnits = [...round.close.units, ...round.ranged.units, ...round.siege.units]
+      for (const gameUnit of gameUnits) {
+        const unitId = gameUnit.unit.toString()
+        if (!unitIdsToResolve.includes(unitId)) {
+          unitIdsToResolve.push(unitId)
+        }
+      }
+
       for (const move of round.moves) {
         if (move.type === MoveType.Unit) {
           const moveUnit = move as MoveUnitDbObject
@@ -109,14 +118,6 @@ export default class PlayerRoundResolver {
               unitIdsToResolve.push(reasonUnitId)
             }
           }
-        }
-      }
-
-      const gameUnits = [...round.close.units, ...round.ranged.units, ...round.siege.units]
-      for (const gameUnit of gameUnits) {
-        const unitId = gameUnit.unit.toString()
-        if (!unitIdsToResolve.includes(unitId)) {
-          unitIdsToResolve.push(unitId)
         }
       }
     }

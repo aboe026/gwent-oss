@@ -1,17 +1,8 @@
-import { ObjectId } from 'mongodb'
-
-import {
-  Combat,
-  GameUnitOrigin,
-  MoveUnitDbObject,
-  PlayerCombatRowDbObject,
-  PlayerRoundDbObject,
-  RoundResult,
-} from '@gwent/graphql-schema/database-typings'
 import { GameUnit, Move, MoveReasonType, PlayerRound, Unit } from '@gwent/graphql-schema/resolver-typings'
 import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
-import { MoveType } from '@gwent/graphql-schema'
 import MoveResolver from '../../src/graphql/resolvers/types/move-resolver'
+import { MoveType } from '@gwent/graphql-schema'
+import { MoveUnitDbObject, PlayerRoundDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
 import PlayerRoundResolver from '../../src/graphql/resolvers/types/player-round-resolver'
 import TestUtil from '../util/test-util'
 import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
@@ -451,6 +442,147 @@ describe('player-round-resolver', () => {
     it('returns empty array if given empty array', async () => {
       await testFromArray({
         rounds: [],
+      })
+    })
+    it('returns single round', async () => {
+      const gameUnits = [
+        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbGameUnit({}),
+      ]
+      await testFromArray({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 1,
+              units: [gameUnits[0]],
+            },
+            ranged: {
+              score: 2,
+              units: [gameUnits[1]],
+            },
+            siege: {
+              score: 3,
+              units: [gameUnits[2]],
+            },
+            moves: [
+              TestUtil.getDbMove({
+                type: MoveType.Unit,
+                unit: gameUnits[3],
+                reason: {
+                  type: MoveReasonType.Deploy,
+                  unit: gameUnits[4],
+                },
+              }),
+              TestUtil.getDbMove({
+                type: MoveType.Unit,
+                unit: gameUnits[5],
+              }),
+              TestUtil.getDbMove({
+                type: MoveType.Pass,
+              }),
+            ],
+          }),
+        ],
+        unitFromIdsCalls: [
+          [
+            {
+              ids: [
+                gameUnits[0].unit.toString(),
+                gameUnits[1].unit.toString(),
+                gameUnits[2].unit.toString(),
+                gameUnits[3].unit.toString(),
+                gameUnits[4].unit.toString(),
+                gameUnits[5].unit.toString(),
+              ],
+            },
+          ],
+        ],
+      })
+    })
+    it('returns multiple rounds', async () => {
+      const gameUnits = [
+        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbGameUnit({}),
+        TestUtil.getDbGameUnit({}),
+      ]
+      await testFromArray({
+        rounds: [
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 1,
+              units: [gameUnits[0]],
+            },
+            ranged: {
+              score: 2,
+              units: [gameUnits[1]],
+            },
+            siege: {
+              score: 3,
+              units: [gameUnits[2]],
+            },
+            moves: [
+              TestUtil.getDbMove({
+                type: MoveType.Unit,
+                unit: gameUnits[0],
+              }),
+              TestUtil.getDbMove({
+                type: MoveType.Unit,
+                unit: gameUnits[1],
+                reason: {
+                  type: MoveReasonType.Deploy,
+                  unit: gameUnits[0],
+                },
+              }),
+            ],
+          }),
+          TestUtil.getDbPlayerRound({
+            close: {
+              score: 4,
+              units: [gameUnits[2]],
+            },
+            ranged: {
+              score: 5,
+              units: [gameUnits[3]],
+            },
+            siege: {
+              score: 6,
+              units: [gameUnits[4]],
+            },
+            moves: [
+              TestUtil.getDbMove({
+                type: MoveType.Unit,
+                unit: gameUnits[3],
+              }),
+              TestUtil.getDbMove({
+                type: MoveType.Unit,
+                unit: gameUnits[4],
+                reason: {
+                  type: MoveReasonType.Deploy,
+                  unit: gameUnits[3],
+                },
+              }),
+            ],
+          }),
+        ],
+        unitFromIdsCalls: [
+          [
+            {
+              ids: [
+                gameUnits[0].unit.toString(),
+                gameUnits[1].unit.toString(),
+                gameUnits[2].unit.toString(),
+                gameUnits[3].unit.toString(),
+                gameUnits[4].unit.toString(),
+              ],
+            },
+          ],
+        ],
       })
     })
   })

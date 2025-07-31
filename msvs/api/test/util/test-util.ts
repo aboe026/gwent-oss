@@ -201,12 +201,14 @@ export default class TestUtil {
     }
   }
 
-  static getDeckUnitFromDbDeckUnit(deckUnit: DeckUnitDbObject): DeckUnit {
+  static getDeckUnitFromDbDeckUnit({ deckUnit, unit }: { deckUnit: DeckUnitDbObject; unit?: Unit }): DeckUnit {
     return {
       artStyle: deckUnit.artStyle,
-      unit: TestUtil.getUnit({
-        id: deckUnit.unit,
-      }),
+      unit:
+        unit ||
+        TestUtil.getUnit({
+          id: deckUnit.unit,
+        }),
     }
   }
 
@@ -670,15 +672,31 @@ export default class TestUtil {
 
   static getGameDeckFromDbGameDeck(gameDeck: GameDeckDbObject): GameDeck {
     return {
-      discard: gameDeck.discard.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
-      hand: gameDeck.hand.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      discard: gameDeck.discard.map((deckUnit) =>
+        TestUtil.getDeckUnitFromDbDeckUnit({
+          deckUnit,
+        })
+      ),
+      hand: gameDeck.hand.map((deckUnit) =>
+        TestUtil.getDeckUnitFromDbDeckUnit({
+          deckUnit,
+        })
+      ),
       redraws: gameDeck.redraws.map((redraw) => {
         return {
-          from: TestUtil.getDeckUnitFromDbDeckUnit(redraw.from),
-          to: TestUtil.getDeckUnitFromDbDeckUnit(redraw.to),
+          from: TestUtil.getDeckUnitFromDbDeckUnit({
+            deckUnit: redraw.from,
+          }),
+          to: TestUtil.getDeckUnitFromDbDeckUnit({
+            deckUnit: redraw.to,
+          }),
         }
       }),
-      undrawn: gameDeck.undrawn.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      undrawn: gameDeck.undrawn.map((deckUnit) =>
+        TestUtil.getDeckUnitFromDbDeckUnit({
+          deckUnit,
+        })
+      ),
       from: gameDeck.from
         ? TestUtil.getDeckFromDbDeck({
             deck: gameDeck.from,
