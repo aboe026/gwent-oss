@@ -338,6 +338,7 @@ describe('move-resolver', () => {
             },
           ],
         ],
+        errorCalls: [[`${message}, move: "${JSON.stringify(unitMove1)}"`]],
       })
     })
     it('throws error if reason unit not found', async () => {
@@ -434,6 +435,15 @@ describe('move-resolver', () => {
             },
           ],
         ],
+        gameUnitFromObjectCalls: [
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+        ],
+        errorCalls: [[`${message}, move: "${JSON.stringify(unitMove1)}"`]],
       })
     })
     it('throws error if source user not found', async () => {
@@ -529,6 +539,23 @@ describe('move-resolver', () => {
             },
           ],
         ],
+        gameUnitFromObjectCalls: [
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+        ],
+        deckUnitFromObjectCalls: [
+          [
+            {
+              deckUnit: gameUnits[1],
+              unit: resolvedUnits[1],
+            },
+          ],
+        ],
+        errorCalls: [[`${message}, move: "${JSON.stringify(unitMove1)}"`]],
       })
     })
     it('throws error if leader not found', async () => {
@@ -622,6 +649,40 @@ describe('move-resolver', () => {
             },
           ],
         ],
+        gameUnitFromObjectCalls: [
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+        ],
+        deckUnitFromObjectCalls: [
+          [
+            {
+              deckUnit: gameUnits[1],
+              unit: resolvedUnits[1],
+            },
+          ],
+          [
+            {
+              deckUnit: gameUnits[1],
+              unit: resolvedUnits[1],
+            },
+          ],
+        ],
         moveFromObjectCalls: [
           [
             {
@@ -651,6 +712,7 @@ describe('move-resolver', () => {
             },
           ],
         ],
+        errorCalls: [[`${message}, move: "${JSON.stringify(leaderMove1)}"`]],
       })
     })
     it('returns empty array if given one', async () => {
@@ -750,6 +812,40 @@ describe('move-resolver', () => {
           [
             {
               ids: [leaderId.toString()],
+            },
+          ],
+        ],
+        gameUnitFromObjectCalls: [
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+        ],
+        deckUnitFromObjectCalls: [
+          [
+            {
+              deckUnit: gameUnits[1],
+              unit: resolvedUnits[1],
+            },
+          ],
+          [
+            {
+              deckUnit: gameUnits[1],
+              unit: resolvedUnits[1],
             },
           ],
         ],
@@ -888,6 +984,40 @@ describe('move-resolver', () => {
           [
             {
               ids: [leaderId.toString()],
+            },
+          ],
+        ],
+        gameUnitFromObjectCalls: [
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+          [
+            {
+              gameUnit: gameUnits[0],
+              unit: resolvedUnits[0],
+            },
+          ],
+        ],
+        deckUnitFromObjectCalls: [
+          [
+            {
+              deckUnit: gameUnits[1],
+              unit: resolvedUnits[1],
+            },
+          ],
+          [
+            {
+              deckUnit: gameUnits[1],
+              unit: resolvedUnits[1],
             },
           ],
         ],
@@ -1061,7 +1191,10 @@ async function testFromArray({
   unitsFromIdsCalls = [],
   usersFromIdsCalls = [],
   leadersFromIdsCalls = [],
+  gameUnitFromObjectCalls = [],
+  deckUnitFromObjectCalls = [],
   moveFromObjectCalls = [],
+  errorCalls = [],
 }: {
   moves: MoveDbObject[]
   units?: Unit[]
@@ -1075,13 +1208,15 @@ async function testFromArray({
   unitsFromIdsCalls?: any[][]
   usersFromIdsCalls?: any[][]
   leadersFromIdsCalls?: any[][]
+  gameUnitFromObjectCalls?: any[][]
+  deckUnitFromObjectCalls?: any[][]
   moveFromObjectCalls?: any[][]
+  errorCalls?: string[][]
 }) {
   const unitsFromIdsSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue(resolvedUnits)
   const usersFromIdsSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue(resolvedUsers)
   const leadersFromIdsSpy = jest.spyOn(LeaderResolver, 'fromIds').mockResolvedValue(resolvedLeaders)
   const gameUnitFromObjectSpy = jest.spyOn(GameUnitResolver, 'fromObject')
-  // TODO: gameUnitFromObject and deckUnitFromObject call verification
   for (const gameUnit of gameUnits) {
     gameUnitFromObjectSpy.mockResolvedValueOnce(gameUnit)
   }
@@ -1107,7 +1242,10 @@ async function testFromArray({
     moveFromObjectSpy.mockResolvedValueOnce(resolvedMove)
     resolvedMoves.push(resolvedMove)
   }
-  // TODO: verify logging
+  const errorSpy = jest.fn().mockImplementation()
+  MoveResolver['logger'] = {
+    error: errorSpy,
+  } as any
 
   const promise = MoveResolver.fromArray({
     moves,
@@ -1123,5 +1261,8 @@ async function testFromArray({
   expect(unitsFromIdsSpy.mock.calls).toEqual(unitsFromIdsCalls)
   expect(usersFromIdsSpy.mock.calls).toEqual(usersFromIdsCalls)
   expect(leadersFromIdsSpy.mock.calls).toEqual(leadersFromIdsCalls)
+  expect(gameUnitFromObjectSpy.mock.calls).toEqual(gameUnitFromObjectCalls)
+  expect(deckUnitFromObjectSpy.mock.calls).toEqual(deckUnitFromObjectCalls)
   expect(moveFromObjectSpy.mock.calls).toEqual(moveFromObjectCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

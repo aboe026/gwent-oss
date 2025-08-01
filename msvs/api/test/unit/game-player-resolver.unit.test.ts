@@ -10,6 +10,24 @@ import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('game-player-resolver', () => {
   describe('fromObject', () => {
+    it('throws error if user is not in users input', async () => {
+      const user = TestUtil.getUser({})
+      const faction = TestUtil.getFaction({})
+      const message = `Could not find user "${user.id}" in pre-resolved users`
+      await testResolveFromObject({
+        gameStatus: GameStatus.Decking,
+        player: TestUtil.getDbGamePlayer({
+          ready: true,
+          user: user.id,
+        }),
+        faction,
+        leader: TestUtil.getLeader({
+          faction,
+        }),
+        users: [],
+        error: `${message}.`,
+      })
+    })
     it('returns without faction, leader or counts if status decking', async () => {
       const user = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
@@ -23,6 +41,7 @@ describe('game-player-resolver', () => {
         leader: TestUtil.getLeader({
           faction,
         }),
+        users: [user],
         user,
       })
     })
@@ -40,6 +59,7 @@ describe('game-player-resolver', () => {
         leader: TestUtil.getLeader({
           faction,
         }),
+        users: [user],
         user,
       })
     })
@@ -59,9 +79,10 @@ describe('game-player-resolver', () => {
             }),
           }),
         }),
+        user,
         resolvedFaction: faction,
         resolvedLeader: leader,
-        resolvedUser: user,
+        resolvedUsers: [user],
         factionResolverCalls: [
           [
             {
@@ -76,27 +97,35 @@ describe('game-player-resolver', () => {
             },
           ],
         ],
-        userResolverCalls: [[new ObjectId(user.id)]],
+        userResolverCalls: [[[user.id]]],
       })
     })
   })
   describe('fromArray', () => {
     it('returns resolved objects if no deck chosen', async () => {
-      const user = TestUtil.getUser({})
-      const player = TestUtil.getDbGamePlayer({
+      const user1 = TestUtil.getUser({})
+      const user2 = TestUtil.getUser({})
+      const player1 = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({}),
-        user: user.id,
+        user: user1.id,
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({}),
+        user: user2.id,
       })
       await testResolveFromArray({
         gameStatus: GameStatus.Decking,
-        players: [player],
-        resolvedUsers: [user],
+        players: [player1, player2],
+        resolvedUsers: [user1, user2],
         resolvedGamePlayers: [
           TestUtil.getGamePlayer({
-            user,
+            user: user1,
+          }),
+          TestUtil.getGamePlayer({
+            user: user2,
           }),
         ],
-        userResolverCalls: [[[new ObjectId(user.id)]]],
+        userResolverCalls: [[[new ObjectId(user1.id), new ObjectId(user2.id)]]],
         factionResolverCalls: [
           [
             {
@@ -115,8 +144,17 @@ describe('game-player-resolver', () => {
         gamePlayerResolverCalls: [
           [
             {
-              player,
-              user,
+              player: player1,
+              users: [user1, user2],
+              faction: undefined,
+              leader: undefined,
+              gameStatus: GameStatus.Decking,
+            },
+          ],
+          [
+            {
+              player: player2,
+              users: [user1, user2],
               faction: undefined,
               leader: undefined,
               gameStatus: GameStatus.Decking,
@@ -126,33 +164,47 @@ describe('game-player-resolver', () => {
       })
     })
     it('returns resolved objects if none provided', async () => {
-      const user = TestUtil.getUser({})
+      const user1 = TestUtil.getUser({})
+      const user2 = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
       const leader = TestUtil.getLeader({
         faction,
       })
-      const player = TestUtil.getDbGamePlayer({
+      const player1 = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({
             faction: faction.id,
             leader: leader.id,
-            user: user.id,
+            user: user1.id,
           }),
         }),
-        user: user.id,
+        user: user1.id,
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({
+            faction: faction.id,
+            leader: leader.id,
+            user: user1.id,
+          }),
+        }),
+        user: user2.id,
       })
       await testResolveFromArray({
         gameStatus: GameStatus.Ordering,
-        players: [player],
-        resolvedUsers: [user],
+        players: [player1, player2],
+        resolvedUsers: [user1, user2],
         resolvedFactions: [faction],
         resolvedLeaders: [leader],
         resolvedGamePlayers: [
           TestUtil.getGamePlayer({
-            user,
+            user: user1,
+          }),
+          TestUtil.getGamePlayer({
+            user: user2,
           }),
         ],
-        userResolverCalls: [[[new ObjectId(user.id)]]],
+        userResolverCalls: [[[new ObjectId(user1.id), new ObjectId(user2.id)]]],
         factionResolverCalls: [
           [
             {
@@ -171,8 +223,17 @@ describe('game-player-resolver', () => {
         gamePlayerResolverCalls: [
           [
             {
-              player,
-              user,
+              player: player1,
+              users: [user1, user2],
+              faction,
+              leader,
+              gameStatus: GameStatus.Ordering,
+            },
+          ],
+          [
+            {
+              player: player2,
+              users: [user1, user2],
               faction,
               leader,
               gameStatus: GameStatus.Ordering,
@@ -182,30 +243,44 @@ describe('game-player-resolver', () => {
       })
     })
     it('returns resolved objects if all provided', async () => {
-      const user = TestUtil.getUser({})
+      const user1 = TestUtil.getUser({})
+      const user2 = TestUtil.getUser({})
       const faction = TestUtil.getFaction({})
       const leader = TestUtil.getLeader({
         faction,
       })
-      const player = TestUtil.getDbGamePlayer({
+      const player1 = TestUtil.getDbGamePlayer({
         deck: TestUtil.getDbGameDeck({
           from: TestUtil.getDbDeck({
             faction: faction.id,
             leader: leader.id,
-            user: user.id,
+            user: user1.id,
           }),
         }),
-        user: user.id,
+        user: user1.id,
+      })
+      const player2 = TestUtil.getDbGamePlayer({
+        deck: TestUtil.getDbGameDeck({
+          from: TestUtil.getDbDeck({
+            faction: faction.id,
+            leader: leader.id,
+            user: user1.id,
+          }),
+        }),
+        user: user2.id,
       })
       await testResolveFromArray({
         gameStatus: GameStatus.Ordering,
-        players: [player],
-        users: [user],
+        players: [player1, player2],
+        users: [user1, user2],
         resolvedFactions: [faction],
         resolvedLeaders: [leader],
         resolvedGamePlayers: [
           TestUtil.getGamePlayer({
-            user,
+            user: user1,
+          }),
+          TestUtil.getGamePlayer({
+            user: user2,
           }),
         ],
         factionResolverCalls: [
@@ -226,8 +301,17 @@ describe('game-player-resolver', () => {
         gamePlayerResolverCalls: [
           [
             {
-              player,
-              user,
+              player: player1,
+              users: [user1, user2],
+              faction,
+              leader,
+              gameStatus: GameStatus.Ordering,
+            },
+          ],
+          [
+            {
+              player: player2,
+              users: [user1, user2],
               faction,
               leader,
               gameStatus: GameStatus.Ordering,
@@ -241,26 +325,28 @@ describe('game-player-resolver', () => {
 
 async function testResolveFromObject({
   player,
-  user,
+  users,
   faction,
   leader,
   gameStatus,
+  user,
   resolvedFaction,
   resolvedLeader,
-  resolvedUser,
+  resolvedUsers,
   error,
   factionResolverCalls = [],
   leaderResolverCalls = [],
   userResolverCalls = [],
 }: {
   player: GamePlayerDbObject
-  user?: User
+  users?: User[]
   faction?: Faction | undefined
   leader?: Leader | undefined
   gameStatus: GameStatus
+  user?: User
   resolvedFaction?: Faction
   resolvedLeader?: Leader
-  resolvedUser?: User
+  resolvedUsers?: User[]
   error?: string
   factionResolverCalls?: any[][]
   leaderResolverCalls?: any[][]
@@ -274,9 +360,9 @@ async function testResolveFromObject({
   if (resolvedLeader) {
     leaderResolverSpy.mockResolvedValue(resolvedLeader)
   }
-  const userResolverSpy = jest.spyOn(UserResolver, 'fromId')
-  if (resolvedUser) {
-    userResolverSpy.mockResolvedValue(resolvedUser)
+  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds')
+  if (resolvedUsers) {
+    userResolverSpy.mockResolvedValue(resolvedUsers)
   }
 
   const promise = GamePlayerResolver.fromObject({
@@ -284,7 +370,7 @@ async function testResolveFromObject({
     player,
     faction,
     leader,
-    user,
+    users,
   })
 
   if (error) {
@@ -304,7 +390,7 @@ async function testResolveFromObject({
       order: player.order,
       ready: player.ready,
       rounds: player.rounds,
-      user: user || resolvedUser,
+      user,
     })
   }
 

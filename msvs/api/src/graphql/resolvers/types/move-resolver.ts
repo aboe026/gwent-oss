@@ -191,7 +191,7 @@ export default class MoveResolver {
         const matchingUnit = resolvedUnits.find((unit) => unit.id === unitMove.unit.unit.toString())
         if (!matchingUnit) {
           const message = `Could not find move unit "${unitMove.unit.unit}"`
-          MoveResolver.logger.error(`${message}: move: "${JSON.stringify(move)}"`)
+          MoveResolver.logger.error(`${message}, move: "${JSON.stringify(move)}"`)
           throw Error(`${message}.`)
         }
         gameUnit = await GameUnitResolver.fromObject({

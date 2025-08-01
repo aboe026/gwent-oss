@@ -1,10 +1,12 @@
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
-import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { GamePlayerDbObject, GameStatus, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { getUniqueItems } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
+import { MoveType } from '@gwent/graphql-schema'
 import PlayerRoundResolver from './player-round-resolver'
 import UserResolver from './user-resolver'
 
@@ -12,6 +14,7 @@ import UserResolver from './user-resolver'
  * A class to convert GamePlayer database objects to their GraphQL equivalent.
  */
 export default class GamePlayerResolver {
+  private static logger = getLogger('GamePlayerResolver')
   /**
    * Converts a single GamePlayer database object to a single GamePlayer GraphQL object.
    *
@@ -27,13 +30,13 @@ export default class GamePlayerResolver {
     faction,
     leader,
     player,
-    user,
+    users,
     gameStatus,
   }: {
     faction?: Faction | undefined
     leader?: Leader | undefined
     player: GamePlayerDbObject
-    user?: User
+    users?: User[]
     gameStatus: GameStatus
   }): Promise<GamePlayer> {
     let counts: GamePlayerUnitCounts | undefined = undefined
@@ -55,6 +58,34 @@ export default class GamePlayerResolver {
       }
     }
 
+    const resolvedUsers: User[] = []
+    if (users) {
+      resolvedUsers.push(...users)
+    } else {
+      const userIdsToResolve = [player.user.toString()]
+      for (const round of player.rounds) {
+        for (const move of round.moves) {
+          if (move.type === MoveType.Unit) {
+            const moveUnit = move as MoveUnitDbObject
+            if (moveUnit.source.user) {
+              const userId = moveUnit.source.user.toString()
+              if (!userIdsToResolve.includes(userId)) {
+                userIdsToResolve.push(userId)
+              }
+            }
+          }
+        }
+      }
+      resolvedUsers.push(...(await UserResolver.fromIds(userIdsToResolve)))
+    }
+
+    const playerUser = resolvedUsers.find((user) => user.id === player.user.toString())
+    if (!playerUser) {
+      const message = `Could not find user "${player.user}" in pre-resolved users`
+      GamePlayerResolver.logger.error(`${message}, users: "${JSON.stringify(users)}"`)
+      throw Error(`${message}.`)
+    }
+
     return {
       counts,
       faction: gameStatus === GameStatus.Decking ? undefined : faction,
@@ -63,8 +94,9 @@ export default class GamePlayerResolver {
       ready: player.ready,
       rounds: await PlayerRoundResolver.fromArray({
         rounds: player.rounds,
+        users,
       }),
-      user: user || (await UserResolver.fromId(player.user)),
+      user: playerUser,
     }
   }
 
@@ -121,7 +153,7 @@ export default class GamePlayerResolver {
       resolvedPlayers.push(
         await GamePlayerResolver.fromObject({
           player,
-          user: resolvedUsers.find((user) => user.id.toString() === player.user.toString()),
+          users: resolvedUsers,
           faction,
           leader,
           gameStatus,
