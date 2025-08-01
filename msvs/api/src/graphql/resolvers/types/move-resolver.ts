@@ -121,9 +121,9 @@ export default class MoveResolver {
       return []
     }
 
-    const resolvedUnits: Unit[] = []
+    let resolvedUnits: Unit[] = []
     if (units) {
-      resolvedUnits.push(...units)
+      resolvedUnits = units
     } else {
       const unitIdsToResolve: string[] = []
       for (const move of moves) {
@@ -141,16 +141,14 @@ export default class MoveResolver {
           }
         }
       }
-      resolvedUnits.push(
-        ...(await UnitResolver.fromIds({
-          ids: unitIdsToResolve,
-        }))
-      )
+      resolvedUnits = await UnitResolver.fromIds({
+        ids: unitIdsToResolve,
+      })
     }
 
-    const resolvedUsers: User[] = []
+    let resolvedUsers: User[] = []
     if (users) {
-      resolvedUsers.push(...users)
+      resolvedUsers = users
     } else {
       const sourceUserIds: string[] = []
       for (const move of moves) {
@@ -164,7 +162,7 @@ export default class MoveResolver {
           }
         }
       }
-      resolvedUsers.push(...(await UserResolver.fromIds(sourceUserIds)))
+      resolvedUsers = await UserResolver.fromIds(sourceUserIds)
     }
 
     const leaderIds: string[] = []

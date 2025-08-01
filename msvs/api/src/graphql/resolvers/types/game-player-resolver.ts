@@ -58,9 +58,9 @@ export default class GamePlayerResolver {
       }
     }
 
-    const resolvedUsers: User[] = []
+    let resolvedUsers: User[] = []
     if (users) {
-      resolvedUsers.push(...users)
+      resolvedUsers = users
     } else {
       const userIdsToResolve = [player.user.toString()]
       for (const round of player.rounds) {
@@ -76,13 +76,13 @@ export default class GamePlayerResolver {
           }
         }
       }
-      resolvedUsers.push(...(await UserResolver.fromIds(userIdsToResolve)))
+      resolvedUsers = await UserResolver.fromIds(userIdsToResolve)
     }
 
     const playerUser = resolvedUsers.find((user) => user.id === player.user.toString())
     if (!playerUser) {
-      const message = `Could not find user "${player.user}" in pre-resolved users`
-      GamePlayerResolver.logger.error(`${message}, users: "${JSON.stringify(users)}"`)
+      const message = `Could not find user "${player.user}"`
+      GamePlayerResolver.logger.error(`${message}, resolvedUsers: "${JSON.stringify(resolvedUsers)}"`)
       throw Error(`${message}.`)
     }
 
@@ -94,7 +94,7 @@ export default class GamePlayerResolver {
       ready: player.ready,
       rounds: await PlayerRoundResolver.fromArray({
         rounds: player.rounds,
-        users,
+        users: resolvedUsers,
       }),
       user: playerUser,
     }
