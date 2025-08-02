@@ -454,12 +454,12 @@ test('Shows single entry if Muster impacts multiple units from hand and undrawn'
           {
             username: gameManager.self.gamePlayer.name,
             unitName: unitName,
-            origin: GameUnitOrigin.Undrawn,
+            origin: GameUnitOrigin.Hand,
           },
           {
             username: gameManager.self.gamePlayer.name,
             unitName: unitName,
-            origin: GameUnitOrigin.Hand,
+            origin: GameUnitOrigin.Undrawn,
           },
         ],
       },
