@@ -2,12 +2,25 @@ import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { GameDbObject, GamePlayerDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  GameDbObject,
+  GamePlayerDbObject,
+  GameStatus,
+  GameUnitDbObject,
+  Move,
+  MoveDbObject,
+  MoveUnitDbObject,
+  UserDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../database/stores/game-store'
+import { getUniqueItems } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
+import { MoveType, RequestedFields } from '@gwent/graphql-schema'
 import { NOT_AUTHENTICATED_MESSAGE, REDACTED } from '@gwent/constants'
 import PresentableError from '../../util/presentable-error'
-import { RequestedFields } from '@gwent/graphql-schema'
+import { Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import UnitResolver from './types/unit-resolver'
+import UserResolver from './types/user-resolver'
 
 /**
  * A class for common utilities used across resolvers.
@@ -182,6 +195,82 @@ export default class ResolverUtil {
     return {
       game,
       player: players[0],
+    }
+  }
+
+  static async resolveMoveUsersAndUnits({
+    moves,
+    users,
+    gameUnits,
+    presolvedUsers,
+    presolvedUnits,
+  }: {
+    moves: MoveDbObject[]
+    users?: UserDbObject[]
+    gameUnits?: GameUnitDbObject[]
+    presolvedUsers?: User[]
+    presolvedUnits?: Unit[]
+  }): Promise<{
+    users: User[]
+    units: Unit[]
+  }> {
+    const resolvedUsers: User[] = []
+    const resolvedUnits: Unit[] = []
+
+    const presolvedUserIds: string[] = []
+    const presolvedUnitIds: string[] = []
+    if (presolvedUsers) {
+      presolvedUserIds.push(...getUniqueItems<string>(presolvedUsers.map((user) => user.id)))
+      resolvedUsers.push(...presolvedUsers)
+    }
+    if (presolvedUnits) {
+      presolvedUnitIds.push(...getUniqueItems<string>(presolvedUnits.map((unit) => unit.id)))
+      resolvedUnits.push(...presolvedUnits)
+    }
+    const userIdsToResolve: string[] = []
+    const unitIdsToResolve: string[] = []
+
+    if (gameUnits) {
+      for (const gameUnit of gameUnits) {
+        const unitId = gameUnit.unit.toString()
+        if (!unitIdsToResolve.includes(unitId) && !presolvedUnitIds.includes(unitId)) {
+          unitIdsToResolve.push(unitId)
+        }
+      }
+    }
+
+    for (const move of moves) {
+      if (move.type === MoveType.Unit) {
+        const unitMove = move as MoveUnitDbObject
+        const unitId = unitMove.unit.unit.toString()
+        if (!unitIdsToResolve.includes(unitId) && !presolvedUnitIds.includes(unitId)) {
+          unitIdsToResolve.push(unitId)
+        }
+        if (unitMove.reason.unit) {
+          const reasonUnitId = unitMove.reason.unit.unit.toString()
+          if (!unitIdsToResolve.includes(reasonUnitId) && !presolvedUnitIds.includes(reasonUnitId)) {
+            unitIdsToResolve.push(reasonUnitId)
+          }
+        }
+        if (unitMove.source.user) {
+          const userId = unitMove.source.user.toString()
+          if (!userIdsToResolve.includes(userId) && !presolvedUserIds.includes(userId)) {
+            userIdsToResolve.push(userId)
+          }
+        }
+      }
+    }
+
+    resolvedUnits.push(
+      ...(await UnitResolver.fromIds({
+        ids: unitIdsToResolve,
+      }))
+    )
+    resolvedUsers.push(...(await UserResolver.fromIds(userIdsToResolve)))
+
+    return {
+      units: resolvedUnits,
+      users: resolvedUsers,
     }
   }
 }

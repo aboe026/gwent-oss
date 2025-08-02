@@ -21,7 +21,7 @@ import GameUnitResolver from './game-unit-resolver'
 import ImpactResolver from './impact-resolver'
 import LeaderResolver from './leader-resolver'
 import { MoveType } from '@gwent/graphql-schema'
-import UnitResolver from './unit-resolver'
+import ResolverUtil from '../resolver-util'
 import UserResolver from './user-resolver'
 
 /**
@@ -121,49 +121,11 @@ export default class MoveResolver {
       return []
     }
 
-    let resolvedUnits: Unit[] = []
-    if (units) {
-      resolvedUnits = units
-    } else {
-      const unitIdsToResolve: string[] = []
-      for (const move of moves) {
-        if (move.type === MoveType.Unit) {
-          const moveUnit = move as MoveUnitDbObject
-          const gameUnitId = moveUnit.unit.unit.toString()
-          if (!unitIdsToResolve.includes(gameUnitId)) {
-            unitIdsToResolve.push(gameUnitId)
-          }
-          if (moveUnit.reason.unit) {
-            const reasonUnitId = moveUnit.reason.unit.unit.toString()
-            if (!unitIdsToResolve.includes(reasonUnitId)) {
-              unitIdsToResolve.push(reasonUnitId)
-            }
-          }
-        }
-      }
-      resolvedUnits = await UnitResolver.fromIds({
-        ids: unitIdsToResolve,
-      })
-    }
-
-    let resolvedUsers: User[] = []
-    if (users) {
-      resolvedUsers = users
-    } else {
-      const sourceUserIds: string[] = []
-      for (const move of moves) {
-        if (move.type === MoveType.Unit) {
-          const moveUnit = move as MoveUnitDbObject
-          if (moveUnit.source.user) {
-            const userId = moveUnit.source.user.toString()
-            if (!sourceUserIds.includes(userId)) {
-              sourceUserIds.push(userId)
-            }
-          }
-        }
-      }
-      resolvedUsers = await UserResolver.fromIds(sourceUserIds)
-    }
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+      moves,
+      presolvedUnits: units,
+      presolvedUsers: users,
+    })
 
     const leaderIds: string[] = []
     for (const move of moves) {

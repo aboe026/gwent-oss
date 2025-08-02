@@ -1,14 +1,13 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, User } from '@gwent/graphql-schema/resolver-typings'
+import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
-import { GamePlayerDbObject, GameStatus, MoveUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import { getUniqueItems } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
-import { MoveType } from '@gwent/graphql-schema'
 import PlayerRoundResolver from './player-round-resolver'
-import UserResolver from './user-resolver'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class to convert GamePlayer database objects to their GraphQL equivalent.
@@ -31,12 +30,14 @@ export default class GamePlayerResolver {
     leader,
     player,
     users,
+    units,
     gameStatus,
   }: {
     faction?: Faction | undefined
     leader?: Leader | undefined
     player: GamePlayerDbObject
     users?: User[]
+    units?: Unit[]
     gameStatus: GameStatus
   }): Promise<GamePlayer> {
     let counts: GamePlayerUnitCounts | undefined = undefined
@@ -58,26 +59,13 @@ export default class GamePlayerResolver {
       }
     }
 
-    let resolvedUsers: User[] = []
-    if (users) {
-      resolvedUsers = users
-    } else {
-      const userIdsToResolve = [player.user.toString()]
-      for (const round of player.rounds) {
-        for (const move of round.moves) {
-          if (move.type === MoveType.Unit) {
-            const moveUnit = move as MoveUnitDbObject
-            if (moveUnit.source.user) {
-              const userId = moveUnit.source.user.toString()
-              if (!userIdsToResolve.includes(userId)) {
-                userIdsToResolve.push(userId)
-              }
-            }
-          }
-        }
-      }
-      resolvedUsers = await UserResolver.fromIds(userIdsToResolve)
-    }
+    const rounds = player.rounds.flat()
+    const { users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+      moves: rounds.map((round) => round.moves).flat(),
+      gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
+      presolvedUsers: users,
+      presolvedUnits: units,
+    })
 
     const playerUser = resolvedUsers.find((user) => user.id === player.user.toString())
     if (!playerUser) {
@@ -118,17 +106,15 @@ export default class GamePlayerResolver {
     users?: User[]
     gameStatus: GameStatus
   }): Promise<GamePlayer[]> {
-    let preResolvedUserIds: string[] = []
-    if (users) {
-      preResolvedUserIds = getUniqueItems<string>(users.map((user) => user.id))
-    }
-    const userIdsToResolve = getUniqueItems<ObjectId>(
-      players.filter((player) => !preResolvedUserIds.includes(player.user.toString())).map((player) => player.user)
-    )
-    const resolvedUsers: User[] = users || []
-    if (userIdsToResolve.length > 0) {
-      resolvedUsers.push(...(await UserResolver.fromIds(userIdsToResolve)))
-    }
+    const rounds = players
+      .flat()
+      .map((player) => player.rounds)
+      .flat()
+    const { units, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+      moves: rounds.map((round) => round.moves).flat(),
+      gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
+      presolvedUsers: users,
+    })
 
     const factionIds = getUniqueItems<ObjectId>(players.map((player) => player.deck.from && player.deck.from.faction))
     const factions = await FactionResolver.fromIds({
@@ -154,6 +140,7 @@ export default class GamePlayerResolver {
         await GamePlayerResolver.fromObject({
           player,
           users: resolvedUsers,
+          units,
           faction,
           leader,
           gameStatus,
