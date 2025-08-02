@@ -394,7 +394,7 @@ function renderImpacts({
   for (const group of groups) {
     const sortedImpacts = sortObjectArray({
       array: group,
-      sortProperties: ['unit.unit.name', 'unit.unit.id'],
+      sortProperties: ['unit.unit.name', 'source.origin', 'unit.unit.id'],
     })
     for (const impact of sortedImpacts) {
       units.push({
@@ -407,7 +407,7 @@ function renderImpacts({
   return groups.map((group, groupIndex) => {
     const sortedImpacts = sortObjectArray({
       array: group,
-      sortProperties: ['unit.unit.name', 'unit.unit.id'],
+      sortProperties: ['unit.unit.name', 'source.origin', 'unit.unit.id'],
     })
 
     return (
