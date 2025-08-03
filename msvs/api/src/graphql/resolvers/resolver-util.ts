@@ -7,7 +7,7 @@ import {
   GamePlayerDbObject,
   GameStatus,
   GameUnitDbObject,
-  Move,
+  ImpactDbObject,
   MoveDbObject,
   MoveUnitDbObject,
   UserDbObject,
@@ -200,13 +200,15 @@ export default class ResolverUtil {
 
   static async resolveMoveUsersAndUnits({
     moves,
-    users,
+    impacts,
+    userIds,
     gameUnits,
     presolvedUsers,
     presolvedUnits,
   }: {
-    moves: MoveDbObject[]
-    users?: UserDbObject[]
+    moves?: MoveDbObject[]
+    impacts?: ImpactDbObject[]
+    userIds?: (ObjectId | string)[]
     gameUnits?: GameUnitDbObject[]
     presolvedUsers?: User[]
     presolvedUnits?: Unit[]
@@ -214,59 +216,89 @@ export default class ResolverUtil {
     users: User[]
     units: Unit[]
   }> {
-    const resolvedUsers: User[] = []
-    const resolvedUnits: Unit[] = []
+    const impactsToResolve: ImpactDbObject[] = impacts || []
+    let resolvedUsers: User[] = presolvedUsers || []
+    let resolvedUnits: Unit[] = presolvedUnits || []
 
-    const presolvedUserIds: string[] = []
-    const presolvedUnitIds: string[] = []
-    if (presolvedUsers) {
-      presolvedUserIds.push(...getUniqueItems<string>(presolvedUsers.map((user) => user.id)))
-      resolvedUsers.push(...presolvedUsers)
-    }
-    if (presolvedUnits) {
-      presolvedUnitIds.push(...getUniqueItems<string>(presolvedUnits.map((unit) => unit.id)))
-      resolvedUnits.push(...presolvedUnits)
-    }
     const userIdsToResolve: string[] = []
     const unitIdsToResolve: string[] = []
 
-    if (gameUnits) {
+    if (!presolvedUsers && userIds) {
+      for (const userId of userIds) {
+        const userStringId = userId.toString()
+        if (!userIdsToResolve.includes(userStringId)) {
+          userIdsToResolve.push(userStringId)
+        }
+      }
+    }
+
+    if (gameUnits && !presolvedUnits) {
       for (const gameUnit of gameUnits) {
         const unitId = gameUnit.unit.toString()
-        if (!unitIdsToResolve.includes(unitId) && !presolvedUnitIds.includes(unitId)) {
+        if (!unitIdsToResolve.includes(unitId)) {
           unitIdsToResolve.push(unitId)
         }
       }
     }
 
-    for (const move of moves) {
-      if (move.type === MoveType.Unit) {
-        const unitMove = move as MoveUnitDbObject
-        const unitId = unitMove.unit.unit.toString()
-        if (!unitIdsToResolve.includes(unitId) && !presolvedUnitIds.includes(unitId)) {
-          unitIdsToResolve.push(unitId)
-        }
-        if (unitMove.reason.unit) {
-          const reasonUnitId = unitMove.reason.unit.unit.toString()
-          if (!unitIdsToResolve.includes(reasonUnitId) && !presolvedUnitIds.includes(reasonUnitId)) {
-            unitIdsToResolve.push(reasonUnitId)
+    if (moves && (!presolvedUnits || !presolvedUsers)) {
+      for (const move of moves) {
+        if (move.type === MoveType.Unit) {
+          const unitMove = move as MoveUnitDbObject
+          const unitId = unitMove.unit.unit.toString()
+          if (!presolvedUnits && !unitIdsToResolve.includes(unitId)) {
+            unitIdsToResolve.push(unitId)
           }
-        }
-        if (unitMove.source.user) {
-          const userId = unitMove.source.user.toString()
-          if (!userIdsToResolve.includes(userId) && !presolvedUserIds.includes(userId)) {
-            userIdsToResolve.push(userId)
+          if (!presolvedUnits && unitMove.reason.unit) {
+            const reasonUnitId = unitMove.reason.unit.unit.toString()
+            if (!unitIdsToResolve.includes(reasonUnitId)) {
+              unitIdsToResolve.push(reasonUnitId)
+            }
+          }
+          if (unitMove.impacts && !impacts) {
+            for (const impact of unitMove.impacts) {
+              impactsToResolve.push(impact)
+            }
+          }
+          if (!presolvedUsers && !userIds && unitMove.source.user) {
+            const userId = unitMove.source.user.toString()
+            if (!userIdsToResolve.includes(userId)) {
+              userIdsToResolve.push(userId)
+            }
           }
         }
       }
     }
 
-    resolvedUnits.push(
-      ...(await UnitResolver.fromIds({
+    for (const impact of impactsToResolve) {
+      if (!presolvedUnits) {
+        const impactUnitId = impact.unit.unit.toString()
+        if (!unitIdsToResolve.includes(impactUnitId)) {
+          unitIdsToResolve.push(impactUnitId)
+        }
+      }
+      if (!presolvedUsers && !userIds) {
+        const impactUserId = impact.user.toString()
+        if (!userIdsToResolve.includes(impactUserId)) {
+          userIdsToResolve.push(impactUserId)
+        }
+        if (impact.source?.user) {
+          const impactSourceUserId = impact.source.user.toString()
+          if (!userIdsToResolve.includes(impactSourceUserId)) {
+            userIdsToResolve.push(impactSourceUserId)
+          }
+        }
+      }
+    }
+
+    if (!presolvedUnits) {
+      resolvedUnits = await UnitResolver.fromIds({
         ids: unitIdsToResolve,
-      }))
-    )
-    resolvedUsers.push(...(await UserResolver.fromIds(userIdsToResolve)))
+      })
+    }
+    if (!presolvedUsers) {
+      resolvedUsers = await UserResolver.fromIds(userIdsToResolve)
+    }
 
     return {
       units: resolvedUnits,

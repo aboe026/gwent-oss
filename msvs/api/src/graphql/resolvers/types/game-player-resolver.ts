@@ -60,7 +60,7 @@ export default class GamePlayerResolver {
     }
 
     const rounds = player.rounds.flat()
-    const { users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { users: resolvedUsers, units: resolvedUnits } = await ResolverUtil.resolveMoveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
       presolvedUsers: users,
@@ -83,6 +83,7 @@ export default class GamePlayerResolver {
       rounds: await PlayerRoundResolver.fromArray({
         rounds: player.rounds,
         users: resolvedUsers,
+        units: resolvedUnits,
       }),
       user: playerUser,
     }
@@ -100,20 +101,23 @@ export default class GamePlayerResolver {
   static async fromArray({
     players,
     users,
+    units,
     gameStatus,
   }: {
     players: GamePlayerDbObject[]
     users?: User[]
+    units?: Unit[]
     gameStatus: GameStatus
   }): Promise<GamePlayer[]> {
     const rounds = players
       .flat()
       .map((player) => player.rounds)
       .flat()
-    const { units, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
       presolvedUsers: users,
+      presolvedUnits: units,
     })
 
     const factionIds = getUniqueItems<ObjectId>(players.map((player) => player.deck.from && player.deck.from.faction))
@@ -140,7 +144,7 @@ export default class GamePlayerResolver {
         await GamePlayerResolver.fromObject({
           player,
           users: resolvedUsers,
-          units,
+          units: resolvedUnits,
           faction,
           leader,
           gameStatus,

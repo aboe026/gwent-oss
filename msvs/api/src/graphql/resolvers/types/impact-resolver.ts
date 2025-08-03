@@ -1,11 +1,9 @@
 import { getLogger } from 'log4js'
-import { ObjectId } from 'mongodb'
 
+import { GameUnitOrigin, Impact, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import GameUnitResolver from './game-unit-resolver'
-import { GameUnit, GameUnitOrigin, Impact, User } from '@gwent/graphql-schema/resolver-typings'
 import { ImpactDbObject } from '@gwent/graphql-schema/database-typings'
-import UnitResolver from './unit-resolver'
-import UserResolver from './user-resolver'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class to convert Impact database objects to their GraphQL equivalent.
@@ -24,48 +22,46 @@ export default class ImpactResolver {
    */
   static async fromObject({
     impact,
-    gameUnit,
-    user,
+    units,
+    users,
   }: {
     impact: ImpactDbObject
-    gameUnit?: GameUnit
-    user?: User
+    units?: Unit[]
+    users?: User[]
   }): Promise<Impact> {
-    const users: User[] = []
-    const userIds: ObjectId[] = []
-    if (user) {
-      users.push(user)
-    } else {
-      userIds.push(impact.user)
-    }
-    if (impact.source?.user) {
-      userIds.push(impact.source.user)
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+      impacts: [impact],
+      presolvedUsers: users,
+      presolvedUnits: units ? units : undefined,
+    })
+
+    const impactUnit = resolvedUnits.find((unit) => unit.id === impact.unit.unit.toString())
+    if (!impactUnit) {
+      const message = `Could not find impact unit "${impact.unit.unit}"`
+      ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
+      throw Error(`${message}.`)
     }
 
-    if (userIds.length > 0) {
-      users.push(...(await UserResolver.fromIds(userIds)))
-    }
-    const impactUser = users.find((user) => user.id === impact.user.toString())
+    const impactUser = resolvedUsers.find((user) => user.id === impact.user.toString())
     if (!impactUser) {
       const message = `Could not find impact user "${impact.user}"`
-      ImpactResolver.logger.error(`failed: ${message}, impact: "${JSON.stringify(impact)}"`)
+      ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
       throw Error(`${message}.`)
     }
     let sourceUser: User | undefined = undefined
     if (impact.source?.user) {
-      sourceUser = users.find((user) => user.id === impact.source?.user?.toString())
+      sourceUser = resolvedUsers.find((user) => user.id === impact.source?.user?.toString())
       if (!sourceUser) {
         const message = `Could not find impact source user "${impact.source.user}"`
-        ImpactResolver.logger.error(`failed: ${message}, impact: "${JSON.stringify(impact)}"`)
+        ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
         throw Error(`${message}.`)
       }
     }
     return {
-      unit:
-        gameUnit ||
-        (await GameUnitResolver.fromObject({
-          gameUnit: impact.unit,
-        })),
+      unit: await GameUnitResolver.fromObject({
+        gameUnit: impact.unit,
+        unit: impactUnit,
+      }),
       user: impactUser,
       source: impact.source
         ? {
@@ -83,67 +79,36 @@ export default class ImpactResolver {
    * @param config.impacts The array of Impact database objects to convert.
    * @returns The resolved Impact array matching the GraphQL schema definition.
    */
-  static async fromArray({ impacts }: { impacts: ImpactDbObject[] | undefined }): Promise<Impact[] | undefined> {
+  static async fromArray({
+    impacts,
+    units,
+    users,
+  }: {
+    impacts: ImpactDbObject[] | undefined
+    units?: Unit[]
+    users?: User[]
+  }): Promise<Impact[] | undefined> {
     if (ImpactResolver.logger.isTraceEnabled()) {
       ImpactResolver.logger.trace(`impacts: "${JSON.stringify(impacts)}"`)
     }
     if (impacts) {
       const resolvedImpacts: Impact[] = []
-      const units = await UnitResolver.fromIds({
-        ids: impacts.map((impact) => impact.unit.unit),
+      const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+        impacts,
+        presolvedUnits: units,
+        presolvedUsers: users,
       })
       if (ImpactResolver.logger.isTraceEnabled()) {
-        ImpactResolver.logger.trace(`units: "${JSON.stringify(units)}"`)
-      }
-
-      const users = await UserResolver.fromIds(impacts.map((impact) => impact.user))
-      if (ImpactResolver.logger.isTraceEnabled()) {
-        ImpactResolver.logger.trace(`users: "${JSON.stringify(users)}"`)
+        ImpactResolver.logger.trace(`resolvedUnits: "${JSON.stringify(resolvedUnits)}"`)
+        ImpactResolver.logger.trace(`resolvedUsers: "${JSON.stringify(resolvedUsers)}"`)
       }
 
       for (const impact of impacts) {
-        if (ImpactResolver.logger.isTraceEnabled()) {
-          ImpactResolver.logger.trace(`impact: "${JSON.stringify(impact)}"`)
-        }
-        const matchingUnits = units.filter((unit) => unit.id === impact.unit.unit.toString())
-        if (ImpactResolver.logger.isTraceEnabled()) {
-          ImpactResolver.logger.trace(`matchingUnits: "${JSON.stringify(matchingUnits)}"`)
-        }
-
-        if (matchingUnits.length === 0) {
-          const message = `Could not find unit with ID "${impact.unit.unit}" for move Impact`
-          ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
-          throw Error(`${message}.`)
-        } else if (matchingUnits.length > 1) {
-          const message = `Found more than 1 unit with ID "${impact.unit.unit}" for move Impact`
-          ImpactResolver.logger.error(
-            `${message}, impact: "${JSON.stringify(impact)}", matchingUnits "${JSON.stringify(matchingUnits)}"`
-          )
-          throw Error(`${message}.`)
-        }
-        const matchingUsers = users.filter((user) => user.id === impact.user.toString())
-        if (ImpactResolver.logger.isTraceEnabled()) {
-          ImpactResolver.logger.trace(`matchingUsers: "${JSON.stringify(matchingUsers)}"`)
-        }
-        if (matchingUsers.length === 0) {
-          const message = `Could not find user with ID "${impact.user}" for move Impact`
-          ImpactResolver.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
-          throw Error(`${message}.`)
-        } else if (matchingUsers.length > 1) {
-          const message = `Found more than 1 user with ID "${impact.user}" for move Impact`
-          ImpactResolver.logger.error(
-            `${message}, impact: "${JSON.stringify(impact)}", matchingUsers: "${JSON.stringify(matchingUsers)}"`
-          )
-          throw Error(`${message}.`)
-        }
         resolvedImpacts.push(
           await ImpactResolver.fromObject({
             impact,
-            gameUnit: await GameUnitResolver.fromObject({
-              gameUnit: impact.unit,
-              unit: matchingUnits[0],
-            }),
-            user: matchingUsers[0],
+            units: resolvedUnits,
+            users: resolvedUsers,
           })
         )
       }

@@ -33,7 +33,7 @@ export default class AddGameResolution {
   }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
       game,
-      users: opponents,
+      // TODO: pass pre-resolved opponents? but need creator as well
     })
 
     if (AddGameResolution.logger.isTraceEnabled()) {

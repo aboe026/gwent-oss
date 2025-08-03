@@ -43,15 +43,13 @@ export default class MoveResolver {
   static async fromObject({
     move,
     leader,
-    gameUnit,
-    reasonDeckUnit,
-    sourceUser,
+    units,
+    users,
   }: {
     move: MoveDbObject
     leader?: Leader
-    gameUnit?: GameUnit
-    reasonDeckUnit?: DeckUnit
-    sourceUser?: User
+    units?: Unit[]
+    users?: User[]
   }): Promise<Move> {
     if (move.type === MoveType.Leader) {
       const leaderMove = move as MoveLeaderDbObject
@@ -72,27 +70,43 @@ export default class MoveResolver {
       }
     } else if (move.type === MoveType.Unit) {
       const unitMove = move as MoveUnitDbObject
+      const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+        moves: [unitMove],
+        presolvedUnits: units,
+        presolvedUsers: users,
+      })
+      const unitForMove = resolvedUnits.find((unit) => unit.id === unitMove.unit.unit.toString())
+      if (!unitForMove) {
+        throw Error(`Could not find move unit "${unitMove.unit.unit}"`)
+      }
       let resolvedReasonDeckUnit: DeckUnit | undefined = undefined
       if (unitMove.reason.unit) {
-        resolvedReasonDeckUnit =
-          reasonDeckUnit ||
-          (await DeckUnitResolver.fromObject({
-            deckUnit: unitMove.reason.unit,
-          }))
+        const reasonUnit = resolvedUnits.find((unit) => unit.id === unitMove.reason.unit?.unit.toString())
+        if (!reasonUnit) {
+          throw Error(`Could not find reason unit "${unitMove.reason.unit?.unit}"`)
+        }
+        resolvedReasonDeckUnit = await DeckUnitResolver.fromObject({
+          deckUnit: unitMove.reason.unit,
+          unit: reasonUnit,
+        })
       }
       let resolvedSourceUser: User | undefined = undefined
       if (unitMove.source.user) {
-        resolvedSourceUser = sourceUser || (await UserResolver.fromId(unitMove.source.user))
+        resolvedSourceUser = resolvedUsers.find((user) => user.id === unitMove.source.user?.toString())
+        if (!resolvedSourceUser) {
+          throw Error(`Could not find source user "${unitMove.source.user}"`)
+        }
       }
       return {
         created: unitMove.created,
-        unit:
-          gameUnit ||
-          (await GameUnitResolver.fromObject({
-            gameUnit: unitMove.unit,
-          })),
+        unit: await GameUnitResolver.fromObject({
+          gameUnit: unitMove.unit,
+          unit: unitForMove,
+        }),
         impacts: await ImpactResolver.fromArray({
           impacts: unitMove.impacts,
+          units: resolvedUnits,
+          users: resolvedUsers,
         }),
         reason: {
           type: unitMove.reason.type as MoveReasonType,
@@ -143,43 +157,6 @@ export default class MoveResolver {
 
     const resolvedMoves: Move[] = []
     for (const move of moves) {
-      let gameUnit: GameUnit | undefined = undefined
-      let sourceUser: User | undefined = undefined
-      let reasonDeckUnit: DeckUnit | undefined = undefined
-      if (move.type === MoveType.Unit) {
-        const unitMove = move as MoveUnitDbObject
-        const matchingUnit = resolvedUnits.find((unit) => unit.id === unitMove.unit.unit.toString())
-        if (!matchingUnit) {
-          const message = `Could not find move unit "${unitMove.unit.unit}"`
-          MoveResolver.logger.error(`${message}, move: "${JSON.stringify(move)}"`)
-          throw Error(`${message}.`)
-        }
-        gameUnit = await GameUnitResolver.fromObject({
-          gameUnit: unitMove.unit,
-          unit: matchingUnit,
-        })
-        if (unitMove.reason.unit) {
-          const reasonUnit = resolvedUnits.find((unit) => unit.id === unitMove.reason.unit?.unit.toString())
-          if (!reasonUnit) {
-            const message = `Could not find reason unit "${unitMove.reason.unit?.unit}"`
-            MoveResolver.logger.error(`${message}, move: "${JSON.stringify(move)}"`)
-            throw Error(`${message}.`)
-          }
-          reasonDeckUnit = await DeckUnitResolver.fromObject({
-            deckUnit: unitMove.reason.unit,
-            unit: reasonUnit,
-          })
-        }
-        if (unitMove.source.user) {
-          sourceUser = resolvedUsers.find((user) => user.id === unitMove.source.user?.toString())
-          if (!sourceUser) {
-            const message = `Could not find source user "${unitMove.source.user}"`
-            MoveResolver.logger.error(`${message}, move: "${JSON.stringify(move)}"`)
-            throw Error(`${message}.`)
-          }
-        }
-      }
-
       let leader: Leader | undefined = undefined
       if (move.type === MoveType.Leader) {
         const leaderMove = move as MoveLeaderDbObject
@@ -193,10 +170,9 @@ export default class MoveResolver {
       resolvedMoves.push(
         await MoveResolver.fromObject({
           move,
-          gameUnit,
           leader,
-          sourceUser,
-          reasonDeckUnit,
+          units: resolvedUnits,
+          users: resolvedUsers,
         })
       )
     }

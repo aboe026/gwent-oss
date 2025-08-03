@@ -74,11 +74,20 @@ export default class PlayerRoundResolver {
    * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
    * @returns The resolved PlayerRound array matching the GraphQL schema definition.
    */
-  static async fromArray({ rounds, users }: { rounds: PlayerRoundDbObject[]; users?: User[] }): Promise<PlayerRound[]> {
-    const { units, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+  static async fromArray({
+    rounds,
+    users,
+    units,
+  }: {
+    rounds: PlayerRoundDbObject[]
+    users?: User[]
+    units?: Unit[]
+  }): Promise<PlayerRound[]> {
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
       presolvedUsers: users,
+      presolvedUnits: units,
     })
 
     const resolvedPlayerRounds: PlayerRound[] = []
@@ -86,7 +95,7 @@ export default class PlayerRoundResolver {
       resolvedPlayerRounds.push(
         await PlayerRoundResolver.fromObject({
           round,
-          units,
+          units: resolvedUnits,
           users: resolvedUsers,
         })
       )
