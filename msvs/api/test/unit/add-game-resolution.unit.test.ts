@@ -1,8 +1,11 @@
+import { ObjectId } from 'mongodb'
+
 import AddGameResolution from '../../src/graphql/resolvers/mutations/add-game/add-game-resolution'
 import EventManager from '../../src/graphql/event-manager'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import { PubSubEvents } from '@gwent/constants'
 import TestUtil from '../util/test-util'
+import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('add-game-resolution', () => {
   it('returns resolved game', async () => {
@@ -17,12 +20,16 @@ describe('add-game-resolution', () => {
 
 async function testAddGameResolution({ traceEnabled }: { traceEnabled?: boolean }) {
   const logPrefix = 'log-prefix'
-  const game = TestUtil.getDbGame({})
+  const creator = TestUtil.getUser({})
+  const game = TestUtil.getDbGame({
+    creator: new ObjectId(creator.id),
+  })
   const opponents = [TestUtil.getUser({})]
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
   })
   const gameResolverFromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
+  const userFromIdSpy = jest.spyOn(UserResolver, 'fromId').mockResolvedValue(creator)
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   AddGameResolution['logger'] = {
@@ -35,6 +42,7 @@ async function testAddGameResolution({ traceEnabled }: { traceEnabled?: boolean 
       game,
       logPrefix,
       opponents,
+      creatorId: new ObjectId(creator.id),
     })
   ).resolves.toEqual(resolvedGame)
 
@@ -42,10 +50,11 @@ async function testAddGameResolution({ traceEnabled }: { traceEnabled?: boolean 
     [
       {
         game,
-        users: opponents,
+        users: [...opponents, creator],
       },
     ],
   ])
+  expect(userFromIdSpy.mock.calls).toEqual([[new ObjectId(creator.id)]])
   expect(publishSpy.mock.calls).toEqual([
     [
       PubSubEvents.GameAdded,

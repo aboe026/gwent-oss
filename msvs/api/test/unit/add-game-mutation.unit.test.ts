@@ -112,6 +112,7 @@ async function testAddGameMutation({
               game,
               logPrefix,
               opponents: [opponent],
+              creatorId: user._id,
             },
           ],
         ]
