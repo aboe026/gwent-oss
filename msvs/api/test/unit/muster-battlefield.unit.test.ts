@@ -888,11 +888,6 @@ describe('muster-battlefield', () => {
       const musterableUnit = TestUtil.getDbUnit({
         combats: [Combat.Close],
       })
-      const impact = TestUtil.getDbImpact({
-        unit: TestUtil.getDbGameUnit({
-          id: musterableUnit._id,
-        }),
-      })
       await testMusterBattlefield({
         logPrefix,
         game,

@@ -107,7 +107,6 @@ export default class GameResolver {
 
     const resolvedGames: Game[] = []
     for (const game of games) {
-      const playerIds = game.players.map((player) => player.user.toString())
       resolvedGames.push(
         await GameResolver.fromObject({
           game,

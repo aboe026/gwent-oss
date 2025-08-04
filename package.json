@@ -23,7 +23,7 @@
     "lint-node": "yarn g:lint",
     "lint-node-fix": "yarn g:lint-fix",
     "g:coverage-view": "yarn g:ts-node $PROJECT_CWD/scripts/open-in-browser.ts $INIT_CWD/coverage/unit/lcov-report/index.html",
-    "g:eslint": "cd $INIT_CWD && eslint --config $PROJECT_CWD/.eslintrc.json",
+    "g:eslint": "cd $INIT_CWD && eslint --config $PROJECT_CWD/.eslint.config.ts",
     "g:jest": "cd $INIT_CWD && jest --config $PROJECT_CWD/jest.config.ts --rootDir=$INIT_CWD",
     "g:lint": "yarn g:eslint --config $PROJECT_CWD/.eslint.config.ts $INIT_CWD && yarn g:prettier --check $INIT_CWD",
     "g:lint-fix": "yarn g:eslint --config $PROJECT_CWD/.eslint.config.ts --fix $INIT_CWD && yarn g:prettier --write $INIT_CWD",

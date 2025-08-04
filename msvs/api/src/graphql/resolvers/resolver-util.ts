@@ -13,7 +13,6 @@ import {
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../database/stores/game-store'
-import { getUniqueItems } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import { MoveType, RequestedFields } from '@gwent/graphql-schema'
 import { NOT_AUTHENTICATED_MESSAGE, REDACTED } from '@gwent/constants'

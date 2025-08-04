@@ -4,7 +4,6 @@ import {
   EffectDbObject,
   GameDbObject,
   ImpactDbObject,
-  GameUnitOrigin,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import ScorchBattlefield from './scorch-battlefield'

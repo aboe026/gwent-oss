@@ -668,24 +668,24 @@ async function testFromArray({
   const units = [TestUtil.getUnit({})]
   const unitsFromIdsSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue(units)
   const playerRoundFromObjectSpy = jest.spyOn(PlayerRoundResolver, 'fromObject')
-  let resolvedRounds: PlayerRound[] = []
+  const resolvedRounds: PlayerRound[] = []
   for (const round of rounds) {
     const resolvedRound: PlayerRound = {
       close: {
-        score: 0,
+        score: round.close.score,
         units: [],
       },
       ranged: {
-        score: 0,
+        score: round.ranged.score,
         units: [],
       },
       siege: {
-        score: 0,
+        score: round.siege.score,
         units: [],
       },
       moves: [],
       passed: false,
-      score: 0,
+      score: round.score,
     }
     playerRoundFromObjectSpy.mockResolvedValueOnce(resolvedRound)
     resolvedRounds.push(resolvedRound)
