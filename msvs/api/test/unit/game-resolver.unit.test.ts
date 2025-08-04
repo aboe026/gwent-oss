@@ -1,172 +1,410 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, Game, GamePlayer, User } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
+import { Combat, Game, GamePlayer, GameStatus, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import GameStore from '../../src/database/stores/game-store'
+import { MoveType } from '@gwent/graphql-schema'
+import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
-import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 import Verifier from '../../src/util/verifier'
 
 describe('game-resolver', () => {
   describe('fromObject', () => {
-    it('returns resolved object if nothing provided', async () => {
-      const gameId = new ObjectId()
-      const user = TestUtil.getUser({})
-      const victor = TestUtil.getUser({})
-      const players = [
-        TestUtil.getDbGamePlayer({
-          user: user.id,
-        }),
-        TestUtil.getDbGamePlayer({
-          user: victor.id,
-        }),
-      ]
-      await testResolveFromObject({
-        game: TestUtil.getDbGame({
-          id: gameId,
-          creator: user.id,
-          players,
-          victors: [victor.id],
-        }),
-        resolvedUsers: [user, victor],
-        resolvedVictors: [victor],
-        resolvedGamePlayers: [
-          TestUtil.getGamePlayer({
-            user,
+    it('throws error if creator not found', async () => {
+      const game = TestUtil.getDbGame({})
+      await testFromObject({
+        game: game,
+        expected: Error(`Could not find creator "${game.creator}" in resolved users`),
+        players: [],
+        resolvedUsers: [],
+      })
+    })
+    it('throws error if turn player not found', async () => {
+      const game = TestUtil.getDbGame({
+        turn: new ObjectId(),
+      })
+      await testFromObject({
+        game: game,
+        expected: Error(`Could not find turn "${game.turn}" in resolved players`),
+        players: [],
+        resolvedUsers: [
+          TestUtil.getUser({
+            id: game.creator,
           }),
-        ],
-        userResolverCalls: [[[user.id, victor.id]]],
-        gamePlayerResolverCalls: [
-          [
-            {
-              players,
-              users: [user, victor],
-              gameStatus: GameStatus.Decking,
-            },
-          ],
         ],
       })
     })
-    it('returns resolved object if everything provided', async () => {
-      const gameId = new ObjectId()
-      const user = TestUtil.getUser({})
-      const victor = TestUtil.getUser({})
-      const players = [
-        TestUtil.getDbGamePlayer({
-          user: user.id,
-        }),
-        TestUtil.getDbGamePlayer({
-          user: victor.id,
-        }),
-      ]
-      await testResolveFromObject({
-        game: TestUtil.getDbGame({
-          id: gameId,
-          creator: user.id,
-          players,
-          turn: user.id,
-          victors: [victor.id],
-          weather: [Combat.Close, Combat.Ranged],
-        }),
-        creator: user,
-        users: [victor],
-        resolvedGamePlayers: [
-          TestUtil.getGamePlayer({
-            user,
+    it('throws error if only victor not found', async () => {
+      const game = TestUtil.getDbGame({
+        victors: [new ObjectId()],
+      })
+      await testFromObject({
+        game: game,
+        expected: Error(`Could not find victor "${game.victors[0]}" in resolved users`),
+        players: [],
+        resolvedUsers: [
+          TestUtil.getUser({
+            id: game.creator,
           }),
-        ],
-        gamePlayerResolverCalls: [
-          [
-            {
-              players: players,
-              users: [user, victor],
-              gameStatus: GameStatus.Decking,
-            },
-          ],
         ],
       })
     })
+    it('throws error if first of many victors not found', async () => {
+      const game = TestUtil.getDbGame({
+        victors: [new ObjectId(), new ObjectId()],
+      })
+      await testFromObject({
+        game: game,
+        expected: Error(`Could not find victor "${game.victors[0]}" in resolved users`),
+        players: [],
+        resolvedUsers: [
+          TestUtil.getUser({
+            id: game.creator,
+          }),
+          TestUtil.getUser({
+            id: game.victors[1],
+          }),
+        ],
+      })
+    })
+    it('throws error if last of many victors not found', async () => {
+      const game = TestUtil.getDbGame({
+        victors: [new ObjectId(), new ObjectId()],
+      })
+      await testFromObject({
+        game: game,
+        expected: Error(`Could not find victor "${game.victors[1]}" in resolved users`),
+        players: [],
+        resolvedUsers: [
+          TestUtil.getUser({
+            id: game.creator,
+          }),
+          TestUtil.getUser({
+            id: game.victors[0],
+          }),
+        ],
+      })
+    })
+    it('returns game without turn', async () => {
+      const users = [TestUtil.getUser({})]
+      const players = [TestUtil.getGamePlayer({}), TestUtil.getGamePlayer({})]
+      const game = TestUtil.getDbGame({
+        creator: users[0].id,
+        players: [
+          TestUtil.getDbGamePlayer({
+            user: players[0].user.id,
+          }),
+          TestUtil.getDbGamePlayer({
+            user: players[1].user.id,
+          }),
+        ],
+      })
+      // TODO: add rounds/moves to get full coverage
+      await testFromObject({
+        game: game,
+        expected: {
+          config: game.config,
+          created: game.created,
+          creator: users[0],
+          id: game._id.toString(),
+          players,
+          round: game.round,
+          status: game.status as GameStatus,
+          turn: undefined,
+          updated: game.updated,
+          victors: [],
+          weather: game.weather.map((weather) => weather as Combat),
+        },
+        players,
+        resolvedUsers: users,
+      })
+    })
+    // TODO: more test cases
   })
   describe('fromArray', () => {
-    it('calls to fromObject with resolved users for single game', async () => {
-      const gameId = new ObjectId()
-      const creator = TestUtil.getUser({})
-      const player = TestUtil.getUser({})
-      const game = TestUtil.getDbGame({
-        id: gameId,
-        creator: creator.id,
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: player.id,
-          }),
-        ],
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                score: 0,
+                units: [TestUtil.getDbGameUnit({})],
+              },
+              ranged: {
+                score: 0,
+                units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              },
+              siege: {
+                score: 0,
+                units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              },
+              moves: [
+                TestUtil.getDbMove({
+                  type: MoveType.Unit,
+                  unit: TestUtil.getDbGameUnit({}),
+                }),
+                TestUtil.getDbMove({
+                  type: MoveType.Unit,
+                  unit: TestUtil.getDbGameUnit({}),
+                }),
+              ],
+            }),
+            TestUtil.getDbPlayerRound({
+              close: {
+                score: 0,
+                units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              },
+              ranged: {
+                score: 0,
+                units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              },
+              siege: {
+                score: 0,
+                units: [TestUtil.getDbGameUnit({})],
+              },
+              moves: [
+                TestUtil.getDbMove({
+                  type: MoveType.Unit,
+                  unit: TestUtil.getDbGameUnit({}),
+                }),
+              ],
+            }),
+          ],
+        }),
+        TestUtil.getDbGamePlayer({
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                score: 0,
+                units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              },
+              ranged: {
+                score: 0,
+                units: [TestUtil.getDbGameUnit({})],
+              },
+              siege: {
+                score: 0,
+                units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+              },
+              moves: [
+                TestUtil.getDbMove({
+                  type: MoveType.Unit,
+                  unit: TestUtil.getDbGameUnit({}),
+                }),
+                TestUtil.getDbMove({
+                  type: MoveType.Unit,
+                  unit: TestUtil.getDbGameUnit({}),
+                }),
+                TestUtil.getDbMove({
+                  type: MoveType.Unit,
+                  unit: TestUtil.getDbGameUnit({}),
+                }),
+              ],
+            }),
+          ],
+        }),
+      ],
+    })
+    it('returns empty array if given one', async () => {
+      await testFromArray({
+        games: [],
       })
-      await testResolveFromArray({
-        games: [game],
-        resolvedUsers: [creator, player],
-        resolvedGames: [
-          TestUtil.getGameFromDbGame({
-            game,
-          }),
-        ],
-        userResolverCalls: [[[creator.id, player.id]]],
-        gameResolverCalls: [
+    })
+    it('resolves single game', async () => {
+      const games = [game]
+      await testFromArray({
+        games: games,
+        resolveMoveUsersAndUnitsCalls: [
           [
             {
-              creator,
-              game,
-              users: [player],
+              moves: [
+                games[0].players[0].rounds[0].moves[0],
+                games[0].players[0].rounds[0].moves[1],
+                games[0].players[0].rounds[1].moves[0],
+                games[0].players[1].rounds[0].moves[0],
+                games[0].players[1].rounds[0].moves[1],
+                games[0].players[1].rounds[0].moves[2],
+              ],
+              gameUnits: [
+                games[0].players[0].rounds[0].close.units[0],
+                games[0].players[0].rounds[0].ranged.units[0],
+                games[0].players[0].rounds[0].ranged.units[1],
+                games[0].players[0].rounds[0].siege.units[0],
+                games[0].players[0].rounds[0].siege.units[1],
+                games[0].players[0].rounds[0].siege.units[2],
+                games[0].players[0].rounds[1].close.units[0],
+                games[0].players[0].rounds[1].close.units[1],
+                games[0].players[0].rounds[1].ranged.units[0],
+                games[0].players[0].rounds[1].ranged.units[1],
+                games[0].players[0].rounds[1].ranged.units[2],
+                games[0].players[0].rounds[1].siege.units[0],
+                games[0].players[1].rounds[0].close.units[0],
+                games[0].players[1].rounds[0].close.units[1],
+                games[0].players[1].rounds[0].close.units[2],
+                games[0].players[1].rounds[0].ranged.units[0],
+                games[0].players[1].rounds[0].siege.units[0],
+                games[0].players[1].rounds[0].siege.units[1],
+              ],
+              userIds: [games[0].players[0].user, games[0].players[1].user],
             },
           ],
         ],
       })
     })
-    it('calls to fromObject with resolved users for multiple games', async () => {
-      const creator = TestUtil.getUser({})
-      const player = TestUtil.getUser({})
-      const game1 = TestUtil.getDbGame({
-        creator: creator.id,
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: player.id,
-          }),
-        ],
-      })
-      const game2 = TestUtil.getDbGame({
-        creator: creator.id,
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: player.id,
-          }),
-        ],
-      })
-      await testResolveFromArray({
-        games: [game1, game2],
-        resolvedUsers: [creator, player],
-        resolvedGames: [
-          TestUtil.getGameFromDbGame({
-            game: game1,
-          }),
-          TestUtil.getGameFromDbGame({
-            game: game2,
-          }),
-        ],
-        userResolverCalls: [[[creator.id, player.id]]],
-        gameResolverCalls: [
-          [
-            {
-              creator,
-              game: game1,
-              users: [player],
-            },
+    it('resolves multiple games', async () => {
+      const games = [
+        game,
+        TestUtil.getDbGame({
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                  },
+                  ranged: {
+                    score: 0,
+                    units: [TestUtil.getDbGameUnit({})],
+                  },
+                  siege: {
+                    score: 0,
+                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                  },
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: TestUtil.getDbGameUnit({}),
+                    }),
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: TestUtil.getDbGameUnit({}),
+                    }),
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: TestUtil.getDbGameUnit({}),
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [TestUtil.getDbGameUnit({})],
+                  },
+                  ranged: {
+                    score: 0,
+                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                  },
+                  siege: {
+                    score: 0,
+                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                  },
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: TestUtil.getDbGameUnit({}),
+                    }),
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: TestUtil.getDbGameUnit({}),
+                    }),
+                  ],
+                }),
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                  },
+                  ranged: {
+                    score: 0,
+                    units: [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})],
+                  },
+                  siege: {
+                    score: 0,
+                    units: [TestUtil.getDbGameUnit({})],
+                  },
+                  moves: [
+                    TestUtil.getDbMove({
+                      type: MoveType.Unit,
+                      unit: TestUtil.getDbGameUnit({}),
+                    }),
+                  ],
+                }),
+              ],
+            }),
           ],
+        }),
+      ]
+      await testFromArray({
+        games: games,
+        resolveMoveUsersAndUnitsCalls: [
           [
             {
-              creator,
-              game: game2,
-              users: [player],
+              moves: [
+                games[0].players[0].rounds[0].moves[0],
+                games[0].players[0].rounds[0].moves[1],
+                games[0].players[0].rounds[1].moves[0],
+                games[0].players[1].rounds[0].moves[0],
+                games[0].players[1].rounds[0].moves[1],
+                games[0].players[1].rounds[0].moves[2],
+                games[1].players[0].rounds[0].moves[0],
+                games[1].players[0].rounds[0].moves[1],
+                games[1].players[0].rounds[0].moves[2],
+                games[1].players[1].rounds[0].moves[0],
+                games[1].players[1].rounds[0].moves[1],
+                games[1].players[1].rounds[1].moves[0],
+              ],
+              gameUnits: [
+                games[0].players[0].rounds[0].close.units[0],
+                games[0].players[0].rounds[0].ranged.units[0],
+                games[0].players[0].rounds[0].ranged.units[1],
+                games[0].players[0].rounds[0].siege.units[0],
+                games[0].players[0].rounds[0].siege.units[1],
+                games[0].players[0].rounds[0].siege.units[2],
+                games[0].players[0].rounds[1].close.units[0],
+                games[0].players[0].rounds[1].close.units[1],
+                games[0].players[0].rounds[1].ranged.units[0],
+                games[0].players[0].rounds[1].ranged.units[1],
+                games[0].players[0].rounds[1].ranged.units[2],
+                games[0].players[0].rounds[1].siege.units[0],
+                games[0].players[1].rounds[0].close.units[0],
+                games[0].players[1].rounds[0].close.units[1],
+                games[0].players[1].rounds[0].close.units[2],
+                games[0].players[1].rounds[0].ranged.units[0],
+                games[0].players[1].rounds[0].siege.units[0],
+                games[0].players[1].rounds[0].siege.units[1],
+                games[1].players[0].rounds[0].close.units[0],
+                games[1].players[0].rounds[0].close.units[1],
+                games[1].players[0].rounds[0].close.units[2],
+                games[1].players[0].rounds[0].ranged.units[0],
+                games[1].players[0].rounds[0].siege.units[0],
+                games[1].players[0].rounds[0].siege.units[1],
+                games[1].players[1].rounds[0].close.units[0],
+                games[1].players[1].rounds[0].ranged.units[0],
+                games[1].players[1].rounds[0].ranged.units[1],
+                games[1].players[1].rounds[0].siege.units[0],
+                games[1].players[1].rounds[0].siege.units[1],
+                games[1].players[1].rounds[0].siege.units[2],
+                games[1].players[1].rounds[1].close.units[0],
+                games[1].players[1].rounds[1].close.units[1],
+                games[1].players[1].rounds[1].ranged.units[0],
+                games[1].players[1].rounds[1].ranged.units[1],
+                games[1].players[1].rounds[1].ranged.units[2],
+                games[1].players[1].rounds[1].siege.units[0],
+              ],
+              userIds: [
+                games[0].players[0].user,
+                games[0].players[1].user,
+                games[1].players[0].user,
+                games[1].players[1].user,
+              ],
             },
           ],
         ],
@@ -175,13 +413,13 @@ describe('game-resolver', () => {
   })
   describe('fromId', () => {
     it('throws error if verifyObjects throws error', async () => {
-      await testResolveById({
+      await testFromId({
         verifyObjectsResponse: Error(`Could not find games "["id"]" to resolve.`),
       })
     })
     it('returns resolved game if getById returns game', async () => {
       const game = TestUtil.getDbGame({})
-      await testResolveById({
+      await testFromId({
         game,
         resolvedGame: TestUtil.getGameFromDbGame({
           game,
@@ -191,97 +429,110 @@ describe('game-resolver', () => {
   })
 })
 
-async function testResolveFromObject({
-  creator,
+async function testFromObject({
   game,
   users,
-  resolvedUsers = [],
-  resolvedGamePlayers = [],
-  resolvedVictors,
-  userResolverCalls = [[[]]],
-  gamePlayerResolverCalls = [],
+  units,
+  resolvedUsers,
+  players = [],
+  expected,
 }: {
   game: GameDbObject
-  creator?: User
   users?: User[]
-  resolvedUsers?: User[]
-  resolvedGamePlayers?: GamePlayer[]
-  resolvedVictors?: User[]
-  userResolverCalls?: any[][]
-  gamePlayerResolverCalls?: any[][]
+  units?: Unit[]
+  resolvedUsers: User[]
+  players: GamePlayer[]
+  expected: Game | Error
 }) {
-  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue(resolvedUsers)
-  const gamePlayerResolverSpy = jest.spyOn(GamePlayerResolver, 'fromArray').mockResolvedValue(resolvedGamePlayers)
-  const victors: User[] = []
-  if (resolvedVictors) {
-    victors.push(...resolvedVictors)
-  } else if (resolvedUsers && resolvedUsers.length > 0) {
-    victors.push(resolvedUsers[1])
-  } else if (users) {
-    victors.push(...users)
+  const resolvedUnits = [TestUtil.getUnit({})]
+  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+    users: resolvedUsers,
+    units: resolvedUnits,
+  })
+  const gamePlayerResolverSpy = jest.spyOn(GamePlayerResolver, 'fromArray').mockResolvedValue(players)
+
+  const promise = GameResolver.fromObject({
+    game,
+    units,
+    users,
+  })
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
   }
 
-  await expect(
-    GameResolver.fromObject({
-      game,
-      creator,
-      users,
-    })
-  ).resolves.toEqual({
-    config: {
-      lives: 2,
-    },
-    created: game.created,
-    creator: creator || resolvedUsers[0],
-    id: game._id.toString(),
-    players: resolvedGamePlayers,
-    round: game.round,
-    status: game.status,
-    updated: game.updated,
-    turn: game.turn
-      ? resolvedGamePlayers.find((player) => player.user.id.toString() === game.turn?.toString())
-      : undefined,
-    victors,
-    weather: game.weather,
-  })
-
-  expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)
-  expect(gamePlayerResolverSpy.mock.calls).toEqual(gamePlayerResolverCalls)
+  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual([
+    [
+      {
+        moves: game.players
+          .map((player) => player.rounds)
+          .flat()
+          .map((round) => round.moves)
+          .flat(),
+        gameUnits: game.players
+          .map((player) => player.rounds)
+          .flat()
+          .map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units])
+          .flat(),
+        userIds: game.players.map((player) => player.user),
+        presolvedUnits: units,
+        presolvedUsers: users,
+      },
+    ],
+  ])
+  expect(gamePlayerResolverSpy.mock.calls).toEqual([
+    [
+      {
+        players: game.players,
+        gameStatus: game.status,
+        users: resolvedUsers,
+        units: resolvedUnits,
+      },
+    ],
+  ])
 }
 
-async function testResolveFromArray({
+async function testFromArray({
   games,
-  resolvedUsers = [],
-  resolvedGames = [],
-  error,
-  userResolverCalls = [],
-  gameResolverCalls = [],
+  resolveMoveUsersAndUnitsCalls = [],
 }: {
   games: GameDbObject[]
-  resolvedUsers?: User[]
-  resolvedGames?: Game[]
-  error?: string
-  userResolverCalls?: any[][]
-  gameResolverCalls?: any[][]
+  resolveMoveUsersAndUnitsCalls?: any[][]
 }) {
-  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue(resolvedUsers)
+  const units = [TestUtil.getUnit({})]
+  const users = [TestUtil.getUser({})]
+  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+    units,
+    users,
+  })
   const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject')
-  for (const resolvedGame of resolvedGames) {
-    fromObjectSpy.mockResolvedValueOnce(resolvedGame)
+  const resolvedGames: Game[] = []
+  for (const game of games) {
+    const resoledGame = TestUtil.getGameFromDbGame({
+      game,
+    })
+    fromObjectSpy.mockResolvedValueOnce(resoledGame)
+    resolvedGames.push(resoledGame)
   }
 
-  const promise = GameResolver.fromArray(games)
-  if (error) {
-    await expect(promise).rejects.toThrow(Error(error))
-  } else {
-    await expect(promise).resolves.toEqual(resolvedGames)
-  }
+  await expect(GameResolver.fromArray(games)).resolves.toEqual(resolvedGames)
 
-  expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)
-  expect(fromObjectSpy.mock.calls).toEqual(gameResolverCalls)
+  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual(resolveMoveUsersAndUnitsCalls)
+  expect(fromObjectSpy.mock.calls).toEqual(
+    games.map((game) => {
+      return [
+        {
+          game,
+          users,
+          units,
+        },
+      ]
+    })
+  )
 }
 
-async function testResolveById({
+async function testFromId({
   game,
   resolvedGame,
   verifyObjectsResponse,

@@ -173,7 +173,7 @@ export default class TestUtil {
     row,
   }: {
     artStyle?: number
-    id?: ObjectId
+    id?: ObjectId | string
     effectiveStrength?: number | null
     effects?: GameUnitEffectDbObject[]
     row?: Combat

@@ -50,7 +50,7 @@ export default class GameResolver {
 
     const creator = resolvedUsers.find((user) => user.id === game.creator.toString())
     if (!creator) {
-      throw Error(`Could not find creator "${creator}" in resolved users`)
+      throw Error(`Could not find creator "${game.creator}" in resolved users`)
     }
     let turn: GamePlayer | undefined = undefined
     if (game.turn) {
@@ -91,6 +91,10 @@ export default class GameResolver {
    * @returns The resolved Game array matching the GraphQL schema definition.
    */
   static async fromArray(games: GameDbObject[]): Promise<Game[]> {
+    if (games.length === 0) {
+      return []
+    }
+
     const rounds = games
       .map((game) => game.players)
       .flat()
