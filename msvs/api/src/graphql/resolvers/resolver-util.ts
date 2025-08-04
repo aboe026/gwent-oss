@@ -211,10 +211,7 @@ export default class ResolverUtil {
     gameUnits?: GameUnitDbObject[]
     presolvedUsers?: User[]
     presolvedUnits?: Unit[]
-  }): Promise<{
-    users: User[]
-    units: Unit[]
-  }> {
+  }): Promise<MoveUsersAndUnits> {
     const impactsToResolve: ImpactDbObject[] = impacts || []
     let resolvedUsers: User[] = presolvedUsers || []
     let resolvedUnits: Unit[] = presolvedUnits || []
@@ -304,6 +301,11 @@ export default class ResolverUtil {
       users: resolvedUsers,
     }
   }
+}
+
+export interface MoveUsersAndUnits {
+  users: User[]
+  units: Unit[]
 }
 
 export interface GamePlayerResponse {
