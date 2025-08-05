@@ -109,6 +109,10 @@ export default class GamePlayerResolver {
     units?: Unit[]
     gameStatus: GameStatus
   }): Promise<GamePlayer[]> {
+    if (players.length === 0) {
+      return []
+    }
+
     const rounds = players
       .flat()
       .map((player) => player.rounds)
@@ -137,7 +141,13 @@ export default class GamePlayerResolver {
       let leader: Leader | undefined
       if (player.deck.from) {
         faction = factions.find((faction) => faction.id === player.deck.from?.faction.toString())
+        if (!faction) {
+          throw Error(`Could not find faction "${player.deck.from?.faction}" in resolved factions`)
+        }
         leader = leaders.find((leader) => leader.id === player.deck.from?.leader.toString())
+        if (!leader) {
+          throw Error(`Could not find leader "${player.deck.from?.leader}" in resolved leaders`)
+        }
       }
 
       resolvedPlayers.push(
