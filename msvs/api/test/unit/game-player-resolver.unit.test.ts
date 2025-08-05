@@ -9,7 +9,6 @@ import { MoveType } from '@gwent/graphql-schema'
 import PlayerRoundResolver from '../../src/graphql/resolvers/types/player-round-resolver'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
-import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('game-player-resolver', () => {
   describe('fromObject', () => {
@@ -582,13 +581,14 @@ describe('game-player-resolver', () => {
 async function testResolveFromObject({
   player,
   users,
+  units,
   faction,
   leader,
   gameStatus,
   user,
   resolvedFaction,
   resolvedLeader,
-  resolvedUsers,
+  resolvedUsers = [],
   error,
   factionResolverCalls = [],
   leaderResolverCalls = [],
@@ -597,6 +597,7 @@ async function testResolveFromObject({
 }: {
   player: GamePlayerDbObject
   users?: User[]
+  units?: Unit[]
   faction?: Faction | undefined
   leader?: Leader | undefined
   gameStatus: GameStatus
@@ -610,6 +611,7 @@ async function testResolveFromObject({
   userResolverCalls?: any[][]
   errorCalls?: any[][]
 }) {
+  const resolvedUnits = [TestUtil.getUnit({})]
   const factionResolverSpy = jest.spyOn(FactionResolver, 'fromId')
   if (resolvedFaction) {
     factionResolverSpy.mockResolvedValue(resolvedFaction)
@@ -618,10 +620,10 @@ async function testResolveFromObject({
   if (resolvedLeader) {
     leaderResolverSpy.mockResolvedValue(resolvedLeader)
   }
-  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds')
-  if (resolvedUsers) {
-    userResolverSpy.mockResolvedValue(resolvedUsers)
-  }
+  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+    units: units || resolvedUnits,
+    users: users || resolvedUsers,
+  })
   const playerRoundsFromArraySpy = jest.spyOn(PlayerRoundResolver, 'fromArray').mockResolvedValue([])
   const errorSpy = jest.fn().mockImplementation()
   GamePlayerResolver['logger'] = {
@@ -659,7 +661,22 @@ async function testResolveFromObject({
 
   expect(factionResolverSpy.mock.calls).toEqual(factionResolverCalls)
   expect(leaderResolverSpy.mock.calls).toEqual(leaderResolverCalls)
-  expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)
+  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual([
+    [
+      {
+        moves: player.rounds
+          .flat()
+          .map((round) => round.moves)
+          .flat(),
+        gameUnits: player.rounds
+          .flat()
+          .map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units])
+          .flat(),
+        presolvedUsers: users,
+        presolvedUnits: units,
+      },
+    ],
+  ])
   expect(playerRoundsFromArraySpy.mock.calls).toEqual(
     error
       ? []
@@ -668,6 +685,7 @@ async function testResolveFromObject({
             {
               rounds: player.rounds,
               users: users || resolvedUsers,
+              units: units || resolvedUnits,
             },
           ],
         ]

@@ -88,6 +88,7 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
+- func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - for "MoveUnit" type, have "reason" field
 
   ```
