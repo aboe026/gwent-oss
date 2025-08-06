@@ -77,6 +77,7 @@ Existing problems in the codebase that need to be fixed.
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
+  - add functional tests which spy on database store "read" method to ensure requests "batched" properly
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
 - Change schema.ts to schema.gql
