@@ -9,7 +9,6 @@ import { MoveType } from '@gwent/graphql-schema'
 import PlayerRoundResolver from '../../src/graphql/resolvers/types/player-round-resolver'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
-import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('game-player-resolver', () => {
   describe('fromObject', () => {
@@ -48,7 +47,6 @@ describe('game-player-resolver', () => {
         }),
         resolvedUsers: [],
         error: `${message}.`,
-        userResolverCalls: [[[user.id.toString()]]],
         errorCalls: [[`${message}, resolvedUsers: "[]"`]],
       })
     })
@@ -149,7 +147,6 @@ describe('game-player-resolver', () => {
             },
           ],
         ],
-        userResolverCalls: [[[user1.id, user2.id]]],
       })
     })
     it('reaches out to resolvers if status not decking chosen and everything provided', async () => {
@@ -202,7 +199,6 @@ describe('game-player-resolver', () => {
         users: [user1, user2],
         factionResolverCalls: [],
         leaderResolverCalls: [],
-        userResolverCalls: [],
       })
     })
   })
@@ -586,17 +582,19 @@ async function testResolveFromObject({
   leader,
   gameStatus,
   user,
+  units,
   resolvedFaction,
   resolvedLeader,
-  resolvedUsers,
+  resolvedUsers = [],
+  resolvedUnits = [TestUtil.getUnit({})],
   error,
   factionResolverCalls = [],
   leaderResolverCalls = [],
-  userResolverCalls = [],
   errorCalls = [],
 }: {
   player: GamePlayerDbObject
   users?: User[]
+  units?: Unit[]
   faction?: Faction | undefined
   leader?: Leader | undefined
   gameStatus: GameStatus
@@ -604,10 +602,10 @@ async function testResolveFromObject({
   resolvedFaction?: Faction
   resolvedLeader?: Leader
   resolvedUsers?: User[]
+  resolvedUnits?: Unit[]
   error?: string
   factionResolverCalls?: any[][]
   leaderResolverCalls?: any[][]
-  userResolverCalls?: any[][]
   errorCalls?: any[][]
 }) {
   const factionResolverSpy = jest.spyOn(FactionResolver, 'fromId')
@@ -618,10 +616,10 @@ async function testResolveFromObject({
   if (resolvedLeader) {
     leaderResolverSpy.mockResolvedValue(resolvedLeader)
   }
-  const userResolverSpy = jest.spyOn(UserResolver, 'fromIds')
-  if (resolvedUsers) {
-    userResolverSpy.mockResolvedValue(resolvedUsers)
-  }
+  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+    units: units || resolvedUnits,
+    users: users || resolvedUsers,
+  })
   const playerRoundsFromArraySpy = jest.spyOn(PlayerRoundResolver, 'fromArray').mockResolvedValue([])
   const errorSpy = jest.fn().mockImplementation()
   GamePlayerResolver['logger'] = {
@@ -659,7 +657,22 @@ async function testResolveFromObject({
 
   expect(factionResolverSpy.mock.calls).toEqual(factionResolverCalls)
   expect(leaderResolverSpy.mock.calls).toEqual(leaderResolverCalls)
-  expect(userResolverSpy.mock.calls).toEqual(userResolverCalls)
+  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual([
+    [
+      {
+        moves: player.rounds
+          .flat()
+          .map((round) => round.moves)
+          .flat(),
+        gameUnits: player.rounds
+          .flat()
+          .map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units])
+          .flat(),
+        presolvedUsers: users,
+        presolvedUnits: units,
+      },
+    ],
+  ])
   expect(playerRoundsFromArraySpy.mock.calls).toEqual(
     error
       ? []
@@ -668,6 +681,7 @@ async function testResolveFromObject({
             {
               rounds: player.rounds,
               users: users || resolvedUsers,
+              units: units || resolvedUnits,
             },
           ],
         ]

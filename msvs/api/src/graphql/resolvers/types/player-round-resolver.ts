@@ -83,6 +83,10 @@ export default class PlayerRoundResolver {
     users?: User[]
     units?: Unit[]
   }): Promise<PlayerRound[]> {
+    if (rounds.length === 0) {
+      return []
+    }
+
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
