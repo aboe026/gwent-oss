@@ -29,8 +29,6 @@ import MoveResolver from '../../src/graphql/resolvers/types/move-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
-import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
-import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('move-resolver', () => {
   describe('fromObject', () => {
@@ -348,320 +346,6 @@ describe('move-resolver', () => {
     })
   })
   describe('fromArray', () => {
-    it('throws error if move unit not found', async () => {
-      const gameUnits = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
-      const userId = new ObjectId()
-      const leaderId = new ObjectId()
-      const unitMove1 = TestUtil.getDbMove({
-        type: MoveType.Unit,
-        unit: gameUnits[0],
-        reason: {
-          type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
-        },
-        source: {
-          origin: GameUnitOrigin.Hand,
-          user: userId,
-        },
-      })
-      const unitMove2 = TestUtil.getDbMove({
-        type: MoveType.Unit,
-        unit: gameUnits[0],
-        reason: {
-          type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
-        },
-        source: {
-          origin: GameUnitOrigin.Hand,
-          user: userId,
-        },
-      })
-      const unitMove3 = TestUtil.getDbMove({
-        type: MoveType.Unit,
-        unit: gameUnits[0],
-        reason: {
-          type: MoveReasonType.Deploy,
-        },
-        source: {
-          origin: GameUnitOrigin.Hand,
-        },
-      })
-      const leaderMove1 = TestUtil.getDbMove({
-        type: MoveType.Leader,
-        leaderId,
-      })
-      const leaderMove2 = TestUtil.getDbMove({
-        type: MoveType.Leader,
-        leaderId,
-      })
-      const resolvedUnits = [
-        TestUtil.getUnit({
-          id: gameUnits[1].unit,
-        }),
-      ]
-      const resolvedUsers = [
-        TestUtil.getUser({
-          id: userId,
-        }),
-      ]
-      const resolvedLeaders = [
-        TestUtil.getLeader({
-          id: leaderId,
-        }),
-      ]
-      const resolvedGameUnit = TestUtil.getGameUnitFromDbGameUnit({
-        gameUnit: gameUnits[0],
-        unit: resolvedUnits[0],
-      })
-
-      const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
-        deckUnit: gameUnits[1],
-        unit: resolvedUnits[1],
-      })
-      const message = `Could not find move unit "${gameUnits[0].unit}"`
-      await testFromArray({
-        moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2],
-        resolvedUnits,
-        resolvedUsers,
-        resolvedLeaders,
-        gameUnits: [resolvedGameUnit],
-        deckUnits: [resolvedDeckUnit],
-        error: Error(`${message}.`),
-        unitsFromIdsCalls: [
-          [
-            {
-              ids: [gameUnits[0].unit.toString(), gameUnits[1].unit.toString()],
-            },
-          ],
-        ],
-        usersFromIdsCalls: [[[userId.toString()]]],
-        leadersFromIdsCalls: [
-          [
-            {
-              ids: [leaderId.toString()],
-            },
-          ],
-        ],
-        errorCalls: [[`${message}, move: "${JSON.stringify(unitMove1)}"`]],
-      })
-    })
-    it('throws error if reason unit not found', async () => {
-      const gameUnits = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
-      const userId = new ObjectId()
-      const leaderId = new ObjectId()
-      const unitMove1 = TestUtil.getDbMove({
-        type: MoveType.Unit,
-        unit: gameUnits[0],
-        reason: {
-          type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
-        },
-        source: {
-          origin: GameUnitOrigin.Hand,
-          user: userId,
-        },
-      })
-      const unitMove2 = TestUtil.getDbMove({
-        type: MoveType.Unit,
-        unit: gameUnits[0],
-        reason: {
-          type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
-        },
-        source: {
-          origin: GameUnitOrigin.Hand,
-          user: userId,
-        },
-      })
-      const unitMove3 = TestUtil.getDbMove({
-        type: MoveType.Unit,
-        unit: gameUnits[0],
-        reason: {
-          type: MoveReasonType.Deploy,
-        },
-        source: {
-          origin: GameUnitOrigin.Hand,
-        },
-      })
-      const leaderMove1 = TestUtil.getDbMove({
-        type: MoveType.Leader,
-        leaderId,
-      })
-      const leaderMove2 = TestUtil.getDbMove({
-        type: MoveType.Leader,
-        leaderId,
-      })
-      const resolvedUnits = [
-        TestUtil.getUnit({
-          id: gameUnits[0].unit,
-        }),
-      ]
-      const resolvedUsers = [
-        TestUtil.getUser({
-          id: userId,
-        }),
-      ]
-      const resolvedLeaders = [
-        TestUtil.getLeader({
-          id: leaderId,
-        }),
-      ]
-      const resolvedGameUnit = TestUtil.getGameUnitFromDbGameUnit({
-        gameUnit: gameUnits[0],
-        unit: resolvedUnits[0],
-      })
-
-      const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
-        deckUnit: gameUnits[1],
-        unit: resolvedUnits[1],
-      })
-      const message = `Could not find reason unit "${gameUnits[1].unit}"`
-      await testFromArray({
-        moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2],
-        resolvedUnits,
-        resolvedUsers,
-        resolvedLeaders,
-        gameUnits: [resolvedGameUnit],
-        deckUnits: [resolvedDeckUnit],
-        error: Error(`${message}.`),
-        unitsFromIdsCalls: [
-          [
-            {
-              ids: [gameUnits[0].unit.toString(), gameUnits[1].unit.toString()],
-            },
-          ],
-        ],
-        usersFromIdsCalls: [[[userId.toString()]]],
-        leadersFromIdsCalls: [
-          [
-            {
-              ids: [leaderId.toString()],
-            },
-          ],
-        ],
-        gameUnitFromObjectCalls: [
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-        ],
-        errorCalls: [[`${message}, move: "${JSON.stringify(unitMove1)}"`]],
-      })
-    })
-    it('throws error if source user not found', async () => {
-      const gameUnits = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
-      const userId = new ObjectId()
-      const leaderId = new ObjectId()
-      const unitMove1 = TestUtil.getDbMove({
-        type: MoveType.Unit,
-        unit: gameUnits[0],
-        reason: {
-          type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
-        },
-        source: {
-          origin: GameUnitOrigin.Hand,
-          user: userId,
-        },
-      })
-      const unitMove2 = TestUtil.getDbMove({
-        type: MoveType.Unit,
-        unit: gameUnits[0],
-        reason: {
-          type: MoveReasonType.Deploy,
-          unit: gameUnits[1],
-        },
-        source: {
-          origin: GameUnitOrigin.Hand,
-          user: userId,
-        },
-      })
-      const unitMove3 = TestUtil.getDbMove({
-        type: MoveType.Unit,
-        unit: gameUnits[0],
-        reason: {
-          type: MoveReasonType.Deploy,
-        },
-        source: {
-          origin: GameUnitOrigin.Hand,
-        },
-      })
-      const leaderMove1 = TestUtil.getDbMove({
-        type: MoveType.Leader,
-        leaderId,
-      })
-      const leaderMove2 = TestUtil.getDbMove({
-        type: MoveType.Leader,
-        leaderId,
-      })
-      const resolvedUnits = [
-        TestUtil.getUnit({
-          id: gameUnits[0].unit,
-        }),
-        TestUtil.getUnit({
-          id: gameUnits[1].unit,
-        }),
-      ]
-      const resolvedUsers = []
-      const resolvedLeaders = [
-        TestUtil.getLeader({
-          id: leaderId,
-        }),
-      ]
-      const resolvedGameUnit = TestUtil.getGameUnitFromDbGameUnit({
-        gameUnit: gameUnits[0],
-        unit: resolvedUnits[0],
-      })
-
-      const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
-        deckUnit: gameUnits[1],
-        unit: resolvedUnits[1],
-      })
-      const message = `Could not find source user "${userId}"`
-      await testFromArray({
-        moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2],
-        resolvedUnits,
-        resolvedUsers,
-        resolvedLeaders,
-        gameUnits: [resolvedGameUnit],
-        deckUnits: [resolvedDeckUnit],
-        error: Error(`${message}.`),
-        unitsFromIdsCalls: [
-          [
-            {
-              ids: [gameUnits[0].unit.toString(), gameUnits[1].unit.toString()],
-            },
-          ],
-        ],
-        usersFromIdsCalls: [[[userId.toString()]]],
-        leadersFromIdsCalls: [
-          [
-            {
-              ids: [leaderId.toString()],
-            },
-          ],
-        ],
-        gameUnitFromObjectCalls: [
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-        ],
-        deckUnitFromObjectCalls: [
-          [
-            {
-              deckUnit: gameUnits[1],
-              unit: resolvedUnits[1],
-            },
-          ],
-        ],
-        errorCalls: [[`${message}, move: "${JSON.stringify(unitMove1)}"`]],
-      })
-    })
     it('throws error if leader not found', async () => {
       const gameUnits = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
       const userId = new ObjectId()
@@ -721,31 +405,12 @@ describe('move-resolver', () => {
           id: userId,
         }),
       ]
-      const resolvedGameUnit = TestUtil.getGameUnitFromDbGameUnit({
-        gameUnit: gameUnits[0],
-        unit: resolvedUnits[0],
-      })
-
-      const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
-        deckUnit: gameUnits[1],
-        unit: resolvedUnits[1],
-      })
       const message = `Could not find move leader "${leaderId}"`
       await testFromArray({
         moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2],
         resolvedUnits,
         resolvedUsers,
-        gameUnits: [resolvedGameUnit],
-        deckUnits: [resolvedDeckUnit],
         error: Error(`${message}.`),
-        unitsFromIdsCalls: [
-          [
-            {
-              ids: [gameUnits[0].unit.toString(), gameUnits[1].unit.toString()],
-            },
-          ],
-        ],
-        usersFromIdsCalls: [[[userId.toString()]]],
         leadersFromIdsCalls: [
           [
             {
@@ -753,66 +418,29 @@ describe('move-resolver', () => {
             },
           ],
         ],
-        gameUnitFromObjectCalls: [
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-        ],
-        deckUnitFromObjectCalls: [
-          [
-            {
-              deckUnit: gameUnits[1],
-              unit: resolvedUnits[1],
-            },
-          ],
-          [
-            {
-              deckUnit: gameUnits[1],
-              unit: resolvedUnits[1],
-            },
-          ],
-        ],
         moveFromObjectCalls: [
           [
             {
               move: unitMove1,
-              gameUnit: resolvedGameUnit,
               leader: undefined,
-              sourceUser: resolvedUsers[0],
-              reasonDeckUnit: resolvedDeckUnit,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
               move: unitMove2,
-              gameUnit: resolvedGameUnit,
               leader: undefined,
-              sourceUser: resolvedUsers[0],
-              reasonDeckUnit: resolvedDeckUnit,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
               move: unitMove3,
-              gameUnit: resolvedGameUnit,
               leader: undefined,
-              sourceUser: undefined,
-              reasonDeckUnit: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
         ],
@@ -888,30 +516,11 @@ describe('move-resolver', () => {
           id: leaderId,
         }),
       ]
-      const resolvedGameUnit = TestUtil.getGameUnitFromDbGameUnit({
-        gameUnit: gameUnits[0],
-        unit: resolvedUnits[0],
-      })
-
-      const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
-        deckUnit: gameUnits[1],
-        unit: resolvedUnits[1],
-      })
       await testFromArray({
         moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2],
         resolvedUnits,
         resolvedUsers,
         resolvedLeaders,
-        gameUnits: [resolvedGameUnit],
-        deckUnits: [resolvedDeckUnit],
-        unitsFromIdsCalls: [
-          [
-            {
-              ids: [gameUnits[0].unit.toString(), gameUnits[1].unit.toString()],
-            },
-          ],
-        ],
-        usersFromIdsCalls: [[[userId.toString()]]],
         leadersFromIdsCalls: [
           [
             {
@@ -919,84 +528,45 @@ describe('move-resolver', () => {
             },
           ],
         ],
-        gameUnitFromObjectCalls: [
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-        ],
-        deckUnitFromObjectCalls: [
-          [
-            {
-              deckUnit: gameUnits[1],
-              unit: resolvedUnits[1],
-            },
-          ],
-          [
-            {
-              deckUnit: gameUnits[1],
-              unit: resolvedUnits[1],
-            },
-          ],
-        ],
         moveFromObjectCalls: [
           [
             {
               move: unitMove1,
-              gameUnit: resolvedGameUnit,
               leader: undefined,
-              sourceUser: resolvedUsers[0],
-              reasonDeckUnit: resolvedDeckUnit,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
               move: unitMove2,
-              gameUnit: resolvedGameUnit,
               leader: undefined,
-              sourceUser: resolvedUsers[0],
-              reasonDeckUnit: resolvedDeckUnit,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
               move: unitMove3,
-              gameUnit: resolvedGameUnit,
               leader: undefined,
-              sourceUser: undefined,
-              reasonDeckUnit: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
               move: leaderMove1,
-              gameUnit: undefined,
               leader: resolvedLeaders[0],
-              sourceUser: undefined,
-              reasonDeckUnit: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
               move: leaderMove1,
-              gameUnit: undefined,
               leader: resolvedLeaders[0],
-              sourceUser: undefined,
-              reasonDeckUnit: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
         ],
@@ -1066,24 +636,11 @@ describe('move-resolver', () => {
           id: leaderId,
         }),
       ]
-      const resolvedGameUnit = TestUtil.getGameUnitFromDbGameUnit({
-        gameUnit: gameUnits[0],
-        unit: resolvedUnits[0],
-      })
-
-      const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
-        deckUnit: gameUnits[1],
-        unit: resolvedUnits[1],
-      })
       await testFromArray({
         moves: [unitMove1, unitMove2, unitMove3, leaderMove1, leaderMove2],
         units: resolvedUnits,
         users: resolvedUsers,
         resolvedLeaders,
-        gameUnits: [resolvedGameUnit],
-        deckUnits: [resolvedDeckUnit],
-        unitsFromIdsCalls: [],
-        usersFromIdsCalls: [],
         leadersFromIdsCalls: [
           [
             {
@@ -1091,84 +648,45 @@ describe('move-resolver', () => {
             },
           ],
         ],
-        gameUnitFromObjectCalls: [
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-          [
-            {
-              gameUnit: gameUnits[0],
-              unit: resolvedUnits[0],
-            },
-          ],
-        ],
-        deckUnitFromObjectCalls: [
-          [
-            {
-              deckUnit: gameUnits[1],
-              unit: resolvedUnits[1],
-            },
-          ],
-          [
-            {
-              deckUnit: gameUnits[1],
-              unit: resolvedUnits[1],
-            },
-          ],
-        ],
         moveFromObjectCalls: [
           [
             {
               move: unitMove1,
-              gameUnit: resolvedGameUnit,
               leader: undefined,
-              sourceUser: resolvedUsers[0],
-              reasonDeckUnit: resolvedDeckUnit,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
               move: unitMove2,
-              gameUnit: resolvedGameUnit,
               leader: undefined,
-              sourceUser: resolvedUsers[0],
-              reasonDeckUnit: resolvedDeckUnit,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
               move: unitMove3,
-              gameUnit: resolvedGameUnit,
               leader: undefined,
-              sourceUser: undefined,
-              reasonDeckUnit: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
               move: leaderMove1,
-              gameUnit: undefined,
               leader: resolvedLeaders[0],
-              sourceUser: undefined,
-              reasonDeckUnit: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
           [
             {
-              move: leaderMove1,
-              gameUnit: undefined,
+              move: leaderMove2,
               leader: resolvedLeaders[0],
-              sourceUser: undefined,
-              reasonDeckUnit: undefined,
+              units: resolvedUnits,
+              users: resolvedUsers,
             },
           ],
         ],
@@ -1304,14 +822,8 @@ async function testFromArray({
   resolvedUnits = [],
   resolvedUsers = [],
   resolvedLeaders = [],
-  gameUnits = [],
-  deckUnits = [],
   error,
-  unitsFromIdsCalls = [],
-  usersFromIdsCalls = [],
   leadersFromIdsCalls = [],
-  gameUnitFromObjectCalls = [],
-  deckUnitFromObjectCalls = [],
   moveFromObjectCalls = [],
   errorCalls = [],
 }: {
@@ -1321,28 +833,16 @@ async function testFromArray({
   resolvedUnits?: Unit[]
   resolvedUsers?: User[]
   resolvedLeaders?: Leader[]
-  gameUnits?: GameUnit[]
-  deckUnits?: DeckUnit[]
   error?: Error
-  unitsFromIdsCalls?: any[][]
-  usersFromIdsCalls?: any[][]
   leadersFromIdsCalls?: any[][]
-  gameUnitFromObjectCalls?: any[][]
-  deckUnitFromObjectCalls?: any[][]
   moveFromObjectCalls?: any[][]
   errorCalls?: string[][]
 }) {
-  const unitsFromIdsSpy = jest.spyOn(UnitResolver, 'fromIds').mockResolvedValue(resolvedUnits)
-  const usersFromIdsSpy = jest.spyOn(UserResolver, 'fromIds').mockResolvedValue(resolvedUsers)
+  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+    units: units || resolvedUnits,
+    users: users || resolvedUsers,
+  })
   const leadersFromIdsSpy = jest.spyOn(LeaderResolver, 'fromIds').mockResolvedValue(resolvedLeaders)
-  const gameUnitFromObjectSpy = jest.spyOn(GameUnitResolver, 'fromObject')
-  for (const gameUnit of gameUnits) {
-    gameUnitFromObjectSpy.mockResolvedValueOnce(gameUnit)
-  }
-  const deckUnitFromObjectSpy = jest.spyOn(DeckUnitResolver, 'fromObject')
-  for (const deckUnit of deckUnits) {
-    deckUnitFromObjectSpy.mockResolvedValueOnce(deckUnit)
-  }
   const moveFromObjectSpy = jest.spyOn(MoveResolver, 'fromObject')
   const resolvedMoves: Move[] = []
   for (const move of moves) {
@@ -1377,11 +877,20 @@ async function testFromArray({
     await expect(promise).resolves.toEqual(resolvedMoves)
   }
 
-  expect(unitsFromIdsSpy.mock.calls).toEqual(unitsFromIdsCalls)
-  expect(usersFromIdsSpy.mock.calls).toEqual(usersFromIdsCalls)
+  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual(
+    moves.length === 0
+      ? []
+      : [
+          [
+            {
+              moves,
+              presolvedUnits: units,
+              presolvedUsers: users,
+            },
+          ],
+        ]
+  )
   expect(leadersFromIdsSpy.mock.calls).toEqual(leadersFromIdsCalls)
-  expect(gameUnitFromObjectSpy.mock.calls).toEqual(gameUnitFromObjectCalls)
-  expect(deckUnitFromObjectSpy.mock.calls).toEqual(deckUnitFromObjectCalls)
   expect(moveFromObjectSpy.mock.calls).toEqual(moveFromObjectCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

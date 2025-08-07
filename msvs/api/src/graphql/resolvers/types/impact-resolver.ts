@@ -32,7 +32,7 @@ export default class ImpactResolver {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
       impacts: [impact],
       presolvedUsers: users,
-      presolvedUnits: units ? units : undefined,
+      presolvedUnits: units,
     })
 
     const impactUnit = resolvedUnits.find((unit) => unit.id === impact.unit.unit.toString())
