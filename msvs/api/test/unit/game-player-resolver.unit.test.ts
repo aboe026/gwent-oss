@@ -578,11 +578,11 @@ describe('game-player-resolver', () => {
 async function testResolveFromObject({
   player,
   users,
+  units,
   faction,
   leader,
   gameStatus,
   user,
-  units,
   resolvedFaction,
   resolvedLeader,
   resolvedUsers = [],
