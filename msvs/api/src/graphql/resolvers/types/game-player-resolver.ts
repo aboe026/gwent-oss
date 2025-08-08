@@ -61,7 +61,7 @@ export default class GamePlayerResolver {
     }
 
     const rounds = player.rounds.flat()
-    const { users: resolvedUsers, units: resolvedUnits } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { users: resolvedUsers, units: resolvedUnits } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
       presolvedUsers: users,
@@ -119,7 +119,7 @@ export default class GamePlayerResolver {
       .flat()
       .map((player) => player.rounds)
       .flat()
-    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
       presolvedUsers: users,

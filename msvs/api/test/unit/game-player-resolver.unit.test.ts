@@ -616,7 +616,7 @@ async function testResolveFromObject({
   if (resolvedLeader) {
     leaderResolverSpy.mockResolvedValue(resolvedLeader)
   }
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     units: units || resolvedUnits,
     users: users || resolvedUsers,
   })
@@ -657,7 +657,7 @@ async function testResolveFromObject({
 
   expect(factionResolverSpy.mock.calls).toEqual(factionResolverCalls)
   expect(leaderResolverSpy.mock.calls).toEqual(leaderResolverCalls)
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual([
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual([
     [
       {
         moves: player.rounds
@@ -716,7 +716,7 @@ async function testResolveFromArray({
   leaderResolverCalls?: any[][]
   gamePlayerFromObjectCalls?: any[][]
 }) {
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     units: units || resolvedUnits,
     users: users || resolvedUsers,
   })
@@ -753,7 +753,7 @@ async function testResolveFromArray({
     await expect(promise).resolves.toEqual(resolvedGamePlayers)
   }
 
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual(
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual(
     players.length === 0
       ? []
       : [

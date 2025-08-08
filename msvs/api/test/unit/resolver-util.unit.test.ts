@@ -411,7 +411,7 @@ describe('resolver-util', () => {
       })
     })
   })
-  describe('resolveMoveUsersAndUnits', () => {
+  describe('resolveUsersAndUnits', () => {
     const units = [
       TestUtil.getDbUnit({}),
       TestUtil.getDbUnit({}),
@@ -506,7 +506,7 @@ describe('resolver-util', () => {
       }),
     ]
     it('returns empty arrays if presolved are empty arrays', async () => {
-      await testResolveMoveUsersAndUnits({
+      await testresolveUsersAndUnits({
         presolvedUnits: [],
         presolvedUsers: [],
         expected: {
@@ -518,7 +518,7 @@ describe('resolver-util', () => {
     it('returns single item arrays if presolved are single items', async () => {
       const presolvedUnits = [TestUtil.getUnit({})]
       const presolvedUsers = [TestUtil.getUser({})]
-      await testResolveMoveUsersAndUnits({
+      await testresolveUsersAndUnits({
         presolvedUnits,
         presolvedUsers,
         expected: {
@@ -530,7 +530,7 @@ describe('resolver-util', () => {
     it('does not resolve units or users in impact if presolved provided', async () => {
       const presolvedUnits = [TestUtil.getUnit({})]
       const presolvedUsers = [TestUtil.getUser({})]
-      await testResolveMoveUsersAndUnits({
+      await testresolveUsersAndUnits({
         presolvedUnits,
         presolvedUsers,
         impacts: [
@@ -554,7 +554,7 @@ describe('resolver-util', () => {
     it('returns multiple item arrays if presolved are multiple items', async () => {
       const presolvedUnits = [TestUtil.getUnit({}), TestUtil.getUnit({})]
       const presolvedUsers = [TestUtil.getUser({}), TestUtil.getUser({})]
-      await testResolveMoveUsersAndUnits({
+      await testresolveUsersAndUnits({
         presolvedUnits,
         presolvedUsers,
         expected: {
@@ -571,7 +571,7 @@ describe('resolver-util', () => {
         })
       )
       const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
-      await testResolveMoveUsersAndUnits({
+      await testresolveUsersAndUnits({
         gameUnits: [
           TestUtil.getDbGameUnit({
             id: units[0]._id,
@@ -605,7 +605,7 @@ describe('resolver-util', () => {
         })
       )
       const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
-      await testResolveMoveUsersAndUnits({
+      await testresolveUsersAndUnits({
         userIds: [users[4]._id, users[4]._id],
         gameUnits: [
           TestUtil.getDbGameUnit({
@@ -640,7 +640,7 @@ describe('resolver-util', () => {
         })
       )
       const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
-      await testResolveMoveUsersAndUnits({
+      await testresolveUsersAndUnits({
         presolvedUnits: resolvedUnits,
         gameUnits: [
           TestUtil.getDbGameUnit({
@@ -668,7 +668,7 @@ describe('resolver-util', () => {
         })
       )
       const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
-      await testResolveMoveUsersAndUnits({
+      await testresolveUsersAndUnits({
         presolvedUsers: resolvedUsers,
         gameUnits: [
           TestUtil.getDbGameUnit({
@@ -886,7 +886,7 @@ async function testGetGamePlayer({
   )
 }
 
-async function testResolveMoveUsersAndUnits({
+async function testresolveUsersAndUnits({
   moves,
   impacts,
   userIds,
@@ -921,7 +921,7 @@ async function testResolveMoveUsersAndUnits({
   }
 
   await expect(
-    ResolverUtil.resolveMoveUsersAndUnits({
+    ResolverUtil.resolveUsersAndUnits({
       gameUnits,
       impacts,
       moves,

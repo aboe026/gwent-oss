@@ -34,7 +34,7 @@ export default class GameResolver {
   }): Promise<Game> {
     const status = game.status as GameStatus
     const rounds = game.players.map((player) => player.rounds).flat()
-    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
       userIds: game.players.map((player) => player.user),
@@ -100,7 +100,7 @@ export default class GameResolver {
       .flat()
       .map((player) => player.rounds)
       .flat()
-    const { units, users } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { units, users } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
       userIds: games

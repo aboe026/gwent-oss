@@ -26,7 +26,7 @@ export default class PlayerRoundResolver {
     units?: Unit[]
     users?: User[]
   }): Promise<PlayerRound> {
-    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: round.moves,
       gameUnits: [...round.close.units, ...round.ranged.units, ...round.siege.units],
       presolvedUnits: units,
@@ -88,7 +88,7 @@ export default class PlayerRoundResolver {
       return []
     }
 
-    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
       gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
       presolvedUsers: users,

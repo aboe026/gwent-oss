@@ -29,7 +29,7 @@ export default class ImpactResolver {
     units?: Unit[]
     users?: User[]
   }): Promise<Impact> {
-    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       impacts: [impact],
       presolvedUsers: users,
       presolvedUnits: units,
@@ -95,7 +95,7 @@ export default class ImpactResolver {
     }
     if (impacts) {
       const resolvedImpacts: Impact[] = []
-      const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+      const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
         impacts,
         presolvedUnits: units,
         presolvedUsers: users,

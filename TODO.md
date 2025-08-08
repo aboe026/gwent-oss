@@ -12,10 +12,8 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - override DateTime in schema to Date?
-- fix lint for vscode eslint extension
-  - need to wait for vscode to upgrade to version 24 of node?
-- jsdocs linting not working?
 - automate check in build process to ensure package.json versions incremented (and all same)?
 - remove need for classes just for log4js spying
   - have "getLogger" method
@@ -89,32 +87,6 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- rename "resolveMoveUsersAndUnits" to "resolveGameUsersAndUnits"
-  - rename "gameUnits" input to "battlefieldUnits"
-- func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
-- for "MoveUnit" type, have "reason" field
-
-  ```
-  enum MoveType {
-    "Deployment by a game player to the battlefield."
-    DEPLOY
-    "Mustered when matching Muster unit added to battlefield."
-    MUSTER
-    "Revived after Medic added to battlefield."
-    REVIVE
-    "Summoned when matching Avenger unit removed from battlefield."
-    SUMMON
-    "Transformed when Mardroeme unit added to battlefield row."
-    TRANSFORM
-  }
-
-  type MoveUnitReason @entity {
-    type: MoveType! @column
-    unit: DeckUnit! @column(overrideType: "DeckUnitDbObject")
-  }
-  ```
-
-- For MoveUnitReason, include "source"? (hand, undrawn, lost, opponent)
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
 - Avenger

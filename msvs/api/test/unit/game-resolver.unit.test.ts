@@ -370,7 +370,7 @@ describe('game-resolver', () => {
       const games = [game]
       await testFromArray({
         games: games,
-        resolveMoveUsersAndUnitsCalls: [
+        resolveUsersAndUnitsCalls: [
           [
             {
               moves: [
@@ -497,7 +497,7 @@ describe('game-resolver', () => {
       ]
       await testFromArray({
         games: games,
-        resolveMoveUsersAndUnitsCalls: [
+        resolveUsersAndUnitsCalls: [
           [
             {
               moves: [
@@ -598,7 +598,7 @@ async function testFromObject({
   expected: Game | Error
 }) {
   const resolvedUnits = [TestUtil.getUnit({})]
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     users: resolvedUsers,
     units: resolvedUnits,
   })
@@ -615,7 +615,7 @@ async function testFromObject({
     await expect(promise).resolves.toEqual(expected)
   }
 
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual([
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual([
     [
       {
         moves: game.players
@@ -648,14 +648,14 @@ async function testFromObject({
 
 async function testFromArray({
   games,
-  resolveMoveUsersAndUnitsCalls = [],
+  resolveUsersAndUnitsCalls = [],
 }: {
   games: GameDbObject[]
-  resolveMoveUsersAndUnitsCalls?: any[][]
+  resolveUsersAndUnitsCalls?: any[][]
 }) {
   const units = [TestUtil.getUnit({})]
   const users = [TestUtil.getUser({})]
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     units,
     users,
   })
@@ -671,7 +671,7 @@ async function testFromArray({
 
   await expect(GameResolver.fromArray(games)).resolves.toEqual(resolvedGames)
 
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual(resolveMoveUsersAndUnitsCalls)
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual(resolveUsersAndUnitsCalls)
   expect(fromObjectSpy.mock.calls).toEqual(
     games.map((game) => {
       return [

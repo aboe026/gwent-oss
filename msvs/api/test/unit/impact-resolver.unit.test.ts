@@ -271,7 +271,7 @@ async function testFromObject({
   expected?: Impact | Error
   errorCalls?: string[][]
 }) {
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     units: units || resolvedUnits,
     users: users || resolvedUsers,
   })
@@ -295,7 +295,7 @@ async function testFromObject({
     await expect(promise).resolves.toEqual(expected)
   }
 
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual([
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual([
     [
       {
         impacts: [impact],
@@ -335,7 +335,7 @@ async function testFromArray({
   errorCalls?: string[][]
   traceEnabled?: boolean
 }) {
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     units: units || resolvedUnits,
     users: users || resolvedUsers,
   })
@@ -367,7 +367,7 @@ async function testFromArray({
     })
   ).resolves.toEqual(impacts ? resolvedImpacts : undefined)
 
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual(
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual(
     impacts
       ? [
           [

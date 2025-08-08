@@ -69,7 +69,7 @@ export default class MoveResolver {
       }
     } else if (move.type === MoveType.Unit) {
       const unitMove = move as MoveUnitDbObject
-      const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+      const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
         moves: [unitMove],
         presolvedUnits: units,
         presolvedUsers: users,
@@ -143,7 +143,7 @@ export default class MoveResolver {
       return []
     }
 
-    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveMoveUsersAndUnits({
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves,
       presolvedUnits: units,
       presolvedUsers: users,

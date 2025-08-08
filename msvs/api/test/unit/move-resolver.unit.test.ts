@@ -733,7 +733,7 @@ async function testFromObject({
   if (deckUnitFromObjectResponse) {
     deckUnitFromObjectSpy.mockResolvedValue(deckUnitFromObjectResponse)
   }
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     units: units || resolvedUnits,
     users: users || resolvedUsers,
   })
@@ -761,7 +761,7 @@ async function testFromObject({
         ]
       : []
   )
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual(
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual(
     move.type === MoveType.Unit
       ? [
           [
@@ -836,7 +836,7 @@ async function testFromArray({
   moveFromObjectCalls?: any[][]
   errorCalls?: string[][]
 }) {
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     units: units || resolvedUnits,
     users: users || resolvedUsers,
   })
@@ -875,7 +875,7 @@ async function testFromArray({
     await expect(promise).resolves.toEqual(resolvedMoves)
   }
 
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual(
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual(
     moves.length === 0
       ? []
       : [

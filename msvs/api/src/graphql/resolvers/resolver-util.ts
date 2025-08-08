@@ -209,7 +209,7 @@ export default class ResolverUtil {
    * @param config.presolvedUnits All the units on the Game. If provided, will not attempt to resolve any units.
    * @returns All the Users and Units on the game, resolved to their GraphQL types.
    */
-  static async resolveMoveUsersAndUnits({
+  static async resolveUsersAndUnits({
     moves,
     impacts,
     userIds,

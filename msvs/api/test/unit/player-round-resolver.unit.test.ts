@@ -336,7 +336,7 @@ async function testFromObject({
   movesFromArray?: Move[]
   expected: PlayerRound
 }) {
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     users: users || resolvedUsers,
     units: units || resolvedUnits,
   })
@@ -354,7 +354,7 @@ async function testFromObject({
     })
   ).resolves.toEqual(expected)
 
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual([
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual([
     [
       {
         moves: round.moves,
@@ -408,7 +408,7 @@ async function testFromArray({
   resolvedUsers?: User[]
   resolvedUnits?: Unit[]
 }) {
-  const resolveMoveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveMoveUsersAndUnits').mockResolvedValue({
+  const resolveUsersAndUnitsSpy = jest.spyOn(ResolverUtil, 'resolveUsersAndUnits').mockResolvedValue({
     units: units || resolvedUnits,
     users: users || resolvedUsers,
   })
@@ -452,7 +452,7 @@ async function testFromArray({
     })
   ).resolves.toEqual(resolvedRounds)
 
-  expect(resolveMoveUsersAndUnitsSpy.mock.calls).toEqual(
+  expect(resolveUsersAndUnitsSpy.mock.calls).toEqual(
     rounds.length === 0
       ? []
       : [
