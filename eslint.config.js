@@ -6,7 +6,7 @@ const tseslint = require('typescript-eslint') // eslint-disable-line no-undef,@t
 module.exports = tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
-  jsdoc.configs['flat/recommended'],
+  jsdoc.configs['flat/recommended-typescript'],
   {
     ignores: [
       '**/build/**',
@@ -39,8 +39,6 @@ module.exports = tseslint.config(
       jsdoc,
     },
     rules: {
-      'jsdoc/require-param-type': 'off', // Not needed since TypeScript handles types
-      'jsdoc/require-returns-type': 'off', // Not needed since TypeScript handles types
       'jsdoc/tag-lines': ['error', 'any', { startLines: 1 }],
     },
   },
