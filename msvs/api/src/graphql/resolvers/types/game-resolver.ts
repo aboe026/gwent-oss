@@ -18,9 +18,9 @@ export default class GameResolver {
    * Converts a single Game database object to a single Game GraphQL object.
    *
    * @param config The configuration used to convert the Game.
-   * @param config.creator The resolved User who created the Game. If not provided, will be retrieved.
    * @param config.game The Game to convert.
-   * @param config.users The resolved Users for the players on the Game. If not provided, will be retrieved.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
    * @returns The resolved Game object matching its GraphQL schema definition.
    */
   static async fromObject({

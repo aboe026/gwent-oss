@@ -22,6 +22,7 @@ export default class AddGameResolution {
    * @param config.game The new game that was added.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.opponents The name of the opponents participating in the game.
+   * @param config.creatorId The ID of the user which created the game.
    * @returns The Game that was added with fields resolved.
    */
   static async addGameResolution({

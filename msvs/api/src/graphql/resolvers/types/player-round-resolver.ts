@@ -14,7 +14,7 @@ export default class PlayerRoundResolver {
    * @param config The configuration for resolving the PlayerRound.
    * @param config.round The database object to resolve to its GraphQL type.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
-   * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
    * @returns The resolved PlayerRound object matching its GraphQL schema definition.
    */
   static async fromObject({
@@ -71,7 +71,8 @@ export default class PlayerRoundResolver {
    *
    * @param config The configuration used to resolve the PlayerRounds.
    * @param config.rounds The database objects to resolve to their GraphQL types.
-   * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
+   * @param config.users An optional list of pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
+   * @param config.units An optional list of pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
    * @returns The resolved PlayerRound array matching the GraphQL schema definition.
    */
   static async fromArray({

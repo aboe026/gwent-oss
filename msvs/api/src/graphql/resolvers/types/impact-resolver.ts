@@ -16,8 +16,8 @@ export default class ImpactResolver {
    *
    * @param config The configuration used to convert the Impact.
    * @param config.impact The Impact to convert.
-   * @param config.gameUnit The resolved GameUnit for the Impact. If not provided, will be retrieved.
-   * @param config.user The resolved User for the Impact. If not provided, will be retrieved.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
    * @returns The resolved Impact object matching its GraphQL schema definition.
    */
   static async fromObject({
@@ -77,6 +77,8 @@ export default class ImpactResolver {
    *
    * @param config The configuration used to convert the array.
    * @param config.impacts The array of Impact database objects to convert.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
    * @returns The resolved Impact array matching the GraphQL schema definition.
    */
   static async fromArray({

@@ -4,6 +4,9 @@ import path from 'path'
 
 import env from './env'
 
+/**
+ * A class for getting information about the currently running instance of Gwent.
+ */
 export default class AppInfo {
   private static logger = getLogger('AppInfo')
 

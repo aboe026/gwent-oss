@@ -1,14 +1,12 @@
 import { ObjectId } from 'mongodb'
 
 import {
-  Combat,
   DeckUnit,
   Impact,
   Leader,
   Move,
   MoveLeader,
   MovePass,
-  MoveUnit,
   Unit,
   User,
 } from '@gwent/graphql-schema/resolver-typings'

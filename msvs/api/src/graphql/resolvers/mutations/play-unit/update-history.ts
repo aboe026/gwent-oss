@@ -15,9 +15,26 @@ import { MoveType } from '@gwent/graphql-schema'
 import { MusteredOrigins } from './muster-battlefield'
 import PresentableError from '../../../../util/presentable-error'
 
+/**
+ * A class to update the Move history on a Game.
+ */
 export default class UpdateHistory {
   private static logger = getLogger('UpdateHistory')
 
+  /**
+   * Add Moves in a Game with due to the deployment of a new unit to the battlefield.
+   *
+   * @param config The configuration used to add the new Move(s) to the Game.
+   * @param config.game The game whose current player should have the move(s) added to.
+   * @param config.deckUnit The new DeckUnit being deployed to the battlefield.
+   * @param config.playerId The ID of the game player who is deploying the new unit to the battlefield.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.combat Which combat row the new unit is being deployed to on the battlefield.
+   * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
+   * @param config.musters Any potential units the new battlefield unit mustered when deployed.
+   * @param config.strengths Any potential units the new battlefield unit moraled when deployed.
+   * @param config.musteredOrigins A map of where any potential mustered units came from.
+   */
   static newUnitDeployed({
     game,
     deckUnit,
@@ -116,6 +133,13 @@ export default class UpdateHistory {
     }
   }
 
+  /**
+   * Add a move to the current player on a Game.
+   *
+   * @param config The configuration used to add the Move to the Game player.
+   * @param config.game The game containing the player to add the Move to, based on the current turn in the Game.
+   * @param config.move The move to add to the current player on the Game.
+   */
   static addMoveToCurrentPlayer({ game, move }: { game: GameDbObject; move: MoveDbObject }) {
     const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
     if (player) {

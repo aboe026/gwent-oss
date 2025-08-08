@@ -4,6 +4,9 @@ import { ObjectId } from 'mongodb'
 import { GameDbObject, GamePlayerDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
 import { sortObjectArray } from '@gwent/utils'
 
+/**
+ * A class to set the turn on a Game for the next round in the Game.
+ */
 export default class SetTurnForNextRound {
   private static logger = getLogger('SetTurnForNextRound')
 

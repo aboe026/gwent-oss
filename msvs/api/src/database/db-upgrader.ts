@@ -161,6 +161,7 @@ export default class DbUpgrader {
    * @param config The configuration used to run the upgrades.
    * @param config.current The current upgrade version the database is on. Only upgrades greater than this version are run.
    * @param config.upgrades The upgrade scripts to run. Any before current are not run.
+   * @param config.started The date the run was started. Used to ensure the lock updating does not conflict with future runs.
    * @throws Error if a script throws an error or problems communicating with database while storing upgrade status.
    */
   private async execute({

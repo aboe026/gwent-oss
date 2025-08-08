@@ -197,6 +197,18 @@ export default class ResolverUtil {
     }
   }
 
+  /**
+   * Resolves the Units and Users in a Game.
+   *
+   * @param config The configuration used to resolve the Units and Users in a Game.
+   * @param config.moves Potential Move objects that are apart of the game.
+   * @param config.impacts Potential Impact objects that are apart of the game.
+   * @param config.userIds IDs of all the users on the game. If provided, will not look for users elsewhere (moves, impacts).
+   * @param config.gameUnits The units currently on the battlefield of a game.
+   * @param config.presolvedUsers All the users on the Game. If provided, will not attempt to resolve users.
+   * @param config.presolvedUnits All the units on the Game. If provided, will not attempt to resolve any units.
+   * @returns All the Users and Units on the game, resolved to their GraphQL types.
+   */
   static async resolveMoveUsersAndUnits({
     moves,
     impacts,

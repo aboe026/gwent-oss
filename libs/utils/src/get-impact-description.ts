@@ -5,6 +5,7 @@ import { EffectKey, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typing
  *
  * @param config The configuration to use to determine the description.
  * @param config.effectKey The Key of the Effect which caused the impact.
+ * @param config.origin The Origin of the unit which caused the impact.
  * @returns The description of the impact on a unit from the effect.
  * @throws Error if Effect cannot have impact (Agile, Avenger, Berserker)
  */

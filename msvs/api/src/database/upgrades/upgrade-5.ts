@@ -10,6 +10,9 @@ import Upgrade from './upgrade'
 export default class Upgrade5 extends Upgrade {
   static logger = getLogger('Upgrade5')
 
+  /**
+   * Run this upgrade operations against the database.
+   */
   async run() {
     Upgrade5.logger.debug('Connecting to database')
     const db = await DbConnector.connect()

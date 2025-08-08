@@ -39,7 +39,17 @@ module.exports = tseslint.config(
       jsdoc,
     },
     rules: {
-      'jsdoc/tag-lines': ['error', 'any', { startLines: 1 }],
+      'jsdoc/tag-lines': ['warn', 'any', { startLines: 1 }],
+      'jsdoc/require-jsdoc': [
+        'warn',
+        {
+          require: {
+            FunctionDeclaration: true,
+            MethodDefinition: true,
+            ClassDeclaration: true,
+          },
+        },
+      ],
     },
   },
   {

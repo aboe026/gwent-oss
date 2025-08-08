@@ -14,9 +14,23 @@ import GetEffectWithKey from './get-effect-with-key'
 import { sortObjectArray } from '@gwent/utils'
 import UnitStore from '../../../../database/stores/unit-store'
 
+/**
+ * A class to Muster units to the battlefield.
+ */
 export default class MusterBattlefield {
   private static logger = getLogger('MusterBattlefield')
 
+  /**
+   * Potentially muster Units to the battlefield due to a new unit deployment.
+   *
+   * @param config The configuration used to potentially muster new Units.
+   * @param config.battlefieldUnits All the existing Units on the battlefield.
+   * @param config.effects The Effect database documents for any potential effect involved in the Game.
+   * @param config.game The Game to potentially muster the Units into.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.newDeckUnit The new unit deployed to the battlefield which is potentially mustering other Units.
+   * @returns Information about any new Units mustered to the battlefield.
+   */
   static async musterBattlefield({
     battlefieldUnits,
     effects,
@@ -110,6 +124,16 @@ export default class MusterBattlefield {
     }
   }
 
+  /**
+   * Potentially muster a unit to the battlefield for the current game player if in their hand or undrawn pile.
+   *
+   * @param config The configuration used to potentially muster the unit.
+   * @param config.combat The Combat row the unit should be mustered to.
+   * @param config.game The game containing the player to potentially muster the unit for.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.potentialMuster The Unit to potentially muster for the game player.
+   * @returns The mustered Unit if it is eligible to be mustered by the player.
+   */
   private static musterUnitForCurrentPlayer({
     combat,
     game,

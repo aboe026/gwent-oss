@@ -6,6 +6,9 @@ import { Logger } from 'log4js'
 export default abstract class Upgrade {
   static logger: Logger
 
+  /**
+   * Initialize a new instance of a Database Upgrade.
+   */
   constructor() {}
 
   /**

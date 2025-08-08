@@ -2,17 +2,32 @@ import { Collection, Db, MongoClient, ProfilingLevel } from 'mongodb'
 import fs from 'fs-extra'
 import path from 'path'
 
+/**
+ * A class for profiling a MongoDB instance for improper operations.
+ */
 export default class DbProfiler {
   private _url: string
   private _dbName: string
   private _db: Db | undefined = undefined
   private _collection: Collection | undefined = undefined
 
+  /**
+   * Instantiate a new instance of the Database Profiler.
+   *
+   * @param config The configuration used to instantiate the Database Profiling instance.
+   * @param config.mongoUrl The Connection String to use when connecting to the MongoDB instance.
+   * @param config.mongoDb The database inside the MongoDB instance to utilize.
+   */
   constructor({ mongoUrl, mongoDb }: { mongoUrl: string; mongoDb: string }) {
     this._url = mongoUrl
     this._dbName = mongoDb
   }
 
+  /**
+   * Initialize a connection to a MongoDB database instance.
+   *
+   * @returns The database and system profiling collection.
+   */
   private async connect(): Promise<{
     db: Db
     collection: Collection
@@ -32,6 +47,9 @@ export default class DbProfiler {
     }
   }
 
+  /**
+   * Start capturing profiling information on the database.
+   */
   async start() {
     const { db, collection } = await this.connect()
     await db.setProfilingLevel(ProfilingLevel.off)
@@ -39,11 +57,19 @@ export default class DbProfiler {
     await db.setProfilingLevel(ProfilingLevel.all)
   }
 
+  /**
+   * Stop capturing profiling information on the database.
+   */
   async stop() {
     const { db } = await this.connect()
     await db.setProfilingLevel(ProfilingLevel.off)
   }
 
+  /**
+   * Save MongoDB operations to a file for analysis.
+   *
+   * @param filePath The full file path (including name) to save results to.
+   */
   async recordToFile(filePath: string) {
     await fs.ensureDir(path.dirname(filePath))
     const { collection } = await this.connect()
@@ -51,6 +77,12 @@ export default class DbProfiler {
     await fs.writeFile(filePath, JSON.stringify(docs, null, 2))
   }
 
+  /**
+   * Get operation violations from a given profiling result file.
+   *
+   * @param profilingFilePath The path to the profiling result file to analyze for violations.
+   * @returns A list of any operations which are unacceptable and need addressing.
+   */
   async getViolations(profilingFilePath: string): Promise<string[]> {
     const results = (await fs.readJson(profilingFilePath, {
       encoding: 'utf-8',
@@ -73,6 +105,14 @@ export default class DbProfiler {
     return violations
   }
 
+  /**
+   * Get list of operations from the MongoDB instance that did not utilize an index.
+   *
+   * @param config The configuration used to determine violoations.
+   * @param config.results The operations ran in the MongoDB instance.
+   * @param config.ignores A list of database commands to ignore their usage of indexes.
+   * @returns A list of operations which did not properly use an index.
+   */
   private getIndexViolations({
     results,
     ignores,
@@ -100,6 +140,14 @@ export default class DbProfiler {
     return violations
   }
 
+  /**
+   * Whether or not an index was used for the given results.
+   *
+   * @param config The configuration used to determine index usage.
+   * @param config.result The profile results of the operations performed in the MongoDB database, which may contain scans that did not use an index.
+   * @param config.ignores A list of database commands to ignore their usage of indexes.
+   * @returns True if all expected operations used an index, false if there was an unexpected operation which did not use an index.
+   */
   private isIndexIgnored({ result, ignores }: { result: ProfileResult; ignores?: CollscansToIgnore[] }) {
     if (ignores) {
       for (const ignore of ignores) {

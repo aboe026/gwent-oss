@@ -32,6 +32,9 @@ import { validatePositiveInteger } from '@gwent/validators'
 export default class Upgrade2 extends Upgrade {
   static logger = getLogger('Upgrade2')
 
+  /**
+   * Run this upgrade operations against the database.
+   */
   async run() {
     const dlcMap = await this.createDlcs({
       dlcs,
@@ -76,6 +79,13 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
+  /**
+   * Adds DLCs to the database based on their JSON representations.
+   *
+   * @param config The configuration used to add the DLCs to the database.
+   * @param config.dlcs The JSON representation of the DLCs to add to the database.
+   * @returns A map of DLCs keys to their respective IDs.
+   */
   async createDlcs({ dlcs }: { dlcs: DlcJson[] }): Promise<KeyIdMap> {
     Upgrade2.logger.debug('Adding dlcs')
 
@@ -100,6 +110,13 @@ export default class Upgrade2 extends Upgrade {
     return dlcMap
   }
 
+  /**
+   * Adds Effects to the database based on their JSON representations.
+   *
+   * @param config The configuration used to add the Effects to the database.
+   * @param config.effects The JSON representation of the Effects to add to the database.
+   * @returns All inserted Effect database documents and a map of Effect keys to their respective IDs.
+   */
   async createEffects({ effects }: { effects: EffectJson[] }): Promise<{
     effectDocs: EffectDbObject[]
     effectMap: KeyIdMap
@@ -129,6 +146,14 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
+  /**
+   * Adds Factions to the database based on their JSON representations.
+   *
+   * @param config The configuration used to add the Factions to the database.
+   * @param config.factions The JSON representation of the Factions to add to the database.
+   * @param config.dlcMap A map of DLC keys to database IDs.
+   * @returns All inserted Faction database documents and a map of Faction keys to their respective IDs.
+   */
   async createFactions({ factions, dlcMap }: { factions: FactionJson[]; dlcMap: KeyIdMap }): Promise<{
     factionDocs: FactionDbObject[]
     factionMap: KeyIdMap
@@ -165,6 +190,14 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
+  /**
+   * Adds Leaders to the database based on their JSON representations.
+   *
+   * @param config The configuration used to add the Leaders to the database.
+   * @param config.leaders The JSON representation of the Leaders to add to the database.
+   * @param config.dlcMap A map of DLC keys to database IDs.
+   * @param config.factionMap A map of Faction keys to database IDs.
+   */
   async createLeaders({
     leaders,
     dlcMap,
@@ -190,6 +223,17 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
+  /**
+   * Adds Units to the database based on their JSON representations.
+   *
+   * @param config The configuration used to add the Units to the database.
+   * @param config.units The JSON representation of the Units to add to the database.
+   * @param config.dlcMap A map of DLC keys to database IDs.
+   * @param config.effectMap A map of Effect keys to database IDs.
+   * @param config.factionDocs A list of all Faction database objects.
+   * @param config.factionMap A map of Faction keys to database IDs.
+   * @returns A list of all inserted database documents.
+   */
   async createUnits({
     units,
     dlcMap,
@@ -239,6 +283,12 @@ export default class Upgrade2 extends Upgrade {
     return factionUnits
   }
 
+  /**
+   * Get the data necessary to add the DLC to the database.
+   *
+   * @param dlc The JSON representation of the DLC.
+   * @returns The inputs used to add the DLC to the database.
+   */
   normalizeDlc(dlc: DlcJson): AddDlcInput {
     if (!dlc.Name) {
       throw Error(`Invalid dlc "${JSON.stringify(dlc)}": Must have "Name".`)
@@ -250,6 +300,13 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
+  /**
+   * Get the key for a DLC given its JSON.
+   *
+   * @param dlc The JSON representation of the DLC.
+   * @returns The Key for the corresponding DLC.
+   * @throws Error if DLC JSON does not match valid keys.
+   */
   normalizeDlcKey(dlc: DlcJson): DlcKey {
     if (dlc.Name === 'Blood and Wine') {
       return DlcKey.BloodAndWine
@@ -261,6 +318,12 @@ export default class Upgrade2 extends Upgrade {
     throw Error(`Invalid Dlc "${dlc.Name}"`)
   }
 
+  /**
+   * Get the data necessary to add the Effect to the database.
+   *
+   * @param effect The JSON representation of the Effect.
+   * @returns The inputs used to add the Effect to the database.
+   */
   normalizeEffect(effect: EffectJson): AddEffectInput {
     if (!effect.Name) {
       throw Error(`Invalid effect "${JSON.stringify(effect)}": Must have "Name".`)
@@ -276,6 +339,14 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
+  /**
+   * Get the data necessary to add the Faction to the database.
+   *
+   * @param config The configuration used to get the data for insertion into the database.
+   * @param config.faction The JSON representation of the Faction.
+   * @param config.dlcMap A map of DLC keys to database IDs.
+   * @returns The inputs used to add the Faction to the database.
+   */
   normalizeFaction({ faction, dlcMap }: { faction: FactionJson; dlcMap: KeyIdMap }): AddFactionInput {
     if (!faction.Name) {
       throw Error(`Invalid faction "${JSON.stringify(faction)}": Must have "Name".`)
@@ -289,6 +360,13 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
+  /**
+   * Get the key for a Faction given its JSON.
+   *
+   * @param faction The JSON representation of the Faction.
+   * @returns The Key for the corresponding faction.
+   * @throws Error if faction JSON does not match valid keys.
+   */
   normalizeFactionKey(faction: FactionJson): FactionKey {
     if (faction.Name === 'Monsters') {
       return FactionKey.Monsters
@@ -306,6 +384,15 @@ export default class Upgrade2 extends Upgrade {
     throw Error(`Invalid Faction "${faction.Name}"`)
   }
 
+  /**
+   * Get the data necessary to add the Leader to the database.
+   *
+   * @param config The configuration used to get the data for insertion into the database.
+   * @param config.leader The JSON representation of the Leader.
+   * @param config.dlcMap A map of DLC keys to database IDs.
+   * @param config.factionMap A map of Faction keys to database IDs.
+   * @returns The inputs used to add the Leader to the database.
+   */
   normalizeLeader({
     leader,
     dlcMap,
@@ -325,6 +412,16 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
+  /**
+   * Get the data necessary to add the Unit to the database.
+   *
+   * @param config The configuration used to get the data for insertion into the database.
+   * @param config.unit The JSON representation of the Unit.
+   * @param config.dlcMap A map of DLC keys to database IDs.
+   * @param config.effectMap A map of Effect keys to database IDs.
+   * @param config.factionMap A map of Faction keys to database IDs.
+   * @returns The inputs used to add the Unit to the database.
+   */
   normalizeUnit({
     unit,
     dlcMap,
@@ -360,6 +457,14 @@ export default class Upgrade2 extends Upgrade {
     }
   }
 
+  /**
+   * Get the ID of the faction for the Unit or Leader.
+   *
+   * @param unitOrLeader The Unit or Leader to get the faction ID for.
+   * @param factionMap The map of Faction keys to IDs.
+   * @returns The ID of the Unit or Leader.
+   * @throws Error if faction not found in factionMap.
+   */
   normalizeUnitFaction(unitOrLeader: UnitJson | LeaderJson, factionMap: KeyIdMap): ObjectId {
     const faction = factionMap[unitOrLeader.Faction]
     if (!faction) {
@@ -371,6 +476,13 @@ export default class Upgrade2 extends Upgrade {
     return faction
   }
 
+  /**
+   * Get the ID of the DLC the Unit was introduced in, if any.
+   *
+   * @param item The unit to get the DLC ID for.
+   * @param dlcMap The map of DLC keys to IDs.
+   * @returns The ID of the DLC for the Unit if it has one, null otherwise.
+   */
   normalizeUnitDlc(item: UnitJson | LeaderJson | FactionJson, dlcMap: KeyIdMap): ObjectId | null {
     const itemDlc = item.DLC
     if (itemDlc === undefined) {
@@ -383,6 +495,12 @@ export default class Upgrade2 extends Upgrade {
     return dlc
   }
 
+  /**
+   * Gets the Combat rows a unit is eligible for.
+   *
+   * @param unit The unit to get combat rows for.
+   * @returns The Combat rows the unit is eligible for.
+   */
   normalizeCombats(unit: UnitJson): Combat[] {
     const combat: Combat[] = []
     if (unit['Combat 1']) {
@@ -394,6 +512,13 @@ export default class Upgrade2 extends Upgrade {
     return combat
   }
 
+  /**
+   * Get the Combat from a given string.
+   *
+   * @param combat The string representation of the combat.
+   * @returns The Combat the string represents.
+   * @throws Error if the string does not have an equivalent Combat representation.
+   */
   normalizeCombat(combat: string | undefined): Combat {
     if (combat === 'Close') {
       return Combat.Close
@@ -405,6 +530,13 @@ export default class Upgrade2 extends Upgrade {
     throw Error(`Invalid Combat "${combat}"`)
   }
 
+  /**
+   * Get the IDs of the effects the Unit has.
+   *
+   * @param unit The unit to get the effect IDs for.
+   * @param effectMap The map of effect keys to IDs.
+   * @returns The IDs of the effects for the Unit.
+   */
   normalizeUnitEffects(unit: UnitJson, effectMap: KeyIdMap): ObjectId[] {
     const effects: ObjectId[] = []
 
@@ -420,6 +552,12 @@ export default class Upgrade2 extends Upgrade {
     return effects
   }
 
+  /**
+   * Get the key that corresponds to the given effect.
+   *
+   * @param effect The effect to get the key of.
+   * @returns The key for the given effect.
+   */
   normalizeEffectKey(effect: EffectJson): EffectKey {
     if (effect.Name === 'Agile') {
       return EffectKey.Agile
@@ -451,6 +589,12 @@ export default class Upgrade2 extends Upgrade {
     throw Error(`Invalid Effect "${JSON.stringify(effect)}"`)
   }
 
+  /**
+   * Get the potential scope the scorch should be limited to.
+   *
+   * @param unit The unit to get the sorch scope for.
+   * @returns The scope the scorch should be limited to, otherwise null.
+   */
   normalizeScorchScope(unit: UnitJson): Combat | null {
     if (unit['Scorch Scope']) {
       return this.normalizeCombat(unit['Scorch Scope'])
@@ -458,10 +602,24 @@ export default class Upgrade2 extends Upgrade {
     return null
   }
 
+  /**
+   * Gets the image path for the resource.
+   *
+   * @param item The resource item to get the image path for.
+   * @param type The type of the resource.
+   * @returns The image path for the resource.
+   */
   normalizeImage(item: UnitJson | LeaderJson | EffectJson | FactionJson | DlcJson, type: ImageType): string {
     return this.normalizeImages(item, type)[0]
   }
 
+  /**
+   * Gets image paths for the resource.
+   *
+   * @param item The resource item to get image paths for.
+   * @param type The type of the resource.
+   * @returns The image paths for the resource.
+   */
   normalizeImages(item: UnitJson | LeaderJson | EffectJson | FactionJson | DlcJson, type: ImageType): string[] {
     const name: string = item.Name
     const images: string[] = []
@@ -481,10 +639,25 @@ export default class Upgrade2 extends Upgrade {
     return images
   }
 
+  /**
+   * Gets the path for an image of a resource.
+   *
+   * @param config The configuration used to get the image path.
+   * @param config.name The name of the resource.
+   * @param config.type The type of the resourc.e
+   * @param config.suffix A potential suffix to prepend to the image path.
+   * @returns The path of an image for a resource.
+   */
   normalizeImagePath({ name, type, suffix = '' }: { type: ImageType; name: string; suffix?: string }) {
     return `images/${type}/${name.toLowerCase().replaceAll(/ /g, '_').replaceAll(/:/g, '')}${suffix}.png`
   }
 
+  /**
+   * Determine if a unit is special or not.
+   *
+   * @param unit The unit to determine if it is special.
+   * @returns True if the unit is considered special, false if not.
+   */
   normalizeSpecial(unit: UnitJson): boolean {
     return (
       ["Commander's Horn", 'Decoy', 'Mardroeme', 'Scorch'].includes(unit.Name) ||
@@ -492,14 +665,32 @@ export default class Upgrade2 extends Upgrade {
     )
   }
 
+  /**
+   * Get the numeric strength of a unit if it has one.
+   *
+   * @param unit The unit to get the strength for.
+   * @returns The strength if a unit has one, otherwise null
+   */
   normalizeStrength(unit: UnitJson): number | null {
     return unit.Strength !== undefined ? Number(unit.Strength) : null
   }
 
+  /**
+   * Determine if a unit is deckable or not.
+   *
+   * @param unit The unit to determine whether or not it is deckable.
+   * @returns True if the unit is deckable, false if not.
+   */
   normalizeDeckable(unit: UnitJson): boolean {
     return unit.Deckable !== 'No'
   }
 
+  /**
+   * Determine if a unit is a Hero or not.
+   *
+   * @param unit The Unit to determine whether or not it is a hero.
+   * @returns True if the unit is a hero, false if not.
+   */
   normalizeHero(unit: UnitJson): boolean {
     return unit.Hero === 'Yes'
   }

@@ -89,6 +89,8 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
+- rename "resolveMoveUsersAndUnits" to "resolveGameUsersAndUnits"
+  - rename "gameUnits" input to "battlefieldUnits"
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - for "MoveUnit" type, have "reason" field
 

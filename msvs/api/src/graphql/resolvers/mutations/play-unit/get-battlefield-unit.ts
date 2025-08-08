@@ -2,6 +2,9 @@ import { ObjectId } from 'mongodb'
 
 import { Combat, GameDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
 
+/**
+ * A class to get Units that are currently on a Game battlefield.
+ */
 export default class GetBattlefieldUnit {
   /**
    * Get a unit if it is on the battlefield.
@@ -47,6 +50,15 @@ export default class GetBattlefieldUnit {
     )
   }
 
+  /**
+   * Get a Unit from a battlefield row, as well as the row it was in.
+   *
+   * @param config The configuration used to get the battlefield unit.
+   * @param config.unitId The ID of the unit to get from the battlefield.
+   * @param config.units All of the units in a row on the battlefield.
+   * @param config.row The row the battlefield units are in.
+   * @returns The battlefield unit if it exists in the given row.
+   */
   private static getRowUnit({
     unitId,
     units,
