@@ -1,9 +1,9 @@
-import eslint from '@eslint/js'
-import jsdocPlugin from 'eslint-plugin-jsdoc'
-import prettierPlugin from 'eslint-plugin-prettier'
-import tseslint from 'typescript-eslint'
+const eslint = require('@eslint/js') // eslint-disable-line no-undef,@typescript-eslint/no-require-imports
+const jsdocPlugin = require('eslint-plugin-jsdoc') // eslint-disable-line no-undef,@typescript-eslint/no-require-imports
+const tseslint = require('typescript-eslint') // eslint-disable-line no-undef,@typescript-eslint/no-require-imports
 
-export default tseslint.config(
+// eslint-disable-next-line no-undef
+module.exports = tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   {
@@ -36,10 +36,8 @@ export default tseslint.config(
     },
     plugins: {
       jsdoc: jsdocPlugin,
-      prettier: prettierPlugin,
     },
     rules: {
-      'prettier/prettier': 'error',
       'jsdoc/tag-lines': ['error', 'any', { startLines: 1 }],
     },
   },
