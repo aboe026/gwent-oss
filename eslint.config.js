@@ -9,6 +9,7 @@ module.exports = tseslint.config(
   jsdoc.configs['flat/recommended-typescript'],
   {
     ignores: [
+      '**/*@tmp*', // Jenkins temp files
       '**/build/**',
       '**/coverage/**',
       '**/generated/**',
