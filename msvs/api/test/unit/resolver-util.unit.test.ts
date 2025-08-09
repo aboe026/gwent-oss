@@ -2,13 +2,26 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { GameDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  GameDbObject,
+  GameStatus,
+  GameUnitDbObject,
+  GameUnitOrigin,
+  ImpactDbObject,
+  MoveDbObject,
+  MoveReasonType,
+  UserDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
+import { MoveType } from '@gwent/graphql-schema'
 import { NOT_AUTHENTICATED_MESSAGE, REDACTED } from '@gwent/constants'
 import PresentableError from '../../src/util/presentable-error'
-import ResolverUtil, { GamePlayerResponse } from '../../src/graphql/resolvers/resolver-util'
+import ResolverUtil, { GamePlayerResponse, MoveUsersAndUnits } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
+import { Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
+import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('resolver-util', () => {
   describe('setLogPrefix', () => {
@@ -398,6 +411,290 @@ describe('resolver-util', () => {
       })
     })
   })
+  describe('resolveUsersAndUnits', () => {
+    const units = [
+      TestUtil.getDbUnit({}),
+      TestUtil.getDbUnit({}),
+      TestUtil.getDbUnit({}),
+      TestUtil.getDbUnit({}),
+      TestUtil.getDbUnit({}),
+    ]
+    const users = [
+      TestUtil.getDbUser({}),
+      TestUtil.getDbUser({}),
+      TestUtil.getDbUser({}),
+      TestUtil.getDbUser({}),
+      TestUtil.getDbUser({}),
+    ]
+    const moves = [
+      TestUtil.getDbMove({
+        type: MoveType.Unit,
+        unit: TestUtil.getDbGameUnit({
+          id: units[1]._id,
+        }),
+        reason: {
+          type: MoveReasonType.Deploy,
+          unit: TestUtil.getDbDeckUnit({
+            id: units[2]._id,
+          }),
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+          user: users[0]._id,
+        },
+        impacts: [
+          {
+            unit: TestUtil.getDbGameUnit({
+              id: units[3]._id,
+            }),
+            user: users[1]._id,
+            source: {
+              origin: GameUnitOrigin.Hand,
+              user: users[2]._id,
+            },
+          },
+          {
+            unit: TestUtil.getDbGameUnit({
+              id: units[4]._id,
+            }),
+            user: users[3]._id,
+          },
+        ],
+      }),
+      TestUtil.getDbMove({
+        type: MoveType.Unit,
+        unit: TestUtil.getDbGameUnit({
+          id: units[1]._id,
+        }),
+        reason: {
+          type: MoveReasonType.Deploy,
+          unit: TestUtil.getDbDeckUnit({
+            id: units[2]._id,
+          }),
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+          user: users[0]._id,
+        },
+        impacts: [
+          {
+            unit: TestUtil.getDbGameUnit({
+              id: units[3]._id,
+            }),
+            user: users[1]._id,
+            source: {
+              origin: GameUnitOrigin.Hand,
+              user: users[2]._id,
+            },
+          },
+          {
+            unit: TestUtil.getDbGameUnit({
+              id: units[4]._id,
+            }),
+            user: users[3]._id,
+          },
+        ],
+      }),
+      TestUtil.getDbMove({
+        type: MoveType.Unit,
+        unit: TestUtil.getDbGameUnit({
+          id: units[0]._id,
+        }),
+      }),
+      TestUtil.getDbMove({
+        type: MoveType.Leader,
+      }),
+    ]
+    it('returns empty arrays if presolved are empty arrays', async () => {
+      await testresolveUsersAndUnits({
+        presolvedUnits: [],
+        presolvedUsers: [],
+        expected: {
+          units: [],
+          users: [],
+        },
+      })
+    })
+    it('returns single item arrays if presolved are single items', async () => {
+      const presolvedUnits = [TestUtil.getUnit({})]
+      const presolvedUsers = [TestUtil.getUser({})]
+      await testresolveUsersAndUnits({
+        presolvedUnits,
+        presolvedUsers,
+        expected: {
+          units: presolvedUnits,
+          users: presolvedUsers,
+        },
+      })
+    })
+    it('does not resolve units or users in impact if presolved provided', async () => {
+      const presolvedUnits = [TestUtil.getUnit({})]
+      const presolvedUsers = [TestUtil.getUser({})]
+      await testresolveUsersAndUnits({
+        presolvedUnits,
+        presolvedUsers,
+        impacts: [
+          {
+            unit: TestUtil.getDbGameUnit({
+              id: new ObjectId(),
+            }),
+            user: new ObjectId(),
+            source: {
+              origin: GameUnitOrigin.Hand,
+              user: new ObjectId(),
+            },
+          },
+        ],
+        expected: {
+          units: presolvedUnits,
+          users: presolvedUsers,
+        },
+      })
+    })
+    it('returns multiple item arrays if presolved are multiple items', async () => {
+      const presolvedUnits = [TestUtil.getUnit({}), TestUtil.getUnit({})]
+      const presolvedUsers = [TestUtil.getUser({}), TestUtil.getUser({})]
+      await testresolveUsersAndUnits({
+        presolvedUnits,
+        presolvedUsers,
+        expected: {
+          units: presolvedUnits,
+          users: presolvedUsers,
+        },
+      })
+    })
+    it('reaches out to resolve units and users', async () => {
+      const usersSubset = [users[0], users[1], users[2], users[3]]
+      const resolvedUnits = units.map((dbUnit) =>
+        TestUtil.getUnitFromDbUnit({
+          unit: dbUnit,
+        })
+      )
+      const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
+      await testresolveUsersAndUnits({
+        gameUnits: [
+          TestUtil.getDbGameUnit({
+            id: units[0]._id,
+          }),
+          TestUtil.getDbGameUnit({
+            id: units[0]._id,
+          }),
+        ],
+        moves,
+        resolvedUnits,
+        resolvedUsers,
+        expected: {
+          units: resolvedUnits,
+          users: resolvedUsers,
+        },
+        unitsFromIdsCalls: [
+          [
+            {
+              ids: units.map((unit) => unit._id.toString()),
+            },
+          ],
+        ],
+        usersFromIdsCalls: [[usersSubset.map((user) => user._id.toString())]],
+      })
+    })
+    it('resolves userIds only if provided', async () => {
+      const usersSubset = [users[4]]
+      const resolvedUnits = units.map((dbUnit) =>
+        TestUtil.getUnitFromDbUnit({
+          unit: dbUnit,
+        })
+      )
+      const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
+      await testresolveUsersAndUnits({
+        userIds: [users[4]._id, users[4]._id],
+        gameUnits: [
+          TestUtil.getDbGameUnit({
+            id: units[0]._id,
+          }),
+          TestUtil.getDbGameUnit({
+            id: units[0]._id,
+          }),
+        ],
+        moves,
+        resolvedUnits,
+        resolvedUsers,
+        expected: {
+          units: resolvedUnits,
+          users: resolvedUsers,
+        },
+        unitsFromIdsCalls: [
+          [
+            {
+              ids: units.map((unit) => unit._id.toString()),
+            },
+          ],
+        ],
+        usersFromIdsCalls: [[usersSubset.map((user) => user._id.toString())]],
+      })
+    })
+    it('only resolves users if units presolved', async () => {
+      const usersSubset = [users[0], users[1], users[2], users[3]]
+      const resolvedUnits = units.map((dbUnit) =>
+        TestUtil.getUnitFromDbUnit({
+          unit: dbUnit,
+        })
+      )
+      const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
+      await testresolveUsersAndUnits({
+        presolvedUnits: resolvedUnits,
+        gameUnits: [
+          TestUtil.getDbGameUnit({
+            id: units[0]._id,
+          }),
+          TestUtil.getDbGameUnit({
+            id: units[0]._id,
+          }),
+        ],
+        moves,
+        resolvedUnits,
+        resolvedUsers,
+        expected: {
+          units: resolvedUnits,
+          users: resolvedUsers,
+        },
+        usersFromIdsCalls: [[usersSubset.map((user) => user._id.toString())]],
+      })
+    })
+    it('only resolves units if users presolved', async () => {
+      const usersSubset = [users[0], users[1], users[2], users[3]]
+      const resolvedUnits = units.map((dbUnit) =>
+        TestUtil.getUnitFromDbUnit({
+          unit: dbUnit,
+        })
+      )
+      const resolvedUsers = usersSubset.map((dbUser) => TestUtil.getUserFromDbUser(dbUser))
+      await testresolveUsersAndUnits({
+        presolvedUsers: resolvedUsers,
+        gameUnits: [
+          TestUtil.getDbGameUnit({
+            id: units[0]._id,
+          }),
+          TestUtil.getDbGameUnit({
+            id: units[0]._id,
+          }),
+        ],
+        moves,
+        resolvedUnits,
+        resolvedUsers,
+        expected: {
+          units: resolvedUnits,
+          users: resolvedUsers,
+        },
+        unitsFromIdsCalls: [
+          [
+            {
+              ids: units.map((unit) => unit._id.toString()),
+            },
+          ],
+        ],
+      })
+    })
+  })
 })
 
 function testGetContextUser({
@@ -587,4 +884,53 @@ async function testGetGamePlayer({
         ]
       : []
   )
+}
+
+async function testresolveUsersAndUnits({
+  moves,
+  impacts,
+  userIds,
+  gameUnits,
+  presolvedUsers,
+  presolvedUnits,
+  resolvedUnits,
+  resolvedUsers,
+  expected,
+  unitsFromIdsCalls = [],
+  usersFromIdsCalls = [],
+}: {
+  moves?: MoveDbObject[]
+  impacts?: ImpactDbObject[]
+  userIds?: (ObjectId | string)[]
+  gameUnits?: GameUnitDbObject[]
+  presolvedUsers?: User[]
+  presolvedUnits?: Unit[]
+  resolvedUsers?: User[]
+  resolvedUnits?: Unit[]
+  expected: MoveUsersAndUnits
+  unitsFromIdsCalls?: any[][]
+  usersFromIdsCalls?: any[][]
+}) {
+  const unitsFromIdsSpy = jest.spyOn(UnitResolver, 'fromIds')
+  if (resolvedUnits) {
+    unitsFromIdsSpy.mockResolvedValue(resolvedUnits)
+  }
+  const usersFromIdsSpy = jest.spyOn(UserResolver, 'fromIds')
+  if (resolvedUsers) {
+    usersFromIdsSpy.mockResolvedValue(resolvedUsers)
+  }
+
+  await expect(
+    ResolverUtil.resolveUsersAndUnits({
+      gameUnits,
+      impacts,
+      moves,
+      presolvedUnits,
+      presolvedUsers,
+      userIds,
+    })
+  ).resolves.toEqual(expected)
+
+  expect(unitsFromIdsSpy.mock.calls).toEqual(unitsFromIdsCalls)
+  expect(usersFromIdsSpy.mock.calls).toEqual(usersFromIdsCalls)
 }

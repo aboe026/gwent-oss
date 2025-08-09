@@ -49,8 +49,12 @@ async function testRedrawResolution({
   const to = TestUtil.getDbDeckUnit({})
   const from = TestUtil.getDbDeckUnit({})
   const game = TestUtil.getDbGame({})
-  const resolvedTo = TestUtil.getDeckUnitFromDbDeckUnit(to)
-  const resolvedFrom = TestUtil.getDeckUnitFromDbDeckUnit(from)
+  const resolvedTo = TestUtil.getDeckUnitFromDbDeckUnit({
+    deckUnit: to,
+  })
+  const resolvedFrom = TestUtil.getDeckUnitFromDbDeckUnit({
+    deckUnit: from,
+  })
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
   })

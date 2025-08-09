@@ -25,7 +25,9 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
   })
-  const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)
+  const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
+    deckUnit,
+  })
   const resolvedGameDeck = TestUtil.getGameDeckFromDbGameDeck(gameDeck)
   const gameResolverFromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
   const deckUnitResolverFromObjectSpy = jest.spyOn(DeckUnitResolver, 'fromObject').mockResolvedValue(resolvedDeckUnit)

@@ -2,12 +2,24 @@ import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { GameDbObject, GamePlayerDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  GameDbObject,
+  GamePlayerDbObject,
+  GameStatus,
+  GameUnitDbObject,
+  ImpactDbObject,
+  MoveDbObject,
+  MoveUnitDbObject,
+  UserDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
+import { MoveType, RequestedFields } from '@gwent/graphql-schema'
 import { NOT_AUTHENTICATED_MESSAGE, REDACTED } from '@gwent/constants'
 import PresentableError from '../../util/presentable-error'
-import { RequestedFields } from '@gwent/graphql-schema'
+import { Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import UnitResolver from './types/unit-resolver'
+import UserResolver from './types/user-resolver'
 
 /**
  * A class for common utilities used across resolvers.
@@ -184,6 +196,128 @@ export default class ResolverUtil {
       player: players[0],
     }
   }
+
+  /**
+   * Resolves the Units and Users in a Game.
+   *
+   * @param config The configuration used to resolve the Units and Users in a Game.
+   * @param config.moves Potential Move objects that are apart of the game.
+   * @param config.impacts Potential Impact objects that are apart of the game.
+   * @param config.userIds IDs of all the users on the game. If provided, will not look for users elsewhere (moves, impacts).
+   * @param config.gameUnits The units currently on the battlefield of a game.
+   * @param config.presolvedUsers All the users on the Game. If provided, will not attempt to resolve users.
+   * @param config.presolvedUnits All the units on the Game. If provided, will not attempt to resolve any units.
+   * @returns All the Users and Units on the game, resolved to their GraphQL types.
+   */
+  static async resolveUsersAndUnits({
+    moves,
+    impacts,
+    userIds,
+    gameUnits,
+    presolvedUsers,
+    presolvedUnits,
+  }: {
+    moves?: MoveDbObject[]
+    impacts?: ImpactDbObject[]
+    userIds?: (ObjectId | string)[]
+    gameUnits?: GameUnitDbObject[]
+    presolvedUsers?: User[]
+    presolvedUnits?: Unit[]
+  }): Promise<MoveUsersAndUnits> {
+    const impactsToResolve: ImpactDbObject[] = impacts || []
+    let resolvedUsers: User[] = presolvedUsers || []
+    let resolvedUnits: Unit[] = presolvedUnits || []
+
+    const userIdsToResolve: string[] = []
+    const unitIdsToResolve: string[] = []
+
+    if (!presolvedUsers && userIds) {
+      for (const userId of userIds) {
+        const userStringId = userId.toString()
+        if (!userIdsToResolve.includes(userStringId)) {
+          userIdsToResolve.push(userStringId)
+        }
+      }
+    }
+
+    if (gameUnits && !presolvedUnits) {
+      for (const gameUnit of gameUnits) {
+        const unitId = gameUnit.unit.toString()
+        if (!unitIdsToResolve.includes(unitId)) {
+          unitIdsToResolve.push(unitId)
+        }
+      }
+    }
+
+    if (moves && (!presolvedUnits || !presolvedUsers)) {
+      for (const move of moves) {
+        if (move.type === MoveType.Unit) {
+          const unitMove = move as MoveUnitDbObject
+          const unitId = unitMove.unit.unit.toString()
+          if (!presolvedUnits && !unitIdsToResolve.includes(unitId)) {
+            unitIdsToResolve.push(unitId)
+          }
+          if (!presolvedUnits && unitMove.reason.unit) {
+            const reasonUnitId = unitMove.reason.unit.unit.toString()
+            if (!unitIdsToResolve.includes(reasonUnitId)) {
+              unitIdsToResolve.push(reasonUnitId)
+            }
+          }
+          if (unitMove.impacts && !impacts) {
+            for (const impact of unitMove.impacts) {
+              impactsToResolve.push(impact)
+            }
+          }
+          if (!presolvedUsers && !userIds && unitMove.source.user) {
+            const userId = unitMove.source.user.toString()
+            if (!userIdsToResolve.includes(userId)) {
+              userIdsToResolve.push(userId)
+            }
+          }
+        }
+      }
+    }
+
+    for (const impact of impactsToResolve) {
+      if (!presolvedUnits) {
+        const impactUnitId = impact.unit.unit.toString()
+        if (!unitIdsToResolve.includes(impactUnitId)) {
+          unitIdsToResolve.push(impactUnitId)
+        }
+      }
+      if (!presolvedUsers && !userIds) {
+        const impactUserId = impact.user.toString()
+        if (!userIdsToResolve.includes(impactUserId)) {
+          userIdsToResolve.push(impactUserId)
+        }
+        if (impact.source?.user) {
+          const impactSourceUserId = impact.source.user.toString()
+          if (!userIdsToResolve.includes(impactSourceUserId)) {
+            userIdsToResolve.push(impactSourceUserId)
+          }
+        }
+      }
+    }
+
+    if (!presolvedUnits) {
+      resolvedUnits = await UnitResolver.fromIds({
+        ids: unitIdsToResolve,
+      })
+    }
+    if (!presolvedUsers) {
+      resolvedUsers = await UserResolver.fromIds(userIdsToResolve)
+    }
+
+    return {
+      units: resolvedUnits,
+      users: resolvedUsers,
+    }
+  }
+}
+
+export interface MoveUsersAndUnits {
+  users: User[]
+  units: Unit[]
 }
 
 export interface GamePlayerResponse {

@@ -39,6 +39,20 @@ fragment GamePlayerFragment on GamePlayer {
             id
             name
           }
+          source {
+            origin
+          }
+        }
+        reason {
+          type
+          unit {
+            unit {
+              name
+            }
+          }
+        }
+        source {
+          origin
         }
       }
     }

@@ -90,15 +90,61 @@ describe('unit-store', () => {
         },
       })
     })
-    it('calls to read if ids factions and deckable all specified', async () => {
+    it('calls to read with namePrefix if supplied', async () => {
+      const namePrefix = 'name-prefix'
+      await testGet({
+        input: {
+          namePrefix,
+        },
+        expectedFilter: {
+          $text: {
+            $search: namePrefix,
+          },
+        },
+      })
+    })
+    it('calls to read with names if supplied', async () => {
+      const names = ['name1', 'name2']
+      await testGet({
+        input: {
+          names,
+        },
+        expectedFilter: {
+          name: {
+            $in: names,
+          },
+        },
+      })
+    })
+    it('calls to read with ignoreIds if supplied', async () => {
+      const id1 = new ObjectId()
+      const id2 = new ObjectId().toString()
+      await testGet({
+        input: {
+          ignoreIds: [id1, id2],
+        },
+        expectedFilter: {
+          _id: {
+            $nin: [id1, new ObjectId(id2)],
+          },
+        },
+      })
+    })
+    it('calls to read if all inputs specified', async () => {
       const id = new ObjectId()
       const faction = new ObjectId()
       const deckable = true
+      const namePrefix = 'name-prefix'
+      const name = 'name'
+      const ignoreId = new ObjectId()
       await testGet({
         input: {
           deckable,
           factionIds: [faction],
           ids: [id],
+          namePrefix,
+          names: [name],
+          ignoreIds: [ignoreId],
         },
         expectedFilter: {
           faction: {
@@ -107,6 +153,13 @@ describe('unit-store', () => {
           deckable,
           _id: {
             $in: [id],
+            $nin: [ignoreId],
+          },
+          $text: {
+            $search: namePrefix,
+          },
+          name: {
+            $in: [name],
           },
         },
       })

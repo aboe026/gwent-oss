@@ -1,6 +1,6 @@
 import ApiClient from './api-client'
 import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/graphql-schema/resolver-typings'
-import { E2eHelper, MoralingExpected, ScorchingExpected } from './e2e-helper'
+import { E2eHelper, MoralingExpected, MusteringExpected, ScorchingExpected } from './e2e-helper'
 import E2eUtil from './e2e-util'
 import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
 import env from './e2e-env'
@@ -97,7 +97,7 @@ export class GameManager {
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
-    mustering?: MoralingExpected[]
+    mustering?: MusteringExpected[]
     impacts?: number
     verify?: boolean
   }): Promise<DeckUnit> {
@@ -368,6 +368,7 @@ export default async function createGameManager({
       mongoDatabaseName: env.MONGO_DB,
       unitNames: self.handUnitNames,
       userId: selfUser.id,
+      excludeNames: self.excludeHandUnitNames,
     })
   }
   if (opponent?.handUnitNames) {
@@ -377,6 +378,7 @@ export default async function createGameManager({
       mongoDatabaseName: env.MONGO_DB,
       unitNames: opponent.handUnitNames,
       userId: opponentUser.id,
+      excludeNames: opponent.excludeHandUnitNames,
     })
   }
 
@@ -443,6 +445,7 @@ interface GameManagerSetupPlayer {
   specialUnitNames?: string[]
   handUnitNames?: string[]
   ignoreUnitNames?: string[]
+  excludeHandUnitNames?: string[]
 }
 
 interface GameManagerPlayer {

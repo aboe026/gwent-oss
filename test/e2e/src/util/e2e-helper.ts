@@ -1,6 +1,16 @@
 import ApiClient from './api-client'
 import Banner from '../components/banner'
-import { Combat, Deck, DeckUnit, EffectKey, FactionKey, GameDeck, User } from '@gwent/graphql-schema/resolver-typings'
+import {
+  Combat,
+  Deck,
+  DeckUnit,
+  EffectKey,
+  FactionKey,
+  GameDeck,
+  MoveReasonType,
+  GameUnitOrigin,
+  User,
+} from '@gwent/graphql-schema/resolver-typings'
 import GamePage, { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'
@@ -67,6 +77,14 @@ export class E2eHelper {
       factions: [faction, FactionKey.Neutral],
     })
     const unitNames = units.filter((unit) => !unit.special).map((unit) => unit.name)
+    if (ignores) {
+      for (const ignore of ignores) {
+        const index = unitNames.indexOf(ignore)
+        if (index >= 0) {
+          unitNames.splice(index, 1)
+        }
+      }
+    }
     for (const special of specials) {
       const expectedOccurrences = specials.filter((name) => name === special).length
       const currentOccurrences = unitNames.filter((name) => name === special).length
@@ -82,14 +100,7 @@ export class E2eHelper {
         unitNames.push(special)
       }
     }
-    if (ignores) {
-      for (const ignore of ignores) {
-        const index = unitNames.indexOf(ignore)
-        if (index >= 0) {
-          unitNames.splice(index, 1)
-        }
-      }
-    }
+
     return unitNames
   }
 
@@ -166,6 +177,7 @@ export class E2eHelper {
     strength?: number
     row: Combat
   }): void {
+    player.score = (player.score || 0) + (strength || 0)
     const unit: CombatUnit = {
       name: unitName,
       strength,
@@ -328,14 +340,13 @@ export class E2eHelper {
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
-    mustering?: MoralingExpected[]
+    mustering?: MusteringExpected[]
     impacts?: number
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
     if (!row) {
       row = deckUnit.unit.combats ? deckUnit.unit.combats[0] : Combat.Close
     }
-    player.score = (player.score || 0) + strength
     player.hand = (player.hand || STARTING_HAND_SIZE) - 1
     gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
     if (deckUnit.unit.name === 'Scorch') {
@@ -347,6 +358,23 @@ export class E2eHelper {
         row,
         strength,
       })
+    }
+    if (mustering) {
+      for (const muster of mustering) {
+        E2eHelper.addUnitToGamePlayer({
+          player: muster.player,
+          unitName: muster.name,
+          row: muster.row,
+          strength: muster.effectiveStrength,
+        })
+        if (muster.hand) {
+          gameDeck.hand = gameDeck.hand.filter((deckUnit) => deckUnit.unit.name !== muster.name)
+          player.hand = gameDeck.hand.length
+        } else {
+          gameDeck.undrawn = gameDeck.undrawn.filter((deckUnit) => deckUnit.unit.name !== muster.name)
+          player.undrawn = gameDeck.undrawn.length
+        }
+      }
     }
     if (moraling) {
       for (const morale of moraling) {
@@ -390,10 +418,30 @@ export class E2eHelper {
           effectKey && impacts !== -1
             ? {
                 effectKey,
-                number: impacts !== undefined ? impacts : (scorching || moraling)?.length || 0,
+                number: impacts !== undefined ? impacts : (scorching || moraling || mustering)?.length || 0,
               }
             : undefined,
       })
+    }
+    if (moves && mustering) {
+      for (const muster of mustering) {
+        moves.push({
+          userName: muster.player.name,
+          unitName: muster.name,
+          combatRow: muster.row,
+          reason: {
+            name: deckUnit.unit.name,
+            type: MoveReasonType.Muster,
+          },
+          impacts: muster.impactable
+            ? {
+                effectKey: EffectKey.Muster,
+                number: 0,
+              }
+            : undefined,
+          origin: muster.hand ? GameUnitOrigin.Hand : GameUnitOrigin.Undrawn,
+        })
+      }
     }
     if (switchTurnsWith) {
       player.turn = undefined
@@ -713,4 +761,13 @@ export interface MoralingExpected {
   name: string
   row: Combat
   effectiveStrength: number
+}
+
+export interface MusteringExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
+  impactable?: boolean
+  hand?: boolean
 }

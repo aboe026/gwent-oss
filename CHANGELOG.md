@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.14.0 - 2025-08-09
+
+### Added
+
+- Muster effect ([#39](https://github.com/aboe026/gwent/pull/39)) (Adam Boe)
+
 ## 0.13.1 - 2025-07-15
 
 ### Fixed
@@ -29,7 +35,7 @@
 
 ### Added
 
-- Scorch Effect ([#34](https://github.com/aboe026/gwent/pull/34)) (Adam Boe)
+- Scorch effect ([#34](https://github.com/aboe026/gwent/pull/34)) (Adam Boe)
 
 ### Fixed
 

@@ -1,13 +1,15 @@
-import eslint from '@eslint/js'
-import jsdocPlugin from 'eslint-plugin-jsdoc'
-import prettierPlugin from 'eslint-plugin-prettier'
-import tseslint from 'typescript-eslint'
+const eslint = require('@eslint/js') // eslint-disable-line no-undef,@typescript-eslint/no-require-imports
+const jsdoc = require('eslint-plugin-jsdoc') // eslint-disable-line no-undef,@typescript-eslint/no-require-imports
+const tseslint = require('typescript-eslint') // eslint-disable-line no-undef,@typescript-eslint/no-require-imports
 
-export default tseslint.config(
+// eslint-disable-next-line no-undef
+module.exports = tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
+  jsdoc.configs['flat/recommended-typescript'],
   {
     ignores: [
+      '**/*@tmp*', // Jenkins temp files
       '**/build/**',
       '**/coverage/**',
       '**/generated/**',
@@ -35,12 +37,20 @@ export default tseslint.config(
       },
     },
     plugins: {
-      jsdoc: jsdocPlugin,
-      prettier: prettierPlugin,
+      jsdoc,
     },
     rules: {
-      'prettier/prettier': 'error',
-      'jsdoc/tag-lines': ['error', 'any', { startLines: 1 }],
+      'jsdoc/tag-lines': ['warn', 'any', { startLines: 1 }],
+      'jsdoc/require-jsdoc': [
+        'warn',
+        {
+          require: {
+            FunctionDeclaration: true,
+            MethodDefinition: true,
+            ClassDeclaration: true,
+          },
+        },
+      ],
     },
   },
   {
@@ -55,7 +65,7 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
-      ...Object.fromEntries(Object.keys(jsdocPlugin.rules ?? {}).map((rule) => [`jsdoc/${rule}`, 'off'])),
+      ...Object.fromEntries(Object.keys(jsdoc.rules ?? {}).map((rule) => [`jsdoc/${rule}`, 'off'])),
     },
   }
 )

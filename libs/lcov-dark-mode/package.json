@@ -1,6 +1,6 @@
 {
   "name": "@gwent/lcov-dark-mode",
-  "version": "0.13.1",
+  "version": "0.14.0",
   "author": "Adam Boe",
   "description": "Jest reporter to make locv HTML files dark mode/theme.",
   "main": "build/src/index.js",

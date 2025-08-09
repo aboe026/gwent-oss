@@ -19,12 +19,11 @@ import {
   Game,
   GamePlayer,
   GameStatus,
-  MoveUnit,
   PlayerCombatRow,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
 import { ensureUnitsInHand } from '@gwent/test-utils'
-import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
+import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
@@ -134,10 +133,9 @@ describe('effect-morale', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: {
                     score: unitSelf1.unit.strength || 0,
@@ -163,13 +161,21 @@ describe('effect-morale', () => {
   })
   it('morale unit played before normal unit increases normal unit effective strength by 1 after normal unit played', async () => {
     const unitName1 = 'Milva'
-    const unitName2 = 'Toruviel'
+    const unitName2 = 'Siegfried of Denesle'
+    const unitName3 = 'Toruviel'
     await ensureUnitsInHand({
       gameId: game.id,
       userId: self.id,
       mongoConnectionString: funcEnv.MONGO_URL,
       mongoDatabaseName: funcEnv.MONGO_DB,
-      unitNames: [unitName1, unitName2],
+      unitNames: [unitName1, unitName3],
+    })
+    await ensureUnitsInHand({
+      gameId: game.id,
+      userId: opponent.id,
+      mongoConnectionString: funcEnv.MONGO_URL,
+      mongoDatabaseName: funcEnv.MONGO_DB,
+      unitNames: [unitName2],
     })
 
     const gameDeckSelf = await getGameDeck({
@@ -198,7 +204,10 @@ describe('effect-morale', () => {
     })
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
 
-    const unitOpponent1 = gameDeckOpponent.hand[0]
+    const unitOpponent1 = gameDeckOpponent.hand.find((unit) => unit.unit.name === unitName2)
+    if (!unitOpponent1) {
+      throw Error(`Could not find unit "${unitName2}" in hand`)
+    }
     const combatUnitOpponent = unitOpponent1.unit.combats ? unitOpponent1.unit.combats[0] : Combat.Close
     await playUnit({
       gameId: game.id,
@@ -208,9 +217,9 @@ describe('effect-morale', () => {
     })
     gameDeckOpponent.hand = gameDeckOpponent.hand.filter((handUnit) => handUnit.unit.id !== unitOpponent1.unit.id)
 
-    const unitSelf2 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName2)
+    const unitSelf2 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName3)
     if (!unitSelf2) {
-      throw Error(`Could not find unit "${unitName2}" in hand`)
+      throw Error(`Could not find unit "${unitName3}" in hand`)
     }
 
     const expectedCombatRowOpponent: PlayerCombatRow = {
@@ -231,10 +240,9 @@ describe('effect-morale', () => {
         expectizePlayerRound({
           close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           moves: [
-            {
-              created: expect.any(Date),
+            expectizeMoveUnit({
               unit: unitOpponent1,
-            } as MoveUnit,
+            }),
           ],
           ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
@@ -274,14 +282,12 @@ describe('effect-morale', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
-                    {
-                      created: expect.any(Date),
+                    }),
+                    expectizeMoveUnit({
                       unit: unitSelf2,
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: {
                     score: 13,
@@ -321,13 +327,21 @@ describe('effect-morale', () => {
   })
   it('morale unit played after normal unit increases normal unit effective strength by 1 after morale unit played', async () => {
     const unitName1 = 'Toruviel'
-    const unitName2 = 'Milva'
+    const unitName2 = 'Siegfried of Denesle'
+    const unitName3 = 'Milva'
     await ensureUnitsInHand({
       gameId: game.id,
       userId: self.id,
       mongoConnectionString: funcEnv.MONGO_URL,
       mongoDatabaseName: funcEnv.MONGO_DB,
-      unitNames: [unitName1, unitName2],
+      unitNames: [unitName1, unitName3],
+    })
+    await ensureUnitsInHand({
+      gameId: game.id,
+      userId: opponent.id,
+      mongoConnectionString: funcEnv.MONGO_URL,
+      mongoDatabaseName: funcEnv.MONGO_DB,
+      unitNames: [unitName2],
     })
 
     const gameDeckSelf = await getGameDeck({
@@ -352,7 +366,10 @@ describe('effect-morale', () => {
     })
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
 
-    const unitOpponent1 = gameDeckOpponent.hand[0]
+    const unitOpponent1 = gameDeckOpponent.hand.find((unit) => unit.unit.name === unitName2)
+    if (!unitOpponent1) {
+      throw Error(`Could not find unit "${unitName2}" in hand`)
+    }
     const combatUnitOpponent = unitOpponent1.unit.combats ? unitOpponent1.unit.combats[0] : Combat.Close
     await playUnit({
       gameId: game.id,
@@ -362,13 +379,13 @@ describe('effect-morale', () => {
     })
     gameDeckOpponent.hand = gameDeckOpponent.hand.filter((handUnit) => handUnit.unit.id !== unitOpponent1.unit.id)
 
-    const unitSelf2 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName2)
+    const unitSelf2 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName3)
     if (!unitSelf2) {
-      throw Error(`Could not find unit "${unitName2}" in hand`)
+      throw Error(`Could not find unit "${unitName3}" in hand`)
     }
     const effectMorale = unitSelf2.unit.effects?.find((effect) => effect.key === EffectKey.Morale)
     if (!effectMorale) {
-      throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName2}" unit`)
+      throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName3}" unit`)
     }
 
     const expectedCombatRowOpponent: PlayerCombatRow = {
@@ -389,10 +406,9 @@ describe('effect-morale', () => {
         expectizePlayerRound({
           close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           moves: [
-            {
-              created: expect.any(Date),
+            expectizeMoveUnit({
               unit: unitOpponent1,
-            } as MoveUnit,
+            }),
           ],
           ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
@@ -432,17 +448,15 @@ describe('effect-morale', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
-                    {
-                      created: expect.any(Date),
+                    }),
+                    expectizeMoveUnit({
                       unit: unitSelf2,
                       impacts: [
-                        {
-                          unit: {
-                            ...unitSelf1,
+                        TestUtil.getImpact({
+                          unit: TestUtil.getGameUnit({
+                            unit: unitSelf1.unit,
                             effectiveStrength: 3,
                             effects: [
                               {
@@ -454,11 +468,11 @@ describe('effect-morale', () => {
                                 total: 3,
                               },
                             ],
-                          },
+                          }),
                           user: self,
-                        },
+                        }),
                       ],
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: {
                     score: 13,
@@ -498,13 +512,21 @@ describe('effect-morale', () => {
   })
   it('morale unit does not effect hero', async () => {
     const unitName1 = 'Eithne'
-    const unitName2 = 'Milva'
+    const unitName2 = 'Siegfried of Denesle'
+    const unitName3 = 'Milva'
     await ensureUnitsInHand({
       gameId: game.id,
       userId: self.id,
       mongoConnectionString: funcEnv.MONGO_URL,
       mongoDatabaseName: funcEnv.MONGO_DB,
-      unitNames: [unitName1, unitName2],
+      unitNames: [unitName1, unitName3],
+    })
+    await ensureUnitsInHand({
+      gameId: game.id,
+      userId: opponent.id,
+      mongoConnectionString: funcEnv.MONGO_URL,
+      mongoDatabaseName: funcEnv.MONGO_DB,
+      unitNames: [unitName2],
     })
 
     const gameDeckSelf = await getGameDeck({
@@ -529,7 +551,10 @@ describe('effect-morale', () => {
     })
     gameDeckSelf.hand = gameDeckSelf.hand.filter((handUnit) => handUnit.unit.id !== unitSelf1.unit.id)
 
-    const unitOpponent1 = gameDeckOpponent.hand[0]
+    const unitOpponent1 = gameDeckOpponent.hand.find((unit) => unit.unit.name === unitName2)
+    if (!unitOpponent1) {
+      throw Error(`Could not find unit "${unitName2}" in hand`)
+    }
     const combatUnitOpponent = unitOpponent1.unit.combats ? unitOpponent1.unit.combats[0] : Combat.Close
     await playUnit({
       gameId: game.id,
@@ -539,13 +564,13 @@ describe('effect-morale', () => {
     })
     gameDeckOpponent.hand = gameDeckOpponent.hand.filter((handUnit) => handUnit.unit.id !== unitOpponent1.unit.id)
 
-    const unitSelf2 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName2)
+    const unitSelf2 = gameDeckSelf.hand.find((unit) => unit.unit.name === unitName3)
     if (!unitSelf2) {
-      throw Error(`Could not find unit "${unitName2}" in hand`)
+      throw Error(`Could not find unit "${unitName3}" in hand`)
     }
     const effectMorale = unitSelf2.unit.effects?.find((effect) => effect.key === EffectKey.Morale)
     if (!effectMorale) {
-      throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName2}" unit`)
+      throw Error(`Could not find "${EffectKey.Morale}" effect on "${unitName3}" unit`)
     }
 
     const expectedCombatRowOpponent: PlayerCombatRow = {
@@ -566,10 +591,9 @@ describe('effect-morale', () => {
         expectizePlayerRound({
           close: combatUnitOpponent === Combat.Close ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           moves: [
-            {
-              created: expect.any(Date),
+            expectizeMoveUnit({
               unit: unitOpponent1,
-            } as MoveUnit,
+            }),
           ],
           ranged: combatUnitOpponent === Combat.Ranged ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
           siege: combatUnitOpponent === Combat.Siege ? expectedCombatRowOpponent : TestUtil.getPlayerCombatRow({}),
@@ -609,14 +633,12 @@ describe('effect-morale', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
-                    {
-                      created: expect.any(Date),
+                    }),
+                    expectizeMoveUnit({
                       unit: unitSelf2,
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: {
                     score: 20,

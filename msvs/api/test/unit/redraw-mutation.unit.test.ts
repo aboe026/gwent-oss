@@ -60,7 +60,9 @@ async function testRedrawMutation({
   }
   const from = TestUtil.getDbDeckUnit({})
   const to = TestUtil.getDbDeckUnit({})
-  const resolvedTo = TestUtil.getDeckUnitFromDbDeckUnit(to)
+  const resolvedTo = TestUtil.getDeckUnitFromDbDeckUnit({
+    deckUnit: to,
+  })
   const args: MutationRedrawArgs = {
     game: game._id.toString(),
     unit: from.unit.toString(),

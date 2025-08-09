@@ -5,6 +5,9 @@ import { GameDbObject, GamePlayerDbObject } from '@gwent/graphql-schema/database
 import PresentableError from '../../../../util/presentable-error'
 import { sortObjectArray } from '@gwent/utils'
 
+/**
+ * A class for setting the turn of a Game in the current Game round.
+ */
 export default class SetNextTurnForCurrentRound {
   private static logger = getLogger('SetNextTurnForCurrentRound')
 

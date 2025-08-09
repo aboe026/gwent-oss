@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import EventManager from '../../../event-manager'
 import { Game, User } from '@gwent/graphql-schema/resolver-typings'
@@ -6,6 +7,7 @@ import { GameAddedPayload } from '../../subscription-resolver'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GameResolver from '../../types/game-resolver'
 import { PubSubEvents } from '@gwent/constants'
+import UserResolver from '../../types/user-resolver'
 
 /**
  * A class for resolving the addGame GraphQL Mutation.
@@ -20,20 +22,23 @@ export default class AddGameResolution {
    * @param config.game The new game that was added.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.opponents The name of the opponents participating in the game.
+   * @param config.creatorId The ID of the user which created the game.
    * @returns The Game that was added with fields resolved.
    */
   static async addGameResolution({
     game,
     logPrefix,
     opponents,
+    creatorId,
   }: {
     game: GameDbObject
     logPrefix: string
     opponents: User[]
+    creatorId: ObjectId
   }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
       game,
-      users: opponents,
+      users: [...opponents, await UserResolver.fromId(creatorId)],
     })
 
     if (AddGameResolution.logger.isTraceEnabled()) {

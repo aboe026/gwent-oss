@@ -15,6 +15,9 @@ import {
   GameStatus,
   GameUnit,
   GameUnitEffect,
+  GameUnitOrigin,
+  GameUnitSource,
+  Impact,
   Leader,
   PlayerCombatRow,
   Redraw,
@@ -34,8 +37,15 @@ import {
   GamePlayerDbObject,
   GameUnitDbObject,
   GameUnitEffectDbObject,
+  GameUnitSourceDbObject,
+  ImpactDbObject,
   LeaderDbObject,
   MoveDbObject,
+  MoveLeaderDbObject,
+  MovePassDbObject,
+  MoveReasonType,
+  MoveUnitDbObject,
+  MoveUnitReasonDbObject,
   PlayerCombatRowDbObject,
   PlayerRoundDbObject,
   RedrawDbObject,
@@ -43,6 +53,7 @@ import {
   UnitDbObject,
   UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { MoveType } from '@gwent/graphql-schema'
 import { STARTING_HAND_SIZE, STARTING_LIVES } from '@gwent/constants'
 
 export default class TestUtil {
@@ -162,7 +173,7 @@ export default class TestUtil {
     row,
   }: {
     artStyle?: number
-    id?: ObjectId
+    id?: ObjectId | string
     effectiveStrength?: number | null
     effects?: GameUnitEffectDbObject[]
     row?: Combat
@@ -176,12 +187,28 @@ export default class TestUtil {
     }
   }
 
-  static getDeckUnitFromDbDeckUnit(deckUnit: DeckUnitDbObject): DeckUnit {
+  static getGameUnitFromDbGameUnit({ gameUnit, unit }: { gameUnit: GameUnitDbObject; unit?: Unit }): GameUnit {
+    return {
+      artStyle: gameUnit.artStyle,
+      unit:
+        unit ||
+        TestUtil.getUnit({
+          id: gameUnit.unit,
+        }),
+      effectiveStrength: gameUnit.effectiveStrength,
+      effects: [],
+      row: gameUnit.row ? (gameUnit.row as Combat) : undefined,
+    }
+  }
+
+  static getDeckUnitFromDbDeckUnit({ deckUnit, unit }: { deckUnit: DeckUnitDbObject; unit?: Unit }): DeckUnit {
     return {
       artStyle: deckUnit.artStyle,
-      unit: TestUtil.getUnit({
-        id: deckUnit.unit,
-      }),
+      unit:
+        unit ||
+        TestUtil.getUnit({
+          id: deckUnit.unit,
+        }),
     }
   }
 
@@ -645,15 +672,31 @@ export default class TestUtil {
 
   static getGameDeckFromDbGameDeck(gameDeck: GameDeckDbObject): GameDeck {
     return {
-      discard: gameDeck.discard.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
-      hand: gameDeck.hand.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      discard: gameDeck.discard.map((deckUnit) =>
+        TestUtil.getDeckUnitFromDbDeckUnit({
+          deckUnit,
+        })
+      ),
+      hand: gameDeck.hand.map((deckUnit) =>
+        TestUtil.getDeckUnitFromDbDeckUnit({
+          deckUnit,
+        })
+      ),
       redraws: gameDeck.redraws.map((redraw) => {
         return {
-          from: TestUtil.getDeckUnitFromDbDeckUnit(redraw.from),
-          to: TestUtil.getDeckUnitFromDbDeckUnit(redraw.to),
+          from: TestUtil.getDeckUnitFromDbDeckUnit({
+            deckUnit: redraw.from,
+          }),
+          to: TestUtil.getDeckUnitFromDbDeckUnit({
+            deckUnit: redraw.to,
+          }),
         }
       }),
-      undrawn: gameDeck.undrawn.map((deckUnit) => TestUtil.getDeckUnitFromDbDeckUnit(deckUnit)),
+      undrawn: gameDeck.undrawn.map((deckUnit) =>
+        TestUtil.getDeckUnitFromDbDeckUnit({
+          deckUnit,
+        })
+      ),
       from: gameDeck.from
         ? TestUtil.getDeckFromDbDeck({
             deck: gameDeck.from,
@@ -666,6 +709,51 @@ export default class TestUtil {
     return {
       score,
       units,
+    }
+  }
+
+  static getDbMove({
+    type,
+    reason = {
+      type: MoveReasonType.Deploy,
+    },
+    source = {
+      origin: GameUnitOrigin.Hand,
+    },
+    unit = TestUtil.getDbGameUnit({}),
+    leaderId = new ObjectId(),
+    impacts,
+  }: {
+    type: MoveType
+    reason?: MoveUnitReasonDbObject
+    source?: GameUnitSourceDbObject
+    unit?: GameUnitDbObject
+    leaderId?: ObjectId
+    impacts?: ImpactDbObject[]
+  }): MoveDbObject {
+    if (type === MoveType.Unit) {
+      const unitMove: MoveUnitDbObject = {
+        created: new Date(),
+        reason,
+        source,
+        type: MoveType.Unit,
+        unit,
+        impacts,
+      }
+      return unitMove
+    } else if (type === MoveType.Leader) {
+      const leaderMove: MoveLeaderDbObject = {
+        created: new Date(),
+        leader: leaderId,
+        type: MoveType.Leader,
+      }
+      return leaderMove
+    } else {
+      const passMove: MovePassDbObject = {
+        created: new Date(),
+        type: MoveType.Pass,
+      }
+      return passMove
     }
   }
 
@@ -827,13 +915,13 @@ export default class TestUtil {
     artStyle = 1,
     effectiveStrength,
     effects = [],
-    row,
+    row = null,
   }: {
     unit: Unit
     artStyle?: number
     effectiveStrength?: number
     effects?: GameUnitEffect[]
-    row?: Combat
+    row?: Combat | null
   }): GameUnit {
     return {
       artStyle,
@@ -841,6 +929,51 @@ export default class TestUtil {
       effectiveStrength: effectiveStrength || (unit.strength === undefined ? null : unit.strength),
       effects,
       row,
+    }
+  }
+
+  static getDbImpact({
+    unit = TestUtil.getDbGameUnit({}),
+    user = new ObjectId(),
+    source,
+  }: {
+    unit?: GameUnitDbObject
+    user?: ObjectId
+    source?: GameUnitSourceDbObject
+  }): ImpactDbObject {
+    return {
+      unit,
+      user,
+      source,
+    }
+  }
+
+  static getImpact({
+    unit,
+    user,
+    source = null,
+  }: {
+    unit: GameUnit
+    user: User
+    source?: GameUnitSource | null
+  }): Impact {
+    return {
+      unit,
+      user,
+      source,
+    }
+  }
+
+  static getSource({
+    origin = GameUnitOrigin.Hand,
+    user = null,
+  }: {
+    origin?: GameUnitOrigin
+    user?: User | null
+  }): GameUnitSource {
+    return {
+      origin,
+      user,
     }
   }
 }

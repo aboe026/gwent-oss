@@ -178,6 +178,24 @@ export function getMoveFragment() {
       impacts {
         ${getImpactFragment()}
       }
+      reason {
+        type
+        unit {
+          ${getDeckUnitFragment()}
+        }
+      }
+      source {
+        ${getSourceFragment()}
+      }
+    }
+  `
+}
+
+export function getSourceFragment(): string {
+  return `
+    origin
+    user {
+      ${getUserFragment()}
     }
   `
 }
@@ -189,6 +207,9 @@ export function getImpactFragment(): string {
     }
     user {
       ${getUserFragment()}
+    }
+    source {
+      ${getSourceFragment()}
     }
   `
 }
@@ -305,6 +326,7 @@ export function getGameUnitFragment() {
       }
       total
     }
+    row
     unit {
       ${getUnitFragment()}
     }

@@ -13,6 +13,8 @@ import {
   Impact,
   GameUnit,
   MoveUnit,
+  MoveReasonType,
+  GameUnitOrigin,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { getApolloError } from '../../util/error-util'
@@ -125,10 +127,23 @@ export default function GameHistory({
                     )
                     pointable = true
                     primaryText = playerMove.move.unit.unit.name
-                    const placement = playerMove.move.unit.row
+                    let placement = playerMove.move.unit.row
                       ? `as ${toTitleCase(playerMove.move.unit.row)}`
                       : 'to battlefield'
-                    secondaryText = `deployed ${placement}`
+                    if (playerMove.move.reason.unit?.unit.name) {
+                      placement += ` by ${playerMove.move.reason.unit?.unit.name}`
+                    }
+                    let reason = 'deployed'
+                    let source = ''
+                    if (playerMove.move.reason.type === MoveReasonType.Muster) {
+                      reason = 'mustered'
+                      if (playerMove.move.source.origin === GameUnitOrigin.Hand) {
+                        source = ' from Hand'
+                      } else if (playerMove.move.source.origin === GameUnitOrigin.Undrawn) {
+                        source = ' from Draw pile'
+                      }
+                    }
+                    secondaryText = `${reason} ${placement}${source}`
                     image = playerMove.move.unit.unit.images[playerMove.move.unit.artStyle - 1]
                     imageTitle = playerMove.move.unit.unit.name
 
@@ -379,7 +394,7 @@ function renderImpacts({
   for (const group of groups) {
     const sortedImpacts = sortObjectArray({
       array: group,
-      sortProperties: ['unit.unit.name', 'unit.unit.id'],
+      sortProperties: ['unit.unit.name', 'source.origin', 'unit.unit.id'],
     })
     for (const impact of sortedImpacts) {
       units.push({
@@ -392,7 +407,7 @@ function renderImpacts({
   return groups.map((group, groupIndex) => {
     const sortedImpacts = sortObjectArray({
       array: group,
-      sortProperties: ['unit.unit.name', 'unit.unit.id'],
+      sortProperties: ['unit.unit.name', 'source.origin', 'unit.unit.id'],
     })
 
     return (
@@ -409,6 +424,7 @@ function renderImpacts({
             }`
             const description = getImpactDescription({
               effectKey,
+              origin: impactedUnit.source?.origin,
             })
             const isSelected =
               historyCardSelected &&

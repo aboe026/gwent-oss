@@ -56,6 +56,13 @@ export default class EffectResolver {
     return effects.map((effect) => EffectResolver.fromObject(effect))
   }
 
+  /**
+   * Retrieves an Effect with the given ID and converts it to the GraphQL object equivalent.
+   *
+   * @param id The ObjectId of the Effect to convert.
+   * @returns The resolved Effect object with the given ID.
+   * @throws Error if an Effect with the given ID does not exist.
+   */
   static async fromId(id: string | ObjectId): Promise<Effect> {
     const effects = await EffectResolver.fromIds([id])
     return effects[0]

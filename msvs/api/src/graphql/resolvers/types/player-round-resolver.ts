@@ -1,14 +1,8 @@
-import { GameUnit, Leader, Move, PlayerRound, RoundResult, Unit } from '@gwent/graphql-schema/resolver-typings'
-import {
-  GameUnitDbObject,
-  MoveLeaderDbObject,
-  MoveUnitDbObject,
-  PlayerRoundDbObject,
-} from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from './game-unit-resolver'
 import MoveResolver from './move-resolver'
-import { MoveType } from '@gwent/graphql-schema'
-import UnitResolver from './unit-resolver'
+import { PlayerRound, RoundResult, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class to convert PlayerRound database objects to their GraphQL equivalent.
@@ -20,52 +14,25 @@ export default class PlayerRoundResolver {
    * @param config The configuration for resolving the PlayerRound.
    * @param config.round The database object to resolve to its GraphQL type.
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
-   * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
    * @returns The resolved PlayerRound object matching its GraphQL schema definition.
    */
   static async fromObject({
     round,
     units,
-    leader,
+    users,
   }: {
     round: PlayerRoundDbObject
     units?: Unit[]
-    leader?: Leader
+    users?: User[]
   }): Promise<PlayerRound> {
-    let resolvedUnits: Unit[] = []
-    if (units) {
-      resolvedUnits = units
-    } else {
-      const gameUnits = [...round.close.units, ...round.ranged.units, ...round.siege.units]
-      resolvedUnits = await UnitResolver.fromIds({
-        ids: gameUnits.map((gameUnit) => gameUnit.unit),
-      })
-    }
-    const moves: Move[] = []
-    for (const move of round.moves) {
-      let gameUnit: GameUnit | undefined = undefined
-      if (move.type === MoveType.Unit) {
-        const moveUnit = (move as MoveUnitDbObject).unit
-        const matchingUnit = resolvedUnits.find((unit) => unit.id === moveUnit.unit.toString())
-        gameUnit = await GameUnitResolver.fromObject({
-          gameUnit: moveUnit,
-          unit: matchingUnit,
-        })
-      }
-      let moveLeader: Leader | undefined = undefined
-      if (move.type === MoveType.Leader) {
-        if (leader && leader.id === (move as MoveLeaderDbObject).leader.toString()) {
-          moveLeader = leader
-        }
-      }
-      moves.push(
-        await MoveResolver.fromObject({
-          move,
-          gameUnit,
-          leader: moveLeader,
-        })
-      )
-    }
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
+      moves: round.moves,
+      gameUnits: [...round.close.units, ...round.ranged.units, ...round.siege.units],
+      presolvedUnits: units,
+      presolvedUsers: users,
+    })
+
     return {
       close: {
         score: round.close.score,
@@ -90,7 +57,11 @@ export default class PlayerRoundResolver {
       },
       score: round.score,
       result: round.result ? (round.result as RoundResult) : undefined,
-      moves,
+      moves: await MoveResolver.fromArray({
+        moves: round.moves,
+        units: resolvedUnits,
+        users: resolvedUsers,
+      }),
       passed: round.passed,
     }
   }
@@ -100,22 +71,28 @@ export default class PlayerRoundResolver {
    *
    * @param config The configuration used to resolve the PlayerRounds.
    * @param config.rounds The database objects to resolve to their GraphQL types.
-   * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
+   * @param config.users An optional list of pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
+   * @param config.units An optional list of pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
    * @returns The resolved PlayerRound array matching the GraphQL schema definition.
    */
   static async fromArray({
     rounds,
-    leader,
+    users,
+    units,
   }: {
     rounds: PlayerRoundDbObject[]
-    leader?: Leader
+    users?: User[]
+    units?: Unit[]
   }): Promise<PlayerRound[]> {
-    const gameUnits: GameUnitDbObject[] = []
-    for (const round of rounds) {
-      gameUnits.push(...round.close.units, ...round.ranged.units, ...round.siege.units)
+    if (rounds.length === 0) {
+      return []
     }
-    const units = await UnitResolver.fromIds({
-      ids: gameUnits.map((gameUnit) => gameUnit.unit),
+
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
+      moves: rounds.map((round) => round.moves).flat(),
+      gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
+      presolvedUsers: users,
+      presolvedUnits: units,
     })
 
     const resolvedPlayerRounds: PlayerRound[] = []
@@ -123,8 +100,8 @@ export default class PlayerRoundResolver {
       resolvedPlayerRounds.push(
         await PlayerRoundResolver.fromObject({
           round,
-          units,
-          leader,
+          units: resolvedUnits,
+          users: resolvedUsers,
         })
       )
     }

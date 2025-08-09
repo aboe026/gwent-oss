@@ -72,6 +72,10 @@ describe('upgrade-1', () => {
         ['name', 1],
         ['_id', 1],
       ],
+      name_text: [
+        ['_fts', 'text'],
+        ['_ftsx', 1],
+      ],
     })
   })
 })

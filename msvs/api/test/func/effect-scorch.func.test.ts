@@ -11,9 +11,9 @@ import {
   setDeck,
   setOrder,
 } from './util/graphql-util'
-import { Deck, FactionKey, Game, GamePlayer, GameStatus, MoveUnit, User } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, FactionKey, Game, GamePlayer, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
 import { ensureUnitsInHand } from '@gwent/test-utils'
-import { expectizeGame, expectizeGamePlayer, expectizePlayerRound } from './util/expect-util'
+import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
 import { getGameFragment } from './util/fragment-util'
 import schema from '../../src/graphql/executable-schema'
@@ -75,10 +75,9 @@ describe('effect-scorch', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
                   siege: TestUtil.getPlayerCombatRow({}),
@@ -175,10 +174,9 @@ describe('effect-scorch', () => {
                     ],
                   },
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitOpponent1,
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
                   siege: TestUtil.getPlayerCombatRow({}),
@@ -206,10 +204,9 @@ describe('effect-scorch', () => {
         expectizePlayerRound({
           close: TestUtil.getPlayerCombatRow({}),
           moves: [
-            {
-              created: expect.any(Date),
+            expectizeMoveUnit({
               unit: unitOpponent1,
-            } as MoveUnit,
+            }),
           ],
           ranged: TestUtil.getPlayerCombatRow({}),
           siege: TestUtil.getPlayerCombatRow({}),
@@ -248,20 +245,18 @@ describe('effect-scorch', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
                       impacts: [
-                        {
-                          unit: {
-                            ...unitOpponent1,
+                        TestUtil.getImpact({
+                          unit: TestUtil.getGameUnit({
+                            unit: unitOpponent1.unit,
                             effectiveStrength: 5,
-                            effects: [],
-                          },
+                          }),
                           user: opponent,
-                        },
+                        }),
                       ],
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
                   siege: TestUtil.getPlayerCombatRow({}),
@@ -335,10 +330,9 @@ describe('effect-scorch', () => {
             ],
           },
           moves: [
-            {
-              created: expect.any(Date),
+            expectizeMoveUnit({
               unit: unitOpponent1,
-            } as MoveUnit,
+            }),
           ],
           ranged: TestUtil.getPlayerCombatRow({}),
           siege: TestUtil.getPlayerCombatRow({}),
@@ -409,10 +403,9 @@ describe('effect-scorch', () => {
                 expectizePlayerRound({
                   close: TestUtil.getPlayerCombatRow({}),
                   moves: [
-                    {
-                      created: expect.any(Date),
+                    expectizeMoveUnit({
                       unit: unitSelf1,
-                    } as MoveUnit,
+                    }),
                   ],
                   ranged: TestUtil.getPlayerCombatRow({}),
                   siege: TestUtil.getPlayerCombatRow({}),

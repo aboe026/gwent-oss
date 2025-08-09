@@ -35,6 +35,9 @@ export default class Server {
     await ClientUtil.setEnvVars(Server.clientDir)
   }
 
+  /**
+   * Configures the server to serve the images directory as a static public route
+   */
   private static async configureImages() {
     const imagesDir = env().IMAGES_DIR
     this.logger.trace(`imagesDir: "${imagesDir}"`)

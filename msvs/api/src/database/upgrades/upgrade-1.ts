@@ -14,6 +14,9 @@ import Upgrade from './upgrade'
 export default class Upgrade1 extends Upgrade {
   static logger = getLogger('Upgrade1')
 
+  /**
+   * Run these upgrade operations against the database.
+   */
   async run() {
     Upgrade1.logger.debug('Connecting to database')
     const db = await DbConnector.connect()
@@ -131,5 +134,9 @@ export default class Upgrade1 extends Upgrade {
         },
       }
     )
+    Upgrade1.logger.debug(`Creating index on collection "${UnitStore.COLLECTION_NAME}" for name:text`)
+    await db.createIndex(UnitStore.COLLECTION_NAME, {
+      name: 'text',
+    })
   }
 }

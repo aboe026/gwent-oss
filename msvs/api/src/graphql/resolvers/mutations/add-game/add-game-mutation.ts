@@ -34,6 +34,7 @@ export default class AddGameMutation {
       game,
       logPrefix,
       opponents,
+      creatorId: userId,
     })
   }
 }

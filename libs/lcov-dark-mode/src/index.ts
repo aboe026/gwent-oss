@@ -9,6 +9,12 @@ export default class LcovDarkMode implements Reporter {
   protected _globalConfig: Config.GlobalConfig
   protected _options?: LcovDarkModeOptions
 
+  /**
+   * Instantiate a new instance of the LcovDarkMode reporter.
+   *
+   * @param globalConfig The global configuration applied to the lcov process.
+   * @param options Options specific to the LcovDarkMode to apply.
+   */
   constructor(globalConfig: Config.GlobalConfig, options: LcovDarkModeOptions) {
     this._globalConfig = globalConfig
     this._options = options

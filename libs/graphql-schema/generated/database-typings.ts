@@ -260,6 +260,17 @@ export type GameUnitEffect = {
   total: Scalars['Int']['output'];
 };
 
+export enum GameUnitOrigin {
+  /** Unit came from the users Lost pile. */
+  Discard = 'Discard',
+  /** Unit came from the users Hand. */
+  Hand = 'HAND',
+  /** Unit came from an opponent placing it on their battlefield. */
+  Opponent = 'OPPONENT',
+  /** Unit came from the users Draw pile. */
+  Undrawn = 'UNDRAWN'
+}
+
 export type GameUnitRedrawn = {
   __typename?: 'GameUnitRedrawn';
   deck: GameDeck;
@@ -268,9 +279,16 @@ export type GameUnitRedrawn = {
   to: DeckUnit;
 };
 
+export type GameUnitSource = {
+  __typename?: 'GameUnitSource';
+  origin: GameUnitOrigin;
+  user?: Maybe<User>;
+};
+
 /** A unit which was impacted by another unit. */
 export type Impact = {
   __typename?: 'Impact';
+  source?: Maybe<GameUnitSource>;
   unit: GameUnit;
   user: User;
 };
@@ -300,11 +318,32 @@ export type MovePass = {
   created: Scalars['DateTime']['output'];
 };
 
+export enum MoveReasonType {
+  /** Deployment by a game player to the battlefield. */
+  Deploy = 'DEPLOY',
+  /** Mustered when matching Muster unit added to battlefield. */
+  Muster = 'MUSTER',
+  /** Revived by Medic added to battlefield. */
+  Revive = 'REVIVE',
+  /** Summoned when matching Avenger unit removed from battlefield. */
+  Summon = 'SUMMON',
+  /** Transformed when Mardroeme unit added to battlefield row. */
+  Transform = 'TRANSFORM'
+}
+
 export type MoveUnit = {
   __typename?: 'MoveUnit';
   created: Scalars['DateTime']['output'];
   impacts?: Maybe<Array<Impact>>;
+  reason: MoveUnitReason;
+  source: GameUnitSource;
   unit: GameUnit;
+};
+
+export type MoveUnitReason = {
+  __typename?: 'MoveUnitReason';
+  type: MoveReasonType;
+  unit?: Maybe<DeckUnit>;
 };
 
 export type Mutation = {
@@ -698,7 +737,13 @@ export type GameUnitEffectDbObject = {
   total: number,
 };
 
+export type GameUnitSourceDbObject = {
+  origin: string,
+  user?: ObjectId,
+};
+
 export type ImpactDbObject = {
+  source?: GameUnitSourceDbObject,
   unit: GameUnitDbObject,
   user: ObjectId,
 };
@@ -732,8 +777,15 @@ export type MovePassDbObject = {
 export type MoveUnitDbObject = {
   created: any,
   impacts?: Array<ImpactDbObject>,
+  reason: MoveUnitReasonDbObject,
+  source: GameUnitSourceDbObject,
   unit: GameUnitDbObject,
   type: MoveType,
+};
+
+export type MoveUnitReasonDbObject = {
+  type: string,
+  unit?: DeckUnitDbObject,
 };
 
 export type PlayerCombatRowDbObject = {

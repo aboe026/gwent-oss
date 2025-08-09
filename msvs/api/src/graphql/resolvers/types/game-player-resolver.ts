@@ -1,17 +1,19 @@
+import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, User } from '@gwent/graphql-schema/resolver-typings'
+import { Faction, GamePlayer, GamePlayerUnitCounts, Leader, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import FactionResolver from './faction-resolver'
 import { GamePlayerDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import { getUniqueItems } from '@gwent/utils'
 import LeaderResolver from './leader-resolver'
 import PlayerRoundResolver from './player-round-resolver'
-import UserResolver from './user-resolver'
+import ResolverUtil from '../resolver-util'
 
 /**
  * A class to convert GamePlayer database objects to their GraphQL equivalent.
  */
 export default class GamePlayerResolver {
+  private static logger = getLogger('GamePlayerResolver')
   /**
    * Converts a single GamePlayer database object to a single GamePlayer GraphQL object.
    *
@@ -19,7 +21,8 @@ export default class GamePlayerResolver {
    * @param config.faction The resolved Faction for the GamePlayer. If not provided, will be retrieved.
    * @param config.leader The resolved Leader for the GamePlayer. If not provided, will be retrieved.
    * @param config.player The GamePlayer to convert.
-   * @param config.user The resolved User for the GamePlayer. If not provided, will be retrieved.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
    * @param config.gameStatus The current status of the Game.
    * @returns The resolved GamePlayer object matching its GraphQL schema definition.
    */
@@ -27,13 +30,15 @@ export default class GamePlayerResolver {
     faction,
     leader,
     player,
-    user,
+    users,
+    units,
     gameStatus,
   }: {
     faction?: Faction | undefined
     leader?: Leader | undefined
     player: GamePlayerDbObject
-    user?: User
+    users?: User[]
+    units?: Unit[]
     gameStatus: GameStatus
   }): Promise<GamePlayer> {
     let counts: GamePlayerUnitCounts | undefined = undefined
@@ -55,6 +60,21 @@ export default class GamePlayerResolver {
       }
     }
 
+    const rounds = player.rounds.flat()
+    const { users: resolvedUsers, units: resolvedUnits } = await ResolverUtil.resolveUsersAndUnits({
+      moves: rounds.map((round) => round.moves).flat(),
+      gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
+      presolvedUsers: users,
+      presolvedUnits: units,
+    })
+
+    const playerUser = resolvedUsers.find((user) => user.id === player.user.toString())
+    if (!playerUser) {
+      const message = `Could not find user "${player.user}"`
+      GamePlayerResolver.logger.error(`${message}, resolvedUsers: "${JSON.stringify(resolvedUsers)}"`)
+      throw Error(`${message}.`)
+    }
+
     return {
       counts,
       faction: gameStatus === GameStatus.Decking ? undefined : faction,
@@ -63,9 +83,10 @@ export default class GamePlayerResolver {
       ready: player.ready,
       rounds: await PlayerRoundResolver.fromArray({
         rounds: player.rounds,
-        leader,
+        users: resolvedUsers,
+        units: resolvedUnits,
       }),
-      user: user || (await UserResolver.fromId(player.user)),
+      user: playerUser,
     }
   }
 
@@ -74,30 +95,36 @@ export default class GamePlayerResolver {
    *
    * @param config The configuration used to convert the array.
    * @param config.players The array of GamePlayer database objects to convert.
-   * @param config.users The resolved Users for the GamePlayers. If not provided, will be retrieved.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
    * @param config.gameStatus The current status of the Game.
    * @returns The resolved Deck array matching the GraphQL schema definition.
    */
   static async fromArray({
     players,
     users,
+    units,
     gameStatus,
   }: {
     players: GamePlayerDbObject[]
     users?: User[]
+    units?: Unit[]
     gameStatus: GameStatus
   }): Promise<GamePlayer[]> {
-    let preResolvedUserIds: string[] = []
-    if (users) {
-      preResolvedUserIds = getUniqueItems<string>(users.map((user) => user.id))
+    if (players.length === 0) {
+      return []
     }
-    const userIdsToResolve = getUniqueItems<ObjectId>(
-      players.filter((player) => !preResolvedUserIds.includes(player.user.toString())).map((player) => player.user)
-    )
-    const resolvedUsers: User[] = users || []
-    if (userIdsToResolve.length > 0) {
-      resolvedUsers.push(...(await UserResolver.fromIds(userIdsToResolve)))
-    }
+
+    const rounds = players
+      .flat()
+      .map((player) => player.rounds)
+      .flat()
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
+      moves: rounds.map((round) => round.moves).flat(),
+      gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
+      presolvedUsers: users,
+      presolvedUnits: units,
+    })
 
     const factionIds = getUniqueItems<ObjectId>(players.map((player) => player.deck.from && player.deck.from.faction))
     const factions = await FactionResolver.fromIds({
@@ -116,13 +143,20 @@ export default class GamePlayerResolver {
       let leader: Leader | undefined
       if (player.deck.from) {
         faction = factions.find((faction) => faction.id === player.deck.from?.faction.toString())
+        if (!faction) {
+          throw Error(`Could not find faction "${player.deck.from?.faction}" in resolved factions`)
+        }
         leader = leaders.find((leader) => leader.id === player.deck.from?.leader.toString())
+        if (!leader) {
+          throw Error(`Could not find leader "${player.deck.from?.leader}" in resolved leaders`)
+        }
       }
 
       resolvedPlayers.push(
         await GamePlayerResolver.fromObject({
           player,
-          user: resolvedUsers.find((user) => user.id.toString() === player.user.toString()),
+          users: resolvedUsers,
+          units: resolvedUnits,
           faction,
           leader,
           gameStatus,

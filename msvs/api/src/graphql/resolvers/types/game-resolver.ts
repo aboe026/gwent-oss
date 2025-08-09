@@ -1,12 +1,11 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Combat, Game, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Game, GamePlayer, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../../database/stores/game-store'
-import { getUniqueItems } from '@gwent/utils'
-import UserResolver from './user-resolver'
+import ResolverUtil from '../resolver-util'
 import Verifier from '../../../util/verifier'
 
 /**
@@ -19,53 +18,68 @@ export default class GameResolver {
    * Converts a single Game database object to a single Game GraphQL object.
    *
    * @param config The configuration used to convert the Game.
-   * @param config.creator The resolved User who created the Game. If not provided, will be retrieved.
    * @param config.game The Game to convert.
-   * @param config.users The resolved Users for the players on the Game. If not provided, will be retrieved.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
    * @returns The resolved Game object matching its GraphQL schema definition.
    */
   static async fromObject({
-    creator,
     game,
     users,
+    units,
   }: {
     game: GameDbObject
-    creator?: User
     users?: User[]
+    units?: Unit[]
   }): Promise<Game> {
     const status = game.status as GameStatus
-    const resolvedUsers: User[] = []
-    if (creator) {
-      resolvedUsers.push(creator)
-    }
-    if (users) {
-      resolvedUsers.push(...users)
-    }
-    const preResolvedUserIds: string[] = resolvedUsers.map((user) => user.id)
-    const userIdsToResolve: string[] = []
-    for (const player of game.players) {
-      if (!userIdsToResolve.includes(player.user.toString()) && !preResolvedUserIds.includes(player.user.toString())) {
-        userIdsToResolve.push(player.user.toString())
-      }
-    }
-    resolvedUsers.push(...(await UserResolver.fromIds(userIdsToResolve)))
+    const rounds = game.players.map((player) => player.rounds).flat()
+    const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
+      moves: rounds.map((round) => round.moves).flat(),
+      gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
+      userIds: game.players.map((player) => player.user),
+      presolvedUnits: units,
+      presolvedUsers: users,
+    })
     const resolvedPlayers = await GamePlayerResolver.fromArray({
       players: game.players,
-      users: resolvedUsers,
       gameStatus: status,
+      users: resolvedUsers,
+      units: resolvedUnits,
     })
+
+    const creator = resolvedUsers.find((user) => user.id === game.creator.toString())
+    if (!creator) {
+      throw Error(`Could not find creator "${game.creator}" in resolved users`)
+    }
+    let turn: GamePlayer | undefined = undefined
+    if (game.turn) {
+      turn = resolvedPlayers.find((player) => player.user.id === game.turn?.toString())
+      if (!turn) {
+        throw Error(`Could not find turn "${game.turn}" in resolved players`)
+      }
+    }
+    const victors: User[] = []
+    for (const victorId of game.victors) {
+      const victor = resolvedUsers.find((user) => user.id === victorId.toString())
+      if (victor) {
+        victors.push(victor)
+      } else {
+        throw Error(`Could not find victor "${victorId}" in resolved users`)
+      }
+    }
 
     return {
       config: game.config,
       created: game.created,
-      creator: creator || (resolvedUsers?.find((user) => user.id === game.creator.toString()) as User),
+      creator,
       id: game._id.toString(),
       players: resolvedPlayers,
       round: game.round,
       status,
-      turn: game.turn && resolvedPlayers.find((player) => player.user.id.toString() === game.turn?.toString()),
+      turn,
       updated: game.updated,
-      victors: game.victors.map((victor) => resolvedUsers.find((user) => user.id === victor.toString()) as User),
+      victors,
       weather: game.weather.map((weather) => weather as Combat),
     }
   }
@@ -77,26 +91,31 @@ export default class GameResolver {
    * @returns The resolved Game array matching the GraphQL schema definition.
    */
   static async fromArray(games: GameDbObject[]): Promise<Game[]> {
-    const userIds = getUniqueItems<string>(games.map((game) => game.creator.toString()))
-
-    for (const game of games) {
-      for (const player of game.players) {
-        const userId = player.user.toString()
-        if (!userIds.includes(userId)) {
-          userIds.push(userId)
-        }
-      }
+    if (games.length === 0) {
+      return []
     }
 
-    const users = await UserResolver.fromIds(userIds)
+    const rounds = games
+      .map((game) => game.players)
+      .flat()
+      .map((player) => player.rounds)
+      .flat()
+    const { units, users } = await ResolverUtil.resolveUsersAndUnits({
+      moves: rounds.map((round) => round.moves).flat(),
+      gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
+      userIds: games
+        .map((game) => game.players)
+        .flat()
+        .map((player) => player.user),
+    })
 
     const resolvedGames: Game[] = []
     for (const game of games) {
       resolvedGames.push(
         await GameResolver.fromObject({
-          creator: users.find((user) => user.id.toString() === game.creator.toString()),
           game,
-          users: game.players.map((player) => users.find((user) => user.id === player.user.toString()) as User),
+          users,
+          units,
         })
       )
     }

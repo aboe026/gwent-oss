@@ -12,6 +12,8 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
+- override DateTime in schema to Date?
 - automate check in build process to ensure package.json versions incremented (and all same)?
 - remove need for classes just for log4js spying
   - have "getLogger" method
@@ -23,6 +25,7 @@ Existing problems in the codebase that need to be fixed.
   - use AI upscaler?
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - rename "undrawn" to "draw" (since its the draw pile?)
+- replace ".hand[0]" with explicit unit using "ensureUnitsInHand"
 - improve UX around game player info (username, score, rounds, passed)
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)
@@ -72,6 +75,7 @@ Existing problems in the codebase that need to be fixed.
 - run index analyzer during func tests?
 - change artStyle to 0 based indexing?
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
+  - add functional tests which spy on database store "read" method to ensure requests "batched" properly
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
 - Change schema.ts to schema.gql
@@ -83,42 +87,25 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- for "MoveUnit" type, have "reason" field
-
-  ```
-  enum MoveType {
-    "Deployment by a game player to the battlefield."
-    DEPLOY
-    "Mustered when matching Muster unit added to battlefield."
-    MUSTER
-    "Revived after Medic added to battlefield."
-    REVIVE
-    "Summoned when matching Avenger unit removed from battlefield."
-    SUMMON
-    "Transformed when Mardroeme unit added to battlefield row."
-    TRANSFORM
-  }
-
-  type MoveUnitReason @entity {
-    type: MoveType! @column
-    unit: DeckUnit! @column(overrideType: "DeckUnitDbObject")
-  }
-  ```
-
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
 - Avenger
   - How to handle duplicates on battlefield? Use "created" field as differentiator?
+- Bond
+  - verify Cerys musters have bond applied
 - Better game summarization (graphs?)
   - points per round
   - time per round
   - efficiency per round?
+  - game duration
+  - duration per player
 - Add link to GitHub repo in about page
 - Limit user creation
   - activation code?
   - manual review?
 - rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
+- "Randomize" button for creating deck?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - game history improvements

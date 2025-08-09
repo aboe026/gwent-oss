@@ -1,14 +1,21 @@
-import { EffectKey } from '@gwent/graphql-schema/resolver-typings'
+import { EffectKey, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typings'
 
 /**
  * Gets the description text for an impact on a unit due to a given effect.
  *
  * @param config The configuration to use to determine the description.
  * @param config.effectKey The Key of the Effect which caused the impact.
+ * @param config.origin The Origin of the unit which caused the impact.
  * @returns The description of the impact on a unit from the effect.
  * @throws Error if Effect cannot have impact (Agile, Avenger, Berserker)
  */
-export default function getImpactDescription({ effectKey }: { effectKey: EffectKey }): string {
+export default function getImpactDescription({
+  effectKey,
+  origin,
+}: {
+  effectKey: EffectKey
+  origin?: GameUnitOrigin
+}): string {
   if (effectKey === EffectKey.Bond) {
     return 'bonded in strength'
   } else if (effectKey === EffectKey.Decoy) {
@@ -22,7 +29,17 @@ export default function getImpactDescription({ effectKey }: { effectKey: EffectK
   } else if (effectKey === EffectKey.Morale) {
     return 'moraled in strength'
   } else if (effectKey === EffectKey.Muster) {
-    return 'mustered to battlefield'
+    let resolvedOrigin = ''
+    if (origin === GameUnitOrigin.Hand) {
+      resolvedOrigin = 'Hand'
+    } else if (origin === GameUnitOrigin.Undrawn) {
+      resolvedOrigin = 'Draw pile'
+    } else {
+      throw Error(
+        `Invalid source "${origin}" for "${effectKey}" impact. Must be either "${GameUnitOrigin.Hand}" or "${GameUnitOrigin.Undrawn}".`
+      )
+    }
+    return `mustered from ${resolvedOrigin}`
   } else if (effectKey === EffectKey.Scorch) {
     return 'scorched from battlefield'
   } else if (effectKey === EffectKey.Spy) {

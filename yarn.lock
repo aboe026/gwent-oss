@@ -4312,9 +4312,7 @@ __metadata:
     "@types/node": "npm:22.15.29"
     cross-env: "npm:7.0.3"
     eslint: "npm:9.31.0"
-    eslint-config-prettier: "npm:10.1.5"
     eslint-plugin-jsdoc: "npm:51.4.0"
-    eslint-plugin-prettier: "npm:5.5.1"
     fs-extra: "npm:11.3.0"
     jest: "npm:30.0.4"
     jest-environment-jsdom: "npm:30.0.4"
@@ -4400,9 +4398,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/msvs-api@workspace:msvs/api":
+"@gwent/msv-api@workspace:msvs/api":
   version: 0.0.0-use.local
-  resolution: "@gwent/msvs-api@workspace:msvs/api"
+  resolution: "@gwent/msv-api@workspace:msvs/api"
   dependencies:
     "@apollo/server": "npm:4.12.2"
     "@graphql-tools/schema": "npm:10.0.23"
@@ -4447,9 +4445,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@gwent/msvs-ui@workspace:msvs/ui":
+"@gwent/msv-ui@workspace:msvs/ui":
   version: 0.0.0-use.local
-  resolution: "@gwent/msvs-ui@workspace:msvs/ui"
+  resolution: "@gwent/msv-ui@workspace:msvs/ui"
   dependencies:
     "@gwent/client": "workspace:*"
     "@gwent/env": "workspace:*"
@@ -9177,17 +9175,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-config-prettier@npm:10.1.5":
-  version: 10.1.5
-  resolution: "eslint-config-prettier@npm:10.1.5"
-  peerDependencies:
-    eslint: ">=7.0.0"
-  bin:
-    eslint-config-prettier: bin/cli.js
-  checksum: 10/bc192e703e595c886c33703ebb9a8381a18179ce2ec14a24f671cb675a96b8ba1b4a862c5763680e1c918131007759afb3c874788c7d61706740147ae77f249a
-  languageName: node
-  linkType: hard
-
 "eslint-plugin-jsdoc@npm:51.4.0":
   version: 51.4.0
   resolution: "eslint-plugin-jsdoc@npm:51.4.0"
@@ -9205,26 +9192,6 @@ __metadata:
   peerDependencies:
     eslint: ^7.0.0 || ^8.0.0 || ^9.0.0
   checksum: 10/0513a55b9e50b579c03ffe2d780c6ee61d6251cd935f16d1f0cdc80e58baf691bc1648e6d4a2b65c1b4b2e60667511aa0a66ffa61058c15115c1d6a530607931
-  languageName: node
-  linkType: hard
-
-"eslint-plugin-prettier@npm:5.5.1":
-  version: 5.5.1
-  resolution: "eslint-plugin-prettier@npm:5.5.1"
-  dependencies:
-    prettier-linter-helpers: "npm:^1.0.0"
-    synckit: "npm:^0.11.7"
-  peerDependencies:
-    "@types/eslint": ">=8.0.0"
-    eslint: ">=8.0.0"
-    eslint-config-prettier: ">= 7.0.0 <10.0.0 || >=10.1.0"
-    prettier: ">=3.0.0"
-  peerDependenciesMeta:
-    "@types/eslint":
-      optional: true
-    eslint-config-prettier:
-      optional: true
-  checksum: 10/4d750c70d97d6ef50776bc0a27eeececaac64792fb50713213c69231ed475aa9822a3d177870300fee537d3e24d0dc8eed1528929cab2d20f6e7ec37484648a3
   languageName: node
   linkType: hard
 
@@ -9603,13 +9570,6 @@ __metadata:
   version: 3.1.3
   resolution: "fast-deep-equal@npm:3.1.3"
   checksum: 10/e21a9d8d84f53493b6aa15efc9cfd53dd5b714a1f23f67fb5dc8f574af80df889b3bce25dc081887c6d25457cce704e636395333abad896ccdec03abaf1f3f9d
-  languageName: node
-  linkType: hard
-
-"fast-diff@npm:^1.1.2":
-  version: 1.3.0
-  resolution: "fast-diff@npm:1.3.0"
-  checksum: 10/9e57415bc69cd6efcc720b3b8fe9fdaf42dcfc06f86f0f45378b1fa512598a8aac48aa3928c8751d58e2f01bb4ba4f07e4f3d9bc0d57586d45f1bd1e872c6cde
   languageName: node
   linkType: hard
 
@@ -14394,15 +14354,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier-linter-helpers@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "prettier-linter-helpers@npm:1.0.0"
-  dependencies:
-    fast-diff: "npm:^1.1.2"
-  checksum: 10/00ce8011cf6430158d27f9c92cfea0a7699405633f7f1d4a45f07e21bf78e99895911cbcdc3853db3a824201a7c745bd49bfea8abd5fb9883e765a90f74f8392
-  languageName: node
-  linkType: hard
-
 "prettier@npm:3.6.2":
   version: 3.6.2
   resolution: "prettier@npm:3.6.2"
@@ -16125,7 +16076,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"synckit@npm:^0.11.7, synckit@npm:^0.11.8":
+"synckit@npm:^0.11.8":
   version: 0.11.8
   resolution: "synckit@npm:0.11.8"
   dependencies:
