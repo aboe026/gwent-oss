@@ -94,7 +94,7 @@ export default gql`
     DEPLOY
     "Mustered when matching Muster unit added to battlefield."
     MUSTER
-    "Revived after Medic added to battlefield."
+    "Revived by Medic added to battlefield."
     REVIVE
     "Summoned when matching Avenger unit removed from battlefield."
     SUMMON

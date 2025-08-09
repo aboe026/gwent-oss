@@ -325,7 +325,7 @@ export enum MoveReasonType {
   Deploy = 'DEPLOY',
   /** Mustered when matching Muster unit added to battlefield. */
   Muster = 'MUSTER',
-  /** Revived after Medic added to battlefield. */
+  /** Revived by Medic added to battlefield. */
   Revive = 'REVIVE',
   /** Summoned when matching Avenger unit removed from battlefield. */
   Summon = 'SUMMON',

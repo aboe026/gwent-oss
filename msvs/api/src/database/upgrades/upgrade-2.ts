@@ -33,7 +33,7 @@ export default class Upgrade2 extends Upgrade {
   static logger = getLogger('Upgrade2')
 
   /**
-   * Run this upgrade operations against the database.
+   * Run these upgrade operations against the database.
    */
   async run() {
     const dlcMap = await this.createDlcs({

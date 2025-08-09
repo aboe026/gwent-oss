@@ -6,8 +6,8 @@ import {
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import ScorchBattlefield from './scorch-battlefield'
 import MusterBattlefield, { MusteredOrigins } from './muster-battlefield'
+import ScorchBattlefield from './scorch-battlefield'
 
 /**
  * Modifies the battlefield of the current round in a game due to the deployment of a new unit. Other units on or off the battlefield may be impacted by unit effects.

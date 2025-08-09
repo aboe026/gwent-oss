@@ -11,7 +11,7 @@ export default class Upgrade4 extends Upgrade {
   static logger = getLogger('Upgrade4')
 
   /**
-   * Run this upgrade operations against the database.
+   * Run these upgrade operations against the database.
    */
   async run() {
     Upgrade4.logger.debug('Connecting to database')
