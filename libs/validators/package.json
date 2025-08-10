@@ -22,6 +22,6 @@
     "@types/jest": "30.0.0",
     "@types/node": "22.15.29",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.4.0"
+    "ts-jest": "29.4.1"
   }
 }
