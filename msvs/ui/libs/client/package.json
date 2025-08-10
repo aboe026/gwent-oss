@@ -35,7 +35,7 @@
     "@gwent/client-env": "workspace:*",
     "@gwent/env": "workspace:*",
     "@types/jest": "30.0.0",
-    "@types/node": "22.15.29",
+    "@types/node": "22.17.1",
     "@types/react": "19.1.9",
     "@types/react-dom": "19.1.7",
     "@types/url-join": "4.0.3",

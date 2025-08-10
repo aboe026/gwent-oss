@@ -47,7 +47,7 @@
     "@gwent/lcov-dark-mode": "workspace:*",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "30.0.0",
-    "@types/node": "22.15.29",
+    "@types/node": "22.17.1",
     "cross-env": "10.0.0",
     "eslint": "9.33.0",
     "eslint-plugin-jsdoc": "52.0.4",
