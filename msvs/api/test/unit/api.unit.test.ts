@@ -64,7 +64,7 @@ jest.mock('@apollo/server', () => {
     }),
   }
 })
-jest.mock('@apollo/server/express4', () => {
+jest.mock('@as-integrations/express5', () => {
   return {
     expressMiddleware: jest.fn().mockImplementation(),
   }
