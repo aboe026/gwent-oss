@@ -96,8 +96,7 @@ export default class MusterBattlefield {
           MusterBattlefield.logger.error(`${logPrefix} failed: ${message}`)
           throw Error(`${message}.`)
         }
-        const { impact, origin } = MusterBattlefield.musterUnitForCurrentPlayer({
-          combat,
+        const { impact, origin } = MusterBattlefield.getMusterImpact({
           game,
           logPrefix,
           potentialMuster: musterableUnit,
@@ -110,37 +109,48 @@ export default class MusterBattlefield {
       }
     }
 
+    // sort to ensure units from hand show first in history/impacts (reduces non-deterministic behavior in tests)
+    const sortedImpacts = sortObjectArray({
+      array: impacts,
+      sortProperties: ['source.origin'],
+    })
+
+    for (const impact of sortedImpacts) {
+      const unit = musteredUnits.find((musteredUnit) => musteredUnit._id.toString() === impact.unit.unit.toString())
+      if (!unit) {
+        const message = `Could not find unit "${impact.unit.unit}" from muster impact`
+        MusterBattlefield.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
+        throw Error(`${message}.`)
+      }
+      MusterBattlefield.musterUnitToBattlefield({
+        combat: unit.combats ? (unit.combats[0] as Combat) : undefined,
+        game,
+        muster: impact.unit,
+        origin: musteredOrigins[unit._id.toString()],
+      })
+    }
+
     return {
-      impacts:
-        impacts.length > 0
-          ? // sort to ensure units from hand show first in history/impacts (reduces non-deterministic behavior in tests)
-            sortObjectArray({
-              array: impacts,
-              sortProperties: ['source.origin'],
-            })
-          : undefined,
+      impacts: sortedImpacts.length > 0 ? sortedImpacts : undefined,
       musteredUnits,
       musteredOrigins,
     }
   }
 
   /**
-   * Potentially muster a unit to the battlefield for the current game player if in their hand or undrawn pile.
+   * Get the impact for the unit if it is eligible for mustering (in current players hand or undrawn pile).
    *
    * @param config The configuration used to potentially muster the unit.
-   * @param config.combat The Combat row the unit should be mustered to.
    * @param config.game The game containing the player to potentially muster the unit for.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.potentialMuster The Unit to potentially muster for the game player.
-   * @returns The mustered Unit if it is eligible to be mustered by the player.
+   * @returns The Impact and Origin of the muster if eligible.
    */
-  private static musterUnitForCurrentPlayer({
-    combat,
+  private static getMusterImpact({
     game,
     logPrefix,
     potentialMuster,
   }: {
-    combat?: Combat
     game: GameDbObject
     logPrefix: string
     potentialMuster: UnitDbObject
@@ -170,23 +180,9 @@ export default class MusterBattlefield {
           if (undrawnUnit) {
             MusterBattlefield.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`)
             origin = GameUnitOrigin.Undrawn
-            player.deck.undrawn = player.deck.undrawn.filter(
-              (deckUnit) => deckUnit.unit.toString() !== potentialMuster._id.toString()
-            )
           } else {
             MusterBattlefield.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`)
             origin = GameUnitOrigin.Hand
-            player.deck.hand = player.deck.hand.filter(
-              (deckUnit) => deckUnit.unit.toString() !== potentialMuster._id.toString()
-            )
-          }
-          const round = player.rounds[game.round - 1]
-          if (combat === Combat.Close) {
-            round.close.units.push(unitToMuster)
-          } else if (combat === Combat.Ranged) {
-            round.ranged.units.push(unitToMuster)
-          } else {
-            round.siege.units.push(unitToMuster)
           }
 
           impact = {
@@ -202,6 +198,48 @@ export default class MusterBattlefield {
     return {
       impact,
       origin,
+    }
+  }
+
+  /**
+   * Move the musterable unit into the battlefield.
+   *
+   * @param config The configuration used to muster the unit into the battlefield.
+   * @param config.combat The combat row to muster the unit into.
+   * @param config.game The game the unit should be mustered into.
+   * @param config.origin There the Unit was mustered from.
+   * @param config.muster The Unit to muster into the battlefield.
+   */
+  private static musterUnitToBattlefield({
+    combat,
+    game,
+    origin,
+    muster,
+  }: {
+    combat?: Combat
+    game: GameDbObject
+    origin: GameUnitOrigin
+    muster: DeckUnitDbObject
+  }) {
+    for (const player of game.players) {
+      if (player.user.toString() === game.turn?.toString()) {
+        if (origin === GameUnitOrigin.Hand) {
+          player.deck.hand = player.deck.hand.filter((deckUnit) => deckUnit.unit.toString() !== muster.unit.toString())
+        } else {
+          player.deck.undrawn = player.deck.undrawn.filter(
+            (deckUnit) => deckUnit.unit.toString() !== muster.unit.toString()
+          )
+        }
+
+        const round = player.rounds[game.round - 1]
+        if (combat === Combat.Close) {
+          round.close.units.push(muster)
+        } else if (combat === Combat.Ranged) {
+          round.ranged.units.push(muster)
+        } else {
+          round.siege.units.push(muster)
+        }
+      }
     }
   }
 }
