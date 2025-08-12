@@ -93,7 +93,7 @@ export default class MusterBattlefield {
         const combat = musterableUnit.combats ? (musterableUnit.combats[0] as Combat) : undefined
         if (!combat) {
           const message = `Cannot muster unit "${musterableUnit._id}" without combat`
-          MusterBattlefield.logger.error(`${logPrefix} failed: ${message}`)
+          MusterBattlefield.logger.error(`${logPrefix} ${message}`)
           throw Error(`${message}.`)
         }
         const { impact, origin } = MusterBattlefield.getMusterImpact({
@@ -119,11 +119,11 @@ export default class MusterBattlefield {
       const unit = musteredUnits.find((musteredUnit) => musteredUnit._id.toString() === impact.unit.unit.toString())
       if (!unit) {
         const message = `Could not find unit "${impact.unit.unit}" from muster impact`
-        MusterBattlefield.logger.error(`${message}, impact: "${JSON.stringify(impact)}"`)
+        MusterBattlefield.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
         throw Error(`${message}.`)
       }
       MusterBattlefield.musterUnitToBattlefield({
-        combat: unit.combats ? (unit.combats[0] as Combat) : undefined,
+        combat: (unit.combats as any)[0] as Combat, // eslint-disable-line @typescript-eslint/no-explicit-any
         game,
         muster: impact.unit,
         origin: musteredOrigins[unit._id.toString()],

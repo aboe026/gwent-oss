@@ -61,8 +61,58 @@ describe('muster-battlefield', () => {
             },
           ],
         ],
-        errorCalls: [[`${logPrefix} failed: ${message}`]],
+        errorCalls: [[`${logPrefix} ${message}`]],
         debugCalls: [[`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`]],
+      })
+    })
+    it('throws error if mustered unit not found for impact', async () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const musterEffect = TestUtil.getDbEffect({})
+      const newUnit = TestUtil.getDbUnit({
+        id: newDeckUnit.unit,
+        effects: [musterEffect._id],
+      })
+      const musterableUnit = TestUtil.getDbUnit({
+        combats: [Combat.Close],
+      })
+      const impact = TestUtil.getDbImpact({
+        unit: TestUtil.getDbGameUnit({}),
+      })
+      const message = `Could not find unit "${impact.unit.unit}" from muster impact`
+      await testMusterBattlefield({
+        logPrefix,
+        game,
+        battlefieldUnits: [newUnit],
+        newDeckUnit,
+        musterEffect,
+        musterableUnits: [musterableUnit],
+        getMusterImpactResponses: [
+          {
+            impact,
+            origin: GameUnitOrigin.Hand,
+          },
+        ],
+        expected: Error(`${message}.`),
+        unitStoreGetCalls: [
+          [
+            {
+              namePrefix: undefined,
+              names: [newUnit.name],
+              ignoreIds: [newUnit._id],
+            },
+          ],
+        ],
+        getMusterImpactCalls: [
+          [
+            {
+              game,
+              logPrefix,
+              potentialMuster: musterableUnit,
+            },
+          ],
+        ],
+        debugCalls: [[`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`]],
+        errorCalls: [[`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`]],
       })
     })
     it('returns empty values if no effect with muster', async () => {
@@ -164,7 +214,6 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit,
@@ -221,10 +270,19 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit,
+              },
+            ],
+          ],
+          musterUnitToBattlefieldSpyCalls: [
+            [
+              {
+                combat,
+                game,
+                muster: impact.unit,
+                origin: GameUnitOrigin.Hand,
               },
             ],
           ],
@@ -279,10 +337,19 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit,
+              },
+            ],
+          ],
+          musterUnitToBattlefieldSpyCalls: [
+            [
+              {
+                combat,
+                game,
+                muster: impact.unit,
+                origin: GameUnitOrigin.Undrawn,
               },
             ],
           ],
@@ -297,7 +364,7 @@ describe('muster-battlefield', () => {
           effects: [musterEffect._id],
         })
         const musterableUnit1 = TestUtil.getDbUnit({
-          combats: [Combat.Close],
+          combats: [combat],
         })
         const impact1 = TestUtil.getDbImpact({
           unit: TestUtil.getDbGameUnit({
@@ -308,7 +375,7 @@ describe('muster-battlefield', () => {
           },
         })
         const musterableUnit2 = TestUtil.getDbUnit({
-          combats: [Combat.Close],
+          combats: [combat],
         })
         const impact2 = TestUtil.getDbImpact({
           unit: TestUtil.getDbGameUnit({
@@ -355,7 +422,6 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat: Combat.Close,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit1,
@@ -363,10 +429,27 @@ describe('muster-battlefield', () => {
             ],
             [
               {
-                combat: Combat.Close,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit2,
+              },
+            ],
+          ],
+          musterUnitToBattlefieldSpyCalls: [
+            [
+              {
+                combat,
+                game,
+                muster: impact2.unit,
+                origin: GameUnitOrigin.Hand,
+              },
+            ],
+            [
+              {
+                combat,
+                game,
+                muster: impact1.unit,
+                origin: GameUnitOrigin.Undrawn,
               },
             ],
           ],
@@ -416,7 +499,6 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit,
@@ -473,10 +555,19 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit,
+              },
+            ],
+          ],
+          musterUnitToBattlefieldSpyCalls: [
+            [
+              {
+                combat,
+                game,
+                muster: impact.unit,
+                origin: GameUnitOrigin.Hand,
               },
             ],
           ],
@@ -531,10 +622,19 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit,
+              },
+            ],
+          ],
+          musterUnitToBattlefieldSpyCalls: [
+            [
+              {
+                combat,
+                game,
+                muster: impact.unit,
+                origin: GameUnitOrigin.Undrawn,
               },
             ],
           ],
@@ -549,7 +649,7 @@ describe('muster-battlefield', () => {
           effects: [musterEffect._id],
         })
         const musterableUnit1 = TestUtil.getDbUnit({
-          combats: [Combat.Close],
+          combats: [combat],
         })
         const impact1 = TestUtil.getDbImpact({
           unit: TestUtil.getDbGameUnit({
@@ -560,7 +660,7 @@ describe('muster-battlefield', () => {
           },
         })
         const musterableUnit2 = TestUtil.getDbUnit({
-          combats: [Combat.Close],
+          combats: [combat],
         })
         const impact2 = TestUtil.getDbImpact({
           unit: TestUtil.getDbGameUnit({
@@ -607,7 +707,6 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat: Combat.Close,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit1,
@@ -615,10 +714,27 @@ describe('muster-battlefield', () => {
             ],
             [
               {
-                combat: Combat.Close,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit2,
+              },
+            ],
+          ],
+          musterUnitToBattlefieldSpyCalls: [
+            [
+              {
+                combat,
+                game,
+                muster: impact2.unit,
+                origin: GameUnitOrigin.Hand,
+              },
+            ],
+            [
+              {
+                combat,
+                game,
+                muster: impact1.unit,
+                origin: GameUnitOrigin.Undrawn,
               },
             ],
           ],
@@ -668,7 +784,6 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit,
@@ -725,10 +840,19 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit,
+              },
+            ],
+          ],
+          musterUnitToBattlefieldSpyCalls: [
+            [
+              {
+                combat,
+                game,
+                muster: impact.unit,
+                origin: GameUnitOrigin.Hand,
               },
             ],
           ],
@@ -783,10 +907,19 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit,
+              },
+            ],
+          ],
+          musterUnitToBattlefieldSpyCalls: [
+            [
+              {
+                combat,
+                game,
+                muster: impact.unit,
+                origin: GameUnitOrigin.Undrawn,
               },
             ],
           ],
@@ -801,7 +934,7 @@ describe('muster-battlefield', () => {
           effects: [musterEffect._id],
         })
         const musterableUnit1 = TestUtil.getDbUnit({
-          combats: [Combat.Close],
+          combats: [combat],
         })
         const impact1 = TestUtil.getDbImpact({
           unit: TestUtil.getDbGameUnit({
@@ -812,7 +945,7 @@ describe('muster-battlefield', () => {
           },
         })
         const musterableUnit2 = TestUtil.getDbUnit({
-          combats: [Combat.Close],
+          combats: [combat],
         })
         const impact2 = TestUtil.getDbImpact({
           unit: TestUtil.getDbGameUnit({
@@ -859,7 +992,6 @@ describe('muster-battlefield', () => {
           getMusterImpactCalls: [
             [
               {
-                combat: Combat.Close,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit1,
@@ -867,10 +999,27 @@ describe('muster-battlefield', () => {
             ],
             [
               {
-                combat: Combat.Close,
                 game,
                 logPrefix,
                 potentialMuster: musterableUnit2,
+              },
+            ],
+          ],
+          musterUnitToBattlefieldSpyCalls: [
+            [
+              {
+                combat,
+                game,
+                muster: impact2.unit,
+                origin: GameUnitOrigin.Hand,
+              },
+            ],
+            [
+              {
+                combat,
+                game,
+                muster: impact1.unit,
+                origin: GameUnitOrigin.Undrawn,
               },
             ],
           ],
@@ -918,7 +1067,6 @@ describe('muster-battlefield', () => {
         getMusterImpactCalls: [
           [
             {
-              combat: Combat.Close,
               game,
               logPrefix,
               potentialMuster: musterableUnit,
@@ -1762,6 +1910,7 @@ async function testMusterBattlefield({
   getEffectWithKeyCalled = true,
   unitStoreGetCalls = [],
   getMusterImpactCalls = [],
+  musterUnitToBattlefieldSpyCalls = [],
   errorCalls = [],
   debugCalls = [],
   traceCalls = [],
@@ -1778,6 +1927,7 @@ async function testMusterBattlefield({
   getEffectWithKeyCalled?: boolean
   unitStoreGetCalls?: any[][]
   getMusterImpactCalls?: any[][]
+  musterUnitToBattlefieldSpyCalls?: any[][]
   errorCalls?: string[][]
   debugCalls?: string[][]
   traceCalls?: string[][]
@@ -1787,7 +1937,9 @@ async function testMusterBattlefield({
   const getEffectWithKeySpy = jest.spyOn(GetEffectWithKey, 'getEffectWithKey').mockReturnValue(musterEffect)
   const unitStoreGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(musterableUnits)
   const getMusterImpactSpy = jest.spyOn(MusterBattlefield as any, 'getMusterImpact')
-  // TODO: add spy for musterUnitToBattlefield
+  const musterUnitToBattlefieldSpy = jest
+    .spyOn(MusterBattlefield as any, 'musterUnitToBattlefield')
+    .mockImplementation()
   for (const getMusterImpactResponse of getMusterImpactResponses) {
     getMusterImpactSpy.mockReturnValueOnce(getMusterImpactResponse)
   }
@@ -1829,6 +1981,7 @@ async function testMusterBattlefield({
   )
   expect(unitStoreGetSpy.mock.calls).toEqual(unitStoreGetCalls)
   expect(getMusterImpactSpy.mock.calls).toEqual(getMusterImpactCalls)
+  expect(musterUnitToBattlefieldSpy.mock.calls).toEqual(musterUnitToBattlefieldSpyCalls)
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)
