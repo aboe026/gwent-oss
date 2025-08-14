@@ -1146,14 +1146,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [player, TestUtil.getDbGamePlayer({})],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [player, TestUtil.getDbGamePlayer({})],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1165,28 +1163,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Undrawn,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                {
-                  ...ogGame.players[0],
-                  deck: {
-                    ...ogGame.players[0].deck,
-                    undrawn: [],
-                  },
-                  rounds: [
-                    {
-                      ...ogGame.players[0].rounds[0],
-                      close: {
-                        ...ogGame.players[0].rounds[0].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-                ogGame.players[1],
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`]],
           })
@@ -1202,14 +1178,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [player, TestUtil.getDbGamePlayer({})],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [player, TestUtil.getDbGamePlayer({})],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1221,28 +1195,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Hand,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                {
-                  ...ogGame.players[0],
-                  deck: {
-                    ...ogGame.players[0].deck,
-                    hand: [],
-                  },
-                  rounds: [
-                    {
-                      ...ogGame.players[0].rounds[0],
-                      close: {
-                        ...ogGame.players[0].rounds[0].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-                ogGame.players[1],
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`]],
           })
@@ -1261,14 +1213,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [player, TestUtil.getDbGamePlayer({})],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [player, TestUtil.getDbGamePlayer({})],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1280,29 +1230,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Undrawn,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                {
-                  ...ogGame.players[0],
-                  deck: {
-                    ...ogGame.players[0].deck,
-                    undrawn: [],
-                  },
-                  rounds: [
-                    ogGame.players[0].rounds[0],
-                    {
-                      ...ogGame.players[0].rounds[1],
-                      close: {
-                        ...ogGame.players[0].rounds[1].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-                ogGame.players[1],
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`]],
           })
@@ -1318,14 +1245,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [player, TestUtil.getDbGamePlayer({})],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [player, TestUtil.getDbGamePlayer({})],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1337,29 +1262,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Hand,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                {
-                  ...ogGame.players[0],
-                  deck: {
-                    ...ogGame.players[0].deck,
-                    hand: [],
-                  },
-                  rounds: [
-                    ogGame.players[0].rounds[0],
-                    {
-                      ...ogGame.players[0].rounds[1],
-                      close: {
-                        ...ogGame.players[0].rounds[1].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-                ogGame.players[1],
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`]],
           })
@@ -1378,14 +1280,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [player, TestUtil.getDbGamePlayer({})],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [player, TestUtil.getDbGamePlayer({})],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1397,30 +1297,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Undrawn,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                {
-                  ...ogGame.players[0],
-                  deck: {
-                    ...ogGame.players[0].deck,
-                    undrawn: [],
-                  },
-                  rounds: [
-                    ogGame.players[0].rounds[0],
-                    ogGame.players[0].rounds[1],
-                    {
-                      ...ogGame.players[0].rounds[2],
-                      close: {
-                        ...ogGame.players[0].rounds[2].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-                ogGame.players[1],
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`]],
           })
@@ -1436,14 +1312,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [player, TestUtil.getDbGamePlayer({})],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [player, TestUtil.getDbGamePlayer({})],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1455,30 +1329,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Hand,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                {
-                  ...ogGame.players[0],
-                  deck: {
-                    ...ogGame.players[0].deck,
-                    hand: [],
-                  },
-                  rounds: [
-                    ogGame.players[0].rounds[0],
-                    ogGame.players[0].rounds[1],
-                    {
-                      ...ogGame.players[0].rounds[2],
-                      close: {
-                        ...ogGame.players[0].rounds[2].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-                ogGame.players[1],
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`]],
           })
@@ -1499,14 +1349,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [TestUtil.getDbGamePlayer({}), player],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [TestUtil.getDbGamePlayer({}), player],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1518,28 +1366,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Undrawn,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                ogGame.players[0],
-                {
-                  ...ogGame.players[1],
-                  deck: {
-                    ...ogGame.players[1].deck,
-                    undrawn: [],
-                  },
-                  rounds: [
-                    {
-                      ...ogGame.players[1].rounds[0],
-                      close: {
-                        ...ogGame.players[1].rounds[0].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`]],
           })
@@ -1555,14 +1381,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [TestUtil.getDbGamePlayer({}), player],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [TestUtil.getDbGamePlayer({}), player],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1574,28 +1398,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Hand,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                ogGame.players[0],
-                {
-                  ...ogGame.players[1],
-                  deck: {
-                    ...ogGame.players[1].deck,
-                    hand: [],
-                  },
-                  rounds: [
-                    {
-                      ...ogGame.players[1].rounds[0],
-                      close: {
-                        ...ogGame.players[1].rounds[0].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`]],
           })
@@ -1614,14 +1416,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [TestUtil.getDbGamePlayer({}), player],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [TestUtil.getDbGamePlayer({}), player],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1633,29 +1433,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Undrawn,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                ogGame.players[0],
-                {
-                  ...ogGame.players[1],
-                  deck: {
-                    ...ogGame.players[1].deck,
-                    undrawn: [],
-                  },
-                  rounds: [
-                    ogGame.players[1].rounds[0],
-                    {
-                      ...ogGame.players[1].rounds[1],
-                      close: {
-                        ...ogGame.players[1].rounds[1].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`]],
           })
@@ -1671,14 +1448,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [TestUtil.getDbGamePlayer({}), player],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [TestUtil.getDbGamePlayer({}), player],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1690,29 +1465,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Hand,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                ogGame.players[0],
-                {
-                  ...ogGame.players[1],
-                  deck: {
-                    ...ogGame.players[1].deck,
-                    hand: [],
-                  },
-                  rounds: [
-                    ogGame.players[1].rounds[0],
-                    {
-                      ...ogGame.players[1].rounds[1],
-                      close: {
-                        ...ogGame.players[1].rounds[1].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`]],
           })
@@ -1731,14 +1483,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [TestUtil.getDbGamePlayer({}), player],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [TestUtil.getDbGamePlayer({}), player],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1750,30 +1500,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Undrawn,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                ogGame.players[0],
-                {
-                  ...ogGame.players[1],
-                  deck: {
-                    ...ogGame.players[1].deck,
-                    undrawn: [],
-                  },
-                  rounds: [
-                    ogGame.players[1].rounds[0],
-                    ogGame.players[1].rounds[1],
-                    {
-                      ...ogGame.players[1].rounds[2],
-                      close: {
-                        ...ogGame.players[1].rounds[2].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`]],
           })
@@ -1789,14 +1515,12 @@ describe('muster-battlefield', () => {
             }),
             rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
           })
-          const game = TestUtil.getDbGame({
-            players: [TestUtil.getDbGamePlayer({}), player],
-            round,
-            turn: player.user,
-          })
-          const ogGame = deepClone(game)
           testgetMusterImpact({
-            game,
+            game: TestUtil.getDbGame({
+              players: [TestUtil.getDbGamePlayer({}), player],
+              round,
+              turn: player.user,
+            }),
             potentialMuster,
             logPrefix,
             expected: {
@@ -1808,30 +1532,6 @@ describe('muster-battlefield', () => {
                 },
               },
               origin: GameUnitOrigin.Hand,
-            },
-            updatedGame: {
-              ...ogGame,
-              players: [
-                ogGame.players[0],
-                {
-                  ...ogGame.players[1],
-                  deck: {
-                    ...ogGame.players[1].deck,
-                    hand: [],
-                  },
-                  rounds: [
-                    ogGame.players[1].rounds[0],
-                    ogGame.players[1].rounds[1],
-                    {
-                      ...ogGame.players[1].rounds[2],
-                      close: {
-                        ...ogGame.players[1].rounds[2].close,
-                        units: [deckUnit],
-                      },
-                    },
-                  ],
-                },
-              ],
             },
             debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`]],
           })
@@ -1849,14 +1549,12 @@ describe('muster-battlefield', () => {
         }),
         rounds: [TestUtil.getDbPlayerRound({})],
       })
-      const game = TestUtil.getDbGame({
-        players: [player],
-        round: 1,
-        turn: player.user,
-      })
-      const ogGame = deepClone(game)
       testgetMusterImpact({
-        game,
+        game: TestUtil.getDbGame({
+          players: [player],
+          round: 1,
+          turn: player.user,
+        }),
         potentialMuster,
         logPrefix,
         expected: {
@@ -1869,30 +1567,112 @@ describe('muster-battlefield', () => {
           },
           origin: GameUnitOrigin.Undrawn,
         },
-        updatedGame: {
-          ...ogGame,
-          players: [
-            {
-              ...ogGame.players[0],
-              deck: {
-                ...ogGame.players[0].deck,
-                undrawn: [],
-              },
-              rounds: [
-                {
-                  ...ogGame.players[0].rounds[0],
-                  close: {
-                    ...ogGame.players[0].rounds[0].close,
-                    units: [deckUnit],
-                  },
-                },
-              ],
-            },
-          ],
-        },
         debugCalls: [[`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`]],
         traceCalls: [[`${logPrefix} unitToMuster: "${JSON.stringify(deckUnit)}"`]],
         traceEnabled: true,
+      })
+    })
+  })
+  describe('musterUnitToBattlefield', () => {
+    const muster = TestUtil.getDbDeckUnit({})
+    describe('player 1', () => {
+      describe('round 1', () => {
+        const round = 1
+        describe('close', () => {
+          const combat = Combat.Close
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[0].rounds[0],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[0].rounds[0],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
       })
     })
   })
@@ -1987,12 +1767,11 @@ async function testMusterBattlefield({
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }
 
-async function testgetMusterImpact({
+function testgetMusterImpact({
   game,
   logPrefix,
   potentialMuster,
   expected,
-  updatedGame,
   errorCalls = [],
   debugCalls = [],
   traceCalls = [],
@@ -2002,7 +1781,6 @@ async function testgetMusterImpact({
   logPrefix: string
   potentialMuster: UnitDbObject
   expected: MusterForPlayer | Error
-  updatedGame?: GameDbObject
   errorCalls?: string[][]
   debugCalls?: string[][]
   traceCalls?: string[][]
@@ -2035,9 +1813,33 @@ async function testgetMusterImpact({
       })
     ).toEqual(expected)
   }
-  expect(game).toEqual(updatedGame || game)
 
   expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceCalls)
+}
+
+function testMusterUnitToBattlefield({
+  combat,
+  game,
+  origin,
+  muster,
+  updatedGame,
+}: {
+  combat: Combat
+  game: GameDbObject
+  origin: GameUnitOrigin
+  muster: DeckUnitDbObject
+  updatedGame: GameDbObject
+}) {
+  expect(
+    MusterBattlefield['musterUnitToBattlefield']({
+      combat,
+      game,
+      origin,
+      muster,
+    })
+  ).toEqual(undefined)
+
+  expect(game).toEqual(updatedGame)
 }

@@ -90,12 +90,6 @@ export default class MusterBattlefield {
       }
 
       for (const musterableUnit of musterableUnits) {
-        const combat = musterableUnit.combats ? (musterableUnit.combats[0] as Combat) : undefined
-        if (!combat) {
-          const message = `Cannot muster unit "${musterableUnit._id}" without combat`
-          MusterBattlefield.logger.error(`${logPrefix} ${message}`)
-          throw Error(`${message}.`)
-        }
         const { impact, origin } = MusterBattlefield.getMusterImpact({
           game,
           logPrefix,
@@ -122,8 +116,14 @@ export default class MusterBattlefield {
         MusterBattlefield.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
         throw Error(`${message}.`)
       }
+      const combat = unit.combats ? (unit.combats[0] as Combat) : undefined
+      if (!combat) {
+        const message = `Cannot muster unit "${unit._id}" without combat`
+        MusterBattlefield.logger.error(`${logPrefix} ${message}`)
+        throw Error(`${message}.`)
+      }
       MusterBattlefield.musterUnitToBattlefield({
-        combat: (unit.combats as any)[0] as Combat, // eslint-disable-line @typescript-eslint/no-explicit-any
+        combat,
         game,
         muster: impact.unit,
         origin: musteredOrigins[unit._id.toString()],
@@ -216,7 +216,7 @@ export default class MusterBattlefield {
     origin,
     muster,
   }: {
-    combat?: Combat
+    combat: Combat
     game: GameDbObject
     origin: GameUnitOrigin
     muster: DeckUnitDbObject
