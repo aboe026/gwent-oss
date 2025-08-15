@@ -98,12 +98,7 @@ test('Page updates automatically with deck set via API on game page', async (t) 
       name: t.ctx.self.user.name,
     },
   })
-  const deck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leaderName,
-    name: `${getScenario(t)}-deck-${Date.now()}`,
-    unitNames: t.ctx.nilfgaard.unitNames,
-  })
+  const deck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
   const gameDeck = await client.setDeck({
     deckId: deck.id,
     gameId: t.ctx.game.id,
@@ -138,12 +133,7 @@ test('Page updates automatically with deck set via API on games list', async (t)
       name: t.ctx.self.user.name,
     },
   })
-  const deck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leaderName,
-    name: `${getScenario(t)}-deck-${Date.now()}`,
-    unitNames: t.ctx.nilfgaard.unitNames,
-  })
+  const deck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
   await Banner.goTo(Banner.elements.MenuGames)
   await GamesPage.verify({
     games: [
@@ -201,12 +191,7 @@ test('Page does not update with deck set for other game via API', async (t) => {
       name: t.ctx.self.user.name,
     },
   })
-  const deck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leaderName,
-    name: `${getScenario(t)}-deck-${Date.now()}`,
-    unitNames: t.ctx.nilfgaard.unitNames,
-  })
+  const deck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
   await client.setDeck({
     deckId: deck.id,
     gameId: game2.id,

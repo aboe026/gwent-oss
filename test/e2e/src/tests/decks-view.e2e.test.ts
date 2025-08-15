@@ -234,12 +234,7 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
     ],
   })
 
-  const deck2 = await t.ctx.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leaderName,
-    name: t.ctx.scoiaTael.name,
-    unitNames: t.ctx.scoiaTael.unitNames,
-  })
+  const deck2 = await t.ctx.client.addDeck(t.ctx.scoiaTael)
 
   await DecksPage.verify({
     decks: [

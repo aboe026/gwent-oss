@@ -74,18 +74,8 @@ fixture('Game Ordering')
   })
 
 test('User with ScoiaTael deck and opponent without it can choose turn order to make self go first', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leaderName,
-    name: t.ctx.scoiaTael.name,
-    unitNames: t.ctx.scoiaTael.unitNames,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leaderName,
-    name: t.ctx.nilfgaard.name,
-    unitNames: t.ctx.nilfgaard.unitNames,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
     deckId: deckSelf.id,
     gameId: t.ctx.game.id,
@@ -135,18 +125,8 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
 })
 
 test('User with ScoiaTael deck and opponent without it can choose turn order to make opponent go first', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leaderName,
-    name: t.ctx.scoiaTael.name,
-    unitNames: t.ctx.scoiaTael.unitNames,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leaderName,
-    name: t.ctx.nilfgaard.name,
-    unitNames: t.ctx.nilfgaard.unitNames,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
     deckId: deckSelf.id,
     gameId: t.ctx.game.id,
@@ -203,18 +183,8 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
 })
 
 test('User without ScoiaTael deck and opponent with it must wait for opponent to set order opponent first', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leaderName,
-    name: t.ctx.scoiaTael.name,
-    unitNames: t.ctx.nilfgaard.unitNames,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leaderName,
-    name: t.ctx.nilfgaard.name,
-    unitNames: t.ctx.scoiaTael.unitNames,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.scoiaTael)
   await t.ctx.self.client.setDeck({
     deckId: deckSelf.id,
     gameId: t.ctx.game.id,
@@ -267,18 +237,8 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
 })
 
 test('User without ScoiaTael deck and opponent with it must wait for opponent to set order self first', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leaderName,
-    name: t.ctx.scoiaTael.name,
-    unitNames: t.ctx.nilfgaard.unitNames,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leaderName,
-    name: t.ctx.nilfgaard.name,
-    unitNames: t.ctx.scoiaTael.unitNames,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.scoiaTael)
   await t.ctx.self.client.setDeck({
     deckId: deckSelf.id,
     gameId: t.ctx.game.id,
@@ -333,18 +293,8 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
 })
 
 test('Order automatically set if both are ScoiaTael', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leaderName,
-    name: t.ctx.scoiaTael.name,
-    unitNames: t.ctx.scoiaTael.unitNames,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leaderName,
-    name: t.ctx.nilfgaard.name,
-    unitNames: t.ctx.scoiaTael.unitNames,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.scoiaTael)
   await t.ctx.opponent.client.setDeck({
     deckId: deckOpponent.id,
     gameId: t.ctx.game.id,
@@ -405,18 +355,8 @@ test('Order automatically set if both are ScoiaTael', async (t) => {
 })
 
 test('Order automatically set if none are ScoiaTael', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leaderName,
-    name: t.ctx.scoiaTael.name,
-    unitNames: t.ctx.nilfgaard.unitNames,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leaderName,
-    name: t.ctx.nilfgaard.name,
-    unitNames: t.ctx.nilfgaard.unitNames,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.opponent.client.setDeck({
     deckId: deckOpponent.id,
     gameId: t.ctx.game.id,
