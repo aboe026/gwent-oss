@@ -18,9 +18,8 @@ const test = getTestCtx<E2eCtx, FullCardTestCtx>()
 fixture('Full Card')
   .page(DeckPage.getUrl())
   .beforeEach(async (t) => {
-    t.ctx.scenario = 'full-card'
     t.ctx.user = await new ApiClient({}).addUser({
-      name: `${t.ctx.scenario}-self-${t.ctx.start}`,
+      name: `${getScenario(t)}-self-${t.ctx.start}`,
     })
     await LoginPage.login({
       username: t.ctx.user.name,

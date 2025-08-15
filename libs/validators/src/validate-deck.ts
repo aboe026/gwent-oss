@@ -1,4 +1,5 @@
 import { DeckUnit, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { DECK_MAX_SPECIALS, DECK_MIN_UNITS } from '@gwent/constants'
 import validatePositiveInteger from './validate-positive-integer'
 
 /**
@@ -41,11 +42,11 @@ export default function validateDeck({ faction, deckUnits }: { faction: FactionK
     }
   }
 
-  if (specials > 10) {
-    errors.push(`Invalid number of special units at "${specials}", maximum is "10".`)
+  if (specials > DECK_MAX_SPECIALS) {
+    errors.push(`Invalid number of special units at "${specials}", maximum is "${DECK_MAX_SPECIALS}".`)
   }
-  if (deckUnits.length < 22) {
-    errors.push(`Invalid number of units at "${deckUnits.length}", minimum is "22".`)
+  if (deckUnits.length < DECK_MIN_UNITS) {
+    errors.push(`Invalid number of units at "${deckUnits.length}", minimum is "${DECK_MIN_UNITS}".`)
   }
 
   return errors

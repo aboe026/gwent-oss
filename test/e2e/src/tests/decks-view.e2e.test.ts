@@ -1,27 +1,58 @@
-import ApiClient from '../util/api-client'
+import ApiClient, { AddDeckInput } from '../util/api-client'
 import Banner from '../components/banner'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import { E2eHelper } from '../util/e2e-helper'
+import { FactionKey, User } from '@gwent/graphql-schema/resolver-typings'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import LoginPage from '../page-objects/login-page'
 
-const fixture = getFixtureCtx<E2eCtx, E2eCtx>()
-const test = getTestCtx<E2eCtx, E2eCtx>()
+interface DecksViewTestCtx extends E2eCtx {
+  north: AddDeckInput
+  nilfgaard: AddDeckInput
+  scoiaTael: AddDeckInput
+  self: User
+  client: ApiClient
+}
+const fixture = getFixtureCtx<E2eCtx, DecksViewTestCtx>()
+const test = getTestCtx<E2eCtx, DecksViewTestCtx>()
 
-fixture('Decks View').page(DecksPage.getUrl())
+fixture('Decks View')
+  .page(DecksPage.getUrl())
+  .beforeEach(async (t) => {
+    t.ctx.self = await new ApiClient({}).addUser({
+      name: `${getScenario(t)}-${t.ctx.start}-user-1`,
+    })
+    t.ctx.client = new ApiClient({
+      username: t.ctx.self.name,
+    })
+    t.ctx.nilfgaard = {
+      faction: FactionKey.NilfgaardianEmpire,
+      leaderName: 'Emhyr var Emreis the Relentless',
+      name: 'deck one',
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: t.ctx.client,
+        faction: FactionKey.NilfgaardianEmpire,
+      }),
+    }
+    t.ctx.scoiaTael = {
+      faction: FactionKey.ScoiaTael,
+      leaderName: 'Francesca Findabair Hope of the Aen Seidhe',
+      name: 'deck two',
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: t.ctx.client,
+        faction: FactionKey.ScoiaTael,
+      }),
+    }
+  })
 
 test('Shows message if no decks', async (t) => {
-  const username = `decks-none-${t.ctx.start}`
-  await new ApiClient({}).addUser({
-    name: username,
-  })
   await LoginPage.login({
-    username,
+    username: t.ctx.self.name,
   })
   await DecksPage.verify({
     decks: [],
@@ -29,169 +60,63 @@ test('Shows message if no decks', async (t) => {
 })
 
 test('Displays single deck', async (t) => {
-  const username = `decks-single-${t.ctx.start}`
-  const name = 'single deck'
-  const faction = FactionKey.NorthernRealms
-  const leader = 'Foltest Son of Medell'
-  const units = [
-    'Ballista',
-    'Blue Stripes Commando',
-    'Blue Stripes Commando',
-    'Blue Stripes Commando',
-    'Catapult',
-    'Catapult',
-    'Cirilla Fiona Elen Riannon',
-    "Commander's Horn",
-    'Crinfrid Reavers Dragon Hunter',
-    'Crinfrid Reavers Dragon Hunter',
-    'Crinfrid Reavers Dragon Hunter',
-    'Esterad Thyssen',
-    'John Natalis',
-    'Poor Fucking Infantry',
-    'Poor Fucking Infantry',
-    'Poor Fucking Infantry',
-    'Prince Stennis',
-    'Redanian Foot Soldier',
-    'Redanian Foot Soldier',
-    'Siegfried of Denesle',
-    'Thaler',
-    'Yarpen Zigrin',
-  ]
-  await new ApiClient({}).addUser({
-    name: username,
-  })
-  const client = new ApiClient({ username })
-  const deck = await client.addDeck({
-    faction,
-    leaderName: leader,
-    name,
-    unitNames: units,
-  })
+  const deck = await t.ctx.client.addDeck(t.ctx.nilfgaard)
   await LoginPage.login({
-    username,
+    username: t.ctx.self.name,
   })
 
   await DecksPage.verify({
     decks: [
       {
         created: deck.created,
-        faction: await client.getFaction({
-          key: faction,
+        faction: await t.ctx.client.getFaction({
+          key: t.ctx.nilfgaard.faction,
         }),
-        leader: await client.getLeader({
-          faction,
-          name: leader,
+        leader: await t.ctx.client.getLeader({
+          faction: t.ctx.nilfgaard.faction,
+          name: t.ctx.nilfgaard.leaderName,
         }),
-        name,
+        name: t.ctx.nilfgaard.name,
         stats: deck.stats,
-        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
+        neutralFaction: await t.ctx.client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
 })
 
 test('Displays two decks', async (t) => {
-  const username = `decks-two-${t.ctx.start}`
-  const name1 = 'two decks first'
-  const name2 = 'two decks second'
-  const faction1 = FactionKey.ScoiaTael
-  const faction2 = FactionKey.NilfgaardianEmpire
-  const leader1 = 'Francesca Findabair Queen of Dol Blathanna'
-  const leader2 = 'Emhyr var Emreis the Relentless'
-  const units1 = [
-    'Barclay Els',
-    'Ciaran aep Easnillien',
-    'Cirilla Fiona Elen Riannon',
-    'Dol Blathanna Archer',
-    'Dol Blathanna Scout',
-    'Dol Blathanna Scout',
-    'Dol Blathanna Scout',
-    'Dwarven Skirmisher',
-    'Dwarven Skirmisher',
-    'Dwarven Skirmisher',
-    'Eithne',
-    'Elven Skirmisher',
-    'Elven Skirmisher',
-    'Elven Skirmisher',
-    'Emiel Regis Rohellec Terzieff',
-    'Filavandrel aen Fidhail',
-    'Havekar Healer',
-    'Havekar Healer',
-    'Havekar Healer',
-    'Havekar Smuggler',
-    'Havekar Smuggler',
-    'Havekar Smuggler',
-  ]
-  const units2 = [
-    'Albrich',
-    'Assire var Anahid',
-    'Black Infantry Archer',
-    'Black Infantry Archer',
-    'Emiel Regis Rohellec Terzieff',
-    'Etolian Auxiliary Archers',
-    'Etolian Auxiliary Archers',
-    'Heavy Zerrikanian Fire Scorpion',
-    'Impera Brigade Guard',
-    'Impera Brigade Guard',
-    'Impera Brigade Guard',
-    'Impera Brigade Guard',
-    'Nausicaa Cavalry Rider',
-    'Nausicaa Cavalry Rider',
-    'Nausicaa Cavalry Rider',
-    'Renuald aep Matsen',
-    'Rotten Mangonel',
-    'Shilard Fitz-Oesterlen',
-    'Siege Engineer',
-    'Siege Technician',
-    'Young Emissary',
-    'Young Emissary',
-  ]
-  await new ApiClient({}).addUser({
-    name: username,
-  })
-  const client = new ApiClient({ username })
-  const deck1 = await client.addDeck({
-    faction: faction1,
-    leaderName: leader1,
-    name: name1,
-    unitNames: units1,
-  })
-  const deck2 = await client.addDeck({
-    faction: faction2,
-    leaderName: leader2,
-    name: name2,
-    unitNames: units2,
-  })
+  const deck1 = await t.ctx.client.addDeck(t.ctx.nilfgaard)
+  const deck2 = await t.ctx.client.addDeck(t.ctx.scoiaTael)
   await LoginPage.login({
-    username,
+    username: t.ctx.self.name,
   })
-  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
+  const neutralFaction = await t.ctx.client.getFaction({ key: FactionKey.Neutral })
 
   await DecksPage.verify({
     decks: [
       {
         created: deck1.created,
-        faction: await client.getFaction({
-          key: faction1,
+        faction: await t.ctx.client.getFaction({
+          key: t.ctx.nilfgaard.faction,
         }),
-        leader: await client.getLeader({
-          faction: faction1,
-          name: leader1,
+        leader: await t.ctx.client.getLeader({
+          faction: t.ctx.nilfgaard.faction,
+          name: t.ctx.nilfgaard.leaderName,
         }),
-        name: name1,
+        name: t.ctx.nilfgaard.name,
         stats: deck1.stats,
         neutralFaction,
       },
       {
         created: deck2.created,
-        faction: await client.getFaction({
-          key: faction2,
+        faction: await t.ctx.client.getFaction({
+          key: t.ctx.scoiaTael.faction,
         }),
-        leader: await client.getLeader({
-          faction: faction2,
-          name: leader2,
+        leader: await t.ctx.client.getLeader({
+          faction: t.ctx.scoiaTael.faction,
+          name: t.ctx.scoiaTael.leaderName,
         }),
-        name: name2,
+        name: t.ctx.scoiaTael.name,
         stats: deck2.stats,
         neutralFaction,
       },
@@ -200,84 +125,48 @@ test('Displays two decks', async (t) => {
 })
 
 test('List gets updated after deck created from deck page', async (t) => {
-  const username = `decks-list-updated-on-create-deck-page-${t.ctx.start}`
-  await new ApiClient({}).addUser({
-    name: username,
-  })
-  const client = new ApiClient({ username })
   await LoginPage.login({
-    username,
+    username: t.ctx.self.name,
   })
   await DecksPage.verify({
     decks: [],
   })
   await DecksPage.clickCreate()
-  const name = 'list-updated-on-create'
-  const factionKey = FactionKey.NilfgaardianEmpire
-  const faction = await client.getFaction({
-    key: factionKey,
+  const faction = await t.ctx.client.getFaction({
+    key: t.ctx.nilfgaard.faction,
   })
-  const leader = await client.getLeader({
-    faction: factionKey,
-    name: 'Emhyr var Emreis the White Flame',
+  const leader = await t.ctx.client.getLeader({
+    faction: t.ctx.nilfgaard.faction,
+    name: t.ctx.nilfgaard.leaderName,
   })
   await DeckPage.createDeck({
     faction,
     leader,
-    name,
-    units: [
-      'Biting Frost',
-      'Biting Frost',
-      'Biting Frost',
-      'Clear Weather',
-      'Clear Weather',
-      'Decoy',
-      'Decoy',
-      'Decoy',
-      "Gaunter O'Dimm Darkness",
-      "Gaunter O'Dimm Darkness",
-      "Gaunter O'Dimm Darkness",
-      'Impenetrable Fog',
-      'Impenetrable Fog',
-      'Impera Brigade Guard',
-      'Impera Brigade Guard',
-      'Impera Brigade Guard',
-      'Impera Brigade Guard',
-      'Nausicaa Cavalry Rider',
-      'Nausicaa Cavalry Rider',
-      'Nausicaa Cavalry Rider',
-      'Young Emissary',
-      'Young Emissary',
-    ],
+    name: t.ctx.nilfgaard.name,
+    units: t.ctx.nilfgaard.unitNames,
   })
-  const deck = await client.getDeck(name)
+  const deck = await t.ctx.client.getDeck(t.ctx.nilfgaard.name)
   await DecksPage.verify({
     decks: [
       {
         created: deck.created,
         faction,
         leader,
-        name,
-        stats: (await client.getDeck(name)).stats,
-        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
+        name: t.ctx.nilfgaard.name,
+        stats: deck.stats,
+        neutralFaction: await t.ctx.client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
 })
 
 test('List gets updated after deck created from game page', async (t) => {
-  const scenario = 'decks-list-updated-on-create-game-page'
-  const username = `${scenario}-user-${t.ctx.start}`
-  const opponent = `${scenario}-opponent-${t.ctx.start}`
-  await new ApiClient({}).addUser({
-    name: username,
-  })
+  const opponent = `${getScenario(t)}-opponent-${t.ctx.start}`
   await new ApiClient({}).addUser({
     name: opponent,
   })
-  const client = new ApiClient({ username })
   await LoginPage.login({
-    username,
+    username: t.ctx.self.name,
   })
   await DecksPage.verify({
     decks: [],
@@ -285,174 +174,80 @@ test('List gets updated after deck created from game page', async (t) => {
   await Banner.goTo(Banner.elements.MenuGames)
   await GamesPage.clickCreateNone()
   await GamePage.createGame({
-    creator: username,
+    creator: t.ctx.self.name,
     opponents: [opponent],
   })
   await GamePage.clickSetDeck()
   await DeckList.clickCreateNone()
-  const name = 'list-updated-on-create'
-  const factionKey = FactionKey.NilfgaardianEmpire
-  const faction = await client.getFaction({
-    key: factionKey,
+  const faction = await t.ctx.client.getFaction({
+    key: t.ctx.nilfgaard.faction,
   })
-  const leader = await client.getLeader({
-    faction: factionKey,
-    name: 'Emhyr var Emreis the White Flame',
+  const leader = await t.ctx.client.getLeader({
+    faction: t.ctx.nilfgaard.faction,
+    name: t.ctx.nilfgaard.leaderName,
   })
   await DeckEditor.createDeck({
     faction,
     leader,
-    name,
-    units: [
-      'Biting Frost',
-      'Biting Frost',
-      'Biting Frost',
-      'Clear Weather',
-      'Clear Weather',
-      'Decoy',
-      'Decoy',
-      'Decoy',
-      "Gaunter O'Dimm Darkness",
-      "Gaunter O'Dimm Darkness",
-      "Gaunter O'Dimm Darkness",
-      'Impenetrable Fog',
-      'Impenetrable Fog',
-      'Impera Brigade Guard',
-      'Impera Brigade Guard',
-      'Impera Brigade Guard',
-      'Impera Brigade Guard',
-      'Nausicaa Cavalry Rider',
-      'Nausicaa Cavalry Rider',
-      'Nausicaa Cavalry Rider',
-      'Young Emissary',
-      'Young Emissary',
-    ],
+    name: t.ctx.nilfgaard.name,
+    units: t.ctx.nilfgaard.unitNames,
     verifyRedirect: false,
   })
   await Banner.goTo(Banner.elements.MenuDecks)
-  const deck = await client.getDeck(name)
+  const deck = await t.ctx.client.getDeck(t.ctx.nilfgaard.name)
   await DecksPage.verify({
     decks: [
       {
         created: deck.created,
         faction,
         leader,
-        name,
-        stats: (await client.getDeck(name)).stats,
-        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
+        name: t.ctx.nilfgaard.name,
+        stats: deck.stats,
+        neutralFaction: await t.ctx.client.getFaction({ key: FactionKey.Neutral }),
       },
     ],
   })
 })
 
 test('Shows deck created by api after list refresh button clicked', async (t) => {
-  const username = `decks-refresh-${t.ctx.start}`
-  const name1 = 'two decks first'
-  const name2 = 'two decks second'
-  const faction1 = FactionKey.ScoiaTael
-  const faction2 = FactionKey.NilfgaardianEmpire
-  const leader1 = 'Francesca Findabair Queen of Dol Blathanna'
-  const leader2 = 'Emhyr var Emreis the Relentless'
-  const units1 = [
-    'Barclay Els',
-    'Ciaran aep Easnillien',
-    'Cirilla Fiona Elen Riannon',
-    'Dol Blathanna Archer',
-    'Dol Blathanna Scout',
-    'Dol Blathanna Scout',
-    'Dol Blathanna Scout',
-    'Dwarven Skirmisher',
-    'Dwarven Skirmisher',
-    'Dwarven Skirmisher',
-    'Eithne',
-    'Elven Skirmisher',
-    'Elven Skirmisher',
-    'Elven Skirmisher',
-    'Emiel Regis Rohellec Terzieff',
-    'Filavandrel aen Fidhail',
-    'Havekar Healer',
-    'Havekar Healer',
-    'Havekar Healer',
-    'Havekar Smuggler',
-    'Havekar Smuggler',
-    'Havekar Smuggler',
-  ]
-  const units2 = [
-    'Albrich',
-    'Assire var Anahid',
-    'Black Infantry Archer',
-    'Black Infantry Archer',
-    'Emiel Regis Rohellec Terzieff',
-    'Etolian Auxiliary Archers',
-    'Etolian Auxiliary Archers',
-    'Heavy Zerrikanian Fire Scorpion',
-    'Impera Brigade Guard',
-    'Impera Brigade Guard',
-    'Impera Brigade Guard',
-    'Impera Brigade Guard',
-    'Nausicaa Cavalry Rider',
-    'Nausicaa Cavalry Rider',
-    'Nausicaa Cavalry Rider',
-    'Renuald aep Matsen',
-    'Rotten Mangonel',
-    'Shilard Fitz-Oesterlen',
-    'Siege Engineer',
-    'Siege Technician',
-    'Young Emissary',
-    'Young Emissary',
-  ]
-  await new ApiClient({}).addUser({
-    name: username,
-  })
-  const client = new ApiClient({ username })
-  const deck1 = await client.addDeck({
-    faction: faction1,
-    leaderName: leader1,
-    name: name1,
-    unitNames: units1,
-  })
-  const neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
+  const deck1 = await t.ctx.client.addDeck(t.ctx.nilfgaard)
+  const neutralFaction = await t.ctx.client.getFaction({ key: FactionKey.Neutral })
 
   await LoginPage.login({
-    username,
+    username: t.ctx.self.name,
   })
   await DecksPage.verify({
     decks: [
       {
         created: deck1.created,
-        faction: await client.getFaction({
-          key: faction1,
+        faction: await t.ctx.client.getFaction({
+          key: t.ctx.nilfgaard.faction,
         }),
-        leader: await client.getLeader({
-          faction: faction1,
-          name: leader1,
+        leader: await t.ctx.client.getLeader({
+          faction: t.ctx.nilfgaard.faction,
+          name: t.ctx.nilfgaard.leaderName,
         }),
-        name: name1,
+        name: t.ctx.nilfgaard.name,
         stats: deck1.stats,
         neutralFaction,
       },
     ],
   })
 
-  const deck2 = await client.addDeck({
-    faction: faction2,
-    leaderName: leader2,
-    name: name2,
-    unitNames: units2,
-  })
+  const deck2 = await t.ctx.client.addDeck(t.ctx.scoiaTael)
 
   await DecksPage.verify({
     decks: [
       {
         created: deck1.created,
-        faction: await client.getFaction({
-          key: faction1,
+        faction: await t.ctx.client.getFaction({
+          key: t.ctx.nilfgaard.faction,
         }),
-        leader: await client.getLeader({
-          faction: faction1,
-          name: leader1,
+        leader: await t.ctx.client.getLeader({
+          faction: t.ctx.nilfgaard.faction,
+          name: t.ctx.nilfgaard.leaderName,
         }),
-        name: name1,
+        name: t.ctx.nilfgaard.name,
         stats: deck1.stats,
         neutralFaction,
       },
@@ -465,27 +260,27 @@ test('Shows deck created by api after list refresh button clicked', async (t) =>
     decks: [
       {
         created: deck1.created,
-        faction: await client.getFaction({
-          key: faction1,
+        faction: await t.ctx.client.getFaction({
+          key: t.ctx.nilfgaard.faction,
         }),
-        leader: await client.getLeader({
-          faction: faction1,
-          name: leader1,
+        leader: await t.ctx.client.getLeader({
+          faction: t.ctx.nilfgaard.faction,
+          name: t.ctx.nilfgaard.leaderName,
         }),
-        name: name1,
+        name: t.ctx.nilfgaard.name,
         stats: deck1.stats,
         neutralFaction,
       },
       {
         created: deck2.created,
-        faction: await client.getFaction({
-          key: faction2,
+        faction: await t.ctx.client.getFaction({
+          key: t.ctx.scoiaTael.faction,
         }),
-        leader: await client.getLeader({
-          faction: faction2,
-          name: leader2,
+        leader: await t.ctx.client.getLeader({
+          faction: t.ctx.scoiaTael.faction,
+          name: t.ctx.scoiaTael.leaderName,
         }),
-        name: name2,
+        name: t.ctx.scoiaTael.name,
         stats: deck2.stats,
         neutralFaction,
       },

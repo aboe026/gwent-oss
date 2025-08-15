@@ -1,5 +1,5 @@
-import ApiClient from '../util/api-client'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import ApiClient, { AddDeckInput } from '../util/api-client'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
 import { FactionKey, Game, User } from '@gwent/graphql-schema/resolver-typings'
@@ -18,16 +18,8 @@ interface GameOrderingTestCtx extends E2eCtx {
     user: User
     client: ApiClient
   }
-  scoiaTael: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
-  nilfgaard: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
+  scoiaTael: AddDeckInput
+  nilfgaard: AddDeckInput
   game: Game
 }
 const fixture = getFixtureCtx<E2eCtx, GameOrderingTestCtx>()
@@ -36,9 +28,8 @@ const test = getTestCtx<E2eCtx, GameOrderingTestCtx>()
 fixture('Game Ordering')
   .page(HomePage.getUrl())
   .beforeEach(async (t) => {
-    t.ctx.scenario = 'game-ordering'
-    const selfUsername = `${t.ctx.scenario}-self-${t.ctx.start}`
-    const opponentUsername = `${t.ctx.scenario}-opponent-${t.ctx.start}`
+    const selfUsername = `${getScenario(t)}-self-${t.ctx.start}`
+    const opponentUsername = `${getScenario(t)}-opponent-${t.ctx.start}`
 
     t.ctx.self = {
       user: await new ApiClient({}).addUser({
@@ -58,61 +49,22 @@ fixture('Game Ordering')
     }
 
     t.ctx.scoiaTael = {
+      name: `${getScenario(t)}-scoiatael-deck-${t.ctx.start}`,
       faction: FactionKey.ScoiaTael,
-      leader: 'Francesca Findabair Queen of Dol Blathanna',
-      units: [
-        'Barclay Els',
-        'Ciaran aep Easnillien',
-        'Cirilla Fiona Elen Riannon',
-        'Dol Blathanna Archer',
-        'Dol Blathanna Scout',
-        'Dol Blathanna Scout',
-        'Dol Blathanna Scout',
-        'Dwarven Skirmisher',
-        'Dwarven Skirmisher',
-        'Dwarven Skirmisher',
-        'Eithne',
-        'Elven Skirmisher',
-        'Elven Skirmisher',
-        'Elven Skirmisher',
-        'Emiel Regis Rohellec Terzieff',
-        'Filavandrel aen Fidhail',
-        'Havekar Healer',
-        'Havekar Healer',
-        'Havekar Healer',
-        'Havekar Smuggler',
-        'Havekar Smuggler',
-        'Havekar Smuggler',
-        'Scorch',
-      ],
+      leaderName: 'Francesca Findabair Queen of Dol Blathanna',
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: t.ctx.self.client,
+        faction: FactionKey.ScoiaTael,
+      }),
     }
     t.ctx.nilfgaard = {
+      name: `${getScenario(t)}-nilfgaard-deck-${t.ctx.start}`,
       faction: FactionKey.NilfgaardianEmpire,
-      leader: 'Emhyr var Emreis the Relentless',
-      units: [
-        'Albrich',
-        'Assire var Anahid',
-        'Black Infantry Archer',
-        'Black Infantry Archer',
-        'Emiel Regis Rohellec Terzieff',
-        'Etolian Auxiliary Archers',
-        'Etolian Auxiliary Archers',
-        'Heavy Zerrikanian Fire Scorpion',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Renuald aep Matsen',
-        'Rotten Mangonel',
-        'Shilard Fitz-Oesterlen',
-        'Siege Engineer',
-        'Siege Technician',
-        'Young Emissary',
-        'Young Emissary',
-      ],
+      leaderName: 'Emhyr var Emreis the Relentless',
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: t.ctx.opponent.client,
+        faction: FactionKey.NilfgaardianEmpire,
+      }),
     }
 
     t.ctx.game = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
@@ -122,18 +74,8 @@ fixture('Game Ordering')
   })
 
 test('User with ScoiaTael deck and opponent without it can choose turn order to make self go first', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-deck-self-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
     deckId: deckSelf.id,
     gameId: t.ctx.game.id,
@@ -183,18 +125,8 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
 })
 
 test('User with ScoiaTael deck and opponent without it can choose turn order to make opponent go first', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-deck-self-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
     deckId: deckSelf.id,
     gameId: t.ctx.game.id,
@@ -251,18 +183,8 @@ test('User with ScoiaTael deck and opponent without it can choose turn order to 
 })
 
 test('User without ScoiaTael deck and opponent with it must wait for opponent to set order opponent first', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-self-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.scoiaTael)
   await t.ctx.self.client.setDeck({
     deckId: deckSelf.id,
     gameId: t.ctx.game.id,
@@ -315,18 +237,8 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
 })
 
 test('User without ScoiaTael deck and opponent with it must wait for opponent to set order self first', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-self-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.scoiaTael)
   await t.ctx.self.client.setDeck({
     deckId: deckSelf.id,
     gameId: t.ctx.game.id,
@@ -381,18 +293,8 @@ test('User without ScoiaTael deck and opponent with it must wait for opponent to
 })
 
 test('Order automatically set if both are ScoiaTael', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-deck-self-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.scoiaTael)
   await t.ctx.opponent.client.setDeck({
     deckId: deckOpponent.id,
     gameId: t.ctx.game.id,
@@ -453,18 +355,8 @@ test('Order automatically set if both are ScoiaTael', async (t) => {
 })
 
 test('Order automatically set if none are ScoiaTael', async (t) => {
-  const deckSelf = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-self-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
-  const deckOpponent = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-opponent-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const deckSelf = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const deckOpponent = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.opponent.client.setDeck({
     deckId: deckOpponent.id,
     gameId: t.ctx.game.id,

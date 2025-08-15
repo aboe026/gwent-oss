@@ -928,9 +928,8 @@ describe('games-query', () => {
             filter: {
               _id: {
                 $in: [
-                  ...[unitGame1Self2.unit.id, unitGame1Self3.unit.id, unitGame1Self4.unit.id]
-                    .sort()
-                    .map((id) => new ObjectId(id)),
+                  ...[unitGame1Self2.unit.id, unitGame1Self3.unit.id].sort().map((id) => new ObjectId(id)),
+                  new ObjectId(unitGame1Self4.unit.id),
                   new ObjectId(unitGame1Self1.unit.id),
                   new ObjectId(unitGame1Opponent1.unit.id),
                   new ObjectId(unitGame2Opponent2.unit.id),

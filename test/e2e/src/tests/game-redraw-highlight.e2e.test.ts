@@ -1,6 +1,6 @@
-import ApiClient from '../util/api-client'
+import ApiClient, { AddDeckInput } from '../util/api-client'
 import { ContextGamePlayer, E2eHelper } from '../util/e2e-helper'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import { ensureUnitsInHand, redrawExactUnit } from '@gwent/test-utils'
 import env from '../util/e2e-env'
@@ -13,19 +13,10 @@ import { PlayerTurn } from '../components/game-player-info'
 import RedrawUnits from '../components/redraw-units'
 
 interface GameRedrawHighlightTestCtx extends E2eCtx {
-  scenario: string
   self: ContextGamePlayer
   opponent: ContextGamePlayer
-  scoiatael: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
-  nilfgaard: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
+  scoiatael: AddDeckInput
+  nilfgaard: AddDeckInput
   game: Game
 }
 const fixture = getFixtureCtx<E2eCtx, GameRedrawHighlightTestCtx>()
@@ -34,12 +25,11 @@ const test = getTestCtx<E2eCtx, GameRedrawHighlightTestCtx>()
 fixture('Game Redraw Highlight')
   .page(HomePage.getUrl())
   .beforeEach(async (t) => {
-    t.ctx.scenario = 'game-redrawing'
     const self = await new ApiClient({}).addUser({
-      name: `${t.ctx.scenario}-self-${t.ctx.start}`,
+      name: `${getScenario(t)}-self-${t.ctx.start}`,
     })
     const opponent = await new ApiClient({}).addUser({
-      name: `${t.ctx.scenario}-opponent-${t.ctx.start}`,
+      name: `${getScenario(t)}-opponent-${t.ctx.start}`,
     })
 
     const selfClient = new ApiClient({
@@ -50,17 +40,19 @@ fixture('Game Redraw Highlight')
     })
 
     t.ctx.scoiatael = {
+      name: `${getScenario(t)}-scoiatael-deck-${t.ctx.start}`,
       faction: FactionKey.ScoiaTael,
-      leader: 'Francesca Findabair Pureblood Elf',
-      units: await E2eHelper.getUnitsForDeck({
+      leaderName: 'Francesca Findabair Pureblood Elf',
+      unitNames: await E2eHelper.getUnitsForDeck({
         client: selfClient,
         faction: FactionKey.ScoiaTael,
       }),
     }
     t.ctx.nilfgaard = {
+      name: `${getScenario(t)}-nilfgaard-deck-${t.ctx.start}`,
       faction: FactionKey.NilfgaardianEmpire,
-      leader: 'Emhyr var Emreis the Relentless',
-      units: await E2eHelper.getUnitsForDeck({
+      leaderName: 'Emhyr var Emreis the Relentless',
+      unitNames: await E2eHelper.getUnitsForDeck({
         client: selfClient,
         faction: FactionKey.NilfgaardianEmpire,
       }),
@@ -68,18 +60,8 @@ fixture('Game Redraw Highlight')
 
     t.ctx.game = await selfClient.addGame([opponent.name])
 
-    const selfDeck = await selfClient.addDeck({
-      faction: t.ctx.scoiatael.faction,
-      leaderName: t.ctx.scoiatael.leader,
-      name: `${t.ctx.scenario}-self-deck-${Date.now()}`,
-      unitNames: t.ctx.scoiatael.units,
-    })
-    const opponentDeck = await opponentClient.addDeck({
-      faction: t.ctx.nilfgaard.faction,
-      leaderName: t.ctx.nilfgaard.leader,
-      name: `${t.ctx.scenario}-opponent-deck-${Date.now()}`,
-      unitNames: t.ctx.nilfgaard.units,
-    })
+    const selfDeck = await selfClient.addDeck(t.ctx.scoiatael)
+    const opponentDeck = await opponentClient.addDeck(t.ctx.nilfgaard)
 
     t.ctx.self = {
       user: self,

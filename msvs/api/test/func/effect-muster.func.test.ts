@@ -115,6 +115,7 @@ describe('effect-muster', () => {
     gameDeck.undrawn = gameDeck.undrawn.filter((undrawnUnit) => undrawnUnit.unit.id !== unitSelf3.unit.id)
 
     const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
+
     await expect(
       graphql({
         schema,
@@ -151,10 +152,10 @@ describe('effect-muster', () => {
                         unit: unitSelf1.unit,
                       }),
                       TestUtil.getGameUnit({
-                        unit: unitSelf3.unit,
+                        unit: unitSelf2.unit,
                       }),
                       TestUtil.getGameUnit({
-                        unit: unitSelf2.unit,
+                        unit: unitSelf3.unit,
                       }),
                     ],
                   },

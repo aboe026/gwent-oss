@@ -7,7 +7,9 @@ import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
 import { E2eHelper } from '../util/e2e-helper'
 import { E2eCtx, E2ETestController, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import e2eEnv from '../util/e2e-env'
 import E2eUtil from '../util/e2e-util'
+import { ensureUnitsInHand } from '@gwent/test-utils'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
 import HomePage from '../page-objects/home-page'
@@ -35,7 +37,7 @@ fixture('Session Expiry').before(async (ctx) => {
   const requiredTimeoutSeconds = 60
   if (ctx.sessionTimeoutSeconds !== requiredTimeoutSeconds) {
     throw Error(
-      `Sessions timeout of "${ctx.sessionTimeoutSeconds}" seconds does not equal required value of "${requiredTimeoutSeconds}" for E2E tests.`
+      `Sessions timeout (SESSION_TIMEOUT_SECONDS) of "${ctx.sessionTimeoutSeconds}" seconds does not equal required value of "${requiredTimeoutSeconds}" for E2E tests.`
     )
   }
   const client = new ApiClient({ username })
@@ -46,30 +48,10 @@ fixture('Session Expiry').before(async (ctx) => {
     faction: ctx.faction.key,
     name: 'Francesca Findabair Hope of the Aen Seidhe',
   })
-  ctx.units = [
-    'Cirilla Fiona Elen Riannon',
-    "Commander's Horn",
-    'Cow',
-    'Decoy',
-    'Emiel Regis Rohellec Terzieff',
-    "Gaunter O'Dimm",
-    "Gaunter O'Dimm Darkness",
-    "Gaunter O'Dimm Darkness",
-    "Gaunter O'Dimm Darkness",
-    'Geralt of Rivia',
-    'Impenetrable Fog',
-    'Mysterious Elf',
-    'Olgierd Von Everec',
-    'Roach',
-    'Scorch',
-    'Skellige Storm',
-    'Torrential Rain',
-    'Triss Merigold',
-    'Vesemir',
-    'Villentretenmerth',
-    'Yennefer of Vengerberg',
-    'Zoltan Chivay',
-  ]
+  ctx.units = await E2eHelper.getUnitsForDeck({
+    client,
+    faction: FactionKey.ScoiaTael,
+  })
 })
 
 test('View decks after session expires', async (t) => {
@@ -690,6 +672,7 @@ test('Redraw unit for game after session expires', async (t) => {
   const scenario = 'session-expiry-game-redraw'
   const username = `${scenario}-user-${t.ctx.start}`
   const opponentName = `${scenario}-opponent-${t.ctx.start}`
+  const unitName1 = 'Toruviel'
   const self = await new ApiClient({}).addUser({
     name: username,
   })
@@ -711,7 +694,7 @@ test('Redraw unit for game after session expires', async (t) => {
     name: `${scenario}-deck-opponent-${t.ctx.start}`,
     unitNames: t.fixtureCtx.units,
   })
-  const gameDeckSelf = await clientSelf.setDeck({
+  await clientSelf.setDeck({
     deckId: deckSelf.id,
     gameId: game.id,
   })
@@ -719,12 +702,20 @@ test('Redraw unit for game after session expires', async (t) => {
     deckId: deckOpponent.id,
     gameId: game.id,
   })
+  await ensureUnitsInHand({
+    gameId: game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName1],
+    userId: self.id,
+  })
+  const gameDeckSelf = await clientSelf.getGameDeck(game.id)
   const updatedGame = await clientSelf.getGame(game.id)
   const selfPlayer = E2eHelper.getGamePlayer({
     player: {
       client: clientSelf,
       deck: deckSelf,
-      gameDeck: gameDeckSelf,
+      gameDeck: await clientOpponent.getGameDeck(game.id),
       user: self,
     },
     turn: updatedGame.turn?.user.id === self.id ? PlayerTurn.Future : undefined,
@@ -753,8 +744,11 @@ test('Redraw unit for game after session expires', async (t) => {
     redraws: [],
   })
   await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
-  const unitToRedraw = gameDeckSelf.hand[0].unit.name
-  await GamePage.redraw(unitToRedraw)
+  const unitFrom = E2eHelper.getHandUnit({
+    name: unitName1,
+    deck: gameDeckSelf,
+  })
+  await GamePage.redraw(unitFrom.unit.name)
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
   await GamePage.verifyRedrawError(`Error redrawing card: ${NOT_AUTHENTICATED_MESSAGE}`)
   await reAuthenticate(username, t)
@@ -766,7 +760,7 @@ test('Redraw unit for game after session expires', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw,
+          unitName: unitFrom.unit.name,
         },
         to: {
           unitName: updatedGameDeck.redraws[0].to.unit.name,

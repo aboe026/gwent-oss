@@ -1,7 +1,7 @@
 import { Selector, t } from 'testcafe'
 
 import { EffectKey, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
-import { HTML_CLASSES, HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { toTitleCase } from '@gwent/utils'
 
 const container = Selector(`#${HTML_IDS.UnitFullCardContainer}`)
@@ -171,7 +171,7 @@ export default class FullCard {
       await t.expect(FullCard.elements.Special.visible).ok()
       await t
         .expect(FullCard.elements.Special.innerText)
-        .eql(`Counts towards the special limit of ${MAX_SPECIALS} per deck.`)
+        .eql(`Counts towards the special limit of ${DECK_MAX_SPECIALS} per deck.`)
     } else {
       await t.expect(FullCard.elements.Special.exists).notOk()
     }

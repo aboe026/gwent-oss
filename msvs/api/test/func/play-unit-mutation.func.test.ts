@@ -7,6 +7,7 @@ import {
   addUser,
   getGame,
   getGameDeck,
+  getHandUnit,
   playPass,
   ready,
   setDeck,
@@ -381,21 +382,20 @@ describe('play-unit-mutation', () => {
         })
       })
       it('returns error if combat does not match unit combat', async () => {
-        const gameDeck = await getGameDeck({
+        const unitName = 'Toruviel'
+        await ensureUnitsInHand({
           gameId: game.id,
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+          unitNames: [unitName],
           userId: self.id,
         })
-        const deckUnit = gameDeck.hand[0]
-        const combats = [Combat.Close, Combat.Ranged, Combat.Siege]
-        if (deckUnit.unit.combats) {
-          for (const combat of deckUnit.unit.combats) {
-            const index = combats.indexOf(combat)
-            if (index >= 0) {
-              combats.splice(index, 1)
-            }
-          }
-        }
-        const combat = combats[0]
+        const deckUnit = await getHandUnit({
+          gameId: game.id,
+          unitName,
+          userId: self.id,
+        })
+        const combat = Combat.Close
         await expect(
           graphql({
             schema,

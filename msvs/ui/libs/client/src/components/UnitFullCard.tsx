@@ -3,7 +3,7 @@ import { CgChevronLeft, CgChevronRight } from 'react-icons/cg'
 import CloseButton from './CloseButton'
 import { DeckUnit, EffectKey, FactionKey, GameUnit, GameUnitEffect } from '@gwent/graphql-schema/resolver-typings'
 import { getCombatImage, getWeatherImage, toTitleCase } from '@gwent/utils'
-import { HTML_CLASSES, HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
+import { HTML_CLASSES, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { Key, useKeyDown } from '../util/keyboard-listener'
 import StrengthCircle from './StrengthCircle'
 import WholeScreenDialog from './WholeScreenDialog'
@@ -224,7 +224,7 @@ export default function UnitFullCard({
                         </div>
                         <span
                           id={HTML_IDS.UnitFullCardSpecial}
-                        >{`Counts towards the special limit of ${MAX_SPECIALS} per deck.`}</span>
+                        >{`Counts towards the special limit of ${DECK_MAX_SPECIALS} per deck.`}</span>
                       </div>
                     )}
                     {fullUnit.unit.dlc && (

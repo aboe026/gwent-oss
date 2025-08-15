@@ -2,6 +2,7 @@ import { GraphQLError, graphql } from 'graphql'
 import { ObjectId } from 'mongodb'
 
 import { addUser, addDeck, getUnits, getFactionId } from './util/graphql-util'
+import { DECK_MIN_UNITS } from '@gwent/constants'
 import { expectizeDeck, verifyMongoIds } from './util/expect-util'
 import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { getDeckFragment } from './util/fragment-util'
@@ -299,7 +300,7 @@ describe('add-deck-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Invalid number of units at "${length}", minimum is "22".`)],
+          errors: [new GraphQLError(`Invalid number of units at "${length}", minimum is "${DECK_MIN_UNITS}".`)],
         })
       })
       it('throws error if too many specials', async () => {
