@@ -6,6 +6,7 @@ import {
   addUser,
   getGame,
   getGameDeck,
+  getHandUnit,
   playPass,
   playUnit,
   ready,
@@ -345,38 +346,44 @@ describe('play-pass-mutation', () => {
         })
       })
       it('plays pass if second turn', async () => {
-        const unitName = 'Toruviel'
+        const unitName1 = 'Toruviel'
+        const unitName2 = 'Ves'
         await ensureUnitsInHand({
           gameId: game.id,
           mongoConnectionString: funcEnv.MONGO_URL,
           mongoDatabaseName: funcEnv.MONGO_DB,
-          unitNames: [unitName],
+          unitNames: [unitName1],
           userId: self.id,
         })
-        const gameDeckSelf = await getGameDeck({
+        await ensureUnitsInHand({
           gameId: game.id,
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+          unitNames: [unitName2],
+          userId: opponent.id,
+        })
+        const deckUnitSelf = await getHandUnit({
+          gameId: game.id,
+          unitName: unitName1,
           userId: self.id,
         })
-        const deckUnit = gameDeckSelf.hand.find((handUnit) => handUnit.unit.name === unitName)
-        if (!deckUnit) {
-          throw Error(`Could not find unit "${unitName}" in hand`)
-        }
+        const deckUnitOpponent = await getHandUnit({
+          gameId: game.id,
+          unitName: unitName2,
+          userId: opponent.id,
+        })
         const deckUnitCombat = Combat.Ranged
         await playUnit({
           gameId: game.id,
           userId: self.id,
-          unitId: deckUnit.unit.id,
+          unitId: deckUnitSelf.unit.id,
           combat: deckUnitCombat,
-        })
-        const gameDeckOpponent = await getGameDeck({
-          gameId: game.id,
-          userId: opponent.id,
         })
         await playUnit({
           gameId: game.id,
           userId: opponent.id,
-          unitId: gameDeckOpponent.hand[0].unit.id,
-          combat: gameDeckOpponent.hand[0].unit.combats ? gameDeckOpponent.hand[0].unit.combats[0] : Combat.Close,
+          unitId: deckUnitOpponent.unit.id,
+          combat: Combat.Close,
         })
         const updatedGame = await getGame({
           gameId: game.id,
@@ -419,7 +426,7 @@ describe('play-pass-mutation', () => {
                     expectizePlayerRound({
                       moves: [
                         expectizeMoveUnit({
-                          unit: deckUnit,
+                          unit: deckUnitSelf,
                         }),
                         expectizeMovePass(),
                       ],

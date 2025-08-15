@@ -511,3 +511,23 @@ export async function playUnit({
   }
   return response.data?.playUnit as Game
 }
+
+export async function getHandUnit({
+  gameId,
+  userId,
+  unitName,
+}: {
+  gameId: string | ObjectId
+  userId: string | ObjectId
+  unitName: string
+}): Promise<DeckUnit> {
+  const gameDeck = await getGameDeck({
+    gameId,
+    userId,
+  })
+  const unit = gameDeck.hand.find((handUnit) => handUnit.unit.name === unitName)
+  if (!unit) {
+    throw Error(`Could not find unit "${unitName}" in game "${gameId}" for user "${userId}"`)
+  }
+  return unit
+}

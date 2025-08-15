@@ -1,4 +1,4 @@
-import ApiClient from '../util/api-client'
+import ApiClient, { AddDeckInput } from '../util/api-client'
 import Banner from '../components/banner'
 import { Combat, Deck, FactionKey, Game, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
@@ -24,16 +24,8 @@ interface GameSubscriptionTestCtx extends E2eCtx {
     client: ApiClient
     deck: Deck
   }
-  scoiaTael: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
-  nilfgaard: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
+  scoiaTael: AddDeckInput
+  nilfgaard: AddDeckInput
   game: Game
 }
 const fixture = getFixtureCtx<E2eCtx, GameSubscriptionTestCtx>()
@@ -42,9 +34,8 @@ const test = getTestCtx<E2eCtx, GameSubscriptionTestCtx>()
 fixture('Game Subscription')
   .page(HomePage.getUrl())
   .beforeEach(async (t) => {
-    t.ctx.scenario = 'game-subscription'
-    const selfUsername = `${t.ctx.scenario}-self-${t.ctx.start}`
-    const opponentUsername = `${t.ctx.scenario}-opponent-${t.ctx.start}`
+    const selfUsername = `${getScenario(t)}-self-${t.ctx.start}`
+    const opponentUsername = `${getScenario(t)}-opponent-${t.ctx.start}`
 
     const self = await new ApiClient({}).addUser({
       name: selfUsername,
@@ -61,80 +52,31 @@ fixture('Game Subscription')
     })
 
     t.ctx.scoiaTael = {
+      name: `${getScenario(t)}-scoiatael-deck-${t.ctx.start}`,
       faction: FactionKey.ScoiaTael,
-      leader: 'Francesca Findabair Queen of Dol Blathanna',
-      units: [
-        'Barclay Els',
-        'Ciaran aep Easnillien',
-        'Cirilla Fiona Elen Riannon',
-        'Dol Blathanna Archer',
-        'Dol Blathanna Scout',
-        'Dol Blathanna Scout',
-        'Dol Blathanna Scout',
-        'Dwarven Skirmisher',
-        'Dwarven Skirmisher',
-        'Dwarven Skirmisher',
-        'Eithne',
-        'Elven Skirmisher',
-        'Elven Skirmisher',
-        'Elven Skirmisher',
-        'Emiel Regis Rohellec Terzieff',
-        'Filavandrel aen Fidhail',
-        'Havekar Healer',
-        'Havekar Healer',
-        'Havekar Healer',
-        'Havekar Smuggler',
-        'Havekar Smuggler',
-        'Havekar Smuggler',
-        'Scorch',
-      ],
+      leaderName: 'Francesca Findabair Queen of Dol Blathanna',
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: FactionKey.ScoiaTael,
+      }),
     }
     t.ctx.nilfgaard = {
+      name: `${getScenario(t)}-nilfgaard-deck-${t.ctx.start}`,
       faction: FactionKey.NilfgaardianEmpire,
-      leader: 'Emhyr var Emreis the Relentless',
-      units: [
-        'Albrich',
-        'Assire var Anahid',
-        'Black Infantry Archer',
-        'Black Infantry Archer',
-        'Emiel Regis Rohellec Terzieff',
-        'Etolian Auxiliary Archers',
-        'Etolian Auxiliary Archers',
-        'Heavy Zerrikanian Fire Scorpion',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Renuald aep Matsen',
-        'Rotten Mangonel',
-        'Shilard Fitz-Oesterlen',
-        'Siege Engineer',
-        'Siege Technician',
-        'Young Emissary',
-        'Young Emissary',
-      ],
+      leaderName: 'Emhyr var Emreis the Relentless',
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: opponentClient,
+        faction: FactionKey.NilfgaardianEmpire,
+      }),
     }
     t.ctx.self = {
       client: selfClient,
-      deck: await selfClient.addDeck({
-        faction: t.ctx.scoiaTael.faction,
-        leaderName: t.ctx.scoiaTael.leader,
-        name: `${t.ctx.scenario}-self-deck-${t.ctx.start}`,
-        unitNames: t.ctx.scoiaTael.units,
-      }),
+      deck: await selfClient.addDeck(t.ctx.scoiaTael),
       user: self,
     }
     t.ctx.opponent = {
       client: opponentClient,
-      deck: await opponentClient.addDeck({
-        faction: t.ctx.nilfgaard.faction,
-        leaderName: t.ctx.nilfgaard.leader,
-        name: `${t.ctx.scenario}-opponent-deck-${t.ctx.start}`,
-        unitNames: t.ctx.nilfgaard.units,
-      }),
+      deck: await opponentClient.addDeck(t.ctx.nilfgaard),
       user: opponent,
     }
     t.ctx.game = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
@@ -158,9 +100,9 @@ test('Page updates automatically with deck set via API on game page', async (t) 
   })
   const deck = await t.ctx.self.client.addDeck({
     faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-${Date.now()}`,
-    unitNames: t.ctx.nilfgaard.units,
+    leaderName: t.ctx.nilfgaard.leaderName,
+    name: `${getScenario(t)}-deck-${Date.now()}`,
+    unitNames: t.ctx.nilfgaard.unitNames,
   })
   const gameDeck = await client.setDeck({
     deckId: deck.id,
@@ -198,9 +140,9 @@ test('Page updates automatically with deck set via API on games list', async (t)
   })
   const deck = await t.ctx.self.client.addDeck({
     faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-${Date.now()}`,
-    unitNames: t.ctx.nilfgaard.units,
+    leaderName: t.ctx.nilfgaard.leaderName,
+    name: `${getScenario(t)}-deck-${Date.now()}`,
+    unitNames: t.ctx.nilfgaard.unitNames,
   })
   await Banner.goTo(Banner.elements.MenuGames)
   await GamesPage.verify({
@@ -261,9 +203,9 @@ test('Page does not update with deck set for other game via API', async (t) => {
   })
   const deck = await t.ctx.self.client.addDeck({
     faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-${Date.now()}`,
-    unitNames: t.ctx.nilfgaard.units,
+    leaderName: t.ctx.nilfgaard.leaderName,
+    name: `${getScenario(t)}-deck-${Date.now()}`,
+    unitNames: t.ctx.nilfgaard.unitNames,
   })
   await client.setDeck({
     deckId: deck.id,

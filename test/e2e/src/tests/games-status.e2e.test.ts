@@ -1,4 +1,4 @@
-import ApiClient from '../util/api-client'
+import ApiClient, { AddDeckInput } from '../util/api-client'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
@@ -7,7 +7,6 @@ import { FactionKey, Game, GameStatus, User } from '@gwent/graphql-schema/resolv
 import LoginPage from '../page-objects/login-page'
 
 interface GamesStatusTestCtx extends E2eCtx {
-  scenario: string
   self: {
     user: User
     client: ApiClient
@@ -16,16 +15,8 @@ interface GamesStatusTestCtx extends E2eCtx {
     user: User
     client: ApiClient
   }
-  scoiaTael: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
-  nilfgaard: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
+  scoiaTael: AddDeckInput
+  nilfgaard: AddDeckInput
   game: Game
 }
 const fixture = getFixtureCtx<E2eCtx, GamesStatusTestCtx>()
@@ -34,9 +25,8 @@ const test = getTestCtx<E2eCtx, GamesStatusTestCtx>()
 fixture('Games Status')
   .page(GamesPage.getUrl())
   .beforeEach(async (t) => {
-    t.ctx.scenario = getScenario(t)
-    const selfUsername = `${t.ctx.scenario}-self-${t.ctx.start}`
-    const opponentUsername = `${t.ctx.scenario}-opponent-${t.ctx.start}`
+    const selfUsername = `${getScenario(t)}-self-${t.ctx.start}`
+    const opponentUsername = `${getScenario(t)}-opponent-${t.ctx.start}`
 
     t.ctx.self = {
       user: await new ApiClient({}).addUser({
@@ -56,17 +46,19 @@ fixture('Games Status')
     }
 
     t.ctx.scoiaTael = {
+      name: `${getScenario(t)}-scoiatael-deck-${t.ctx.start}`,
       faction: FactionKey.ScoiaTael,
-      leader: 'Francesca Findabair Queen of Dol Blathanna',
-      units: await E2eHelper.getUnitsForDeck({
+      leaderName: 'Francesca Findabair Queen of Dol Blathanna',
+      unitNames: await E2eHelper.getUnitsForDeck({
         client: t.ctx.self.client,
         faction: FactionKey.ScoiaTael,
       }),
     }
     t.ctx.nilfgaard = {
+      name: `${getScenario(t)}-nilfgaard-deck-${t.ctx.start}`,
       faction: FactionKey.NilfgaardianEmpire,
-      leader: 'Emhyr var Emreis the Relentless',
-      units: await E2eHelper.getUnitsForDeck({
+      leaderName: 'Emhyr var Emreis the Relentless',
+      unitNames: await E2eHelper.getUnitsForDeck({
         client: t.ctx.self.client,
         faction: FactionKey.NilfgaardianEmpire,
       }),
@@ -76,18 +68,8 @@ fixture('Games Status')
   })
 
 test('Automatically updated with ordering status if decks set through API and self is scoitael', async (t) => {
-  const selfDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-self-deck-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
-  const opponentDeck = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-opponent-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const selfDeck = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
+  const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
     deckId: selfDeck.id,
     gameId: t.ctx.game.id,
@@ -123,18 +105,8 @@ test('Automatically updated with ordering status if decks set through API and se
 })
 
 test('Automatically updated with ordering status if decks set through API and opponent is scoitael', async (t) => {
-  const selfDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-self-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
-  const opponentDeck = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-opponent-deck-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
+  const selfDeck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.scoiaTael)
   await t.ctx.self.client.setDeck({
     deckId: selfDeck.id,
     gameId: t.ctx.game.id,
@@ -170,18 +142,8 @@ test('Automatically updated with ordering status if decks set through API and op
 })
 
 test('Games page updated with redrawing status if order set by self through API', async (t) => {
-  const selfDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-self-deck-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
-  const opponentDeck = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-opponent-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const selfDeck = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
+  const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
     deckId: selfDeck.id,
     gameId: t.ctx.game.id,
@@ -222,18 +184,8 @@ test('Games page updated with redrawing status if order set by self through API'
 })
 
 test('Games page updated with redrawing status if order set by opponent through API', async (t) => {
-  const selfDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-self-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
-  const opponentDeck = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-opponent-deck-${t.ctx.start}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
+  const selfDeck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.scoiaTael)
   await t.ctx.self.client.setDeck({
     deckId: selfDeck.id,
     gameId: t.ctx.game.id,
@@ -274,18 +226,8 @@ test('Games page updated with redrawing status if order set by opponent through 
 })
 
 test('Games page updated with redrawing status if decks set through API by self last', async (t) => {
-  const selfDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-self-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
-  const opponentDeck = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-opponent-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const selfDeck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.opponent.client.setDeck({
     deckId: opponentDeck.id,
     gameId: t.ctx.game.id,
@@ -321,18 +263,8 @@ test('Games page updated with redrawing status if decks set through API by self 
 })
 
 test('Games page updated with redrawing status if decks set through API by opponent last', async (t) => {
-  const selfDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-self-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
-  const opponentDeck = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-opponent-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const selfDeck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
     deckId: selfDeck.id,
     gameId: t.ctx.game.id,
@@ -368,18 +300,8 @@ test('Games page updated with redrawing status if decks set through API by oppon
 })
 
 test('Games page updated with playing status if marked ready through API by self last', async (t) => {
-  const selfDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-self-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
-  const opponentDeck = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-opponent-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const selfDeck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
     deckId: selfDeck.id,
     gameId: t.ctx.game.id,
@@ -418,18 +340,8 @@ test('Games page updated with playing status if marked ready through API by self
 })
 
 test('Games page updated with playing status if marked ready through API by opponent last', async (t) => {
-  const selfDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-self-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
-  const opponentDeck = await t.ctx.opponent.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-opponent-deck-${t.ctx.start}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const selfDeck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
+  const opponentDeck = await t.ctx.opponent.client.addDeck(t.ctx.nilfgaard)
   await t.ctx.self.client.setDeck({
     deckId: selfDeck.id,
     gameId: t.ctx.game.id,

@@ -1,7 +1,9 @@
-import ApiClient from '../util/api-client'
+import ApiClient, { AddDeckInput } from '../util/api-client'
 import { FactionKey, Game } from '@gwent/graphql-schema/resolver-typings'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import e2eEnv from '../util/e2e-env'
 import E2eUtil from '../util/e2e-util'
+import { ensureUnitsInHand } from '@gwent/test-utils'
 import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
@@ -9,19 +11,10 @@ import { ContextGamePlayer, E2eHelper } from '../util/e2e-helper'
 import { PlayerTurn } from '../components/game-player-info'
 
 interface GameRedrawingTestCtx extends E2eCtx {
-  scenario: string
   self: ContextGamePlayer
   opponent: ContextGamePlayer
-  northerRealms: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
-  nilfgaard: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
+  northerRealms: AddDeckInput
+  nilfgaard: AddDeckInput
   game: Game
 }
 const fixture = getFixtureCtx<E2eCtx, GameRedrawingTestCtx>()
@@ -30,70 +23,12 @@ const test = getTestCtx<E2eCtx, GameRedrawingTestCtx>()
 fixture('Game Redrawing')
   .page(HomePage.getUrl())
   .beforeEach(async (t) => {
-    t.ctx.scenario = 'game-redrawing'
     const self = await new ApiClient({}).addUser({
-      name: `${t.ctx.scenario}-self-${t.ctx.start}`,
+      name: `${getScenario(t)}-self-${t.ctx.start}`,
     })
     const opponent = await new ApiClient({}).addUser({
-      name: `${t.ctx.scenario}-opponent-${t.ctx.start}`,
+      name: `${getScenario(t)}-opponent-${t.ctx.start}`,
     })
-
-    t.ctx.northerRealms = {
-      faction: FactionKey.NorthernRealms,
-      leader: 'Foltest Son of Medell',
-      units: [
-        'Ballista',
-        'Biting Frost',
-        'Blue Stripes Commando',
-        'Blue Stripes Commando',
-        'Blue Stripes Commando',
-        'Catapult',
-        'Catapult',
-        'Cirilla Fiona Elen Riannon',
-        "Commander's Horn",
-        'Cow',
-        'Decoy',
-        'Dun Banner Medic',
-        'Geralt of Rivia',
-        'Mysterious Elf',
-        'Prince Stennis',
-        'Sabrina Glevissig',
-        'Scorch',
-        'Sigismund Dijkstra',
-        'Skellige Storm',
-        'Thaler',
-        'Villentretenmerth',
-        'Yennefer of Vengerberg',
-      ],
-    }
-    t.ctx.nilfgaard = {
-      faction: FactionKey.NilfgaardianEmpire,
-      leader: 'Emhyr var Emreis the Relentless',
-      units: [
-        'Albrich',
-        'Assire var Anahid',
-        'Black Infantry Archer',
-        'Black Infantry Archer',
-        'Emiel Regis Rohellec Terzieff',
-        'Etolian Auxiliary Archers',
-        'Etolian Auxiliary Archers',
-        'Heavy Zerrikanian Fire Scorpion',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Renuald aep Matsen',
-        'Rotten Mangonel',
-        'Shilard Fitz-Oesterlen',
-        'Siege Engineer',
-        'Siege Technician',
-        'Young Emissary',
-        'Young Emissary',
-      ],
-    }
 
     const selfClient = new ApiClient({
       username: self.name,
@@ -102,20 +37,29 @@ fixture('Game Redrawing')
       username: opponent.name,
     })
 
+    t.ctx.northerRealms = {
+      name: `${getScenario(t)}-north-deck-${t.ctx.start}`,
+      faction: FactionKey.NorthernRealms,
+      leaderName: 'Foltest Son of Medell',
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: selfClient,
+        faction: FactionKey.NorthernRealms,
+      }),
+    }
+    t.ctx.nilfgaard = {
+      name: `${getScenario(t)}-nilfgaard-deck-${t.ctx.start}`,
+      faction: FactionKey.NilfgaardianEmpire,
+      leaderName: 'Emhyr var Emreis the Relentless',
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client: opponentClient,
+        faction: FactionKey.NilfgaardianEmpire,
+      }),
+    }
+
     t.ctx.game = await selfClient.addGame([opponent.name])
 
-    const selfDeck = await selfClient.addDeck({
-      faction: t.ctx.northerRealms.faction,
-      leaderName: t.ctx.northerRealms.leader,
-      name: `${t.ctx.scenario}-self-deck-${Date.now()}`,
-      unitNames: t.ctx.northerRealms.units,
-    })
-    const opponentDeck = await opponentClient.addDeck({
-      faction: t.ctx.nilfgaard.faction,
-      leaderName: t.ctx.nilfgaard.leader,
-      name: `${t.ctx.scenario}-opponent-deck-${Date.now()}`,
-      unitNames: t.ctx.nilfgaard.units,
-    })
+    const selfDeck = await selfClient.addDeck(t.ctx.northerRealms)
+    const opponentDeck = await opponentClient.addDeck(t.ctx.nilfgaard)
 
     t.ctx.self = {
       user: self,
@@ -144,6 +88,7 @@ fixture('Game Redrawing')
   })
 
 test('Redraw 1 card before opponent redraws or ready', async (t) => {
+  const unitName = 'Siegfried of Denesle'
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -153,6 +98,14 @@ test('Redraw 1 card before opponent redraws or ready', async (t) => {
     player: t.ctx.opponent,
     turn: won ? undefined : PlayerTurn.Future,
   })
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName],
+    userId: t.ctx.self.user.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -163,8 +116,7 @@ test('Redraw 1 card before opponent redraws or ready', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [],
   })
-  const unitToRedraw = t.ctx.self.gameDeck.hand[0].unit.name
-  await GamePage.redraw(unitToRedraw)
+  await GamePage.redraw(unitName)
   const updatedGameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -173,7 +125,7 @@ test('Redraw 1 card before opponent redraws or ready', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw,
+          unitName,
         },
         to: {
           unitName: updatedGameDeck.redraws[0].to.unit.name,
@@ -184,6 +136,8 @@ test('Redraw 1 card before opponent redraws or ready', async (t) => {
 })
 
 test('Redraw 1 card after opponent redraws', async (t) => {
+  const unitName1 = 'Morteisen'
+  const unitName2 = 'Siegfried of Denesle'
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -193,13 +147,33 @@ test('Redraw 1 card after opponent redraws', async (t) => {
     player: t.ctx.opponent,
     turn: won ? undefined : PlayerTurn.Future,
   })
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName1],
+    userId: t.ctx.opponent.user.id,
+  })
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName2],
+    userId: t.ctx.self.user.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  t.ctx.opponent.gameDeck = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
+  const opponentFrom = E2eHelper.getHandUnit({
+    name: unitName1,
+    deck: t.ctx.opponent.gameDeck,
+  })
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
   })
   await t.ctx.opponent.client.redraw({
     gameId: t.ctx.game.id,
-    unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
+    unitId: opponentFrom.unit.id,
   })
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -207,8 +181,7 @@ test('Redraw 1 card after opponent redraws', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [],
   })
-  const unitToRedraw = t.ctx.self.gameDeck.hand[0].unit.name
-  await GamePage.redraw(unitToRedraw)
+  await GamePage.redraw(unitName2)
   const updatedGameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -217,7 +190,7 @@ test('Redraw 1 card after opponent redraws', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw,
+          unitName: unitName2,
         },
         to: {
           unitName: updatedGameDeck.redraws[0].to.unit.name,
@@ -228,6 +201,7 @@ test('Redraw 1 card after opponent redraws', async (t) => {
 })
 
 test('Redraw 1 card after opponent ready', async (t) => {
+  const unitName = 'Siegfried of Denesle'
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -238,6 +212,14 @@ test('Redraw 1 card after opponent ready', async (t) => {
     turn: won ? undefined : PlayerTurn.Future,
   })
   await t.ctx.opponent.client.ready(t.ctx.game.id)
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName],
+    userId: t.ctx.self.user.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -248,8 +230,7 @@ test('Redraw 1 card after opponent ready', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [],
   })
-  const unitToRedraw = t.ctx.self.gameDeck.hand[0].unit.name
-  await GamePage.redraw(unitToRedraw)
+  await GamePage.redraw(unitName)
   const updatedGameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -258,7 +239,7 @@ test('Redraw 1 card after opponent ready', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw,
+          unitName,
         },
         to: {
           unitName: updatedGameDeck.redraws[0].to.unit.name,
@@ -269,6 +250,8 @@ test('Redraw 1 card after opponent ready', async (t) => {
 })
 
 test('Redraw 2 cards before opponent ready', async (t) => {
+  const unitName1 = 'Siegfried of Denesle'
+  const unitName2 = 'Ves'
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -278,6 +261,14 @@ test('Redraw 2 cards before opponent ready', async (t) => {
     player: t.ctx.opponent,
     turn: won ? undefined : PlayerTurn.Future,
   })
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName1, unitName2],
+    userId: t.ctx.self.user.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -288,9 +279,7 @@ test('Redraw 2 cards before opponent ready', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [],
   })
-  const unitToRedraw1 = t.ctx.self.gameDeck.hand[0].unit.name
-  const unitToRedraw2 = t.ctx.self.gameDeck.hand[1].unit.name
-  await GamePage.redraw(unitToRedraw1)
+  await GamePage.redraw(unitName1)
   const updatedGameDeck1 = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -299,7 +288,7 @@ test('Redraw 2 cards before opponent ready', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw1,
+          unitName: unitName1,
         },
         to: {
           unitName: updatedGameDeck1.redraws[0].to.unit.name,
@@ -307,7 +296,7 @@ test('Redraw 2 cards before opponent ready', async (t) => {
       },
     ],
   })
-  await GamePage.redraw(unitToRedraw2)
+  await GamePage.redraw(unitName2)
   const updatedGameDeck2 = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -316,7 +305,7 @@ test('Redraw 2 cards before opponent ready', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw1,
+          unitName: unitName1,
         },
         to: {
           unitName: updatedGameDeck2.redraws[0].to.unit.name,
@@ -324,7 +313,7 @@ test('Redraw 2 cards before opponent ready', async (t) => {
       },
       {
         from: {
-          unitName: unitToRedraw2,
+          unitName: unitName2,
         },
         to: {
           unitName: updatedGameDeck2.redraws[1].to.unit.name,
@@ -335,6 +324,10 @@ test('Redraw 2 cards before opponent ready', async (t) => {
 })
 
 test('Redraw 2 cards after opponent redraws', async (t) => {
+  const unitName1 = 'Vreemde'
+  const unitName2 = 'Siegfried of Denesle'
+  const unitName3 = 'Morteisen'
+  const unitName4 = 'Ves'
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -344,13 +337,37 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
     player: t.ctx.opponent,
     turn: won ? undefined : PlayerTurn.Future,
   })
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName2, unitName4],
+    userId: t.ctx.self.user.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName1, unitName3],
+    userId: t.ctx.opponent.user.id,
+  })
+  t.ctx.opponent.gameDeck = await t.ctx.opponent.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
   })
+  const opponentFrom1 = E2eHelper.getHandUnit({
+    name: unitName1,
+    deck: t.ctx.opponent.gameDeck,
+  })
+  const opponentFrom2 = E2eHelper.getHandUnit({
+    name: unitName3,
+    deck: t.ctx.opponent.gameDeck,
+  })
   await t.ctx.opponent.client.redraw({
     gameId: t.ctx.game.id,
-    unitId: t.ctx.opponent.gameDeck.hand[0].unit.id,
+    unitId: opponentFrom1.unit.id,
   })
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -358,9 +375,7 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [],
   })
-  const unitToRedraw1 = t.ctx.self.gameDeck.hand[0].unit.name
-  const unitToRedraw2 = t.ctx.self.gameDeck.hand[1].unit.name
-  await GamePage.redraw(unitToRedraw1)
+  await GamePage.redraw(unitName2)
   const updatedGameDeck1 = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -369,7 +384,7 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw1,
+          unitName: unitName2,
         },
         to: {
           unitName: updatedGameDeck1.redraws[0].to.unit.name,
@@ -379,7 +394,7 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
   })
   await t.ctx.opponent.client.redraw({
     gameId: t.ctx.game.id,
-    unitId: t.ctx.opponent.gameDeck.hand[1].unit.id,
+    unitId: opponentFrom2.unit.id,
   })
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -388,7 +403,7 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw1,
+          unitName: unitName2,
         },
         to: {
           unitName: updatedGameDeck1.redraws[0].to.unit.name,
@@ -396,7 +411,7 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
       },
     ],
   })
-  await GamePage.redraw(unitToRedraw2)
+  await GamePage.redraw(unitName4)
   const updatedGameDeck2 = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -405,7 +420,7 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw1,
+          unitName: unitName2,
         },
         to: {
           unitName: updatedGameDeck2.redraws[0].to.unit.name,
@@ -413,7 +428,7 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
       },
       {
         from: {
-          unitName: unitToRedraw2,
+          unitName: unitName4,
         },
         to: {
           unitName: updatedGameDeck2.redraws[1].to.unit.name,
@@ -424,6 +439,8 @@ test('Redraw 2 cards after opponent redraws', async (t) => {
 })
 
 test('Redraw 2 cards after opponent ready', async (t) => {
+  const unitName1 = 'Siegfried of Denesle'
+  const unitName2 = 'Ves'
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -435,6 +452,14 @@ test('Redraw 2 cards after opponent ready', async (t) => {
     ready: true,
   })
   await t.ctx.opponent.client.ready(t.ctx.game.id)
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName1, unitName2],
+    userId: t.ctx.self.user.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -445,9 +470,7 @@ test('Redraw 2 cards after opponent ready', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [],
   })
-  const unitToRedraw1 = t.ctx.self.gameDeck.hand[0].unit.name
-  const unitToRedraw2 = t.ctx.self.gameDeck.hand[1].unit.name
-  await GamePage.redraw(unitToRedraw1)
+  await GamePage.redraw(unitName1)
   const updatedGameDeck1 = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -456,7 +479,7 @@ test('Redraw 2 cards after opponent ready', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw1,
+          unitName: unitName1,
         },
         to: {
           unitName: updatedGameDeck1.redraws[0].to.unit.name,
@@ -464,7 +487,7 @@ test('Redraw 2 cards after opponent ready', async (t) => {
       },
     ],
   })
-  await GamePage.redraw(unitToRedraw2)
+  await GamePage.redraw(unitName2)
   const updatedGameDeck2 = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
     opponent: opponentPlayer,
@@ -473,7 +496,7 @@ test('Redraw 2 cards after opponent ready', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw1,
+          unitName: unitName1,
         },
         to: {
           unitName: updatedGameDeck2.redraws[0].to.unit.name,
@@ -481,7 +504,7 @@ test('Redraw 2 cards after opponent ready', async (t) => {
       },
       {
         from: {
-          unitName: unitToRedraw2,
+          unitName: unitName2,
         },
         to: {
           unitName: updatedGameDeck2.redraws[1].to.unit.name,
@@ -492,6 +515,7 @@ test('Redraw 2 cards after opponent ready', async (t) => {
 })
 
 test('Page automatically updates after first redraw via API', async (t) => {
+  const unitName = 'Siegfried of Denesle'
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -501,6 +525,14 @@ test('Page automatically updates after first redraw via API', async (t) => {
     player: t.ctx.opponent,
     turn: won ? undefined : PlayerTurn.Future,
   })
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName],
+    userId: t.ctx.self.user.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -511,10 +543,13 @@ test('Page automatically updates after first redraw via API', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [],
   })
-  const unitToRedraw = t.ctx.self.gameDeck.hand[0].unit
+  const unitToRedraw = E2eHelper.getHandUnit({
+    name: unitName,
+    deck: t.ctx.self.gameDeck,
+  })
   await t.ctx.self.client.redraw({
     gameId: t.ctx.game.id,
-    unitId: unitToRedraw.id,
+    unitId: unitToRedraw.unit.id,
   })
   const updatedGameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
@@ -524,7 +559,7 @@ test('Page automatically updates after first redraw via API', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw.name,
+          unitName,
         },
         to: {
           unitName: updatedGameDeck.redraws[0].to.unit.name,
@@ -535,6 +570,8 @@ test('Page automatically updates after first redraw via API', async (t) => {
 })
 
 test('Page automatically updates after second redraw via API', async (t) => {
+  const unitName1 = 'Siegfried of Denesle'
+  const unitName2 = 'Ves'
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -544,11 +581,25 @@ test('Page automatically updates after second redraw via API', async (t) => {
     player: t.ctx.opponent,
     turn: won ? undefined : PlayerTurn.Future,
   })
-  const unitToRedraw1 = t.ctx.self.gameDeck.hand[0].unit
-  const unitToRedraw2 = t.ctx.self.gameDeck.hand[1].unit
+  await ensureUnitsInHand({
+    gameId: t.ctx.game.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName1, unitName2],
+    userId: t.ctx.self.user.id,
+  })
+  t.ctx.self.gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
+  const unitToRedraw1 = E2eHelper.getHandUnit({
+    name: unitName1,
+    deck: t.ctx.self.gameDeck,
+  })
+  const unitToRedraw2 = E2eHelper.getHandUnit({
+    name: unitName2,
+    deck: t.ctx.self.gameDeck,
+  })
   await t.ctx.self.client.redraw({
     gameId: t.ctx.game.id,
-    unitId: unitToRedraw1.id,
+    unitId: unitToRedraw1.unit.id,
   })
   const updatedGameDeck1 = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
@@ -562,7 +613,7 @@ test('Page automatically updates after second redraw via API', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw1.name,
+          unitName: unitName1,
         },
         to: {
           unitName: updatedGameDeck1.redraws[0].to.unit.name,
@@ -572,7 +623,7 @@ test('Page automatically updates after second redraw via API', async (t) => {
   })
   await t.ctx.self.client.redraw({
     gameId: t.ctx.game.id,
-    unitId: unitToRedraw2.id,
+    unitId: unitToRedraw2.unit.id,
   })
   const updatedGameDeck2 = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
@@ -582,7 +633,7 @@ test('Page automatically updates after second redraw via API', async (t) => {
     redraws: [
       {
         from: {
-          unitName: unitToRedraw1.name,
+          unitName: unitName1,
         },
         to: {
           unitName: updatedGameDeck1.redraws[0].to.unit.name,
@@ -590,7 +641,7 @@ test('Page automatically updates after second redraw via API', async (t) => {
       },
       {
         from: {
-          unitName: unitToRedraw2.name,
+          unitName: unitName2,
         },
         to: {
           unitName: updatedGameDeck2.redraws[1].to.unit.name,
@@ -601,6 +652,7 @@ test('Page automatically updates after second redraw via API', async (t) => {
 })
 
 test('Page not updated if use API to redraw from other game', async (t) => {
+  const unitName = 'Ves'
   const won = t.ctx.game.turn?.user.id === t.ctx.self.user.id
   const selfPlayer = E2eHelper.getGamePlayer({
     player: t.ctx.self,
@@ -611,7 +663,7 @@ test('Page not updated if use API to redraw from other game', async (t) => {
     turn: won ? undefined : PlayerTurn.Future,
   })
   const game2 = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
-  const gameDeck2 = await t.ctx.self.client.setDeck({
+  await t.ctx.self.client.setDeck({
     deckId: t.ctx.self.deck.id,
     gameId: game2.id,
   })
@@ -619,6 +671,14 @@ test('Page not updated if use API to redraw from other game', async (t) => {
     deckId: t.ctx.opponent.deck.id,
     gameId: game2.id,
   })
+  await ensureUnitsInHand({
+    gameId: game2.id,
+    mongoConnectionString: e2eEnv.MONGO_URL,
+    mongoDatabaseName: e2eEnv.MONGO_DB,
+    unitNames: [unitName],
+    userId: t.ctx.self.user.id,
+  })
+  const gameDeck2 = await t.ctx.self.client.getGameDeck(game2.id)
   await E2eUtil.goTo(GamePage.getUrl(t.ctx.game.id))
   await GamePage.verifyCoinToss({
     won,
@@ -629,10 +689,13 @@ test('Page not updated if use API to redraw from other game', async (t) => {
     hand: t.ctx.self.gameDeck.hand,
     redraws: [],
   })
-  const unitToRedraw = gameDeck2.hand[0].unit
+  const unitToRedraw = E2eHelper.getHandUnit({
+    name: unitName,
+    deck: gameDeck2,
+  })
   await t.ctx.self.client.redraw({
     gameId: game2.id,
-    unitId: unitToRedraw.id,
+    unitId: unitToRedraw.unit.id,
   })
   await GamePage.verify({
     opponent: opponentPlayer,

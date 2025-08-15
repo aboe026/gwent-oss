@@ -2,9 +2,9 @@ import { CgChevronDoubleLeft, CgChevronDoubleRight, CgLock, CgLockUnlock } from 
 import { Dispatch, SetStateAction } from 'react'
 
 import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
+import { DECK_MIN_UNITS, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
 import { getUnitStats, toTitleCase } from '@gwent/utils'
-import { HTML_IDS, MAX_SPECIALS } from '@gwent/constants'
 import ProgressRing from '../components/ProgressRing'
 import { UnitStats } from '@gwent/graphql-schema/apollo-typings'
 import './UnitsStats.css'
@@ -109,11 +109,11 @@ export default function UnitsStats({
             <ProgressRing
               id={HTML_IDS.DeckUnitStatUnit}
               completed={selectedStats.units}
-              total={22}
+              total={DECK_MIN_UNITS}
               remainingColor="darkgray"
-              completedColor={selectedStats.units < 22 ? 'red' : 'green'}
+              completedColor={selectedStats.units < DECK_MIN_UNITS ? 'red' : 'green'}
               label={<img src="images/stats/deck.png" title="Units" />}
-              title="Minimum 22"
+              title={`Minimum ${DECK_MIN_UNITS}`}
               onClick={() => {
                 setAvailableFilterFields([])
                 setSelectedFilterFields([])
@@ -122,11 +122,11 @@ export default function UnitsStats({
             <ProgressRing
               id={HTML_IDS.DeckUnitStatSpecial}
               completed={selectedStats.specials}
-              total={MAX_SPECIALS}
+              total={DECK_MAX_SPECIALS}
               remainingColor="darkgray"
-              completedColor={selectedStats.specials > MAX_SPECIALS ? 'red' : 'green'}
+              completedColor={selectedStats.specials > DECK_MAX_SPECIALS ? 'red' : 'green'}
               label={<img src="images/stats/special.png" title="Special" />}
-              title={`Maximum ${MAX_SPECIALS}`}
+              title={`Maximum ${DECK_MAX_SPECIALS}`}
               onClick={() => {
                 setAvailableFilterFields([FILTER_FIELD.Special])
                 setSelectedFilterFields([FILTER_FIELD.Special])

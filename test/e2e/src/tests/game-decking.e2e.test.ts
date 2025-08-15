@@ -1,16 +1,16 @@
-import ApiClient from '../util/api-client'
+import ApiClient, { AddDeckInput } from '../util/api-client'
+import { Deck, FactionKey, Game, User } from '@gwent/graphql-schema/resolver-typings'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
-import { Deck, FactionKey, Game, User } from '@gwent/graphql-schema/resolver-typings'
-import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { DECK_MIN_UNITS, STARTING_HAND_SIZE } from '@gwent/constants'
+import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
 import GamePage from '../page-objects/game-page'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
-import { STARTING_HAND_SIZE } from '@gwent/constants'
 
 interface GameDeckingTestCtx extends E2eCtx {
-  scenario: string
   self: {
     user: User
     client: ApiClient
@@ -19,16 +19,8 @@ interface GameDeckingTestCtx extends E2eCtx {
     user: User
     client: ApiClient
   }
-  scoiaTael: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
-  nilfgaard: {
-    faction: FactionKey
-    leader: string
-    units: string[]
-  }
+  scoiaTael: AddDeckInput
+  nilfgaard: AddDeckInput
   game: Game
 }
 const fixture = getFixtureCtx<E2eCtx, GameDeckingTestCtx>()
@@ -37,9 +29,8 @@ const test = getTestCtx<E2eCtx, GameDeckingTestCtx>()
 fixture('Game Decking')
   .page(HomePage.getUrl())
   .beforeEach(async (t) => {
-    t.ctx.scenario = 'game-decking'
-    const selfUsername = `${t.ctx.scenario}-self-${t.ctx.start}`
-    const opponentUsername = `${t.ctx.scenario}-opponent-${t.ctx.start}`
+    const selfUsername = `${getScenario(t)}-self-${t.ctx.start}`
+    const opponentUsername = `${getScenario(t)}-opponent-${t.ctx.start}`
 
     t.ctx.self = {
       user: await new ApiClient({}).addUser({
@@ -59,61 +50,26 @@ fixture('Game Decking')
     }
 
     t.ctx.scoiaTael = {
+      name: `${getScenario(t)}-scoiatael-deck-${t.ctx.start}`,
       faction: FactionKey.ScoiaTael,
-      leader: 'Francesca Findabair Queen of Dol Blathanna',
-      units: [
-        'Barclay Els',
-        'Ciaran aep Easnillien',
-        'Cirilla Fiona Elen Riannon',
-        'Dol Blathanna Archer',
-        'Dol Blathanna Scout',
-        'Dol Blathanna Scout',
-        'Dol Blathanna Scout',
-        'Dwarven Skirmisher',
-        'Dwarven Skirmisher',
-        'Dwarven Skirmisher',
-        'Eithne',
-        'Elven Skirmisher',
-        'Elven Skirmisher',
-        'Elven Skirmisher',
-        'Emiel Regis Rohellec Terzieff',
-        'Filavandrel aen Fidhail',
-        'Havekar Healer',
-        'Havekar Healer',
-        'Havekar Healer',
-        'Havekar Smuggler',
-        'Havekar Smuggler',
-        'Havekar Smuggler',
-        'Scorch',
-      ],
+      leaderName: 'Francesca Findabair Queen of Dol Blathanna',
+      unitNames: (
+        await E2eHelper.getUnitsForDeck({
+          client: t.ctx.self.client,
+          faction: FactionKey.ScoiaTael,
+        })
+      ).slice(0, DECK_MIN_UNITS),
     }
     t.ctx.nilfgaard = {
+      name: `${getScenario(t)}-nilfgaard-deck-${t.ctx.start}`,
       faction: FactionKey.NilfgaardianEmpire,
-      leader: 'Emhyr var Emreis the Relentless',
-      units: [
-        'Albrich',
-        'Assire var Anahid',
-        'Black Infantry Archer',
-        'Black Infantry Archer',
-        'Emiel Regis Rohellec Terzieff',
-        'Etolian Auxiliary Archers',
-        'Etolian Auxiliary Archers',
-        'Heavy Zerrikanian Fire Scorpion',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Impera Brigade Guard',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Nausicaa Cavalry Rider',
-        'Renuald aep Matsen',
-        'Rotten Mangonel',
-        'Shilard Fitz-Oesterlen',
-        'Siege Engineer',
-        'Siege Technician',
-        'Young Emissary',
-        'Young Emissary',
-      ],
+      leaderName: 'Emhyr var Emreis the Relentless',
+      unitNames: (
+        await E2eHelper.getUnitsForDeck({
+          client: t.ctx.self.client,
+          faction: FactionKey.NilfgaardianEmpire,
+        })
+      ).slice(0, DECK_MIN_UNITS),
     }
     t.ctx.game = await t.ctx.self.client.addGame([t.ctx.opponent.user.name])
     await LoginPage.login({
@@ -137,10 +93,10 @@ test('Set deck from new one without any existing', async (t) => {
     }),
     leader: await t.ctx.self.client.getLeader({
       faction: t.ctx.nilfgaard.faction,
-      name: t.ctx.nilfgaard.leader,
+      name: t.ctx.nilfgaard.leaderName,
     }),
-    name: `${t.ctx.scenario}-deck-${Date.now()}`,
-    units: t.ctx.nilfgaard.units,
+    name: t.ctx.nilfgaard.name,
+    units: t.ctx.nilfgaard.unitNames,
   })
   const gameDeck = await t.ctx.self.client.getGameDeck(t.ctx.game.id)
   await GamePage.verify({
@@ -170,22 +126,17 @@ test('Set deck from new one with single existing', async (t) => {
       name: t.ctx.self.user.name,
     },
   })
-  const existingDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-existing-deck-${Date.now()}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
+  const existingDeck = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
   await GamePage.setNewDeck({
     faction: await t.ctx.self.client.getFaction({
       key: t.ctx.nilfgaard.faction,
     }),
     leader: await t.ctx.self.client.getLeader({
       faction: t.ctx.nilfgaard.faction,
-      name: t.ctx.nilfgaard.leader,
+      name: t.ctx.nilfgaard.leaderName,
     }),
-    name: `${t.ctx.scenario}-deck-${Date.now()}`,
-    units: t.ctx.nilfgaard.units,
+    name: t.ctx.nilfgaard.name,
+    units: t.ctx.nilfgaard.unitNames,
     existingDecks: [
       {
         created: existingDeck.created,
@@ -225,12 +176,7 @@ test('Set deck from existing one with single existing', async (t) => {
       name: t.ctx.self.user.name,
     },
   })
-  const deck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-${Date.now()}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const deck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
   await GamePage.setDeck({
     created: deck.created,
     faction: deck.faction,
@@ -267,18 +213,8 @@ test('Set deck from existing one with multiple existing', async (t) => {
       name: t.ctx.self.user.name,
     },
   })
-  const existingDeck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.scoiaTael.faction,
-    leaderName: t.ctx.scoiaTael.leader,
-    name: `${t.ctx.scenario}-existing-deck-${Date.now()}`,
-    unitNames: t.ctx.scoiaTael.units,
-  })
-  const deck = await t.ctx.self.client.addDeck({
-    faction: t.ctx.nilfgaard.faction,
-    leaderName: t.ctx.nilfgaard.leader,
-    name: `${t.ctx.scenario}-deck-${Date.now()}`,
-    unitNames: t.ctx.nilfgaard.units,
-  })
+  const existingDeck = await t.ctx.self.client.addDeck(t.ctx.scoiaTael)
+  const deck = await t.ctx.self.client.addDeck(t.ctx.nilfgaard)
   const neutralFaction = await t.ctx.self.client.getFaction({ key: FactionKey.Neutral })
   await GamePage.setDeck({
     created: deck.created,

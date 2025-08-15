@@ -3,6 +3,7 @@ import DeckList, { DeckInfo } from '../components/deck-list'
 import DecksPage from '../page-objects/decks-page'
 import { Deck, Faction, FactionKey, Leader } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
+import { E2eHelper } from '../util/e2e-helper'
 import LoginPage from '../page-objects/login-page'
 import { SORT_FIELD } from '@gwent/graphql-schema/decks-filter'
 
@@ -32,55 +33,6 @@ fixture('Decks Sort')
     const leader1 = 'Francesca Findabair Queen of Dol Blathanna'
     const leader2 = 'Emhyr var Emreis the Relentless'
 
-    const units1 = [
-      'Barclay Els',
-      'Ciaran aep Easnillien',
-      'Cirilla Fiona Elen Riannon',
-      'Dol Blathanna Archer',
-      'Dol Blathanna Scout',
-      'Dol Blathanna Scout',
-      'Dol Blathanna Scout',
-      'Dwarven Skirmisher',
-      'Dwarven Skirmisher',
-      'Dwarven Skirmisher',
-      'Eithne',
-      'Elven Skirmisher',
-      'Elven Skirmisher',
-      'Elven Skirmisher',
-      'Emiel Regis Rohellec Terzieff',
-      'Filavandrel aen Fidhail',
-      'Havekar Healer',
-      'Havekar Healer',
-      'Havekar Healer',
-      'Havekar Smuggler',
-      'Havekar Smuggler',
-      'Havekar Smuggler',
-      'Scorch',
-    ]
-    const units2 = [
-      'Albrich',
-      'Assire var Anahid',
-      'Black Infantry Archer',
-      'Black Infantry Archer',
-      'Emiel Regis Rohellec Terzieff',
-      'Etolian Auxiliary Archers',
-      'Etolian Auxiliary Archers',
-      'Heavy Zerrikanian Fire Scorpion',
-      'Impera Brigade Guard',
-      'Impera Brigade Guard',
-      'Impera Brigade Guard',
-      'Impera Brigade Guard',
-      'Nausicaa Cavalry Rider',
-      'Nausicaa Cavalry Rider',
-      'Nausicaa Cavalry Rider',
-      'Renuald aep Matsen',
-      'Rotten Mangonel',
-      'Shilard Fitz-Oesterlen',
-      'Siege Engineer',
-      'Siege Technician',
-      'Young Emissary',
-      'Young Emissary',
-    ]
     await new ApiClient({}).addUser({
       name: t.ctx.username,
     })
@@ -105,13 +57,21 @@ fixture('Decks Sort')
       faction: faction1,
       leaderName: leader1,
       name: t.ctx.name1,
-      unitNames: units1,
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client,
+        faction: faction1,
+        specials: ['Scorch'],
+      }),
     })
     t.ctx.deck2 = await client.addDeck({
       faction: faction2,
       leaderName: leader2,
       name: t.ctx.name2,
-      unitNames: units2,
+      unitNames: await E2eHelper.getUnitsForDeck({
+        client,
+        faction: faction2,
+        ignores: ['Geralt of Rivia', 'Black Infantry Archer'],
+      }),
     })
     t.ctx.neutralFaction = await client.getFaction({ key: FactionKey.Neutral })
     await LoginPage.login({
@@ -257,7 +217,24 @@ test('Sorts by strength average descending', async (t) => {
   await DeckList.setSortField(SORT_FIELD.StrengthAverage)
   await verifySortOrder({
     ctx: t.ctx,
+    first: false,
+  })
+})
+
+test('Sorts by strength average ascending', async (t) => {
+  await DeckList.setSortField(SORT_FIELD.StrengthAverage)
+  await DeckList.changeSortOrder()
+  await verifySortOrder({
+    ctx: t.ctx,
     first: true,
+  })
+})
+
+test('Sorts by strength total descending', async (t) => {
+  await DeckList.setSortField(SORT_FIELD.StrengthAverage)
+  await verifySortOrder({
+    ctx: t.ctx,
+    first: false,
   })
 })
 
@@ -266,7 +243,7 @@ test('Sorts by strength total ascending', async (t) => {
   await DeckList.changeSortOrder()
   await verifySortOrder({
     ctx: t.ctx,
-    first: false,
+    first: true,
   })
 })
 
