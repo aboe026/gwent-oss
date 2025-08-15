@@ -51,6 +51,17 @@ describe('muster-battlefield', () => {
         newDeckUnit,
         musterEffect,
         musterableUnits: [musterableUnit],
+        getMusterImpactResponses: [
+          {
+            impact: {
+              unit: TestUtil.getDbGameUnit({
+                id: musterableUnit._id,
+              }),
+              user: new ObjectId(),
+            },
+            origin: GameUnitOrigin.Hand,
+          },
+        ],
         expected: Error(`${message}.`),
         unitStoreGetCalls: [
           [
@@ -58,6 +69,15 @@ describe('muster-battlefield', () => {
               namePrefix: undefined,
               names: [newUnit.name],
               ignoreIds: [newUnit._id],
+            },
+          ],
+        ],
+        getMusterImpactCalls: [
+          [
+            {
+              game,
+              logPrefix,
+              potentialMuster: musterableUnit,
             },
           ],
         ],
@@ -1668,6 +1688,1674 @@ describe('muster-battlefield', () => {
                     ],
                   },
                   ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
+        describe('ranged', () => {
+          const combat = Combat.Ranged
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[0].rounds[0],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[0].rounds[0],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
+        describe('siege', () => {
+          const combat = Combat.Siege
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[0].rounds[0],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[0].rounds[0],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
+      })
+      describe('round 2', () => {
+        const round = 2
+        describe('close', () => {
+          const combat = Combat.Close
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      {
+                        ...ogGame.players[0].rounds[1],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      {
+                        ...ogGame.players[0].rounds[1],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
+        describe('ranged', () => {
+          const combat = Combat.Ranged
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      {
+                        ...ogGame.players[0].rounds[1],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      {
+                        ...ogGame.players[0].rounds[1],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
+        describe('siege', () => {
+          const combat = Combat.Siege
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      {
+                        ...ogGame.players[0].rounds[1],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      {
+                        ...ogGame.players[0].rounds[1],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
+      })
+      describe('round 3', () => {
+        const round = 3
+        describe('close', () => {
+          const combat = Combat.Close
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      ogGame.players[0].rounds[1],
+                      {
+                        ...ogGame.players[0].rounds[2],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      ogGame.players[0].rounds[1],
+                      {
+                        ...ogGame.players[0].rounds[2],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
+        describe('ranged', () => {
+          const combat = Combat.Ranged
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      ogGame.players[0].rounds[1],
+                      {
+                        ...ogGame.players[0].rounds[2],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      ogGame.players[0].rounds[1],
+                      {
+                        ...ogGame.players[0].rounds[2],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
+        describe('siege', () => {
+          const combat = Combat.Siege
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      ogGame.players[0].rounds[1],
+                      {
+                        ...ogGame.players[0].rounds[2],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [player, TestUtil.getDbGamePlayer({})],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  {
+                    ...ogGame.players[0],
+                    deck: {
+                      ...ogGame.players[0].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[0].rounds[0],
+                      ogGame.players[0].rounds[1],
+                      {
+                        ...ogGame.players[0].rounds[2],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                  ogGame.players[1],
+                ],
+              },
+            })
+          })
+        })
+      })
+    })
+    describe('player 2', () => {
+      describe('round 1', () => {
+        const round = 1
+        describe('close', () => {
+          const combat = Combat.Close
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[1].rounds[0],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[1].rounds[0],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+        })
+        describe('ranged', () => {
+          const combat = Combat.Ranged
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[1].rounds[0],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[1].rounds[0],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+        })
+        describe('siege', () => {
+          const combat = Combat.Siege
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[1].rounds[0],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      {
+                        ...ogGame.players[1].rounds[0],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+        })
+      })
+      describe('round 2', () => {
+        const round = 2
+        describe('close', () => {
+          const combat = Combat.Close
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      {
+                        ...ogGame.players[1].rounds[1],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      {
+                        ...ogGame.players[1].rounds[1],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+        })
+        describe('ranged', () => {
+          const combat = Combat.Ranged
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      {
+                        ...ogGame.players[1].rounds[1],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      {
+                        ...ogGame.players[1].rounds[1],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+        })
+        describe('siege', () => {
+          const combat = Combat.Siege
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      {
+                        ...ogGame.players[1].rounds[1],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      {
+                        ...ogGame.players[1].rounds[1],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+        })
+      })
+      describe('round 3', () => {
+        const round = 3
+        describe('close', () => {
+          const combat = Combat.Close
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      ogGame.players[1].rounds[1],
+                      {
+                        ...ogGame.players[1].rounds[2],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      ogGame.players[1].rounds[1],
+                      {
+                        ...ogGame.players[1].rounds[2],
+                        close: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+        })
+        describe('ranged', () => {
+          const combat = Combat.Ranged
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      ogGame.players[1].rounds[1],
+                      {
+                        ...ogGame.players[1].rounds[2],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      ogGame.players[1].rounds[1],
+                      {
+                        ...ogGame.players[1].rounds[2],
+                        ranged: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+        })
+        describe('siege', () => {
+          const combat = Combat.Siege
+          it('removes unit from hand and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                hand: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Hand,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      hand: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      ogGame.players[1].rounds[1],
+                      {
+                        ...ogGame.players[1].rounds[2],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            })
+          })
+          it('removes unit from undrawn and adds it to battlefield', () => {
+            const player = TestUtil.getDbGamePlayer({
+              deck: TestUtil.getDbGameDeck({
+                undrawn: [
+                  TestUtil.getDbDeckUnit({
+                    id: muster.unit,
+                  }),
+                ],
+              }),
+              rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+            })
+            const game = TestUtil.getDbGame({
+              round,
+              players: [TestUtil.getDbGamePlayer({}), player],
+              turn: player.user,
+            })
+            const ogGame = deepClone(game)
+            testMusterUnitToBattlefield({
+              combat,
+              game,
+              muster,
+              origin: GameUnitOrigin.Undrawn,
+              updatedGame: {
+                ...ogGame,
+                players: [
+                  ogGame.players[0],
+                  {
+                    ...ogGame.players[1],
+                    deck: {
+                      ...ogGame.players[1].deck,
+                      undrawn: [],
+                    },
+                    rounds: [
+                      ogGame.players[1].rounds[0],
+                      ogGame.players[1].rounds[1],
+                      {
+                        ...ogGame.players[1].rounds[2],
+                        siege: {
+                          score: 0,
+                          units: [muster],
+                        },
+                      },
+                    ],
+                  },
                 ],
               },
             })
