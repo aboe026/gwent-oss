@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.14.2 - 2025-08-15
+
+### Fixed
+
+- Muster from hand first ([#41](https://github.com/aboe026/gwent/pull/41)) (Adam Boe)
+- E2E test refactors ([#41](https://github.com/aboe026/gwent/pull/41)) (Adam Boe)
+
 ## 0.14.1 - 2025-08-10
 
 ### Fixed
