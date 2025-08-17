@@ -131,15 +131,16 @@ export default class CalculateGameEffectiveStrengths {
       moraleEffect,
       units: rowDbUnits,
     })
-    const bondIdsInRow = EffectBond.getUnitsWithBond({
-      bondEffect,
-      logPrefix,
-      units: rowDbUnits,
-    })
 
     for (const rowGameUnit of row.units) {
       const rowUnit = units.find((unit) => unit._id.toString() === rowGameUnit.unit.toString())
       if (rowUnit && rowUnit.strength !== undefined && rowUnit.strength !== null) {
+        const bondIdsInRow = EffectBond.getUnitsWithBond({
+          bondEffect,
+          logPrefix,
+          units: rowDbUnits,
+          unitName: rowUnit.name,
+        })
         rowGameUnit.effectiveStrength = rowUnit.strength
         rowGameUnit.effects = []
 

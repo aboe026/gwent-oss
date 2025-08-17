@@ -25,16 +25,19 @@ export default class EffectBond {
    * @param config.logPrefix The prefix to prepend to log statements.
    * @param config.bondEffect The Bond Effect database document used to check against units.
    * @param config.units The list of units to check if they contain the Bond effect in their abilities.
+   * @param config.unitName The name of the bonded unit to match against.
    * @returns A list of IDs of units which have the Bond effect ability.
    */
   static getUnitsWithBond({
     logPrefix,
     bondEffect,
     units,
+    unitName,
   }: {
     logPrefix: string
     bondEffect: EffectDbObject | undefined
     units: UnitDbObject[]
+    unitName: string
   }): string[] {
     const unitIdsWithBond: string[] = []
 
@@ -49,8 +52,10 @@ export default class EffectBond {
           let unitHasBond = false
           for (let i = 0; i < unit.effects.length && !unitHasBond; i++) {
             const effect = unit.effects[i]
-            if (effect.toString() === bondEffect._id.toString()) {
-              EffectBond.logger.debug(`${logPrefix} unit "${unit._id}" has bond effect "${bondEffect._id}"`)
+            if (effect.toString() === bondEffect._id.toString() && unit.name === unitName) {
+              EffectBond.logger.debug(
+                `${logPrefix} unit "${unit._id}" has bond effect "${bondEffect._id}" and matches name "${unitName}"`
+              )
               unitHasBond = true
             }
           }

@@ -147,3 +147,168 @@ test('Bond multiplies base strengths by 8 when three other bonded units present'
     ],
   })
 })
+
+test('Bond is separate for units with different names', async (t) => {
+  const unitName1 = 'Blue Stripes Commando'
+  const unitName2 = 'Poor Fucking Infantry'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName1, unitName1, unitName2, unitName2, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, bonding: [] })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    effectiveStrength: 8,
+    bonding: [
+      {
+        effectiveStrength: 8,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.deploy({ unitName: unitName2, bonding: [] })
+  await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 2,
+    bonding: [
+      {
+        effectiveStrength: 2,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.deploy({
+    unitName: unitName1,
+    effectiveStrength: 16,
+    bonding: [
+      {
+        effectiveStrength: 16,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+      {
+        effectiveStrength: 16,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 4,
+    bonding: [
+      {
+        effectiveStrength: 4,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+      {
+        effectiveStrength: 4,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+})
+
+test('Bond is separate for units on different combat rows', async (t) => {
+  const unitName1 = 'Blue Stripes Commando'
+  const unitName2 = 'Crinfrid Reavers Dragon Hunter'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName1, unitName2, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, bonding: [] })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    effectiveStrength: 8,
+    bonding: [
+      {
+        effectiveStrength: 8,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await gameManager.deploy({ unitName: unitName2, combat: Combat.Ranged, bonding: [] })
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    effectiveStrength: 10,
+    bonding: [
+      {
+        effectiveStrength: 10,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+  })
+})
+
+test('Bond is separate for same unit as opponent', async (t) => {
+  const unitName1 = 'Blue Stripes Commando'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName1],
+    },
+    opponent: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName1],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({ unitName: unitName1, bonding: [] })
+  await gameManager.deploy({ unitName: unitName1, bonding: [] })
+  await gameManager.deploy({
+    unitName: unitName1,
+    effectiveStrength: 8,
+    bonding: [
+      {
+        effectiveStrength: 8,
+        name: unitName1,
+        player: gameManager.opponent.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    effectiveStrength: 8,
+    bonding: [
+      {
+        effectiveStrength: 8,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+})
+
+// TODO: bond doesn't work if unit scorched
