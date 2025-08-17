@@ -10,6 +10,7 @@ import {
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import EffectBond from './effect-bond'
 import EffectMorale from './effect-morale'
 import GetEffectWithKey from './get-effect-with-key'
 import PresentableError from '../../../../util/presentable-error'
@@ -52,6 +53,11 @@ export default class CalculateGameEffectiveStrengths {
       effects,
       logPrefix,
     })
+    const bondEffect = GetEffectWithKey.getEffectWithKey({
+      effectKey: EffectKey.Bond,
+      effects,
+      logPrefix,
+    })
 
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
@@ -62,6 +68,7 @@ export default class CalculateGameEffectiveStrengths {
             units,
             logPrefix,
             moraleEffect,
+            bondEffect,
             newDeckUnit,
             userId: player.user,
             currentPlayerId: game.turn,
@@ -80,6 +87,7 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.units All the database Unit objects present in the round for the game.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.moraleEffect The Effect database document for the Morale effect.
+   * @param config.bondEffect The Effect database document for the Bond effect.
    * @param config.newDeckUnit The new unit being introduced to the battlefield.
    * @param config.userId The ID of the user for the combat row.
    * @param config.currentPlayerId The ID of the current game turn user.
@@ -90,6 +98,7 @@ export default class CalculateGameEffectiveStrengths {
     units,
     logPrefix,
     moraleEffect,
+    bondEffect,
     newDeckUnit,
     userId,
     currentPlayerId,
@@ -98,6 +107,7 @@ export default class CalculateGameEffectiveStrengths {
     units: UnitDbObject[]
     logPrefix: string
     moraleEffect: EffectDbObject | undefined
+    bondEffect: EffectDbObject | undefined
     newDeckUnit: DeckUnitDbObject
     userId: ObjectId
     currentPlayerId: ObjectId | undefined
@@ -121,6 +131,11 @@ export default class CalculateGameEffectiveStrengths {
       moraleEffect,
       units: rowDbUnits,
     })
+    const bondIdsInRow = EffectBond.getUnitsWithBond({
+      bondEffect,
+      logPrefix,
+      units: rowDbUnits,
+    })
 
     for (const rowGameUnit of row.units) {
       const rowUnit = units.find((unit) => unit._id.toString() === rowGameUnit.unit.toString())
@@ -128,6 +143,19 @@ export default class CalculateGameEffectiveStrengths {
         rowGameUnit.effectiveStrength = rowUnit.strength
         rowGameUnit.effects = []
 
+        impacts.push(
+          ...EffectBond.applyBonds({
+            logPrefix,
+            bondEffect,
+            unitIdsWithBondInRow: bondIdsInRow,
+            newDeckUnit,
+            rowGameUnit: rowGameUnit,
+            rowUnit: rowUnit,
+            units,
+            userId,
+            currentPlayerId,
+          })
+        )
         impacts.push(
           ...EffectMorale.applyMorales({
             logPrefix,
