@@ -76,6 +76,7 @@ export default class CalculateGameEffectiveStrengths {
         )
       }
     }
+    // TODO: return morales and bonds separately?
     return impacts.length > 0 ? impacts : undefined
   }
 
@@ -144,6 +145,7 @@ export default class CalculateGameEffectiveStrengths {
         rowGameUnit.effectiveStrength = rowUnit.strength
         rowGameUnit.effects = []
 
+        // TODO: capture impacts of mustered units
         impacts.push(
           ...EffectBond.applyBonds({
             logPrefix,

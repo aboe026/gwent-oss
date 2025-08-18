@@ -311,4 +311,79 @@ test('Bond is separate for same unit as opponent', async (t) => {
   })
 })
 
-// TODO: bond doesn't work if unit scorched
+test('Bond does not take into account scorched units', async (t) => {
+  const unitName1 = 'Blue Stripes Commando'
+  const unitName2 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName1, unitName1],
+    },
+    opponent: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, bonding: [] })
+  await gameManager.deploy({
+    unitName: unitName2,
+    scorching: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        strength: 4,
+      },
+    ],
+  })
+  await gameManager.deploy({ unitName: unitName1, bonding: [] })
+  await gameManager.pass({})
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    effectiveStrength: 8,
+    bonding: [
+      {
+        effectiveStrength: 8,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+})
+
+test('Can bond moraled unit', async (t) => {
+  const unitName1 = 'Olgierd Von Everec'
+  const unitName2 = 'Blue Stripes Commando'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, moraling: [] })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 5,
+    bonding: [],
+  })
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 9,
+    bonding: [
+      {
+        effectiveStrength: 9,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+})

@@ -449,10 +449,10 @@ export class E2eHelper {
             name: deckUnit.unit.name,
             type: MoveReasonType.Muster,
           },
-          impacts: muster.impactable
+          impacts: muster.impact
             ? {
-                effectKey: EffectKey.Muster,
-                number: 0,
+                effectKey: muster.impact.type || EffectKey.Muster,
+                number: muster.impact.instances || 0,
               }
             : undefined,
           origin: muster.hand ? GameUnitOrigin.Hand : GameUnitOrigin.Undrawn,
@@ -784,7 +784,10 @@ export interface MusteringExpected {
   name: string
   row: Combat
   effectiveStrength: number
-  impactable?: boolean
+  impact?: {
+    type: EffectKey
+    instances?: number
+  }
   hand?: boolean
 }
 

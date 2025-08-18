@@ -7,6 +7,7 @@ import EffectStore from '../../../../database/stores/effect-store'
  * @param units The units containing potential effect IDs that the full Effect database documents should be grabbed for.
  * @returns The database documents of any Effects present in the Unit objects.
  */
+// TODO: add effects object for existing effects already captured to not needlessly retrieve effects already have
 export default async function getUnitEffects(units: UnitDbObject[]): Promise<EffectDbObject[]> {
   const effectIds: string[] = []
   for (const unit of units) {

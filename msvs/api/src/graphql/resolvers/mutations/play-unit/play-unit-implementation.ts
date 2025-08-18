@@ -59,6 +59,8 @@ export default class PlayUnitImplementation {
       newDeckUnit: deckUnit,
     })
 
+    unitEffects.push(...(await getUnitEffects(musteredUnits)))
+
     const strengths = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits, ...musteredUnits],

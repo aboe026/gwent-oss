@@ -810,3 +810,5 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
     username: gameManager.self.gamePlayer.name,
   })
 })
+
+// TODO: can morale bonded units

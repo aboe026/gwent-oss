@@ -425,7 +425,9 @@ test('Shows single entry if Muster impacts multiple units from hand and undrawn'
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
         hand: true,
       },
       {
@@ -433,7 +435,9 @@ test('Shows single entry if Muster impacts multiple units from hand and undrawn'
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })

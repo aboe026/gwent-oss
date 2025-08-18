@@ -80,7 +80,7 @@ export default class MusterBattlefield {
       MusterBattlefield.logger.debug(`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`)
 
       const musterableUnits = await UnitStore.get({
-        namePrefix: newUnit.effectPrefix ? newUnit.effectPrefix : undefined,
+        namePrefix: newUnit.effectPrefix ? `"${newUnit.effectPrefix}"` : undefined,
         names: newUnit.effectPrefix ? undefined : [newUnit.name],
         ignoreIds: [newUnit._id],
       })

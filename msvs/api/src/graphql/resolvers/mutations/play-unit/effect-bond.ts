@@ -115,51 +115,47 @@ export default class EffectBond {
       EffectBond.logger.trace(`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`)
     }
 
-    if (!rowUnit.hero) {
-      const bondsToApply = unitIdsWithBondInRow.filter((id) => id !== rowGameUnit.unit.toString())
-      if (EffectBond.logger.isTraceEnabled()) {
-        EffectBond.logger.trace(`${logPrefix} bondsToApply: "${JSON.stringify(bondsToApply)}"`)
-      }
-      for (const unitIdWithBond of bondsToApply) {
-        const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
-        if (bondEffect && bondingUnit && rowGameUnit.effects) {
-          rowGameUnit.effectiveStrength = (rowGameUnit.effectiveStrength || 0) * 2
-          EffectBond.logger.debug(
-            `${logPrefix} adding bond boost to "${rowUnit._id}" from "${bondingUnit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}"`
-          )
-          const reason: EffectFromUnitDbObject = {
-            effect: bondEffect._id,
-            type: EffectReasonType.Unit,
-            unit: bondingUnit._id,
-          }
+    const bondsToApply = unitIdsWithBondInRow.filter((id) => id !== rowGameUnit.unit.toString())
+    if (EffectBond.logger.isTraceEnabled()) {
+      EffectBond.logger.trace(`${logPrefix} bondsToApply: "${JSON.stringify(bondsToApply)}"`)
+    }
+    for (const unitIdWithBond of bondsToApply) {
+      const bondingUnit = units.find((unit) => unit._id.toString() === unitIdWithBond)
+      if (bondEffect && bondingUnit && rowGameUnit.effects) {
+        rowGameUnit.effectiveStrength = (rowGameUnit.effectiveStrength || 0) * 2
+        EffectBond.logger.debug(
+          `${logPrefix} adding bond boost to "${rowUnit._id}" from "${bondingUnit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}"`
+        )
+        const reason: EffectFromUnitDbObject = {
+          effect: bondEffect._id,
+          type: EffectReasonType.Unit,
+          unit: bondingUnit._id,
+        }
 
-          const gameUnitEffect: GameUnitEffectDbObject = {
-            operator: 'x2',
-            reason,
-            total: rowGameUnit.effectiveStrength,
+        const gameUnitEffect: GameUnitEffectDbObject = {
+          operator: 'x2',
+          reason,
+          total: rowGameUnit.effectiveStrength,
+        }
+        if (EffectBond.logger.isTraceEnabled()) {
+          EffectBond.logger.trace(`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`)
+        }
+        rowGameUnit.effects.push(gameUnitEffect)
+
+        if (
+          bondingUnit._id.toString() === newDeckUnit.unit.toString() &&
+          userId.toString() === currentPlayerId?.toString()
+        ) {
+          const impact: ImpactDbObject = {
+            unit: rowGameUnit,
+            user: userId,
           }
           if (EffectBond.logger.isTraceEnabled()) {
-            EffectBond.logger.trace(`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`)
+            EffectBond.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
           }
-          rowGameUnit.effects.push(gameUnitEffect)
-
-          if (
-            bondingUnit._id.toString() === newDeckUnit.unit.toString() &&
-            userId.toString() === currentPlayerId?.toString()
-          ) {
-            const impact: ImpactDbObject = {
-              unit: rowGameUnit,
-              user: userId,
-            }
-            if (EffectBond.logger.isTraceEnabled()) {
-              EffectBond.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
-            }
-            impacts.push(impact)
-          }
+          impacts.push(impact)
         }
       }
-    } else {
-      EffectBond.logger.debug(`${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to bond effect.`)
     }
 
     return impacts
