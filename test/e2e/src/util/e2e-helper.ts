@@ -385,6 +385,7 @@ export class E2eHelper {
           player: morale.player,
           row: morale.row,
           unitName: morale.name,
+          instance: morale.instance,
         })
       }
     }
@@ -777,6 +778,7 @@ export interface MoralingExpected {
   name: string
   row: Combat
   effectiveStrength: number
+  instance?: number
 }
 
 export interface MusteringExpected {

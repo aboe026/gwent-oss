@@ -4,13 +4,13 @@ import {
   Combat,
   DeckUnitDbObject,
   GameDbObject,
-  ImpactDbObject,
   MoveReasonType,
   GameUnitOrigin,
   MoveUnitDbObject,
   MoveDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GetBattlefieldUnit from './get-battlefield-unit'
+import { ImpactsByUnitId } from '../../resolver-util'
 import { MoveType } from '@gwent/graphql-schema'
 import { MusteredOrigins } from './muster-battlefield'
 import PresentableError from '../../../../util/presentable-error'
@@ -32,7 +32,8 @@ export default class UpdateHistory {
    * @param config.combat Which combat row the new unit is being deployed to on the battlefield.
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
-   * @param config.strengths Any potential units the new battlefield unit moraled when deployed.
+   * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
+   * @param config.morales Any potential units the new battlefield unit moraled when deployed.
    * @param config.musteredOrigins A map of where any potential mustered units came from.
    */
   static newUnitDeployed({
@@ -43,7 +44,8 @@ export default class UpdateHistory {
     combat,
     scorches,
     musters,
-    strengths,
+    bonds,
+    morales,
     musteredOrigins,
   }: {
     game: GameDbObject
@@ -51,9 +53,10 @@ export default class UpdateHistory {
     playerId: string
     logPrefix: string
     combat: Combat | null | undefined
-    scorches: ImpactDbObject[] | undefined
-    musters: ImpactDbObject[] | undefined
-    strengths: ImpactDbObject[] | undefined
+    scorches: ImpactsByUnitId
+    musters: ImpactsByUnitId
+    bonds: ImpactsByUnitId
+    morales: ImpactsByUnitId
     musteredOrigins: MusteredOrigins | undefined
   }) {
     const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
@@ -61,6 +64,11 @@ export default class UpdateHistory {
       unitId: deckUnit.unit,
       userId: playerId,
     })
+    const impacts =
+      scorches[deckUnit.unit.toString()] ||
+      musters[deckUnit.unit.toString()] ||
+      bonds[deckUnit.unit.toString()] ||
+      morales[deckUnit.unit.toString()]
     const move: MoveUnitDbObject = {
       created: new Date(),
       unit: {
@@ -70,7 +78,7 @@ export default class UpdateHistory {
         effects: battlefieldUnit?.unit.effects,
         row: combat,
       },
-      impacts: scorches || musters || strengths,
+      impacts,
       reason: {
         type: MoveReasonType.Deploy,
       },
@@ -84,13 +92,13 @@ export default class UpdateHistory {
       move,
     })
 
-    if (musters) {
+    if (musters[deckUnit.unit.toString()]) {
       if (!musteredOrigins) {
         const message = 'No origins provided for musters'
         UpdateHistory.logger.error(`${logPrefix} failed: ${message}, musters: "${JSON.stringify(musters)}"`)
         throw Error(`${message}.`)
       }
-      for (const muster of musters) {
+      for (const muster of musters[deckUnit.unit.toString()]) {
         const musteredBattlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
           game,
           unitId: muster.unit.unit,
@@ -107,6 +115,11 @@ export default class UpdateHistory {
           UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
           throw Error(`${message}.`)
         }
+        const musterImpacts =
+          scorches[muster.unit.unit.toString()] ||
+          musters[muster.unit.unit.toString()] ||
+          bonds[muster.unit.unit.toString()] ||
+          morales[muster.unit.unit.toString()]
         const musterMove: MoveUnitDbObject = {
           created: move.created,
           reason: {
@@ -121,6 +134,7 @@ export default class UpdateHistory {
             effects: musteredBattlefieldUnit.unit.effects,
             row: musteredBattlefieldUnit.row,
           },
+          impacts: musterImpacts,
           source: {
             origin,
           },

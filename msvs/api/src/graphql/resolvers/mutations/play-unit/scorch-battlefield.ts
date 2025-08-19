@@ -17,6 +17,7 @@ import {
 import GetEffectWithKey from './get-effect-with-key'
 import getGameUnits from './get-game-units'
 import GetStrongestNonHeroUnitIds from './get-strongest-non-hero-unit-ids'
+import { ImpactsByUnitId } from '../../resolver-util'
 
 /**
  * A class to modify the battlefield if a scorching unit is played.
@@ -47,7 +48,7 @@ export default class ScorchBattlefield {
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
-  }): ImpactDbObject[] | undefined {
+  }): ImpactsByUnitId {
     const scorched: ImpactDbObject[] = []
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
@@ -112,7 +113,11 @@ export default class ScorchBattlefield {
         )
       }
     }
-    return scorched.length > 0 ? scorched : undefined
+    return scorched.length > 0
+      ? {
+          [newDeckUnit.unit.toString()]: scorched,
+        }
+      : {}
   }
 
   /**

@@ -795,7 +795,7 @@ test('Can muster same units as opponent', async (t) => {
   })
 })
 
-test.only('Can muster units with bonding', async (t) => {
+test('Can muster units with bonding', async (t) => {
   const unitName1 = 'Cerys'
   const unitName2 = 'Clan Drummond Shield Maiden'
   const gameManager = await createGameManager({
@@ -816,7 +816,7 @@ test.only('Can muster units with bonding', async (t) => {
         row: Combat.Close,
         impact: {
           type: EffectKey.Bond,
-          instances: 3,
+          instances: 2,
         },
         hand: true,
       },
@@ -827,7 +827,7 @@ test.only('Can muster units with bonding', async (t) => {
         row: Combat.Close,
         impact: {
           type: EffectKey.Bond,
-          instances: 3,
+          instances: 2,
         },
         hand: true,
       },
@@ -838,7 +838,7 @@ test.only('Can muster units with bonding', async (t) => {
         row: Combat.Close,
         impact: {
           type: EffectKey.Bond,
-          instances: 3,
+          instances: 2,
         },
         hand: true,
       },

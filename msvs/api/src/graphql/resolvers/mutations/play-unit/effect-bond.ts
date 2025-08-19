@@ -11,6 +11,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EffectReasonType } from '@gwent/graphql-schema'
+import { ImpactsByUnitId } from '../../resolver-util'
 
 /**
  * A class for determining the impact the Bond effect has on units effectiveStrength.
@@ -81,6 +82,7 @@ export default class EffectBond {
    * @param config.unitIdsWithBondInRow A list of IDs of units which contain the Bond effect ability in the battlefield row under consideration.
    * @param config.bondEffect The Effect database document for the Bond effect.
    * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
+   * @param config.musteredUnitIds A list of any unit IDs that were mustered to the battlefield by the newDeckUnit. Used to apply potential impacts to those musters.
    * @param config.rowGameUnit The GameUnit under consideration to be bonded.
    * @param config.rowUnit The Unit under consideration to be bonded.
    * @param config.units A list of all units on the battlefield.
@@ -93,6 +95,7 @@ export default class EffectBond {
     unitIdsWithBondInRow,
     bondEffect,
     newDeckUnit,
+    musteredUnitIds,
     rowGameUnit,
     rowUnit,
     units,
@@ -103,13 +106,14 @@ export default class EffectBond {
     unitIdsWithBondInRow: string[]
     bondEffect: EffectDbObject | undefined
     newDeckUnit: DeckUnitDbObject
+    musteredUnitIds: string[]
     rowGameUnit: GameUnitDbObject
     rowUnit: UnitDbObject
     units: UnitDbObject[]
     userId: ObjectId
     currentPlayerId: ObjectId | undefined
-  }): ImpactDbObject[] {
-    const impacts: ImpactDbObject[] = []
+  }): ImpactsByUnitId {
+    const impacts: ImpactsByUnitId = {}
 
     if (EffectBond.logger.isTraceEnabled()) {
       EffectBond.logger.trace(`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`)
@@ -143,7 +147,8 @@ export default class EffectBond {
         rowGameUnit.effects.push(gameUnitEffect)
 
         if (
-          bondingUnit._id.toString() === newDeckUnit.unit.toString() &&
+          (bondingUnit._id.toString() === newDeckUnit.unit.toString() ||
+            musteredUnitIds.includes(bondingUnit._id.toString())) &&
           userId.toString() === currentPlayerId?.toString()
         ) {
           const impact: ImpactDbObject = {
@@ -153,7 +158,10 @@ export default class EffectBond {
           if (EffectBond.logger.isTraceEnabled()) {
             EffectBond.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
           }
-          impacts.push(impact)
+          if (!impacts[bondingUnit._id.toString()]) {
+            impacts[bondingUnit._id.toString()] = []
+          }
+          if (impacts[bondingUnit._id.toString()]) impacts[bondingUnit._id.toString()].push(impact)
         }
       }
     }

@@ -927,11 +927,22 @@ export default class GamePage {
     await t.click(card.find(`.${HTML_CLASSES.UnitGameCardFullScreen}`))
   }
 
-  static async fullscreenCombatCard({ unitName, row, self }: { unitName: string; row: Combat; self: boolean }) {
+  static async fullscreenCombatCard({
+    unitName,
+    row,
+    self,
+    instance = 1,
+  }: {
+    unitName: string
+    row: Combat
+    self: boolean
+    instance?: number
+  }) {
     const card = await GamePage.getBattlefieldCard({
       unitName,
       row,
       self,
+      instance,
     })
     await t.hover(card.find(`.${HTML_CLASSES.UnitGameCardStrength}`))
     await t.click(card.find(`.${HTML_CLASSES.UnitGameCardFullScreen}`))
@@ -1090,7 +1101,17 @@ export default class GamePage {
     await t.click(historyUnit)
   }
 
-  static async getBattlefieldCard({ unitName, row, self }: { unitName: string; row: Combat; self: boolean }) {
+  static async getBattlefieldCard({
+    unitName,
+    row,
+    self,
+    instance = 1,
+  }: {
+    unitName: string
+    row: Combat
+    self: boolean
+    instance?: number
+  }) {
     let rowSelector: Selector | undefined = undefined
     if (self) {
       if (row === Combat.Close) {
@@ -1112,15 +1133,22 @@ export default class GamePage {
     const rowCards = rowSelector.find(`.${HTML_CLASSES.GameCombatRowCards}`).child()
     const rowCardsCount = await rowCards.count
     let matchingCard: Selector | undefined
-    for (let i = 0; i < rowCardsCount; i++) {
+    let namedInstance = 1
+    for (let i = 0; i < rowCardsCount && !matchingCard; i++) {
       const rowCard = rowCards.nth(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
       const cardName = (await rowCard.getAttribute('title')) || ''
       if (cardName === unitName) {
-        matchingCard = rowCard
+        if (namedInstance === instance) {
+          matchingCard = rowCard
+        } else {
+          namedInstance++
+        }
       }
     }
     if (!matchingCard) {
-      throw Error(`Could not find unit "${unitName}" in row "${row}" for "${self ? 'self' : 'opponent'}" to select`)
+      throw Error(
+        `Could not find unit "${unitName}" instance "${instance}" in row "${row}" for "${self ? 'self' : 'opponent'}" to select`
+      )
     }
     return matchingCard
   }

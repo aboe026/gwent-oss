@@ -61,12 +61,14 @@ export default class PlayUnitImplementation {
 
     unitEffects.push(...(await getUnitEffects(musteredUnits)))
 
-    const strengths = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+    // TODO: return "bondedOrigins?"
+    const { bonds, morales } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits, ...musteredUnits],
       effects: unitEffects,
       logPrefix,
       newDeckUnit: deckUnit,
+      musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
     })
 
     setGameScores(game)
@@ -80,7 +82,8 @@ export default class PlayUnitImplementation {
       playerId,
       logPrefix,
       scorches,
-      strengths,
+      bonds,
+      morales,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

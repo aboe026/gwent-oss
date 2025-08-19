@@ -1470,3 +1470,5 @@ test('Impacts can include same unit from both players', async (t) => {
     ],
   })
 })
+
+// TODO: test with impact with same name

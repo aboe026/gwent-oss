@@ -1,5 +1,5 @@
 import createGameManager from '../util/game-manager'
-import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, EffectKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
@@ -267,7 +267,7 @@ test('Morale effects normal unit if morale played after', async (t) => {
   })
 })
 
-test('Morale effects multiple normal units', async (t) => {
+test('Morale effects multiple normal units with different names', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Ida Emean aep Sivney'
   const unitName3 = 'Milva'
@@ -333,6 +333,119 @@ test('Morale effects multiple normal units', async (t) => {
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Morale effects multiple normal units with same name', async (t) => {
+  const unitName1 = 'Elven Skirmisher'
+  const unitName2 = 'Milva'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName1, unitName1, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        effectiveStrength: 2,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        hand: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
+      },
+      {
+        effectiveStrength: 2,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        hand: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    moraling: [
+      {
+        effectiveStrength: 3,
+        row: Combat.Ranged,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+      },
+      {
+        effectiveStrength: 3,
+        row: Combat.Ranged,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        instance: 2,
+      },
+      {
+        effectiveStrength: 3,
+        row: Combat.Ranged,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        instance: 3,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: '+1',
+        strength: 3,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: '+1',
+        strength: 3,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: '+1',
+        strength: 3,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
     username: gameManager.self.gamePlayer.name,
   })
 })
