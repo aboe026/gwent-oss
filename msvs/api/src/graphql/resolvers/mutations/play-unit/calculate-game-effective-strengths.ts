@@ -1,6 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
+import { addListsToMap } from '@gwent/utils'
 import {
   DeckUnitDbObject,
   EffectDbObject,
@@ -12,8 +13,8 @@ import {
 import EffectBond from './effect-bond'
 import EffectMorale from './effect-morale'
 import GetEffectWithKey from './get-effect-with-key'
+import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
-import ResolverUtil, { ImpactsByUnitId } from '../../resolver-util'
 
 /**
  * A class for calculating the effective strength for units in the current round of a game.
@@ -78,13 +79,13 @@ export default class CalculateGameEffectiveStrengths {
             userId: player.user,
             currentPlayerId: game.turn,
           })
-        ResolverUtil.concatenateImpactsByUnitIds({
-          first: bonds,
-          second: rowBonds,
+        addListsToMap({
+          baseMap: bonds,
+          newLists: rowBonds,
         })
-        ResolverUtil.concatenateImpactsByUnitIds({
-          first: morales,
-          second: rowMorales,
+        addListsToMap({
+          baseMap: morales,
+          newLists: rowMorales,
         })
       }
     }
@@ -164,9 +165,9 @@ export default class CalculateGameEffectiveStrengths {
         rowGameUnit.effectiveStrength = rowUnit.strength
         rowGameUnit.effects = []
 
-        ResolverUtil.concatenateImpactsByUnitIds({
-          first: bonds,
-          second: EffectBond.applyBonds({
+        addListsToMap({
+          baseMap: bonds,
+          newLists: EffectBond.applyBonds({
             logPrefix,
             bondEffect,
             unitIdsWithBondInRow: bondIdsInRow,
@@ -181,9 +182,9 @@ export default class CalculateGameEffectiveStrengths {
         })
 
         // TODO: does this need to move to separate iteration of row? Because need to calculate all bonds first before morales?
-        ResolverUtil.concatenateImpactsByUnitIds({
-          first: morales,
-          second: EffectMorale.applyMorales({
+        addListsToMap({
+          baseMap: morales,
+          newLists: EffectMorale.applyMorales({
             logPrefix,
             moraleEffect,
             unitIdsWithMoraleInRow: moraleIdsInRow,

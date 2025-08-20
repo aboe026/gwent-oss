@@ -392,7 +392,6 @@ function renderImpacts({
   })
   const units: UnitForPlayer[] = []
   for (const group of groups) {
-    // TODO: update sortObjectArray (or really getNestedProperty) to not error if parent in nested prop chain undefined
     const sortedImpacts = sortObjectArray({
       array: group,
       sortProperties: ['unit.unit.name', 'source.origin', 'unit.unit.id'],

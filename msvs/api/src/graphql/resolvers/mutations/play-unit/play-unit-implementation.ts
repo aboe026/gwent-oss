@@ -48,7 +48,9 @@ export default class PlayUnitImplementation {
       game,
       unitBeingPlayed: unit,
     })
-    const unitEffects = await getUnitEffects(roundUnits)
+    const unitEffects = await getUnitEffects({
+      units: roundUnits,
+    })
 
     const { musters, musteredUnits, musteredOrigins, scorches } = await modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
@@ -59,9 +61,13 @@ export default class PlayUnitImplementation {
       newDeckUnit: deckUnit,
     })
 
-    unitEffects.push(...(await getUnitEffects(musteredUnits)))
+    unitEffects.push(
+      ...(await getUnitEffects({
+        units: musteredUnits,
+        effects: unitEffects,
+      }))
+    )
 
-    // TODO: return "bondedOrigins?"
     const { bonds, morales } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits, ...musteredUnits],

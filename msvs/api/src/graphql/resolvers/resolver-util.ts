@@ -313,18 +313,6 @@ export default class ResolverUtil {
       users: resolvedUsers,
     }
   }
-
-  // TODO: extract to util method "addListsToMap"
-  static concatenateImpactsByUnitIds({ first, second }: { first: ImpactsByUnitId; second: ImpactsByUnitId }) {
-    for (const unitId in second) {
-      if (!first[unitId]) {
-        first[unitId] = []
-      }
-      for (const impact of second[unitId]) {
-        first[unitId].push(impact)
-      }
-    }
-  }
 }
 
 export interface MoveUsersAndUnits {
