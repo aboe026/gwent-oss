@@ -37,11 +37,9 @@ export default async function getUnitEffects({
     }
   }
 
-  const newEffects =
-    effectIdsToGet.length === 0
-      ? []
-      : await EffectStore.get({
-          ids: effectIdsToGet,
-        })
-  return [...effects, ...newEffects]
+  return effectIdsToGet.length === 0
+    ? []
+    : await EffectStore.get({
+        ids: effectIdsToGet,
+      })
 }

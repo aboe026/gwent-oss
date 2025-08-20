@@ -13,7 +13,7 @@ export default function getNestedProperty({ obj, nestedProperty }: { nestedPrope
     const properties = nestedProperty.split('.')
     value = obj[properties[0]]
     for (let i = 1; i < properties.length; i++) {
-      if (typeof value === 'object') {
+      if (typeof value === 'object' && value !== null && value !== undefined) {
         value = value[properties[i]]
       }
     }
