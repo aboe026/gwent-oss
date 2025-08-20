@@ -9,11 +9,16 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default function getNestedProperty({ obj, nestedProperty }: { nestedProperty: string; obj: any }): any {
   let value
+  let first = true
   if (obj) {
     for (const property of nestedProperty.split('.')) {
-      if (value === undefined) {
+      if (first) {
         value = obj[property]
+        first = false
       } else {
+        if (value === undefined || value === null) {
+          return undefined
+        }
         value = value[property]
       }
     }

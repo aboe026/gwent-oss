@@ -1471,4 +1471,74 @@ test('Impacts can include same unit from both players', async (t) => {
   })
 })
 
-// TODO: test with impact with same name
+test('Impacts expandable if multiple with same name', async (t) => {
+  const unitName = 'Clan an Craite Warrior'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName, unitName, unitName],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName, bonding: [] })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName,
+    effectiveStrength: 12,
+    bonding: [
+      {
+        effectiveStrength: 12,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName,
+    effectiveStrength: 24,
+    bonding: [
+      {
+        effectiveStrength: 24,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+      {
+        effectiveStrength: 24,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await GamePage.toggleImpacts({
+    unitName: unitName,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+    instance: 3,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Bond,
+        unitName: unitName,
+        userName: gameManager.self.gamePlayer.name,
+        round: gameManager.round,
+        instance: 3,
+        impacts: [
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName,
+          },
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName,
+          },
+        ],
+      },
+    ],
+  })
+})
