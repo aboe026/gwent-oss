@@ -924,4 +924,171 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
   })
 })
 
-// TODO: can morale bonded units
+test('Morale applied to bonded units after bonding applied if played after bonds', async (t) => {
+  const unitName1 = 'Catapult'
+  const unitName2 = 'Kaedweni Siege Expert'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName1, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege, bonding: [] })
+  await gameManager.pass({})
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName1,
+    effectiveStrength: 16,
+    bonding: [
+      {
+        effectiveStrength: 16,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  const deckUnit3 = await gameManager.deploy({
+    unitName: unitName2,
+    moraling: [
+      {
+        effectiveStrength: 17,
+        row: Combat.Siege,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+      },
+      {
+        effectiveStrength: 17,
+        row: Combat.Siege,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        instance: 2,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Siege,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 17,
+    effects: [
+      {
+        operator: 'x2',
+        strength: 16,
+        reason: `Bond from ${unitName1}`,
+      },
+      {
+        operator: '+1',
+        strength: 17,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 17,
+    effects: [
+      {
+        operator: 'x2',
+        strength: 16,
+        reason: `Bond from ${unitName1}`,
+      },
+      {
+        operator: '+1',
+        strength: 17,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+})
+
+test('Morale applied to bonded units after bonding applied if played before bonds', async (t) => {
+  const unitName1 = 'Kaedweni Siege Expert'
+  const unitName2 = 'Catapult'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege, moraling: [] })
+  await gameManager.pass({})
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 9,
+    bonding: [],
+  })
+  await gameManager.initialize({})
+
+  const deckUnit3 = await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 17,
+    bonding: [
+      {
+        effectiveStrength: 17,
+        row: Combat.Siege,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Siege,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 17,
+    effects: [
+      {
+        operator: 'x2',
+        strength: 16,
+        reason: `Bond from ${unitName2}`,
+      },
+      {
+        operator: '+1',
+        strength: 17,
+        reason: `Morale from ${unitName1}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 17,
+    effects: [
+      {
+        operator: 'x2',
+        strength: 16,
+        reason: `Bond from ${unitName2}`,
+      },
+      {
+        operator: '+1',
+        strength: 17,
+        reason: `Morale from ${unitName1}`,
+      },
+    ],
+  })
+})

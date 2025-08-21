@@ -14,6 +14,7 @@ Existing problems in the codebase that need to be fixed.
 
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - override DateTime in schema to Date?
+- have effect operators ("+1", "x2", etc) be enums? or at least constants to avoid duplicate code/copy-paste errors?
 - automate check in build process to ensure package.json versions incremented (and all same)?
 - remove need for classes just for log4js spying
   - have "getLogger" method

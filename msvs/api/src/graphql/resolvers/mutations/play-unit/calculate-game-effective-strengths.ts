@@ -181,7 +181,6 @@ export default class CalculateGameEffectiveStrengths {
           }),
         })
 
-        // TODO: does this need to move to separate iteration of row? Because need to calculate all bonds first before morales?
         addListsToMap({
           baseMap: morales,
           newLists: EffectMorale.applyMorales({
