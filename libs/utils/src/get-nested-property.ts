@@ -15,6 +15,8 @@ export default function getNestedProperty({ obj, nestedProperty }: { nestedPrope
     for (let i = 1; i < properties.length; i++) {
       if (typeof value === 'object' && value !== null && value !== undefined) {
         value = value[properties[i]]
+      } else {
+        value = undefined
       }
     }
   }
