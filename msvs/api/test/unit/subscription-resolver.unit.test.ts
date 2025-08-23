@@ -312,10 +312,24 @@ describe('subscription-resolver', () => {
         id: userId,
       }),
     })
+    const payload = {
+      [subscriptionName]: {},
+    }
+    it('throws error if deck not found in payload', () => {
+      const message = `Could not find deck in payload for subscription "${subscriptionName}"`
+      testFilterDeckOwner({
+        subscriptionName,
+        payload,
+        deck: undefined,
+        error: Error(`${message}.`),
+        errorCalls: [[`${message}, nestedProperty: "${subscriptionName}", payload: "${JSON.stringify(payload)}"`]],
+      })
+    })
     it('returns false if no user on context', () => {
       const deck = TestUtil.getDeck({})
       testFilterDeckOwner({
         subscriptionName,
+        payload,
         deck,
         expected: false,
         debugCalls: [[`Not publishing ${subscriptionName} for deck "${deck.id}": No user on context.`]],
@@ -325,6 +339,7 @@ describe('subscription-resolver', () => {
       const unownedDeck = TestUtil.getDeck({})
       testFilterDeckOwner({
         subscriptionName,
+        payload,
         userId,
         deck: unownedDeck,
         expected: false,
@@ -338,6 +353,7 @@ describe('subscription-resolver', () => {
     it('returns true if user is deck owner', () => {
       testFilterDeckOwner({
         subscriptionName,
+        payload,
         userId,
         deck,
         expected: true,
@@ -347,6 +363,7 @@ describe('subscription-resolver', () => {
     it('uses correct nestedProperty if nestedDeckPath specified', () => {
       testFilterDeckOwner({
         subscriptionName,
+        payload,
         userId,
         deck,
         nestedDeckPath: 'nested',
@@ -357,6 +374,7 @@ describe('subscription-resolver', () => {
     it('logs to trace if enabled', () => {
       testFilterDeckOwner({
         subscriptionName,
+        payload,
         userId,
         deck,
         expected: true,
@@ -377,9 +395,23 @@ describe('subscription-resolver', () => {
         }),
       ],
     })
+    const payload = {
+      [subscriptionName]: {},
+    }
+    it('throws error if game not found in payload', () => {
+      const message = `Could not find game in payload for subscription "${subscriptionName}"`
+      testFilterPlayerOnGame({
+        subscriptionName,
+        payload,
+        game: undefined,
+        error: Error(`${message}.`),
+        errorCalls: [[`${message}, nestedProperty: "${subscriptionName}", payload: "${JSON.stringify(payload)}"`]],
+      })
+    })
     it('returns false if no user on context', () => {
       testFilterPlayerOnGame({
         subscriptionName,
+        payload,
         game,
         expected: false,
         debugCalls: [[`Not publishing ${subscriptionName} for game "${game.id}": No user on context.`]],
@@ -389,6 +421,7 @@ describe('subscription-resolver', () => {
       const nonPlayerGame = TestUtil.getGame({})
       testFilterPlayerOnGame({
         subscriptionName,
+        payload,
         userId,
         game: nonPlayerGame,
         expected: false,
@@ -400,6 +433,7 @@ describe('subscription-resolver', () => {
     it('returns true if user game player', () => {
       testFilterPlayerOnGame({
         subscriptionName,
+        payload,
         userId,
         game,
         expected: true,
@@ -409,6 +443,7 @@ describe('subscription-resolver', () => {
     it('uses correct nestedProperty if nestedDeckPath specified', () => {
       testFilterPlayerOnGame({
         subscriptionName,
+        payload,
         userId,
         game,
         nestedGamePath: 'nested',
@@ -419,6 +454,7 @@ describe('subscription-resolver', () => {
     it('returns true if user game player', () => {
       testFilterPlayerOnGame({
         subscriptionName,
+        payload,
         userId,
         game,
         expected: true,
@@ -436,15 +472,19 @@ function testFilterDeckOwner({
   subscriptionName,
   deck,
   expected,
+  error,
+  errorCalls = [],
   debugCalls = [],
   traceEnabled,
 }: {
   userId?: ObjectId
-  payload?: any
+  payload: any
   nestedDeckPath?: string
   subscriptionName: string
-  deck: Deck
-  expected: boolean
+  deck?: Deck
+  expected?: boolean
+  error?: Error
+  errorCalls?: string[][]
   debugCalls?: string[][]
   traceEnabled?: boolean
 }) {
@@ -459,22 +499,35 @@ function testFilterDeckOwner({
 
   const getNestedPropertySpy = jest.spyOn(utils, 'getNestedProperty').mockReturnValue(deck)
 
+  const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   SubscriptionResolver['logger'] = {
+    error: errorSpy,
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
 
-  expect(
-    SubscriptionResolver['filterDeckOwner']({
-      ctx,
-      nestedDeckPath,
-      payload,
-      subscriptionName,
-    })
-  ).toEqual(expected)
+  if (error) {
+    expect(() =>
+      SubscriptionResolver['filterDeckOwner']({
+        ctx,
+        nestedDeckPath,
+        payload,
+        subscriptionName,
+      })
+    ).toThrow(error)
+  } else {
+    expect(
+      SubscriptionResolver['filterDeckOwner']({
+        ctx,
+        nestedDeckPath,
+        payload,
+        subscriptionName,
+      })
+    ).toEqual(expected)
+  }
 
   expect(getNestedPropertySpy.mock.calls).toEqual([
     [
@@ -484,6 +537,7 @@ function testFilterDeckOwner({
       },
     ],
   ])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled
@@ -504,15 +558,19 @@ function testFilterPlayerOnGame({
   subscriptionName,
   game,
   expected,
+  error,
+  errorCalls = [],
   debugCalls = [],
   traceEnabled,
 }: {
   userId?: ObjectId
-  payload?: any
+  payload: any
   nestedGamePath?: string
   subscriptionName: string
-  game: Game
-  expected: boolean
+  game?: Game
+  expected?: boolean
+  error?: Error
+  errorCalls?: string[][]
   debugCalls?: string[][]
   traceEnabled?: boolean
 }) {
@@ -527,22 +585,35 @@ function testFilterPlayerOnGame({
 
   const getNestedPropertySpy = jest.spyOn(utils, 'getNestedProperty').mockReturnValue(game)
 
+  const errorSpy = jest.fn().mockImplementation()
   const debugSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   SubscriptionResolver['logger'] = {
+    error: errorSpy,
     debug: debugSpy,
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
     trace: traceSpy,
   } as any
 
-  expect(
-    SubscriptionResolver['filterPlayerOnGame']({
-      ctx,
-      nestedGamePath,
-      payload,
-      subscriptionName,
-    })
-  ).toEqual(expected)
+  if (error) {
+    expect(() =>
+      SubscriptionResolver['filterPlayerOnGame']({
+        ctx,
+        nestedGamePath,
+        payload,
+        subscriptionName,
+      })
+    ).toThrow(error)
+  } else {
+    expect(
+      SubscriptionResolver['filterPlayerOnGame']({
+        ctx,
+        nestedGamePath,
+        payload,
+        subscriptionName,
+      })
+    ).toEqual(expected)
+  }
 
   expect(getNestedPropertySpy.mock.calls).toEqual([
     [
@@ -552,6 +623,7 @@ function testFilterPlayerOnGame({
       },
     ],
   ])
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(
     traceEnabled

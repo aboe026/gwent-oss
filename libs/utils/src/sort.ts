@@ -83,12 +83,20 @@ export function getSortOrder({
     secondValue = secondValue.toLowerCase()
   }
   if (
-    firstValue < secondValue ||
+    (firstValue !== undefined &&
+      firstValue !== null &&
+      secondValue !== undefined &&
+      secondValue !== null &&
+      firstValue < secondValue) ||
     ((firstValue === undefined || firstValue === null) && secondValue !== undefined && secondValue !== null)
   ) {
     return reverse ? 1 : -1
   } else if (
-    firstValue > secondValue ||
+    (firstValue !== undefined &&
+      firstValue !== null &&
+      secondValue !== undefined &&
+      secondValue !== null &&
+      firstValue > secondValue) ||
     (firstValue !== undefined && firstValue !== null && (secondValue === undefined || secondValue === null))
   ) {
     return reverse ? -1 : 1

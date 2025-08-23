@@ -6,8 +6,13 @@
  * @param options.nestedProperty The path of deeply nested properties to get in the object, separated by periods.
  * @returns The value of the nested property within the object. Returns undefined if nested path does not exist.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function getNestedProperty({ obj, nestedProperty }: { nestedProperty: string; obj: any }): any {
+export default function getNestedProperty<T>({
+  obj,
+  nestedProperty,
+}: {
+  nestedProperty: string
+  obj: any // eslint-disable-line @typescript-eslint/no-explicit-any
+}): T | undefined {
   let value
   if (obj) {
     const properties = nestedProperty.split('.')

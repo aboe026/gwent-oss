@@ -9,7 +9,25 @@ describe('groupBy', () => {
       })
     ).toEqual([])
   })
-  it('returns single item if single item given', () => {
+  it('returns single item if single item given without matching property', () => {
+    expect(
+      groupBy({
+        array: [
+          {
+            foo: 'bar',
+          },
+        ],
+        property: 'hello',
+      })
+    ).toEqual([
+      [
+        {
+          foo: 'bar',
+        },
+      ],
+    ])
+  })
+  it('returns single item if single item given with matching property', () => {
     expect(
       groupBy({
         array: [
@@ -55,7 +73,7 @@ describe('groupBy', () => {
       ],
     ])
   })
-  it('returns multiple items in multiple arrays if have different property value', () => {
+  it('returns multiple items in multiple arrays if have different property value with keys', () => {
     expect(
       groupBy({
         array: [
@@ -81,6 +99,50 @@ describe('groupBy', () => {
         {
           foo: 'gazi',
           hello: 'world',
+        },
+      ],
+    ])
+  })
+  it('returns multiple items in multiple arrays if have different property value without keys', () => {
+    expect(
+      groupBy({
+        array: [
+          {
+            foo: 'bar',
+            biz: 'bazz',
+          },
+          {
+            hello: 'world',
+          },
+          {
+            foo: 'gazi',
+            hello: 'world',
+          },
+          {
+            biz: 'bazz',
+          },
+        ],
+        property: 'foo',
+      })
+    ).toEqual([
+      [
+        {
+          foo: 'bar',
+          biz: 'bazz',
+        },
+      ],
+      [
+        {
+          foo: 'gazi',
+          hello: 'world',
+        },
+      ],
+      [
+        {
+          hello: 'world',
+        },
+        {
+          biz: 'bazz',
         },
       ],
     ])
