@@ -12,6 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- remove figlet as dependency and just have hard-coded banner text for startup
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - override DateTime in schema to Date?
 - have effect operators ("+1", "x2", etc) be enums? or at least constants to avoid duplicate code/copy-paste errors?

@@ -158,10 +158,7 @@ export default class EffectBond {
           if (EffectBond.logger.isTraceEnabled()) {
             EffectBond.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
           }
-          if (!impacts[bondingUnit._id.toString()]) {
-            impacts[bondingUnit._id.toString()] = []
-          }
-          if (impacts[bondingUnit._id.toString()]) impacts[bondingUnit._id.toString()].push(impact)
+          impacts[bondingUnit._id.toString()] = [impact]
         }
       }
     }
