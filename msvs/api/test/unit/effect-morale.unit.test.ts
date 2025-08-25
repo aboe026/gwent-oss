@@ -5,15 +5,15 @@ import {
   EffectDbObject,
   EffectKey,
   GameUnitDbObject,
-  ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectMorale from '../../src/graphql/resolvers/mutations/play-unit/effect-morale'
 import { EffectReasonType } from '@gwent/graphql-schema'
+import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 
-describe('effect-morales', () => {
+describe('effect-morale', () => {
   const logPrefix = 'log-prefix'
   describe('getUnitsWithMorale', () => {
     it('returns empty array if no moraleEffect', () => {
@@ -197,7 +197,7 @@ describe('effect-morales', () => {
         }),
         userId: new ObjectId(),
         units: [moralingUnit],
-        expected: [],
+        expected: {},
         modifiedRowGameUnit: deepClone(rowGameUnit),
         debugCalls: [[`${logPrefix} rowUnit "${rowGameUnit.unit}" is hero so not susceptible to morale effect.`]],
       })
@@ -221,7 +221,7 @@ describe('effect-morales', () => {
         }),
         userId: new ObjectId(),
         units: [moralingUnit],
-        expected: [],
+        expected: {},
         modifiedRowGameUnit: deepClone(rowGameUnit),
       })
     })
@@ -245,7 +245,7 @@ describe('effect-morales', () => {
         }),
         userId: new ObjectId(),
         units: [moralingUnit],
-        expected: [],
+        expected: {},
         modifiedRowGameUnit: deepClone(rowGameUnit),
       })
     })
@@ -268,7 +268,7 @@ describe('effect-morales', () => {
         }),
         userId: new ObjectId(),
         units: [moralingUnit],
-        expected: [],
+        expected: {},
         modifiedRowGameUnit: {
           ...deepClone(rowGameUnit),
           effectiveStrength: 1,
@@ -312,7 +312,7 @@ describe('effect-morales', () => {
         }),
         userId: new ObjectId(),
         units: [moralingUnit],
-        expected: [],
+        expected: {},
         modifiedRowGameUnit: {
           ...deepClone(rowGameUnit),
           effectiveStrength: 1,
@@ -355,7 +355,7 @@ describe('effect-morales', () => {
         }),
         userId: new ObjectId(),
         units: [moralingUnit1, moralingUnit2],
-        expected: [],
+        expected: {},
         modifiedRowGameUnit: {
           ...deepClone(rowGameUnit),
           effectiveStrength: 2,
@@ -412,7 +412,7 @@ describe('effect-morales', () => {
         }),
         userId: new ObjectId(),
         units: [moralingUnit1, moralingUnit2],
-        expected: [],
+        expected: {},
         modifiedRowGameUnit: {
           ...deepClone(rowGameUnit),
           effectiveStrength: 2,
@@ -470,12 +470,14 @@ describe('effect-morales', () => {
         userId,
         currentPlayerId: userId,
         units: [moralingUnit],
-        expected: [
-          {
-            unit: rowGameUnit,
-            user: userId,
-          },
-        ],
+        expected: {
+          [moralingUnit._id.toString()]: [
+            {
+              unit: rowGameUnit,
+              user: userId,
+            },
+          ],
+        },
         modifiedRowGameUnit: {
           ...deepClone(rowGameUnit),
           effectiveStrength: 1,
@@ -522,12 +524,14 @@ describe('effect-morales', () => {
         userId,
         currentPlayerId: userId,
         units: [moralingUnit1, moralingUnit2],
-        expected: [
-          {
-            unit: rowGameUnit,
-            user: userId,
-          },
-        ],
+        expected: {
+          [moralingUnit2._id.toString()]: [
+            {
+              unit: rowGameUnit,
+              user: userId,
+            },
+          ],
+        },
         modifiedRowGameUnit: {
           ...deepClone(rowGameUnit),
           effectiveStrength: 2,
@@ -602,12 +606,14 @@ describe('effect-morales', () => {
         userId,
         currentPlayerId: userId,
         units: [moralingUnit],
-        expected: [
-          {
-            unit: rowGameUnit,
-            user: userId,
-          },
-        ],
+        expected: {
+          [moralingUnit._id.toString()]: [
+            {
+              unit: rowGameUnit,
+              user: userId,
+            },
+          ],
+        },
         modifiedRowGameUnit,
         debugCalls: [
           [
@@ -699,7 +705,7 @@ function testApplyMorales({
   units: UnitDbObject[]
   userId: ObjectId
   currentPlayerId?: ObjectId | undefined
-  expected: ImpactDbObject[]
+  expected: ImpactsByUnitId
   modifiedRowGameUnit: GameUnitDbObject
   debugCalls?: string[][]
   traceEnabled?: boolean

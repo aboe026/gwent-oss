@@ -1561,7 +1561,13 @@ function testScorchBattlefield({
         game,
         newDeckUnit,
       })
-    ).toEqual(impacts.length > 0 ? impacts : undefined)
+    ).toEqual(
+      impacts.length > 0
+        ? {
+            [newDeckUnit.unit.toString()]: impacts,
+          }
+        : {}
+    )
   }
 
   expect(getEffectWithKeySpy.mock.calls).toEqual(
