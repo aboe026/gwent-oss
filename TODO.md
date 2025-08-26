@@ -12,6 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
 - remove figlet as dependency and just have hard-coded banner text for startup
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - override DateTime in schema to Date?

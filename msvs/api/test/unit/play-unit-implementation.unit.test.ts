@@ -2,10 +2,17 @@ import { ObjectId } from 'mongodb'
 
 import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
-import { GameDbObject, GameDeckDbObject, ImpactDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  EffectKey,
+  GameDbObject,
+  GameDeckDbObject,
+  ImpactDbObject,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../src/database/stores/game-store'
 import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
 import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
+import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import * as modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/muster-battlefield'
 import PlayUnitImplementation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-implementation'
@@ -75,7 +82,7 @@ describe('play-unit-implementation', () => {
       expectedGameDeck: player.deck,
     })
   })
-  it('passes battlefield modification impacts to move', async () => {
+  it('passes scorch impacts to move', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
     })
@@ -96,11 +103,44 @@ describe('play-unit-implementation', () => {
         updated: new Date(),
       },
       logPrefix,
-      scorches: impacts,
+      scorches: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
       expectedGameDeck: player.deck,
     })
   })
-  it('passes strength impacts to move', async () => {
+  it('passes muster impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const musteredUnit = TestUtil.getDbUnit({})
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({
+          id: musteredUnit._id,
+        }),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      musteredUnits: [musteredUnit],
+      musters: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
+      expectedGameDeck: player.deck,
+    })
+  })
+  it('passes bond impacts to move', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
     })
@@ -121,7 +161,36 @@ describe('play-unit-implementation', () => {
         updated: new Date(),
       },
       logPrefix,
-      strengths: impacts,
+      bonds: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
+      expectedGameDeck: player.deck,
+    })
+  })
+  it('passes morale impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      morales: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
       expectedGameDeck: player.deck,
     })
   })
@@ -150,11 +219,12 @@ async function testPlayUnitImplementation({
   game,
   updatedGame,
   logPrefix,
-  scorches,
-  musters,
+  scorches = {},
+  musters = {},
   musteredUnits = [],
   musteredOrigins = {},
-  strengths,
+  bonds = {},
+  morales = {},
   error,
   expectedGameDeck,
   getRoundUnitsCalls,
@@ -164,11 +234,12 @@ async function testPlayUnitImplementation({
   game: GameDbObject
   updatedGame?: GameDbObject
   logPrefix: string
-  scorches?: ImpactDbObject[] | undefined
-  musters?: ImpactDbObject[] | undefined
+  scorches?: ImpactsByUnitId
+  musters?: ImpactsByUnitId
   musteredUnits?: UnitDbObject[]
   musteredOrigins?: MusteredOrigins
-  strengths?: ImpactDbObject[] | undefined
+  bonds?: ImpactsByUnitId
+  morales?: ImpactsByUnitId
   error?: Error
   expectedGameDeck?: GameDeckDbObject
   getRoundUnitsCalls?: any[][]
@@ -185,9 +256,17 @@ async function testPlayUnitImplementation({
       id: unit._id,
     }),
   ]
-  const effects = [TestUtil.getDbEffect({})]
+  const unitEffect = TestUtil.getDbEffect({
+    key: EffectKey.Muster,
+  })
+  const musterEffect = TestUtil.getDbEffect({
+    key: EffectKey.Bond,
+  })
   const getRoundUnitsSpy = jest.spyOn(getRoundUnits, 'default').mockResolvedValue(units)
-  const getUnitEffectsSpy = jest.spyOn(getUnitEffects, 'default').mockResolvedValue(effects)
+  const getUnitEffectsSpy = jest
+    .spyOn(getUnitEffects, 'default')
+    .mockResolvedValueOnce([unitEffect])
+    .mockResolvedValueOnce([musterEffect])
   const modifyBattlefieldWithNewUnitSpy = jest.spyOn(modifyBattlefieldWithNewUnit, 'default').mockResolvedValue({
     scorches,
     musters,
@@ -196,7 +275,10 @@ async function testPlayUnitImplementation({
   })
   const calculateEffectiveStrengthsSpy = jest
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
-    .mockReturnValue(strengths)
+    .mockReturnValue({
+      bonds,
+      morales,
+    })
   const setGameScoresSpy = jest.spyOn(setGameScores, 'default').mockImplementation()
   const updateHistorySpy = jest.spyOn(UpdateHistory, 'newUnitDeployed').mockImplementation()
   const setNextTurnForCurrentRoundSpy = jest
@@ -237,7 +319,23 @@ async function testPlayUnitImplementation({
       ],
     ]
   )
-  expect(getUnitEffectsSpy.mock.calls).toEqual(getRoundUnitsCalls ? [] : [[units]])
+  expect(getUnitEffectsSpy.mock.calls).toEqual(
+    getRoundUnitsCalls
+      ? []
+      : [
+          [
+            {
+              units,
+            },
+          ],
+          [
+            {
+              units: musteredUnits,
+              effects: [unitEffect],
+            },
+          ],
+        ]
+  )
   expect(modifyBattlefieldWithNewUnitSpy.mock.calls).toEqual(
     getRoundUnitsCalls
       ? []
@@ -246,7 +344,7 @@ async function testPlayUnitImplementation({
             {
               battlefieldUnits: units,
               combat,
-              effects,
+              effects: [unitEffect],
               game,
               logPrefix,
               newDeckUnit: deckUnit,
@@ -261,10 +359,11 @@ async function testPlayUnitImplementation({
           [
             {
               game,
-              units: [unit, ...units],
-              effects: effects,
+              units: [unit, ...units, ...musteredUnits],
+              effects: [unitEffect, musterEffect],
               logPrefix,
               newDeckUnit: deckUnit,
+              musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
             },
           ],
         ]
@@ -284,7 +383,8 @@ async function testPlayUnitImplementation({
               playerId: game.turn?.toString(),
               logPrefix,
               scorches,
-              strengths,
+              bonds,
+              morales,
             },
           ],
         ]

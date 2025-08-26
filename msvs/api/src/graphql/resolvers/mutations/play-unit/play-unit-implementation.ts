@@ -61,17 +61,15 @@ export default class PlayUnitImplementation {
       newDeckUnit: deckUnit,
     })
 
-    unitEffects.push(
-      ...(await getUnitEffects({
-        units: musteredUnits,
-        effects: unitEffects,
-      }))
-    )
+    const musterEffects = await getUnitEffects({
+      units: musteredUnits,
+      effects: unitEffects,
+    })
 
     const { bonds, morales } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits, ...musteredUnits],
-      effects: unitEffects,
+      effects: [...unitEffects, ...musterEffects],
       logPrefix,
       newDeckUnit: deckUnit,
       musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
