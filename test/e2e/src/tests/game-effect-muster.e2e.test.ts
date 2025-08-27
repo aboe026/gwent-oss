@@ -1,6 +1,7 @@
 import { Combat, EffectKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 
@@ -668,7 +669,7 @@ test('Mustered unit with morale shows morale in history', async (t) => {
     effectiveStrength: 4,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 4,
         reason: `Morale from ${unitName1}`,
       },
@@ -697,7 +698,7 @@ test('Mustered unit with morale shows morale in history', async (t) => {
     effectiveStrength: 4,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 4,
         reason: `Morale from ${unitName1}`,
       },

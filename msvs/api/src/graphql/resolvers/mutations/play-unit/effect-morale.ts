@@ -11,6 +11,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import { EffectReasonType } from '@gwent/graphql-schema'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import { ImpactsByUnitId } from '../../resolver-util'
 
 /**
@@ -130,7 +131,7 @@ export default class EffectMorale {
           }
 
           const gameUnitEffect: GameUnitEffectDbObject = {
-            operator: '+1',
+            operator: EFFECT_OPERATOR.Plus,
             reason,
             total: rowGameUnit.effectiveStrength,
           }

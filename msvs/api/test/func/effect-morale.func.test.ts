@@ -22,6 +22,7 @@ import {
   PlayerCombatRow,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import { ensureUnitsInHand } from '@gwent/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
@@ -300,7 +301,7 @@ describe('effect-morale', () => {
                         effectiveStrength: 3,
                         effects: [
                           {
-                            operator: '+1',
+                            operator: EFFECT_OPERATOR.Plus,
                             total: 3,
                             reason: {
                               effect: effectMorale,
@@ -460,7 +461,7 @@ describe('effect-morale', () => {
                             effectiveStrength: 3,
                             effects: [
                               {
-                                operator: '+1',
+                                operator: EFFECT_OPERATOR.Plus,
                                 reason: {
                                   effect: effectMorale,
                                   unit: unitSelf2.unit,
@@ -482,7 +483,7 @@ describe('effect-morale', () => {
                         effectiveStrength: 3,
                         effects: [
                           {
-                            operator: '+1',
+                            operator: EFFECT_OPERATOR.Plus,
                             total: 3,
                             reason: {
                               effect: effectMorale,

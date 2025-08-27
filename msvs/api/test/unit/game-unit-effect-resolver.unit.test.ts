@@ -13,6 +13,7 @@ import {
   EffectFromUnitDbObject,
   GameUnitEffectDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import { EffectReasonType } from '@gwent/graphql-schema'
 import EffectResolver from '../../src/graphql/resolvers/types/effect-resolver'
 import GameUnitEffectResolver from '../../src/graphql/resolvers/types/game-unit-effect-resolver'
@@ -26,7 +27,7 @@ describe('game-unit-effect-resolver', () => {
       const type = 'invalid'
       await testFromObject({
         gameUnitEffect: {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             type,
           } as any,
@@ -38,7 +39,7 @@ describe('game-unit-effect-resolver', () => {
     it('calls out to resolve unit and effects if none provided and EffectFromUnit', async () => {
       await testFromObject({
         gameUnitEffect: {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             type: EffectReasonType.Unit,
             effect: new ObjectId(),
@@ -51,7 +52,7 @@ describe('game-unit-effect-resolver', () => {
     it('calls out to resolve leader if none provided and EffectFromLeader', async () => {
       await testFromObject({
         gameUnitEffect: {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             type: EffectReasonType.Leader,
             leader: new ObjectId(),
@@ -65,7 +66,7 @@ describe('game-unit-effect-resolver', () => {
       const unitId = new ObjectId()
       await testFromObject({
         gameUnitEffect: {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             type: EffectReasonType.Unit,
             effect: effectId,
@@ -85,7 +86,7 @@ describe('game-unit-effect-resolver', () => {
       const leaderId = new ObjectId()
       await testFromObject({
         gameUnitEffect: {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             type: EffectReasonType.Leader,
             leader: leaderId,
@@ -104,7 +105,7 @@ describe('game-unit-effect-resolver', () => {
       await testFromArray({
         gameUnitEffects: [
           {
-            operator: '+1',
+            operator: EFFECT_OPERATOR.Plus,
             reason: {
               type,
             } as any,
@@ -125,7 +126,7 @@ describe('game-unit-effect-resolver', () => {
         const effect = TestUtil.getEffect({})
         const unit = TestUtil.getUnit({})
         const gameUnitEffect = {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             effect: new ObjectId(effect.id),
             type: EffectReasonType.Unit,
@@ -139,7 +140,7 @@ describe('game-unit-effect-resolver', () => {
           unitsResponse: [unit],
           expected: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect,
                 unit,
@@ -172,7 +173,7 @@ describe('game-unit-effect-resolver', () => {
         const effect = TestUtil.getEffect({})
         const unit = TestUtil.getUnit({})
         const gameUnitEffect1 = {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             effect: new ObjectId(effect.id),
             type: EffectReasonType.Unit,
@@ -181,7 +182,7 @@ describe('game-unit-effect-resolver', () => {
           total: 1,
         }
         const gameUnitEffect2 = {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             effect: new ObjectId(effect.id),
             type: EffectReasonType.Unit,
@@ -195,7 +196,7 @@ describe('game-unit-effect-resolver', () => {
           unitsResponse: [unit],
           expected: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect,
                 unit,
@@ -204,7 +205,7 @@ describe('game-unit-effect-resolver', () => {
               total: 1,
             },
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect,
                 unit,
@@ -246,7 +247,7 @@ describe('game-unit-effect-resolver', () => {
       it('calls to leader resolver if single effect', async () => {
         const leader = TestUtil.getLeader({})
         const gameUnitEffect = {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             leader: new ObjectId(leader.id),
             type: EffectReasonType.Leader,
@@ -258,7 +259,7 @@ describe('game-unit-effect-resolver', () => {
           leadersResponse: [leader],
           expected: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 leader,
                 __typename: 'EffectFromLeader',
@@ -288,7 +289,7 @@ describe('game-unit-effect-resolver', () => {
       it('calls to leader resolver if multiple effects', async () => {
         const leader = TestUtil.getLeader({})
         const gameUnitEffect1 = {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             leader: new ObjectId(leader.id),
             type: EffectReasonType.Leader,
@@ -296,7 +297,7 @@ describe('game-unit-effect-resolver', () => {
           total: 1,
         }
         const gameUnitEffect2 = {
-          operator: '+1',
+          operator: EFFECT_OPERATOR.Plus,
           reason: {
             leader: new ObjectId(leader.id),
             type: EffectReasonType.Leader,
@@ -308,7 +309,7 @@ describe('game-unit-effect-resolver', () => {
           leadersResponse: [leader],
           expected: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 leader,
                 __typename: 'EffectFromLeader',
@@ -316,7 +317,7 @@ describe('game-unit-effect-resolver', () => {
               total: 1,
             },
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 leader,
                 __typename: 'EffectFromLeader',

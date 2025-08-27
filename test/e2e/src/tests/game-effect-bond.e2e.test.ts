@@ -1,6 +1,7 @@
 import createGameManager from '../util/game-manager'
 import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 
@@ -45,7 +46,7 @@ test('Bond multiplies base strengths by 2 when single other bonded unit present'
     effectiveStrength: 8,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName}`,
       },
@@ -58,7 +59,7 @@ test('Bond multiplies base strengths by 2 when single other bonded unit present'
     effectiveStrength: 8,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName}`,
       },
@@ -120,12 +121,12 @@ test('Bond multiplies base strengths by 4 when two other bonded units present', 
     effectiveStrength: 16,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName}`,
       },
@@ -138,12 +139,12 @@ test('Bond multiplies base strengths by 4 when two other bonded units present', 
     effectiveStrength: 16,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName}`,
       },
@@ -156,12 +157,12 @@ test('Bond multiplies base strengths by 4 when two other bonded units present', 
     effectiveStrength: 16,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName}`,
       },
@@ -247,17 +248,17 @@ test('Bond multiplies base strengths by 8 when three other bonded units present'
     effectiveStrength: 24,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 6,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 12,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 24,
         reason: `Bond from ${unitName}`,
       },
@@ -270,17 +271,17 @@ test('Bond multiplies base strengths by 8 when three other bonded units present'
     effectiveStrength: 24,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 6,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 12,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 24,
         reason: `Bond from ${unitName}`,
       },
@@ -293,17 +294,17 @@ test('Bond multiplies base strengths by 8 when three other bonded units present'
     effectiveStrength: 24,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 6,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 12,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 24,
         reason: `Bond from ${unitName}`,
       },
@@ -316,17 +317,17 @@ test('Bond multiplies base strengths by 8 when three other bonded units present'
     effectiveStrength: 24,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 6,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 12,
         reason: `Bond from ${unitName}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 24,
         reason: `Bond from ${unitName}`,
       },
@@ -420,12 +421,12 @@ test('Bond is separate for units with different names', async (t) => {
     effectiveStrength: 4,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 2,
         reason: `Bond from ${unitName2}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 4,
         reason: `Bond from ${unitName2}`,
       },
@@ -438,12 +439,12 @@ test('Bond is separate for units with different names', async (t) => {
     effectiveStrength: 4,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 2,
         reason: `Bond from ${unitName2}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 4,
         reason: `Bond from ${unitName2}`,
       },
@@ -456,12 +457,12 @@ test('Bond is separate for units with different names', async (t) => {
     effectiveStrength: 4,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 2,
         reason: `Bond from ${unitName2}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 4,
         reason: `Bond from ${unitName2}`,
       },
@@ -474,12 +475,12 @@ test('Bond is separate for units with different names', async (t) => {
     effectiveStrength: 16,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName1}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName1}`,
       },
@@ -492,12 +493,12 @@ test('Bond is separate for units with different names', async (t) => {
     effectiveStrength: 16,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName1}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName1}`,
       },
@@ -510,12 +511,12 @@ test('Bond is separate for units with different names', async (t) => {
     effectiveStrength: 16,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName1}`,
       },
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName1}`,
       },
@@ -574,7 +575,7 @@ test('Bond is separate for units on different combat rows', async (t) => {
     effectiveStrength: 8,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName1}`,
       },
@@ -587,7 +588,7 @@ test('Bond is separate for units on different combat rows', async (t) => {
     effectiveStrength: 8,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName1}`,
       },
@@ -605,7 +606,7 @@ test('Bond is separate for units on different combat rows', async (t) => {
     effectiveStrength: 10,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 10,
         reason: `Bond from ${unitName2}`,
       },
@@ -618,7 +619,7 @@ test('Bond is separate for units on different combat rows', async (t) => {
     effectiveStrength: 10,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 10,
         reason: `Bond from ${unitName2}`,
       },
@@ -679,7 +680,7 @@ test('Bond is separate for same unit as opponent', async (t) => {
     effectiveStrength: 8,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName}`,
       },
@@ -692,7 +693,7 @@ test('Bond is separate for same unit as opponent', async (t) => {
     effectiveStrength: 8,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName}`,
       },
@@ -753,7 +754,7 @@ test('Bond does not take into account scorched units', async (t) => {
     effectiveStrength: 8,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName1}`,
       },
@@ -766,7 +767,7 @@ test('Bond does not take into account scorched units', async (t) => {
     effectiveStrength: 8,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName1}`,
       },
@@ -821,12 +822,12 @@ test('Can bond moraled unit', async (t) => {
     effectiveStrength: 9,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName2}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 9,
         reason: `Morale from ${unitName1}`,
       },
@@ -839,12 +840,12 @@ test('Can bond moraled unit', async (t) => {
     effectiveStrength: 9,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 8,
         reason: `Bond from ${unitName2}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 9,
         reason: `Morale from ${unitName1}`,
       },

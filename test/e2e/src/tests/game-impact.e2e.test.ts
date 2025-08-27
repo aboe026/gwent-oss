@@ -1,6 +1,7 @@
 import { Combat, EffectKey, FactionKey, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typings'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 
@@ -1232,7 +1233,7 @@ test('FullUnit for impact preserves effects in time', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
@@ -1257,12 +1258,12 @@ test('FullUnit for impact preserves effects in time', async (t) => {
     effectiveStrength: 4,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 4,
         reason: `Morale from ${unitName3}`,
       },

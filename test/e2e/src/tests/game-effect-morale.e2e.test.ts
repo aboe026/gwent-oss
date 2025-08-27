@@ -1,6 +1,7 @@
 import createGameManager from '../util/game-manager'
 import { Combat, EffectKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 
@@ -100,7 +101,7 @@ test('Morale hero unit not effected by other morale', async (t) => {
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName1}`,
       },
@@ -205,7 +206,7 @@ test('Morale effects normal unit if morale played before', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName1}`,
       },
@@ -254,7 +255,7 @@ test('Morale effects normal unit if morale played after', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
@@ -311,7 +312,7 @@ test('Morale effects multiple normal units with different names', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName3}`,
       },
@@ -324,7 +325,7 @@ test('Morale effects multiple normal units with different names', async (t) => {
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName3}`,
       },
@@ -411,7 +412,7 @@ test('Morale effects multiple normal units with same name', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
@@ -424,7 +425,7 @@ test('Morale effects multiple normal units with same name', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
@@ -437,7 +438,7 @@ test('Morale effects multiple normal units with same name', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
@@ -494,7 +495,7 @@ test('Multiple morales effect each other', async (t) => {
     effectiveStrength: 11,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 11,
         reason: `Morale from ${unitName2}`,
       },
@@ -507,7 +508,7 @@ test('Multiple morales effect each other', async (t) => {
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName1}`,
       },
@@ -591,12 +592,12 @@ test('Multiple morales effect themselves and multiple standard units in same row
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 2,
         reason: `Morale from ${unitName3}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName4}`,
       },
@@ -609,7 +610,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName3}`,
       },
@@ -622,12 +623,12 @@ test('Multiple morales effect themselves and multiple standard units in same row
     effectiveStrength: 8,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName3}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 8,
         reason: `Morale from ${unitName4}`,
       },
@@ -640,7 +641,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
     effectiveStrength: 11,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 11,
         reason: `Morale from ${unitName4}`,
       },
@@ -706,7 +707,7 @@ test('Multiple morales effect themselves and multiple standard units in differen
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName1}`,
       },
@@ -729,7 +730,7 @@ test('Multiple morales effect themselves and multiple standard units in differen
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName3}`,
       },
@@ -777,7 +778,7 @@ test('Can see reason for morale in opponents fullcard details', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
@@ -880,7 +881,7 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName3}`,
       },
@@ -984,12 +985,12 @@ test('Morale applied to bonded units after bonding applied if played after bonds
     effectiveStrength: 17,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName1}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 17,
         reason: `Morale from ${unitName2}`,
       },
@@ -1002,12 +1003,12 @@ test('Morale applied to bonded units after bonding applied if played after bonds
     effectiveStrength: 17,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName1}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 17,
         reason: `Morale from ${unitName2}`,
       },
@@ -1062,12 +1063,12 @@ test('Morale applied to bonded units after bonding applied if played before bond
     effectiveStrength: 17,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName2}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 17,
         reason: `Morale from ${unitName1}`,
       },
@@ -1080,12 +1081,12 @@ test('Morale applied to bonded units after bonding applied if played before bond
     effectiveStrength: 17,
     effects: [
       {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         strength: 16,
         reason: `Bond from ${unitName2}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 17,
         reason: `Morale from ${unitName1}`,
       },

@@ -13,6 +13,10 @@ export const STARTING_HAND_SIZE = 10
 export const STARTING_LIVES = 2
 export const DECK_MAX_SPECIALS = 10
 export const DECK_MIN_UNITS = 22
+export const EFFECT_OPERATOR = {
+  Plus: '+1',
+  Double: 'x2',
+}
 
 export const NOT_AUTHENTICATED_MESSAGE = 'Not Authenticated. Login or provide credentials.'
 export const NOT_AUTHORIZED_MESSAGE = 'Not Authorized. You do not have access to this resource.'

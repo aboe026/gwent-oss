@@ -11,6 +11,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectBond from '../../src/graphql/resolvers/mutations/play-unit/effect-bond'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import { EffectReasonType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
@@ -254,7 +255,7 @@ describe('effect-bond', () => {
           effectiveStrength: 8,
           effects: [
             {
-              operator: 'x2',
+              operator: EFFECT_OPERATOR.Double,
               reason: {
                 effect: bondEffect._id,
                 type: EffectReasonType.Unit,
@@ -308,7 +309,7 @@ describe('effect-bond', () => {
           effectiveStrength: 8,
           effects: [
             {
-              operator: 'x2',
+              operator: EFFECT_OPERATOR.Double,
               reason: {
                 effect: bondEffect._id,
                 type: EffectReasonType.Unit,
@@ -361,7 +362,7 @@ describe('effect-bond', () => {
           effectiveStrength: 0,
           effects: [
             {
-              operator: 'x2',
+              operator: EFFECT_OPERATOR.Double,
               reason: {
                 effect: bondEffect._id,
                 type: EffectReasonType.Unit,
@@ -413,7 +414,7 @@ describe('effect-bond', () => {
           effectiveStrength: 8,
           effects: [
             {
-              operator: 'x2',
+              operator: EFFECT_OPERATOR.Double,
               reason: {
                 effect: bondEffect._id,
                 type: EffectReasonType.Unit,
@@ -468,7 +469,7 @@ describe('effect-bond', () => {
           effectiveStrength: 16,
           effects: [
             {
-              operator: 'x2',
+              operator: EFFECT_OPERATOR.Double,
               reason: {
                 effect: bondEffect._id,
                 type: EffectReasonType.Unit,
@@ -477,7 +478,7 @@ describe('effect-bond', () => {
               total: 8,
             },
             {
-              operator: 'x2',
+              operator: EFFECT_OPERATOR.Double,
               reason: {
                 effect: bondEffect._id,
                 type: EffectReasonType.Unit,
@@ -508,7 +509,7 @@ describe('effect-bond', () => {
         id: unit2._id,
       })
       const gameUnitEffect: GameUnitEffectDbObject = {
-        operator: 'x2',
+        operator: EFFECT_OPERATOR.Double,
         reason: {
           effect: bondEffect._id,
           type: EffectReasonType.Unit,

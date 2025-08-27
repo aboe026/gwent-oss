@@ -9,6 +9,7 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import EffectMorale from '../../src/graphql/resolvers/mutations/play-unit/effect-morale'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import { EffectReasonType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
@@ -274,7 +275,7 @@ describe('effect-morale', () => {
           effectiveStrength: 1,
           effects: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
@@ -318,7 +319,7 @@ describe('effect-morale', () => {
           effectiveStrength: 1,
           effects: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
@@ -361,7 +362,7 @@ describe('effect-morale', () => {
           effectiveStrength: 2,
           effects: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
@@ -370,7 +371,7 @@ describe('effect-morale', () => {
               total: 1,
             },
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
@@ -418,7 +419,7 @@ describe('effect-morale', () => {
           effectiveStrength: 2,
           effects: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
@@ -427,7 +428,7 @@ describe('effect-morale', () => {
               total: 1,
             },
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
@@ -483,7 +484,7 @@ describe('effect-morale', () => {
           effectiveStrength: 1,
           effects: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
@@ -537,7 +538,7 @@ describe('effect-morale', () => {
           effectiveStrength: 2,
           effects: [
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
@@ -546,7 +547,7 @@ describe('effect-morale', () => {
               total: 1,
             },
             {
-              operator: '+1',
+              operator: EFFECT_OPERATOR.Plus,
               reason: {
                 effect: moraleEffect._id,
                 type: EffectReasonType.Unit,
@@ -581,7 +582,7 @@ describe('effect-morale', () => {
       })
 
       const effect = {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         reason: {
           effect: moraleEffect._id,
           type: EffectReasonType.Unit,

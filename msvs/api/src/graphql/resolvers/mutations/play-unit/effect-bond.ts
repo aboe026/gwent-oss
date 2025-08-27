@@ -10,6 +10,7 @@ import {
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import { EffectReasonType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
 
@@ -137,7 +138,7 @@ export default class EffectBond {
         }
 
         const gameUnitEffect: GameUnitEffectDbObject = {
-          operator: 'x2',
+          operator: EFFECT_OPERATOR.Double,
           reason,
           total: rowGameUnit.effectiveStrength,
         }

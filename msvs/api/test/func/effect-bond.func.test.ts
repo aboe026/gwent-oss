@@ -22,6 +22,7 @@ import {
   PlayerCombatRow,
   User,
 } from '@gwent/graphql-schema/resolver-typings'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import { ensureUnitsInHand } from '@gwent/test-utils'
 import { expectizeGame, expectizeGamePlayer, expectizeMoveUnit, expectizePlayerRound } from './util/expect-util'
 import funcEnv from './util/func-env'
@@ -288,7 +289,7 @@ describe('effect-bond', () => {
                         effectiveStrength: 8,
                         effects: [
                           {
-                            operator: 'x2',
+                            operator: EFFECT_OPERATOR.Double,
                             total: 8,
                             reason: {
                               effect: effectBond,
@@ -302,7 +303,7 @@ describe('effect-bond', () => {
                         effectiveStrength: 8,
                         effects: [
                           {
-                            operator: 'x2',
+                            operator: EFFECT_OPERATOR.Double,
                             total: 8,
                             reason: {
                               effect: effectBond,
@@ -326,7 +327,7 @@ describe('effect-bond', () => {
                             effectiveStrength: 8,
                             effects: [
                               {
-                                operator: 'x2',
+                                operator: EFFECT_OPERATOR.Double,
                                 reason: {
                                   effect: effectBond,
                                   unit: unitSelf2.unit,
