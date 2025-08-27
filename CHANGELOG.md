@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.0 - 2025-08-27
+
+### Added
+
+- Bond effect ([#42](https://github.com/aboe026/gwent/pull/42)) (Adam Boe)
+
 ## 0.14.2 - 2025-08-15
 
 ### Fixed
