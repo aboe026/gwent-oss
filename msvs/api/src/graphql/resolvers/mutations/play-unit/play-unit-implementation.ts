@@ -48,7 +48,9 @@ export default class PlayUnitImplementation {
       game,
       unitBeingPlayed: unit,
     })
-    const unitEffects = await getUnitEffects(roundUnits)
+    const unitEffects = await getUnitEffects({
+      units: roundUnits,
+    })
 
     const { musters, musteredUnits, musteredOrigins, scorches } = await modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
@@ -59,12 +61,18 @@ export default class PlayUnitImplementation {
       newDeckUnit: deckUnit,
     })
 
-    const strengths = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+    const musterEffects = await getUnitEffects({
+      units: musteredUnits,
+      effects: unitEffects,
+    })
+
+    const { bonds, morales } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits, ...musteredUnits],
-      effects: unitEffects,
+      effects: [...unitEffects, ...musterEffects],
       logPrefix,
       newDeckUnit: deckUnit,
+      musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
     })
 
     setGameScores(game)
@@ -78,7 +86,8 @@ export default class PlayUnitImplementation {
       playerId,
       logPrefix,
       scorches,
-      strengths,
+      bonds,
+      morales,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

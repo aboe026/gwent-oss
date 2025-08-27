@@ -196,10 +196,18 @@ export default class SubscriptionResolver {
       SubscriptionResolver.logger.trace(`${subscriptionName} filterDeckOwner nestedDeckPath: "${nestedDeckPath}"`)
     }
     const userId = ctx.session?.user?._id.toString()
-    const deck: Deck = getNestedProperty({
+    const nestedProperty = `${subscriptionName}${nestedDeckPath ? `.${nestedDeckPath}` : ''}`
+    const deck = getNestedProperty<Deck>({
       obj: payload,
-      nestedProperty: `${subscriptionName}${nestedDeckPath ? `.${nestedDeckPath}` : ''}`,
+      nestedProperty,
     })
+    if (!deck) {
+      const message = `Could not find deck in payload for subscription "${subscriptionName}"`
+      SubscriptionResolver.logger.error(
+        `${message}, nestedProperty: "${nestedProperty}", payload: "${JSON.stringify(payload)}"`
+      )
+      throw Error(`${message}.`)
+    }
     const deckId = deck.id
     const deckOwner = deck.user.id
     if (userId) {
@@ -247,10 +255,18 @@ export default class SubscriptionResolver {
       SubscriptionResolver.logger.trace(`${subscriptionName} filterPlayerOnGame nestedGamePath: "${nestedGamePath}"`)
     }
     const userId = ctx.session?.user?._id.toString()
-    const game: Game = getNestedProperty({
+    const nestedProperty = `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`
+    const game = getNestedProperty<Game>({
       obj: payload,
-      nestedProperty: `${subscriptionName}${nestedGamePath ? `.${nestedGamePath}` : ''}`,
+      nestedProperty,
     })
+    if (!game) {
+      const message = `Could not find game in payload for subscription "${subscriptionName}"`
+      SubscriptionResolver.logger.error(
+        `${message}, nestedProperty: "${nestedProperty}", payload: "${JSON.stringify(payload)}"`
+      )
+      throw Error(`${message}.`)
+    }
     const gameId = game.id
     if (userId) {
       if (game.players.some((player) => player.user.id === userId)) {

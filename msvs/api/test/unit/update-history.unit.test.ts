@@ -6,11 +6,13 @@ import {
   MoveUnitDbObject,
   MoveReasonType,
   GameUnitOrigin,
+  DeckUnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
 import GetBattlefieldUnit, {
   BattlefieldUnit,
 } from '../../src/graphql/resolvers/mutations/play-unit/get-battlefield-unit'
+import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import { MoveType } from '@gwent/graphql-schema'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/muster-battlefield'
 import TestUtil from '../util/test-util'
@@ -20,12 +22,18 @@ describe('update-history', () => {
   describe('newUnitDeployed', () => {
     const logPrefix = 'log-prefix'
     it('throws error if musters without origin', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const musters = {
+        [deckUnit.unit.toString()]: [],
+      }
       const message = 'No origins provided for musters'
       testUpdateHistory({
-        musters: [],
+        deckUnit,
+        musters,
         logPrefix,
         error: Error(`${message}.`),
-        errorCalls: [[`${logPrefix} failed: ${message}, musters: "[]"`]],
+        expectedMoveImpacts: [],
+        errorCalls: [[`${logPrefix} failed: ${message}, musters: "${JSON.stringify(musters)}"`]],
       })
     })
     it('throws error if mustered unit not in battlefield', () => {
@@ -33,14 +41,17 @@ describe('update-history', () => {
         row: Combat.Close,
         unit: TestUtil.getDbGameUnit({}),
       }
-      const musters = [
-        {
-          unit: musteredUnit.unit,
-          user: new ObjectId(),
-        },
-      ]
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: musteredUnit.unit,
+        user: new ObjectId(),
+      }
+      const musters = {
+        [deckUnit.unit.toString()]: [impact],
+      }
       const message = `Could not find mustered unit "${musteredUnit.unit.unit}" on battlefield`
       testUpdateHistory({
+        deckUnit,
         musters,
         musteredOrigins: {
           [musteredUnit.unit.unit.toString()]: GameUnitOrigin.Hand,
@@ -48,6 +59,7 @@ describe('update-history', () => {
         getBattlefieldUnitResponses: [undefined],
         logPrefix,
         error: Error(`${message}.`),
+        expectedMoveImpacts: [impact],
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
@@ -56,19 +68,23 @@ describe('update-history', () => {
         row: Combat.Close,
         unit: TestUtil.getDbGameUnit({}),
       }
-      const musters = [
-        {
-          unit: musteredUnit.unit,
-          user: new ObjectId(),
-        },
-      ]
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: musteredUnit.unit,
+        user: new ObjectId(),
+      }
+      const musters = {
+        [deckUnit.unit.toString()]: [impact],
+      }
       const message = `Could not find origin for mustered unit "${musteredUnit.unit.unit}"`
       testUpdateHistory({
+        deckUnit,
         musters,
         musteredOrigins: {},
         getBattlefieldUnitResponses: [musteredUnit],
         logPrefix,
         error: Error(`${message}.`),
+        expectedMoveImpacts: [impact],
         errorCalls: [[`${logPrefix} failed: ${message}`]],
       })
     })
@@ -90,48 +106,108 @@ describe('update-history', () => {
       })
     })
     it('calls addMoveToCurrentPlayer once with scorch impact', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
       testUpdateHistory({
-        scorches: [
-          {
-            unit: TestUtil.getDbGameUnit({}),
-            user: new ObjectId(),
-          },
-        ],
+        deckUnit,
+        scorches: {
+          [deckUnit.unit.toString()]: [impact],
+        },
         logPrefix,
+        expectedMoveImpacts: [impact],
       })
     })
-    it('calls addMoveToCurrentPlayer once with strength impact', () => {
+    it('calls addMoveToCurrentPlayer once with morale impact', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
       testUpdateHistory({
-        strengths: [
-          {
-            unit: TestUtil.getDbGameUnit({}),
-            user: new ObjectId(),
-          },
-        ],
+        deckUnit,
+        morales: {
+          [deckUnit.unit.toString()]: [impact],
+        },
         logPrefix,
+        expectedMoveImpacts: [impact],
       })
     })
-    it('calls to addMoveToCurrentPlayer for single valid muster', () => {
+    it('calls addMoveToCurrentPlayer once with bond impact', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testUpdateHistory({
+        deckUnit,
+        bonds: {
+          [deckUnit.unit.toString()]: [impact],
+        },
+        logPrefix,
+        expectedMoveImpacts: [impact],
+      })
+    })
+    it('calls to addMoveToCurrentPlayer for single valid muster without own impact', () => {
       const musteredUnit: BattlefieldUnit = {
         row: Combat.Close,
         unit: TestUtil.getDbGameUnit({}),
       }
-      const musters = [
-        {
-          unit: musteredUnit.unit,
-          user: new ObjectId(),
-        },
-      ]
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: musteredUnit.unit,
+        user: new ObjectId(),
+      }
+      const musters = {
+        [deckUnit.unit.toString()]: [impact],
+      }
       testUpdateHistory({
+        deckUnit,
         musters,
         musteredOrigins: {
           [musteredUnit.unit.unit.toString()]: GameUnitOrigin.Hand,
         },
         getBattlefieldUnitResponses: [musteredUnit],
+        expectedMoveImpacts: [impact],
         logPrefix,
       })
     })
-    it('calls to addMoveToCurrentPlayer for multiple valid muster', () => {
+    it('calls to addMoveToCurrentPlayer for single valid muster with own impact', () => {
+      const musteredUnit: BattlefieldUnit = {
+        row: Combat.Close,
+        unit: TestUtil.getDbGameUnit({}),
+      }
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact1: ImpactDbObject = {
+        unit: musteredUnit.unit,
+        user: new ObjectId(),
+      }
+      const impact2: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const musters = {
+        [deckUnit.unit.toString()]: [impact1],
+      }
+      const bonds = {
+        [musteredUnit.unit.unit.toString()]: [impact2],
+      }
+      testUpdateHistory({
+        deckUnit,
+        musters,
+        musteredOrigins: {
+          [musteredUnit.unit.unit.toString()]: GameUnitOrigin.Hand,
+        },
+        bonds,
+        getBattlefieldUnitResponses: [musteredUnit],
+        expectedMoveImpacts: [impact1],
+        expectedMusterImpacts: [impact2],
+        logPrefix,
+      })
+    })
+    it('calls to addMoveToCurrentPlayer for multiple valid musters', () => {
       const musteredUnit1: BattlefieldUnit = {
         row: Combat.Close,
         unit: TestUtil.getDbGameUnit({}),
@@ -140,17 +216,20 @@ describe('update-history', () => {
         row: Combat.Close,
         unit: TestUtil.getDbGameUnit({}),
       }
-      const musters = [
-        {
-          unit: musteredUnit1.unit,
-          user: new ObjectId(),
-        },
-        {
-          unit: musteredUnit2.unit,
-          user: new ObjectId(),
-        },
-      ]
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact1: ImpactDbObject = {
+        unit: musteredUnit1.unit,
+        user: new ObjectId(),
+      }
+      const impact2: ImpactDbObject = {
+        unit: musteredUnit2.unit,
+        user: new ObjectId(),
+      }
+      const musters = {
+        [deckUnit.unit.toString()]: [impact1, impact2],
+      }
       testUpdateHistory({
+        deckUnit,
         musters,
         musteredOrigins: {
           [musteredUnit2.unit.unit.toString()]: GameUnitOrigin.Undrawn,
@@ -158,6 +237,7 @@ describe('update-history', () => {
         },
         getBattlefieldUnitResponses: [musteredUnit1, musteredUnit2],
         logPrefix,
+        expectedMoveImpacts: [impact1, impact2],
       })
     })
   })
@@ -759,27 +839,34 @@ describe('update-history', () => {
 })
 
 function testUpdateHistory({
+  deckUnit = TestUtil.getDbDeckUnit({}),
   combat = Combat.Close,
-  scorches,
-  musters,
-  strengths,
+  scorches = {},
+  musters = {},
+  morales = {},
+  bonds = {},
   musteredOrigins,
   logPrefix,
   getBattlefieldUnitResponses = [],
   error,
+  expectedMoveImpacts,
+  expectedMusterImpacts,
   errorCalls = [],
 }: {
+  deckUnit?: DeckUnitDbObject
   combat?: Combat | null | undefined
-  scorches?: ImpactDbObject[] | undefined
-  musters?: ImpactDbObject[] | undefined
-  strengths?: ImpactDbObject[] | undefined
+  scorches?: ImpactsByUnitId
+  musters?: ImpactsByUnitId
+  morales?: ImpactsByUnitId
+  bonds?: ImpactsByUnitId
   musteredOrigins?: MusteredOrigins | undefined
   logPrefix: string
   getBattlefieldUnitResponses?: (BattlefieldUnit | undefined)[]
   error?: Error
+  expectedMoveImpacts?: ImpactDbObject[]
+  expectedMusterImpacts?: ImpactDbObject[]
   errorCalls?: string[][]
 }) {
-  const deckUnit = TestUtil.getDbDeckUnit({})
   const playerId = new ObjectId().toString()
   const game = TestUtil.getDbGame({})
   const battlefieldUnit: BattlefieldUnit = {
@@ -797,7 +884,7 @@ function testUpdateHistory({
       effects: battlefieldUnit.unit.effects,
       row: combat,
     },
-    impacts: scorches || musters || strengths,
+    impacts: expectedMoveImpacts,
     reason: {
       type: MoveReasonType.Deploy,
     },
@@ -831,6 +918,7 @@ function testUpdateHistory({
               unit: deckUnit,
             },
             type: MoveType.Unit,
+            impacts: expectedMusterImpacts,
             unit: {
               artStyle: getBattlefieldUnitResponse.unit.artStyle,
               unit: getBattlefieldUnitResponse.unit.unit,
@@ -856,7 +944,7 @@ function testUpdateHistory({
     ],
   ]
   if (musters && musteredOrigins) {
-    for (const muster of musters) {
+    for (const muster of musters[deckUnit.unit.toString()]) {
       getBattlefieldUnitCalls.push([
         {
           game,
@@ -882,7 +970,8 @@ function testUpdateHistory({
         playerId,
         logPrefix,
         scorches,
-        strengths,
+        morales,
+        bonds,
       })
     ).toThrow(error)
   } else {
@@ -896,7 +985,8 @@ function testUpdateHistory({
         playerId,
         logPrefix,
         scorches,
-        strengths,
+        morales,
+        bonds,
       })
     ).toEqual(undefined)
   }

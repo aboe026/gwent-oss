@@ -11,6 +11,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GetEffectWithKey from './get-effect-with-key'
+import { ImpactsByUnitId } from '../../resolver-util'
 import { sortObjectArray } from '@gwent/utils'
 import UnitStore from '../../../../database/stores/unit-store'
 
@@ -80,7 +81,7 @@ export default class MusterBattlefield {
       MusterBattlefield.logger.debug(`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`)
 
       const musterableUnits = await UnitStore.get({
-        namePrefix: newUnit.effectPrefix ? newUnit.effectPrefix : undefined,
+        namePrefix: newUnit.effectPrefix ? `"${newUnit.effectPrefix}"` : undefined,
         names: newUnit.effectPrefix ? undefined : [newUnit.name],
         ignoreIds: [newUnit._id],
       })
@@ -131,7 +132,12 @@ export default class MusterBattlefield {
     }
 
     return {
-      impacts: sortedImpacts.length > 0 ? sortedImpacts : undefined,
+      impacts:
+        sortedImpacts.length > 0
+          ? {
+              [newDeckUnit.unit.toString()]: sortedImpacts,
+            }
+          : {},
       musteredUnits,
       musteredOrigins,
     }
@@ -254,7 +260,7 @@ export interface MusterForPlayer {
 }
 
 export interface Musterings {
-  impacts: ImpactDbObject[] | undefined
+  impacts: ImpactsByUnitId
   musteredUnits: UnitDbObject[]
   musteredOrigins: MusteredOrigins
 }

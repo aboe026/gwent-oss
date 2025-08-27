@@ -1,17 +1,19 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
+import { addListsToMap } from '@gwent/utils'
 import {
   DeckUnitDbObject,
   EffectDbObject,
   EffectKey,
   GameDbObject,
-  ImpactDbObject,
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import EffectBond from './effect-bond'
 import EffectMorale from './effect-morale'
 import GetEffectWithKey from './get-effect-with-key'
+import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -30,6 +32,7 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.effects All the database Effect objects for any unit effect present in the round for the game.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.newDeckUnit The new unit being introduced to the battlefield.
+   * @param config.musteredUnitIds A list of any unit IDs that were mustered to the battlefield by the newDeckUnit. Used to apply potential impacts to those musters.
    * @returns Any impacts the new unit has on other units.
    */
   static calculateEffectiveStrengths({
@@ -38,17 +41,25 @@ export default class CalculateGameEffectiveStrengths {
     effects,
     logPrefix,
     newDeckUnit,
+    musteredUnitIds,
   }: {
     game: GameDbObject
     units: UnitDbObject[]
     effects: EffectDbObject[]
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
-  }): ImpactDbObject[] | undefined {
-    const impacts: ImpactDbObject[] = []
+    musteredUnitIds: string[]
+  }): StrengthImpacts {
+    const bonds: ImpactsByUnitId = {}
+    const morales: ImpactsByUnitId = {}
 
     const moraleEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Morale,
+      effects,
+      logPrefix,
+    })
+    const bondEffect = GetEffectWithKey.getEffectWithKey({
+      effectKey: EffectKey.Bond,
       effects,
       logPrefix,
     })
@@ -56,20 +67,33 @@ export default class CalculateGameEffectiveStrengths {
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
       for (const row of [round.close, round.ranged, round.siege]) {
-        impacts.push(
-          ...CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
+        const { bonds: rowBonds, morales: rowMorales } =
+          CalculateGameEffectiveStrengths.calculateEffectiveStrengthsForRow({
             row,
             units,
             logPrefix,
             moraleEffect,
+            bondEffect,
             newDeckUnit,
+            musteredUnitIds,
             userId: player.user,
             currentPlayerId: game.turn,
           })
-        )
+        addListsToMap({
+          baseMap: bonds,
+          newLists: rowBonds,
+        })
+        addListsToMap({
+          baseMap: morales,
+          newLists: rowMorales,
+        })
       }
     }
-    return impacts.length > 0 ? impacts : undefined
+
+    return {
+      bonds,
+      morales,
+    }
   }
 
   /**
@@ -80,7 +104,9 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.units All the database Unit objects present in the round for the game.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.moraleEffect The Effect database document for the Morale effect.
+   * @param config.bondEffect The Effect database document for the Bond effect.
    * @param config.newDeckUnit The new unit being introduced to the battlefield.
+   * @param config.musteredUnitIds A list of any unit IDs that were mustered to the battlefield by the newDeckUnit. Used to apply potential impacts to those musters.
    * @param config.userId The ID of the user for the combat row.
    * @param config.currentPlayerId The ID of the current game turn user.
    * @returns Any impacts the new unit has on other units.
@@ -90,7 +116,9 @@ export default class CalculateGameEffectiveStrengths {
     units,
     logPrefix,
     moraleEffect,
+    bondEffect,
     newDeckUnit,
+    musteredUnitIds,
     userId,
     currentPlayerId,
   }: {
@@ -98,11 +126,14 @@ export default class CalculateGameEffectiveStrengths {
     units: UnitDbObject[]
     logPrefix: string
     moraleEffect: EffectDbObject | undefined
+    bondEffect: EffectDbObject | undefined
     newDeckUnit: DeckUnitDbObject
+    musteredUnitIds: string[]
     userId: ObjectId
     currentPlayerId: ObjectId | undefined
-  }): ImpactDbObject[] {
-    const impacts: ImpactDbObject[] = []
+  }): StrengthImpacts {
+    const bonds: ImpactsByUnitId = {}
+    const morales: ImpactsByUnitId = {}
 
     const rowDbUnits: UnitDbObject[] = []
     for (const rowUnit of row.units) {
@@ -125,25 +156,56 @@ export default class CalculateGameEffectiveStrengths {
     for (const rowGameUnit of row.units) {
       const rowUnit = units.find((unit) => unit._id.toString() === rowGameUnit.unit.toString())
       if (rowUnit && rowUnit.strength !== undefined && rowUnit.strength !== null) {
+        const bondIdsInRow = EffectBond.getUnitsWithBond({
+          bondEffect,
+          logPrefix,
+          units: rowDbUnits,
+          unitName: rowUnit.name,
+        })
         rowGameUnit.effectiveStrength = rowUnit.strength
         rowGameUnit.effects = []
 
-        impacts.push(
-          ...EffectMorale.applyMorales({
+        addListsToMap({
+          baseMap: bonds,
+          newLists: EffectBond.applyBonds({
+            logPrefix,
+            bondEffect,
+            unitIdsWithBondInRow: bondIdsInRow,
+            newDeckUnit,
+            musteredUnitIds,
+            rowGameUnit,
+            rowUnit,
+            units,
+            userId,
+            currentPlayerId,
+          }),
+        })
+
+        addListsToMap({
+          baseMap: morales,
+          newLists: EffectMorale.applyMorales({
             logPrefix,
             moraleEffect,
             unitIdsWithMoraleInRow: moraleIdsInRow,
             newDeckUnit,
-            rowGameUnit: rowGameUnit,
-            rowUnit: rowUnit,
+            rowGameUnit,
+            rowUnit,
             units,
             userId,
             currentPlayerId,
-          })
-        )
+          }),
+        })
       }
     }
 
-    return impacts
+    return {
+      bonds,
+      morales,
+    }
   }
+}
+
+export interface StrengthImpacts {
+  morales: ImpactsByUnitId
+  bonds: ImpactsByUnitId
 }

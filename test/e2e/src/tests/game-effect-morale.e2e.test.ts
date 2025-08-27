@@ -1,6 +1,7 @@
 import createGameManager from '../util/game-manager'
-import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, EffectKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 
@@ -100,7 +101,7 @@ test('Morale hero unit not effected by other morale', async (t) => {
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName1}`,
       },
@@ -205,7 +206,7 @@ test('Morale effects normal unit if morale played before', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName1}`,
       },
@@ -254,7 +255,7 @@ test('Morale effects normal unit if morale played after', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
@@ -267,7 +268,7 @@ test('Morale effects normal unit if morale played after', async (t) => {
   })
 })
 
-test('Morale effects multiple normal units', async (t) => {
+test('Morale effects multiple normal units with different names', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Ida Emean aep Sivney'
   const unitName3 = 'Milva'
@@ -311,7 +312,7 @@ test('Morale effects multiple normal units', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName3}`,
       },
@@ -324,7 +325,7 @@ test('Morale effects multiple normal units', async (t) => {
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName3}`,
       },
@@ -333,6 +334,119 @@ test('Morale effects multiple normal units', async (t) => {
   await FullCard.next()
   await FullCard.verify({
     unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Morale effects multiple normal units with same name', async (t) => {
+  const unitName1 = 'Elven Skirmisher'
+  const unitName2 = 'Milva'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName1, unitName1, unitName1, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        effectiveStrength: 2,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        hand: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
+      },
+      {
+        effectiveStrength: 2,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        hand: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
+      },
+    ],
+  })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    moraling: [
+      {
+        effectiveStrength: 3,
+        row: Combat.Ranged,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+      },
+      {
+        effectiveStrength: 3,
+        row: Combat.Ranged,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        instance: 2,
+      },
+      {
+        effectiveStrength: 3,
+        row: Combat.Ranged,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        instance: 3,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 3,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 3,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 3,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 3,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
     username: gameManager.self.gamePlayer.name,
   })
 })
@@ -381,7 +495,7 @@ test('Multiple morales effect each other', async (t) => {
     effectiveStrength: 11,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 11,
         reason: `Morale from ${unitName2}`,
       },
@@ -394,7 +508,7 @@ test('Multiple morales effect each other', async (t) => {
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName1}`,
       },
@@ -478,12 +592,12 @@ test('Multiple morales effect themselves and multiple standard units in same row
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 2,
         reason: `Morale from ${unitName3}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName4}`,
       },
@@ -496,7 +610,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName3}`,
       },
@@ -509,12 +623,12 @@ test('Multiple morales effect themselves and multiple standard units in same row
     effectiveStrength: 8,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName3}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 8,
         reason: `Morale from ${unitName4}`,
       },
@@ -527,7 +641,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
     effectiveStrength: 11,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 11,
         reason: `Morale from ${unitName4}`,
       },
@@ -593,7 +707,7 @@ test('Multiple morales effect themselves and multiple standard units in differen
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName1}`,
       },
@@ -616,7 +730,7 @@ test('Multiple morales effect themselves and multiple standard units in differen
     effectiveStrength: 7,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 7,
         reason: `Morale from ${unitName3}`,
       },
@@ -664,7 +778,7 @@ test('Can see reason for morale in opponents fullcard details', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
@@ -767,7 +881,7 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName3}`,
       },
@@ -808,5 +922,174 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
   await FullCard.verify({
     unit: deckUnit.unit,
     username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Morale applied to bonded units after bonding applied if played after bonds', async (t) => {
+  const unitName1 = 'Catapult'
+  const unitName2 = 'Kaedweni Siege Expert'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName1, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege, bonding: [] })
+  await gameManager.pass({})
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName1,
+    effectiveStrength: 16,
+    bonding: [
+      {
+        effectiveStrength: 16,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  const deckUnit3 = await gameManager.deploy({
+    unitName: unitName2,
+    moraling: [
+      {
+        effectiveStrength: 17,
+        row: Combat.Siege,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+      },
+      {
+        effectiveStrength: 17,
+        row: Combat.Siege,
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        instance: 2,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Siege,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 17,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 16,
+        reason: `Bond from ${unitName1}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 17,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 17,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 16,
+        reason: `Bond from ${unitName1}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 17,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+})
+
+test('Morale applied to bonded units after bonding applied if played before bonds', async (t) => {
+  const unitName1 = 'Kaedweni Siege Expert'
+  const unitName2 = 'Catapult'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege, moraling: [] })
+  await gameManager.pass({})
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 9,
+    bonding: [],
+  })
+  await gameManager.initialize({})
+
+  const deckUnit3 = await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 17,
+    bonding: [
+      {
+        effectiveStrength: 17,
+        row: Combat.Siege,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Siege,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 17,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 16,
+        reason: `Bond from ${unitName2}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 17,
+        reason: `Morale from ${unitName1}`,
+      },
+    ],
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 17,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 16,
+        reason: `Bond from ${unitName2}`,
+      },
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 17,
+        reason: `Morale from ${unitName1}`,
+      },
+    ],
   })
 })

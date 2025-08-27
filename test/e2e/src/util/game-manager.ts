@@ -1,6 +1,6 @@
 import ApiClient from './api-client'
+import { BondingExpected, E2eHelper, MoralingExpected, MusteringExpected, ScorchingExpected } from './e2e-helper'
 import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/graphql-schema/resolver-typings'
-import { E2eHelper, MoralingExpected, MusteringExpected, ScorchingExpected } from './e2e-helper'
 import E2eUtil from './e2e-util'
 import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
 import env from './e2e-env'
@@ -88,6 +88,7 @@ export class GameManager {
     moraling,
     horning,
     mustering,
+    bonding,
     impacts,
     verify,
   }: {
@@ -98,6 +99,7 @@ export class GameManager {
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mustering?: MusteringExpected[]
+    bonding?: BondingExpected[]
     impacts?: number
     verify?: boolean
   }): Promise<DeckUnit> {
@@ -134,6 +136,7 @@ export class GameManager {
       moraling,
       horning,
       mustering,
+      bonding,
       impacts,
     })
     if (this.shouldVerify || verify) {

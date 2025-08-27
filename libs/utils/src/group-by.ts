@@ -18,14 +18,19 @@ export default function groupBy<T>({
   property: string
   reverse?: boolean
 }): T[][] {
-  const groupKeys: string[] = []
+  const groupKeys: (string | undefined)[] = []
   for (const item of array) {
-    const key = getNestedProperty({
+    const value = getNestedProperty({
       obj: item,
       nestedProperty: property,
     })
-    if (!groupKeys.includes(key)) {
-      groupKeys.push(key.toLowerCase())
+    if (value !== undefined && value !== null) {
+      const key = value.toString().toLowerCase()
+      if (!groupKeys.includes(key)) {
+        groupKeys.push(key)
+      }
+    } else if (!groupKeys.includes(undefined)) {
+      groupKeys.push(undefined)
     }
   }
 
@@ -36,10 +41,11 @@ export default function groupBy<T>({
 
   const groups: T[][] = []
   for (const item of array) {
-    const key = getNestedProperty({
+    const value = getNestedProperty({
       obj: item,
       nestedProperty: property,
-    }).toLowerCase()
+    })
+    const key = value === undefined || value === null ? undefined : value.toString().toLowerCase()
     const index = sortedKeys.indexOf(key)
     if (!groups[index]) {
       groups[index] = []

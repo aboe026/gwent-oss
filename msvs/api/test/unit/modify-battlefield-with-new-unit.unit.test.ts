@@ -9,6 +9,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
+import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import modifyBattlefieldWithNewUnit, {
   addNewUnitToBattlefield,
 } from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
@@ -19,9 +20,12 @@ import TestUtil from '../util/test-util'
 describe('modify-battlefield-with-new-unit', () => {
   describe('modifyBattlefieldWithNewUnit', () => {
     it('returns undefined if no impacts', async () => {
-      await testModifyBattlefieldWithNewUnit({})
+      await testModifyBattlefieldWithNewUnit({
+        newDeckUnit: TestUtil.getDbDeckUnit({}),
+      })
     })
     it('returns single impact for muster', async () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
           unit: TestUtil.getDbGameUnit({}),
@@ -29,7 +33,10 @@ describe('modify-battlefield-with-new-unit', () => {
         },
       ]
       await testModifyBattlefieldWithNewUnit({
-        musterImpacts: impacts,
+        newDeckUnit,
+        musterImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
         musteredUnits: [
           TestUtil.getDbUnit({
             id: impacts[0].unit.unit,
@@ -41,6 +48,7 @@ describe('modify-battlefield-with-new-unit', () => {
       })
     })
     it('returns multiple impacts for muster', async () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
           unit: TestUtil.getDbGameUnit({}),
@@ -52,7 +60,10 @@ describe('modify-battlefield-with-new-unit', () => {
         },
       ]
       await testModifyBattlefieldWithNewUnit({
-        musterImpacts: impacts,
+        newDeckUnit,
+        musterImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
         musteredUnits: [
           TestUtil.getDbUnit({
             id: impacts[0].unit.unit,
@@ -68,6 +79,7 @@ describe('modify-battlefield-with-new-unit', () => {
       })
     })
     it('returns single impact for scorch', () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
           unit: TestUtil.getDbGameUnit({}),
@@ -75,10 +87,14 @@ describe('modify-battlefield-with-new-unit', () => {
         },
       ]
       testModifyBattlefieldWithNewUnit({
-        scorchImpacts: impacts,
+        newDeckUnit,
+        scorchImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
       })
     })
     it('returns multiple impacts for scorch', async () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
       const impacts: ImpactDbObject[] = [
         {
           unit: TestUtil.getDbGameUnit({}),
@@ -90,7 +106,10 @@ describe('modify-battlefield-with-new-unit', () => {
         },
       ]
       await testModifyBattlefieldWithNewUnit({
-        scorchImpacts: impacts,
+        newDeckUnit,
+        scorchImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
       })
     })
   })
@@ -1381,22 +1400,23 @@ describe('modify-battlefield-with-new-unit', () => {
 })
 
 async function testModifyBattlefieldWithNewUnit({
-  musterImpacts = undefined,
+  newDeckUnit,
+  musterImpacts = {},
   musteredUnits = [],
   musteredOrigins = {},
-  scorchImpacts = undefined,
+  scorchImpacts = {},
 }: {
-  musterImpacts?: ImpactDbObject[] | undefined
+  newDeckUnit: DeckUnitDbObject
+  musterImpacts?: ImpactsByUnitId
   musteredUnits?: UnitDbObject[]
   musteredOrigins?: MusteredOrigins
-  scorchImpacts?: ImpactDbObject[] | undefined
+  scorchImpacts?: ImpactsByUnitId
 }) {
   const battlefieldUnits = [TestUtil.getDbUnit({})]
   const combat = Combat.Close
   const effects = [TestUtil.getDbEffect({})]
   const game = TestUtil.getDbGame({})
   const logPrefix = 'log-prefix'
-  const newDeckUnit = TestUtil.getDbDeckUnit({})
 
   const musterBattlefieldSpy = jest.spyOn(MusterBattlefield, 'musterBattlefield').mockResolvedValue({
     impacts: musterImpacts,

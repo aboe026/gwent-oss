@@ -1,6 +1,7 @@
 import { Combat, EffectKey, FactionKey, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typings'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 
@@ -425,7 +426,9 @@ test('Shows single entry if Muster impacts multiple units from hand and undrawn'
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
         hand: true,
       },
       {
@@ -433,7 +436,9 @@ test('Shows single entry if Muster impacts multiple units from hand and undrawn'
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -1228,7 +1233,7 @@ test('FullUnit for impact preserves effects in time', async (t) => {
     effectiveStrength: 3,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
@@ -1253,12 +1258,12 @@ test('FullUnit for impact preserves effects in time', async (t) => {
     effectiveStrength: 4,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 3,
         reason: `Morale from ${unitName2}`,
       },
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 4,
         reason: `Morale from ${unitName3}`,
       },
@@ -1460,6 +1465,78 @@ test('Impacts can include same unit from both players', async (t) => {
           {
             username: gameManager.self.gamePlayer.name,
             unitName: unitName1,
+          },
+        ],
+      },
+    ],
+  })
+})
+
+test('Impacts expandable if multiple with same name', async (t) => {
+  const unitName = 'Clan an Craite Warrior'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName, unitName, unitName],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName, bonding: [] })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName,
+    effectiveStrength: 12,
+    bonding: [
+      {
+        effectiveStrength: 12,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName,
+    effectiveStrength: 24,
+    bonding: [
+      {
+        effectiveStrength: 24,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+      {
+        effectiveStrength: 24,
+        name: unitName,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await GamePage.toggleImpacts({
+    unitName: unitName,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+    instance: 3,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Bond,
+        unitName: unitName,
+        userName: gameManager.self.gamePlayer.name,
+        round: gameManager.round,
+        instance: 3,
+        impacts: [
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName,
+          },
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName,
           },
         ],
       },

@@ -147,7 +147,7 @@ describe('muster-battlefield', () => {
         ],
         newDeckUnit,
         expected: {
-          impacts: undefined,
+          impacts: {},
           musteredUnits: [],
           musteredOrigins: {},
         },
@@ -166,7 +166,7 @@ describe('muster-battlefield', () => {
         newDeckUnit,
         musterEffect: TestUtil.getDbEffect({}),
         expected: {
-          impacts: undefined,
+          impacts: {},
           musteredUnits: [],
           musteredOrigins: {},
         },
@@ -186,7 +186,7 @@ describe('muster-battlefield', () => {
         newDeckUnit,
         musterEffect: TestUtil.getDbEffect({}),
         expected: {
-          impacts: undefined,
+          impacts: {},
           musteredUnits: [],
           musteredOrigins: {},
         },
@@ -218,7 +218,7 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: undefined,
+            impacts: {},
             musteredUnits: [],
             musteredOrigins: {},
           },
@@ -272,7 +272,9 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: [impact],
+            impacts: {
+              [newDeckUnit.unit.toString()]: [impact],
+            },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
               [musterableUnit._id.toString()]: GameUnitOrigin.Hand,
@@ -339,7 +341,9 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: [impact],
+            impacts: {
+              [newDeckUnit.unit.toString()]: [impact],
+            },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
               [musterableUnit._id.toString()]: GameUnitOrigin.Undrawn,
@@ -348,7 +352,7 @@ describe('muster-battlefield', () => {
           unitStoreGetCalls: [
             [
               {
-                namePrefix: 'effect-prefix',
+                namePrefix: '"effect-prefix"',
                 names: undefined,
                 ignoreIds: [newUnit._id],
               },
@@ -423,7 +427,9 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: [impact2, impact1],
+            impacts: {
+              [newDeckUnit.unit.toString()]: [impact2, impact1],
+            },
             musteredUnits: [musterableUnit1, musterableUnit2],
             musteredOrigins: {
               [musterableUnit1._id.toString()]: GameUnitOrigin.Undrawn,
@@ -503,7 +509,7 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: undefined,
+            impacts: {},
             musteredUnits: [],
             musteredOrigins: {},
           },
@@ -557,7 +563,9 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: [impact],
+            impacts: {
+              [newDeckUnit.unit.toString()]: [impact],
+            },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
               [musterableUnit._id.toString()]: GameUnitOrigin.Hand,
@@ -624,7 +632,9 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: [impact],
+            impacts: {
+              [newDeckUnit.unit.toString()]: [impact],
+            },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
               [musterableUnit._id.toString()]: GameUnitOrigin.Undrawn,
@@ -633,7 +643,7 @@ describe('muster-battlefield', () => {
           unitStoreGetCalls: [
             [
               {
-                namePrefix: 'effect-prefix',
+                namePrefix: '"effect-prefix"',
                 names: undefined,
                 ignoreIds: [newUnit._id],
               },
@@ -708,7 +718,9 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: [impact2, impact1],
+            impacts: {
+              [newDeckUnit.unit.toString()]: [impact2, impact1],
+            },
             musteredUnits: [musterableUnit1, musterableUnit2],
             musteredOrigins: {
               [musterableUnit1._id.toString()]: GameUnitOrigin.Undrawn,
@@ -788,7 +800,7 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: undefined,
+            impacts: {},
             musteredUnits: [],
             musteredOrigins: {},
           },
@@ -842,7 +854,9 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: [impact],
+            impacts: {
+              [newDeckUnit.unit.toString()]: [impact],
+            },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
               [musterableUnit._id.toString()]: GameUnitOrigin.Hand,
@@ -909,7 +923,9 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: [impact],
+            impacts: {
+              [newDeckUnit.unit.toString()]: [impact],
+            },
             musteredUnits: [musterableUnit],
             musteredOrigins: {
               [musterableUnit._id.toString()]: GameUnitOrigin.Undrawn,
@@ -918,7 +934,7 @@ describe('muster-battlefield', () => {
           unitStoreGetCalls: [
             [
               {
-                namePrefix: 'effect-prefix',
+                namePrefix: '"effect-prefix"',
                 names: undefined,
                 ignoreIds: [newUnit._id],
               },
@@ -993,7 +1009,9 @@ describe('muster-battlefield', () => {
             },
           ],
           expected: {
-            impacts: [impact2, impact1],
+            impacts: {
+              [newDeckUnit.unit.toString()]: [impact2, impact1],
+            },
             musteredUnits: [musterableUnit1, musterableUnit2],
             musteredOrigins: {
               [musterableUnit1._id.toString()]: GameUnitOrigin.Undrawn,
@@ -1071,7 +1089,7 @@ describe('muster-battlefield', () => {
           },
         ],
         expected: {
-          impacts: undefined,
+          impacts: {},
           musteredUnits: [],
           musteredOrigins: {},
         },

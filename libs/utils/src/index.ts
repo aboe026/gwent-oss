@@ -1,3 +1,4 @@
+import addListsToMap from './add-lists-to-map'
 import combineUnitStats from './combine-unit-stats'
 import { humanizeDay, humanizeTime } from './humanize-date'
 import formatGameStatus from './format-game-status'
@@ -17,6 +18,7 @@ import sortObjectArray from './sort'
 import toTitleCase from './to-title-case'
 
 export {
+  addListsToMap,
   combineUnitStats,
   formatGameStatus,
   getCombatImage,

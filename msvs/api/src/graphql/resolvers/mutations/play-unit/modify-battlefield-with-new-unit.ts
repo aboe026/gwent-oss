@@ -1,11 +1,6 @@
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
-import {
-  DeckUnitDbObject,
-  EffectDbObject,
-  GameDbObject,
-  ImpactDbObject,
-  UnitDbObject,
-} from '@gwent/graphql-schema/database-typings'
+import { DeckUnitDbObject, EffectDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { ImpactsByUnitId } from '../../resolver-util'
 import MusterBattlefield, { MusteredOrigins } from './muster-battlefield'
 import ScorchBattlefield from './scorch-battlefield'
 
@@ -100,8 +95,8 @@ export function addNewUnitToBattlefield({
 }
 
 interface ModificationImpacts {
-  scorches: ImpactDbObject[] | undefined
-  musters: ImpactDbObject[] | undefined
+  scorches: ImpactsByUnitId
+  musters: ImpactsByUnitId
   musteredUnits: UnitDbObject[]
   musteredOrigins: MusteredOrigins
 }

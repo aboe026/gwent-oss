@@ -1,6 +1,7 @@
-import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, EffectKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
+import { EFFECT_OPERATOR } from '@gwent/constants'
 import FullCard from '../components/full-card'
 import GamePage from '../page-objects/game-page'
 
@@ -31,7 +32,9 @@ test('Muster works for single of same unit in undrawn', async (t) => {
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -57,7 +60,9 @@ test('Muster works for single of same unit in hand', async (t) => {
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
         hand: true,
       },
     ],
@@ -136,14 +141,18 @@ test('Muster works for multiple of same units in undrawn', async (t) => {
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
       {
         effectiveStrength: 2,
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -168,7 +177,9 @@ test('Muster works for multiple of same units in hand', async (t) => {
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
         hand: true,
       },
       {
@@ -176,7 +187,9 @@ test('Muster works for multiple of same units in hand', async (t) => {
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
         hand: true,
       },
     ],
@@ -203,7 +216,9 @@ test('Muster works for multiple of same units in hand and undrawn', async (t) =>
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
         hand: true,
       },
       {
@@ -211,7 +226,9 @@ test('Muster works for multiple of same units in hand and undrawn', async (t) =>
         name: unitName,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -240,14 +257,18 @@ test('Muster works for multiple of different units in undrawn', async (t) => {
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
       {
         effectiveStrength: 6,
         name: unitName3,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -274,7 +295,9 @@ test('Muster works for multiple of different units in hand', async (t) => {
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
         hand: true,
       },
       {
@@ -282,7 +305,9 @@ test('Muster works for multiple of different units in hand', async (t) => {
         name: unitName3,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
         hand: true,
       },
     ],
@@ -312,7 +337,9 @@ test('Muster works for multiple of different units in hand and undrawn', async (
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
         hand: true,
       },
       {
@@ -320,7 +347,9 @@ test('Muster works for multiple of different units in hand and undrawn', async (
         name: unitName3,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -349,21 +378,27 @@ test("Gaunter O'Dimm musters Gaunter O'Dimm Darkness units", async (t) => {
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
       {
         effectiveStrength: 4,
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
       {
         effectiveStrength: 4,
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -392,14 +427,18 @@ test("Gaunter O'Dimm Darkness does not muster Gaunter O'Dimm unit", async (t) =>
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
       {
         effectiveStrength: 4,
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -466,14 +505,18 @@ test('Mustered multiple units get moraled if morale already present', async (t) 
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
       {
         effectiveStrength: 3,
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -498,14 +541,18 @@ test('Mustered units are scorcheable', async (t) => {
         name: unitName1,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
       {
         effectiveStrength: 2,
         name: unitName1,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -622,7 +669,7 @@ test('Mustered unit with morale shows morale in history', async (t) => {
     effectiveStrength: 4,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 4,
         reason: `Morale from ${unitName1}`,
       },
@@ -651,7 +698,7 @@ test('Mustered unit with morale shows morale in history', async (t) => {
     effectiveStrength: 4,
     effects: [
       {
-        operator: '+1',
+        operator: EFFECT_OPERATOR.Plus,
         strength: 4,
         reason: `Morale from ${unitName1}`,
       },
@@ -679,14 +726,18 @@ test('Does not muster units in Lost pile', async (t) => {
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
       {
         effectiveStrength: 4,
         name: unitName2,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
-        impactable: true,
+        impact: {
+          type: EffectKey.Muster,
+        },
       },
     ],
   })
@@ -740,6 +791,57 @@ test('Can muster same units as opponent', async (t) => {
         effectiveStrength: 3,
         player: gameManager.self.gamePlayer,
         row: Combat.Close,
+      },
+    ],
+  })
+})
+
+test('Can muster units with bonding', async (t) => {
+  const unitName1 = 'Cerys'
+  const unitName2 = 'Clan Drummond Shield Maiden'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2, unitName2, unitName2],
+    },
+  })
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    mustering: [
+      {
+        name: unitName2,
+        effectiveStrength: 16,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impact: {
+          type: EffectKey.Bond,
+          instances: 2,
+        },
+        hand: true,
+      },
+      {
+        name: unitName2,
+        effectiveStrength: 16,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impact: {
+          type: EffectKey.Bond,
+          instances: 2,
+        },
+        hand: true,
+      },
+      {
+        name: unitName2,
+        effectiveStrength: 16,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impact: {
+          type: EffectKey.Bond,
+          instances: 2,
+        },
+        hand: true,
       },
     ],
   })

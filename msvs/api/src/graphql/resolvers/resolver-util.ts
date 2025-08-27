@@ -324,3 +324,7 @@ export interface GamePlayerResponse {
   game: GameDbObject
   player: GamePlayerDbObject
 }
+
+export interface ImpactsByUnitId {
+  [unitId: string]: ImpactDbObject[]
+}

@@ -17,6 +17,34 @@ describe('getNestedProperty', () => {
       })
     ).toEqual(undefined)
   })
+  it('returns undefined if parent in chain does not exist', () => {
+    expect(
+      getNestedProperty({
+        nestedProperty: 'foo.bar',
+        obj: {},
+      })
+    ).toEqual(undefined)
+  })
+  it('returns undefined if parent in chain is undefined', () => {
+    expect(
+      getNestedProperty({
+        nestedProperty: 'foo.bar.baz',
+        obj: {
+          foo: undefined,
+        },
+      })
+    ).toEqual(undefined)
+  })
+  it('returns undefined if parent in chain is null', () => {
+    expect(
+      getNestedProperty({
+        nestedProperty: 'foo.bar.baz',
+        obj: {
+          foo: null,
+        },
+      })
+    ).toEqual(undefined)
+  })
   it('returns root level property', () => {
     expect(
       getNestedProperty({

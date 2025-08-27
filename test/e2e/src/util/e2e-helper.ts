@@ -229,66 +229,66 @@ export class E2eHelper {
     }
   }
 
+  static getPlayerUnitInRow({
+    player,
+    unitName,
+    row,
+    instance = 1,
+  }: {
+    player: GamePlayerExpected
+    unitName: string
+    row: Combat
+    instance?: number
+  }): CombatUnit {
+    const combatUnits: CombatUnit[] = []
+    if (row === Combat.Close) {
+      combatUnits.push(...(player.close?.units || []))
+    } else if (row === Combat.Ranged) {
+      combatUnits.push(...(player.ranged?.units || []))
+    } else if (row === Combat.Siege) {
+      combatUnits.push(...(player.siege?.units || []))
+    }
+    const filteredUnits = combatUnits.filter((unit) => unit.name === unitName)
+    const matchingUnit = filteredUnits[instance - 1]
+    if (!matchingUnit) {
+      throw Error(
+        `Could not find instance "${instance}" of unit "${unitName}" in player "${player.name}" combat row "${row}", only "${filteredUnits.length}" found`
+      )
+    }
+    return matchingUnit
+  }
+
   static setEffectiveStrength({
     player,
     effectiveStrength,
     row,
     unitName,
+    instance = 1,
   }: {
     player: GamePlayerExpected
     unitName: string
     effectiveStrength: number
     row: Combat
+    instance?: number
   }) {
-    let currentStrength = 0
-    if (row === Combat.Close) {
-      const rowUnit = player.close?.units.find((unit) => unit.name === unitName)
-      if (!rowUnit) {
-        throw Error(`Could not find unit "${unitName}" in "${Combat.Close}" for "${player.name}"`)
-      }
-      currentStrength = rowUnit.effectiveStrength || rowUnit.strength || 0
-      if (player.close) {
-        player.close.units = player.close.units.map((unit) => {
-          if (unit.name === unitName) {
-            unit.effectiveStrength = effectiveStrength
-          }
-          return unit
-        })
-        player.close.score = player.close.score + (effectiveStrength - currentStrength)
-      }
-    } else if (row === Combat.Ranged) {
-      const rowUnit = player.ranged?.units.find((unit) => unit.name === unitName)
-      if (!rowUnit) {
-        throw Error(`Could not find unit "${unitName}" in "${Combat.Ranged}" for "${player.name}"`)
-      }
-      currentStrength = rowUnit.effectiveStrength || rowUnit.strength || 0
-      if (player.ranged) {
-        player.ranged.units = player.ranged.units.map((unit) => {
-          if (unit.name === unitName) {
-            unit.effectiveStrength = effectiveStrength
-          }
-          return unit
-        })
-        player.ranged.score = player.ranged.score + (effectiveStrength - currentStrength)
-      }
-    } else if (row === Combat.Siege) {
-      const rowUnit = player.siege?.units.find((unit) => unit.name === unitName)
-      if (!rowUnit) {
-        throw Error(`Could not find unit "${unitName}" in "${Combat.Siege}" for "${player.name}"`)
-      }
-      currentStrength = rowUnit.effectiveStrength || rowUnit.strength || 0
-      if (player.siege) {
-        player.siege.units = player.siege.units.map((unit) => {
-          if (unit.name === unitName) {
-            unit.effectiveStrength = effectiveStrength
-          }
-          return unit
-        })
-        player.siege.score = player.siege.score + (effectiveStrength - currentStrength)
-      }
+    const unit = E2eHelper.getPlayerUnitInRow({
+      player,
+      row,
+      unitName,
+      instance,
+    })
+    const currentStrength = unit.effectiveStrength || unit.strength || 0
+    unit.effectiveStrength = effectiveStrength
+    const strengthDifference = effectiveStrength - currentStrength
+    if (row === Combat.Close && player.close) {
+      player.close.score = player.close.score + strengthDifference
+    } else if (row === Combat.Ranged && player.ranged) {
+      player.ranged.score = player.ranged.score + strengthDifference
+    } else if (row === Combat.Siege && player.siege) {
+      player.siege.score = player.siege.score + strengthDifference
     }
     if (player.score !== undefined && player.score !== null) {
-      player.score = player.score + (effectiveStrength - currentStrength)
+      player.score = player.score + strengthDifference
     }
   }
 
@@ -328,6 +328,7 @@ export class E2eHelper {
     moraling,
     horning,
     mustering,
+    bonding,
     impacts,
   }: {
     player: GamePlayerExpected
@@ -341,6 +342,7 @@ export class E2eHelper {
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mustering?: MusteringExpected[]
+    bonding?: BondingExpected[]
     impacts?: number
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
@@ -383,6 +385,19 @@ export class E2eHelper {
           player: morale.player,
           row: morale.row,
           unitName: morale.name,
+          instance: morale.instance,
+        })
+      }
+    }
+    if (bonding) {
+      for (let i = 0; i < bonding.length; i++) {
+        const bond = bonding[i]
+        E2eHelper.setEffectiveStrength({
+          effectiveStrength: bond.effectiveStrength,
+          player: bond.player,
+          row: bond.row,
+          unitName: bond.name,
+          instance: i + 1,
         })
       }
     }
@@ -409,6 +424,8 @@ export class E2eHelper {
         effectKey = EffectKey.Horn
       } else if (mustering) {
         effectKey = EffectKey.Muster
+      } else if (bonding) {
+        effectKey = EffectKey.Bond
       }
       moves.push({
         userName: player.name,
@@ -418,7 +435,7 @@ export class E2eHelper {
           effectKey && impacts !== -1
             ? {
                 effectKey,
-                number: impacts !== undefined ? impacts : (scorching || moraling || mustering)?.length || 0,
+                number: impacts !== undefined ? impacts : (scorching || moraling || mustering || bonding)?.length || 0,
               }
             : undefined,
       })
@@ -433,10 +450,10 @@ export class E2eHelper {
             name: deckUnit.unit.name,
             type: MoveReasonType.Muster,
           },
-          impacts: muster.impactable
+          impacts: muster.impact
             ? {
-                effectKey: EffectKey.Muster,
-                number: 0,
+                effectKey: muster.impact.type || EffectKey.Muster,
+                number: muster.impact.instances || 0,
               }
             : undefined,
           origin: muster.hand ? GameUnitOrigin.Hand : GameUnitOrigin.Undrawn,
@@ -761,6 +778,7 @@ export interface MoralingExpected {
   name: string
   row: Combat
   effectiveStrength: number
+  instance?: number
 }
 
 export interface MusteringExpected {
@@ -768,6 +786,16 @@ export interface MusteringExpected {
   name: string
   row: Combat
   effectiveStrength: number
-  impactable?: boolean
+  impact?: {
+    type: EffectKey
+    instances?: number
+  }
   hand?: boolean
+}
+
+export interface BondingExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
 }
