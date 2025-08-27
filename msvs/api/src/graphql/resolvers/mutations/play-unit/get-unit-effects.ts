@@ -17,12 +17,10 @@ export default async function getUnitEffects({
   effects?: EffectDbObject[]
 }): Promise<EffectDbObject[]> {
   const existingEffectIds: string[] = []
-  if (effects) {
-    for (const effect of effects) {
-      const effectId = effect._id.toString()
-      if (!existingEffectIds.includes(effectId)) {
-        existingEffectIds.push(effectId)
-      }
+  for (const effect of effects) {
+    const effectId = effect._id.toString()
+    if (!existingEffectIds.includes(effectId)) {
+      existingEffectIds.push(effectId)
     }
   }
   const effectIdsToGet: string[] = []

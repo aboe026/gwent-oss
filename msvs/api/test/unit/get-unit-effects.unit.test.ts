@@ -11,7 +11,7 @@ describe('get-unit-effects', () => {
         expected: [],
       })
     })
-    it('returns single effect if unit has single effect', async () => {
+    it('retrieves single effect if unit has single effect and no effect prefetched', async () => {
       const effects = [TestUtil.getDbEffect({})]
       await testGetUnitEffects({
         units: [
@@ -20,9 +20,47 @@ describe('get-unit-effects', () => {
           }),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString()],
+            },
+          ],
+        ],
       })
     })
-    it('returns multiple effects if unit has multiple effect', async () => {
+    it('retrieves single effect if unit has single effect and different effect prefetched', async () => {
+      const effects = [TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+        ],
+        effects: [TestUtil.getDbEffect({})],
+        expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('returns empty array if unit has single effect and matches effect prefetched', async () => {
+      const effects = [TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+        ],
+        effects,
+        expected: [],
+      })
+    })
+    it('retrieves multiple effects if unit has multiple effects and no effects prefetched', async () => {
       const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
       await testGetUnitEffects({
         units: [
@@ -31,6 +69,63 @@ describe('get-unit-effects', () => {
           }),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString(), effects[1]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('retrieves single effects if unit has multiple effects and first effect prefetched', async () => {
+      const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id, effects[1]._id],
+          }),
+        ],
+        effects: [effects[0]],
+        expected: [effects[1]],
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[1]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('retrieves single effects if unit has multiple effects and last effect prefetched', async () => {
+      const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id, effects[1]._id],
+          }),
+        ],
+        effects: [effects[1]],
+        expected: [effects[0]],
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('returns empty array if if unit has multiple effects and all effects prefetched', async () => {
+      const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id, effects[1]._id],
+          }),
+        ],
+        effects: [effects[0], effects[1]],
+        expected: [],
       })
     })
   })
@@ -41,7 +136,7 @@ describe('get-unit-effects', () => {
         expected: [],
       })
     })
-    it('returns single effect if first unit has single effect', async () => {
+    it('retrieves single effect if first unit has single effect and no prefetches', async () => {
       const effects = [TestUtil.getDbEffect({})]
       await testGetUnitEffects({
         units: [
@@ -51,9 +146,49 @@ describe('get-unit-effects', () => {
           TestUtil.getDbUnit({}),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString()],
+            },
+          ],
+        ],
       })
     })
-    it('returns single effect if second unit has single effect', async () => {
+    it('retrieves single effect if first unit has single effect and prefetch does not match', async () => {
+      const effects = [TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+          TestUtil.getDbUnit({}),
+        ],
+        effects: [TestUtil.getDbEffect({})],
+        expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('returns empty array if first unit has single effect and prefetch matches', async () => {
+      const effects = [TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+          TestUtil.getDbUnit({}),
+        ],
+        effects,
+        expected: [],
+      })
+    })
+    it('retrieves single effect if first unit has single effect and no prefetches', async () => {
       const effects = [TestUtil.getDbEffect({})]
       await testGetUnitEffects({
         units: [
@@ -63,9 +198,49 @@ describe('get-unit-effects', () => {
           }),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString()],
+            },
+          ],
+        ],
       })
     })
-    it('returns single effect if both units have same single effect', async () => {
+    it('retrieves single effect if second unit has single effect and prefetch does not match', async () => {
+      const effects = [TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({}),
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+        ],
+        effects: [TestUtil.getDbEffect({})],
+        expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('returns empty array if second unit has single effect and prefetch matches', async () => {
+      const effects = [TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({}),
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+        ],
+        effects,
+        expected: [],
+      })
+    })
+    it('retrieves single effect if both units have same single effect and no prefetches', async () => {
       const effects = [TestUtil.getDbEffect({})]
       await testGetUnitEffects({
         units: [
@@ -77,9 +252,53 @@ describe('get-unit-effects', () => {
           }),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString()],
+            },
+          ],
+        ],
       })
     })
-    it('returns multiple effects if first unit has multiple effects', async () => {
+    it('retrieves single effect if both units have same single effect and prefetch does not match', async () => {
+      const effects = [TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+        ],
+        effects: [TestUtil.getDbEffect({})],
+        expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('returns empty array if both units have same single effect and prefetch matches', async () => {
+      const effects = [TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id],
+          }),
+        ],
+        effects,
+        expected: [],
+      })
+    })
+    it('retrieves multiple effects if first unit has multiple effects and no prefetches', async () => {
       const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
       await testGetUnitEffects({
         units: [
@@ -89,6 +308,86 @@ describe('get-unit-effects', () => {
           TestUtil.getDbUnit({}),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString(), effects[1]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('retrieves multiple effects if first unit has multiple effects and all prefetches do not match', async () => {
+      const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id, effects[1]._id],
+          }),
+          TestUtil.getDbUnit({}),
+        ],
+        effects: [TestUtil.getDbEffect({})],
+        expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString(), effects[1]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('retrieves single effect if first unit has multiple effects and all but one prefetches match', async () => {
+      const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id, effects[1]._id],
+          }),
+          TestUtil.getDbUnit({}),
+        ],
+        effects: [effects[0]],
+        expected: [effects[1]],
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[1]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('ignores duplicate prefetch', async () => {
+      const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id, effects[1]._id],
+          }),
+          TestUtil.getDbUnit({}),
+        ],
+        effects: [effects[0], effects[0]],
+        expected: [effects[1]],
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[1]._id.toString()],
+            },
+          ],
+        ],
+      })
+    })
+    it('returns empty array for single effect if first unit has multiple effects and all prefetches match', async () => {
+      const effects = [TestUtil.getDbEffect({}), TestUtil.getDbEffect({})]
+      await testGetUnitEffects({
+        units: [
+          TestUtil.getDbUnit({
+            effects: [effects[0]._id, effects[1]._id],
+          }),
+          TestUtil.getDbUnit({}),
+        ],
+        effects,
+        expected: [],
       })
     })
     it('returns multiple effects if second unit has multiple effects', async () => {
@@ -101,6 +400,13 @@ describe('get-unit-effects', () => {
           }),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString(), effects[1]._id.toString()],
+            },
+          ],
+        ],
       })
     })
     it('returns multiple effects if both units have different single effect', async () => {
@@ -115,6 +421,13 @@ describe('get-unit-effects', () => {
           }),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString(), effects[1]._id.toString()],
+            },
+          ],
+        ],
       })
     })
     it('returns multiple effects if both units share effect but also have different ones', async () => {
@@ -129,6 +442,13 @@ describe('get-unit-effects', () => {
           }),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [effects[0]._id.toString(), effects[1]._id.toString(), effects[2]._id.toString()],
+            },
+          ],
+        ],
       })
     })
     it('returns multiple effects if both units have different multiple effect', async () => {
@@ -148,25 +468,42 @@ describe('get-unit-effects', () => {
           }),
         ],
         expected: effects,
+        effectStoreCalls: [
+          [
+            {
+              ids: [
+                effects[0]._id.toString(),
+                effects[1]._id.toString(),
+                effects[2]._id.toString(),
+                effects[3]._id.toString(),
+              ],
+            },
+          ],
+        ],
       })
     })
   })
 })
 
-async function testGetUnitEffects({ units, expected }: { units: UnitDbObject[]; expected: EffectDbObject[] }) {
+async function testGetUnitEffects({
+  units,
+  effects,
+  expected,
+  effectStoreCalls = [],
+}: {
+  units: UnitDbObject[]
+  effects?: EffectDbObject[]
+  expected: EffectDbObject[]
+  effectStoreCalls?: any[][]
+}) {
   const effectStoreGetSpy = jest.spyOn(EffectStore, 'get').mockResolvedValue(expected)
 
-  await expect(getUnitEffects(units)).resolves.toEqual(expected)
+  await expect(
+    getUnitEffects({
+      units,
+      effects,
+    })
+  ).resolves.toEqual(expected)
 
-  expect(effectStoreGetSpy.mock.calls).toEqual(
-    expected.length === 0
-      ? []
-      : [
-          [
-            {
-              ids: expected.map((effect) => effect._id.toString()),
-            },
-          ],
-        ]
-  )
+  expect(effectStoreGetSpy.mock.calls).toEqual(effectStoreCalls)
 }
