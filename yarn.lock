@@ -3377,7 +3377,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-codegen/client-preset@npm:^4.8.2":
+"@graphql-codegen/client-preset@npm:4.8.3, @graphql-codegen/client-preset@npm:^4.8.2":
   version: 4.8.3
   resolution: "@graphql-codegen/client-preset@npm:4.8.3"
   dependencies:
@@ -4390,11 +4390,13 @@ __metadata:
     "@apollo/client": "npm:3.13.9"
     "@graphql-codegen/add": "npm:5.0.3"
     "@graphql-codegen/cli": "npm:5.0.7"
+    "@graphql-codegen/client-preset": "npm:4.8.3"
     "@graphql-codegen/typescript": "npm:4.1.6"
     "@graphql-codegen/typescript-mongodb": "npm:3.0.1"
     "@graphql-codegen/typescript-operations": "npm:4.6.1"
     "@graphql-codegen/typescript-react-apollo": "npm:4.3.3"
     "@graphql-codegen/typescript-resolvers": "npm:4.5.1"
+    "@graphql-typed-document-node/core": "npm:3.2.0"
     "@gwent/constants": "workspace:*"
     "@parcel/watcher": "npm:2.5.1"
     "@types/fs-extra": "npm:11.0.4"

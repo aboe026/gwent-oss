@@ -23,9 +23,9 @@ const config: CodegenConfig = {
         contextType: '../src/context#Context',
       },
     },
-    './generated/apollo-typings.tsx': {
+    './generated/apollo/': {
       documents: ['./src/apollo/*.gql'],
-      plugins: ['typescript', 'typescript-operations', 'typescript-react-apollo'],
+      preset: 'client',
     },
   },
   hooks: {
