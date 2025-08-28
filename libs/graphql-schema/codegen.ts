@@ -26,6 +26,9 @@ const config: CodegenConfig = {
     './generated/apollo/': {
       documents: ['./src/apollo/*.gql'],
       preset: 'client',
+      presetConfig: {
+        fragmentMasking: false,
+      },
     },
   },
   hooks: {

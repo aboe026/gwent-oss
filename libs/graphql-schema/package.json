@@ -21,6 +21,7 @@
     "./deck-filter": "./build/src/deck-filter.js",
     "./decks-filter": "./build/src/decks-filter.js",
     "./games-filter": "./build/src/games-filter.js",
+    "./apollo/graphql": "./build/generated/apollo/graphql.js",
     "./apollo-typings": "./build/generated/apollo-typings.js",
     "./database-typings": "./build/generated/database-typings.js",
     "./resolver-typings": "./build/generated/resolver-typings.js",

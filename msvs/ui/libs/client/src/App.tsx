@@ -2,11 +2,13 @@ import { ApolloClient, ApolloConsumer, ApolloError } from '@apollo/client'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { IconContext } from 'react-icons'
 import { Outlet, useLocation, Navigate } from 'react-router'
+import { useQuery } from '@apollo/client'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
 import { CheckAuth, getApolloError } from './util/error-util'
-import { CurrentUserDocument, CurrentUserQuery, useCurrentUserQuery, User } from '@gwent/graphql-schema/apollo-typings'
+import { CurrentUserDocument, CurrentUserQuery } from '@gwent/graphql-schema/apollo/graphql'
+import { User } from '@gwent/graphql-schema/apollo-typings'
 import { getRouteFromPath } from './util/route-util'
 import LoadingSpinner from './components/LoadingSpinner'
 import LoginDialog from './components/LoginDialog'
@@ -36,7 +38,7 @@ export default function App() {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [reAuthFuncs, setReAuthFuncs] = useState<Function[]>([])
   const [preLoginPath, setPreLoginPath] = useState(pathname === ROUTES.Logout.path ? ROUTES.Home.path : pathname)
-  const { loading: currentUserLoading, data: currentUserData } = useCurrentUserQuery({
+  const { loading: currentUserLoading, data: currentUserData } = useQuery(CurrentUserDocument, {
     notifyOnNetworkStatusChange: true, // makes sure "currentUserData" gets set to "undefined" when cache changed
     nextFetchPolicy: 'cache-only', // makes sure the query does not immediately run after cache changed
   })

@@ -1,5 +1,7 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useState } from 'react'
+import { useMutation, useQuery } from '@apollo/client'
 
+import { AddDeckDocument, Faction, FactionsDocument } from '@gwent/graphql-schema/apollo/graphql'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
@@ -9,15 +11,12 @@ import {
   DecksQuery,
   DecksDocument,
   FactionKey,
-  useAddDeckMutation,
-  useFactionsQuery,
   useLeadersQuery,
   useUnitsQuery,
   Unit,
   Combat,
   UnitStats,
   DlcKey,
-  Faction,
   Deck,
   FactionsQuery,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -57,7 +56,7 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
   const [selectedUnits, setSelectedUnits] = useState<DeckUnit[]>([])
   const [deckUnits, setDeckUnits] = useState<DeckUnit[]>([])
   const { checkAuth } = useUserContext()
-  const [addDeck, { loading, error }] = useAddDeckMutation({
+  const [addDeck, { loading, error }] = useMutation(AddDeckDocument, {
     variables: {
       faction: faction?.key as FactionKey,
       leader: leaderId as string,
@@ -209,7 +208,7 @@ function renderNameAndFaction({
     error: factionsError,
     data: factionsData,
     refetch: factionsRefetch,
-  } = useFactionsQuery({
+  } = useQuery(FactionsDocument, {
     onError: (error) => {
       checkAuth(error, factionsRefetch)
     },
