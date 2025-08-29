@@ -60,9 +60,6 @@ Existing problems in the codebase that need to be fixed.
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
 - carry over username (and password?) when switching between log-in and sign-up
   - show sign up by default, unless they have visited page (or signed up?) before, then show login by default
-- more accurately type front-end results based on their return fragments
-  - type Game = GameQuery['game']
-  - this seems to mess up nested objects though :/
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
 - Have "DateTime" on resolver object map to javascript Date object?
 - Make Combat a type (because of image)
