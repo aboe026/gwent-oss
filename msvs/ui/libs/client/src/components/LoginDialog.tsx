@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router'
+import { useMutation } from '@apollo/client'
 import { useState } from 'react'
 
 import {
+  AddUserDocument,
   CurrentUserDocument,
   CurrentUserQuery,
-  useAddUserMutation,
-  useLoginMutation,
+  LoginDocument,
 } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
@@ -29,7 +30,7 @@ export default function LoginDialog({
   const [username, setUsername] = useState(initialUsername || '')
   const [password, setPassword] = useState('')
   const { pathname } = useLocation()
-  const [login, { loading: loginLoading, error: loginError }] = useLoginMutation({
+  const [login, { loading: loginLoading, error: loginError }] = useMutation(LoginDocument, {
     update(cache, { data }) {
       if (data?.login?.id && data.login.name) {
         cache.writeQuery<CurrentUserQuery>({
@@ -41,7 +42,7 @@ export default function LoginDialog({
       }
     },
   })
-  const [addUser, { loading: addUserLoading, error: addUserError }] = useAddUserMutation()
+  const [addUser, { loading: addUserLoading, error: addUserError }] = useMutation(AddUserDocument)
   const loading = loginLoading || addUserLoading
   const resolvedError = getApolloError(loginError || addUserError)
   const newUser = pathname === ROUTES.Signup.path

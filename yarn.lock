@@ -3575,21 +3575,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-codegen/typescript-react-apollo@npm:4.3.3":
-  version: 4.3.3
-  resolution: "@graphql-codegen/typescript-react-apollo@npm:4.3.3"
-  dependencies:
-    "@graphql-codegen/plugin-helpers": "npm:^3.0.0"
-    "@graphql-codegen/visitor-plugin-common": "npm:2.13.8"
-    auto-bind: "npm:~4.0.0"
-    change-case-all: "npm:1.0.15"
-    tslib: "npm:^2.8.1"
-  peerDependencies:
-    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
-  checksum: 10/1f2fb302a01cbb88af8a5b1e9eb73b65111c546b796b90a2bf115135af70e08745b70f12e3711201c45baecfed6f361d337003b5c4c6bfd289271a1db5f3e845
-  languageName: node
-  linkType: hard
-
 "@graphql-codegen/typescript-resolvers@npm:4.5.1":
   version: 4.5.1
   resolution: "@graphql-codegen/typescript-resolvers@npm:4.5.1"
@@ -4394,7 +4379,6 @@ __metadata:
     "@graphql-codegen/typescript": "npm:4.1.6"
     "@graphql-codegen/typescript-mongodb": "npm:3.0.1"
     "@graphql-codegen/typescript-operations": "npm:4.6.1"
-    "@graphql-codegen/typescript-react-apollo": "npm:4.3.3"
     "@graphql-codegen/typescript-resolvers": "npm:4.5.1"
     "@graphql-typed-document-node/core": "npm:3.2.0"
     "@gwent/constants": "workspace:*"

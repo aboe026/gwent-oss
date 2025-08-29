@@ -1,27 +1,28 @@
 import { PropsWithChildren } from 'react'
+import { useSubscription } from '@apollo/client'
 
 import addToCacheList from './util/add-to-cache-list'
 import {
+  DeckAddedDocument,
   DecksDocument,
+  DeckSetDocument,
   DecksQuery,
   DeckUnit,
+  GameAddedDocument,
   GameDeckDocument,
   GameDeckQuery,
   GameDocument,
   GameQuery,
+  GameReadyDocument,
   GamesDocument,
+  GameSetDocument,
   GamesQuery,
-  useDeckAddedSubscription,
-  useDeckSetSubscription,
-  useGameAddedSubscription,
-  useGameReadySubscription,
-  useGameSetSubscription,
-  useOrderSetSubscription,
-  usePassPlayedSubscription,
-  useRoundEndedForDeckSubscription,
-  useUnitPlayedFromDeckSubscription,
-  useUnitPlayedOnGameSubscription,
-  useUnitRedrawnSubscription,
+  OrderSetDocument,
+  PassPlayedDocument,
+  RoundEndedForDeckDocument,
+  UnitPlayedFromDeckDocument,
+  UnitPlayedOnGameDocument,
+  UnitRedrawnDocument,
 } from '@gwent/graphql-schema/apollo-typings'
 import updateGameDeckCacheOnRedraw from './util/update-game-deck-cache-on-redraw'
 import { useUserContext } from './App'
@@ -36,7 +37,7 @@ import { useUserContext } from './App'
 export default function Subscriptions({ children }: PropsWithChildren) {
   const { user } = useUserContext()
 
-  useDeckAddedSubscription({
+  useSubscription(DeckAddedDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const newDeck = data.data?.deckAdded
@@ -59,7 +60,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useDeckSetSubscription({
+  useSubscription(DeckSetDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const gameDeck = data.data?.deckSet.deck
@@ -83,7 +84,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useGameAddedSubscription({
+  useSubscription(GameAddedDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       client.cache.updateQuery<GamesQuery>(
@@ -103,7 +104,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       )
     },
   })
-  useGameReadySubscription({
+  useSubscription(GameReadyDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const game = data.data?.gameReady
@@ -126,7 +127,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useGameSetSubscription({
+  useSubscription(GameSetDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const game = data.data?.gameSet
@@ -149,7 +150,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useOrderSetSubscription({
+  useSubscription(OrderSetDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const game = data.data?.orderSet
@@ -172,7 +173,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useRoundEndedForDeckSubscription({
+  useSubscription(RoundEndedForDeckDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const game = data.data?.roundEndedForDeck.game
@@ -196,7 +197,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  usePassPlayedSubscription({
+  useSubscription(PassPlayedDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const game = data.data?.passPlayed
@@ -219,7 +220,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useUnitPlayedFromDeckSubscription({
+  useSubscription(UnitPlayedFromDeckDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const game = data.data?.unitPlayedFromDeck.game
@@ -250,7 +251,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useUnitPlayedOnGameSubscription({
+  useSubscription(UnitPlayedOnGameDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const game = data.data?.unitPlayedOnGame.game
@@ -273,7 +274,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  useUnitRedrawnSubscription({
+  useSubscription(UnitRedrawnDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const from = data.data?.unitRedrawn.from

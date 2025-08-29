@@ -2,10 +2,11 @@ import { ApolloQueryResult } from '@apollo/client'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router'
+import { useQuery } from '@apollo/client'
 
 import { Button } from '../../util/keyboard-listener'
 import Centered from '../../components/Centered'
-import { Exact, FactionKey, Game, GamesQuery, GameStatus, useGamesQuery } from '@gwent/graphql-schema/apollo-typings'
+import { Exact, FactionKey, Game, GamesDocument, GamesQuery, GameStatus } from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FILTER_FIELD,
@@ -35,7 +36,7 @@ export default function GamesPage() {
   const [filterFields, setFilterFields] = useState<FILTER_FIELD[]>([])
   const [filtersExpanded, setFiltersExpanded] = useState(false)
   const { checkAuth } = useUserContext()
-  const { loading, error, data, refetch } = useGamesQuery({
+  const { loading, error, data, refetch } = useQuery(GamesDocument, {
     onError: (error) => {
       checkAuth(error, refetch)
     },

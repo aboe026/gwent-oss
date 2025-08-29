@@ -32,7 +32,7 @@ const config: CodegenConfig = {
     },
   },
   hooks: {
-    afterAllFileWrite: ['yarn convert-eol'],
+    afterAllFileWrite: ['yarn add-graphql-to-apollo', 'yarn convert-eol'],
   },
 }
 

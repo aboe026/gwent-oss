@@ -1,25 +1,27 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useState } from 'react'
 import { useMutation, useQuery } from '@apollo/client'
 
-import { AddDeckDocument, Faction, FactionsDocument } from '@gwent/graphql-schema/apollo/graphql'
+import {
+  AddDeckDocument,
+  Combat,
+  Deck,
+  DecksQuery,
+  DecksDocument,
+  DlcKey,
+  Faction,
+  FactionKey,
+  FactionsDocument,
+  FactionsQuery,
+  LeadersDocument,
+  Unit,
+  UnitsDocument,
+  UnitStats,
+} from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
 import { combineUnitStats, sortObjectArray } from '@gwent/utils'
 import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
-import {
-  DecksQuery,
-  DecksDocument,
-  FactionKey,
-  useLeadersQuery,
-  useUnitsQuery,
-  Unit,
-  Combat,
-  UnitStats,
-  DlcKey,
-  Deck,
-  FactionsQuery,
-} from '@gwent/graphql-schema/apollo-typings'
 import DlcTag from '../components/DlcTag'
 import {
   FILTERS,
@@ -425,7 +427,7 @@ function renderLeader({
     error: leadersError,
     data: leadersData,
     refetch: leadersRefetch,
-  } = useLeadersQuery({
+  } = useQuery(LeadersDocument, {
     variables: {
       factions: faction ? [faction.key] : [],
     },
@@ -590,7 +592,7 @@ function renderUnits({
     loading: factionUnitsLoading,
     error: factionUnitsError,
     refetch: factionUnitsRefetch,
-  } = useUnitsQuery({
+  } = useQuery(UnitsDocument, {
     variables: {
       deckable: true,
       factions: faction ? [faction.key] : [],
@@ -615,7 +617,7 @@ function renderUnits({
     loading: neutralUnitsLoading,
     error: neutralUnitsError,
     refetch: neutralUnitsRefetch,
-  } = useUnitsQuery({
+  } = useQuery(UnitsDocument, {
     variables: {
       deckable: true,
       factions: [FactionKey.Neutral],
