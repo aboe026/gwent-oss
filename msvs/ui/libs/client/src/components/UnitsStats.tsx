@@ -1,12 +1,11 @@
 import { CgChevronDoubleLeft, CgChevronDoubleRight, CgLock, CgLockUnlock } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { DeckUnit } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, UnitStats } from '@gwent/graphql-schema/apollo-typings'
 import { DECK_MIN_UNITS, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
 import { getUnitStats, toTitleCase } from '@gwent/utils'
 import ProgressRing from '../components/ProgressRing'
-import { UnitStats } from '@gwent/graphql-schema/apollo-typings'
 import './UnitsStats.css'
 
 /**

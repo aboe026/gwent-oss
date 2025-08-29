@@ -15,6 +15,7 @@ import {
   FactionStatsDocument,
   FactionStatsQuery,
   InputMaybe,
+  UnitStats,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
 import { getApolloError } from '../util/error-util'
@@ -25,7 +26,6 @@ import ProgressBar from '../components/ProgressBar'
 import { sortObjectArray } from '@gwent/utils'
 import { useUserContext } from '../App'
 import './DeckList.css'
-import { UnitStats } from '@gwent/graphql-schema/resolver-typings'
 
 /**
  * The a list of a users created decks

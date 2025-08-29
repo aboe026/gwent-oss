@@ -7,7 +7,9 @@ import {
   Deck,
   DecksQuery,
   DecksDocument,
+  DeckUnit,
   DlcKey,
+  EffectKey,
   Faction,
   FactionKey,
   FactionsDocument,
@@ -21,7 +23,6 @@ import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
 import { combineUnitStats, sortObjectArray } from '@gwent/utils'
-import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 import DlcTag from '../components/DlcTag'
 import {
   FILTERS,
