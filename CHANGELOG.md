@@ -5,6 +5,7 @@
 ### Fixed
 
 - Replace @graphql-codegen/typescript-react-apollo with @graphql-codegen/client-preset ([#43](https://github.com/aboe026/gwent/pull/43)) (Adam Boe)
+- Syntax support for GraphQL ([#43](https://github.com/aboe026/gwent/pull/43)) (Adam Boe)
 
 ## 0.15.0 - 2025-08-27
 

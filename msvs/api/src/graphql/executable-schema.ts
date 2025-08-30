@@ -1,16 +1,16 @@
 import { applyMiddleware } from 'graphql-middleware'
 import { makeExecutableSchema } from '@graphql-tools/schema'
 
-import { directives, schema } from '@gwent/graphql-schema'
 import Permissions from './permissions'
 import resolvers from './resolvers/resolvers'
+import { typeDefs } from '@gwent/graphql-schema'
 
 /**
  * The executable GraphQL schema.
  */
 export default applyMiddleware(
   makeExecutableSchema({
-    typeDefs: [directives, schema],
+    typeDefs,
     resolvers,
   }),
   Permissions.shield()
