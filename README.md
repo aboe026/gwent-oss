@@ -189,6 +189,12 @@ All the [Local Prereqs](#prereqs-1) apply, along with:
 
     `Use Workspace Version`
 
+  - Recommended Extensions:
+    - [Eslint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+    - [GraphQL: Language Feature Support](https://marketplace.visualstudio.com/items?itemName=GraphQL.vscode-graphql)
+    - [Prettier - Code formatter](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+    - [ZipFS - a zip file system](https://marketplace.visualstudio.com/items?itemName=arcanis.vscode-zipfs)
+
 ### Lint
 
 To check code for programmatic or stylistic problems, run
