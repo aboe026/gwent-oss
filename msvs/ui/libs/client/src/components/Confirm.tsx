@@ -1,5 +1,3 @@
-import { ApolloError } from '@apollo/client/v4-migration'
-
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'
 import LoadingBar from './LoadingBar'
@@ -78,7 +76,7 @@ export default function Confirm({
 
 interface ConfirmProps {
   cancelLabel?: string
-  error: ApolloError | undefined
+  error: unknown
   id?: string
   loading: boolean
   message: string

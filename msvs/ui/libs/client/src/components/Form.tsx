@@ -1,4 +1,3 @@
-import { ApolloError } from '@apollo/client/v4-migration'
 import { HTMLInputTypeAttribute, useState } from 'react'
 
 import { getApolloError } from '../util/error-util'
@@ -138,7 +137,7 @@ interface FormProps {
   cancelId?: string
   closeable?: boolean
   closeParams?: any // eslint-disable-line @typescript-eslint/no-explicit-any
-  error: ApolloError | undefined
+  error: unknown
   errorPrefix?: string
   errorId?: string
   fields: FormField[]

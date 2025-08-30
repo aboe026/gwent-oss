@@ -1,7 +1,6 @@
-import { ApolloCache, ObservableQuery, ApolloLink } from '@apollo/client'
-import { ApolloError } from '@apollo/client/v4-migration'
-import type { useMutation } from '@apollo/client/react'
+import { ApolloCache, ApolloClient } from '@apollo/client'
 import { RefObject } from 'react'
+import type { useMutation } from '@apollo/client/react'
 
 import {
   AddGameMutation,
@@ -25,24 +24,20 @@ import {
 } from '@gwent/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
-  addGame: (
-    options?:
-      | useMutation.MutationFunctionOptions<
-          AddGameMutation,
-          Exact<{
-            opponentNames: string | string[]
-          }>, // eslint-disable-line @typescript-eslint/no-explicit-any
-          ApolloCache<any>
-        >
-      | undefined
-  ) => Promise<ApolloLink.Result<AddGameMutation>>
+  addGame: useMutation.MutationFunction<
+    AddGameMutation,
+    {
+      opponentNames: Array<Scalars['String']['input']> | Scalars['String']['input']
+    },
+    ApolloCache
+  >
   loading: boolean
-  error: ApolloError | undefined
+  error: unknown
 }
 
 export interface GameProps {
   game: Game | undefined
-  error: ApolloError | undefined
+  error: unknown
   loading: boolean
   refetch: (
     variables?:
@@ -52,12 +47,12 @@ export interface GameProps {
           }>
         >
       | undefined
-  ) => Promise<ObservableQuery.Result<GameQuery>>
+  ) => Promise<ApolloClient.QueryResult<GameQuery>>
 }
 
 export interface GameDeckProps {
   deck: GameDeck | undefined
-  error: ApolloError | undefined
+  error: unknown
   loading: boolean
   refetch: (
     variables?:
@@ -67,107 +62,83 @@ export interface GameDeckProps {
           }>
         >
       | undefined
-  ) => Promise<ObservableQuery.Result<GameDeckQuery>>
+  ) => Promise<ApolloClient.QueryResult<GameDeckQuery>>
 }
 
 export interface SetDeckProps {
-  setDeck: (
-    options?:
-      | useMutation.MutationFunctionOptions<
-          SetDeckMutation,
-          Exact<{
-            game: string
-            deck: string
-          }>, // eslint-disable-line @typescript-eslint/no-explicit-any
-          ApolloCache<any>
-        >
-      | undefined
-  ) => Promise<ApolloLink.Result<SetDeckMutation>>
+  setDeck: useMutation.MutationFunction<
+    SetDeckMutation,
+    {
+      game: Scalars['ID']['input']
+      deck: Scalars['ID']['input']
+    },
+    ApolloCache
+  >
   loading: boolean
-  error: ApolloError | undefined
+  error: unknown
 }
 
 export interface SetOrderProps {
-  setOrder: (
-    options?:
-      | useMutation.MutationFunctionOptions<
-          SetOrderMutation,
-          Exact<{
-            game: Scalars['ID']['input']
-            users?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>
-          }>, // eslint-disable-line @typescript-eslint/no-explicit-any
-          ApolloCache<any>
-        >
-      | undefined
-  ) => Promise<ApolloLink.Result<SetOrderMutation>>
+  setOrder: useMutation.MutationFunction<
+    SetOrderMutation,
+    {
+      game: Scalars['ID']['input']
+      users?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']> | undefined
+    },
+    ApolloCache
+  >
   loading: boolean
-  error: ApolloError | undefined
+  error: unknown
 }
 
 export interface RedrawProps {
-  redraw: (
-    options?:
-      | useMutation.MutationFunctionOptions<
-          RedrawMutation,
-          Exact<{
-            game: string
-            unit: string
-          }>, // eslint-disable-line @typescript-eslint/no-explicit-any
-          ApolloCache<any>
-        >
-      | undefined
-  ) => Promise<ApolloLink.Result<RedrawMutation>>
-  error: ApolloError | undefined
+  redraw: useMutation.MutationFunction<
+    RedrawMutation,
+    {
+      game: Scalars['ID']['input']
+      unit: Scalars['ID']['input']
+    },
+    ApolloCache
+  >
+  error: unknown
   loading: boolean
 }
 
 export interface ReadyProps {
-  ready: (
-    options?:
-      | useMutation.MutationFunctionOptions<
-          ReadyMutation,
-          Exact<{
-            game: string
-          }>, // eslint-disable-line @typescript-eslint/no-explicit-any
-          ApolloCache<any>
-        >
-      | undefined
-  ) => Promise<ApolloLink.Result<ReadyMutation>>
-  error: ApolloError | undefined
+  ready: useMutation.MutationFunction<
+    ReadyMutation,
+    {
+      game: Scalars['ID']['input']
+    },
+    ApolloCache
+  >
+  error: unknown
   loading: boolean
 }
 
 export interface PlayUnitProps {
-  playUnit: (
-    options?:
-      | useMutation.MutationFunctionOptions<
-          PlayUnitMutation,
-          Exact<{
-            game: Scalars['ID']['input']
-            unit: Scalars['ID']['input']
-            combat?: InputMaybe<Combat>
-          }>, // eslint-disable-line @typescript-eslint/no-explicit-any
-          ApolloCache<any>
-        >
-      | undefined
-  ) => Promise<ApolloLink.Result<PlayUnitMutation>>
-  error: ApolloError | undefined
+  playUnit: useMutation.MutationFunction<
+    PlayUnitMutation,
+    {
+      game: Scalars['ID']['input']
+      unit: Scalars['ID']['input']
+      combat?: InputMaybe<Combat> | undefined
+    },
+    ApolloCache
+  >
+  error: unknown
   loading: boolean
 }
 
 export interface PlayPassProps {
-  playPass: (
-    options?:
-      | useMutation.MutationFunctionOptions<
-          PlayPassMutation,
-          Exact<{
-            game: Scalars['ID']['input']
-          }>, // eslint-disable-line @typescript-eslint/no-explicit-any
-          ApolloCache<any>
-        >
-      | undefined
-  ) => Promise<ApolloLink.Result<PlayPassMutation>>
-  error: ApolloError | undefined
+  playPass: useMutation.MutationFunction<
+    PlayPassMutation,
+    {
+      game: Scalars['ID']['input']
+    },
+    ApolloCache
+  >
+  error: unknown
   loading: boolean
 }
 

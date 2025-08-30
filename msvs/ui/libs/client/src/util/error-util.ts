@@ -1,5 +1,11 @@
-import { ApolloError } from '@apollo/client/v4-migration'
-// TODO: remove ApolloError from UI code
+import {
+  CombinedGraphQLErrors,
+  CombinedProtocolErrors,
+  LocalStateError,
+  ServerError,
+  ServerParseError,
+  UnconventionalError,
+} from '@apollo/client/errors'
 
 /**
  * Get any potential errors returned by the GraphQL query/mutation and formats them in a newline-separated string.
@@ -7,35 +13,44 @@ import { ApolloError } from '@apollo/client/v4-migration'
  * @param error The potential errors thrown by a GraphQL query/mutation.
  * @returns The potential errors in a newline-separated string. Empty string if no errors thrown.
  */
-export function getApolloError(error: ApolloError | undefined): string {
+export function getApolloError(error: unknown): string {
   const resolvedErrors: string[] = []
-  if (error?.graphQLErrors) {
-    for (const graphqlError of error.graphQLErrors) {
-      if (!resolvedErrors.includes(graphqlError.message)) {
+
+  if (error) {
+    console.error(error)
+    if (CombinedGraphQLErrors.is(error)) {
+      // Handle GraphQL errors
+      resolvedErrors.push(error.message)
+      for (const graphqlError of error.errors) {
         resolvedErrors.push(graphqlError.message)
       }
-    }
-  }
-  if (error?.clientErrors) {
-    for (const clientError of error.clientErrors) {
-      if (!resolvedErrors.includes(clientError.message)) {
-        resolvedErrors.push(clientError.message)
-      }
-    }
-  }
-  if (error?.protocolErrors) {
-    for (const protocolError of error.protocolErrors) {
-      if (!resolvedErrors.includes(protocolError.message)) {
+    } else if (CombinedProtocolErrors.is(error)) {
+      // Handle multipart subscription protocol errors
+      resolvedErrors.push(error.message)
+      for (const protocolError of error.errors) {
         resolvedErrors.push(protocolError.message)
       }
+    } else if (LocalStateError.is(error)) {
+      // Handle errors thrown by the `LocalState` class
+      resolvedErrors.push(error.message)
+    } else if (ServerError.is(error)) {
+      // Handle server HTTP errors
+      resolvedErrors.push(error.message)
+    } else if (ServerParseError.is(error)) {
+      // Handle JSON parse errors
+      resolvedErrors.push(error.message)
+    } else if (UnconventionalError.is(error)) {
+      // Handle errors thrown by irregular types
+      resolvedErrors.push(error.message)
+    } else if (error instanceof Error) {
+      // Handle other errors
+      resolvedErrors.push(error.message)
+    } else {
+      // Handle case where we don't know what the error object is
+      resolvedErrors.push(JSON.stringify(error))
     }
   }
-  if (error?.networkError && !resolvedErrors.includes(error.networkError.message)) {
-    resolvedErrors.push(error.networkError.message)
-  }
-  if (error?.message && !resolvedErrors.includes(error.message)) {
-    resolvedErrors.push(error.message)
-  }
+
   return resolvedErrors.join('\n')
 }
 
@@ -57,13 +72,9 @@ export async function retryCheckingAuth({
   try {
     await method()
   } catch (error: unknown) {
-    if (error instanceof ApolloError) {
-      checkAuth(error, method)
-    } else {
-      throw error
-    }
+    checkAuth(error, method)
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export type CheckAuth = (error: ApolloError | undefined, callbackAfterReauth: Function) => void
+export type CheckAuth = (error: unknown, callbackAfterReauth: Function) => void

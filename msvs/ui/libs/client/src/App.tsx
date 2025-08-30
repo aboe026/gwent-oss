@@ -1,4 +1,3 @@
-import { ApolloError } from '@apollo/client/v4-migration'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { IconContext } from 'react-icons'
 import { Outlet, useLocation, Navigate } from 'react-router'
@@ -96,7 +95,7 @@ export default function App() {
    * @param callbackAfterReauth The functions to re-perform if user re-authenticates.
    */
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  function checkAuth(error: ApolloError | undefined, callbackAfterReauth?: Function) {
+  function checkAuth(error: unknown, callbackAfterReauth?: Function) {
     const resolvedError = getApolloError(error)
     if (resolvedError.includes(NOT_AUTHENTICATED_MESSAGE)) {
       if (callbackAfterReauth) {

@@ -137,7 +137,8 @@ export default function GamePage() {
     data: gameData,
     refetch: gameRefetch,
   } = useQuery(GameDocument, {
-    onError: (error) => {
+    // TODO: find out how to check these
+    onError: (error: unknown) => {
       checkAuth(error, gameRefetch)
     },
     onCompleted: (data) => {
@@ -157,7 +158,8 @@ export default function GamePage() {
     data: gameDeckData,
     refetch: gameDeckRefetch,
   } = useQuery(GameDeckDocument, {
-    onError: (error) => {
+    // TODO: find out how to check this
+    onError: (error: unknown) => {
       checkAuth(error, gameDeckRefetch)
     },
     variables: gameDeckQueryVariables,
@@ -224,7 +226,7 @@ export default function GamePage() {
                   `Could not find player "${user.name}" among game players "${JSON.stringify(data.playUnit.players)}`
                 )
               }
-              const playerRound = player.rounds[gameData.game.round - 1]
+              const playerRound = player.rounds[(gameData.game.round || 1) - 1]
               for (const unit of [
                 ...playerRound.close.units,
                 ...playerRound.ranged.units,
