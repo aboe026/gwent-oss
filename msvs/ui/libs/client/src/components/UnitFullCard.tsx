@@ -1,7 +1,7 @@
 import { CgChevronLeft, CgChevronRight } from 'react-icons/cg'
 
 import CloseButton from './CloseButton'
-import { DeckUnit, EffectKey, FactionKey, GameUnit, GameUnitEffect } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, EffectKey, FactionKey, GameUnit, GameUnitEffect } from '@gwent/graphql-schema/apollo-typings'
 import { getCombatImage, getWeatherImage, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { Key, useKeyDown } from '../util/keyboard-listener'

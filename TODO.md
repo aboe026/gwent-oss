@@ -12,8 +12,12 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- improve performance when typing name for deck
+- use Fragment Masking to ensure front end code is only using fields actually requested in queries/mutations/subscriptions
 - rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
-- remove figlet as dependency and just have hard-coded banner text for startup
+- remove unnecessary dependencies
+  - figlet: just have hard-coded banner text for startup
+  - fs-extra: just use fs or fs/promises, maybe helper method for "exists"
 - func test to validate how many times db is read when querying items (to ensure "batching" is enforced)
 - override DateTime in schema to Date?
 - have effect operators ("+1", "x2", etc) be enums?
@@ -58,9 +62,6 @@ Existing problems in the codebase that need to be fixed.
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
 - carry over username (and password?) when switching between log-in and sign-up
   - show sign up by default, unless they have visited page (or signed up?) before, then show login by default
-- more accurately type front-end results based on their return fragments
-  - type Game = GameQuery['game']
-  - this seems to mess up nested objects though :/
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
 - Have "DateTime" on resolver object map to javascript Date object?
 - Make Combat a type (because of image)
@@ -80,7 +81,6 @@ Existing problems in the codebase that need to be fixed.
   - add functional tests which spy on database store "read" method to ensure requests "batched" properly
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
-- Change schema.ts to schema.gql
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
 - Have api and ui use same Dockerfile (just with different build args)
 - Fold [deck-filter.ts](libs\graphql-schema\src\deck-filter.ts) into normal GraphQL schema (add sort and filter fields to units query)

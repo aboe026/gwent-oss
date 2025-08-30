@@ -1,8 +1,10 @@
+import { useQuery } from '@apollo/client'
+
+import { ApplicationDocument } from '@gwent/graphql-schema/apollo-typings'
 import Centered from '../../components/Centered'
 import { getApolloError } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
-import { useApplicationQuery } from '@gwent/graphql-schema/apollo-typings'
 import { useTitle } from '../../components/TabTitle'
 import './About.css'
 
@@ -13,7 +15,7 @@ import './About.css'
  */
 export default function AboutPage() {
   useTitle('About | Gwent')
-  const { loading, error, data } = useApplicationQuery()
+  const { loading, error, data } = useQuery(ApplicationDocument)
   const resolvedError = getApolloError(error)
 
   return (

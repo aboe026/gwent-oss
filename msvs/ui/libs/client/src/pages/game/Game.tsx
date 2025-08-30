@@ -1,12 +1,10 @@
 import { CgPlayButton } from 'react-icons/cg'
 import { createRef, RefObject } from 'react'
 import { Link, useLocation } from 'react-router'
+import { useQuery, useMutation } from '@apollo/client'
 
-import addToCacheList from '../../util/add-to-cache-list'
-import Centered from '../../components/Centered'
-import { CheckAuth, getApolloError, retryCheckingAuth } from '../../util/error-util'
-import Confirm from '../../components/Confirm'
 import {
+  AddGameDocument,
   Deck,
   DeckUnit,
   GameDocument,
@@ -14,24 +12,25 @@ import {
   GamesDocument,
   GamesQuery,
   User,
-  useAddGameMutation,
-  useGameQuery,
-  useSetDeckMutation,
-  useRedrawMutation,
-  useGameDeckQuery,
   GameDeckDocument,
   Game,
   GameDeck,
   GameDeckQuery,
   GameStatus,
-  useReadyMutation,
   GameQuery,
-  useSetOrderMutation,
-  usePlayUnitMutation,
-  usePlayPassMutation,
   GameUnit,
   Move,
+  PlayUnitDocument,
+  PlayPassDocument,
+  ReadyDocument,
+  RedrawDocument,
+  SetDeckDocument,
+  SetOrderDocument,
 } from '@gwent/graphql-schema/apollo-typings'
+import addToCacheList from '../../util/add-to-cache-list'
+import Centered from '../../components/Centered'
+import { CheckAuth, getApolloError, retryCheckingAuth } from '../../util/error-util'
+import Confirm from '../../components/Confirm'
 import DeckEditor from '../../components/DeckEditor'
 import DeckList from '../../components/DeckList'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
@@ -95,7 +94,7 @@ export default function GamePage() {
   const gameDeckQueryVariables = {
     game: gameId,
   }
-  const [addGame, { loading: addGameLoading, error: addGameError }] = useAddGameMutation({
+  const [addGame, { loading: addGameLoading, error: addGameError }] = useMutation(AddGameDocument, {
     update(cache, { data }) {
       if (data?.addGame) {
         // need to manually update caches because Apollo does not automatically pick up additions
@@ -137,7 +136,7 @@ export default function GamePage() {
     error: gameError,
     data: gameData,
     refetch: gameRefetch,
-  } = useGameQuery({
+  } = useQuery(GameDocument, {
     onError: (error) => {
       checkAuth(error, gameRefetch)
     },
@@ -157,7 +156,7 @@ export default function GamePage() {
     error: gameDeckError,
     data: gameDeckData,
     refetch: gameDeckRefetch,
-  } = useGameDeckQuery({
+  } = useQuery(GameDeckDocument, {
     onError: (error) => {
       checkAuth(error, gameDeckRefetch)
     },
@@ -166,7 +165,7 @@ export default function GamePage() {
     skip: isNew,
     notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
   })
-  const [setDeck, { loading: setDeckLoading, error: setDeckError }] = useSetDeckMutation({
+  const [setDeck, { loading: setDeckLoading, error: setDeckError }] = useMutation(SetDeckDocument, {
     update(cache, { data }) {
       if (data?.setDeck && user) {
         cache.updateQuery<GameDeckQuery>(
@@ -185,8 +184,8 @@ export default function GamePage() {
       }
     },
   })
-  const [setOrder, { loading: setOrderLoading, error: setOrderError }] = useSetOrderMutation() // Apollo automatically handles cache changes on update
-  const [redraw, { loading: redrawLoading, error: redrawError }] = useRedrawMutation({
+  const [setOrder, { loading: setOrderLoading, error: setOrderError }] = useMutation(SetOrderDocument) // Apollo automatically handles cache changes on update
+  const [redraw, { loading: redrawLoading, error: redrawError }] = useMutation(RedrawDocument, {
     // need to manually update cache because the return type of "redraw" mutation (DeckUnit)
     // does not update underlying "game" query type (GameDeck) since they do not match
     update(cache, { data }) {
@@ -206,9 +205,9 @@ export default function GamePage() {
       }
     },
   })
-  const [ready, { loading: readyLoading, error: readyError }] = useReadyMutation() // Apollo automatically handles cache changes on update
-  const [playPass, { loading: playPassLoading, error: playPassError }] = usePlayPassMutation()
-  const [playUnit, { loading: playUnitLoading, error: playUnitError }] = usePlayUnitMutation({
+  const [ready, { loading: readyLoading, error: readyError }] = useMutation(ReadyDocument) // Apollo automatically handles cache changes on update
+  const [playPass, { loading: playPassLoading, error: playPassError }] = useMutation(PlayPassDocument)
+  const [playUnit, { loading: playUnitLoading, error: playUnitError }] = useMutation(PlayUnitDocument, {
     update(cache, { data }) {
       if (data?.playUnit && user && handCardSelected) {
         cache.updateQuery<GameDeckQuery>(

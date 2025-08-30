@@ -1,4 +1,4 @@
-import { ApolloQueryResult } from '@apollo/client'
+import { ApolloQueryResult, useQuery } from '@apollo/client'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router'
@@ -8,13 +8,14 @@ import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
 import {
   Deck,
+  DecksDocument,
   DecksQuery,
   Exact,
   FactionKey,
+  FactionStatsDocument,
   FactionStatsQuery,
   InputMaybe,
-  useDecksQuery,
-  useFactionStatsQuery,
+  UnitStats,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
 import { getApolloError } from '../util/error-util'
@@ -25,7 +26,6 @@ import ProgressBar from '../components/ProgressBar'
 import { sortObjectArray } from '@gwent/utils'
 import { useUserContext } from '../App'
 import './DeckList.css'
-import { UnitStats } from '@gwent/graphql-schema/resolver-typings'
 
 /**
  * The a list of a users created decks
@@ -44,7 +44,7 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
     error: decksError,
     data: decksData,
     refetch: decksRefetch,
-  } = useDecksQuery({
+  } = useQuery(DecksDocument, {
     onError: (error) => {
       checkAuth(error, decksRefetch)
     },
@@ -55,7 +55,7 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
     error: neutralStatsError,
     data: neutralStatsData,
     refetch: neutralStatsRefetch,
-  } = useFactionStatsQuery({
+  } = useQuery(FactionStatsDocument, {
     skip: !decksData?.decks || decksData.decks.length < 1,
     notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
     variables: {

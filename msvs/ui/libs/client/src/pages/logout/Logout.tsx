@@ -1,7 +1,8 @@
+import { useMutation } from '@apollo/client'
 import { useNavigate } from 'react-router'
 
 import Centered from '../../components/Centered'
-import { CurrentUserDocument, CurrentUserQuery, useLogoutMutation, User } from '@gwent/graphql-schema/apollo-typings'
+import { CurrentUserDocument, CurrentUserQuery, LogoutDocument, User } from '@gwent/graphql-schema/apollo-typings'
 import { getApolloError } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -15,7 +16,7 @@ import './Logout.css'
  */
 export default function LogoutPage() {
   const navigate = useNavigate()
-  const [logout, { loading: logoutLoading, error: logoutError, data: logoutData }] = useLogoutMutation({
+  const [logout, { loading: logoutLoading, error: logoutError, data: logoutData }] = useMutation(LogoutDocument, {
     // eslint-disable-next-line no-empty-pattern
     update(cache, {}) {
       const existingUser = cache.readQuery<CurrentUserQuery>({ query: CurrentUserDocument })

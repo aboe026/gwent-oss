@@ -1,7 +1,7 @@
 import { CgChevronLeft, CgChevronRight, CgMaximizeAlt } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { DeckUnit, EffectKey } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnit, EffectKey } from '@gwent/graphql-schema/apollo-typings'
 import { getCombatImage, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES } from '@gwent/constants'
 import StrengthCircle from './StrengthCircle'

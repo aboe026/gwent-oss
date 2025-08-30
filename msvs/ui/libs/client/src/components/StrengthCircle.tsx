@@ -1,4 +1,4 @@
-import { EffectKey, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { EffectKey, Unit } from '@gwent/graphql-schema/apollo-typings'
 import { getWeatherImage } from '@gwent/utils'
 import { HTML_CLASSES } from '@gwent/constants'
 import './StrengthCircle.css'
