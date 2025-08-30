@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router'
-import { useMutation } from '@apollo/client'
+import { useMutation } from '@apollo/client/react'
 import { useState } from 'react'
 
 import {

@@ -1,7 +1,7 @@
 import { CgPlayButton } from 'react-icons/cg'
 import { createRef, RefObject } from 'react'
 import { Link, useLocation } from 'react-router'
-import { useQuery, useMutation } from '@apollo/client'
+import { useMutation, useQuery } from '@apollo/client/react'
 
 import {
   AddGameDocument,

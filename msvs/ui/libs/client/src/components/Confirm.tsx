@@ -1,4 +1,4 @@
-import { ApolloError } from '@apollo/client'
+import { ApolloError } from '@apollo/client/v4-migration'
 
 import { getApolloError } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'

@@ -1,4 +1,5 @@
-import { ApolloError } from '@apollo/client'
+import { ApolloError } from '@apollo/client/v4-migration'
+// TODO: remove ApolloError from UI code
 
 /**
  * Get any potential errors returned by the GraphQL query/mutation and formats them in a newline-separated string.

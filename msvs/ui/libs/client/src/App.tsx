@@ -1,8 +1,8 @@
-import { ApolloClient, ApolloConsumer, ApolloError } from '@apollo/client'
+import { ApolloError } from '@apollo/client/v4-migration'
 import { createContext, useContext, useEffect, useState } from 'react'
 import { IconContext } from 'react-icons'
 import { Outlet, useLocation, Navigate } from 'react-router'
-import { useQuery } from '@apollo/client'
+import { useQuery, useApolloClient } from '@apollo/client/react'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
@@ -33,6 +33,7 @@ export { useUserContext }
  * @returns The main application component.
  */
 export default function App() {
+  const client = useApolloClient()
   const { pathname } = useLocation()
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [reAuthFuncs, setReAuthFuncs] = useState<Function[]>([])
@@ -81,80 +82,68 @@ export default function App() {
       />
     )
   } else if (needsLogin) {
-    return (
-      <ApolloConsumer>
-        {(client: ApolloClient<object>) => {
-          client.resetStore()
-          if (justLoggedOut) {
-            setPreLoginPath('')
-          }
-          return <Navigate to={ROUTES.Login.path} replace />
-        }}
-      </ApolloConsumer>
-    )
+    client.resetStore()
+    if (justLoggedOut) {
+      setPreLoginPath('')
+    }
+    return <Navigate to={ROUTES.Login.path} replace />
+  }
+
+  /**
+   * Verifies the user is still authenticated. If not, present dialog for them to re-authenticate.
+   *
+   * @param error The error thrown by the request.
+   * @param callbackAfterReauth The functions to re-perform if user re-authenticates.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+  function checkAuth(error: ApolloError | undefined, callbackAfterReauth?: Function) {
+    const resolvedError = getApolloError(error)
+    if (resolvedError.includes(NOT_AUTHENTICATED_MESSAGE)) {
+      if (callbackAfterReauth) {
+        setReAuthFuncs((previous) => [...previous, callbackAfterReauth])
+      }
+      const existingUser = client.readQuery<CurrentUserQuery>({ query: CurrentUserDocument })
+      if (existingUser?.currentUser) {
+        client.writeQuery<CurrentUserQuery>({
+          query: CurrentUserDocument,
+          data: {
+            currentUser: {
+              ...existingUser.currentUser,
+              id: AUTH_TIMEOUT_ID,
+            },
+          },
+          broadcast: true,
+        })
+      }
+    }
+    throw Error(resolvedError)
   }
 
   return (
-    <ApolloConsumer>
-      {(client: ApolloClient<object>) => {
-        /**
-         * Verifies the user is still authenticated. If not, present dialog for them to re-authenticate.
-         *
-         * @param error The error thrown by the request.
-         * @param callbackAfterReauth The functions to re-perform if user re-authenticates.
-         */
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-        function checkAuth(error: ApolloError | undefined, callbackAfterReauth?: Function) {
-          const resolvedError = getApolloError(error)
-          if (resolvedError.includes(NOT_AUTHENTICATED_MESSAGE)) {
-            if (callbackAfterReauth) {
-              setReAuthFuncs((previous) => [...previous, callbackAfterReauth])
-            }
-            const existingUser = client.readQuery<CurrentUserQuery>({ query: CurrentUserDocument })
-            if (existingUser?.currentUser) {
-              client.writeQuery<CurrentUserQuery>({
-                query: CurrentUserDocument,
-                data: {
-                  currentUser: {
-                    ...existingUser.currentUser,
-                    id: AUTH_TIMEOUT_ID,
-                  },
-                },
-                broadcast: true,
-              })
-            }
-          }
-          throw Error(resolvedError)
-        }
-
-        return (
-          <UserContext.Provider value={{ user: loggedIn || authTimedOut ? user : undefined, checkAuth }}>
-            <IconContext.Provider value={{ color: 'white' }}>
-              <ConnectionStatus>
-                <Subscriptions>
-                  <Banner />
-                  {authTimedOut && (
-                    <WholeScreenDialog style={{ zIndex: 200 }}>
-                      <Centered>
-                        <LoginDialog
-                          initialUsername={user?.name}
-                          secondaryLinkLabel="Change User"
-                          secondaryLinkPath={ROUTES.Logout.path}
-                          secondaryText="Not You?"
-                          title="Session Timed Out"
-                          usernameDisabled={true}
-                        />
-                      </Centered>
-                    </WholeScreenDialog>
-                  )}
-                  <Outlet />
-                </Subscriptions>
-              </ConnectionStatus>
-            </IconContext.Provider>
-          </UserContext.Provider>
-        )
-      }}
-    </ApolloConsumer>
+    <UserContext.Provider value={{ user: loggedIn || authTimedOut ? user : undefined, checkAuth }}>
+      <IconContext.Provider value={{ color: 'white' }}>
+        <ConnectionStatus>
+          <Subscriptions>
+            <Banner />
+            {authTimedOut && (
+              <WholeScreenDialog style={{ zIndex: 200 }}>
+                <Centered>
+                  <LoginDialog
+                    initialUsername={user?.name}
+                    secondaryLinkLabel="Change User"
+                    secondaryLinkPath={ROUTES.Logout.path}
+                    secondaryText="Not You?"
+                    title="Session Timed Out"
+                    usernameDisabled={true}
+                  />
+                </Centered>
+              </WholeScreenDialog>
+            )}
+            <Outlet />
+          </Subscriptions>
+        </ConnectionStatus>
+      </IconContext.Provider>
+    </UserContext.Provider>
   )
 }
 

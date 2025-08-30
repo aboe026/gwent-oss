@@ -1,4 +1,4 @@
-import { ApolloError } from '@apollo/client'
+import { ApolloError } from '@apollo/client/v4-migration'
 import { HTMLInputTypeAttribute, useState } from 'react'
 
 import { getApolloError } from '../util/error-util'

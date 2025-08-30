@@ -1,4 +1,5 @@
-import { ApolloQueryResult, useQuery } from '@apollo/client'
+import { ObservableQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client/react'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router'
@@ -249,7 +250,7 @@ function renderHeader({
           }>
         >
       | undefined
-  ) => Promise<ApolloQueryResult<DecksQuery>>
+  ) => Promise<ObservableQuery.Result<DecksQuery>>
   refetchNeutralStats: (
     variables?:
       | Partial<
@@ -258,7 +259,7 @@ function renderHeader({
           }>
         >
       | undefined
-  ) => Promise<ApolloQueryResult<FactionStatsQuery>>
+  ) => Promise<ObservableQuery.Result<FactionStatsQuery>>
   setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setNameFilter: Dispatch<SetStateAction<string>>

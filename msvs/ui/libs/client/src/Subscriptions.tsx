@@ -1,5 +1,5 @@
 import { PropsWithChildren } from 'react'
-import { useSubscription } from '@apollo/client'
+import { useSubscription } from '@apollo/client/react'
 
 import addToCacheList from './util/add-to-cache-list'
 import {

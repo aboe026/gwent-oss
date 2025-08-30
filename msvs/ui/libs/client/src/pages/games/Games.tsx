@@ -1,8 +1,8 @@
-import { ApolloQueryResult } from '@apollo/client'
+import { ObservableQuery } from '@apollo/client'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router'
-import { useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client/react'
 
 import { Button } from '../../util/keyboard-listener'
 import Centered from '../../components/Centered'
@@ -193,7 +193,7 @@ function renderHeader({
           }>
         >
       | undefined
-  ) => Promise<ApolloQueryResult<GamesQuery>>
+  ) => Promise<ObservableQuery.Result<GamesQuery>>
   setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setSortField: Dispatch<SetStateAction<SORT_FIELD>>
