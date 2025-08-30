@@ -8,8 +8,8 @@ import { printSchema } from 'graphql/utilities'
 const config: CodegenConfig = {
   schema: './src/schema.gql',
   generates: {
-    // emit raw SDL for tools (like VSCode extension GraphQL.vscode-graphql)
-    './generated/schema.graphql': {
+    // emit complete SDL for tools (like VSCode extension GraphQL.vscode-graphql)
+    './generated/complete-schema.graphql': {
       plugins: [
         'schema-ast',
         {
@@ -26,8 +26,8 @@ const config: CodegenConfig = {
         includeDirectives: true,
       },
     },
-    // emit typescript file for consumption by makeExecutableSchema in api
-    './generated/schema.ts': {
+    // emit typescript file for consumption by makeExecutableSchema in API
+    './generated/typeDefs.ts': {
       plugins: [
         {
           add: {
@@ -46,7 +46,7 @@ const config: CodegenConfig = {
         },
       ],
     },
-    // typings for types of objects stored in the database
+    // typings for types of objects stored in the database for use by API
     './generated/database-typings.ts': {
       plugins: [
         'typescript',
@@ -61,7 +61,7 @@ const config: CodegenConfig = {
         },
       ],
     },
-    // typings for GraphQL types to return to end user
+    // typings for GraphQL types to return to end user for use in API
     './generated/resolver-typings.ts': {
       plugins: ['typescript', 'typescript-resolvers'],
       config: {

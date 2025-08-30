@@ -1,4 +1,4 @@
 export default {
-  schema: 'generated/schema.graphql',
+  schema: 'generated/complete-schema.graphql',
   documents: 'src/apollo/*.gql',
 }
