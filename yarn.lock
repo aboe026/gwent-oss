@@ -4284,7 +4284,7 @@ __metadata:
     "@gwent/utils": "workspace:*"
     "@gwent/validators": "workspace:*"
     "@types/jest": "npm:30.0.0"
-    "@types/node": "npm:22.17.1"
+    "@types/node": "npm:22.18.0"
     "@types/react": "npm:19.1.12"
     "@types/react-dom": "npm:19.1.9"
     "@types/url-join": "npm:4.0.3"
@@ -4330,7 +4330,7 @@ __metadata:
     "@gwent/lcov-dark-mode": "workspace:*"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:30.0.0"
-    "@types/node": "npm:22.17.1"
+    "@types/node": "npm:22.18.0"
     cross-env: "npm:10.0.0"
     eslint: "npm:9.34.0"
     eslint-plugin-jsdoc: "npm:54.1.1"
@@ -4359,7 +4359,7 @@ __metadata:
   resolution: "@gwent/db-profiler@workspace:libs/db-profiler"
   dependencies:
     "@types/fs-extra": "npm:11.0.4"
-    "@types/node": "npm:22.17.1"
+    "@types/node": "npm:22.18.0"
     fs-extra: "npm:11.3.1"
     mongodb: "npm:6.19.0"
   languageName: unknown
@@ -4395,7 +4395,7 @@ __metadata:
     "@parcel/watcher": "npm:2.5.1"
     "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:30.0.0"
-    "@types/node": "npm:22.17.1"
+    "@types/node": "npm:22.18.0"
     "@types/semver": "npm:7.7.0"
     eol: "npm:0.10.0"
     fs-extra: "npm:11.3.1"
@@ -4499,7 +4499,7 @@ __metadata:
     "@gwent/graphql-schema": "workspace:*"
     "@gwent/test-utils": "workspace:*"
     "@gwent/utils": "workspace:*"
-    "@types/node": "npm:22.17.1"
+    "@types/node": "npm:22.18.0"
     "@types/url-join": "npm:4.0.3"
     "@types/ws": "npm:8.18.1"
     cookie: "npm:1.0.2"
@@ -4521,7 +4521,7 @@ __metadata:
   dependencies:
     "@gwent/graphql-schema": "workspace:*"
     "@types/jest": "npm:30.0.0"
-    "@types/node": "npm:22.17.1"
+    "@types/node": "npm:22.18.0"
     jest-junit: "npm:16.0.0"
     mongodb: "npm:6.19.0"
     ts-jest: "npm:29.4.1"
@@ -4534,7 +4534,7 @@ __metadata:
   dependencies:
     "@gwent/graphql-schema": "workspace:*"
     "@types/jest": "npm:30.0.0"
-    "@types/node": "npm:22.17.1"
+    "@types/node": "npm:22.18.0"
     jest-junit: "npm:16.0.0"
     ts-jest: "npm:29.4.1"
   languageName: unknown
@@ -4547,7 +4547,7 @@ __metadata:
     "@gwent/constants": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
     "@types/jest": "npm:30.0.0"
-    "@types/node": "npm:22.17.1"
+    "@types/node": "npm:22.18.0"
     jest-junit: "npm:16.0.0"
     ts-jest: "npm:29.4.1"
   languageName: unknown
@@ -5815,12 +5815,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.17.1":
-  version: 22.17.1
-  resolution: "@types/node@npm:22.17.1"
+"@types/node@npm:22.18.0":
+  version: 22.18.0
+  resolution: "@types/node@npm:22.18.0"
   dependencies:
     undici-types: "npm:~6.21.0"
-  checksum: 10/775d3996693ce2e717267c810669a8122308676487130c91590022ded38a999fef63fd63b4631fdbbceeea9470f0ecf6a2333a3abbc4f917f40b404bbb57e9bc
+  checksum: 10/c4e4cdac52aae71e120fb4a02a08f774366e8bd6654de9376fb1113fb66cfa2706176b72f188069cdecdb40e5cdde2befa031dc720a0cc0b1e349af9e38492ad
   languageName: node
   linkType: hard
 

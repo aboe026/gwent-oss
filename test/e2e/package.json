@@ -39,7 +39,7 @@
     "ws": "8.18.3"
   },
   "devDependencies": {
-    "@types/node": "22.17.1",
+    "@types/node": "22.18.0",
     "@types/url-join": "4.0.3",
     "@types/ws": "8.18.1",
     "replace-in-file": "7.2.0"
