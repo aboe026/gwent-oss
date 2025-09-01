@@ -29,7 +29,7 @@ import {
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../../util/add-to-cache-list'
 import Centered from '../../components/Centered'
-import { CheckAuth, getApolloError, retryCheckingAuth } from '../../util/error-util'
+import { CheckAuth, getErrorMessages, retryCheckingAuth } from '../../util/error-util'
 import Confirm from '../../components/Confirm'
 import DeckEditor from '../../components/DeckEditor'
 import DeckList from '../../components/DeckList'
@@ -346,8 +346,8 @@ function ExistingGame({
   const [fullUnits, setFullUnits] = useState<FullUnitCards | undefined>()
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
   const { game } = gameProps
-  const resolvedGameError = getApolloError(gameProps.error)
-  const resolvedGameDeckError = getApolloError(gameDeckProps.error)
+  const gameErrorMessages = getErrorMessages(gameProps.error)
+  const gameDeckErrorMessages = getErrorMessages(gameDeckProps.error)
   let opponent: GamePlayer | undefined = undefined
   let self: GamePlayer | undefined = undefined
   if (game?.players && user?.name) {
@@ -438,7 +438,7 @@ function ExistingGame({
     <Centered>
       <LoadingSpinner size="50px" />
     </Centered>
-  ) : resolvedGameError === NOT_AUTHORIZED_MESSAGE ? (
+  ) : gameErrorMessages === NOT_AUTHORIZED_MESSAGE ? (
     <Centered>
       <div id={HTML_IDS.GameAuthErrorContainer}>
         <h2>Not Authorized</h2>
@@ -448,9 +448,9 @@ function ExistingGame({
         </Link>
       </div>
     </Centered>
-  ) : resolvedGameError || !game ? (
+  ) : gameErrorMessages || !game ? (
     <Centered>
-      <div className={HTML_CLASSES.ErrorText}>{`Error getting game: ${resolvedGameError}`}</div>
+      <div className={HTML_CLASSES.ErrorText}>{`Error getting game: ${gameErrorMessages}`}</div>
     </Centered>
   ) : !opponent ? (
     <Centered>
@@ -460,9 +460,9 @@ function ExistingGame({
     <Centered>
       <div className={HTML_CLASSES.ErrorText}>{`Error getting self from game: ${JSON.stringify(game)}`}</div>
     </Centered>
-  ) : resolvedGameDeckError ? (
+  ) : gameDeckErrorMessages ? (
     <Centered>
-      <div className={HTML_CLASSES.ErrorText}>{`Error getting game deck: ${resolvedGameDeckError}`}</div>
+      <div className={HTML_CLASSES.ErrorText}>{`Error getting game deck: ${gameDeckErrorMessages}`}</div>
     </Centered>
   ) : (
     <div id={HTML_IDS.GameContainer}>

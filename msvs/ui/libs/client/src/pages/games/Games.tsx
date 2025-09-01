@@ -16,7 +16,7 @@ import {
   SORT_ORDER,
 } from '@gwent/graphql-schema/games-filter'
 import { humanizeDay, formatGameStatus, humanizeTime, sortObjectArray } from '@gwent/utils'
-import { getApolloError } from '../../util/error-util'
+import { getErrorMessages } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { useAuthRetry } from '../../AuthRetry'
@@ -38,7 +38,7 @@ export default function GamesPage() {
   const { loading, error, data, refetch } = useQuery(GamesDocument)
   useAuthRetry(error, refetch)
   const navigate = useNavigate()
-  const resolvedError = getApolloError(error)
+  const errorMessages = getErrorMessages(error)
 
   const sortedGames = sortObjectArray({
     array: data?.games,
@@ -74,8 +74,8 @@ export default function GamesPage() {
         <Centered>
           <LoadingSpinner size="50px" />
         </Centered>
-      ) : resolvedError ? (
-        <div className={HTML_CLASSES.ErrorText}>{`Error getting games: ${resolvedError}`}</div>
+      ) : errorMessages ? (
+        <div className={HTML_CLASSES.ErrorText}>{`Error getting games: ${errorMessages}`}</div>
       ) : data?.games.length === 0 ? (
         <Centered>
           <div className="games-message">

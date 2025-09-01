@@ -8,7 +8,7 @@ import {
   CurrentUserQuery,
   LoginDocument,
 } from '@gwent/graphql-schema/apollo-typings'
-import { getApolloError } from '../util/error-util'
+import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
 import './LoginDialog.css'
@@ -44,7 +44,7 @@ export default function LoginDialog({
   })
   const [addUser, { loading: addUserLoading, error: addUserError }] = useMutation(AddUserDocument)
   const loading = loginLoading || addUserLoading
-  const resolvedError = getApolloError(loginError || addUserError)
+  const errorMessages = getErrorMessages(loginError || addUserError)
   const newUser = pathname === ROUTES.Signup.path
 
   return (
@@ -101,9 +101,9 @@ export default function LoginDialog({
         </div>
       </div>
       <div id="loginDialogLower">
-        {resolvedError && (
+        {errorMessages && (
           <span id={HTML_IDS.LoginDialogError} className={HTML_CLASSES.ErrorText}>
-            {resolvedError}
+            {errorMessages}
           </span>
         )}
         <div id="loginDialogActions">

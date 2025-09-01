@@ -19,7 +19,7 @@ import {
   UnitStats,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
-import { getApolloError } from '../util/error-util'
+import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import { IconType } from 'react-icons'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -54,8 +54,8 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   })
   useAuthRetry(neutralStatsError, neutralStatsRefetch)
   const navigate = useNavigate()
-  const resolvedDecksError = getApolloError(decksError)
-  const resolvedNeutralStatsError = getApolloError(neutralStatsError)
+  const decksErrorMessages = getErrorMessages(decksError)
+  const meutralStatsErrorMessages = getErrorMessages(neutralStatsError)
 
   const sortedDecks = sortObjectArray({
     array: decksData?.decks,
@@ -97,11 +97,11 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
         <Centered>
           <LoadingSpinner size="50px" />
         </Centered>
-      ) : resolvedDecksError ? (
+      ) : decksErrorMessages ? (
         <div
           id={HTML_IDS.DeckListError}
           className={HTML_CLASSES.ErrorText}
-        >{`Error getting decks: ${resolvedDecksError}`}</div>
+        >{`Error getting decks: ${decksErrorMessages}`}</div>
       ) : decksData?.decks?.length === 0 ? (
         <Centered>
           <div className="deck-list-message">
@@ -176,7 +176,7 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
                   deck: deck as Deck,
                   neutralStats,
                   neutralLoading: neutralStatsLoading,
-                  neutralError: resolvedNeutralStatsError,
+                  neutralError: meutralStatsErrorMessages,
                 })}
                 {actions && actions.length > 0 && (
                   <div className="deck-list-deck-actions-container">

@@ -1,4 +1,4 @@
-import { getApolloError } from '../util/error-util'
+import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'
 import LoadingBar from './LoadingBar'
 import './Confirm.css'
@@ -33,13 +33,13 @@ export default function Confirm({
   submitVariables,
   title,
 }: ConfirmProps) {
-  const resolvedError = getApolloError(error)
+  const errorMessages = getErrorMessages(error)
   return open ? (
     <div className="whole-screen-overlay">
       <div className="whole-screen-dialog" id={id}>
         {title && <span className="confirm-title">{title}</span>}
         <span className="confirm-message">{message}</span>
-        {resolvedError && <span className={HTML_CLASSES.ErrorText}>{resolvedError}</span>}
+        {errorMessages && <span className={HTML_CLASSES.ErrorText}>{errorMessages}</span>}
         <div className={HTML_CLASSES.ActionsContainer}>
           {loading && <LoadingBar height="25px" />}
           <button

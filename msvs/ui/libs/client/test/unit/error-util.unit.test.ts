@@ -1,281 +1,193 @@
-import { ApolloError } from '@apollo/client'
+import {
+  CombinedGraphQLErrors,
+  CombinedProtocolErrors,
+  LocalStateError,
+  ServerError,
+  ServerParseError,
+  UnconventionalError,
+} from '@apollo/client/errors'
 
-import { getApolloError, retryCheckingAuth } from '../../src/util/error-util'
+import { getErrorMessages, retryCheckingAuth } from '../../src/util/error-util'
 
 describe('error-util', () => {
-  describe('getApolloError', () => {
+  describe('getErrorMessages', () => {
     it('returns empty string if undefined', () => {
-      expect(getApolloError(undefined)).toEqual('')
+      testGetErrorMessage({
+        error: undefined,
+        expected: '',
+      })
     })
-    it('returns graphqlError if one exists', () => {
-      const error = 'toast'
-      expect(
-        getApolloError({
-          graphQLErrors: [
-            {
-              message: error,
-            },
-          ],
-        } as any)
-      ).toEqual(error)
+    it('returns empty string if null', () => {
+      testGetErrorMessage({
+        error: undefined,
+        expected: '',
+      })
     })
-    it('returns graphqlErrors if multiple exists', () => {
-      const error1 = 'toast'
-      const error2 = 'jelly'
-      expect(
-        getApolloError({
-          graphQLErrors: [
-            {
-              message: error1,
-            },
-            {
-              message: error2,
-            },
-          ],
-        } as any)
-      ).toEqual(`${error1}\n${error2}`)
+    describe('CombinedGraphQLErrors', () => {
+      it('returns message of single error', () => {
+        testGetErrorMessage({
+          error: new CombinedGraphQLErrors({
+            errors: [
+              {
+                message: 'toast',
+              },
+            ],
+          }),
+          expected: 'toast',
+        })
+      })
+      it('returns messages from multiple errors', () => {
+        testGetErrorMessage({
+          error: new CombinedGraphQLErrors({
+            errors: [
+              {
+                message: 'toast',
+              },
+              {
+                message: 'jelly',
+              },
+            ],
+          }),
+          expected: 'toast\njelly',
+        })
+      })
     })
-    it('does not return duplicate graphqlErrors', () => {
-      const error1 = 'toast'
-      const error2 = 'toast'
-      expect(
-        getApolloError({
-          graphQLErrors: [
+    describe('CombinedProtocolErrors', () => {
+      it('returns message of single error', () => {
+        testGetErrorMessage({
+          error: new CombinedProtocolErrors([
             {
-              message: error1,
+              message: 'toast',
+            },
+          ]),
+          expected: 'toast',
+        })
+      })
+      it('returns message from multiple errors', () => {
+        testGetErrorMessage({
+          error: new CombinedProtocolErrors([
+            {
+              message: 'toast',
             },
             {
-              message: error2,
+              message: 'jelly',
             },
-          ],
-        } as any)
-      ).toEqual(error1)
+          ]),
+          expected: 'toast\njelly',
+        })
+      })
     })
-    it('returns clientError if one exists', () => {
-      const error = 'toast'
-      expect(
-        getApolloError({
-          clientErrors: [
-            {
-              message: error,
-            },
-          ],
-        } as any)
-      ).toEqual(error)
+    describe('LocalStateError', () => {
+      it('returns message of error', () => {
+        testGetErrorMessage({
+          error: new LocalStateError('toast'),
+          expected: 'toast',
+        })
+      })
     })
-    it('returns clientErrors if multiple exists', () => {
-      const error1 = 'toast'
-      const error2 = 'jelly'
-      expect(
-        getApolloError({
-          clientErrors: [
-            {
-              message: error1,
-            },
-            {
-              message: error2,
-            },
-          ],
-        } as any)
-      ).toEqual(`${error1}\n${error2}`)
+    describe('ServerError', () => {
+      it('returns message of error', () => {
+        testGetErrorMessage({
+          error: new ServerError('toast', {
+            bodyText: 'body-text',
+            response: {} as any,
+          }),
+          expected: 'toast',
+        })
+      })
     })
-    it('does not return duplicate clientErrors', () => {
-      const error1 = 'toast'
-      const error2 = 'toast'
-      expect(
-        getApolloError({
-          clientErrors: [
-            {
-              message: error1,
-            },
-            {
-              message: error2,
-            },
-          ],
-        } as any)
-      ).toEqual(error1)
+    describe('ServerParseError', () => {
+      it('returns generic message for error', () => {
+        testGetErrorMessage({
+          error: new ServerParseError('toast', {
+            bodyText: 'body-text',
+            response: {} as any,
+          }),
+          expected: 'Could not parse server response',
+        })
+      })
     })
-    it('returns protocolError if one exists', () => {
-      const error = 'toast'
-      expect(
-        getApolloError({
-          protocolErrors: [
-            {
-              message: error,
-            },
-          ],
-        } as any)
-      ).toEqual(error)
+    describe('UnconventionalError', () => {
+      it('returns generic message from error', () => {
+        testGetErrorMessage({
+          error: new UnconventionalError('toast'),
+          expected: 'An error of unexpected shape occurred.',
+        })
+      })
     })
-    it('returns protocolErrors if multiple exists', () => {
-      const error1 = 'toast'
-      const error2 = 'jelly'
-      expect(
-        getApolloError({
-          protocolErrors: [
-            {
-              message: error1,
-            },
-            {
-              message: error2,
-            },
-          ],
-        } as any)
-      ).toEqual(`${error1}\n${error2}`)
+    describe('Error', () => {
+      it('returns message of error', () => {
+        testGetErrorMessage({
+          error: new Error('toast'),
+          expected: 'toast',
+        })
+      })
     })
-    it('does not return duplicate protocolErrors', () => {
-      const error1 = 'toast'
-      const error2 = 'toast'
-      expect(
-        getApolloError({
-          protocolErrors: [
-            {
-              message: error1,
-            },
-            {
-              message: error2,
-            },
-          ],
-        } as any)
-      ).toEqual(error1)
-    })
-    it('returns networkError if it exists', () => {
-      const error = 'toast'
-      expect(
-        getApolloError({
-          networkError: {
-            message: error,
-          },
-        } as any)
-      ).toEqual(error)
-    })
-    it('returns message if it exists', () => {
-      const error = 'toast'
-      expect(
-        getApolloError({
-          message: error,
-        } as any)
-      ).toEqual(error)
-    })
-    it('returns joined errors if all errors exist', () => {
-      const graphqlError1 = 'ge1'
-      const graphqlError2 = 'ge2'
-      const clientError1 = 'ce1'
-      const clientError2 = 'ce2'
-      const protocolError1 = 'pe1'
-      const protocolError2 = 'pe2'
-      const networkError = 'ne'
-      const error = 'e'
-      expect(
-        getApolloError({
-          graphQLErrors: [
-            {
-              message: graphqlError1,
-            },
-            {
-              message: graphqlError2,
-            },
-          ],
-          clientErrors: [
-            {
-              message: clientError1,
-            },
-            {
-              message: clientError2,
-            },
-          ],
-          protocolErrors: [
-            {
-              message: protocolError1,
-            },
-            {
-              message: protocolError2,
-            },
-          ],
-          networkError: {
-            message: networkError,
-          },
-          message: error,
-        } as any)
-      ).toEqual(
-        [
-          graphqlError1,
-          graphqlError2,
-          clientError1,
-          clientError2,
-          protocolError1,
-          protocolError2,
-          networkError,
-          error,
-        ].join('\n')
-      )
-    })
-    it('does not return duplicate errors across types', () => {
-      const error = 'error'
-      expect(
-        getApolloError({
-          graphQLErrors: [
-            {
-              message: error,
-            },
-            {
-              message: error,
-            },
-          ],
-          clientErrors: [
-            {
-              message: error,
-            },
-            {
-              message: error,
-            },
-          ],
-          protocolErrors: [
-            {
-              message: error,
-            },
-            {
-              message: error,
-            },
-          ],
-          networkError: {
-            message: error,
-          },
-          message: error,
-        } as any)
-      ).toEqual(error)
+    describe('unknown', () => {
+      it('returns JSON stringified error and prints error to console', () => {
+        testGetErrorMessage({
+          error: { hello: 'world' },
+          expected: JSON.stringify({ hello: 'world' }),
+          errorCalls: [[{ hello: 'world' }]],
+        })
+      })
     })
   })
   describe('retryCheckingAuth', () => {
-    it('calls checkAuth with method if error is ApolloError', async () => {
-      const error = new ApolloError({})
-      const method = jest.fn().mockImplementation().mockRejectedValue(error)
-      const checkAuth = jest.fn().mockImplementation()
-
-      await expect(
-        retryCheckingAuth({
-          checkAuth,
-          method,
-        })
-      ).resolves.toEqual(undefined)
-
-      expect(method.mock.calls).toEqual([[]])
-      expect(checkAuth.mock.calls).toEqual([[error, method]])
+    it('does not call to checkAuth if method promise resolves', async () => {
+      await testRetryCheckingAuth({
+        method: () => {
+          return new Promise((resolve) => {
+            resolve('toast')
+          })
+        },
+      })
     })
-    it('throws error if it is not ApolloError', async () => {
-      const error = new Error('network timeout')
-      const method = jest.fn().mockImplementation().mockRejectedValue(error)
-      const checkAuth = jest.fn().mockImplementation()
-
-      await expect(
-        retryCheckingAuth({
-          checkAuth,
-          method,
+    it('calls to checkAuth with error and method if method promise rejects', async () => {
+      const method = () => {
+        return new Promise((resolve, reject) => {
+          reject(Error('toast'))
         })
-      ).rejects.toThrow(error)
-
-      expect(method.mock.calls).toEqual([[]])
-      expect(checkAuth.mock.calls).toEqual([])
+      }
+      await testRetryCheckingAuth({
+        method,
+        checkAuthCalls: [[Error('toast'), method]],
+      })
     })
   })
 })
+
+function testGetErrorMessage({
+  error,
+  expected,
+  errorCalls = [],
+}: {
+  error: unknown
+  expected: string
+  errorCalls?: any[][]
+}) {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation()
+
+  expect(getErrorMessages(error)).toEqual(expected)
+
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
+}
+
+async function testRetryCheckingAuth({
+  method,
+  checkAuthCalls = [],
+}: {
+  method: () => Promise<any>
+  checkAuthCalls?: any[][]
+}) {
+  const checkAuthSpy = jest.fn().mockImplementation()
+
+  await expect(
+    retryCheckingAuth({
+      checkAuth: checkAuthSpy,
+      method,
+    })
+  ).resolves.toEqual(undefined)
+
+  expect(checkAuthSpy.mock.calls).toEqual(checkAuthCalls)
+}

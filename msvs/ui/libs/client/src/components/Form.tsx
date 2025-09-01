@@ -1,6 +1,6 @@
 import { HTMLInputTypeAttribute, useState } from 'react'
 
-import { getApolloError } from '../util/error-util'
+import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'
 import LoadingBar from './LoadingBar'
 import './Form.css'
@@ -55,7 +55,7 @@ export default function Form({
     return map
   }, {})
   const [values, setValues] = useState(valueMap)
-  const resolvedError = getApolloError(error)
+  const errorMessages = getErrorMessages(error)
 
   return (
     <div id={id} className={overlay ? 'whole-screen-overlay' : ''} style={style}>
@@ -104,9 +104,9 @@ export default function Form({
               )
           )}
         </div>
-        {resolvedError && (
+        {errorMessages && (
           <span id={errorId || undefined} className={HTML_CLASSES.ErrorText}>
-            {`${errorPrefix ? `${errorPrefix}: ` : ''}${resolvedError}`}
+            {`${errorPrefix ? `${errorPrefix}: ` : ''}${errorMessages}`}
           </span>
         )}
         <div className="actions">

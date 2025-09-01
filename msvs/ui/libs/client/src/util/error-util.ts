@@ -8,26 +8,22 @@ import {
 } from '@apollo/client/errors'
 
 /**
- * Get any potential errors returned by the GraphQL query/mutation and formats them in a newline-separated string.
+ * Get the messages of any potential errors returned by the GraphQL query/mutation and formats them in a newline-separated string.
  *
- * @param error The potential errors thrown by a GraphQL query/mutation.
- * @returns The potential errors in a newline-separated string. Empty string if no errors thrown.
+ * @param error The potential error thrown by a GraphQL query/mutation.
+ * @returns The potential error messages in a newline-separated string. Empty string if no errors thrown.
  */
-export function getApolloError(error: unknown): string {
+export function getErrorMessages(error: unknown): string {
   const resolvedErrors: string[] = []
 
   if (error) {
     if (CombinedGraphQLErrors.is(error)) {
       // Handle GraphQL errors
-      if (error.errors.length === 0) {
-        resolvedErrors.push(error.message)
-      }
       for (const graphqlError of error.errors) {
         resolvedErrors.push(graphqlError.message)
       }
     } else if (CombinedProtocolErrors.is(error)) {
       // Handle multipart subscription protocol errors
-      resolvedErrors.push(error.message)
       for (const protocolError of error.errors) {
         resolvedErrors.push(protocolError.message)
       }

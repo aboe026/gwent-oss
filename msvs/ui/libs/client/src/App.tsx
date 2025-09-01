@@ -7,7 +7,7 @@ import Banner from './components/Banner'
 import Centered from './components/Centered'
 import ConnectionStatus from './ConnectionStatus'
 import { CurrentUserDocument, CurrentUserQuery } from '@gwent/graphql-schema/apollo-typings'
-import { getApolloError } from './util/error-util'
+import { getErrorMessages } from './util/error-util'
 import { getRouteFromPath } from './util/route-util'
 import LoadingSpinner from './components/LoadingSpinner'
 import LoginDialog from './components/LoginDialog'
@@ -95,8 +95,8 @@ export default function App() {
    */
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   function checkAuth(error: unknown, callbackAfterReauth?: Function) {
-    const resolvedError = getApolloError(error)
-    if (resolvedError.includes(NOT_AUTHENTICATED_MESSAGE)) {
+    const errorMessages = getErrorMessages(error)
+    if (errorMessages.includes(NOT_AUTHENTICATED_MESSAGE)) {
       if (callbackAfterReauth) {
         setReAuthFuncs((previous) => [...previous, callbackAfterReauth])
       }

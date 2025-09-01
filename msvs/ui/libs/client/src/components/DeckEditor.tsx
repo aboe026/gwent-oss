@@ -32,7 +32,7 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/deck-filter'
-import { getApolloError } from '../util/error-util'
+import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -107,7 +107,7 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
   ) {
     percent += 25
   }
-  const resolvedError = getApolloError(error)
+  const errorMessages = getErrorMessages(error)
 
   return (
     <form
@@ -152,9 +152,9 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
           disabledOverride: loading,
         })}
       </div>
-      {resolvedError && (
+      {errorMessages && (
         <span id={HTML_IDS.DeckEditorError} className={HTML_CLASSES.ErrorText}>
-          {`Error creating deck: ${resolvedError}`}
+          {`Error creating deck: ${errorMessages}`}
         </span>
       )}
       <div id="deckEditorActions">
@@ -210,13 +210,13 @@ function renderNameAndFaction({
   } = useQuery(FactionsDocument)
   useAuthRetry(factionsError, factionsRefetch)
 
-  const resolvedError = getApolloError(factionsError)
-  if (resolvedError) {
+  const errorMessages = getErrorMessages(factionsError)
+  if (errorMessages) {
     return (
       <span
         id={HTML_IDS.DeckEditorFactionError}
         className={HTML_CLASSES.ErrorText}
-      >{`Error getting factions: ${resolvedError}`}</span>
+      >{`Error getting factions: ${errorMessages}`}</span>
     )
   }
 
@@ -436,14 +436,14 @@ function renderLeader({
     )
   }
 
-  const resolvedError = getApolloError(leadersError)
-  if (resolvedError) {
+  const errorMessages = getErrorMessages(leadersError)
+  if (errorMessages) {
     return (
       <Centered>
         <span
           id={HTML_IDS.DeckEditorLeaderError}
           className={HTML_CLASSES.ErrorText}
-        >{`Error getting leaders: ${resolvedError}`}</span>
+        >{`Error getting leaders: ${errorMessages}`}</span>
       </Centered>
     )
   }
@@ -660,8 +660,8 @@ function renderUnits({
     })
   }
 
-  const resolvedFactionUnitsError = getApolloError(factionUnitsError)
-  const resolvedNeutralUnitsError = getApolloError(neutralUnitsError)
+  const factionUnitsErrorMessages = getErrorMessages(factionUnitsError)
+  const neutralUnitsErrorMessages = getErrorMessages(neutralUnitsError)
 
   const disabled = neutralUnitsLoading || factionUnitsLoading || disabledOverride
 
@@ -765,19 +765,19 @@ function renderUnits({
       />
       {faction === undefined ? (
         <img id="deckEditorUnitsIcon" src="images/stats/units.png" title="Units" />
-      ) : resolvedFactionUnitsError || resolvedNeutralUnitsError ? (
+      ) : factionUnitsErrorMessages || neutralUnitsErrorMessages ? (
         <div id="deckEditorUnitsErrors">
-          {resolvedFactionUnitsError && (
+          {factionUnitsErrorMessages && (
             <span
               id={HTML_IDS.DeckUnitsFactionError}
               className={HTML_CLASSES.ErrorText}
-            >{`Error getting faction units: ${resolvedFactionUnitsError}`}</span>
+            >{`Error getting faction units: ${factionUnitsErrorMessages}`}</span>
           )}
-          {resolvedNeutralUnitsError && (
+          {neutralUnitsErrorMessages && (
             <span
               id={HTML_IDS.DeckUnitsNeutralError}
               className={HTML_CLASSES.ErrorText}
-            >{`Error getting neutral units: ${resolvedNeutralUnitsError}`}</span>
+            >{`Error getting neutral units: ${neutralUnitsErrorMessages}`}</span>
           )}
         </div>
       ) : (

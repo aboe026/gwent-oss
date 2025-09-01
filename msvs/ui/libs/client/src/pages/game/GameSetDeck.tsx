@@ -2,7 +2,7 @@ import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
 import { Game } from '@gwent/graphql-schema/apollo-typings'
-import { getApolloError } from '../../util/error-util'
+import { getErrorMessages } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -22,7 +22,7 @@ export default function GameSetDeck({
   setDeckListOpen: Dispatch<SetStateAction<boolean>>
   setDeckProps: SetDeckProps
 }) {
-  const resolvedSetDeckError = getApolloError(setDeckProps.error)
+  const setDeckErrorMessages = getErrorMessages(setDeckProps.error)
   return (
     <div id="gameSetDeckContainer" className="game-section">
       <Centered>
@@ -38,11 +38,11 @@ export default function GameSetDeck({
             <button id={HTML_IDS.GameSetDeck} type="button" onClick={() => setDeckListOpen(true)}>
               Choose Deck
             </button>
-            {resolvedSetDeckError && (
+            {setDeckErrorMessages && (
               <span
                 id={HTML_IDS.GameDeckError}
                 className={HTML_CLASSES.ErrorText}
-              >{`Error choosing deck: ${resolvedSetDeckError}`}</span>
+              >{`Error choosing deck: ${setDeckErrorMessages}`}</span>
             )}
           </div>
         )}
