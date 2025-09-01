@@ -69,9 +69,10 @@ import NewGame from './NewGame'
 import { sortObjectArray } from '@gwent/utils'
 import UnitFullCard from '../../components/UnitFullCard'
 import updateGameDeckCacheOnRedraw from '../../util/update-game-deck-cache-on-redraw'
+import { useAuthRetry } from '../../AuthRetry'
 import { usePrevious } from '../../util/usePrevious'
 import { useTitle } from '../../components/TabTitle'
-import { useUserContext } from '../../App'
+import { useUserContext } from '../../UserContext'
 import WholeScreenDialog from '../../components/WholeScreenDialog'
 import './Game.css'
 
@@ -137,36 +138,27 @@ export default function GamePage() {
     data: gameData,
     refetch: gameRefetch,
   } = useQuery(GameDocument, {
-    // TODO: find out how to check these
-    onError: (error: unknown) => {
-      checkAuth(error, gameRefetch)
-    },
-    onCompleted: (data) => {
-      if (data.game) {
-        if (data.game.players) {
-          setPlayerOrder(data.game.players as GamePlayer[])
-        }
-      }
-    },
     variables: gameQueryVariables,
     skip: isNew,
-    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
   })
+  useAuthRetry(gameError, gameRefetch)
+  useEffect(() => {
+    if (gameData && gameData.game?.players) {
+      setPlayerOrder(gameData.game.players as GamePlayer[])
+    }
+  }, [gameData, setPlayerOrder])
+
   const {
     loading: gameDeckLoading,
     error: gameDeckError,
     data: gameDeckData,
     refetch: gameDeckRefetch,
   } = useQuery(GameDeckDocument, {
-    // TODO: find out how to check this
-    onError: (error: unknown) => {
-      checkAuth(error, gameDeckRefetch)
-    },
     variables: gameDeckQueryVariables,
     nextFetchPolicy: 'cache-only', // prevents re-fetch after setDeck called
     skip: isNew,
-    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
   })
+  useAuthRetry(gameDeckError, gameDeckRefetch)
   const [setDeck, { loading: setDeckLoading, error: setDeckError }] = useMutation(SetDeckDocument, {
     update(cache, { data }) {
       if (data?.setDeck && user) {

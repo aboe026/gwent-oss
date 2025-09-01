@@ -25,7 +25,7 @@ import {
   UnitRedrawnDocument,
 } from '@gwent/graphql-schema/apollo-typings'
 import updateGameDeckCacheOnRedraw from './util/update-game-deck-cache-on-redraw'
-import { useUserContext } from './App'
+import { useUserContext } from './UserContext'
 
 /**
  * A class to listen to GraphQL subscriptions and update Apollo cache accordingly.

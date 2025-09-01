@@ -10,7 +10,7 @@ import { getApolloError, retryCheckingAuth } from '../../util/error-util'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import UnitGameCard from '../../components/UnitGameCard'
-import { useUserContext } from '../../App'
+import { useUserContext } from '../../UserContext'
 
 /**
  * Allows user to Redraw units for a Game.

@@ -5,7 +5,7 @@ import { Button } from '../util/keyboard-listener'
 import { ConnectionStatusContext, CONNECTION_STATUS } from '../ConnectionStatus'
 import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'
-import { useUserContext } from '../App'
+import { useUserContext } from '../UserContext'
 import './Banner.css'
 
 /**

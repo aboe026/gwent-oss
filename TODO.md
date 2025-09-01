@@ -12,6 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- remove unnecessary notifyOnNetworkStatusChange
 - improve performance when typing name for deck
 - use Fragment Masking to ensure front end code is only using fields actually requested in queries/mutations/subscriptions
 - rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
@@ -33,6 +34,8 @@ Existing problems in the codebase that need to be fixed.
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - rename "undrawn" to "draw" (since its the draw pile?)
 - improve UX around game player info (username, score, rounds, passed)
+- centralize error handling in the UI
+  - single place to watch for any error and automatially re-auths and re-calls failing operations
 - move all hard-coded config to GameConfig
   - PLAYER_COUNTS (or can this just be inferred from game.players size?)
   - MAX_REDRAWS

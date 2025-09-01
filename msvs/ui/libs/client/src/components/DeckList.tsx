@@ -1,4 +1,4 @@
-import { ObservableQuery } from '@apollo/client'
+import { ApolloClient } from '@apollo/client'
 import { useQuery } from '@apollo/client/react'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
@@ -25,7 +25,7 @@ import { IconType } from 'react-icons'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ProgressBar from '../components/ProgressBar'
 import { sortObjectArray } from '@gwent/utils'
-import { useUserContext } from '../App'
+import { useAuthRetry } from '../AuthRetry'
 import './DeckList.css'
 
 /**
@@ -39,18 +39,8 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   const [sortOrder, setSortOrder] = useState<SORT_ORDER>(SORT_ORDER.Asc)
   const [filterFields, setFilterFields] = useState<FILTER_FIELD[]>([])
   const [filtersExpanded, setFiltersExpanded] = useState(false)
-  const { checkAuth } = useUserContext()
-  const {
-    loading: decksLoading,
-    error: decksError,
-    data: decksData,
-    refetch: decksRefetch,
-  } = useQuery(DecksDocument, {
-    onError: (error) => {
-      checkAuth(error, decksRefetch)
-    },
-    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
-  })
+  const { loading: decksLoading, error: decksError, data: decksData, refetch: decksRefetch } = useQuery(DecksDocument)
+  useAuthRetry(decksError, decksRefetch)
   const {
     loading: neutralStatsLoading,
     error: neutralStatsError,
@@ -58,14 +48,11 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
     refetch: neutralStatsRefetch,
   } = useQuery(FactionStatsDocument, {
     skip: !decksData?.decks || decksData.decks.length < 1,
-    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
     variables: {
       keys: [FactionKey.Neutral],
     },
-    onError: (error) => {
-      checkAuth(error, neutralStatsRefetch)
-    },
   })
+  useAuthRetry(neutralStatsError, neutralStatsRefetch)
   const navigate = useNavigate()
   const resolvedDecksError = getApolloError(decksError)
   const resolvedNeutralStatsError = getApolloError(neutralStatsError)
@@ -250,7 +237,7 @@ function renderHeader({
           }>
         >
       | undefined
-  ) => Promise<ObservableQuery.Result<DecksQuery>>
+  ) => Promise<ApolloClient.QueryResult<DecksQuery>>
   refetchNeutralStats: (
     variables?:
       | Partial<
@@ -259,7 +246,7 @@ function renderHeader({
           }>
         >
       | undefined
-  ) => Promise<ObservableQuery.Result<FactionStatsQuery>>
+  ) => Promise<ApolloClient.QueryResult<FactionStatsQuery>>
   setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setNameFilter: Dispatch<SetStateAction<string>>

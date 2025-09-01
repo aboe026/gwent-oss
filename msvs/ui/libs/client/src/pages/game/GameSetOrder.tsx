@@ -8,7 +8,7 @@ import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { SetOrderProps } from './GameProps'
-import { useUserContext } from '../../App'
+import { useUserContext } from '../../UserContext'
 
 /**
  * Allows user to set the turn order for a Game.

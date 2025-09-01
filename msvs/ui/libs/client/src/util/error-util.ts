@@ -17,10 +17,11 @@ export function getApolloError(error: unknown): string {
   const resolvedErrors: string[] = []
 
   if (error) {
-    console.error(error)
     if (CombinedGraphQLErrors.is(error)) {
       // Handle GraphQL errors
-      resolvedErrors.push(error.message)
+      if (error.errors.length === 0) {
+        resolvedErrors.push(error.message)
+      }
       for (const graphqlError of error.errors) {
         resolvedErrors.push(graphqlError.message)
       }
@@ -47,6 +48,7 @@ export function getApolloError(error: unknown): string {
       resolvedErrors.push(error.message)
     } else {
       // Handle case where we don't know what the error object is
+      console.error(error)
       resolvedErrors.push(JSON.stringify(error))
     }
   }

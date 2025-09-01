@@ -4,7 +4,7 @@ import Centered from '../../components/Centered'
 import { HTML_IDS } from '@gwent/constants'
 import { ROUTES } from '@gwent/constants'
 import { useTitle } from '../../components/TabTitle'
-import { useUserContext } from '../../App'
+import { useUserContext } from '../../UserContext'
 import './Profile.css'
 
 /**

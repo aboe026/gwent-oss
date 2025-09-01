@@ -4,7 +4,7 @@ import { DeckUnit, GamePlayer, Game, Combat } from '@gwent/graphql-schema/apollo
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import GameCombatRow from './GameCombatRow'
 import { HTML_CLASSES } from '@gwent/constants'
-import { useUserContext } from '../../App'
+import { useUserContext } from '../../UserContext'
 
 /**
  * The active battlefield of a Game.

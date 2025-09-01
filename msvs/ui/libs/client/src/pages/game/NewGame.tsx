@@ -5,7 +5,7 @@ import Centered from '../../components/Centered'
 import Form from '../../components/Form'
 import { HTML_IDS, PLAYER_COUNTS, ROUTES } from '@gwent/constants'
 import { retryCheckingAuth } from '../../util/error-util'
-import { useUserContext } from '../../App'
+import { useUserContext } from '../../UserContext'
 
 /**
  * Form for creating a new Game.

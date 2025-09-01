@@ -1,4 +1,4 @@
-import { ObservableQuery } from '@apollo/client'
+import { ApolloClient } from '@apollo/client'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router'
@@ -19,8 +19,8 @@ import { humanizeDay, formatGameStatus, humanizeTime, sortObjectArray } from '@g
 import { getApolloError } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import { useAuthRetry } from '../../AuthRetry'
 import { useTitle } from '../../components/TabTitle'
-import { useUserContext } from '../../App'
 import './Games.css'
 
 /**
@@ -35,13 +35,8 @@ export default function GamesPage() {
   const [sortOrder, setSortOrder] = useState<SORT_ORDER>(SORT_ORDER.Desc)
   const [filterFields, setFilterFields] = useState<FILTER_FIELD[]>([])
   const [filtersExpanded, setFiltersExpanded] = useState(false)
-  const { checkAuth } = useUserContext()
-  const { loading, error, data, refetch } = useQuery(GamesDocument, {
-    onError: (error) => {
-      checkAuth(error, refetch)
-    },
-    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
-  })
+  const { loading, error, data, refetch } = useQuery(GamesDocument)
+  useAuthRetry(error, refetch)
   const navigate = useNavigate()
   const resolvedError = getApolloError(error)
 
@@ -193,7 +188,7 @@ function renderHeader({
           }>
         >
       | undefined
-  ) => Promise<ObservableQuery.Result<GamesQuery>>
+  ) => Promise<ApolloClient.QueryResult<GamesQuery>>
   setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setSortField: Dispatch<SetStateAction<SORT_FIELD>>

@@ -1,30 +1,22 @@
-import { createContext, useContext, useEffect, useState } from 'react'
 import { IconContext } from 'react-icons'
 import { Outlet, useLocation, Navigate } from 'react-router'
+import { useEffect, useState } from 'react'
 import { useQuery, useApolloClient } from '@apollo/client/react'
 
 import Banner from './components/Banner'
 import Centered from './components/Centered'
-import { CheckAuth, getApolloError } from './util/error-util'
-import { CurrentUserDocument, CurrentUserQuery, User } from '@gwent/graphql-schema/apollo-typings'
+import ConnectionStatus from './ConnectionStatus'
+import { CurrentUserDocument, CurrentUserQuery } from '@gwent/graphql-schema/apollo-typings'
+import { getApolloError } from './util/error-util'
 import { getRouteFromPath } from './util/route-util'
 import LoadingSpinner from './components/LoadingSpinner'
 import LoginDialog from './components/LoginDialog'
 import { NOT_AUTHENTICATED_MESSAGE, ROUTES } from '@gwent/constants'
-import WholeScreenDialog from './components/WholeScreenDialog'
-import ConnectionStatus from './ConnectionStatus'
 import Subscriptions from './Subscriptions'
+import { UserContext } from './UserContext'
+import WholeScreenDialog from './components/WholeScreenDialog'
 
 const AUTH_TIMEOUT_ID = 'AUTH_TIMEOUT_ID'
-
-const UserContext = createContext<UserContextType>({
-  user: undefined,
-  checkAuth: () => undefined,
-})
-
-const useUserContext = () => useContext(UserContext)
-
-export { useUserContext }
 
 /**
  * The main component of the Application, under which everything else is rendered.
@@ -115,7 +107,6 @@ export default function App() {
         })
       }
     }
-    throw Error(resolvedError)
   }
 
   return (
@@ -144,9 +135,4 @@ export default function App() {
       </IconContext.Provider>
     </UserContext.Provider>
   )
-}
-
-type UserContextType = {
-  user: User | undefined | null
-  checkAuth: CheckAuth
 }
