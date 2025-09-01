@@ -29,10 +29,19 @@ export default function App() {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const [reAuthFuncs, setReAuthFuncs] = useState<Function[]>([])
   const [preLoginPath, setPreLoginPath] = useState(pathname === ROUTES.Logout.path ? ROUTES.Home.path : pathname)
+  const [shouldNavigateToLogin, setShouldNavigateToLogin] = useState(false)
   const { loading: currentUserLoading, data: currentUserData } = useQuery(CurrentUserDocument, {
-    notifyOnNetworkStatusChange: true, // makes sure "currentUserData" gets set to "undefined" when cache changed
     nextFetchPolicy: 'cache-only', // makes sure the query does not immediately run after cache changed
   })
+
+  const route = getRouteFromPath(pathname)
+  const user = currentUserData?.currentUser
+  const authTimedOut = user?.id === AUTH_TIMEOUT_ID
+  const loggedIn = !!user?.id && !authTimedOut
+  const loginOrSignup = [ROUTES.Login.path, ROUTES.Signup.path].includes(pathname)
+  const justLoggedOut = !user?.id && user?.name
+  const needsLogin = !loggedIn && !currentUserLoading && !authTimedOut && route?.secure && !loginOrSignup
+  const needsHome = loggedIn && loginOrSignup
 
   useEffect(() => {
     if (currentUserData?.currentUser?.id !== AUTH_TIMEOUT_ID) {
@@ -43,11 +52,17 @@ export default function App() {
     }
   }, [currentUserData])
 
-  const user = currentUserData?.currentUser
-  const authTimedOut = user?.id === AUTH_TIMEOUT_ID
-  const loggedIn = !!user?.id && !authTimedOut
-  const loginOrSignup = [ROUTES.Login.path, ROUTES.Signup.path].includes(pathname)
-  const justLoggedOut = !user?.id && user?.name
+  useEffect(() => {
+    if (needsLogin) {
+      client.resetStore()
+      if (justLoggedOut) {
+        setPreLoginPath('')
+      }
+      setShouldNavigateToLogin(true)
+    } else {
+      setShouldNavigateToLogin(false)
+    }
+  }, [needsLogin, justLoggedOut, client])
 
   if (currentUserLoading) {
     return (
@@ -56,10 +71,6 @@ export default function App() {
       </Centered>
     )
   }
-
-  const route = getRouteFromPath(pathname)
-  const needsLogin = !loggedIn && !currentUserLoading && !authTimedOut && route?.secure && !loginOrSignup
-  const needsHome = loggedIn && loginOrSignup
 
   if (needsHome) {
     return (
@@ -72,11 +83,7 @@ export default function App() {
         replace
       />
     )
-  } else if (needsLogin) {
-    client.resetStore()
-    if (justLoggedOut) {
-      setPreLoginPath('')
-    }
+  } else if (shouldNavigateToLogin) {
     return <Navigate to={ROUTES.Login.path} replace />
   }
 
