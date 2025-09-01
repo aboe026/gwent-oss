@@ -17,7 +17,7 @@ import {
   GameUnitOrigin,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
-import { getApolloError } from '../../util/error-util'
+import { getErrorMessages } from '../../util/error-util'
 import { getImpactDescription, getNoImpactMessage, groupBy, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -58,8 +58,8 @@ export default function GameHistory({
     : playPassProps.loading
       ? 'Waiting for Pass to be recognized on the battlefield'
       : 'Waiting for opponent to make their move'
-  const resolvedPlayPassError = getApolloError(playPassProps.error)
-  const resolvedPlayUnitError = getApolloError(playUnitProps.error)
+  const playPassErrorMessages = getErrorMessages(playPassProps.error)
+  const playUnitErrorMessages = getErrorMessages(playUnitProps.error)
 
   return (
     <div id={HTML_IDS.GameHistoryContainer} className="game-edge-container game-section">
@@ -74,14 +74,14 @@ export default function GameHistory({
               <LoadingSpinner size="100px" title={loadingTitle} />
             </div>
           )}
-          {resolvedPlayPassError && (
+          {playPassErrorMessages && (
             <div className={HTML_CLASSES.GameHistoryError}>
-              <div className="error-text">{`Error attempting to pass: ${resolvedPlayPassError}`}</div>
+              <div className="error-text">{`Error attempting to pass: ${playPassErrorMessages}`}</div>
             </div>
           )}
-          {resolvedPlayUnitError && (
+          {playUnitErrorMessages && (
             <div className={HTML_CLASSES.GameHistoryError}>
-              <div className="error-text">{`Error playing unit "${handCardSelected?.unit.name}": ${resolvedPlayUnitError}`}</div>
+              <div className="error-text">{`Error playing unit "${handCardSelected?.unit.name}": ${playUnitErrorMessages}`}</div>
             </div>
           )}
           {movesByRounds.map((movesByRound) => {

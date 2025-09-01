@@ -6,11 +6,11 @@ import CoinToss from '../../components/CoinToss'
 import { DeckUnit, GamePlayer, Game, GameDeck } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, ReadyProps, RedrawProps } from './GameProps'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent/constants'
-import { getApolloError, retryCheckingAuth } from '../../util/error-util'
+import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import UnitGameCard from '../../components/UnitGameCard'
-import { useUserContext } from '../../App'
+import { useUserContext } from '../../UserContext'
 
 /**
  * Allows user to Redraw units for a Game.
@@ -50,8 +50,8 @@ export default function GameRedraw({
           redrawsLeft > 1 ? 's' : ''
         } from your hand to redraw. When satisfied with deck:`
       : 'All allowed redraws made. To begin the game:'
-  const resolvedRedrawError = getApolloError(redrawProps.error)
-  const resolvedReadyError = getApolloError(readyProps.error)
+  const redrawErrorMessages = getErrorMessages(redrawProps.error)
+  const readyErrorMessages = getErrorMessages(readyProps.error)
   return coinTossVisible ? (
     renderCoinToss({
       setCoinTossVisible,
@@ -193,11 +193,11 @@ export default function GameRedraw({
               )
             })}
           </div>
-          {resolvedRedrawError && (
+          {redrawErrorMessages && (
             <div
               id={HTML_IDS.GameRedrawError}
               className={HTML_CLASSES.ErrorText}
-            >{`Error redrawing card: ${resolvedRedrawError}`}</div>
+            >{`Error redrawing card: ${redrawErrorMessages}`}</div>
           )}
           <div className="game-deck-redraw-lower">
             {readyProps.loading ? (
@@ -224,11 +224,11 @@ export default function GameRedraw({
             >
               Ready to Play
             </button>
-            {resolvedReadyError && (
+            {readyErrorMessages && (
               <div
                 id={HTML_IDS.GameReadyError}
                 className={HTML_CLASSES.ErrorText}
-              >{`Error marking self as ready: ${resolvedReadyError}`}</div>
+              >{`Error marking self as ready: ${readyErrorMessages}`}</div>
             )}
           </div>
         </>

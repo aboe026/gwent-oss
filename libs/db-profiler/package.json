@@ -1,6 +1,6 @@
 {
   "name": "@gwent/db-profiler",
-  "version": "0.15.1",
+  "version": "0.15.2",
   "author": "Adam Boe",
   "description": "Database profiler to analyze operations",
   "main": "build/src/index.js",
@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "fs-extra": "11.3.1",
-    "mongodb": "6.18.0"
+    "mongodb": "6.19.0"
   },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",
-    "@types/node": "22.17.1"
+    "@types/node": "22.18.0"
   }
 }

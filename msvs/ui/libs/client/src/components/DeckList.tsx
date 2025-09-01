@@ -1,7 +1,8 @@
-import { ApolloQueryResult, useQuery } from '@apollo/client'
+import { ApolloClient } from '@apollo/client'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router'
+import { useQuery } from '@apollo/client/react'
 
 import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
@@ -18,13 +19,13 @@ import {
   UnitStats,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
-import { getApolloError } from '../util/error-util'
+import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import { IconType } from 'react-icons'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ProgressBar from '../components/ProgressBar'
 import { sortObjectArray } from '@gwent/utils'
-import { useUserContext } from '../App'
+import { useAuthRetry } from '../AuthRetry'
 import './DeckList.css'
 
 /**
@@ -38,18 +39,8 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   const [sortOrder, setSortOrder] = useState<SORT_ORDER>(SORT_ORDER.Asc)
   const [filterFields, setFilterFields] = useState<FILTER_FIELD[]>([])
   const [filtersExpanded, setFiltersExpanded] = useState(false)
-  const { checkAuth } = useUserContext()
-  const {
-    loading: decksLoading,
-    error: decksError,
-    data: decksData,
-    refetch: decksRefetch,
-  } = useQuery(DecksDocument, {
-    onError: (error) => {
-      checkAuth(error, decksRefetch)
-    },
-    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
-  })
+  const { loading: decksLoading, error: decksError, data: decksData, refetch: decksRefetch } = useQuery(DecksDocument)
+  useAuthRetry(decksError, decksRefetch)
   const {
     loading: neutralStatsLoading,
     error: neutralStatsError,
@@ -57,17 +48,14 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
     refetch: neutralStatsRefetch,
   } = useQuery(FactionStatsDocument, {
     skip: !decksData?.decks || decksData.decks.length < 1,
-    notifyOnNetworkStatusChange: true, // fixes "loading" to work properly on refetch
     variables: {
       keys: [FactionKey.Neutral],
     },
-    onError: (error) => {
-      checkAuth(error, neutralStatsRefetch)
-    },
   })
+  useAuthRetry(neutralStatsError, neutralStatsRefetch)
   const navigate = useNavigate()
-  const resolvedDecksError = getApolloError(decksError)
-  const resolvedNeutralStatsError = getApolloError(neutralStatsError)
+  const decksErrorMessages = getErrorMessages(decksError)
+  const meutralStatsErrorMessages = getErrorMessages(neutralStatsError)
 
   const sortedDecks = sortObjectArray({
     array: decksData?.decks,
@@ -109,11 +97,11 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
         <Centered>
           <LoadingSpinner size="50px" />
         </Centered>
-      ) : resolvedDecksError ? (
+      ) : decksErrorMessages ? (
         <div
           id={HTML_IDS.DeckListError}
           className={HTML_CLASSES.ErrorText}
-        >{`Error getting decks: ${resolvedDecksError}`}</div>
+        >{`Error getting decks: ${decksErrorMessages}`}</div>
       ) : decksData?.decks?.length === 0 ? (
         <Centered>
           <div className="deck-list-message">
@@ -188,7 +176,7 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
                   deck: deck as Deck,
                   neutralStats,
                   neutralLoading: neutralStatsLoading,
-                  neutralError: resolvedNeutralStatsError,
+                  neutralError: meutralStatsErrorMessages,
                 })}
                 {actions && actions.length > 0 && (
                   <div className="deck-list-deck-actions-container">
@@ -249,7 +237,7 @@ function renderHeader({
           }>
         >
       | undefined
-  ) => Promise<ApolloQueryResult<DecksQuery>>
+  ) => Promise<ApolloClient.QueryResult<DecksQuery>>
   refetchNeutralStats: (
     variables?:
       | Partial<
@@ -258,7 +246,7 @@ function renderHeader({
           }>
         >
       | undefined
-  ) => Promise<ApolloQueryResult<FactionStatsQuery>>
+  ) => Promise<ApolloClient.QueryResult<FactionStatsQuery>>
   setFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setNameFilter: Dispatch<SetStateAction<string>>

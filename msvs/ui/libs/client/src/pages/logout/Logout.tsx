@@ -1,9 +1,9 @@
-import { useMutation } from '@apollo/client'
+import { useMutation } from '@apollo/client/react'
 import { useNavigate } from 'react-router'
 
 import Centered from '../../components/Centered'
 import { CurrentUserDocument, CurrentUserQuery, LogoutDocument, User } from '@gwent/graphql-schema/apollo-typings'
-import { getApolloError } from '../../util/error-util'
+import { getErrorMessages } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { ROUTES } from '@gwent/constants'
@@ -41,6 +41,7 @@ export default function LogoutPage() {
     logout()
   }
 
+  const errorMessages = getErrorMessages(logoutError)
   return (
     <Centered>
       {logoutLoading ? (
@@ -59,7 +60,7 @@ export default function LogoutPage() {
         >
           <div id="logoutContainer">
             <span id={HTML_IDS.LogoutMessage} className={logoutError ? HTML_CLASSES.ErrorText : ''}>
-              {`Error logging out: ${getApolloError(logoutError)}`}
+              {`Error logging out: ${errorMessages}`}
             </span>
             <button id="logoutRetry" type="reset" onClick={() => logout} autoFocus={true}>
               Retry

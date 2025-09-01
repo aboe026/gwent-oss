@@ -1,8 +1,9 @@
+import { ApolloProvider } from '@apollo/client/react'
 import { createClient } from 'graphql-ws'
 import { createContext, PropsWithChildren } from 'react'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
-import { split, HttpLink, ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client'
+import { HttpLink, ApolloClient, InMemoryCache, ApolloLink } from '@apollo/client'
 import urlJoin from 'url-join'
 
 /**
@@ -41,7 +42,7 @@ export default function Apollo({ children }: PropsWithChildren) {
   )
 
   const client = new ApolloClient({
-    link: split(
+    link: ApolloLink.split(
       ({ query }) => {
         const definition = getMainDefinition(query)
         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
@@ -50,8 +51,10 @@ export default function Apollo({ children }: PropsWithChildren) {
       httpLink
     ),
     cache: new InMemoryCache(),
-    credentials: process.env.NODE_ENV === 'development' ? 'include' : 'same-origin', // process.env.NODE_ENV overwritten/hard-coded at build time,
-    connectToDevTools: process.env.NODE_ENV === 'development' ? true : false, // process.env.NODE_ENV overwritten/hard-coded at build time
+    devtools: {
+      // process.env.NODE_ENV overwritten/hard-coded at build time
+      enabled: process.env.NODE_ENV === 'development' ? true : false,
+    },
   })
 
   return (

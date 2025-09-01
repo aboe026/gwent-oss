@@ -6,7 +6,7 @@ import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { retryCheckingAuth } from '../../util/error-util'
 import { sortObjectArray, toTitleCase } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
-import { useUserContext } from '../../App'
+import { useUserContext } from '../../UserContext'
 
 /**
  * A row of combat for a Game player and the units that make up that row.

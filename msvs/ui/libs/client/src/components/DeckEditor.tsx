@@ -1,5 +1,5 @@
-import { Dispatch, PropsWithChildren, SetStateAction, useState } from 'react'
-import { useMutation, useQuery } from '@apollo/client'
+import { Dispatch, PropsWithChildren, SetStateAction, useEffect, useState } from 'react'
+import { useMutation, useQuery } from '@apollo/client/react'
 
 import {
   AddDeckDocument,
@@ -32,7 +32,7 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/deck-filter'
-import { getApolloError } from '../util/error-util'
+import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -41,7 +41,7 @@ import UnitDeckCard from './UnitDeckCard'
 import UnitFullCard from './UnitFullCard'
 import UnitsHeader from '../components/UnitsHeader'
 import UnitsStats from '../components/UnitsStats'
-import { useUserContext } from '../App'
+import { useAuthRetry } from '../AuthRetry'
 import { validateDeck } from '@gwent/validators'
 import WholeScreenDialog from '../components/WholeScreenDialog'
 import './DeckEditor.css'
@@ -58,7 +58,6 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
   const [leaderId, setLeaderId] = useState<string | undefined>()
   const [selectedUnits, setSelectedUnits] = useState<DeckUnit[]>([])
   const [deckUnits, setDeckUnits] = useState<DeckUnit[]>([])
-  const { checkAuth } = useUserContext()
   const [addDeck, { loading, error }] = useMutation(AddDeckDocument, {
     variables: {
       faction: faction?.key as FactionKey,
@@ -70,9 +69,6 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
           artStyle: deckUnit.artStyle,
         }
       }),
-    },
-    onError(error) {
-      checkAuth(error, addDeck)
     },
     onCompleted(result) {
       onSave(result.addDeck as Deck)
@@ -95,6 +91,7 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
       )
     },
   })
+  useAuthRetry(error, addDeck)
 
   const isNew = deck !== undefined
   let percent = 0
@@ -110,7 +107,7 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
   ) {
     percent += 25
   }
-  const resolvedError = getApolloError(error)
+  const errorMessages = getErrorMessages(error)
 
   return (
     <form
@@ -155,9 +152,9 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
           disabledOverride: loading,
         })}
       </div>
-      {resolvedError && (
+      {errorMessages && (
         <span id={HTML_IDS.DeckEditorError} className={HTML_CLASSES.ErrorText}>
-          {`Error creating deck: ${resolvedError}`}
+          {`Error creating deck: ${errorMessages}`}
         </span>
       )}
       <div id="deckEditorActions">
@@ -205,25 +202,21 @@ function renderNameAndFaction({
   setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
 }) {
   const [factionPickerOpen, setFactionPickerOpen] = useState(false)
-  const { checkAuth } = useUserContext()
   const {
     loading: factionsLoading,
     error: factionsError,
     data: factionsData,
     refetch: factionsRefetch,
-  } = useQuery(FactionsDocument, {
-    onError: (error) => {
-      checkAuth(error, factionsRefetch)
-    },
-  })
+  } = useQuery(FactionsDocument)
+  useAuthRetry(factionsError, factionsRefetch)
 
-  const resolvedError = getApolloError(factionsError)
-  if (resolvedError) {
+  const errorMessages = getErrorMessages(factionsError)
+  if (errorMessages) {
     return (
       <span
         id={HTML_IDS.DeckEditorFactionError}
         className={HTML_CLASSES.ErrorText}
-      >{`Error getting factions: ${resolvedError}`}</span>
+      >{`Error getting factions: ${errorMessages}`}</span>
     )
   }
 
@@ -422,7 +415,6 @@ function renderLeader({
   setLeaderId: Dispatch<SetStateAction<string | undefined>>
 }) {
   const [leaderPickerOpen, setLeaderPickerOpen] = useState(false)
-  const { checkAuth } = useUserContext()
   const {
     loading: leadersLoading,
     error: leadersError,
@@ -432,11 +424,9 @@ function renderLeader({
     variables: {
       factions: faction ? [faction.key] : [],
     },
-    onError: (error) => {
-      checkAuth(error, leadersRefetch)
-    },
     skip: faction === undefined,
   })
+  useAuthRetry(leadersError, leadersRefetch)
 
   if (faction === undefined) {
     return (
@@ -446,14 +436,14 @@ function renderLeader({
     )
   }
 
-  const resolvedError = getApolloError(leadersError)
-  if (resolvedError) {
+  const errorMessages = getErrorMessages(leadersError)
+  if (errorMessages) {
     return (
       <Centered>
         <span
           id={HTML_IDS.DeckEditorLeaderError}
           className={HTML_CLASSES.ErrorText}
-        >{`Error getting leaders: ${resolvedError}`}</span>
+        >{`Error getting leaders: ${errorMessages}`}</span>
       </Centered>
     )
   }
@@ -588,57 +578,54 @@ function renderUnits({
   const [combatsExpanded, setCombatsExpanded] = useState(false)
   const [effectsExpanded, setEffectsExpanded] = useState(false)
   const [fullUnit, setFullUnit] = useState<DeckUnit | undefined>()
-  const { checkAuth } = useUserContext()
   const {
     loading: factionUnitsLoading,
     error: factionUnitsError,
+    data: factionUnitsData,
     refetch: factionUnitsRefetch,
   } = useQuery(UnitsDocument, {
     variables: {
       deckable: true,
       factions: faction ? [faction.key] : [],
     },
-    onError: (error) => {
-      checkAuth(error, factionUnitsRefetch)
-    },
-    onCompleted: (data) => {
-      setDeckUnits((previous: DeckUnit[]) => [
-        ...previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral),
-        ...data.units.map((unit) => {
-          return {
-            artStyle: 1,
-            unit: unit as Unit,
-          }
-        }),
-      ])
-    },
     skip: faction === undefined,
   })
+  useAuthRetry(factionUnitsError, factionUnitsRefetch)
+  useEffect(() => {
+    if (factionUnitsData) {
+      setDeckUnits((previous: DeckUnit[]) => [
+        ...previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral),
+        ...(factionUnitsData.units || []).map((unit) => ({
+          artStyle: 1,
+          unit: unit as Unit,
+        })),
+      ])
+    }
+  }, [factionUnitsData, setDeckUnits])
   const {
     loading: neutralUnitsLoading,
     error: neutralUnitsError,
+    data: neutralUnitsData,
     refetch: neutralUnitsRefetch,
   } = useQuery(UnitsDocument, {
     variables: {
       deckable: true,
       factions: [FactionKey.Neutral],
     },
-    onError: (error) => {
-      checkAuth(error, neutralUnitsRefetch)
-    },
-    onCompleted: (data) => {
-      setDeckUnits((previous: DeckUnit[]) => [
-        ...previous,
-        ...data.units.map((unit) => {
-          return {
-            artStyle: 1,
-            unit: unit as Unit,
-          }
-        }),
-      ])
-    },
     skip: faction === undefined,
   })
+  useAuthRetry(neutralUnitsError, neutralUnitsRefetch)
+  useEffect(() => {
+    if (neutralUnitsData) {
+      setDeckUnits((previous: DeckUnit[]) => [
+        ...previous,
+        ...(neutralUnitsData.units || []).map((unit) => ({
+          artStyle: 1,
+          unit: unit as Unit,
+        })),
+      ])
+    }
+  }, [neutralUnitsData, setDeckUnits])
 
   let availableSortFields = [`unit.${SORT_FIELD.Name}`, `unit.${SORT_FIELD.Id}`]
   if (availableSortField === SORT_FIELD.Strength) {
@@ -673,8 +660,8 @@ function renderUnits({
     })
   }
 
-  const resolvedFactionUnitsError = getApolloError(factionUnitsError)
-  const resolvedNeutralUnitsError = getApolloError(neutralUnitsError)
+  const factionUnitsErrorMessages = getErrorMessages(factionUnitsError)
+  const neutralUnitsErrorMessages = getErrorMessages(neutralUnitsError)
 
   const disabled = neutralUnitsLoading || factionUnitsLoading || disabledOverride
 
@@ -778,19 +765,19 @@ function renderUnits({
       />
       {faction === undefined ? (
         <img id="deckEditorUnitsIcon" src="images/stats/units.png" title="Units" />
-      ) : resolvedFactionUnitsError || resolvedNeutralUnitsError ? (
+      ) : factionUnitsErrorMessages || neutralUnitsErrorMessages ? (
         <div id="deckEditorUnitsErrors">
-          {resolvedFactionUnitsError && (
+          {factionUnitsErrorMessages && (
             <span
               id={HTML_IDS.DeckUnitsFactionError}
               className={HTML_CLASSES.ErrorText}
-            >{`Error getting faction units: ${resolvedFactionUnitsError}`}</span>
+            >{`Error getting faction units: ${factionUnitsErrorMessages}`}</span>
           )}
-          {resolvedNeutralUnitsError && (
+          {neutralUnitsErrorMessages && (
             <span
               id={HTML_IDS.DeckUnitsNeutralError}
               className={HTML_CLASSES.ErrorText}
-            >{`Error getting neutral units: ${resolvedNeutralUnitsError}`}</span>
+            >{`Error getting neutral units: ${neutralUnitsErrorMessages}`}</span>
           )}
         </div>
       ) : (

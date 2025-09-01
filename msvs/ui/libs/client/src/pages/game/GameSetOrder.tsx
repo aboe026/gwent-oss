@@ -3,12 +3,12 @@ import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
 import { GamePlayer, Game, FactionKey } from '@gwent/graphql-schema/apollo-typings'
-import { getApolloError, retryCheckingAuth } from '../../util/error-util'
+import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import { SetOrderProps } from './GameProps'
-import { useUserContext } from '../../App'
+import { useUserContext } from '../../UserContext'
 
 /**
  * Allows user to set the turn order for a Game.
@@ -27,7 +27,7 @@ export default function GameSetOrder({
   setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
 }) {
   const { checkAuth } = useUserContext()
-  const resolvedSetOrderError = getApolloError(setOrderProps.error)
+  const setOrderErrorMessages = getErrorMessages(setOrderProps.error)
   const scoiaTaelDecks = game.players.filter((player) => player.faction?.key === FactionKey.ScoiaTael).length
   const canSetOrder = scoiaTaelDecks !== 1 || self.faction?.key === FactionKey.ScoiaTael
   const canChooseOrder =
@@ -112,11 +112,11 @@ export default function GameSetOrder({
             >
               Set Order
             </button>
-            {resolvedSetOrderError && (
+            {setOrderErrorMessages && (
               <span
                 id={HTML_IDS.GameOrderError}
                 className={HTML_CLASSES.ErrorText}
-              >{`Error setting order: ${resolvedSetOrderError}`}</span>
+              >{`Error setting order: ${setOrderErrorMessages}`}</span>
             )}
           </div>
         ) : (

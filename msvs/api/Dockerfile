@@ -4,7 +4,7 @@ ARG BUILD=0
 #########
 # BUILD #
 #########
-FROM node:22.18.0-alpine AS build
+FROM node:22.19.0-alpine AS build
 
 ARG APP_DIR
 ARG BUILD
@@ -23,7 +23,7 @@ RUN echo "{\"buildNumber\": ${BUILD}}" > app-info.json
 ###########
 # RUNTIME #
 ###########
-FROM node:22.18.0-alpine
+FROM node:22.19.0-alpine
 
 ARG APP_DIR
 ARG BUILD
