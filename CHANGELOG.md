@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Upgraded dependencies ([#44](https://github.com/aboe026/gwent/pull/44)) (Adam Boe)
+- Upgrade dependencies ([#44](https://github.com/aboe026/gwent/pull/44)) (Adam Boe)
 
 ## 0.15.1 - 2025-08-29
 
