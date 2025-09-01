@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
-import { useUserContext } from './UserContext'
-import { Exact } from '@gwent/graphql-schema/apollo-typings'
 import { ApolloClient } from '@apollo/client'
+import { useEffect } from 'react'
+
+import { Exact } from '@gwent/graphql-schema/apollo-typings'
+import { useUserContext } from './UserContext'
 
 /**
  * Allow user to re-authenticate with system to retry operation if their session times out.
