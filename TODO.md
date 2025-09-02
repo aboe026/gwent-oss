@@ -12,7 +12,6 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- check if all codegen dependencies necessary (eg @graphql-codegen/typescript-operations)
 - use apollo data masking
   - ran into issue with returning empty objects (because some fragments not having ids ?)
 - separate lib/graphql-schema/src/apollo into:
