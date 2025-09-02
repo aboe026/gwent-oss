@@ -37,9 +37,6 @@ export default function GamesPage() {
   const [filterFields, setFilterFields] = useState<FILTER_FIELD[]>([])
   const [filtersExpanded, setFiltersExpanded] = useState(false)
   const { loading, error, data, refetch } = useQuery(GamesDocument)
-  if (data) {
-    console.log('TEST data raw:', data.games[0])
-  }
   useAuthRetry(error, refetch)
   const navigate = useNavigate()
   const errorMessages = getErrorMessages(error)
@@ -48,9 +45,8 @@ export default function GamesPage() {
     array: data?.games,
     sortProperties: [sortField, 'id'],
     reverse: sortOrder === SORT_ORDER.Asc ? false : true,
-    clone: false,
   })
-  console.log('TEST sortedGames: ', sortedGames)
+
   const filteredGames = sortedGames.filter((game) =>
     isFilteredIn({
       game: game as Game,

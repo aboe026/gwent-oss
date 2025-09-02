@@ -72,15 +72,6 @@ const config: CodegenConfig = {
     './generated/apollo/': {
       documents: ['./src/apollo/*.gql'],
       preset: 'client',
-      presetConfig: {
-        fragmentMasking: false, // disable Codegen’s masking because using Apollo masking
-      },
-      config: {
-        customDirectives: {
-          apolloUnmask: true,
-        },
-        inlineFragmentTypes: 'mask',
-      },
     },
   },
   hooks: {
