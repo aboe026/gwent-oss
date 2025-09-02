@@ -12,9 +12,10 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- remove "...Faction" from faction names, as it gets repeated in the typings (...FactionFactionDoc)
 - improve performance when typing name for deck
-- use Fragment Masking to ensure front end code is only using fields actually requested in queries/mutations/subscriptions
-  - use built-in apollo Data Masking instead? Ditch client-preset in favor of https://www.apollographql.com/docs/react/development-testing/graphql-codegen#recommended-starter-configuration
+- use Data Masking to ensure front end code is only using fields actually requested in queries/mutations/subscriptions
+  - https://www.apollographql.com/docs/react/data/fragments#data-masking
 - rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
 - remove unnecessary dependencies
   - figlet: just have hard-coded banner text for startup

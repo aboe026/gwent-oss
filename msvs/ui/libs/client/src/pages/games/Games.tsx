@@ -2,11 +2,21 @@ import { ApolloClient } from '@apollo/client'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router'
-import { useQuery } from '@apollo/client/react'
+import { useFragment, useQuery } from '@apollo/client/react'
 
 import { Button } from '../../util/keyboard-listener'
 import Centered from '../../components/Centered'
-import { Exact, FactionKey, Game, GamesDocument, GamesQuery, GameStatus } from '@gwent/graphql-schema/apollo-typings'
+import {
+  Exact,
+  FactionKey,
+  Game,
+  GamesDocument,
+  GamesQuery,
+  GameStatus,
+  GameFragmentFragmentDoc,
+  GamePlayerFragmentFragmentDoc,
+  GameFactionFragmentFragmentDoc,
+} from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FILTER_FIELD,
@@ -106,7 +116,14 @@ export default function GamesPage() {
         </Centered>
       ) : (
         <div id="gamesList">
-          {filteredGames.map((game) => {
+          {filteredGames.map((gameFragment) => {
+            // TODO: move into its own component (probably same with faction stuff)
+            const { data: game, complete: gameComplete } = useFragment({
+              fragment: GameFragmentFragmentDoc,
+              from: gameFragment,
+              fragmentName: 'GameFragment',
+            })
+            if (!gameComplete) return null
             const status = formatGameStatus(game.status)
             const rowUrl = ROUTES.Game.path.replace(':gameId', game.id)
 
@@ -123,18 +140,40 @@ export default function GamesPage() {
                 <div className={HTML_CLASSES.GameRowCreator}>{game.creator.name}</div>
                 <div className="multi-row-cell">
                   {game.players.map((player, index) => {
+                    const { data: gamePlayer, complete: gamePlayerComplete } = useFragment({
+                      fragment: GamePlayerFragmentFragmentDoc,
+                      from: player,
+                      fragmentName: 'GamePlayerFragment',
+                    })
+                    if (!gamePlayerComplete) return null
                     return (
                       <span className={HTML_CLASSES.GameRowPlayer} key={index}>
-                        {player.user.name}
+                        {gamePlayer.user.name}
                       </span>
                     )
                   })}
                 </div>
                 <div className="multi-row-cell">
                   {game.players.map((player, index) => {
+                    let factionName = ''
+                    const { data: gamePlayer, complete: gamePlayerComplete } = useFragment({
+                      fragment: GamePlayerFragmentFragmentDoc,
+                      from: player,
+                      fragmentName: 'GamePlayerFragment',
+                    })
+                    if (!gamePlayerComplete) return null
+                    if (gamePlayer.faction) {
+                      const { data: playerFaction, complete: playerFactionComplete } = useFragment({
+                        fragment: GameFactionFragmentFragmentDoc,
+                        from: gamePlayer.faction,
+                        fragmentName: 'GameFactionFragment',
+                      })
+                      if (!playerFactionComplete) return null
+                      factionName = playerFaction.name
+                    }
                     return (
                       <span className={HTML_CLASSES.GameRowFaction} key={index}>
-                        {player.faction?.name}
+                        {factionName}
                       </span>
                     )
                   })}

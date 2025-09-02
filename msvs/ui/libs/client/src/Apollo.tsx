@@ -51,6 +51,7 @@ export default function Apollo({ children }: PropsWithChildren) {
       httpLink
     ),
     cache: new InMemoryCache(),
+    dataMasking: true,
     devtools: {
       // process.env.NODE_ENV overwritten/hard-coded at build time
       enabled: process.env.NODE_ENV === 'development' ? true : false,

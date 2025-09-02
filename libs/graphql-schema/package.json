@@ -10,9 +10,6 @@
       "build/src/index.d.ts": [
         "build/src/index.d.ts"
       ],
-      "apollo-typings": [
-        "build/generated/apollo/index.d.ts"
-      ],
       "*": [
         "build/generated/*",
         "build/src/*"
@@ -24,7 +21,7 @@
     "./deck-filter": "./build/src/deck-filter.js",
     "./decks-filter": "./build/src/decks-filter.js",
     "./games-filter": "./build/src/games-filter.js",
-    "./apollo-typings": "./build/generated/apollo/index.js",
+    "./apollo-typings": "./build/generated/apollo-typings.js",
     "./database-typings": "./build/generated/database-typings.js",
     "./resolver-typings": "./build/generated/resolver-typings.js",
     "./context": "./build/src/context.js"
@@ -35,7 +32,6 @@
     "build-node": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "convert-eol": "yarn g:ts-node scripts/convert-eol.ts",
-    "add-graphql-to-apollo": "yarn g:ts-node scripts/add-graphql-to-apollo",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
@@ -58,10 +54,11 @@
   "devDependencies": {
     "@graphql-codegen/add": "5.0.3",
     "@graphql-codegen/cli": "5.0.7",
-    "@graphql-codegen/client-preset": "4.8.3",
     "@graphql-codegen/schema-ast": "4.1.0",
+    "@graphql-codegen/typed-document-node": "5.1.2",
     "@graphql-codegen/typescript": "4.1.6",
     "@graphql-codegen/typescript-mongodb": "3.0.1",
+    "@graphql-codegen/typescript-operations": "4.6.1",
     "@graphql-codegen/typescript-resolvers": "4.5.2",
     "@graphql-tools/schema": "10.0.25",
     "@parcel/watcher": "2.5.1",

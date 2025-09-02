@@ -6,7 +6,7 @@
     "moduleResolution": "node"
   },
   "extends": "../../../../tsconfig",
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "types"],
   "ts-node": {
     "compilerOptions": {
       "module": "CommonJS"

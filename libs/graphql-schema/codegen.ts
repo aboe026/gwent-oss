@@ -69,16 +69,19 @@ const config: CodegenConfig = {
       },
     },
     // typings for use by Apollo/React in the frontend browser code
-    './generated/apollo/': {
+    './generated/apollo-typings.ts': {
       documents: ['./src/apollo/*.gql'],
-      preset: 'client',
-      presetConfig: {
-        fragmentMasking: false,
+      plugins: ['typescript', 'typescript-operations', 'typed-document-node'],
+      config: {
+        inlineFragmentTypes: 'mask',
+        customDirectives: {
+          apolloUnmask: true,
+        },
       },
     },
   },
   hooks: {
-    afterAllFileWrite: ['yarn add-graphql-to-apollo', 'yarn convert-eol'],
+    afterAllFileWrite: ['yarn convert-eol'],
   },
 }
 
