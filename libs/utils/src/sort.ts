@@ -14,15 +14,17 @@ export default function sortObjectArray<T extends any[]>({
   array,
   sortProperties,
   reverse = false,
+  clone = true,
 }: {
   array?: T | null
   sortProperties: (string | string[])[]
   reverse?: boolean
+  clone?: boolean
 }): T {
   if (!array) {
     return [] as any as T // eslint-disable-line @typescript-eslint/no-explicit-any
   }
-  const clonedArray = array.slice()
+  const clonedArray = clone ? array.slice() : array
   return clonedArray.sort((a, b) =>
     getSortOrder({
       firstComparator: a,

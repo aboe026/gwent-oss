@@ -2,21 +2,11 @@ import { ApolloClient } from '@apollo/client'
 import { CgArrowDown, CgArrowUp, CgClose, CgEyeAlt, CgEye, CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction, useState } from 'react'
 import { NavigateFunction, useNavigate } from 'react-router'
-import { useFragment, useQuery } from '@apollo/client/react'
+import { useQuery } from '@apollo/client/react'
 
 import { Button } from '../../util/keyboard-listener'
 import Centered from '../../components/Centered'
-import {
-  Exact,
-  FactionKey,
-  Game,
-  GamesDocument,
-  GamesQuery,
-  GameStatus,
-  GameFragmentFragmentDoc,
-  GamePlayerFragmentFragmentDoc,
-  GameFactionFragmentFragmentDoc,
-} from '@gwent/graphql-schema/apollo-typings'
+import { Exact, FactionKey, Game, GamesDocument, GamesQuery, GameStatus } from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FILTER_FIELD,
@@ -25,10 +15,11 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/games-filter'
-import { humanizeDay, formatGameStatus, humanizeTime, sortObjectArray } from '@gwent/utils'
+import GameRow from './GameRow'
 import { getErrorMessages } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import { sortObjectArray } from '@gwent/utils'
 import { useAuthRetry } from '../../AuthRetry'
 import { useTitle } from '../../components/TabTitle'
 import './Games.css'
@@ -46,6 +37,9 @@ export default function GamesPage() {
   const [filterFields, setFilterFields] = useState<FILTER_FIELD[]>([])
   const [filtersExpanded, setFiltersExpanded] = useState(false)
   const { loading, error, data, refetch } = useQuery(GamesDocument)
+  if (data) {
+    console.log('TEST data raw:', data.games[0])
+  }
   useAuthRetry(error, refetch)
   const navigate = useNavigate()
   const errorMessages = getErrorMessages(error)
@@ -54,7 +48,9 @@ export default function GamesPage() {
     array: data?.games,
     sortProperties: [sortField, 'id'],
     reverse: sortOrder === SORT_ORDER.Asc ? false : true,
+    clone: false,
   })
+  console.log('TEST sortedGames: ', sortedGames)
   const filteredGames = sortedGames.filter((game) =>
     isFilteredIn({
       game: game as Game,
@@ -116,81 +112,9 @@ export default function GamesPage() {
         </Centered>
       ) : (
         <div id="gamesList">
-          {filteredGames.map((gameFragment) => {
-            // TODO: move into its own component (probably same with faction stuff)
-            const { data: game, complete: gameComplete } = useFragment({
-              fragment: GameFragmentFragmentDoc,
-              from: gameFragment,
-              fragmentName: 'GameFragment',
-            })
-            if (!gameComplete) return null
-            const status = formatGameStatus(game.status)
-            const rowUrl = ROUTES.Game.path.replace(':gameId', game.id)
-
-            return (
-              <div key={game.id} className="game-list-row" onClick={() => navigate(rowUrl)}>
-                <div title={game.created} className="multi-row-cell">
-                  <span className={HTML_CLASSES.GameRowCreatedDay}>{humanizeDay(game.created)}</span>
-                  <span className={HTML_CLASSES.GameRowCreatedTime}>{humanizeTime(game.created)}</span>
-                </div>
-                <div title={game.updated} className="multi-row-cell">
-                  <span className={HTML_CLASSES.GameRowUpdatedDay}>{humanizeDay(game.updated)}</span>
-                  <span className={HTML_CLASSES.GameRowUpdatedTime}>{humanizeTime(game.updated)}</span>
-                </div>
-                <div className={HTML_CLASSES.GameRowCreator}>{game.creator.name}</div>
-                <div className="multi-row-cell">
-                  {game.players.map((player, index) => {
-                    const { data: gamePlayer, complete: gamePlayerComplete } = useFragment({
-                      fragment: GamePlayerFragmentFragmentDoc,
-                      from: player,
-                      fragmentName: 'GamePlayerFragment',
-                    })
-                    if (!gamePlayerComplete) return null
-                    return (
-                      <span className={HTML_CLASSES.GameRowPlayer} key={index}>
-                        {gamePlayer.user.name}
-                      </span>
-                    )
-                  })}
-                </div>
-                <div className="multi-row-cell">
-                  {game.players.map((player, index) => {
-                    let factionName = ''
-                    const { data: gamePlayer, complete: gamePlayerComplete } = useFragment({
-                      fragment: GamePlayerFragmentFragmentDoc,
-                      from: player,
-                      fragmentName: 'GamePlayerFragment',
-                    })
-                    if (!gamePlayerComplete) return null
-                    if (gamePlayer.faction) {
-                      const { data: playerFaction, complete: playerFactionComplete } = useFragment({
-                        fragment: GameFactionFragmentFragmentDoc,
-                        from: gamePlayer.faction,
-                        fragmentName: 'GameFactionFragment',
-                      })
-                      if (!playerFactionComplete) return null
-                      factionName = playerFaction.name
-                    }
-                    return (
-                      <span className={HTML_CLASSES.GameRowFaction} key={index}>
-                        {factionName}
-                      </span>
-                    )
-                  })}
-                </div>
-                <div className={HTML_CLASSES.GameRowStatus}>{status}</div>
-                <div className="multi-row-cell">
-                  {game.victors.map((victor, index) => {
-                    return (
-                      <span className={HTML_CLASSES.GameRowVictor} key={index}>
-                        {victor.name}
-                      </span>
-                    )
-                  })}
-                </div>
-              </div>
-            )
-          })}
+          {filteredGames.map((game, index) => (
+            <GameRow gameFragment={game} key={index} />
+          ))}
         </div>
       )}
     </div>
