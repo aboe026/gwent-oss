@@ -70,7 +70,7 @@ const config: CodegenConfig = {
     },
     // typings for use by Apollo/React in the frontend browser code
     './generated/apollo/': {
-      documents: ['./src/apollo/*.gql'],
+      documents: ['./src/apollo/**/*.gql'],
       preset: 'client',
     },
   },

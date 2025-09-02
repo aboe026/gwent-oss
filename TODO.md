@@ -14,10 +14,6 @@ Existing problems in the codebase that need to be fixed.
 
 - use apollo data masking
   - ran into issue with returning empty objects (because some fragments not having ids ?)
-- separate lib/graphql-schema/src/apollo into:
-  - queries
-  - mutations
-  - fragments
 - remove "...Faction" from faction names, as it gets repeated in the typings (...FactionFactionDoc)
 - improve performance when typing name for deck
 - use Data Masking to ensure front end code is only using fields actually requested in queries/mutations/subscriptions
