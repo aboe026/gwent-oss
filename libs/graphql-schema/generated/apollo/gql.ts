@@ -15,9 +15,10 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  */
 type Documents = {
     "fragment CardUnitFragment on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ability\n    image\n    key\n    name\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  name\n  quote\n  special\n  strength\n}": typeof types.CardUnitFragmentFragmentDoc,
-    "fragment DeckFragment on Deck {\n  id\n  created\n  name\n  faction {\n    ...FactionFragment\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    units\n    specials\n    heroes\n    close\n    ranged\n    siege\n    agile\n    strengthTotal\n    strengthAverage\n  }\n}": typeof types.DeckFragmentFragmentDoc,
+    "fragment DeckFragment on Deck {\n  id\n  created\n  name\n  faction {\n    ...FactionFragment\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    ...DeckStats\n  }\n}": typeof types.DeckFragmentFragmentDoc,
+    "fragment DeckStats on UnitStats {\n  units\n  specials\n  heroes\n  close\n  ranged\n  siege\n  agile\n  strengthTotal\n  strengthAverage\n}": typeof types.DeckStatsFragmentDoc,
     "fragment DeckUnitFragment on DeckUnit {\n  artStyle\n  unit {\n    ...CardUnitFragment\n  }\n}": typeof types.DeckUnitFragmentFragmentDoc,
-    "fragment FactionFragment on Faction {\n  key\n  id\n  name\n  image\n  ability\n  dlc {\n    name\n    image\n  }\n  stats {\n    agile\n    avenger\n    berserker\n    bond\n    decoy\n    horn\n    mardroeme\n    medic\n    morale\n    muster\n    scorch\n    spy\n    weather\n    close\n    ranged\n    siege\n    units\n    specials\n    heroes\n    strengthAverage\n    strengthTotal\n    strengths\n  }\n}": typeof types.FactionFragmentFragmentDoc,
+    "fragment FactionFragment on Faction {\n  key\n  id\n  name\n  image\n  ability\n  dlc {\n    name\n    image\n  }\n  stats {\n    ...DeckStats\n    avenger\n    berserker\n    bond\n    decoy\n    horn\n    mardroeme\n    medic\n    morale\n    muster\n    scorch\n    spy\n    weather\n    strengths\n  }\n}": typeof types.FactionFragmentFragmentDoc,
     "fragment GameDeckFragment on GameDeck {\n  discard {\n    ...DeckUnitFragment\n  }\n  from {\n    created\n    faction {\n      ...GameFactionFragment\n    }\n    id\n    leader {\n      ...GameLeaderFragment\n    }\n    name\n  }\n  hand {\n    ...DeckUnitFragment\n  }\n  redraws {\n    from {\n      ...DeckUnitFragment\n    }\n    to {\n      ...DeckUnitFragment\n    }\n  }\n  undrawn {\n    ...DeckUnitFragment\n  }\n}": typeof types.GameDeckFragmentFragmentDoc,
     "fragment GameFactionFragment on Faction {\n  ability\n  id\n  image\n  key\n  name\n}": typeof types.GameFactionFragmentFragmentDoc,
     "fragment GameFragment on Game {\n  config {\n    lives\n  }\n  created\n  creator {\n    id\n    name\n  }\n  id\n  players {\n    ...GamePlayerFragment\n  }\n  round\n  status\n  turn {\n    user {\n      id\n      name\n    }\n  }\n  updated\n  victors {\n    id\n    name\n  }\n}": typeof types.GameFragmentFragmentDoc,
@@ -39,7 +40,7 @@ type Documents = {
     "query Application {\n  application {\n    build\n    version\n  }\n}": typeof types.ApplicationDocument,
     "query CurrentUser {\n  currentUser {\n    id\n    name\n    created\n  }\n}": typeof types.CurrentUserDocument,
     "query Decks {\n  decks {\n    ...DeckFragment\n  }\n}": typeof types.DecksDocument,
-    "query FactionStats($keys: [FactionKey!]) {\n  factions(keys: $keys) {\n    key\n    stats {\n      units\n      specials\n      heroes\n      close\n      ranged\n      siege\n      agile\n      strengthTotal\n    }\n  }\n}": typeof types.FactionStatsDocument,
+    "query FactionStats($keys: [FactionKey!]) {\n  factions(keys: $keys) {\n    key\n    stats {\n      ...DeckStats\n    }\n  }\n}": typeof types.FactionStatsDocument,
     "query Factions {\n  factions {\n    ...FactionFragment\n  }\n}": typeof types.FactionsDocument,
     "query Game($id: ID!) {\n  game(id: $id) {\n    ...GameFragment\n  }\n}": typeof types.GameDocument,
     "query GameDeck($game: ID!) {\n  gameDeck(game: $game) {\n    ...GameDeckFragment\n  }\n}": typeof types.GameDeckDocument,
@@ -60,9 +61,10 @@ type Documents = {
 };
 const documents: Documents = {
     "fragment CardUnitFragment on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ability\n    image\n    key\n    name\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  name\n  quote\n  special\n  strength\n}": types.CardUnitFragmentFragmentDoc,
-    "fragment DeckFragment on Deck {\n  id\n  created\n  name\n  faction {\n    ...FactionFragment\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    units\n    specials\n    heroes\n    close\n    ranged\n    siege\n    agile\n    strengthTotal\n    strengthAverage\n  }\n}": types.DeckFragmentFragmentDoc,
+    "fragment DeckFragment on Deck {\n  id\n  created\n  name\n  faction {\n    ...FactionFragment\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    ...DeckStats\n  }\n}": types.DeckFragmentFragmentDoc,
+    "fragment DeckStats on UnitStats {\n  units\n  specials\n  heroes\n  close\n  ranged\n  siege\n  agile\n  strengthTotal\n  strengthAverage\n}": types.DeckStatsFragmentDoc,
     "fragment DeckUnitFragment on DeckUnit {\n  artStyle\n  unit {\n    ...CardUnitFragment\n  }\n}": types.DeckUnitFragmentFragmentDoc,
-    "fragment FactionFragment on Faction {\n  key\n  id\n  name\n  image\n  ability\n  dlc {\n    name\n    image\n  }\n  stats {\n    agile\n    avenger\n    berserker\n    bond\n    decoy\n    horn\n    mardroeme\n    medic\n    morale\n    muster\n    scorch\n    spy\n    weather\n    close\n    ranged\n    siege\n    units\n    specials\n    heroes\n    strengthAverage\n    strengthTotal\n    strengths\n  }\n}": types.FactionFragmentFragmentDoc,
+    "fragment FactionFragment on Faction {\n  key\n  id\n  name\n  image\n  ability\n  dlc {\n    name\n    image\n  }\n  stats {\n    ...DeckStats\n    avenger\n    berserker\n    bond\n    decoy\n    horn\n    mardroeme\n    medic\n    morale\n    muster\n    scorch\n    spy\n    weather\n    strengths\n  }\n}": types.FactionFragmentFragmentDoc,
     "fragment GameDeckFragment on GameDeck {\n  discard {\n    ...DeckUnitFragment\n  }\n  from {\n    created\n    faction {\n      ...GameFactionFragment\n    }\n    id\n    leader {\n      ...GameLeaderFragment\n    }\n    name\n  }\n  hand {\n    ...DeckUnitFragment\n  }\n  redraws {\n    from {\n      ...DeckUnitFragment\n    }\n    to {\n      ...DeckUnitFragment\n    }\n  }\n  undrawn {\n    ...DeckUnitFragment\n  }\n}": types.GameDeckFragmentFragmentDoc,
     "fragment GameFactionFragment on Faction {\n  ability\n  id\n  image\n  key\n  name\n}": types.GameFactionFragmentFragmentDoc,
     "fragment GameFragment on Game {\n  config {\n    lives\n  }\n  created\n  creator {\n    id\n    name\n  }\n  id\n  players {\n    ...GamePlayerFragment\n  }\n  round\n  status\n  turn {\n    user {\n      id\n      name\n    }\n  }\n  updated\n  victors {\n    id\n    name\n  }\n}": types.GameFragmentFragmentDoc,
@@ -84,7 +86,7 @@ const documents: Documents = {
     "query Application {\n  application {\n    build\n    version\n  }\n}": types.ApplicationDocument,
     "query CurrentUser {\n  currentUser {\n    id\n    name\n    created\n  }\n}": types.CurrentUserDocument,
     "query Decks {\n  decks {\n    ...DeckFragment\n  }\n}": types.DecksDocument,
-    "query FactionStats($keys: [FactionKey!]) {\n  factions(keys: $keys) {\n    key\n    stats {\n      units\n      specials\n      heroes\n      close\n      ranged\n      siege\n      agile\n      strengthTotal\n    }\n  }\n}": types.FactionStatsDocument,
+    "query FactionStats($keys: [FactionKey!]) {\n  factions(keys: $keys) {\n    key\n    stats {\n      ...DeckStats\n    }\n  }\n}": types.FactionStatsDocument,
     "query Factions {\n  factions {\n    ...FactionFragment\n  }\n}": types.FactionsDocument,
     "query Game($id: ID!) {\n  game(id: $id) {\n    ...GameFragment\n  }\n}": types.GameDocument,
     "query GameDeck($game: ID!) {\n  gameDeck(game: $game) {\n    ...GameDeckFragment\n  }\n}": types.GameDeckDocument,
@@ -125,7 +127,11 @@ export function graphql(source: "fragment CardUnitFragment on Unit {\n  combats\
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "fragment DeckFragment on Deck {\n  id\n  created\n  name\n  faction {\n    ...FactionFragment\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    units\n    specials\n    heroes\n    close\n    ranged\n    siege\n    agile\n    strengthTotal\n    strengthAverage\n  }\n}"): (typeof documents)["fragment DeckFragment on Deck {\n  id\n  created\n  name\n  faction {\n    ...FactionFragment\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    units\n    specials\n    heroes\n    close\n    ranged\n    siege\n    agile\n    strengthTotal\n    strengthAverage\n  }\n}"];
+export function graphql(source: "fragment DeckFragment on Deck {\n  id\n  created\n  name\n  faction {\n    ...FactionFragment\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    ...DeckStats\n  }\n}"): (typeof documents)["fragment DeckFragment on Deck {\n  id\n  created\n  name\n  faction {\n    ...FactionFragment\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    ...DeckStats\n  }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "fragment DeckStats on UnitStats {\n  units\n  specials\n  heroes\n  close\n  ranged\n  siege\n  agile\n  strengthTotal\n  strengthAverage\n}"): (typeof documents)["fragment DeckStats on UnitStats {\n  units\n  specials\n  heroes\n  close\n  ranged\n  siege\n  agile\n  strengthTotal\n  strengthAverage\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -133,7 +139,7 @@ export function graphql(source: "fragment DeckUnitFragment on DeckUnit {\n  artS
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "fragment FactionFragment on Faction {\n  key\n  id\n  name\n  image\n  ability\n  dlc {\n    name\n    image\n  }\n  stats {\n    agile\n    avenger\n    berserker\n    bond\n    decoy\n    horn\n    mardroeme\n    medic\n    morale\n    muster\n    scorch\n    spy\n    weather\n    close\n    ranged\n    siege\n    units\n    specials\n    heroes\n    strengthAverage\n    strengthTotal\n    strengths\n  }\n}"): (typeof documents)["fragment FactionFragment on Faction {\n  key\n  id\n  name\n  image\n  ability\n  dlc {\n    name\n    image\n  }\n  stats {\n    agile\n    avenger\n    berserker\n    bond\n    decoy\n    horn\n    mardroeme\n    medic\n    morale\n    muster\n    scorch\n    spy\n    weather\n    close\n    ranged\n    siege\n    units\n    specials\n    heroes\n    strengthAverage\n    strengthTotal\n    strengths\n  }\n}"];
+export function graphql(source: "fragment FactionFragment on Faction {\n  key\n  id\n  name\n  image\n  ability\n  dlc {\n    name\n    image\n  }\n  stats {\n    ...DeckStats\n    avenger\n    berserker\n    bond\n    decoy\n    horn\n    mardroeme\n    medic\n    morale\n    muster\n    scorch\n    spy\n    weather\n    strengths\n  }\n}"): (typeof documents)["fragment FactionFragment on Faction {\n  key\n  id\n  name\n  image\n  ability\n  dlc {\n    name\n    image\n  }\n  stats {\n    ...DeckStats\n    avenger\n    berserker\n    bond\n    decoy\n    horn\n    mardroeme\n    medic\n    morale\n    muster\n    scorch\n    spy\n    weather\n    strengths\n  }\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -221,7 +227,7 @@ export function graphql(source: "query Decks {\n  decks {\n    ...DeckFragment\n
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "query FactionStats($keys: [FactionKey!]) {\n  factions(keys: $keys) {\n    key\n    stats {\n      units\n      specials\n      heroes\n      close\n      ranged\n      siege\n      agile\n      strengthTotal\n    }\n  }\n}"): (typeof documents)["query FactionStats($keys: [FactionKey!]) {\n  factions(keys: $keys) {\n    key\n    stats {\n      units\n      specials\n      heroes\n      close\n      ranged\n      siege\n      agile\n      strengthTotal\n    }\n  }\n}"];
+export function graphql(source: "query FactionStats($keys: [FactionKey!]) {\n  factions(keys: $keys) {\n    key\n    stats {\n      ...DeckStats\n    }\n  }\n}"): (typeof documents)["query FactionStats($keys: [FactionKey!]) {\n  factions(keys: $keys) {\n    key\n    stats {\n      ...DeckStats\n    }\n  }\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

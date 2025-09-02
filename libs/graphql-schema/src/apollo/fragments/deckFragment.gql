@@ -11,14 +11,6 @@ fragment DeckFragment on Deck {
     image
   }
   stats {
-    units
-    specials
-    heroes
-    close
-    ranged
-    siege
-    agile
-    strengthTotal
-    strengthAverage
+    ...DeckStats
   }
 }

@@ -9,7 +9,7 @@ fragment FactionFragment on Faction {
     image
   }
   stats {
-    agile
+    ...DeckStats
     avenger
     berserker
     bond
@@ -22,14 +22,6 @@ fragment FactionFragment on Faction {
     scorch
     spy
     weather
-    close
-    ranged
-    siege
-    units
-    specials
-    heroes
-    strengthAverage
-    strengthTotal
     strengths
   }
 }

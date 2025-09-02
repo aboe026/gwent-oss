@@ -62,10 +62,6 @@ export default function GameRow({ gameFragment }: GameRowProps) {
 
 /**
  * A players name for a Game.
- *
- * @param config The configuration used to render the players name.
- * @param config.playerFragment The fragment containing the game players information.
- * @returns A rendering of the game players name.
  */
 function PlayerName({ playerFragment }: { playerFragment: FragmentType<GamePlayerFragmentFragment> }) {
   const player = useFragment(GamePlayerFragmentFragmentDoc, playerFragment)
@@ -74,10 +70,6 @@ function PlayerName({ playerFragment }: { playerFragment: FragmentType<GamePlaye
 
 /**
  * A players chosen Faction for a Game.
- *
- * @param config The configuration used to render the players Faction.
- * @param config.playerFragment The fragment containing the game players information.
- * @returns A rendering of the game players Faction.
  */
 function PlayerFaction({ playerFragment }: { playerFragment: FragmentType<GamePlayerFragmentFragment> }) {
   const gamePlayer = useFragment(GamePlayerFragmentFragmentDoc, playerFragment)
