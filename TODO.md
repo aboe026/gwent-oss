@@ -12,12 +12,9 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- use apollo data masking
-  - ran into issue with returning empty objects (because some fragments not having ids ?)
+- looks for " as " in UI code to make sure not casting type when should be using fragment masking
 - remove "...Faction" from faction names, as it gets repeated in the typings (...FactionFactionDoc)
 - improve performance when typing name for deck
-- use Data Masking to ensure front end code is only using fields actually requested in queries/mutations/subscriptions
-  - https://www.apollographql.com/docs/react/data/fragments#data-masking
 - rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
 - remove unnecessary dependencies
   - figlet: just have hard-coded banner text for startup
@@ -47,6 +44,8 @@ Existing problems in the codebase that need to be fixed.
   - min units?
 - split subscriptions into separate files (similar to resolvers)
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status, gamesList doesn't need all details that game page does)
+- use apollo data masking
+  - ran into issue with returning empty objects (because some fragments not having ids ?)
 - enter key does not create game in UI?
   - seems to be browser specific due to autocomplete list taking autofocus
 - rename "redraw" mutation to "redrawUnit"? and "ready" to "readyGame"? Have mutation name convention by "verbNoun"?

@@ -13,7 +13,6 @@ import { humanizeDay, formatGameStatus, humanizeTime } from '@gwent/utils'
 import './GameRow.css'
 import { FragmentType } from '@apollo/client'
 
-// TODO: move other CSS from Games.css to GameRow.css
 /**
  * A row with information about a specific game
  *

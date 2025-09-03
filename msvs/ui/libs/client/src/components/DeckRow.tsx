@@ -2,7 +2,6 @@ import { ErrorLike, FragmentType } from '@apollo/client'
 
 import Centered from './Centered'
 import {
-  Deck,
   DeckFragmentFragment,
   DeckFragmentFragmentDoc,
   DeckStatsFragment,
@@ -61,7 +60,7 @@ export default function DeckRow({ actions, actionsDisabled, deckFragment, neutra
           {actions.map((action, index) => (
             <div
               key={index}
-              onClick={() => !actionsDisabled && action.onClick(deck as Deck)} // TODO: remove "as Deck" and handle deck fragment in action onClick
+              onClick={() => !actionsDisabled && action.onClick(deck)}
               title={action.title}
               className={`deck-list-deck-action-button ${action.className}`}
             >
@@ -249,5 +248,5 @@ export interface Action {
   title: string
   className: string
   icon: IconType
-  onClick: (deck: Deck) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClick: (deck: DeckFragmentFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }

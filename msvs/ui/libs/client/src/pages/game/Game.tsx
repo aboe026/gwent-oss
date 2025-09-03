@@ -26,6 +26,7 @@ import {
   RedrawDocument,
   SetDeckDocument,
   SetOrderDocument,
+  DeckFragmentFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../../util/add-to-cache-list'
 import Centered from '../../components/Centered'
@@ -703,7 +704,7 @@ function ExistingGame({
                 actions={[
                   {
                     icon: CgPlayButton,
-                    onClick: async (deck: Deck) => {
+                    onClick: async (deck: DeckFragmentFragment) => {
                       setDeckListOpen(false)
                       await retryCheckingAuth({
                         checkAuth,
