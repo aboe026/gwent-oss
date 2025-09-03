@@ -2,7 +2,7 @@ import { CgChevronUp, CgChevronDown } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
-import { GamePlayer, Game, FactionKey } from '@gwent/graphql-schema/apollo-typings'
+import { GamePlayer, Game, FactionKey, GamePlayerFragmentFragment } from '@gwent/graphql-schema/apollo-typings'
 import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../../components/LoadingBar'
@@ -21,10 +21,10 @@ export default function GameSetOrder({
   setPlayerOrder,
 }: {
   game: Game
-  playerOrder: GamePlayer[]
+  playerOrder: GamePlayerFragmentFragment[]
   self: GamePlayer
   setOrderProps: SetOrderProps
-  setPlayerOrder: Dispatch<SetStateAction<GamePlayer[]>>
+  setPlayerOrder: Dispatch<SetStateAction<GamePlayerFragmentFragment[]>>
 }) {
   const { checkAuth } = useUserContext()
   const setOrderErrorMessages = getErrorMessages(setOrderProps.error)

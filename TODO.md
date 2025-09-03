@@ -12,6 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- look into why FragmentType export from apollo-typings doesn't work
 - looks for " as " in UI code to make sure not casting type when should be using fragment masking
 - remove "...Faction" from faction names, as it gets repeated in the typings (...FactionFactionDoc)
 - improve performance when typing name for deck

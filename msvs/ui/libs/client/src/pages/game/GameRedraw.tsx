@@ -3,7 +3,15 @@ import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
 import CoinToss from '../../components/CoinToss'
-import { DeckUnit, GamePlayer, Game, GameDeck } from '@gwent/graphql-schema/apollo-typings'
+import {
+  DeckUnit,
+  GamePlayer,
+  Game,
+  GameDeckFragmentFragment,
+  DeckUnitFragmentFragmentDoc,
+  useFragment,
+  CardUnitFragmentFragmentDoc,
+} from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, ReadyProps, RedrawProps } from './GameProps'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent/constants'
 import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
@@ -31,7 +39,7 @@ export default function GameRedraw({
 }: {
   coinTossVisible: boolean
   game: Game
-  gameDeck: GameDeck | undefined
+  gameDeck: GameDeckFragmentFragment | null | undefined
   handCardSelected: DeckUnit | undefined
   readyProps: ReadyProps
   redrawCardSelected: DeckUnit | undefined
@@ -52,6 +60,17 @@ export default function GameRedraw({
       : 'All allowed redraws made. To begin the game:'
   const redrawErrorMessages = getErrorMessages(redrawProps.error)
   const readyErrorMessages = getErrorMessages(readyProps.error)
+  const handUnitIds: string[] = []
+  if (gameDeck?.hand) {
+    for (const handUnitFragment of gameDeck.hand) {
+      const handUnit = useFragment(DeckUnitFragmentFragmentDoc, handUnitFragment)
+      const unit = useFragment(CardUnitFragmentFragmentDoc, handUnit.unit)
+      if (!handUnitIds.includes(unit.id)) {
+        handUnitIds.push(unit.id)
+      }
+    }
+  }
+
   return coinTossVisible ? (
     renderCoinToss({
       setCoinTossVisible,
@@ -84,12 +103,10 @@ export default function GameRedraw({
                 })
               const toCardSelected =
                 toCard && [redrawCardSelected?.unit.id, handCardSelected?.unit.id].includes(toCard.unit.id)
-              const toCardDotted =
-                toCardSelected && !gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)
+              const toCardDotted = toCardSelected && !handUnitIds.includes(toCard.unit.id)
               const fromCardSelected =
                 fromCard && [redrawCardSelected?.unit.id, handCardSelected?.unit.id].includes(fromCard.unit.id)
-              const fromCardDotted =
-                fromCardSelected && !gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)
+              const fromCardDotted = fromCardSelected && !handUnitIds.includes(fromCard.unit.id)
 
               return (
                 <div className="game-deck-redraw-card-container" key={index}>
@@ -102,7 +119,7 @@ export default function GameRedraw({
                         dottedTitle={fromCardDotted ? 'This unit is no longer in your hand' : ''}
                         onClick={() => {
                           setRedrawCardSelected(fromCardSelected ? undefined : fromCard)
-                          if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)) {
+                          if (handUnitIds.includes(fromCard.unit.id)) {
                             setHandCardSelected(fromCardSelected ? undefined : fromCard)
                           } else {
                             setHandCardSelected(undefined)
@@ -114,7 +131,7 @@ export default function GameRedraw({
                             units,
                           })
                           setRedrawCardSelected(fromCard)
-                          if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === fromCard.unit.id)) {
+                          if (handUnitIds.includes(fromCard.unit.id)) {
                             setHandCardSelected(fromCard)
                           } else {
                             setHandCardSelected(undefined)
@@ -130,7 +147,7 @@ export default function GameRedraw({
                           dottedTitle={toCardDotted ? 'This unit is no longer in your hand' : ''}
                           onClick={() => {
                             setRedrawCardSelected(toCardSelected ? undefined : toCard)
-                            if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)) {
+                            if (handUnitIds.includes(toCard.unit.id)) {
                               setHandCardSelected(toCardSelected ? undefined : toCard)
                             } else {
                               setHandCardSelected(undefined)
@@ -142,7 +159,7 @@ export default function GameRedraw({
                               units,
                             })
                             setRedrawCardSelected(toCard)
-                            if (gameDeck.hand.some((deckUnit) => deckUnit.unit.id === toCard.unit.id)) {
+                            if (handUnitIds.includes(toCard.unit.id)) {
                               setHandCardSelected(toCard)
                             } else {
                               setHandCardSelected(undefined)
