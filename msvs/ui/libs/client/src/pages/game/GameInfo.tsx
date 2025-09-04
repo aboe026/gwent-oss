@@ -3,14 +3,19 @@ import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
 import {
-  DeckUnit,
   GamePlayer,
   Game,
   GameStatus,
-  Faction,
-  Leader,
   RoundResult,
   PlayerRound,
+  DeckUnitFragmentFragment,
+  useFragment,
+  CardUnitFragmentFragmentDoc,
+  GameDeckFragmentFragmentDoc,
+  GameFactionFragmentFragmentDoc,
+  GameFactionFragmentFragment,
+  GameLeaderFragmentFragmentDoc,
+  GameLeaderFragmentFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { GameDeckProps, GameProps } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -33,7 +38,7 @@ export default function GameInfo({
   coinTossVisible: boolean
   gameDeckProps: GameDeckProps
   gameProps: GameProps
-  handCardSelected: DeckUnit | undefined
+  handCardSelected: DeckUnitFragmentFragment | undefined
   opponent: GamePlayer
   playPassLoading: boolean
   playUnitLoading: boolean
@@ -48,6 +53,9 @@ export default function GameInfo({
     playUnitLoading,
     playPassLoading,
   }
+  const gameDeck = useFragment(GameDeckFragmentFragmentDoc, gameDeckProps.deck)
+  const faction = useFragment(GameFactionFragmentFragmentDoc, gameDeck?.from?.faction)
+  const leader = useFragment(GameLeaderFragmentFragmentDoc, gameDeck?.from?.leader)
   return (
     <div id="gameInfoContainer" className="game-edge-container">
       {renderPlayerInfo({
@@ -70,13 +78,13 @@ export default function GameInfo({
         id: HTML_IDS.GameInfoSelfContainer,
         player: self,
         isSelf: true,
-        faction: gameDeckProps.deck?.from?.faction,
-        leader: gameDeckProps.deck?.from?.leader,
-        discard: self.counts?.discard !== undefined ? self.counts?.discard : gameDeckProps.deck?.discard.length,
-        hand: self.counts?.hand !== undefined ? self.counts?.hand : gameDeckProps.deck?.hand.length,
-        undrawn: self.counts?.undrawn !== undefined ? self.counts?.undrawn : gameDeckProps.deck?.undrawn.length,
-        deckName: gameDeckProps.deck?.from?.name,
-        deckUpdated: gameDeckProps.deck?.from?.created,
+        faction,
+        leader,
+        discard: self.counts?.discard !== undefined ? self.counts?.discard : gameDeck?.discard.length,
+        hand: self.counts?.hand !== undefined ? self.counts?.hand : gameDeck?.hand.length,
+        undrawn: self.counts?.undrawn !== undefined ? self.counts?.undrawn : gameDeck?.undrawn.length,
+        deckName: gameDeck?.from?.name,
+        deckUpdated: gameDeck?.from?.created,
       })}
     </div>
   )
@@ -143,13 +151,13 @@ function renderPlayerInfo({
   deckName?: string
   deckUpdated?: Date
   discard?: number
-  faction?: Faction | null
+  faction?: GameFactionFragmentFragment | null
   game: Game
   hand?: number
-  handCardSelected: DeckUnit | undefined
+  handCardSelected: DeckUnitFragmentFragment | undefined
   id: string
   isSelf: boolean
-  leader?: Leader | null
+  leader?: GameLeaderFragmentFragment | null
   player: GamePlayer
   playPassLoading: boolean
   playUnitLoading: boolean
@@ -253,7 +261,7 @@ function renderScore({
   setPassConfirmationOpen,
 }: {
   game: Game
-  handCardSelected: DeckUnit | undefined
+  handCardSelected: DeckUnitFragmentFragment | undefined
   isSelf: boolean
   isTurn?: boolean | null | undefined
   player: GamePlayer
@@ -261,6 +269,7 @@ function renderScore({
   playUnitLoading: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
+  const handCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, handCardSelected?.unit)
   let playerRound: PlayerRound | undefined = undefined
   let winning = false
   let passTitle = ''
@@ -277,7 +286,7 @@ function renderScore({
     } else {
       if (playUnitLoading) {
         passTitle = `Cannot pass while waiting for ${
-          handCardSelected?.unit.name || 'unit'
+          handCardSelectedUnit?.name || 'unit'
         } to be deployed to the battlefield`
       } else {
         if (playerRound.passed) {
@@ -400,7 +409,7 @@ function renderScore({
 /**
  * Information about the Faction the Deck belongs to for the Game player.
  */
-function renderFaction({ faction }: { faction?: Faction | null }) {
+function renderFaction({ faction }: { faction?: GameFactionFragmentFragment | null }) {
   return (
     <div className="game-player-faction">
       {faction && (
@@ -418,7 +427,7 @@ function renderFaction({ faction }: { faction?: Faction | null }) {
 /**
  * Information about the Leader on the Deck for the Game player.
  */
-function renderLeader({ leader }: { leader?: Leader | null }) {
+function renderLeader({ leader }: { leader?: GameLeaderFragmentFragment | null }) {
   return (
     <div className="game-player-leader">
       {leader && (

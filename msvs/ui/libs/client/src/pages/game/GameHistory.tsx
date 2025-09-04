@@ -149,7 +149,7 @@ export default function GameHistory({
 
                     if (
                       historyCardSelected &&
-                      historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
+                      historyCardSelected.unitFragment.unit.id === playerMove.move.unit.unit.id &&
                       historyCardSelected.playerId === gamePlayer.user.id
                     ) {
                       isSelected = true
@@ -184,14 +184,14 @@ export default function GameHistory({
                           if (playerMove.move.__typename === 'MoveUnit') {
                             if (
                               historyCardSelected &&
-                              historyCardSelected.unit.unit.id === playerMove.move.unit.unit.id &&
+                              historyCardSelected.unitFragment.unit.id === playerMove.move.unit.unit.id &&
                               historyCardSelected.playerId === gamePlayer.user.id
                             ) {
                               setHistoryCardSelected(undefined)
                             } else {
                               setHistoryCardSelected({
                                 playerId: gamePlayer.user.id,
-                                unit: playerMove.move.unit,
+                                unitFragment: playerMove.move.unit,
                               })
                             }
                             setHandCardSelected(undefined)
@@ -220,7 +220,7 @@ export default function GameHistory({
                                     })
                                     setHistoryCardSelected({
                                       playerId: gamePlayer.user.id,
-                                      unit: gameUnit,
+                                      unitFragment: gameUnit,
                                     })
                                     setHandCardSelected(undefined)
                                   }
@@ -399,7 +399,7 @@ function renderImpacts({
     for (const impact of sortedImpacts) {
       units.push({
         playerId: impact.user.id,
-        unit: impact.unit,
+        unitFragment: impact.unit,
       })
     }
   }
@@ -429,7 +429,7 @@ function renderImpacts({
             const isSelected =
               historyCardSelected &&
               historyCardSelected.playerId === impactedUnit.user.id &&
-              historyCardSelected.unit.unit.id === impactedUnit.unit.unit.id
+              historyCardSelected.unitFragment.unit.id === impactedUnit.unit.unit.id
             let isOnBattlefield = false
             if (isSelected) {
               const gamePlayer = game.players.find((player) => player.user.id === impactedUnit.user.id)
@@ -455,12 +455,12 @@ function renderImpacts({
                 style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
                 title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
                 onClick={() => {
-                  if (historyCardSelected && historyCardSelected.unit.unit.id === impactedUnit.unit.unit.id) {
+                  if (historyCardSelected && historyCardSelected.unitFragment.unit.id === impactedUnit.unit.unit.id) {
                     setHistoryCardSelected(undefined)
                   } else {
                     setHistoryCardSelected({
                       playerId: impactedUnit.user.id,
-                      unit: impactedUnit.unit,
+                      unitFragment: impactedUnit.unit,
                     })
                     setHandCardSelected(undefined)
                   }
@@ -477,13 +477,14 @@ function renderImpacts({
                       setFullUnits({
                         currentIndex: units.findIndex(
                           (unit) =>
-                            unit.playerId === impactedUnit.user.id && unit.unit.unit.id === impactedUnit.unit.unit.id
+                            unit.playerId === impactedUnit.user.id &&
+                            unit.unitFragment.unit.id === impactedUnit.unit.unit.id
                         ),
                         units,
                       })
                       setHistoryCardSelected({
                         playerId: impactedUnit.user.id,
-                        unit: impactedUnit.unit,
+                        unitFragment: impactedUnit.unit,
                       })
                       setHandCardSelected(undefined)
                     }}

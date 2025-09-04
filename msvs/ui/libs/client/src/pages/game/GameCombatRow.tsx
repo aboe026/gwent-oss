@@ -126,14 +126,14 @@ export default function GameCombatRow({
       >
         {sortedUnits.map((gameUnit, index) => {
           const selectedAsFullCard =
-            fullUnit && fullUnit.unit.unit.id === gameUnit.unit.id && fullUnit.playerId === player.user.id
+            fullUnit && fullUnit.unitFragment.unit.id === gameUnit.unit.id && fullUnit.playerId === player.user.id
           const selectedInHistory =
             historyCardSelected &&
-            historyCardSelected.unit.unit.id === gameUnit.unit.id &&
+            historyCardSelected.unitFragment.unit.id === gameUnit.unit.id &&
             historyCardSelected.playerId === player.user.id
           const unitForPlayer: UnitForPlayer = {
             playerId: player.user.id,
-            unit: gameUnit,
+            unitFragment: gameUnit,
           }
 
           return (

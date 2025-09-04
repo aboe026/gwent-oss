@@ -1,6 +1,4 @@
-import { Unit } from '@gwent/graphql-schema/resolver-typings'
-
-// TODO: delete this and get-combat-image.ts
+import { CardUnitFragmentFragment } from '@gwent/graphql-schema/apollo-typings'
 
 /**
  * Get the path to the weather image for a Unit.
@@ -8,7 +6,7 @@ import { Unit } from '@gwent/graphql-schema/resolver-typings'
  * @param unit The Unit to get the weather image for.
  * @returns The path to the image representing the weather for the Unit.
  */
-export default function getWeatherImage(unit: Unit): string | undefined {
+export default function getWeatherImage(unit: CardUnitFragmentFragment): string | undefined {
   let image
   if (unit.name === 'Biting Frost') {
     image = 'frost.png'

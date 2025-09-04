@@ -4,7 +4,6 @@ import type { useMutation } from '@apollo/client/react'
 
 import {
   AddGameMutation,
-  DeckUnit,
   Exact,
   SetDeckMutation,
   RedrawMutation,
@@ -18,9 +17,10 @@ import {
   Combat,
   PlayUnitMutation,
   PlayPassMutation,
-  GameUnit,
   Move,
   GameDeckFragmentFragment,
+  DeckUnitFragmentFragment,
+  GameUnitFragmentFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
@@ -143,7 +143,7 @@ export interface PlayPassProps {
 }
 
 export interface UnitForPlayer {
-  unit: DeckUnit | GameUnit
+  unitFragment: DeckUnitFragmentFragment | GameUnitFragmentFragment
   playerId: string | undefined
 }
 
