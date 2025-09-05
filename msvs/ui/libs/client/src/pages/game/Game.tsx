@@ -1,39 +1,36 @@
 import { CgPlayButton } from 'react-icons/cg'
 import { createRef, RefObject } from 'react'
-import { FragmentType } from '@apollo/client'
 import { Link, useLocation } from 'react-router'
 import { useMutation, useQuery } from '@apollo/client/react'
 
 import {
   AddGameDocument,
-  DeckUnit,
+  CardUnitFragmentFragmentDoc,
+  DeckFragmentFragment,
+  DeckUnitFragmentFragment,
+  Game,
+  GameDeckDocument,
+  GameDeckFragmentFragmentDoc,
+  GameDeckQuery,
   GameDocument,
+  GameFragmentFragmentDoc,
   GamePlayer,
+  GamePlayerFragmentFragment,
+  GamePlayerFragmentFragmentDoc,
+  GameQuery,
   GamesDocument,
   GamesQuery,
-  User,
-  GameDeckDocument,
-  Game,
-  GameDeckQuery,
   GameStatus,
-  GameQuery,
   GameUnit,
   Move,
-  PlayUnitDocument,
   PlayPassDocument,
+  PlayUnitDocument,
   ReadyDocument,
   RedrawDocument,
   SetDeckDocument,
   SetOrderDocument,
-  DeckFragmentFragment,
   useFragment,
-  GameFragmentFragmentDoc,
-  GamePlayerFragmentFragmentDoc,
-  GamePlayerFragmentFragment,
-  DeckUnitFragmentFragmentDoc,
-  GameDeckFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
-  CardUnitFragmentFragmentDoc,
+  User,
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../../util/add-to-cache-list'
 import Centered from '../../components/Centered'
@@ -200,12 +197,15 @@ export default function GamePage() {
             query: GameDeckDocument,
             variables: gameDeckQueryVariables,
           },
-          (previous) =>
-            updateGameDeckCacheOnRedraw({
-              from: handCardSelected,
-              previous,
-              to: data.redraw as DeckUnit,
-            })
+          (previous) => {
+            if (previous) {
+              updateGameDeckCacheOnRedraw({
+                from: handCardSelected,
+                previous,
+                to: data.redraw,
+              })
+            }
+          }
         )
       }
     },
@@ -683,7 +683,7 @@ function ExistingGame({
           isTurn={game.turn?.user.name === self.user.name}
           playUnitLoading={playUnitProps.loading}
           redrawCardSelected={redrawCardSelected}
-          redrawsLeft={MAX_REDRAWS - (gameDeckProps.deck?.redraws || []).length}
+          redrawsLeft={MAX_REDRAWS - (gameDeck?.redraws || []).length}
           self={self}
           setFullUnits={setFullUnits}
           setHandCardSelected={setHandCardSelected}

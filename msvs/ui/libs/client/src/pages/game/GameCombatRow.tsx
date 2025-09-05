@@ -1,6 +1,14 @@
 import { Dispatch, SetStateAction } from 'react'
 
-import { DeckUnit, GamePlayer, Game, Combat } from '@gwent/graphql-schema/apollo-typings'
+import {
+  CardUnitFragmentFragmentDoc,
+  CardUnitFragmentFragment,
+  Combat,
+  DeckUnitFragmentFragment,
+  Game,
+  GamePlayer,
+  useFragment,
+} from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { retryCheckingAuth } from '../../util/error-util'
@@ -15,7 +23,7 @@ export default function GameCombatRow({
   combat,
   fullUnits,
   game,
-  handCardSelected,
+  handCardSelectedUnit,
   historyCardSelected,
   isSelf,
   isTurn,
@@ -29,7 +37,7 @@ export default function GameCombatRow({
   combat: Combat
   fullUnits: FullUnitCards | undefined
   game: Game
-  handCardSelected: DeckUnit | undefined
+  handCardSelectedUnit: CardUnitFragmentFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
   isSelf?: boolean
   isTurn?: boolean
@@ -37,37 +45,37 @@ export default function GameCombatRow({
   playUnitProps: PlayUnitProps
   scrollHistoryIntoView: (args: UnitForPlayer) => void
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const { checkAuth } = useUserContext()
   const titledCombat = toTitleCase(combat)
-  const scorchSelected = handCardSelected && handCardSelected.unit.name === 'Scorch'
+  const scorchSelected = handCardSelectedUnit && handCardSelectedUnit.name === 'Scorch'
   const validRow =
     isSelf &&
-    handCardSelected &&
-    handCardSelected.unit.combats &&
-    handCardSelected.unit.combats.includes(combat) &&
+    handCardSelectedUnit &&
+    handCardSelectedUnit.combats &&
+    handCardSelectedUnit.combats.includes(combat) &&
     !scorchSelected
   const invalidRow =
-    handCardSelected &&
-    handCardSelected.unit.combats &&
-    !handCardSelected.unit.combats.includes(combat) &&
+    handCardSelectedUnit &&
+    handCardSelectedUnit.combats &&
+    !handCardSelectedUnit.combats.includes(combat) &&
     !scorchSelected
   let description = scorchSelected ? '' : `${titledCombat} combat row`
-  if (handCardSelected && !scorchSelected) {
+  if (handCardSelectedUnit && !scorchSelected) {
     if (isSelf) {
       if (validRow) {
         if (isTurn) {
-          description = `Place here for ${handCardSelected.unit.name} to fight as a ${titledCombat} unit`
+          description = `Place here for ${handCardSelectedUnit.name} to fight as a ${titledCombat} unit`
         } else {
           description = 'It is not your turn to play'
         }
       } else if (invalidRow) {
-        description = `${handCardSelected.unit.name} is not eligible to fight as a ${titledCombat} unit`
+        description = `${handCardSelectedUnit.name} is not eligible to fight as a ${titledCombat} unit`
       }
     } else {
-      description = `${handCardSelected.unit.name} cannot fight for your opponent`
+      description = `${handCardSelectedUnit.name} cannot fight for your opponent`
     }
   }
   const playerRound = player.rounds[game.round - 1]
@@ -85,7 +93,9 @@ export default function GameCombatRow({
   } else {
     id = isSelf ? HTML_IDS.GameCombatRowSiegeSelf : HTML_IDS.GameCombatRowSiegeOpponent
   }
-  const fullUnit = fullUnits && fullUnits.units[fullUnits.currentIndex]
+  const fullUnitFragment = fullUnits && fullUnits.units[fullUnits.currentIndex]
+  const fullUnit = useFragment(CardUnitFragmentFragmentDoc, fullUnitFragment?.unitFragment.unit)
+  const historyCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, historyCardSelected?.unitFragment.unit)
 
   return (
     <div id={id} className="game-unit-board-combat-row">
@@ -102,12 +112,12 @@ export default function GameCombatRow({
           validRow ? `${HTML_CLASSES.ItemHighlighted} game-unit-combat-row-valid` : ''
         } ${!isTurn || invalidRow ? 'game-unit-combat-row-invalid' : ''}`}
         style={{
-          cursor: (validRow || scorchSelected) && isTurn ? 'pointer' : handCardSelected ? 'not-allowed' : 'default',
+          cursor: (validRow || scorchSelected) && isTurn ? 'pointer' : handCardSelectedUnit ? 'not-allowed' : 'default',
           borderStyle: validRow ? (isTurn ? 'solid' : 'dotted') : 'none',
         }}
         title={description}
         onClick={async () => {
-          if (isSelf && isTurn && handCardSelected?.unit && validRow) {
+          if (isSelf && isTurn && handCardSelectedUnit && validRow) {
             await retryCheckingAuth({
               checkAuth,
               method: async () => {
@@ -115,7 +125,7 @@ export default function GameCombatRow({
                   variables: {
                     game: game.id,
                     combat: combat,
-                    unit: handCardSelected?.unit.id,
+                    unit: handCardSelectedUnit.id,
                   },
                 })
                 setHandCardSelected(undefined)
@@ -126,10 +136,14 @@ export default function GameCombatRow({
       >
         {sortedUnits.map((gameUnit, index) => {
           const selectedAsFullCard =
-            fullUnit && fullUnit.unitFragment.unit.id === gameUnit.unit.id && fullUnit.playerId === player.user.id
+            fullUnitFragment &&
+            fullUnit &&
+            fullUnit.id === gameUnit.unit.id &&
+            fullUnitFragment.playerId === player.user.id
           const selectedInHistory =
             historyCardSelected &&
-            historyCardSelected.unitFragment.unit.id === gameUnit.unit.id &&
+            historyCardSelectedUnit &&
+            historyCardSelectedUnit.id === gameUnit.unit.id &&
             historyCardSelected.playerId === player.user.id
           const unitForPlayer: UnitForPlayer = {
             playerId: player.user.id,
@@ -143,8 +157,8 @@ export default function GameCombatRow({
               onClick={() => {
                 const cardBeingPlayed =
                   isTurn &&
-                  handCardSelected &&
-                  (!handCardSelected.unit.combats || handCardSelected.unit.combats.includes(combat))
+                  handCardSelectedUnit &&
+                  (!handCardSelectedUnit.combats || handCardSelectedUnit.combats.includes(combat))
                 if (!cardBeingPlayed) {
                   if (selectedInHistory) {
                     setHistoryCardSelected(undefined)
@@ -170,7 +184,7 @@ export default function GameCombatRow({
                     units: sortedUnits.map((deckUnit) => {
                       return {
                         playerId: player.user.id,
-                        unit: deckUnit,
+                        unitFragment: deckUnit,
                       }
                     }),
                   })

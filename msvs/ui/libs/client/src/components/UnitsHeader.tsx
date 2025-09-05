@@ -1,7 +1,7 @@
 import { CgArrowDown, CgArrowUp, CgClose, CgEye, CgEyeAlt } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { Faction } from '@gwent/graphql-schema/apollo-typings'
+import { FactionFragmentFragment } from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FilterField,
@@ -291,7 +291,7 @@ interface UnitsHeaderProps {
   availableSortField: SORT_FIELD
   availableSortOrder: SORT_ORDER
   disabled: boolean
-  faction: Faction | undefined
+  faction: FactionFragmentFragment | undefined
   isAvailable: boolean
   selectedFilterFields: FILTER_FIELD[]
   selectedFiltersExpanded: boolean

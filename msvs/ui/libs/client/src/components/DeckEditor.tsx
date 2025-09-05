@@ -1,16 +1,20 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useEffect, useState } from 'react'
+import { FragmentType } from '@apollo/client'
 import { useMutation, useQuery } from '@apollo/client/react'
 
 import {
   AddDeckDocument,
   Combat,
   Deck,
-  DecksQuery,
   DecksDocument,
+  DecksQuery,
+  DeckStatsFragmentDoc,
   DeckUnit,
   DlcKey,
   EffectKey,
   Faction,
+  FactionFragmentFragment,
+  FactionFragmentFragmentDoc,
   FactionKey,
   FactionsDocument,
   FactionsQuery,
@@ -18,6 +22,7 @@ import {
   Unit,
   UnitsDocument,
   UnitStats,
+  useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import addToCacheList from '../util/add-to-cache-list'
 import Centered from '../components/Centered'
@@ -53,7 +58,7 @@ import './DeckEditor.css'
  */
 export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) {
   const [name, setName] = useState<string>('')
-  const [faction, setFaction] = useState<Faction | undefined>()
+  const [faction, setFaction] = useState<FactionFragmentFragment | undefined>()
   const [factionStats, setFactionStats] = useState<UnitStats | undefined>()
   const [leaderId, setLeaderId] = useState<string | undefined>()
   const [selectedUnits, setSelectedUnits] = useState<DeckUnit[]>([])
@@ -191,11 +196,11 @@ function renderNameAndFaction({
   setSelectedUnits,
 }: {
   disabledOverride: boolean
-  faction: Faction | undefined
+  faction: FactionFragmentFragment | undefined
   factionStats: UnitStats | undefined
   name: string
   setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
-  setFaction: Dispatch<SetStateAction<Faction | undefined>>
+  setFaction: Dispatch<SetStateAction<FactionFragmentFragment | undefined>>
   setFactionStats: Dispatch<SetStateAction<UnitStats | undefined>>
   setLeaderId: Dispatch<SetStateAction<string | undefined>>
   setName: Dispatch<SetStateAction<string>>
@@ -220,11 +225,33 @@ function renderNameAndFaction({
     )
   }
 
-  const selectedFaction = factionsData?.factions.find((availableFaction) => availableFaction.key === faction?.key)
-  const neutralFaction = factionsData?.factions.find((availableFaction) => availableFaction.key === FactionKey.Neutral)
+  let selectedFaction: FactionFragmentFragment | undefined = undefined
+  let neutralFaction: FactionFragmentFragment | undefined = undefined
+  if (factionsData && faction) {
+    for (
+      let i = 0;
+      i < factionsData.factions.length && selectedFaction === undefined && neutralFaction === undefined;
+      i++
+    ) {
+      const potentialFaction = useFragment(FactionFragmentFragmentDoc, factionsData.factions[i])
+      if (potentialFaction.key === faction.key) {
+        selectedFaction = potentialFaction
+      } else if (potentialFaction.key === FactionKey.Neutral) {
+        neutralFaction = potentialFaction
+      }
+    }
+  }
 
   if (selectedFaction?.stats && neutralFaction?.stats) {
-    const combinedStats = combineUnitStats(selectedFaction.stats, neutralFaction.stats)
+    const selectedStats = {
+      ...selectedFaction.stats,
+      ...useFragment(DeckStatsFragmentDoc, selectedFaction.stats),
+    }
+    const neutralStats = {
+      ...neutralFaction.stats,
+      ...useFragment(DeckStatsFragmentDoc, neutralFaction.stats),
+    }
+    const combinedStats = combineUnitStats(selectedStats, neutralStats)
     if (!factionStats || combinedStats.strengthAverage !== factionStats.strengthAverage) {
       setFactionStats(combinedStats)
     }
@@ -284,15 +311,9 @@ function renderNameAndFaction({
                 <option disabled value="">
                   -- select a faction --
                 </option>
-                {factionsData?.factions.map((faction) => {
-                  if (faction.key !== FactionKey.Neutral) {
-                    return (
-                      <option key={faction.key} value={faction.key}>
-                        {faction.name}
-                      </option>
-                    )
-                  }
-                })}
+                {factionsData?.factions.map((factionFragment, index) => (
+                  <FactionTextOption factionFragment={factionFragment} key={index} />
+                ))}
               </select>
               <button
                 id={HTML_IDS.DeckEditorFactionChange}
@@ -311,34 +332,17 @@ function renderNameAndFaction({
                       <CloseButton onClose={() => setFactionPickerOpen(false)} />
                     </div>
                     <div id="deckEditorFactionPickerList">
-                      {factionsData?.factions.map((faction) => {
-                        if (faction.key !== FactionKey.Neutral) {
-                          return (
-                            <div
-                              key={faction.id}
-                              className="deck-editor-faction-picker-faction pointable"
-                              onClick={() =>
-                                changeFaction({
-                                  factionsData,
-                                  newFactionKey: faction.key,
-                                  setDeckUnits,
-                                  setFaction,
-                                  setLeaderId,
-                                  setSelectedUnits,
-                                  setFactionPickerOpen,
-                                })
-                              }
-                            >
-                              <img src={faction.image} className="deck-editor-faction-picker-image" />
-                              <div className="deck-editor-faction-picker-name-ability">
-                                <span className={HTML_CLASSES.DeckEditorFactionPickerName}>{faction.name}</span>
-                                <span>{faction.ability}</span>
-                              </div>
-                              {faction.dlc && <DlcTag dlc={faction.dlc} height="100px" width="25px" />}
-                            </div>
-                          )
-                        }
-                      })}
+                      {factionsData?.factions.map((factionFragment) => (
+                        <FactionDetailedOption
+                          factionFragment={factionFragment}
+                          factionsData={factionsData}
+                          setDeckUnits={setDeckUnits}
+                          setFaction={setFaction}
+                          setFactionPickerOpen={setFactionPickerOpen}
+                          setLeaderId={setLeaderId}
+                          setSelectedUnits={setSelectedUnits}
+                        />
+                      ))}
                     </div>
                   </div>
                 </WholeScreenDialog>
@@ -369,6 +373,63 @@ function renderNameAndFaction({
   )
 }
 
+function FactionTextOption({ factionFragment }: { factionFragment: FragmentType<FactionFragmentFragment> }) {
+  const faction = useFragment(FactionFragmentFragmentDoc, factionFragment)
+  if (faction.key !== FactionKey.Neutral) {
+    return (
+      <option key={faction.key} value={faction.key}>
+        {faction.name}
+      </option>
+    )
+  }
+}
+
+function FactionDetailedOption({
+  factionFragment,
+  factionsData,
+  setDeckUnits,
+  setFaction,
+  setLeaderId,
+  setSelectedUnits,
+  setFactionPickerOpen,
+}: {
+  factionFragment: FragmentType<FactionFragmentFragment>
+  factionsData: FactionsQuery | undefined
+  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setFaction: Dispatch<SetStateAction<FactionFragmentFragment | undefined>>
+  setLeaderId: Dispatch<SetStateAction<string | undefined>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setFactionPickerOpen: Dispatch<SetStateAction<boolean>>
+}) {
+  const faction = useFragment(FactionFragmentFragmentDoc, factionFragment)
+  if (faction.key !== FactionKey.Neutral) {
+    return (
+      <div
+        key={faction.id}
+        className="deck-editor-faction-picker-faction pointable"
+        onClick={() =>
+          changeFaction({
+            factionsData,
+            newFactionKey: faction.key,
+            setDeckUnits,
+            setFaction,
+            setLeaderId,
+            setSelectedUnits,
+            setFactionPickerOpen,
+          })
+        }
+      >
+        <img src={faction.image} className="deck-editor-faction-picker-image" />
+        <div className="deck-editor-faction-picker-name-ability">
+          <span className={HTML_CLASSES.DeckEditorFactionPickerName}>{faction.name}</span>
+          <span>{faction.ability}</span>
+        </div>
+        {faction.dlc && <DlcTag dlc={faction.dlc} height="100px" width="25px" />}
+      </div>
+    )
+  }
+}
+
 /**
  * A user changes the Faction for the Deck.
  */
@@ -384,7 +445,7 @@ function changeFaction({
   factionsData: FactionsQuery | undefined
   newFactionKey: FactionKey
   setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
-  setFaction: Dispatch<SetStateAction<Faction | undefined>>
+  setFaction: Dispatch<SetStateAction<FactionFragmentFragment | undefined>>
   setFactionPickerOpen: Dispatch<SetStateAction<boolean>>
   setLeaderId: Dispatch<SetStateAction<string | undefined>>
   setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
@@ -395,7 +456,11 @@ function changeFaction({
   setSelectedUnits((previous: DeckUnit[]) =>
     previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
   )
-  setFaction(factionsData?.factions.find((availableFaction) => availableFaction.key === newFactionKey) as Faction)
+  setFaction(
+    factionsData?.factions.find(
+      (availableFaction) => useFragment(FactionFragmentFragmentDoc, availableFaction).key === newFactionKey
+    ) as Faction
+  )
   setLeaderId(undefined)
   setFactionPickerOpen(false)
 }
@@ -410,7 +475,7 @@ function renderLeader({
   setLeaderId,
 }: {
   disabledOverride: boolean
-  faction: Faction | undefined
+  faction: FactionFragmentFragment | undefined
   leaderId: string | undefined
   setLeaderId: Dispatch<SetStateAction<string | undefined>>
 }) {
@@ -558,7 +623,7 @@ function renderUnits({
 }: {
   deckUnits: DeckUnit[]
   disabledOverride: boolean
-  faction: Faction | undefined
+  faction: FactionFragmentFragment | undefined
   factionStats: UnitStats | undefined
   selectedUnits: DeckUnit[]
   setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>

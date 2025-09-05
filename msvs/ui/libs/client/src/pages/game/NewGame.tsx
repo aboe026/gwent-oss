@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router'
 import { AddGameProps } from './GameProps'
 import Centered from '../../components/Centered'
 import Form from '../../components/Form'
+import { GameFragmentFragmentDoc, useFragment } from '@gwent/graphql-schema/apollo-typings'
 import { HTML_IDS, PLAYER_COUNTS, ROUTES } from '@gwent/constants'
 import { retryCheckingAuth } from '../../util/error-util'
 import { useUserContext } from '../../UserContext'
@@ -56,8 +57,9 @@ export default function NewGame({ addGameProps }: { addGameProps: AddGameProps }
                   }),
                 },
               })
-              if (game.data?.addGame?.id) {
-                navigate(ROUTES.Game.path.replace(':gameId', game.data.addGame.id))
+              const newGame = useFragment(GameFragmentFragmentDoc, game.data?.addGame)
+              if (newGame) {
+                navigate(ROUTES.Game.path.replace(':gameId', newGame.id))
               }
             },
           })

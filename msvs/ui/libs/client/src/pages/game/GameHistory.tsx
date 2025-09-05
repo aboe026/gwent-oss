@@ -4,17 +4,19 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
 import {
-  DeckUnit,
-  GamePlayer,
-  Game,
-  GameStatus,
-  EffectKey,
+  CardUnitFragmentFragmentDoc,
+  DeckUnitFragmentFragment,
   Effect,
-  Impact,
+  EffectKey,
+  Game,
+  GamePlayer,
+  GameStatus,
   GameUnit,
-  MoveUnit,
-  MoveReasonType,
   GameUnitOrigin,
+  Impact,
+  MoveReasonType,
+  MoveUnit,
+  useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { getErrorMessages } from '../../util/error-util'
@@ -39,22 +41,23 @@ export default function GameHistory({
   setFullUnits,
 }: {
   game: Game
-  handCardSelected: DeckUnit | undefined
+  handCardSelected: DeckUnitFragmentFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
   movesByRounds: MoveForRound[]
   playPassProps: PlayPassProps
   playUnitProps: PlayUnitProps
   self: GamePlayer
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
+  const handCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, handCardSelected?.unit)
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
     playUnitProps.loading ||
     playPassProps.loading
   const loadingTitle = playUnitProps.loading
-    ? `Waiting for ${handCardSelected?.unit.name || 'unit'} to be deployed to the battlefield`
+    ? `Waiting for ${handCardSelectedUnit?.name || 'unit'} to be deployed to the battlefield`
     : playPassProps.loading
       ? 'Waiting for Pass to be recognized on the battlefield'
       : 'Waiting for opponent to make their move'
@@ -81,7 +84,7 @@ export default function GameHistory({
           )}
           {playUnitErrorMessages && (
             <div className={HTML_CLASSES.GameHistoryError}>
-              <div className="error-text">{`Error playing unit "${handCardSelected?.unit.name}": ${playUnitErrorMessages}`}</div>
+              <div className="error-text">{`Error playing unit "${handCardSelectedUnit?.name}": ${playUnitErrorMessages}`}</div>
             </div>
           )}
           {movesByRounds.map((movesByRound) => {
@@ -149,7 +152,8 @@ export default function GameHistory({
 
                     if (
                       historyCardSelected &&
-                      historyCardSelected.unitFragment.unit.id === playerMove.move.unit.unit.id &&
+                      handCardSelectedUnit &&
+                      handCardSelectedUnit.id === playerMove.move.unit.unit.id &&
                       historyCardSelected.playerId === gamePlayer.user.id
                     ) {
                       isSelected = true
@@ -184,7 +188,8 @@ export default function GameHistory({
                           if (playerMove.move.__typename === 'MoveUnit') {
                             if (
                               historyCardSelected &&
-                              historyCardSelected.unitFragment.unit.id === playerMove.move.unit.unit.id &&
+                              handCardSelectedUnit &&
+                              handCardSelectedUnit.id === playerMove.move.unit.unit.id &&
                               historyCardSelected.playerId === gamePlayer.user.id
                             ) {
                               setHistoryCardSelected(undefined)
@@ -214,7 +219,7 @@ export default function GameHistory({
                                       units: unitMoves.map((unitMove) => {
                                         return {
                                           playerId: game.players[unitMove.playerIndex].user.id,
-                                          unit: (unitMove.move as MoveUnit).unit,
+                                          unitFragment: (unitMove.move as MoveUnit).unit,
                                         }
                                       }),
                                     })
@@ -303,7 +308,7 @@ function MoveUnitImpact({
   impacts: Impact[] | null | undefined
   self: GamePlayer
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const [expanded, setExpanded] = useState(false)
@@ -383,9 +388,10 @@ function renderImpacts({
   impacts: Impact[]
   self: GamePlayer
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
+  const historyCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, historyCardSelected?.unitFragment.unit)
   const groups = groupBy({
     array: impacts,
     property: 'user.name',
@@ -428,8 +434,9 @@ function renderImpacts({
             })
             const isSelected =
               historyCardSelected &&
+              historyCardSelectedUnit &&
               historyCardSelected.playerId === impactedUnit.user.id &&
-              historyCardSelected.unitFragment.unit.id === impactedUnit.unit.unit.id
+              historyCardSelectedUnit.id === impactedUnit.unit.unit.id
             let isOnBattlefield = false
             if (isSelected) {
               const gamePlayer = game.players.find((player) => player.user.id === impactedUnit.user.id)
@@ -455,7 +462,7 @@ function renderImpacts({
                 style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
                 title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
                 onClick={() => {
-                  if (historyCardSelected && historyCardSelected.unitFragment.unit.id === impactedUnit.unit.unit.id) {
+                  if (historyCardSelectedUnit && historyCardSelectedUnit.id === impactedUnit.unit.unit.id) {
                     setHistoryCardSelected(undefined)
                   } else {
                     setHistoryCardSelected({
@@ -478,7 +485,8 @@ function renderImpacts({
                         currentIndex: units.findIndex(
                           (unit) =>
                             unit.playerId === impactedUnit.user.id &&
-                            unit.unitFragment.unit.id === impactedUnit.unit.unit.id
+                            useFragment(CardUnitFragmentFragmentDoc, unit.unitFragment.unit).id ===
+                              impactedUnit.unit.unit.id
                         ),
                         units,
                       })

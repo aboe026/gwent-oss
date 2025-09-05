@@ -4,6 +4,7 @@ import {
   CardUnitFragmentFragmentDoc,
   DeckUnitFragmentFragment,
   EffectKey,
+  GameUnitFragmentFragment,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'
@@ -86,13 +87,13 @@ export default function UnitGameCard({
 
 interface UnitGameCardProps {
   cursor?: string
-  deckUnit: DeckUnitFragmentFragment
+  deckUnit: DeckUnitFragmentFragment | GameUnitFragmentFragment
   effectiveStrength?: number | null
   dotted?: boolean
   dottedTitle?: string
   iconSize?: string
-  onFullscreen: (deckUnit: DeckUnitFragmentFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClick?: (deckUnit: DeckUnitFragmentFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onFullscreen: (deckUnit: DeckUnitFragmentFragment | GameUnitFragmentFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClick?: (deckUnit: DeckUnitFragmentFragment | GameUnitFragmentFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   selected?: boolean
   title?: string
 }
