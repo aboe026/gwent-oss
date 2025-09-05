@@ -21,53 +21,52 @@ export default function updateGameDeckCacheOnRedraw({
   from,
   to,
 }: {
-  previous: GameDeckQuery | null
+  previous: GameDeckQuery
   from: DeckUnitFragmentFragment
   to: DeckUnitFragmentFragment
 }) {
-  if (previous?.gameDeck) {
-    const gameDeck = useFragment(GameDeckFragmentFragmentDoc, previous.gameDeck)
-    const fromUnit = useFragment(CardUnitFragmentFragmentDoc, from.unit)
-    const toUnit = useFragment(CardUnitFragmentFragmentDoc, to.unit)
-    return {
-      gameDeck: {
-        ...previous.gameDeck,
-        hand: [
-          ...(gameDeck?.hand || []).filter(
-            (deckUnit) =>
-              ![fromUnit.id, toUnit.id].includes(
-                useFragment(CardUnitFragmentFragmentDoc, useFragment(DeckUnitFragmentFragmentDoc, deckUnit).unit).id
-              )
-          ),
-          to,
-        ],
-        undrawn: [
-          ...(gameDeck?.undrawn || []).filter(
-            (deckUnit) =>
-              ![fromUnit.id, toUnit.id].includes(
-                useFragment(CardUnitFragmentFragmentDoc, useFragment(DeckUnitFragmentFragmentDoc, deckUnit).unit).id
-              )
-          ),
+  const gameDeck = useFragment(GameDeckFragmentFragmentDoc, previous.gameDeck)
+  const fromUnit = useFragment(CardUnitFragmentFragmentDoc, from.unit)
+  const toUnit = useFragment(CardUnitFragmentFragmentDoc, to.unit)
+  return {
+    ...previous,
+    gameDeck: {
+      ...previous.gameDeck,
+      hand: [
+        ...(gameDeck?.hand || []).filter(
+          (deckUnit) =>
+            ![fromUnit.id, toUnit.id].includes(
+              useFragment(CardUnitFragmentFragmentDoc, useFragment(DeckUnitFragmentFragmentDoc, deckUnit).unit).id
+            )
+        ),
+        to,
+      ],
+      undrawn: [
+        ...(gameDeck?.undrawn || []).filter(
+          (deckUnit) =>
+            ![fromUnit.id, toUnit.id].includes(
+              useFragment(CardUnitFragmentFragmentDoc, useFragment(DeckUnitFragmentFragmentDoc, deckUnit).unit).id
+            )
+        ),
+        from,
+      ],
+      redraws: [
+        ...(gameDeck?.redraws || []).filter((deckUnit) => {
+          const existingFromUnit = useFragment(
+            CardUnitFragmentFragmentDoc,
+            useFragment(DeckUnitFragmentFragmentDoc, deckUnit.from).unit
+          )
+          const existingToUnit = useFragment(
+            CardUnitFragmentFragmentDoc,
+            useFragment(DeckUnitFragmentFragmentDoc, deckUnit.to).unit
+          )
+          return existingFromUnit.id !== fromUnit.id && existingToUnit.id !== toUnit.id
+        }),
+        {
           from,
-        ],
-        redraws: [
-          ...(gameDeck?.redraws || []).filter((deckUnit) => {
-            const existingFromUnit = useFragment(
-              CardUnitFragmentFragmentDoc,
-              useFragment(DeckUnitFragmentFragmentDoc, deckUnit.from).unit
-            )
-            const existingToUnit = useFragment(
-              CardUnitFragmentFragmentDoc,
-              useFragment(DeckUnitFragmentFragmentDoc, deckUnit.to).unit
-            )
-            return existingFromUnit.id !== fromUnit.id && existingToUnit.id !== toUnit.id
-          }),
-          {
-            from,
-            to,
-          },
-        ],
-      },
-    }
+          to,
+        },
+      ],
+    },
   }
 }

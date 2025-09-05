@@ -198,8 +198,8 @@ export default function GamePage() {
             variables: gameDeckQueryVariables,
           },
           (previous) => {
-            if (previous) {
-              updateGameDeckCacheOnRedraw({
+            if (previous?.gameDeck) {
+              return updateGameDeckCacheOnRedraw({
                 from: handCardSelected,
                 previous,
                 to: data.redraw,
