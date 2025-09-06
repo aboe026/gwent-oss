@@ -1,9 +1,6 @@
 import {
   CardUnitFragmentFragmentDoc,
   DeckUnitFragmentFragment,
-  DeckUnitFragmentFragmentDoc,
-  GameDeckFragmentFragmentDoc,
-  GameDeckQuery,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { GameDeckQuery as GameDeckQueryRaw } from '@gwent/graphql-schema/apollo-raw-types'
@@ -22,54 +19,48 @@ export default function updateGameDeckCacheOnRedraw({
   from,
   to,
 }: {
-  previous: GameDeckQuery
+  previous: GameDeckQueryRaw
   from: DeckUnitFragmentFragment
   to: DeckUnitFragmentFragment
 }): GameDeckQueryRaw {
-  const gameDeck = useFragment(GameDeckFragmentFragmentDoc, previous.gameDeck)
   const fromUnit = useFragment(CardUnitFragmentFragmentDoc, from.unit)
   const toUnit = useFragment(CardUnitFragmentFragmentDoc, to.unit)
-  const updated = {
+  return {
     ...previous,
     gameDeck: {
       ...previous.gameDeck,
+      discard: previous.gameDeck?.discard || [],
       hand: [
-        ...(gameDeck?.hand || []).filter(
-          (deckUnit) =>
-            ![fromUnit.id, toUnit.id].includes(
-              useFragment(CardUnitFragmentFragmentDoc, useFragment(DeckUnitFragmentFragmentDoc, deckUnit).unit).id
-            )
-        ),
-        to,
+        ...(previous.gameDeck?.hand || []).filter((deckUnit) => ![fromUnit.id, toUnit.id].includes(deckUnit.unit.id)),
+        {
+          ...to,
+          unit: toUnit,
+        },
       ],
       undrawn: [
-        ...(gameDeck?.undrawn || []).filter(
-          (deckUnit) =>
-            ![fromUnit.id, toUnit.id].includes(
-              useFragment(CardUnitFragmentFragmentDoc, useFragment(DeckUnitFragmentFragmentDoc, deckUnit).unit).id
-            )
+        ...(previous.gameDeck?.undrawn || []).filter(
+          (deckUnit) => ![fromUnit.id, toUnit.id].includes(deckUnit.unit.id)
         ),
-        from,
+        {
+          ...from,
+          unit: fromUnit,
+        },
       ],
       redraws: [
-        ...(gameDeck?.redraws || []).filter((deckUnit) => {
-          const existingFromUnit = useFragment(
-            CardUnitFragmentFragmentDoc,
-            useFragment(DeckUnitFragmentFragmentDoc, deckUnit.from).unit
-          )
-          const existingToUnit = useFragment(
-            CardUnitFragmentFragmentDoc,
-            useFragment(DeckUnitFragmentFragmentDoc, deckUnit.to).unit
-          )
-          return existingFromUnit.id !== fromUnit.id && existingToUnit.id !== toUnit.id
+        ...(previous.gameDeck?.redraws || []).filter((deckUnit) => {
+          return deckUnit.from.unit.id !== fromUnit.id && deckUnit.to.unit.id !== toUnit.id
         }),
         {
-          from,
-          to,
+          from: {
+            ...from,
+            unit: fromUnit,
+          },
+          to: {
+            ...to,
+            unit: toUnit,
+          },
         },
       ],
     },
   }
-
-  return updated as GameDeckQueryRaw
 }
