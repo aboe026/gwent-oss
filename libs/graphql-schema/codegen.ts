@@ -73,6 +73,14 @@ const config: CodegenConfig = {
       documents: ['./src/apollo/**/*.gql'],
       preset: 'client',
     },
+    // typings needed by Apollo for direclty modifying the cache
+    './generated/apollo/raw-types.ts': {
+      documents: ['./src/apollo/**/*.gql'],
+      plugins: ['typescript', 'typescript-operations'],
+      config: {
+        documentMode: 'string',
+      },
+    },
   },
   hooks: {
     afterAllFileWrite: ['yarn add-graphql-to-apollo', 'yarn convert-eol'],

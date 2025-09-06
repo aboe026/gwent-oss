@@ -5,6 +5,8 @@ import addToCacheList from './util/add-to-cache-list'
 import {
   CardUnitFragmentFragmentDoc,
   DeckAddedDocument,
+  DeckFragmentFragment,
+  DeckFragmentFragmentDoc,
   DecksDocument,
   DeckSetDocument,
   DecksQuery,
@@ -13,6 +15,7 @@ import {
   GameDeckDocument,
   GameDeckQuery,
   GameDocument,
+  GameFragmentFragment,
   GameFragmentFragmentDoc,
   GameQuery,
   GameReadyDocument,
@@ -27,6 +30,12 @@ import {
   UnitRedrawnDocument,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
+import {
+  DecksQuery as DecksQueryRaw,
+  GameDeckQuery as GameDeckQueryRaw,
+  GameQuery as GameQueryRaw,
+  GamesQuery as GamesQueryRaw,
+} from '@gwent/graphql-schema/apollo-raw-types'
 import updateGameDeckCacheOnRedraw from './util/update-game-deck-cache-on-redraw'
 import { useUserContext } from './UserContext'
 
@@ -53,11 +62,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.decks) {
               return {
                 decks: addToCacheList({
-                  add: data.data?.deckAdded as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-                  // TODO: fix so no explicit casting necessary
-                  previous: previous?.decks,
+                  add: useFragment(DeckFragmentFragmentDoc, data.data?.deckAdded),
+                  previous: previous?.decks as DeckFragmentFragment[],
                 }),
-              }
+              } as DecksQueryRaw
             }
           }
         )
@@ -81,8 +89,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (!previous?.gameDeck) {
               return {
                 gameDeck,
-              } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              // TODO: fix so no explicit casting necessary
+              } as GameDeckQueryRaw
             }
           }
         )
@@ -100,11 +107,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
           if (previous?.games) {
             return {
               games: addToCacheList({
-                add: useFragment(GameFragmentFragmentDoc, data.data?.gameAdded) as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-                // TODO: fix so no explicit casting necessary
-                previous: previous?.games,
+                add: useFragment(GameFragmentFragmentDoc, data.data?.gameAdded),
+                previous: previous?.games as GameFragmentFragment[],
               }),
-            }
+            } as GamesQueryRaw
           }
         }
       )
@@ -126,8 +132,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              // TODO: fix so no explicit casting necessary
+              } as GameQueryRaw
             }
           }
         )
@@ -150,8 +155,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              // TODO: fix so no explicit casting necessary
+              } as GameQueryRaw
             }
           }
         )
@@ -174,8 +178,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              // TODO: fix so no explicit casting necessary
+              } as GameQueryRaw
             }
           }
         )
@@ -199,8 +202,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.gameDeck) {
               return {
                 gameDeck,
-              } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              // TODO: fix so no explicit casting necessary
+              } as GameDeckQueryRaw
             }
           }
         )
@@ -223,8 +225,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              // TODO: fix so no explicit casting necessary
+              } as GameQueryRaw
             }
           }
         )
@@ -258,8 +259,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
                       ? [...previous.gameDeck.discard, playedUnit]
                       : previous.gameDeck.discard,
                 },
-              } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              // TODO: fix so no explicit casting necessary
+              } as GameDeckQueryRaw
             }
           }
         )
@@ -282,8 +282,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              } as any // eslint-disable-line @typescript-eslint/no-explicit-any
-              // TODO: fix so no explicit casting necessary
+              } as GameQueryRaw
             }
           }
         )
@@ -305,7 +304,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             },
           },
           (previous) => {
-            if (previous) {
+            if (previous?.gameDeck) {
               updateGameDeckCacheOnRedraw({
                 from,
                 previous,

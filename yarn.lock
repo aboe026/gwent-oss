@@ -3564,7 +3564,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-codegen/typescript-operations@npm:^4.6.1":
+"@graphql-codegen/typescript-operations@npm:4.6.1, @graphql-codegen/typescript-operations@npm:^4.6.1":
   version: 4.6.1
   resolution: "@graphql-codegen/typescript-operations@npm:4.6.1"
   dependencies:
@@ -4387,6 +4387,7 @@ __metadata:
     "@graphql-codegen/schema-ast": "npm:4.1.0"
     "@graphql-codegen/typescript": "npm:4.1.6"
     "@graphql-codegen/typescript-mongodb": "npm:3.0.1"
+    "@graphql-codegen/typescript-operations": "npm:4.6.1"
     "@graphql-codegen/typescript-resolvers": "npm:4.5.2"
     "@graphql-tools/schema": "npm:10.0.25"
     "@graphql-typed-document-node/core": "npm:3.2.0"

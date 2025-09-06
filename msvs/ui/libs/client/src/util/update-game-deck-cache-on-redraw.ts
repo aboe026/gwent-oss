@@ -6,6 +6,7 @@ import {
   GameDeckQuery,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
+import { GameDeckQuery as GameDeckQueryRaw } from '@gwent/graphql-schema/apollo-raw-types'
 
 /**
  * Updates the Apollo cache for GameDeck when redraw made.
@@ -24,11 +25,11 @@ export default function updateGameDeckCacheOnRedraw({
   previous: GameDeckQuery
   from: DeckUnitFragmentFragment
   to: DeckUnitFragmentFragment
-}) {
+}): GameDeckQueryRaw {
   const gameDeck = useFragment(GameDeckFragmentFragmentDoc, previous.gameDeck)
   const fromUnit = useFragment(CardUnitFragmentFragmentDoc, from.unit)
   const toUnit = useFragment(CardUnitFragmentFragmentDoc, to.unit)
-  return {
+  const updated = {
     ...previous,
     gameDeck: {
       ...previous.gameDeck,
@@ -69,4 +70,6 @@ export default function updateGameDeckCacheOnRedraw({
       ],
     },
   }
+
+  return updated as GameDeckQueryRaw
 }

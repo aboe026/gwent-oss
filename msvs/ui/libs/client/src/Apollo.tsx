@@ -9,7 +9,7 @@ import urlJoin from 'url-join'
 /**
  * Need to pass management of WebSocket status to a lower-order component
  * otherwise the state changes of the WebSocket status causes this component to re-render
- * and since it is so high in the component tree it would re-render child pages (such as DecksPage)
+ * and since it is so high in the component tree it would re-render child pages (like DecksPage)
  * which would then cause those pages to redo their useEffect (which would create another WebSocket unnecessarily)
  */
 export const WebSocketLinkContext = createContext<GraphQLWsLink | undefined>(undefined)

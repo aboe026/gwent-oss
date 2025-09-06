@@ -5,14 +5,14 @@ import { useMutation, useQuery } from '@apollo/client/react'
 import {
   AddDeckDocument,
   Combat,
-  Deck,
+  DeckFragmentFragment,
+  DeckFragmentFragmentDoc,
   DecksDocument,
   DecksQuery,
   DeckStatsFragmentDoc,
   DeckUnit,
   DlcKey,
   EffectKey,
-  Faction,
   FactionFragmentFragment,
   FactionFragmentFragmentDoc,
   FactionKey,
@@ -37,7 +37,7 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/deck-filter'
-import { getErrorMessages } from '../util/error-util'
+import { getErrorMessages, retryCheckingAuth } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -47,6 +47,7 @@ import UnitFullCard from './UnitFullCard'
 import UnitsHeader from '../components/UnitsHeader'
 import UnitsStats from '../components/UnitsStats'
 import { useAuthRetry } from '../AuthRetry'
+import { useUserContext } from '../UserContext'
 import { validateDeck } from '@gwent/validators'
 import WholeScreenDialog from '../components/WholeScreenDialog'
 import './DeckEditor.css'
@@ -63,20 +64,10 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
   const [leaderId, setLeaderId] = useState<string | undefined>()
   const [selectedUnits, setSelectedUnits] = useState<DeckUnit[]>([])
   const [deckUnits, setDeckUnits] = useState<DeckUnit[]>([])
+  const { checkAuth } = useUserContext()
   const [addDeck, { loading, error }] = useMutation(AddDeckDocument, {
-    variables: {
-      faction: faction?.key as FactionKey,
-      leader: leaderId as string,
-      name,
-      units: selectedUnits.map((deckUnit) => {
-        return {
-          id: deckUnit.unit.id,
-          artStyle: deckUnit.artStyle,
-        }
-      }),
-    },
     onCompleted(result) {
-      onSave(result.addDeck as Deck)
+      onSave(useFragment(DeckFragmentFragmentDoc, result.addDeck))
     },
     update(cache, { data }) {
       cache.updateQuery<DecksQuery>(
@@ -96,7 +87,6 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
       )
     },
   })
-  useAuthRetry(error, addDeck)
 
   const isNew = deck !== undefined
   let percent = 0
@@ -119,7 +109,26 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
       id={HTML_IDS.DeckEditorContainer}
       onSubmit={async (event) => {
         event.preventDefault()
-        addDeck()
+        if (percent === 100 && faction && leaderId && name && selectedUnits) {
+          await retryCheckingAuth({
+            checkAuth,
+            method: async () => {
+              await addDeck({
+                variables: {
+                  faction: faction.key,
+                  leader: leaderId,
+                  name,
+                  units: selectedUnits.map((deckUnit) => {
+                    return {
+                      id: deckUnit.unit.id,
+                      artStyle: deckUnit.artStyle,
+                    }
+                  }),
+                },
+              })
+            },
+          })
+        }
       }}
     >
       <div id="deckEditorUpper">
@@ -456,11 +465,16 @@ function changeFaction({
   setSelectedUnits((previous: DeckUnit[]) =>
     previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
   )
-  setFaction(
-    factionsData?.factions.find(
-      (availableFaction) => useFragment(FactionFragmentFragmentDoc, availableFaction).key === newFactionKey
-    ) as Faction
-  )
+  let newFaction: FactionFragmentFragment | undefined = undefined
+  if (factionsData?.factions) {
+    for (const factionFragment of factionsData.factions) {
+      const potentialFaction = useFragment(FactionFragmentFragmentDoc, factionFragment)
+      if (potentialFaction.key === newFactionKey) {
+        newFaction = potentialFaction
+      }
+    }
+  }
+  setFaction(newFaction)
   setLeaderId(undefined)
   setFactionPickerOpen(false)
 }
@@ -662,7 +676,7 @@ function renderUnits({
         ...previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral),
         ...(factionUnitsData.units || []).map((unit) => ({
           artStyle: 1,
-          unit: unit as Unit,
+          unit: unit as Unit, // TODO: go through UI code and remove " as " castings where we can use fragment masking
         })),
       ])
     }
@@ -989,7 +1003,7 @@ function isFilteredIn(deckUnit: DeckUnit, fields: FILTER_FIELD[], name: string):
 }
 
 interface DeckEditorProps extends PropsWithChildren {
-  deck?: Deck | undefined
+  deck?: DeckFragmentFragment | undefined
   onCancel: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onSave: (deck: Deck) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSave: (deck: DeckFragmentFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }
