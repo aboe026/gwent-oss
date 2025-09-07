@@ -4,13 +4,14 @@ import { useMutation, useQuery } from '@apollo/client/react'
 
 import {
   AddDeckDocument,
+  CardUnitFragmentFragmentDoc,
   Combat,
   DeckFragmentFragment,
   DeckFragmentFragmentDoc,
   DecksDocument,
   DecksQuery,
   DeckStatsFragmentDoc,
-  DeckUnit,
+  DeckUnitFragmentFragment,
   DlcKey,
   EffectKey,
   FactionFragmentFragment,
@@ -19,7 +20,6 @@ import {
   FactionsDocument,
   FactionsQuery,
   LeadersDocument,
-  Unit,
   UnitsDocument,
   UnitStats,
   useFragment,
@@ -48,7 +48,7 @@ import UnitsHeader from '../components/UnitsHeader'
 import UnitsStats from '../components/UnitsStats'
 import { useAuthRetry } from '../AuthRetry'
 import { useUserContext } from '../UserContext'
-import { validateDeck } from '@gwent/validators'
+import { ValidateDeck } from '@gwent/validators'
 import WholeScreenDialog from '../components/WholeScreenDialog'
 import './DeckEditor.css'
 
@@ -62,8 +62,8 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
   const [faction, setFaction] = useState<FactionFragmentFragment | undefined>()
   const [factionStats, setFactionStats] = useState<UnitStats | undefined>()
   const [leaderId, setLeaderId] = useState<string | undefined>()
-  const [selectedUnits, setSelectedUnits] = useState<DeckUnit[]>([])
-  const [deckUnits, setDeckUnits] = useState<DeckUnit[]>([])
+  const [selectedUnits, setSelectedUnits] = useState<DeckUnitFragmentFragment[]>([])
+  const [deckUnits, setDeckUnits] = useState<DeckUnitFragmentFragment[]>([])
   const { checkAuth } = useUserContext()
   const [addDeck, { loading, error }] = useMutation(AddDeckDocument, {
     onCompleted(result) {
@@ -95,7 +95,7 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
   if (leaderId) percent += 25
   if (
     faction &&
-    validateDeck({
+    ValidateDeck.fromDeckUnitFragments({
       deckUnits: selectedUnits,
       faction: faction.key,
     }).length === 0
@@ -119,8 +119,9 @@ export default function DeckEditor({ deck, onCancel, onSave }: DeckEditorProps) 
                   leader: leaderId,
                   name,
                   units: selectedUnits.map((deckUnit) => {
+                    const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
                     return {
-                      id: deckUnit.unit.id,
+                      id: unit.id,
                       artStyle: deckUnit.artStyle,
                     }
                   }),
@@ -208,12 +209,12 @@ function renderNameAndFaction({
   faction: FactionFragmentFragment | undefined
   factionStats: UnitStats | undefined
   name: string
-  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setDeckUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
   setFaction: Dispatch<SetStateAction<FactionFragmentFragment | undefined>>
   setFactionStats: Dispatch<SetStateAction<UnitStats | undefined>>
   setLeaderId: Dispatch<SetStateAction<string | undefined>>
   setName: Dispatch<SetStateAction<string>>
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
 }) {
   const [factionPickerOpen, setFactionPickerOpen] = useState(false)
   const {
@@ -404,10 +405,10 @@ function FactionDetailedOption({
 }: {
   factionFragment: FragmentType<FactionFragmentFragment>
   factionsData: FactionsQuery | undefined
-  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setDeckUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
   setFaction: Dispatch<SetStateAction<FactionFragmentFragment | undefined>>
   setLeaderId: Dispatch<SetStateAction<string | undefined>>
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
   setFactionPickerOpen: Dispatch<SetStateAction<boolean>>
 }) {
   const faction = useFragment(FactionFragmentFragmentDoc, factionFragment)
@@ -453,17 +454,23 @@ function changeFaction({
 }: {
   factionsData: FactionsQuery | undefined
   newFactionKey: FactionKey
-  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setDeckUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
   setFaction: Dispatch<SetStateAction<FactionFragmentFragment | undefined>>
   setFactionPickerOpen: Dispatch<SetStateAction<boolean>>
   setLeaderId: Dispatch<SetStateAction<string | undefined>>
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
 }) {
-  setDeckUnits((previous: DeckUnit[]) =>
-    previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
+  setDeckUnits((previous: DeckUnitFragmentFragment[]) =>
+    previous.filter((deckUnit) => {
+      const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
+      return unit.faction.key === FactionKey.Neutral
+    })
   )
-  setSelectedUnits((previous: DeckUnit[]) =>
-    previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral)
+  setSelectedUnits((previous: DeckUnitFragmentFragment[]) =>
+    previous.filter((deckUnit) => {
+      const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
+      return unit.faction.key === FactionKey.Neutral
+    })
   )
   let newFaction: FactionFragmentFragment | undefined = undefined
   if (factionsData?.factions) {
@@ -635,13 +642,13 @@ function renderUnits({
   setDeckUnits,
   setSelectedUnits,
 }: {
-  deckUnits: DeckUnit[]
+  deckUnits: DeckUnitFragmentFragment[]
   disabledOverride: boolean
   faction: FactionFragmentFragment | undefined
   factionStats: UnitStats | undefined
-  selectedUnits: DeckUnit[]
-  setDeckUnits: Dispatch<SetStateAction<DeckUnit[]>>
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  selectedUnits: DeckUnitFragmentFragment[]
+  setDeckUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
 }) {
   const [availableFiltersExpanded, setAvailableFiltersExpanded] = useState(false)
   const [selectedFiltersExpanded, setSelectedFiltersExpanded] = useState(false)
@@ -656,7 +663,7 @@ function renderUnits({
   const [sortFilterLocked, setSortFilterLocked] = useState(true)
   const [combatsExpanded, setCombatsExpanded] = useState(false)
   const [effectsExpanded, setEffectsExpanded] = useState(false)
-  const [fullUnit, setFullUnit] = useState<DeckUnit | undefined>()
+  const [fullUnit, setFullUnit] = useState<DeckUnitFragmentFragment | undefined>()
   const {
     loading: factionUnitsLoading,
     error: factionUnitsError,
@@ -672,11 +679,14 @@ function renderUnits({
   useAuthRetry(factionUnitsError, factionUnitsRefetch)
   useEffect(() => {
     if (factionUnitsData) {
-      setDeckUnits((previous: DeckUnit[]) => [
-        ...previous.filter((deckUnit) => deckUnit.unit.faction.key === FactionKey.Neutral),
+      setDeckUnits((previous: DeckUnitFragmentFragment[]) => [
+        ...previous.filter((deckUnit) => {
+          const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
+          return unit.faction.key === FactionKey.Neutral
+        }),
         ...(factionUnitsData.units || []).map((unit) => ({
           artStyle: 1,
-          unit: unit as Unit, // TODO: go through UI code and remove " as " castings where we can use fragment masking
+          unit,
         })),
       ])
     }
@@ -696,11 +706,11 @@ function renderUnits({
   useAuthRetry(neutralUnitsError, neutralUnitsRefetch)
   useEffect(() => {
     if (neutralUnitsData) {
-      setDeckUnits((previous: DeckUnit[]) => [
+      setDeckUnits((previous: DeckUnitFragmentFragment[]) => [
         ...previous,
         ...(neutralUnitsData.units || []).map((unit) => ({
           artStyle: 1,
-          unit: unit as Unit,
+          unit,
         })),
       ])
     }
@@ -715,11 +725,14 @@ function renderUnits({
     sortProperties: availableSortFields,
     reverse: availableSortOrder === SORT_ORDER.Desc,
   })
-  const filteredAvailableUnits: DeckUnit[] = []
-  let filteredSelectedUnits: DeckUnit[] = []
-  const selectedIds = selectedUnits.map((deckUnit) => deckUnit.unit.id)
+  const filteredAvailableUnits: DeckUnitFragmentFragment[] = []
+  let filteredSelectedUnits: DeckUnitFragmentFragment[] = []
+  const selectedIds = selectedUnits.map((deckUnit) => {
+    return useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id
+  })
   for (const deckUnit of sortedUnits) {
-    if (selectedIds.includes(deckUnit.unit.id)) {
+    const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
+    if (selectedIds.includes(unit.id)) {
       if (isFilteredIn(deckUnit, selectedFilterFields, selectedNameFilter)) {
         filteredSelectedUnits.push(deckUnit)
       }
@@ -744,15 +757,20 @@ function renderUnits({
 
   const disabled = neutralUnitsLoading || factionUnitsLoading || disabledOverride
 
-  let nextUnit: DeckUnit | undefined
-  let previousUnit: DeckUnit | undefined
+  let nextUnit: DeckUnitFragmentFragment | undefined
+  let previousUnit: DeckUnitFragmentFragment | undefined
   if (fullUnit) {
-    if (selectedIds.includes(fullUnit.unit.id)) {
-      const fullUnitPosition = filteredSelectedUnits.findIndex((deckUnit) => deckUnit.unit.id === fullUnit.unit.id)
+    const fullUnitId = useFragment(CardUnitFragmentFragmentDoc, fullUnit.unit).id
+    if (selectedIds.includes(fullUnitId)) {
+      const fullUnitPosition = filteredSelectedUnits.findIndex((deckUnit) => {
+        return useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id === fullUnitId
+      })
       nextUnit = filteredSelectedUnits[fullUnitPosition + 1]
       previousUnit = filteredSelectedUnits[fullUnitPosition - 1]
     } else {
-      const fullUnitPosition = filteredAvailableUnits.findIndex((deckUnit) => deckUnit.unit.id === fullUnit.unit.id)
+      const fullUnitPosition = filteredAvailableUnits.findIndex((deckUnit) => {
+        return useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id === fullUnitId
+      })
       nextUnit = filteredAvailableUnits[fullUnitPosition + 1]
       previousUnit = filteredAvailableUnits[fullUnitPosition - 1]
     }
@@ -761,11 +779,12 @@ function renderUnits({
    * Change to an alternative art style for a Unit
    */
   function changeArtStyle(change: number) {
-    setDeckUnits((previous: DeckUnit[]) =>
+    setDeckUnits((previous: DeckUnitFragmentFragment[]) =>
       previous.map((deckUnit) => {
         if (
           fullUnit &&
-          deckUnit.unit.id === fullUnit.unit.id &&
+          useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id ===
+            useFragment(CardUnitFragmentFragmentDoc, fullUnit.unit).id &&
           deckUnit.artStyle !== undefined &&
           deckUnit.artStyle !== null
         ) {
@@ -809,11 +828,19 @@ function renderUnits({
         hasPrevious={previousUnit !== undefined}
         onSelect={(fullUnitSelected) => {
           if (fullUnitSelected) {
-            setSelectedUnits((previous) =>
-              previous.map((deckUnit) => deckUnit.unit.id).includes(fullUnitSelected.unit.id)
-                ? previous.filter((deckUnit) => deckUnit.unit.id !== fullUnitSelected.unit.id)
-                : [...previous, fullUnitSelected as DeckUnit]
-            )
+            setSelectedUnits((previous) => {
+              const previousUnitIds = previous.map(
+                (deckUnit) => useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id
+              )
+              const currentUnitId = useFragment(CardUnitFragmentFragmentDoc, fullUnitSelected.unit).id
+              return previousUnitIds.includes(currentUnitId)
+                ? previous.filter(
+                    (deckUnit) =>
+                      useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id !==
+                      useFragment(CardUnitFragmentFragmentDoc, fullUnitSelected.unit).id
+                  )
+                : [...previous, fullUnitSelected as DeckUnitFragmentFragment]
+            })
           }
           if (nextUnit) {
             setFullUnit(nextUnit)
@@ -827,17 +854,14 @@ function renderUnits({
         onNext={() => nextUnit && setFullUnit(nextUnit)}
         onClose={() => setFullUnit(undefined)}
         onArtDecrement={() => {
-          if (!disabled && fullUnit && fullUnit.unit.images.length > 0 && fullUnit.artStyle && fullUnit.artStyle > 1) {
+          const unit = useFragment(CardUnitFragmentFragmentDoc, fullUnit?.unit)
+          if (!disabled && fullUnit && unit && unit.images.length > 0 && fullUnit.artStyle && fullUnit.artStyle > 1) {
             changeArtStyle(-1)
           }
         }}
         onArtIncrement={() => {
-          if (
-            !disabled &&
-            fullUnit &&
-            fullUnit.unit.images.length > 0 &&
-            fullUnit.artStyle < fullUnit.unit.images.length
-          ) {
+          const unit = useFragment(CardUnitFragmentFragmentDoc, fullUnit?.unit)
+          if (!disabled && fullUnit && unit && unit.images.length > 0 && fullUnit.artStyle < unit.images.length) {
             changeArtStyle(1)
           }
         }}
@@ -870,7 +894,7 @@ function renderUnits({
                 <div className="deck-editor-card-container">
                   {filteredAvailableUnits.map((deckUnit) => (
                     <UnitDeckCard
-                      key={deckUnit.unit.id}
+                      key={useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id}
                       deckUnit={deckUnit}
                       disabled={disabled}
                       setUnits={setDeckUnits}
@@ -918,7 +942,7 @@ function renderUnits({
                 <div className="deck-editor-card-container">
                   {filteredSelectedUnits.map((deckUnit) => (
                     <UnitDeckCard
-                      key={deckUnit.unit.id}
+                      key={useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id}
                       deckUnit={deckUnit}
                       disabled={disabled}
                       setUnits={setDeckUnits}
@@ -955,7 +979,8 @@ function renderUnitsLoading() {
  * @param name The Unit name the user is currently filtering on. Matches substrings.
  * @returns True if the DeckUnit should be shown, false if not.
  */
-function isFilteredIn(deckUnit: DeckUnit, fields: FILTER_FIELD[], name: string): boolean {
+function isFilteredIn(deckUnit: DeckUnitFragmentFragment, fields: FILTER_FIELD[], name: string): boolean {
+  const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
   const selected: FilterField[] = []
   for (const field of fields) {
     if (FILTERS[field]) {
@@ -969,35 +994,31 @@ function isFilteredIn(deckUnit: DeckUnit, fields: FILTER_FIELD[], name: string):
   const otherFilters = selected.filter((field) => field.group === FILTER_GROUP.Other)
 
   const combatIncluded =
-    combatFilters.length === 0 ||
-    combatFilters.some((filter) => deckUnit.unit.combats?.includes(filter.value as any as Combat)) // eslint-disable-line @typescript-eslint/no-explicit-any
+    combatFilters.length === 0 || combatFilters.some((filter) => unit.combats?.includes(filter.value as any as Combat)) // eslint-disable-line @typescript-eslint/no-explicit-any
   const dlcIncluded =
-    dlcFilters.length === 0 || dlcFilters.some((filter) => deckUnit.unit.dlc?.key === (filter.value as any as DlcKey)) // eslint-disable-line @typescript-eslint/no-explicit-any
+    dlcFilters.length === 0 || dlcFilters.some((filter) => unit.dlc?.key === (filter.value as any as DlcKey)) // eslint-disable-line @typescript-eslint/no-explicit-any
   const effectIncluded =
     effectFilters.length === 0 ||
     effectFilters.some(
-      (filter) => deckUnit.unit.effects?.map((effect) => effect.key).includes(filter.value as any as EffectKey) // eslint-disable-line @typescript-eslint/no-explicit-any
+      (filter) => unit.effects?.map((effect) => effect.key).includes(filter.value as any as EffectKey) // eslint-disable-line @typescript-eslint/no-explicit-any
     )
   const factionIncluded =
     factionFilters.length === 0 ||
     factionFilters.some(
       (filter) =>
-        (deckUnit.unit.faction.key === FactionKey.Neutral &&
-          (filter.value as any as FactionKey) === FactionKey.Neutral) || // eslint-disable-line @typescript-eslint/no-explicit-any
-        (deckUnit.unit.faction.key !== FactionKey.Neutral && (filter.value as any as FactionKey) !== FactionKey.Neutral) // eslint-disable-line @typescript-eslint/no-explicit-any
+        (unit.faction.key === FactionKey.Neutral && (filter.value as any as FactionKey) === FactionKey.Neutral) || // eslint-disable-line @typescript-eslint/no-explicit-any
+        (unit.faction.key !== FactionKey.Neutral && (filter.value as any as FactionKey) !== FactionKey.Neutral) // eslint-disable-line @typescript-eslint/no-explicit-any
     )
   const otherIncluded =
     otherFilters.length === 0 ||
     otherFilters.some(
       (filter) =>
-        (filter.value === FILTER_FIELD.Hero && deckUnit.unit.hero) ||
-        (filter.value === FILTER_FIELD.Special && deckUnit.unit.special) ||
-        (filter.value === FILTER_FIELD.Strength &&
-          deckUnit.unit.strength !== undefined &&
-          deckUnit.unit.strength !== null) ||
-        (filter.value === FILTER_FIELD.Art && deckUnit.unit.images.length > 1)
+        (filter.value === FILTER_FIELD.Hero && unit.hero) ||
+        (filter.value === FILTER_FIELD.Special && unit.special) ||
+        (filter.value === FILTER_FIELD.Strength && unit.strength !== undefined && unit.strength !== null) ||
+        (filter.value === FILTER_FIELD.Art && unit.images.length > 1)
     )
-  const nameIncluded = !name || deckUnit.unit.name.toLowerCase().includes(name.toLowerCase())
+  const nameIncluded = !name || unit.name.toLowerCase().includes(name.toLowerCase())
 
   return combatIncluded && dlcIncluded && effectIncluded && factionIncluded && otherIncluded && nameIncluded
 }

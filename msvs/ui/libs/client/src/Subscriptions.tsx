@@ -35,7 +35,7 @@ import {
   GameDeckQuery as GameDeckQueryRaw,
   GameQuery as GameQueryRaw,
   GamesQuery as GamesQueryRaw,
-} from '@gwent/graphql-schema/apollo-raw-types'
+} from '@gwent/graphql-schema/apollo-raw-typings'
 import updateGameDeckCacheOnRedraw from './util/update-game-deck-cache-on-redraw'
 import { useUserContext } from './UserContext'
 

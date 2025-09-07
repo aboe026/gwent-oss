@@ -9,7 +9,7 @@ import getNestedProperty from './get-nested-property'
 import getNoImpactMessage from './get-no-impact-message'
 import getRandomSubset from './get-random-subset'
 import getUniqueItems from './get-unique-items'
-import getUnitStats from './get-unit-stats'
+import GetUnitStats from './get-unit-stats'
 import getWeatherImage from './get-weather-image'
 import groupBy from './group-by'
 import randomizeOrder from './randomize-order'
@@ -28,7 +28,7 @@ export {
   getNoImpactMessage,
   getRandomSubset,
   getUniqueItems,
-  getUnitStats,
+  GetUnitStats,
   getWeatherImage,
   groupBy,
   humanizeDay,

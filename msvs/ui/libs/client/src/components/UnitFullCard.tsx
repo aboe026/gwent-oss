@@ -1,11 +1,21 @@
 import { CgChevronLeft, CgChevronRight } from 'react-icons/cg'
 
 import CloseButton from './CloseButton'
-import { DeckUnit, EffectKey, FactionKey, GameUnit, GameUnitEffect } from '@gwent/graphql-schema/apollo-typings'
-import { getCombatImage, getWeatherImage, toTitleCase } from '@gwent/utils'
+import {
+  CardUnitFragmentFragmentDoc,
+  DeckUnitFragmentFragment,
+  EffectKey,
+  FactionKey,
+  GameUnitEffect,
+  GameUnitFragmentFragment,
+  useFragment,
+} from '@gwent/graphql-schema/apollo-typings'
+import getCombatImage from '../util/get-combat-image'
+import getWeatherImage from '../util/get-weather-image'
 import { HTML_CLASSES, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { Key, useKeyDown } from '../util/keyboard-listener'
 import StrengthCircle from './StrengthCircle'
+import { toTitleCase } from '@gwent/utils'
 import WholeScreenDialog from './WholeScreenDialog'
 import './UnitFullCard.css'
 
@@ -28,6 +38,7 @@ export default function UnitFullCard({
   onSelect,
   userName,
 }: UnitFullCardProps) {
+  const unit = useFragment(CardUnitFragmentFragmentDoc, fullUnit?.unit)
   useKeyDown([
     {
       key: Key.Left,
@@ -37,7 +48,7 @@ export default function UnitFullCard({
     {
       key: Key.Left,
       ctrl: true,
-      condition: () => fullUnit !== undefined && fullUnit.unit.images.length > 0,
+      condition: () => unit !== undefined && unit.images.length > 0,
       onCondition: () => onArtDecrement && onArtDecrement(fullUnit),
     },
     {
@@ -48,7 +59,7 @@ export default function UnitFullCard({
     {
       key: Key.Right,
       ctrl: true,
-      condition: () => fullUnit !== undefined && fullUnit.unit.images.length > 0,
+      condition: () => unit !== undefined && unit.images.length > 0,
       onCondition: () => onArtIncrement && onArtIncrement(fullUnit),
     },
     {
@@ -63,13 +74,11 @@ export default function UnitFullCard({
     },
   ])
 
-  if (fullUnit) {
+  if (fullUnit && unit) {
     const combatSymbol = getCombatImage(fullUnit)
-    const combatTitle = fullUnit.unit.combats
-      ? fullUnit.unit.combats.map((combat) => toTitleCase(combat)).join(' or ')
-      : ''
+    const combatTitle = unit.combats ? unit.combats.map((combat) => toTitleCase(combat)).join(' or ') : ''
     const combatDescription = `Can be placed in the ${combatTitle} combat row${
-      fullUnit.unit.combats && fullUnit.unit.combats.length > 1 ? 's' : ''
+      unit.combats && unit.combats.length > 1 ? 's' : ''
     }.`
     return (
       <WholeScreenDialog onClose={() => onClose(fullUnit)}>
@@ -89,41 +98,37 @@ export default function UnitFullCard({
               <div id="unitFullCardContents">
                 <img
                   id={HTML_IDS.UnitFullCardImage}
-                  src={fullUnit.unit.images[(fullUnit.artStyle || 1) - 1]}
-                  className={fullUnit.unit.hero ? 'full-unit-hero' : ''}
+                  src={unit.images[(fullUnit.artStyle || 1) - 1]}
+                  className={unit.hero ? 'full-unit-hero' : ''}
                   onClick={() => onSelect(fullUnit)}
                 />
                 <div id="unitFullCardInfo">
                   {userName && <div id={HTML_IDS.UnitFullCardUsername}>{userName}</div>}
                   <div id="unitFullCardUpper">
-                    <span id={HTML_IDS.UnitFullCardName}>{fullUnit.unit.name}</span>
-                    <span id={HTML_IDS.UnitFullCardQuote}>{fullUnit.unit.quote}</span>
+                    <span id={HTML_IDS.UnitFullCardName}>{unit.name}</span>
+                    <span id={HTML_IDS.UnitFullCardQuote}>{unit.quote}</span>
                     <div className={HTML_CLASSES.UnitFullCardInfoRow}>
                       <div className="unit-full-card-info-image-container">
-                        <img
-                          className="unit-full-card-info-image"
-                          src={fullUnit.unit.faction.image}
-                          title={fullUnit.unit.faction.name}
-                        />
+                        <img className="unit-full-card-info-image" src={unit.faction.image} title={unit.faction.name} />
                       </div>
-                      <span id={HTML_IDS.UnitFullCardFaction}>{`A member of the ${fullUnit.unit.faction.name} faction${
-                        fullUnit.unit.faction.key === FactionKey.Neutral
+                      <span id={HTML_IDS.UnitFullCardFaction}>{`A member of the ${unit.faction.name} faction${
+                        unit.faction.key === FactionKey.Neutral
                           ? ', which can be added to the deck of any faction.'
                           : '.'
                       }`}</span>
                     </div>
-                    {fullUnit.unit.strength !== undefined && fullUnit.unit.strength !== null && (
+                    {unit.strength !== undefined && unit.strength !== null && (
                       <div className={`${HTML_CLASSES.UnitFullCardInfoRow} unit-full-card-info-row-strength`}>
                         <div className={HTML_CLASSES.UnitFullCardInfoRow}>
                           <StrengthCircle
-                            unit={fullUnit.unit}
+                            unit={useFragment(CardUnitFragmentFragmentDoc, fullUnit.unit)}
                             effectiveStrength={effectiveStrength}
                             size="50px"
                             ignoreHero={true}
                             effectHighlight={true}
                           />
                           <span id={HTML_IDS.UnitFullCardStrength}>{`Provides a strength of ${
-                            effectiveStrength || fullUnit.unit.strength
+                            effectiveStrength || unit.strength
                           } to the row placed in.`}</span>
                         </div>
                         {effects && effects.length > 0 && (
@@ -144,7 +149,7 @@ export default function UnitFullCard({
                                   <td
                                     className={`${HTML_CLASSES.UnitFullCardStrengthReasonStrength} unit-full-card-info-strength-reason-number`}
                                   >
-                                    {fullUnit.unit.strength}
+                                    {unit.strength}
                                   </td>
                                   <td className={HTML_CLASSES.UnitFullCardStrengthReasonExplanation}>Base strength</td>
                                 </tr>
@@ -185,7 +190,7 @@ export default function UnitFullCard({
                         <span id={HTML_IDS.UnitFullCardCombat}>{combatDescription}</span>
                       </div>
                     )}
-                    {fullUnit.unit.hero && (
+                    {unit.hero && (
                       <div className={HTML_CLASSES.UnitFullCardInfoRow}>
                         <div className="unit-full-card-info-image-container">
                           <img className="unit-full-card-info-image" src="images/stats/hero.png" title="Hero" />
@@ -193,9 +198,9 @@ export default function UnitFullCard({
                         <span id={HTML_IDS.UnitFullCardHero}>Not affected by any special cards or abilities.</span>
                       </div>
                     )}
-                    {fullUnit.unit.effects && fullUnit.unit.effects?.length > 0 && (
+                    {unit.effects && unit.effects?.length > 0 && (
                       <div id={HTML_IDS.UnitFullCardEffects}>
-                        {fullUnit.unit.effects.map((effect) => (
+                        {unit.effects.map((effect) => (
                           <div
                             id={`fullUnitEffect${toTitleCase(effect.key)}`}
                             className={HTML_CLASSES.UnitFullCardInfoRow}
@@ -204,7 +209,7 @@ export default function UnitFullCard({
                             <div className="unit-full-card-info-image-container">
                               <img
                                 className="unit-full-card-info-image"
-                                src={effect.key === EffectKey.Weather ? getWeatherImage(fullUnit.unit) : effect.image}
+                                src={effect.key === EffectKey.Weather ? getWeatherImage(unit) : effect.image}
                                 title={effect.name}
                               />
                             </div>
@@ -213,7 +218,7 @@ export default function UnitFullCard({
                         ))}
                       </div>
                     )}
-                    {fullUnit.unit.special && (
+                    {unit.special && (
                       <div className={HTML_CLASSES.UnitFullCardInfoRow}>
                         <div className="unit-full-card-info-image-container">
                           <img
@@ -227,19 +232,19 @@ export default function UnitFullCard({
                         >{`Counts towards the special limit of ${DECK_MAX_SPECIALS} per deck.`}</span>
                       </div>
                     )}
-                    {fullUnit.unit.dlc && (
+                    {unit.dlc && (
                       <div className={HTML_CLASSES.UnitFullCardInfoRow}>
                         <img
                           className="unit-full-card-info-image unit-full-card-info-image-dlc"
-                          src={fullUnit.unit.dlc.image}
-                          title={fullUnit.unit.dlc.name}
+                          src={unit.dlc.image}
+                          title={unit.dlc.name}
                         />
-                        <span id={HTML_IDS.UnitFullCardDlc}>{`Introduced in the ${fullUnit.unit.dlc.name} DLC.`}</span>
+                        <span id={HTML_IDS.UnitFullCardDlc}>{`Introduced in the ${unit.dlc.name} DLC.`}</span>
                       </div>
                     )}
                   </div>
 
-                  {fullUnit.artStyle && fullUnit.unit.images.length > 1 && (
+                  {fullUnit.artStyle && unit.images.length > 1 && (
                     <div id="unitFullCardArtSwitcher">
                       {onArtDecrement && (
                         <div
@@ -257,17 +262,17 @@ export default function UnitFullCard({
                       )}
                       <span
                         id={HTML_IDS.UnitFullCardArt}
-                      >{`Art style: ${fullUnit.artStyle}/${fullUnit.unit.images.length}`}</span>
+                      >{`Art style: ${fullUnit.artStyle}/${unit.images.length}`}</span>
                       {onArtIncrement && (
                         <div
                           id={HTML_IDS.UnitFullCardArtNext}
                           className={`icon-container unit-full-card-art-switcher ${
-                            fullUnit.artStyle < fullUnit.unit.images.length ? 'pointable' : ''
+                            fullUnit.artStyle < unit.images.length ? 'pointable' : ''
                           }`}
                           onClick={() => onArtIncrement(fullUnit)}
                           title="Next Art Style"
                         >
-                          {fullUnit.artStyle < fullUnit.unit.images.length && (
+                          {fullUnit.artStyle < unit.images.length && (
                             <CgChevronRight className="unit-full-card-art-switcher-arrow" size="1.5em" />
                           )}
                         </div>
@@ -300,14 +305,14 @@ export default function UnitFullCard({
 interface UnitFullCardProps {
   effectiveStrength?: number | null
   effects?: GameUnitEffect[] | null
-  fullUnit: DeckUnit | GameUnit | undefined
+  fullUnit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined
   hasNext: boolean
   hasPrevious: boolean
-  onArtDecrement?: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onArtIncrement?: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClose: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onNext: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onPrevious: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onSelect: (unit: DeckUnit | GameUnit | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onArtDecrement?: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onArtIncrement?: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onNext: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onPrevious: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSelect: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   userName?: string
 }

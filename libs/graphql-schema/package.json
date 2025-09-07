@@ -13,6 +13,9 @@
       "apollo-typings": [
         "build/generated/apollo/index.d.ts"
       ],
+      "apollo-raw-typings": [
+        "build/generated/apollo/raw-types.d.ts"
+      ],
       "*": [
         "build/generated/*",
         "build/src/*"
@@ -25,6 +28,7 @@
     "./decks-filter": "./build/src/decks-filter.js",
     "./games-filter": "./build/src/games-filter.js",
     "./apollo-typings": "./build/generated/apollo/index.js",
+    "./apollo-raw-typings": "./build/generated/apollo/raw-types.js",
     "./database-typings": "./build/generated/database-typings.js",
     "./resolver-typings": "./build/generated/resolver-typings.js",
     "./context": "./build/src/context.js"

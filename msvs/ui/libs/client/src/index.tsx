@@ -9,11 +9,14 @@ import './index.css'
  * The main entrypoint of the Browser Client.
  */
 if (typeof window !== 'undefined') {
-  const root = createRoot(document.getElementById('root') as Element)
+  const element = document.getElementById('root')
+  if (element) {
+    const root = createRoot(element)
 
-  root.render(
-    <Apollo>
-      <Router />
-    </Apollo>
-  )
+    root.render(
+      <Apollo>
+        <Router />
+      </Apollo>
+    )
+  }
 }

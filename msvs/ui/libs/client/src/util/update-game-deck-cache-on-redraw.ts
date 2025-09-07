@@ -3,7 +3,7 @@ import {
   DeckUnitFragmentFragment,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
-import { GameDeckQuery as GameDeckQueryRaw } from '@gwent/graphql-schema/apollo-raw-types'
+import { GameDeckQuery as GameDeckQueryRaw } from '@gwent/graphql-schema/apollo-raw-typings'
 
 /**
  * Updates the Apollo cache for GameDeck when redraw made.
