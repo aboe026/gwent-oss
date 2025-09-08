@@ -22,7 +22,7 @@ import { IconType } from 'react-icons'
 /**
  * A Row representing a users created Deck
  *
- * @returns The Deck as a row
+ * @returns The Deck row
  */
 export default function DeckRow({ actions, actionsDisabled, deckFragment, neutralFactionStats }: DeckRowProps) {
   const deck = useFragment(DeckFragmentFragmentDoc, deckFragment)
@@ -215,8 +215,8 @@ function renderDeckStat({
   const faction = useFragment(FactionFragmentFragmentDoc, deck.faction)
   const factionStats = useFragment(DeckStatsFragmentDoc, faction.stats)
   const deckStats = useFragment(DeckStatsFragmentDoc, deck.stats)
-  const available = (factionStats[stat] as number) + (neutralStats[stat] as number)
-  const chosen = deckStats[stat] as number
+  const available = getStatNumber(factionStats[stat]) + getStatNumber(neutralStats[stat])
+  const chosen = getStatNumber(deckStats[stat])
 
   return (
     <div>
@@ -229,6 +229,15 @@ function renderDeckStat({
       <ProgressBar completeColor="gray" remainingColor="lightgray" height="10px" percent={(chosen / available) * 100} />
     </div>
   )
+}
+
+// TODO: change to have stats object, key and label as input params
+// so if its not a number, the error is more helpful
+function getStatNumber(statNumber: number | 'DeckStatsFragment' | 'UnitStats' | undefined) {
+  if (typeof statNumber === 'number') {
+    return statNumber
+  }
+  throw Error(`Stat "${statNumber}" is not a number`)
 }
 
 interface DeckRowProps {

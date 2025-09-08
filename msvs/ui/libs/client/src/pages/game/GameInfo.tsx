@@ -1,13 +1,12 @@
 import { CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
+import { FragmentType } from '@apollo/client'
 
 import Centered from '../../components/Centered'
 import {
-  GamePlayer,
   Game,
   GameStatus,
   RoundResult,
-  PlayerRound,
   DeckUnitFragmentFragment,
   useFragment,
   CardUnitFragmentFragmentDoc,
@@ -16,6 +15,9 @@ import {
   GameFactionFragmentFragment,
   GameLeaderFragmentFragmentDoc,
   GameLeaderFragmentFragment,
+  GamePlayerFragmentFragment,
+  PlayerRoundFragment,
+  PlayerRoundFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 import { GameDeckProps, GameProps } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -39,10 +41,10 @@ export default function GameInfo({
   gameDeckProps: GameDeckProps
   gameProps: GameProps
   handCardSelected: DeckUnitFragmentFragment | undefined
-  opponent: GamePlayer
+  opponent: GamePlayerFragmentFragment
   playPassLoading: boolean
   playUnitLoading: boolean
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
   const sharedProps = {
@@ -63,11 +65,11 @@ export default function GameInfo({
         id: HTML_IDS.GameInfoOpponentContainer,
         player: opponent,
         isSelf: false,
-        faction: opponent.faction,
+        faction: useFragment(GameFactionFragmentFragmentDoc, opponent.faction),
         discard: opponent.counts?.discard,
         hand: opponent.counts?.hand,
         undrawn: opponent.counts?.undrawn,
-        leader: opponent.leader,
+        leader: useFragment(GameLeaderFragmentFragmentDoc, opponent.leader),
       })}
       {renderSharedInfo({
         gameProps,
@@ -158,7 +160,7 @@ function renderPlayerInfo({
   id: string
   isSelf: boolean
   leader?: GameLeaderFragmentFragment | null
-  player: GamePlayer
+  player: GamePlayerFragmentFragment
   playPassLoading: boolean
   playUnitLoading: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
@@ -264,17 +266,17 @@ function renderScore({
   handCardSelected: DeckUnitFragmentFragment | undefined
   isSelf: boolean
   isTurn?: boolean | null | undefined
-  player: GamePlayer
+  player: GamePlayerFragmentFragment
   playPassLoading: boolean
   playUnitLoading: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
   const handCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, handCardSelected?.unit)
-  let playerRound: PlayerRound | undefined = undefined
+  let playerRound: PlayerRoundFragment | undefined = undefined
   let winning = false
   let passTitle = ''
   if (game.round > 0) {
-    playerRound = player.rounds[game.round - 1]
+    playerRound = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
     const playerScore = playerRound.score
     const opponent = game.players.find((gamePlayer) => gamePlayer.user.name !== player.user.name)
     if (opponent) {
@@ -308,16 +310,19 @@ function renderScore({
     }
   }
   const sortedRounds: {
-    round: PlayerRound
+    round: FragmentType<PlayerRoundFragment>
     number: number
   }[] = []
   const livesRemaining =
     game.config.lives -
-    player.rounds.filter((round) => round.result === RoundResult.Lost || round.result === RoundResult.Drew).length
+    player.rounds.filter((roundFragment) => {
+      const round = useFragment(PlayerRoundFragmentDoc, roundFragment)
+      return round.result === RoundResult.Lost || round.result === RoundResult.Drew
+    }).length
   for (let i = 0; i < livesRemaining; i++) {
     sortedRounds.push({
       number: game.round + i + 1,
-      round: {} as any as PlayerRound, // eslint-disable-line @typescript-eslint/no-explicit-any
+      round: {},
     })
   }
   const roundToNumberMap = player.rounds.map((round, index) => {
@@ -326,9 +331,12 @@ function renderScore({
       number: index + 1,
     }
   })
-  const roundsPlayed = roundToNumberMap.filter((round) => round.round.result)
+  const roundsPlayed = roundToNumberMap.filter(
+    (roundAndNumber) => useFragment(PlayerRoundFragmentDoc, roundAndNumber.round).result
+  )
   for (const roundPlayed of roundsPlayed) {
-    if (roundPlayed.round.result !== RoundResult.Won) {
+    const round = useFragment(PlayerRoundFragmentDoc, roundPlayed.round)
+    if (round.result !== RoundResult.Won) {
       sortedRounds.push(roundPlayed)
     }
   }
@@ -349,18 +357,19 @@ function renderScore({
           <div className="game-player-rounds-container">
             <div className="game-player-rounds-score">
               <div className="game-player-rounds">
-                {sortedRounds.map((round, index) => {
+                {sortedRounds.map((roundAndNumber, index) => {
+                  const round = useFragment(PlayerRoundFragmentDoc, roundAndNumber.round)
                   let title = 'Life remaining'
-                  if (round.round.result === RoundResult.Drew) {
-                    title = `Life lost due to tie on round ${round.number}`
-                  } else if (round.round.result === RoundResult.Lost) {
-                    title = `Life lost due to loss on round ${round.number}`
+                  if (round.result === RoundResult.Drew) {
+                    title = `Life lost due to tie on round ${roundAndNumber.number}`
+                  } else if (round.result === RoundResult.Lost) {
+                    title = `Life lost due to loss on round ${roundAndNumber.number}`
                   }
                   return (
                     <div
                       key={index}
                       className={`game-round-token ${
-                        round.round.result === RoundResult.Lost || round.round.result === RoundResult.Drew
+                        round.result === RoundResult.Lost || round.result === RoundResult.Drew
                           ? HTML_CLASSES.GamePlayerRoundTokenLost
                           : HTML_CLASSES.GamePlayerRoundTokenWon
                       }`}

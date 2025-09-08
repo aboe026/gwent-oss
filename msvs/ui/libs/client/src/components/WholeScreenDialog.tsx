@@ -14,7 +14,7 @@ export default function WholeScreenDialog({ children, onClose, style }: WholeScr
     <div
       className="whole-screen-overlay"
       onClick={(event) => {
-        if ((event.target as HTMLDivElement).id === id && onClose) {
+        if (event.target instanceof HTMLDivElement && event.target.id === id && onClose) {
           onClose()
         }
       }}

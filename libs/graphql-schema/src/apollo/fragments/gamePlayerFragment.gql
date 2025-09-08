@@ -12,59 +12,7 @@ fragment GamePlayerFragment on GamePlayer {
   }
   ready
   rounds {
-    close {
-      ...PlayerCombatRowFragment
-    }
-    moves {
-      ... on MoveLeader {
-        created
-        leader {
-          image
-          name
-        }
-      }
-      ... on MovePass {
-        created
-      }
-      ... on MoveUnit {
-        created
-        unit {
-          ...GameUnitFragment
-        }
-        impacts {
-          unit {
-            ...GameUnitFragment
-          }
-          user {
-            id
-            name
-          }
-          source {
-            origin
-          }
-        }
-        reason {
-          type
-          unit {
-            unit {
-              name
-            }
-          }
-        }
-        source {
-          origin
-        }
-      }
-    }
-    passed
-    ranged {
-      ...PlayerCombatRowFragment
-    }
-    result
-    score
-    siege {
-      ...PlayerCombatRowFragment
-    }
+    ...PlayerRound
   }
   user {
     id

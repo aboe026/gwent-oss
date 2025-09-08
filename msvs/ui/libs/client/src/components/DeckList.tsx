@@ -8,14 +8,17 @@ import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
 import {
-  Deck,
+  DeckFragmentFragment,
+  DeckFragmentFragmentDoc,
   DecksDocument,
   DecksQuery,
   Exact,
+  FactionFragmentFragmentDoc,
   FactionKey,
   FactionStatsDocument,
   FactionStatsQuery,
   InputMaybe,
+  useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import DeckRow, { Action } from './DeckRow'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
@@ -61,7 +64,7 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   })
   const filteredDecks = sortedDecks.filter((deck) =>
     isFilteredIn({
-      deck: deck as Deck,
+      deck: useFragment(DeckFragmentFragmentDoc, deck),
       fields: filterFields,
       name: nameFilter,
     })
@@ -361,14 +364,23 @@ function renderCreateDeckButton({
  * @param config.name The name that Decks should be filtered on, and substring matches.
  * @returns True if the Deck should be shown, false otherwise.
  */
-function isFilteredIn({ deck, fields, name }: { deck: Deck; fields: FILTER_FIELD[]; name: string }): boolean {
+function isFilteredIn({
+  deck,
+  fields,
+  name,
+}: {
+  deck: DeckFragmentFragment
+  fields: FILTER_FIELD[]
+  name: string
+}): boolean {
+  const faction = useFragment(FactionFragmentFragmentDoc, deck.faction)
   const filteredByFaction =
     fields.length === 0 ||
-    (fields.includes(FILTER_FIELD.Monsters) && deck.faction.key === FactionKey.Monsters) ||
-    (fields.includes(FILTER_FIELD.NilfgaardianEmpire) && deck.faction.key === FactionKey.NilfgaardianEmpire) ||
-    (fields.includes(FILTER_FIELD.NorthernRealms) && deck.faction.key === FactionKey.NorthernRealms) ||
-    (fields.includes(FILTER_FIELD.ScoiaTael) && deck.faction.key === FactionKey.ScoiaTael) ||
-    (fields.includes(FILTER_FIELD.Skellige) && deck.faction.key === FactionKey.Skellige)
+    (fields.includes(FILTER_FIELD.Monsters) && faction.key === FactionKey.Monsters) ||
+    (fields.includes(FILTER_FIELD.NilfgaardianEmpire) && faction.key === FactionKey.NilfgaardianEmpire) ||
+    (fields.includes(FILTER_FIELD.NorthernRealms) && faction.key === FactionKey.NorthernRealms) ||
+    (fields.includes(FILTER_FIELD.ScoiaTael) && faction.key === FactionKey.ScoiaTael) ||
+    (fields.includes(FILTER_FIELD.Skellige) && faction.key === FactionKey.Skellige)
   const filteredByName = !name || deck.name.toLowerCase().includes(name.toLowerCase())
   return filteredByFaction && filteredByName
 }

@@ -7,7 +7,6 @@ import {
   Exact,
   SetDeckMutation,
   RedrawMutation,
-  Game,
   GameDeckQuery,
   ReadyMutation,
   Scalars,
@@ -21,6 +20,7 @@ import {
   GameDeckFragmentFragment,
   DeckUnitFragmentFragment,
   GameUnitFragmentFragment,
+  GameFragmentFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
@@ -36,7 +36,7 @@ export interface AddGameProps {
 }
 
 export interface GameProps {
-  game: Game | undefined
+  game: GameFragmentFragment | undefined
   error: unknown
   loading: boolean
   refetch: (
