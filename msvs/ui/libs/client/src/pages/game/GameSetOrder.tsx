@@ -2,7 +2,14 @@ import { CgChevronUp, CgChevronDown } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
-import { GamePlayer, Game, FactionKey, GamePlayerFragmentFragment } from '@gwent/graphql-schema/apollo-typings'
+import {
+  FactionKey,
+  GameFactionFragmentFragmentDoc,
+  GameFragmentFragment,
+  GamePlayerFragmentFragment,
+  GamePlayerFragmentFragmentDoc,
+  useFragment,
+} from '@gwent/graphql-schema/apollo-typings'
 import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../../components/LoadingBar'
@@ -20,19 +27,27 @@ export default function GameSetOrder({
   setOrderProps,
   setPlayerOrder,
 }: {
-  game: Game
+  game: GameFragmentFragment
   playerOrder: GamePlayerFragmentFragment[]
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   setOrderProps: SetOrderProps
   setPlayerOrder: Dispatch<SetStateAction<GamePlayerFragmentFragment[]>>
 }) {
   const { checkAuth } = useUserContext()
   const setOrderErrorMessages = getErrorMessages(setOrderProps.error)
-  const scoiaTaelDecks = game.players.filter((player) => player.faction?.key === FactionKey.ScoiaTael).length
-  const canSetOrder = scoiaTaelDecks !== 1 || self.faction?.key === FactionKey.ScoiaTael
+  const scoiaTaelDecks = game.players.filter(
+    (player) =>
+      useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)?.key ===
+      FactionKey.ScoiaTael
+  ).length
+  const selfFaction = useFragment(GameFactionFragmentFragmentDoc, self.faction)
+  const canSetOrder = scoiaTaelDecks !== 1 || selfFaction?.key === FactionKey.ScoiaTael
   const canChooseOrder =
-    game.players.filter((player) => player.faction?.key === FactionKey.ScoiaTael).length === 1 &&
-    self.faction?.key === FactionKey.ScoiaTael
+    game.players.filter(
+      (player) =>
+        useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)?.key ===
+        FactionKey.ScoiaTael
+    ).length === 1 && selfFaction?.key === FactionKey.ScoiaTael
 
   return (
     <div id={HTML_IDS.GameOrderContainer} className="game-section">

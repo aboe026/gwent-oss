@@ -6,7 +6,7 @@ import {
   DeckUnitFragmentFragmentDoc,
   GameDeckFragmentFragment,
   GameDeckFragmentFragmentDoc,
-  GamePlayer,
+  GamePlayerFragmentFragment,
   GameStatus,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -42,7 +42,7 @@ export default function GameHand({
   playUnitLoading: boolean
   redrawCardSelected: DeckUnitFragmentFragment | undefined
   redrawsLeft: number
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
@@ -122,7 +122,7 @@ function GameHandUnit({
   playUnitLoading: boolean
   redrawCardSelected: DeckUnitFragmentFragment | undefined
   redrawsLeft: number
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>

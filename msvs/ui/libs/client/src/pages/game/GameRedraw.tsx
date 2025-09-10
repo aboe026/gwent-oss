@@ -6,10 +6,10 @@ import {
   CardUnitFragmentFragmentDoc,
   DeckUnitFragmentFragmentDoc,
   DeckUnitFragmentFragment,
-  Game,
   GameDeckFragmentFragment,
-  GamePlayer,
   useFragment,
+  GamePlayerFragmentFragment,
+  GameFragmentFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import Centered from '../../components/Centered'
 import CoinToss from '../../components/CoinToss'
@@ -39,13 +39,13 @@ export default function GameRedraw({
   setRedrawCardSelected,
 }: {
   coinTossVisible: boolean
-  game: Game
+  game: GameFragmentFragment
   gameDeck: GameDeckFragmentFragment | null | undefined
   handCardSelected: DeckUnitFragmentFragment | undefined
   readyProps: ReadyProps
   redrawCardSelected: DeckUnitFragmentFragment | undefined
   redrawProps: RedrawProps
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
@@ -191,9 +191,9 @@ function RedrawCard({
 }: {
   index: number
   gameDeck: GameDeckFragmentFragment
-  game: Game
+  game: GameFragmentFragment
   handCardSelected: DeckUnitFragmentFragment | undefined
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   redrawCardSelected: DeckUnitFragmentFragment | undefined
   redrawProps: RedrawProps
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>

@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
-import { Game } from '@gwent/graphql-schema/apollo-typings'
+import { GameFragmentFragment } from '@gwent/graphql-schema/apollo-typings'
 import { getErrorMessages } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../../components/LoadingBar'
@@ -18,7 +18,7 @@ export default function GameSetDeck({
   setDeckProps,
 }: {
   alreadySet: boolean
-  game: Game
+  game: GameFragmentFragment
   setDeckListOpen: Dispatch<SetStateAction<boolean>>
   setDeckProps: SetDeckProps
 }) {

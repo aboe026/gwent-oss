@@ -4,8 +4,9 @@ import {
   CardUnitFragmentFragmentDoc,
   Combat,
   DeckUnitFragmentFragment,
-  Game,
-  GamePlayer,
+  GameFragmentFragment,
+  GamePlayerFragmentFragment,
+  PlayerRoundFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
@@ -30,13 +31,13 @@ export default function GameBattlefield({
   setHistoryCardSelected,
 }: {
   fullUnits: FullUnitCards | undefined
-  game: Game
+  game: GameFragmentFragment
   handCardSelected: DeckUnitFragmentFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
-  opponent: GamePlayer
+  opponent: GamePlayerFragmentFragment
   playUnitProps: PlayUnitProps
   scrollHistoryIntoView: (args: UnitForPlayer) => void
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
@@ -57,8 +58,8 @@ export default function GameBattlefield({
     }
   }
   const isTurn = game.turn?.user.name === self.user.name
-  const selfPassed = self.rounds[game.round - 1].passed
-  const opponentPassed = opponent.rounds[game.round - 1].passed
+  const selfPassed = useFragment(PlayerRoundFragmentDoc, self.rounds[game.round - 1]).passed
+  const opponentPassed = useFragment(PlayerRoundFragmentDoc, opponent.rounds[game.round - 1]).passed
   const sharedProps = {
     handCardSelectedUnit,
     playUnitProps,

@@ -9,7 +9,8 @@ import {
   Effect,
   EffectKey,
   Game,
-  GamePlayer,
+  GameFragmentFragment,
+  GamePlayerFragmentFragment,
   GameStatus,
   GameUnit,
   GameUnitOrigin,
@@ -40,13 +41,13 @@ export default function GameHistory({
   setHistoryCardSelected,
   setFullUnits,
 }: {
-  game: Game
+  game: GameFragmentFragment
   handCardSelected: DeckUnitFragmentFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
   movesByRounds: MoveForRound[]
   playPassProps: PlayPassProps
   playUnitProps: PlayUnitProps
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
@@ -306,7 +307,7 @@ function MoveUnitImpact({
   game: Game
   historyCardSelected: UnitForPlayer | undefined
   impacts: Impact[] | null | undefined
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
@@ -386,7 +387,7 @@ function renderImpacts({
   game: Game
   historyCardSelected: UnitForPlayer | undefined
   impacts: Impact[]
-  self: GamePlayer
+  self: GamePlayerFragmentFragment
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
