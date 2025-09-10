@@ -16,11 +16,11 @@ import {
   Combat,
   PlayUnitMutation,
   PlayPassMutation,
-  Move,
   GameDeckFragmentFragment,
   DeckUnitFragmentFragment,
   GameUnitFragmentFragment,
   GameFragmentFragment,
+  MoveFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
@@ -153,7 +153,7 @@ export interface FullUnitCards {
 }
 
 export interface PlayerMove {
-  move: Move
+  move: MoveFragment
   playerIndex: number
   ref: RefObject<HTMLDivElement | null>
 }

@@ -1,13 +1,18 @@
 import { CgChevronLeft, CgChevronRight } from 'react-icons/cg'
+import { FragmentType } from '@apollo/client'
 
 import CloseButton from './CloseButton'
 import {
+  CardUnitFragmentFragment,
   CardUnitFragmentFragmentDoc,
   DeckUnitFragmentFragment,
   EffectKey,
   FactionKey,
-  GameUnitEffect,
+  GameUnitEffectFragment,
+  GameUnitEffectFragmentDoc,
   GameUnitFragmentFragment,
+  UnitEffectFragment,
+  UnitEffectFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'
@@ -153,29 +158,9 @@ export default function UnitFullCard({
                                   </td>
                                   <td className={HTML_CLASSES.UnitFullCardStrengthReasonExplanation}>Base strength</td>
                                 </tr>
-                                {effects.map((effect, index) => {
-                                  let reason = ''
-                                  if (effect.reason.__typename === 'EffectFromUnit') {
-                                    reason = `${effect.reason.effect.name} from ${effect.reason.unit.name}`
-                                  } else if (effect.reason.__typename === 'EffectFromLeader') {
-                                    reason = `Ability from ${effect.reason.leader.name}`
-                                  }
-                                  return (
-                                    <tr key={index} className={HTML_CLASSES.UnitFullCardStrengthReasonRow}>
-                                      <td
-                                        className={`${HTML_CLASSES.UnitFullCardStrengthReasonOperator} unit-full-card-info-strength-reason-number`}
-                                      >
-                                        {effect.operator}
-                                      </td>
-                                      <td
-                                        className={`${HTML_CLASSES.UnitFullCardStrengthReasonStrength} unit-full-card-info-strength-reason-number`}
-                                      >
-                                        {effect.total}
-                                      </td>
-                                      <td className={HTML_CLASSES.UnitFullCardStrengthReasonExplanation}>{reason}</td>
-                                    </tr>
-                                  )
-                                })}
+                                {effects.map((effectFragment, index) => (
+                                  <GameUnitEffect effectFragment={effectFragment} key={index} />
+                                ))}
                               </tbody>
                             </table>
                           </div>
@@ -200,21 +185,8 @@ export default function UnitFullCard({
                     )}
                     {unit.effects && unit.effects?.length > 0 && (
                       <div id={HTML_IDS.UnitFullCardEffects}>
-                        {unit.effects.map((effect) => (
-                          <div
-                            id={`fullUnitEffect${toTitleCase(effect.key)}`}
-                            className={HTML_CLASSES.UnitFullCardInfoRow}
-                            key={effect.key}
-                          >
-                            <div className="unit-full-card-info-image-container">
-                              <img
-                                className="unit-full-card-info-image"
-                                src={effect.key === EffectKey.Weather ? getWeatherImage(unit) : effect.image}
-                                title={effect.name}
-                              />
-                            </div>
-                            <div className={HTML_CLASSES.UnitFullCardEffectAbility}>{effect.ability}</div>
-                          </div>
+                        {unit.effects.map((effectFragment, index) => (
+                          <UnitEffect effectFragment={effectFragment} unit={unit} key={index} />
                         ))}
                       </div>
                     )}
@@ -302,9 +274,52 @@ export default function UnitFullCard({
   }
 }
 
+function UnitEffect({
+  effectFragment,
+  unit,
+}: {
+  effectFragment: FragmentType<UnitEffectFragment>
+  unit: CardUnitFragmentFragment
+}) {
+  const effect = useFragment(UnitEffectFragmentDoc, effectFragment)
+  return (
+    <div id={`fullUnitEffect${toTitleCase(effect.key)}`} className={HTML_CLASSES.UnitFullCardInfoRow} key={effect.key}>
+      <div className="unit-full-card-info-image-container">
+        <img
+          className="unit-full-card-info-image"
+          src={effect.key === EffectKey.Weather ? getWeatherImage(unit) : effect.image}
+          title={effect.name}
+        />
+      </div>
+      <div className={HTML_CLASSES.UnitFullCardEffectAbility}>{effect.ability}</div>
+    </div>
+  )
+}
+
+function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<GameUnitEffectFragment> }) {
+  const effect = useFragment(GameUnitEffectFragmentDoc, effectFragment)
+  let reason = ''
+  if (effect.reason.__typename === 'EffectFromUnit') {
+    reason = `${effect.reason.effect.name} from ${effect.reason.unit.name}`
+  } else if (effect.reason.__typename === 'EffectFromLeader') {
+    reason = `Ability from ${effect.reason.leader.name}`
+  }
+  return (
+    <tr className={HTML_CLASSES.UnitFullCardStrengthReasonRow}>
+      <td className={`${HTML_CLASSES.UnitFullCardStrengthReasonOperator} unit-full-card-info-strength-reason-number`}>
+        {effect.operator}
+      </td>
+      <td className={`${HTML_CLASSES.UnitFullCardStrengthReasonStrength} unit-full-card-info-strength-reason-number`}>
+        {effect.total}
+      </td>
+      <td className={HTML_CLASSES.UnitFullCardStrengthReasonExplanation}>{reason}</td>
+    </tr>
+  )
+}
+
 interface UnitFullCardProps {
   effectiveStrength?: number | null
-  effects?: GameUnitEffect[] | null
+  effects?: FragmentType<GameUnitEffectFragment>[] | null
   fullUnit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined
   hasNext: boolean
   hasPrevious: boolean

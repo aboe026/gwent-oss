@@ -1,0 +1,6 @@
+fragment UnitEffect on Effect {
+  ability
+  image
+  key
+  name
+}

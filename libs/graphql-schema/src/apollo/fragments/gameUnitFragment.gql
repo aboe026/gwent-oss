@@ -2,26 +2,7 @@ fragment GameUnitFragment on GameUnit {
   artStyle
   effectiveStrength
   effects {
-    operator
-    total
-    reason {
-      ... on EffectFromUnit {
-        effect {
-          id
-          name
-        }
-        unit {
-          id
-          name
-        }
-      }
-      ... on EffectFromLeader {
-        leader {
-          id
-          name
-        }
-      }
-    }
+    ...GameUnitEffect
   }
   row
   unit {

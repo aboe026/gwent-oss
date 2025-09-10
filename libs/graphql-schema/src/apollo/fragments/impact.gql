@@ -1,0 +1,12 @@
+fragment Impact on Impact {
+  unit {
+    ...GameUnitFragment
+  }
+  user {
+    id
+    name
+  }
+  source {
+    origin
+  }
+}

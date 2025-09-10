@@ -1,0 +1,11 @@
+fragment Move on Move {
+  ... on MoveLeader {
+    ...MoveLeader
+  }
+  ... on MovePass {
+    created
+  }
+  ... on MoveUnit {
+    ...MoveUnit
+  }
+}

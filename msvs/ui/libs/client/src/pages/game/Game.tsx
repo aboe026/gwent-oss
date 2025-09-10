@@ -21,7 +21,9 @@ import {
   GamesQuery,
   GameStatus,
   GameUnitFragmentFragmentDoc,
-  Move,
+  MoveFragmentDoc,
+  MoveUnitFragmentDoc,
+  PlayerRoundFragmentDoc,
   PlayPassDocument,
   PlayUnitDocument,
   ReadyDocument,
@@ -401,13 +403,14 @@ function ExistingGame({
       const allPlayerMoves: PlayerMove[] = []
       for (let j = 0; j < game.players.length; j++) {
         const player = useFragment(GamePlayerFragmentFragmentDoc, game.players[j])
-        // TODO: have moves be a fragment
-        for (let k = 0; k < player.rounds[i].moves.length; k++) {
+        const round = useFragment(PlayerRoundFragmentDoc, player.rounds[i])
+        for (let k = 0; k < round.moves.length; k++) {
+          const move = useFragment(MoveFragmentDoc, round.moves[k])
           const refId = `${i}.${j}.${k}`
           const ref = createRef<HTMLDivElement>()
           historyRefs[refId] = ref
           allPlayerMoves.push({
-            move: player.rounds[i].moves[k] as Move,
+            move,
             playerIndex: j,
             ref,
           })
@@ -432,23 +435,21 @@ function ExistingGame({
    */
   function scrollHistoryIntoView({ playerId, unitFragment }: UnitForPlayer) {
     if (game && playerId) {
-      const unit = useFragment(CardUnitFragmentFragmentDoc, unitFragment.unit)
+      const unitSelected = useFragment(CardUnitFragmentFragmentDoc, unitFragment.unit)
       const roundIndex = game.round - 1
       const playerIndex = game.players
         .map((player) => useFragment(GamePlayerFragmentFragmentDoc, player).user.id)
         .indexOf(playerId)
       let moveIndex: number | undefined = undefined
-      for (
-        let i =
-          useFragment(GamePlayerFragmentFragmentDoc, game.players[playerIndex]).rounds[roundIndex].moves.length - 1;
-        i >= 0 && moveIndex === undefined;
-        i--
-      ) {
-        const move = useFragment(GamePlayerFragmentFragmentDoc, game.players[playerIndex]).rounds[roundIndex].moves[i]
+      const player = useFragment(GamePlayerFragmentFragmentDoc, game.players[playerIndex])
+      const round = useFragment(PlayerRoundFragmentDoc, player.rounds[roundIndex])
+      for (let i = round.moves.length - 1; i >= 0 && moveIndex === undefined; i--) {
+        const move = useFragment(MoveFragmentDoc, round.moves[i])
         if (move.__typename === 'MoveUnit') {
-          const gameUnit = useFragment(GameUnitFragmentFragmentDoc, move.unit)
-          const moveUnit = useFragment(CardUnitFragmentFragmentDoc, gameUnit.unit)
-          if (moveUnit.id === unit.id) {
+          const moveUnit = useFragment(MoveUnitFragmentDoc, move)
+          const gameUnit = useFragment(GameUnitFragmentFragmentDoc, moveUnit.unit)
+          const unit = useFragment(CardUnitFragmentFragmentDoc, gameUnit.unit)
+          if (unit.id === unitSelected.id) {
             moveIndex = i
           }
         }
