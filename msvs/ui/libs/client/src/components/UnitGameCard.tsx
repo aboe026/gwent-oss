@@ -5,6 +5,7 @@ import {
   DeckUnitFragmentFragment,
   EffectKey,
   GameUnitFragmentFragment,
+  UnitEffectFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'
@@ -34,6 +35,8 @@ export default function UnitGameCard({
   const combatSymbol = getCombatImage(deckUnit)
   const combatTitle = unit.combats ? unit.combats.map((combat) => toTitleCase(combat)).join(' or ') : ''
   const unitTitle = title || unit.name
+  const effects = useFragment(UnitEffectFragmentDoc, unit.effects)
+
   return (
     <div
       className={`${HTML_CLASSES.UnitGameCardContainer} ${selected ? HTML_CLASSES.ItemHighlighted : ''}`}
@@ -68,8 +71,8 @@ export default function UnitGameCard({
             title={combatTitle}
           />
         )}
-        {unit.effects &&
-          unit.effects
+        {effects &&
+          effects
             .filter((effect) => effect.key !== EffectKey.Weather)
             .map((effect, index) => (
               <img

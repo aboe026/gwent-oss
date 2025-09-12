@@ -1,6 +1,7 @@
 import {
   CardUnitFragmentFragmentDoc,
   DeckUnitFragmentFragment,
+  UnitEffectFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { GameDeckQuery as GameDeckQueryRaw } from '@gwent/graphql-schema/apollo-raw-typings'
@@ -34,7 +35,10 @@ export default function updateGameDeckCacheOnRedraw({
         ...(previous.gameDeck?.hand || []).filter((deckUnit) => ![fromUnit.id, toUnit.id].includes(deckUnit.unit.id)),
         {
           ...to,
-          unit: toUnit,
+          unit: {
+            ...toUnit,
+            effects: toUnit.effects?.map((effect) => useFragment(UnitEffectFragmentDoc, effect)),
+          },
         },
       ],
       undrawn: [
@@ -43,7 +47,10 @@ export default function updateGameDeckCacheOnRedraw({
         ),
         {
           ...from,
-          unit: fromUnit,
+          unit: {
+            ...fromUnit,
+            effects: fromUnit.effects?.map((effect) => useFragment(UnitEffectFragmentDoc, effect)),
+          },
         },
       ],
       redraws: [
@@ -53,11 +60,17 @@ export default function updateGameDeckCacheOnRedraw({
         {
           from: {
             ...from,
-            unit: fromUnit,
+            unit: {
+              ...fromUnit,
+              effects: fromUnit.effects?.map((effect) => useFragment(UnitEffectFragmentDoc, effect)),
+            },
           },
           to: {
             ...to,
-            unit: toUnit,
+            unit: {
+              ...toUnit,
+              effects: toUnit.effects?.map((effect) => useFragment(UnitEffectFragmentDoc, effect)),
+            },
           },
         },
       ],

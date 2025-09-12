@@ -20,6 +20,7 @@ import {
   FactionsDocument,
   FactionsQuery,
   LeadersDocument,
+  UnitEffectFragmentDoc,
   UnitsDocument,
   UnitStats,
   useFragment,
@@ -1000,7 +1001,10 @@ function isFilteredIn(deckUnit: DeckUnitFragmentFragment, fields: FILTER_FIELD[]
   const effectIncluded =
     effectFilters.length === 0 ||
     effectFilters.some(
-      (filter) => unit.effects?.map((effect) => effect.key).includes(filter.value as any as EffectKey) // eslint-disable-line @typescript-eslint/no-explicit-any
+      (filter) =>
+        unit.effects
+          ?.map((effect) => useFragment(UnitEffectFragmentDoc, effect).key)
+          .includes(filter.value as any as EffectKey) // eslint-disable-line @typescript-eslint/no-explicit-any
     )
   const factionIncluded =
     factionFilters.length === 0 ||

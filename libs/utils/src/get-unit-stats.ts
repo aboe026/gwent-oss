@@ -1,6 +1,7 @@
 import {
   CardUnitFragmentFragmentDoc,
   DeckUnitFragmentFragment,
+  UnitEffectFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { Combat, DeckUnit, UnitStats, EffectKey } from '@gwent/graphql-schema/resolver-typings'
@@ -28,7 +29,7 @@ export default class GetUnitStats {
         return {
           combats: unit.combats,
           deckable: unit.deckable,
-          effects: unit.effects?.map((effect) => effect.key),
+          effects: unit.effects?.map((effect) => useFragment(UnitEffectFragmentDoc, effect).key),
           hero: unit.hero,
           special: unit.special,
           strength: unit.strength,
