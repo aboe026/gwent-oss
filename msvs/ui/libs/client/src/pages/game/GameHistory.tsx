@@ -61,6 +61,7 @@ export default function GameHistory({
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
   const handCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, handCardSelected?.unit)
+  const historyCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, historyCardSelected?.unitFragment.unit)
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
     playUnitProps.loading ||
@@ -104,7 +105,7 @@ export default function GameHistory({
                 {movesByRound.playerMoves.map((playerMove, index) => (
                   <PlayerHistoryMove
                     game={game}
-                    handCardSelectedUnit={handCardSelectedUnit}
+                    historyCardSelectedUnit={historyCardSelectedUnit}
                     historyCardSelected={historyCardSelected}
                     index={index}
                     movesByRound={movesByRound}
@@ -136,7 +137,7 @@ function PlayerHistoryMove({
   setHistoryCardSelected,
   setFullUnits,
   unitMoves,
-  handCardSelectedUnit,
+  historyCardSelectedUnit,
   index,
 }: {
   playerMove: PlayerMove
@@ -148,7 +149,7 @@ function PlayerHistoryMove({
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   unitMoves: PlayerMove[]
-  handCardSelectedUnit: CardUnitFragmentFragment | undefined
+  historyCardSelectedUnit: CardUnitFragmentFragment | undefined
   index: number
 }) {
   const gamePlayer = game.players[playerMove.playerIndex]
@@ -190,8 +191,8 @@ function PlayerHistoryMove({
           CardUnitFragmentFragmentDoc,
           useFragment(GameUnitFragmentFragmentDoc, potentialUnitMove.unit).unit
         )
-        if (potentialUnit.id === useFragment(CardUnitFragmentFragmentDoc, gameUnit?.unit)?.id) {
-          unitMove.playerIndex = playerMove.playerIndex
+        if (potentialUnit.id === unit.id) {
+          return unitMove.playerIndex === playerMove.playerIndex
         }
       }
     })
@@ -217,8 +218,8 @@ function PlayerHistoryMove({
 
     if (
       historyCardSelected &&
-      handCardSelectedUnit &&
-      handCardSelectedUnit.id === unit.id &&
+      historyCardSelectedUnit &&
+      historyCardSelectedUnit.id === unit.id &&
       historyCardSelected.playerId === player.user.id
     ) {
       isSelected = true
@@ -259,8 +260,8 @@ function PlayerHistoryMove({
             const unit = useFragment(CardUnitFragmentFragmentDoc, gameUnit.unit)
             if (
               historyCardSelected &&
-              handCardSelectedUnit &&
-              handCardSelectedUnit.id === unit.id &&
+              historyCardSelectedUnit &&
+              historyCardSelectedUnit.id === unit.id &&
               historyCardSelected.playerId === player.user.id
             ) {
               setHistoryCardSelected(undefined)
