@@ -180,9 +180,9 @@ function PlayerHistoryMove({
     textClass += ' game-history-move-text-wrappable'
   } else if (playerMove.move.__typename === 'MoveUnit') {
     const unitMove = useFragment(MoveUnitFragmentDoc, playerMove.move)
-    const unit = useFragment(CardUnitFragmentFragmentDoc, useFragment(GameUnitFragmentFragmentDoc, unitMove.unit).unit)
-    impacts = useFragment(ImpactFragmentDoc, unitMove.impacts)
     gameUnit = useFragment(GameUnitFragmentFragmentDoc, unitMove.unit)
+    const unit = useFragment(CardUnitFragmentFragmentDoc, gameUnit.unit)
+    impacts = useFragment(ImpactFragmentDoc, unitMove.impacts)
     unitMoveIndex = unitMoves.findIndex((unitMove) => {
       if (unitMove.move.__typename === 'MoveUnit') {
         const potentialUnitMove = useFragment(MoveUnitFragmentDoc, unitMove.move)

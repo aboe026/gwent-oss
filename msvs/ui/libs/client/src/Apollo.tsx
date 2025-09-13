@@ -50,7 +50,11 @@ export default function Apollo({ children }: PropsWithChildren) {
       wsLink,
       httpLink
     ),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      possibleTypes: {
+        Move: ['MoveUnit', 'MoveLeader', 'MovePass'],
+      },
+    }),
     devtools: {
       // process.env.NODE_ENV overwritten/hard-coded at build time
       enabled: process.env.NODE_ENV === 'development' ? true : false,

@@ -8,7 +8,6 @@ import {
   CardUnitFragmentFragmentDoc,
   DeckFragmentFragment,
   DeckUnitFragmentFragment,
-  Game,
   GameDeckDocument,
   GameDeckFragmentFragmentDoc,
   GameDeckQuery,
@@ -273,7 +272,7 @@ export default function GamePage() {
         refetch: gameDeckRefetch,
       }}
       gameProps={{
-        game: gameData?.game as Game | undefined,
+        game: useFragment(GameFragmentFragmentDoc, gameData?.game),
         error: gameError,
         loading: gameLoading,
         refetch: gameRefetch,
