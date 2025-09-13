@@ -13,7 +13,7 @@ import path from 'path'
   })
   await ensureLineInFile({
     filePath: indexFilePath,
-    line: 'export * as raw from "./raw-types"',
+    line: 'export * as raw from "./raw-types";',
   })
 })().catch((err) => {
   console.error(err)

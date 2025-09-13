@@ -6,6 +6,8 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { HttpLink, ApolloClient, InMemoryCache, ApolloLink } from '@apollo/client'
 import urlJoin from 'url-join'
 
+import generatedIntrospection from '@gwent/graphql-schema/apollo-possible-typings'
+
 /**
  * Need to pass management of WebSocket status to a lower-order component
  * otherwise the state changes of the WebSocket status causes this component to re-render
@@ -51,9 +53,7 @@ export default function Apollo({ children }: PropsWithChildren) {
       httpLink
     ),
     cache: new InMemoryCache({
-      possibleTypes: {
-        Move: ['MoveUnit', 'MoveLeader', 'MovePass'],
-      },
+      possibleTypes: generatedIntrospection.possibleTypes,
     }),
     devtools: {
       // process.env.NODE_ENV overwritten/hard-coded at build time

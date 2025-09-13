@@ -73,6 +73,14 @@ const config: CodegenConfig = {
       documents: ['./src/apollo/**/*.gql'],
       preset: 'client',
     },
+    // typings for use by Apollo InMemoryCache for unions/interfaces
+    './generated/apollo/fragment-types.ts': {
+      plugins: ['fragment-matcher'],
+      config: {
+        apolloClientVersion: 3,
+        useExplicitTyping: true,
+      },
+    },
     // typings needed by Apollo for direclty modifying the cache
     './generated/apollo/raw-types.ts': {
       documents: ['./src/apollo/**/*.gql'],

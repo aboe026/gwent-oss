@@ -16,6 +16,9 @@
       "apollo-raw-typings": [
         "build/generated/apollo/raw-types.d.ts"
       ],
+      "apollo-possible-typings": [
+        "build/generated/apollo/fragment-types.d.ts"
+      ],
       "*": [
         "build/generated/*",
         "build/src/*"
@@ -29,6 +32,7 @@
     "./games-filter": "./build/src/games-filter.js",
     "./apollo-typings": "./build/generated/apollo/index.js",
     "./apollo-raw-typings": "./build/generated/apollo/raw-types.js",
+    "./apollo-possible-typings": "./build/generated/apollo/fragment-types.js",
     "./database-typings": "./build/generated/database-typings.js",
     "./resolver-typings": "./build/generated/resolver-typings.js",
     "./context": "./build/src/context.js"
@@ -62,6 +66,7 @@
     "@graphql-codegen/add": "5.0.3",
     "@graphql-codegen/cli": "5.0.7",
     "@graphql-codegen/client-preset": "4.8.3",
+    "@graphql-codegen/fragment-matcher": "6.0.0",
     "@graphql-codegen/schema-ast": "4.1.0",
     "@graphql-codegen/typescript": "4.1.6",
     "@graphql-codegen/typescript-mongodb": "3.0.1",
