@@ -215,8 +215,22 @@ function renderDeckStat({
   const faction = useFragment(FactionFragmentFragmentDoc, deck.faction)
   const factionStats = useFragment(DeckStatsFragmentDoc, faction.stats)
   const deckStats = useFragment(DeckStatsFragmentDoc, deck.stats)
-  const available = getStatNumber(factionStats[stat]) + getStatNumber(neutralStats[stat])
-  const chosen = getStatNumber(deckStats[stat])
+  const available =
+    getStatNumber({
+      stats: factionStats,
+      stat,
+      label: 'faction',
+    }) +
+    getStatNumber({
+      stats: neutralStats,
+      stat,
+      label: 'neutral',
+    })
+  const chosen = getStatNumber({
+    stats: deckStats,
+    stat,
+    label: 'deck',
+  })
 
   return (
     <div>
@@ -231,13 +245,25 @@ function renderDeckStat({
   )
 }
 
-// TODO: change to have stats object, key and label as input params
-// so if its not a number, the error is more helpful
-function getStatNumber(statNumber: number | 'DeckStatsFragment' | 'UnitStats' | undefined) {
-  if (typeof statNumber === 'number') {
-    return statNumber
+/**
+ * Gets the numeric value of a DeckStat
+ *
+ * @throws Error if the value is not a number
+ */
+function getStatNumber({
+  stats,
+  stat,
+  label,
+}: {
+  stats: DeckStatsFragment
+  stat: keyof DeckStatsFragment
+  label: string
+}): number {
+  const value = stats[stat]
+  if (typeof value === 'number') {
+    return value
   }
-  throw Error(`Stat "${statNumber}" is not a number`)
+  throw Error(`Stat "${stat}" from "${label}" has non numeric value "${value}"`)
 }
 
 interface DeckRowProps {
