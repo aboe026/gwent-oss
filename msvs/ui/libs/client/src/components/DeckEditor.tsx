@@ -241,7 +241,7 @@ function renderNameAndFaction({
   if (factionsData && faction) {
     for (
       let i = 0;
-      i < factionsData.factions.length && selectedFaction === undefined && neutralFaction === undefined;
+      i < factionsData.factions.length && (selectedFaction === undefined || neutralFaction === undefined);
       i++
     ) {
       const potentialFaction = useFragment(FactionFragmentFragmentDoc, factionsData.factions[i])

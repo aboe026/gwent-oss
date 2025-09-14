@@ -12,6 +12,9 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- fix e2e
+  - Page automatically updates after first redraw via API
+  - Page automatically updates after second redraw via API
 - look into why FragmentType export from apollo-typings doesn't work
 - looks for " as " in UI code to make sure not casting type when should be using fragment masking
 - remove "...Faction" from faction names, as it gets repeated in the typings (...FactionFactionDoc)
@@ -24,6 +27,7 @@ Existing problems in the codebase that need to be fixed.
 - override DateTime in schema to Date?
 - have effect operators ("+1", "x2", etc) be enums?
 - automate check in build process to ensure package.json versions incremented (and all same)?
+- use INFO logging more? Like any time action successful (game created, unit played, etc)?
 - remove need for classes just for log4js spying
   - have "getLogger" method
     - keeps loggers in memory by name
