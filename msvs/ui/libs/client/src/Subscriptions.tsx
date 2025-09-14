@@ -305,7 +305,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
           },
           (previous) => {
             if (previous?.gameDeck) {
-              updateGameDeckCacheOnRedraw({
+              return updateGameDeckCacheOnRedraw({
                 from,
                 previous,
                 to,
