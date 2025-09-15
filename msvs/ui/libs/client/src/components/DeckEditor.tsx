@@ -41,6 +41,7 @@ import {
 import getEnumFromString from '../util/get-faction-key-from-string'
 import { getErrorMessages, retryCheckingAuth } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import isGameUnit from '../util/is-game-unit'
 import LoadingBar from '../components/LoadingBar'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ProgressBar from '../components/ProgressBar'
@@ -835,7 +836,7 @@ function renderUnits({
         hasNext={nextUnit !== undefined}
         hasPrevious={previousUnit !== undefined}
         onSelect={(fullUnitSelected) => {
-          if (fullUnitSelected) {
+          if (fullUnitSelected && !isGameUnit(fullUnitSelected)) {
             setSelectedUnits((previous) => {
               const previousUnitIds = previous.map(
                 (deckUnit) => useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id
@@ -847,7 +848,7 @@ function renderUnits({
                       useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id !==
                       useFragment(CardUnitFragmentFragmentDoc, fullUnitSelected.unit).id
                   )
-                : [...previous, fullUnitSelected as DeckUnitFragmentFragment]
+                : [...previous, fullUnitSelected]
             })
           }
           if (nextUnit) {

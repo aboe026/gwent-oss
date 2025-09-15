@@ -70,6 +70,7 @@ import {
   ROUTES,
 } from '@gwent/constants'
 import getRedrawIds from '../../util/get-redraw-ids'
+import isGameUnit from '../../util/is-game-unit'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import NewGame from './NewGame'
 import { sortObjectArray } from '@gwent/utils'
@@ -487,7 +488,7 @@ function ExistingGame({
         </Link>
       </div>
     </Centered>
-  ) : gameErrorMessages || !game ? (
+  ) : gameErrorMessages || !game || !gameProps.game ? (
     <Centered>
       <div className={HTML_CLASSES.ErrorText}>{`Error getting game: ${gameErrorMessages}`}</div>
     </Centered>
@@ -524,14 +525,14 @@ function ExistingGame({
             const fullPlayerUnit = fullUnits.units[fullUnits.currentIndex - 1]
             const fullUnitFragment = fullPlayerUnit.unitFragment
             const fullUnit = useFragment(CardUnitFragmentFragmentDoc, fullUnitFragment.unit)
-            if (handCardSelected) {
-              setHandCardSelected(fullUnitFragment as DeckUnitFragmentFragment) // TODO: make handCardSelected an or with GameUnitFragmentFragment?
+            if (handCardSelected && !isGameUnit(fullUnitFragment)) {
+              setHandCardSelected(fullUnitFragment)
             }
             if (historyCardSelected) {
               setHistoryCardSelected(fullPlayerUnit)
             }
-            if (redrawCardSelected || redrawIds.includes(fullUnit.id)) {
-              setRedrawCardSelected(fullUnitFragment as DeckUnitFragmentFragment) // TODO: make redrawCardSelected an or with GameUnitFragmentFragment?
+            if ((redrawCardSelected || redrawIds.includes(fullUnit.id)) && !isGameUnit(fullUnitFragment)) {
+              setRedrawCardSelected(fullUnitFragment)
             }
           }
         }}
@@ -544,14 +545,14 @@ function ExistingGame({
             const fullPlayerUnit = fullUnits.units[fullUnits.currentIndex + 1]
             const fullUnitFragment = fullPlayerUnit.unitFragment
             const fullUnit = useFragment(CardUnitFragmentFragmentDoc, fullUnitFragment.unit)
-            if (handCardSelected) {
-              setHandCardSelected(fullUnitFragment as DeckUnitFragmentFragment)
+            if (handCardSelected && !isGameUnit(fullUnitFragment)) {
+              setHandCardSelected(fullUnitFragment)
             }
             if (historyCardSelected) {
               setHistoryCardSelected(fullPlayerUnit)
             }
-            if (redrawCardSelected || redrawIds.includes(fullUnit.id)) {
-              setRedrawCardSelected(fullUnitFragment as DeckUnitFragmentFragment)
+            if ((redrawCardSelected || redrawIds.includes(fullUnit.id)) && !isGameUnit(fullUnitFragment)) {
+              setRedrawCardSelected(fullUnitFragment)
             }
           }
         }}

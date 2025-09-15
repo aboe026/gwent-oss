@@ -4,7 +4,6 @@ import { FragmentType } from '@apollo/client'
 
 import Centered from '../../components/Centered'
 import {
-  Game,
   GameStatus,
   RoundResult,
   DeckUnitFragmentFragment,
@@ -13,9 +12,11 @@ import {
   GameDeckFragmentFragmentDoc,
   GameFactionFragmentFragmentDoc,
   GameFactionFragmentFragment,
+  GameFragmentFragment,
   GameLeaderFragmentFragmentDoc,
   GameLeaderFragmentFragment,
   GamePlayerFragmentFragment,
+  GamePlayerFragmentFragmentDoc,
   PlayerRoundFragment,
   PlayerRoundFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -49,7 +50,6 @@ export default function GameInfo({
 }) {
   const sharedProps = {
     handCardSelected,
-    game: gameProps.game as Game,
     coinTossVisible,
     setPassConfirmationOpen,
     playUnitLoading,
@@ -58,38 +58,43 @@ export default function GameInfo({
   const gameDeck = useFragment(GameDeckFragmentFragmentDoc, gameDeckProps.deck)
   const faction = useFragment(GameFactionFragmentFragmentDoc, gameDeck?.from?.faction)
   const leader = useFragment(GameLeaderFragmentFragmentDoc, gameDeck?.from?.leader)
-  return (
-    <div id="gameInfoContainer" className="game-edge-container">
-      {renderPlayerInfo({
-        ...sharedProps,
-        id: HTML_IDS.GameInfoOpponentContainer,
-        player: opponent,
-        isSelf: false,
-        faction: useFragment(GameFactionFragmentFragmentDoc, opponent.faction),
-        discard: opponent.counts?.discard,
-        hand: opponent.counts?.hand,
-        undrawn: opponent.counts?.undrawn,
-        leader: useFragment(GameLeaderFragmentFragmentDoc, opponent.leader),
-      })}
-      {renderSharedInfo({
-        gameProps,
-        gameDeckProps: gameDeckProps,
-      })}
-      {renderPlayerInfo({
-        ...sharedProps,
-        id: HTML_IDS.GameInfoSelfContainer,
-        player: self,
-        isSelf: true,
-        faction,
-        leader,
-        discard: self.counts?.discard !== undefined ? self.counts?.discard : gameDeck?.discard.length,
-        hand: self.counts?.hand !== undefined ? self.counts?.hand : gameDeck?.hand.length,
-        undrawn: self.counts?.undrawn !== undefined ? self.counts?.undrawn : gameDeck?.undrawn.length,
-        deckName: gameDeck?.from?.name,
-        deckUpdated: gameDeck?.from?.created,
-      })}
-    </div>
-  )
+
+  if (gameProps.game) {
+    return (
+      <div id="gameInfoContainer" className="game-edge-container">
+        {renderPlayerInfo({
+          ...sharedProps,
+          game: gameProps.game,
+          id: HTML_IDS.GameInfoOpponentContainer,
+          player: opponent,
+          isSelf: false,
+          faction: useFragment(GameFactionFragmentFragmentDoc, opponent.faction),
+          discard: opponent.counts?.discard,
+          hand: opponent.counts?.hand,
+          undrawn: opponent.counts?.undrawn,
+          leader: useFragment(GameLeaderFragmentFragmentDoc, opponent.leader),
+        })}
+        {renderSharedInfo({
+          gameProps,
+          gameDeckProps: gameDeckProps,
+        })}
+        {renderPlayerInfo({
+          ...sharedProps,
+          game: gameProps.game,
+          id: HTML_IDS.GameInfoSelfContainer,
+          player: self,
+          isSelf: true,
+          faction,
+          leader,
+          discard: self.counts?.discard !== undefined ? self.counts?.discard : gameDeck?.discard.length,
+          hand: self.counts?.hand !== undefined ? self.counts?.hand : gameDeck?.hand.length,
+          undrawn: self.counts?.undrawn !== undefined ? self.counts?.undrawn : gameDeck?.undrawn.length,
+          deckName: gameDeck?.from?.name,
+          deckUpdated: gameDeck?.from?.created,
+        })}
+      </div>
+    )
+  }
 }
 
 /**
@@ -154,7 +159,7 @@ function renderPlayerInfo({
   deckUpdated?: Date
   discard?: number
   faction?: GameFactionFragmentFragment | null
-  game: Game
+  game: GameFragmentFragment
   hand?: number
   handCardSelected: DeckUnitFragmentFragment | undefined
   id: string
@@ -250,7 +255,7 @@ function renderPlayerInfo({
 }
 
 /**
- * Information about the score of the current round as well as losses for the Game.
+ * Information about the score of the current round and losses for the Game.
  */
 function renderScore({
   game,
@@ -262,7 +267,7 @@ function renderScore({
   playUnitLoading,
   setPassConfirmationOpen,
 }: {
-  game: Game
+  game: GameFragmentFragment
   handCardSelected: DeckUnitFragmentFragment | undefined
   isSelf: boolean
   isTurn?: boolean | null | undefined
@@ -278,9 +283,11 @@ function renderScore({
   if (game.round > 0) {
     playerRound = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
     const playerScore = playerRound.score
-    const opponent = game.players.find((gamePlayer) => gamePlayer.user.name !== player.user.name)
+    const opponent = useFragment(GamePlayerFragmentFragmentDoc, game.players).find(
+      (gamePlayer) => gamePlayer.user.name !== player.user.name
+    )
     if (opponent) {
-      const opponentScore = opponent.rounds[game.round - 1].score
+      const opponentScore = useFragment(PlayerRoundFragmentDoc, opponent.rounds[game.round - 1]).score
       winning = playerScore > opponentScore
     }
     if (playPassLoading) {

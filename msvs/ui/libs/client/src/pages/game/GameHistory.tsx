@@ -19,7 +19,6 @@ import {
   ImpactFragmentDoc,
   MoveLeaderFragmentDoc,
   MoveReasonType,
-  MoveUnit,
   MoveUnitFragmentDoc,
   PlayerCombatRowFragmentFragmentDoc,
   PlayerRoundFragmentDoc,
@@ -286,15 +285,23 @@ function PlayerHistoryMove({
                   if (gameUnit) {
                     event.preventDefault()
                     event.stopPropagation()
+                    const units: {
+                      playerId: string
+                      unitFragment: GameUnitFragmentFragment
+                    }[] = []
+                    for (const unitMove of unitMoves) {
+                      if (unitMove.move.__typename === 'MoveUnit') {
+                        const player = useFragment(GamePlayerFragmentFragmentDoc, game.players[unitMove.playerIndex])
+                        const move = useFragment(MoveUnitFragmentDoc, unitMove.move)
+                        units.push({
+                          playerId: player.user.id,
+                          unitFragment: useFragment(GameUnitFragmentFragmentDoc, move.unit),
+                        })
+                      }
+                    }
                     setFullUnits({
                       currentIndex: unitMoveIndex,
-                      units: unitMoves.map((unitMove) => {
-                        return {
-                          playerId: useFragment(GamePlayerFragmentFragmentDoc, game.players[unitMove.playerIndex]).user
-                            .id,
-                          unitFragment: (unitMove.move as MoveUnit).unit, // adjust to remove casting
-                        }
-                      }),
+                      units,
                     })
                     setHistoryCardSelected({
                       playerId: player.user.id,

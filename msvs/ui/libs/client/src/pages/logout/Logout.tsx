@@ -2,7 +2,7 @@ import { useMutation } from '@apollo/client/react'
 import { useNavigate } from 'react-router'
 
 import Centered from '../../components/Centered'
-import { CurrentUserDocument, CurrentUserQuery, LogoutDocument, User } from '@gwent/graphql-schema/apollo-typings'
+import { CurrentUserDocument, CurrentUserQuery, LogoutDocument } from '@gwent/graphql-schema/apollo-typings'
 import { getErrorMessages } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -26,12 +26,17 @@ export default function LogoutPage() {
             query: CurrentUserDocument,
             broadcast: true,
           },
-          (previous) => ({
-            currentUser: {
-              ...(previous?.currentUser as User),
-              id: '',
-            },
-          })
+          (previous) => {
+            if (previous?.currentUser) {
+              return {
+                ...previous,
+                currentUser: {
+                  ...previous.currentUser,
+                  id: '',
+                },
+              }
+            }
+          }
         )
       }
     },
