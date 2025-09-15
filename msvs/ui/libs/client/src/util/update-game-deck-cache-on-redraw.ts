@@ -1,6 +1,6 @@
 import {
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
+  CardUnitFragmentDoc,
+  DeckUnitFragment,
   UnitEffectFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -21,11 +21,11 @@ export default function updateGameDeckCacheOnRedraw({
   to,
 }: {
   previous: GameDeckQueryRaw
-  from: DeckUnitFragmentFragment
-  to: DeckUnitFragmentFragment
+  from: DeckUnitFragment
+  to: DeckUnitFragment
 }): GameDeckQueryRaw {
-  const fromUnit = useFragment(CardUnitFragmentFragmentDoc, from.unit)
-  const toUnit = useFragment(CardUnitFragmentFragmentDoc, to.unit)
+  const fromUnit = useFragment(CardUnitFragmentDoc, from.unit)
+  const toUnit = useFragment(CardUnitFragmentDoc, to.unit)
   return {
     ...previous,
     gameDeck: {

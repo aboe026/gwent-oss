@@ -1,5 +1,5 @@
 query Factions {
   factions {
-    ...FactionFragment
+    ...Faction
   }
 }

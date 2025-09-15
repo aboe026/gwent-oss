@@ -1,14 +1,14 @@
-fragment GamePlayerFragment on GamePlayer {
+fragment GamePlayer on GamePlayer {
   counts {
     discard
     hand
     undrawn
   }
   faction {
-    ...GameFactionFragment
+    ...GameFaction
   }
   leader {
-    ...GameLeaderFragment
+    ...GameLeader
   }
   ready
   rounds {

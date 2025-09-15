@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router'
 
 import {
-  GameFragmentFragment,
-  GamePlayerFragmentFragment,
-  GamePlayerFragmentFragmentDoc,
+  GameFragment,
+  GamePlayerFragment,
+  GamePlayerFragmentDoc,
   PlayerRoundFragment,
   PlayerRoundFragmentDoc,
   RoundResult,
@@ -15,7 +15,7 @@ import { FragmentType } from '@apollo/client'
 /**
  * A breakdown of the results of a finished Game.
  */
-export default function GameSummary({ game }: { game: GameFragmentFragment }) {
+export default function GameSummary({ game }: { game: GameFragment }) {
   const navigate = useNavigate()
   const victorNames = game.victors.map((victor) => victor.name)
   const victoryText = `Congratulations to the victor${victorNames.length > 1 ? 's' : ''}:`
@@ -58,9 +58,9 @@ function GameSummaryPlayer({
   playerFragment,
 }: {
   index: number
-  playerFragment: FragmentType<GamePlayerFragmentFragment>
+  playerFragment: FragmentType<GamePlayerFragment>
 }) {
-  const player = useFragment(GamePlayerFragmentFragmentDoc, playerFragment)
+  const player = useFragment(GamePlayerFragmentDoc, playerFragment)
   return (
     <tr key={index} className={HTML_CLASSES.GameSummaryVictorRow}>
       <td className="game-victor-username">{player.user.name}</td>

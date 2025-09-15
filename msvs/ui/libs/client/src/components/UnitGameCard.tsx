@@ -1,10 +1,10 @@
 import { CgMaximizeAlt } from 'react-icons/cg'
 
 import {
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
+  CardUnitFragmentDoc,
+  DeckUnitFragment,
   EffectKey,
-  GameUnitFragmentFragment,
+  GameUnitFragment,
   UnitEffectFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -31,7 +31,7 @@ export default function UnitGameCard({
   selected,
   title,
 }: UnitGameCardProps) {
-  const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
+  const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
   const combatSymbol = getCombatImage(deckUnit)
   const combatTitle = unit.combats ? unit.combats.map((combat) => toTitleCase(combat)).join(' or ') : ''
   const unitTitle = title || unit.name
@@ -90,13 +90,13 @@ export default function UnitGameCard({
 
 interface UnitGameCardProps {
   cursor?: string
-  deckUnit: DeckUnitFragmentFragment | GameUnitFragmentFragment
+  deckUnit: DeckUnitFragment | GameUnitFragment
   effectiveStrength?: number | null
   dotted?: boolean
   dottedTitle?: string
   iconSize?: string
-  onFullscreen: (deckUnit: DeckUnitFragmentFragment | GameUnitFragmentFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClick?: (deckUnit: DeckUnitFragmentFragment | GameUnitFragmentFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onFullscreen: (deckUnit: DeckUnitFragment | GameUnitFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClick?: (deckUnit: DeckUnitFragment | GameUnitFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   selected?: boolean
   title?: string
 }

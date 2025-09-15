@@ -1,0 +1,6 @@
+fragment DeckUnit on DeckUnit {
+  artStyle
+  unit {
+    ...CardUnit
+  }
+}

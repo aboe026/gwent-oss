@@ -1,4 +1,4 @@
-fragment GameFragment on Game {
+fragment Game on Game {
   config {
     lives
   }
@@ -9,7 +9,7 @@ fragment GameFragment on Game {
   }
   id
   players {
-    ...GamePlayerFragment
+    ...GamePlayer
   }
   round
   status

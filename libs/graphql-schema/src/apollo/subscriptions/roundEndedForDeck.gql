@@ -4,7 +4,7 @@ subscription RoundEndedForDeck {
       id
     }
     deck {
-      ...GameDeckFragment
+      ...GameDeck
     }
   }
 }

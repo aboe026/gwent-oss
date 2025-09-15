@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router'
 
 import {
-  GameFragmentFragmentDoc,
-  GamePlayerFragmentFragmentDoc,
-  GameFactionFragmentFragmentDoc,
-  GameFragmentFragment,
-  GamePlayerFragmentFragment,
+  GameFragmentDoc,
+  GamePlayerFragmentDoc,
+  GameFactionFragmentDoc,
+  GameFragment,
+  GamePlayerFragment,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { HTML_CLASSES, ROUTES } from '@gwent/constants'
@@ -20,7 +20,7 @@ import { FragmentType } from '@apollo/client'
  */
 export default function GameRow({ gameFragment }: GameRowProps) {
   const navigate = useNavigate()
-  const game = useFragment(GameFragmentFragmentDoc, gameFragment)
+  const game = useFragment(GameFragmentDoc, gameFragment)
   const status = formatGameStatus(game.status)
   const rowUrl = ROUTES.Game.path.replace(':gameId', game.id)
 
@@ -62,20 +62,20 @@ export default function GameRow({ gameFragment }: GameRowProps) {
 /**
  * A players name for a Game.
  */
-function PlayerName({ playerFragment }: { playerFragment: FragmentType<GamePlayerFragmentFragment> }) {
-  const player = useFragment(GamePlayerFragmentFragmentDoc, playerFragment)
+function PlayerName({ playerFragment }: { playerFragment: FragmentType<GamePlayerFragment> }) {
+  const player = useFragment(GamePlayerFragmentDoc, playerFragment)
   return <span className={HTML_CLASSES.GameRowPlayer}>{player.user.name}</span>
 }
 
 /**
  * A players chosen Faction for a Game.
  */
-function PlayerFaction({ playerFragment }: { playerFragment: FragmentType<GamePlayerFragmentFragment> }) {
-  const gamePlayer = useFragment(GamePlayerFragmentFragmentDoc, playerFragment)
-  const playerFaction = useFragment(GameFactionFragmentFragmentDoc, gamePlayer.faction)
+function PlayerFaction({ playerFragment }: { playerFragment: FragmentType<GamePlayerFragment> }) {
+  const gamePlayer = useFragment(GamePlayerFragmentDoc, playerFragment)
+  const playerFaction = useFragment(GameFactionFragmentDoc, gamePlayer.faction)
   return <span className={HTML_CLASSES.GameRowFaction}>{playerFaction?.name}</span>
 }
 
 interface GameRowProps {
-  gameFragment: FragmentType<GameFragmentFragment>
+  gameFragment: FragmentType<GameFragment>
 }

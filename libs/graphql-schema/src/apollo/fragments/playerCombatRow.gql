@@ -1,0 +1,6 @@
+fragment PlayerCombatRow on PlayerCombatRow {
+  score
+  units {
+    ...GameUnit
+  }
+}

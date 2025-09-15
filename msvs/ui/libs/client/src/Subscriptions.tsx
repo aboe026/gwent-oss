@@ -3,20 +3,20 @@ import { useSubscription } from '@apollo/client/react'
 
 import addToCacheList from './util/add-to-cache-list'
 import {
-  CardUnitFragmentFragmentDoc,
+  CardUnitFragmentDoc,
   DeckAddedDocument,
-  DeckFragmentFragment,
-  DeckFragmentFragmentDoc,
+  DeckFragment,
+  DeckFragmentDoc,
   DecksDocument,
   DeckSetDocument,
   DecksQuery,
-  DeckUnitFragmentFragmentDoc,
+  DeckUnitFragmentDoc,
   GameAddedDocument,
   GameDeckDocument,
   GameDeckQuery,
   GameDocument,
-  GameFragmentFragment,
-  GameFragmentFragmentDoc,
+  GameFragment,
+  GameFragmentDoc,
   GameQuery,
   GameReadyDocument,
   GamesDocument,
@@ -62,8 +62,8 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.decks) {
               return {
                 decks: addToCacheList({
-                  add: useFragment(DeckFragmentFragmentDoc, data.data?.deckAdded),
-                  previous: previous?.decks as DeckFragmentFragment[],
+                  add: useFragment(DeckFragmentDoc, data.data?.deckAdded),
+                  previous: previous?.decks as DeckFragment[],
                 }),
               } as DecksQueryRaw
             }
@@ -107,8 +107,8 @@ export default function Subscriptions({ children }: PropsWithChildren) {
           if (previous?.games) {
             return {
               games: addToCacheList({
-                add: useFragment(GameFragmentFragmentDoc, data.data?.gameAdded),
-                previous: previous?.games as GameFragmentFragment[],
+                add: useFragment(GameFragmentDoc, data.data?.gameAdded),
+                previous: previous?.games as GameFragment[],
               }),
             } as GamesQueryRaw
           }
@@ -119,7 +119,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(GameReadyDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = useFragment(GameFragmentFragmentDoc, data.data?.gameReady)
+      const game = useFragment(GameFragmentDoc, data.data?.gameReady)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -142,7 +142,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(GameSetDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = useFragment(GameFragmentFragmentDoc, data.data?.gameSet)
+      const game = useFragment(GameFragmentDoc, data.data?.gameSet)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -165,7 +165,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(OrderSetDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = useFragment(GameFragmentFragmentDoc, data.data?.orderSet)
+      const game = useFragment(GameFragmentDoc, data.data?.orderSet)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -212,7 +212,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(PassPlayedDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = useFragment(GameFragmentFragmentDoc, data.data?.passPlayed)
+      const game = useFragment(GameFragmentDoc, data.data?.passPlayed)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -237,8 +237,8 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     onData: ({ data, client }) => {
       const game = data.data?.unitPlayedFromDeck.game
       const playedUnit = useFragment(
-        CardUnitFragmentFragmentDoc,
-        useFragment(DeckUnitFragmentFragmentDoc, data.data?.unitPlayedFromDeck.unit)?.unit
+        CardUnitFragmentDoc,
+        useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedFromDeck.unit)?.unit
       )
       if (game && playedUnit) {
         client.cache.updateQuery<GameDeckQuery>(
@@ -269,7 +269,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(UnitPlayedOnGameDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = useFragment(GameFragmentFragmentDoc, data.data?.unitPlayedOnGame.game)
+      const game = useFragment(GameFragmentDoc, data.data?.unitPlayedOnGame.game)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -292,8 +292,8 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(UnitRedrawnDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const from = useFragment(DeckUnitFragmentFragmentDoc, data.data?.unitRedrawn.from)
-      const to = useFragment(DeckUnitFragmentFragmentDoc, data.data?.unitRedrawn.to)
+      const from = useFragment(DeckUnitFragmentDoc, data.data?.unitRedrawn.from)
+      const to = useFragment(DeckUnitFragmentDoc, data.data?.unitRedrawn.to)
       const game = data.data?.unitRedrawn.game
       if (from && to && game) {
         client.cache.updateQuery<GameDeckQuery>(

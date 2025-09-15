@@ -1,9 +1,9 @@
-fragment DeckFragment on Deck {
+fragment Deck on Deck {
   id
   created
   name
   faction {
-    ...FactionFragment
+    ...Faction
   }
   leader {
     name

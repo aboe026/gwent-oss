@@ -1,5 +1,5 @@
 query Decks {
   decks {
-    ...DeckFragment
+    ...Deck
   }
 }

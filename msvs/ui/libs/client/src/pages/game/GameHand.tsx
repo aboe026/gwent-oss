@@ -1,12 +1,12 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
-  DeckUnitFragmentFragmentDoc,
-  GameDeckFragmentFragment,
-  GameDeckFragmentFragmentDoc,
-  GamePlayerFragmentFragment,
+  CardUnitFragmentDoc,
+  DeckUnitFragment,
+  DeckUnitFragmentDoc,
+  GameDeckFragment,
+  GameDeckFragmentDoc,
+  GamePlayerFragment,
   GameStatus,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -36,20 +36,20 @@ export default function GameHand({
   setRedrawCardSelected,
 }: {
   gameStatus: GameStatus
-  gameDeckFragment: FragmentType<GameDeckFragmentFragment> | null | undefined
-  handCardSelected: DeckUnitFragmentFragment | undefined
+  gameDeckFragment: FragmentType<GameDeckFragment> | null | undefined
+  handCardSelected: DeckUnitFragment | undefined
   isTurn: boolean
   playUnitLoading: boolean
-  redrawCardSelected: DeckUnitFragmentFragment | undefined
+  redrawCardSelected: DeckUnitFragment | undefined
   redrawsLeft: number
-  self: GamePlayerFragmentFragment
+  self: GamePlayerFragment
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
-  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
+  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
 }) {
-  const gameDeck = useFragment(GameDeckFragmentFragmentDoc, gameDeckFragment)
-  const hand = useFragment(DeckUnitFragmentFragmentDoc, gameDeck?.hand)
+  const gameDeck = useFragment(GameDeckFragmentDoc, gameDeckFragment)
+  const hand = useFragment(DeckUnitFragmentDoc, gameDeck?.hand)
   const sortedUnits = !hand
     ? []
     : sortObjectArray({
@@ -113,25 +113,25 @@ function GameHandUnit({
   setRedrawCardSelected,
   sortedUnits,
 }: {
-  deckUnit: DeckUnitFragmentFragment
-  gameDeck: GameDeckFragmentFragment | null | undefined
+  deckUnit: DeckUnitFragment
+  gameDeck: GameDeckFragment | null | undefined
   gameStatus: GameStatus
-  handCardSelected: DeckUnitFragmentFragment | undefined
+  handCardSelected: DeckUnitFragment | undefined
   isTurn: boolean
   index: number
   playUnitLoading: boolean
-  redrawCardSelected: DeckUnitFragmentFragment | undefined
+  redrawCardSelected: DeckUnitFragment | undefined
   redrawsLeft: number
-  self: GamePlayerFragmentFragment
+  self: GamePlayerFragment
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
-  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
-  sortedUnits: DeckUnitFragmentFragment[]
+  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
+  sortedUnits: DeckUnitFragment[]
 }) {
-  const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
-  const handCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, handCardSelected?.unit)
-  const redrawCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, redrawCardSelected?.unit)
+  const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
+  const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected?.unit)
+  const redrawCardSelectedUnit = useFragment(CardUnitFragmentDoc, redrawCardSelected?.unit)
   const selected = [handCardSelectedUnit?.id, redrawCardSelectedUnit?.id].includes(unit.id)
   const notSelected = handCardSelectedUnit?.id && !selected
   const title = unit.name

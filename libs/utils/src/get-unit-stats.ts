@@ -1,6 +1,6 @@
 import {
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
+  CardUnitFragmentDoc,
+  DeckUnitFragment,
   UnitEffectFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -22,10 +22,10 @@ export default class GetUnitStats {
     )
   }
 
-  static fromDeckUnitFragments(deckUnits: DeckUnitFragmentFragment[]): UnitStats {
+  static fromDeckUnitFragments(deckUnits: DeckUnitFragment[]): UnitStats {
     return GetUnitStats.getUnitStats(
       deckUnits.map((deckUnit) => {
-        const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
+        const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
         return {
           combats: unit.combats,
           deckable: unit.deckable,

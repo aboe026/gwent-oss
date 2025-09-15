@@ -1,8 +1,4 @@
-import {
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
-  useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+import { CardUnitFragmentDoc, DeckUnitFragment, useFragment } from '@gwent/graphql-schema/apollo-typings'
 import { DeckUnit, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { DECK_MAX_SPECIALS, DECK_MIN_UNITS } from '@gwent/constants'
 import validatePositiveInteger from './validate-positive-integer'
@@ -23,11 +19,11 @@ export default class ValidateDeck {
     })
   }
 
-  static fromDeckUnitFragments({ faction, deckUnits }: { faction: FactionKey; deckUnits: DeckUnitFragmentFragment[] }) {
+  static fromDeckUnitFragments({ faction, deckUnits }: { faction: FactionKey; deckUnits: DeckUnitFragment[] }) {
     return ValidateDeck.validate({
       faction,
       deckUnits: deckUnits.map((deckUnit) => {
-        const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
+        const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
         return {
           artStyle: deckUnit.artStyle,
           factionKey: unit.faction.key,

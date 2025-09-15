@@ -1,8 +1,6 @@
-import { DeckUnitFragmentFragment, GameUnitFragmentFragment } from '@gwent/graphql-schema/apollo-typings'
+import { DeckUnitFragment, GameUnitFragment } from '@gwent/graphql-schema/apollo-typings'
 
-export default function isGameUnit(
-  unit: DeckUnitFragmentFragment | GameUnitFragmentFragment
-): unit is GameUnitFragmentFragment {
-  const gameUnit = unit as GameUnitFragmentFragment
+export default function isGameUnit(unit: DeckUnitFragment | GameUnitFragment): unit is GameUnitFragment {
+  const gameUnit = unit as GameUnitFragment
   return gameUnit.effectiveStrength !== undefined || gameUnit.effects !== undefined || gameUnit.row !== undefined
 }

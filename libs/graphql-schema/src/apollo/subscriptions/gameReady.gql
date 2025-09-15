@@ -1,5 +1,5 @@
 subscription GameReady {
   gameReady {
-    ...GameFragment
+    ...Game
   }
 }

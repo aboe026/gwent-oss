@@ -1,4 +1,4 @@
-fragment GameUnitFragment on GameUnit {
+fragment GameUnit on GameUnit {
   artStyle
   effectiveStrength
   effects {
@@ -6,6 +6,6 @@ fragment GameUnitFragment on GameUnit {
   }
   row
   unit {
-    ...CardUnitFragment
+    ...CardUnit
   }
 }

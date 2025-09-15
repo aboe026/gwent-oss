@@ -4,10 +4,10 @@ import { Dispatch, SetStateAction } from 'react'
 import Centered from '../../components/Centered'
 import {
   FactionKey,
-  GameFactionFragmentFragmentDoc,
-  GameFragmentFragment,
-  GamePlayerFragmentFragment,
-  GamePlayerFragmentFragmentDoc,
+  GameFactionFragmentDoc,
+  GameFragment,
+  GamePlayerFragment,
+  GamePlayerFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
@@ -27,25 +27,25 @@ export default function GameSetOrder({
   setOrderProps,
   setPlayerOrder,
 }: {
-  game: GameFragmentFragment
-  playerOrder: GamePlayerFragmentFragment[]
-  self: GamePlayerFragmentFragment
+  game: GameFragment
+  playerOrder: GamePlayerFragment[]
+  self: GamePlayerFragment
   setOrderProps: SetOrderProps
-  setPlayerOrder: Dispatch<SetStateAction<GamePlayerFragmentFragment[]>>
+  setPlayerOrder: Dispatch<SetStateAction<GamePlayerFragment[]>>
 }) {
   const { checkAuth } = useUserContext()
   const setOrderErrorMessages = getErrorMessages(setOrderProps.error)
   const scoiaTaelDecks = game.players.filter(
     (player) =>
-      useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)?.key ===
+      useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
       FactionKey.ScoiaTael
   ).length
-  const selfFaction = useFragment(GameFactionFragmentFragmentDoc, self.faction)
+  const selfFaction = useFragment(GameFactionFragmentDoc, self.faction)
   const canSetOrder = scoiaTaelDecks !== 1 || selfFaction?.key === FactionKey.ScoiaTael
   const canChooseOrder =
     game.players.filter(
       (player) =>
-        useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)?.key ===
+        useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
         FactionKey.ScoiaTael
     ).length === 1 && selfFaction?.key === FactionKey.ScoiaTael
 

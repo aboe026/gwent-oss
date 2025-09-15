@@ -2,12 +2,12 @@ import { ErrorLike, FragmentType } from '@apollo/client'
 
 import Centered from './Centered'
 import {
-  DeckFragmentFragment,
-  DeckFragmentFragmentDoc,
+  DeckFragment,
+  DeckFragmentDoc,
   DeckStatsFragment,
   DeckStatsFragmentDoc,
-  FactionFragmentFragment,
-  FactionFragmentFragmentDoc,
+  FactionFragment,
+  FactionFragmentDoc,
   FactionKey,
   FactionStatsQuery,
   useFragment,
@@ -25,7 +25,7 @@ import { IconType } from 'react-icons'
  * @returns The Deck row
  */
 export default function DeckRow({ actions, actionsDisabled, deckFragment, neutralFactionStats }: DeckRowProps) {
-  const deck = useFragment(DeckFragmentFragmentDoc, deckFragment)
+  const deck = useFragment(DeckFragmentDoc, deckFragment)
 
   return (
     <div key={deck.id} className={HTML_CLASSES.DeckListDeckContainer}>
@@ -76,8 +76,8 @@ export default function DeckRow({ actions, actionsDisabled, deckFragment, neutra
 /**
  * The faction the deck was configured to use.
  */
-function DeckFaction({ factionFragment }: { factionFragment: FragmentType<FactionFragmentFragment> }) {
-  const faction = useFragment(FactionFragmentFragmentDoc, factionFragment)
+function DeckFaction({ factionFragment }: { factionFragment: FragmentType<FactionFragment> }) {
+  const faction = useFragment(FactionFragmentDoc, factionFragment)
   return (
     <div className="deck-list-deck-sub-section deck-list-faction">
       <img src={faction.image} title={faction.name} className={HTML_CLASSES.DeckListDeckFactionImage} />
@@ -96,7 +96,7 @@ function renderDeckStats({
   deck,
   neutralFactionStats,
 }: {
-  deck: DeckFragmentFragment
+  deck: DeckFragment
   neutralFactionStats: FactionStatsProps
 }) {
   const neutralFaction = neutralFactionStats.data?.factions.find((faction) => faction.key === FactionKey.Neutral)
@@ -129,7 +129,7 @@ function renderDeckStatsGroups({
   deck,
   neutralStatsFragment,
 }: {
-  deck: DeckFragmentFragment
+  deck: DeckFragment
   neutralStatsFragment: FragmentType<DeckStatsFragment>
 }) {
   const deckStats = useFragment(DeckStatsFragmentDoc, deck.stats)
@@ -207,12 +207,12 @@ function renderDeckStat({
   stat,
   neutralStats,
 }: {
-  deck: DeckFragmentFragment
+  deck: DeckFragment
   label: string
   stat: keyof DeckStatsFragment
   neutralStats: DeckStatsFragment
 }) {
-  const faction = useFragment(FactionFragmentFragmentDoc, deck.faction)
+  const faction = useFragment(FactionFragmentDoc, deck.faction)
   const factionStats = useFragment(DeckStatsFragmentDoc, faction.stats)
   const deckStats = useFragment(DeckStatsFragmentDoc, deck.stats)
   const available =
@@ -269,7 +269,7 @@ function getStatNumber({
 interface DeckRowProps {
   actions?: Action[]
   actionsDisabled?: boolean
-  deckFragment: FragmentType<DeckFragmentFragment>
+  deckFragment: FragmentType<DeckFragment>
   neutralFactionStats: FactionStatsProps
 }
 
@@ -283,5 +283,5 @@ export interface Action {
   title: string
   className: string
   icon: IconType
-  onClick: (deck: DeckFragmentFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClick: (deck: DeckFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }

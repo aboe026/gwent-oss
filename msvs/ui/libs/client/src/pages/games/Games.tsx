@@ -9,10 +9,10 @@ import Centered from '../../components/Centered'
 import {
   Exact,
   FactionKey,
-  GameFactionFragmentFragmentDoc,
-  GameFragmentFragment,
-  GameFragmentFragmentDoc,
-  GamePlayerFragmentFragmentDoc,
+  GameFactionFragmentDoc,
+  GameFragment,
+  GameFragmentDoc,
+  GamePlayerFragmentDoc,
   GamesDocument,
   GamesQuery,
   GameStatus,
@@ -61,7 +61,7 @@ export default function GamesPage() {
 
   const filteredGames = sortedGames.filter((game) =>
     isFilteredIn({
-      game: useFragment(GameFragmentFragmentDoc, game),
+      game: useFragment(GameFragmentDoc, game),
       fields: filterFields,
       user: userFilter,
     })
@@ -327,15 +327,7 @@ function renderHeader({
  * @param config.user The Username that games should be filtered to, only matching if a game includes a player whose name is a substring.
  * @returns True if the game passes the current filters and should be visible, false otherwise.
  */
-function isFilteredIn({
-  fields,
-  game,
-  user,
-}: {
-  fields: FILTER_FIELD[]
-  game: GameFragmentFragment
-  user: string
-}): boolean {
+function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: GameFragment; user: string }): boolean {
   const filteringAnyFaction =
     fields.includes(FILTER_FIELD.Monsters) ||
     fields.includes(FILTER_FIELD.NilfgaardianEmpire) ||
@@ -354,32 +346,32 @@ function isFilteredIn({
     (fields.includes(FILTER_FIELD.Monsters) &&
       game.players.find(
         (player) =>
-          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
-            ?.key === FactionKey.Monsters
+          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
+          FactionKey.Monsters
       )) ||
     (fields.includes(FILTER_FIELD.NilfgaardianEmpire) &&
       game.players.find(
         (player) =>
-          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
-            ?.key === FactionKey.NilfgaardianEmpire
+          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
+          FactionKey.NilfgaardianEmpire
       )) ||
     (fields.includes(FILTER_FIELD.NorthernRealms) &&
       game.players.find(
         (player) =>
-          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
-            ?.key === FactionKey.NorthernRealms
+          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
+          FactionKey.NorthernRealms
       )) ||
     (fields.includes(FILTER_FIELD.ScoiaTael) &&
       game.players.find(
         (player) =>
-          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
-            ?.key === FactionKey.ScoiaTael
+          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
+          FactionKey.ScoiaTael
       )) ||
     (fields.includes(FILTER_FIELD.Skellige) &&
       game.players.find(
         (player) =>
-          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
-            ?.key === FactionKey.Skellige
+          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
+          FactionKey.Skellige
       ))
   const filteredByStatus =
     fields.length === 0 ||
@@ -393,7 +385,7 @@ function isFilteredIn({
     !user ||
     game.creator.name.toLowerCase().includes(user.toLowerCase()) ||
     game.players.find((player) =>
-      useFragment(GamePlayerFragmentFragmentDoc, player).user.name.toLowerCase().includes(user.toLowerCase())
+      useFragment(GamePlayerFragmentDoc, player).user.name.toLowerCase().includes(user.toLowerCase())
     ) ||
     game.victors.find((victor) => victor.name.toLowerCase().includes(user.toLowerCase()))
   return !!filteredByFaction && !!filteredByStatus && !!filteredByUser

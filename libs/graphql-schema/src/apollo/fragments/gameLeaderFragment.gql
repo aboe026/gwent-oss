@@ -1,5 +1,0 @@
-fragment GameLeaderFragment on Leader {
-  ability
-  image
-  name
-}

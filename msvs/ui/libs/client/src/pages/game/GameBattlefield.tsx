@@ -1,11 +1,11 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragmentFragmentDoc,
+  CardUnitFragmentDoc,
   Combat,
-  DeckUnitFragmentFragment,
-  GameFragmentFragment,
-  GamePlayerFragmentFragment,
+  DeckUnitFragment,
+  GameFragment,
+  GamePlayerFragment,
   PlayerRoundFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -31,19 +31,19 @@ export default function GameBattlefield({
   setHistoryCardSelected,
 }: {
   fullUnits: FullUnitCards | undefined
-  game: GameFragmentFragment
-  handCardSelected: DeckUnitFragmentFragment | undefined
+  game: GameFragment
+  handCardSelected: DeckUnitFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
-  opponent: GamePlayerFragmentFragment
+  opponent: GamePlayerFragment
   playUnitProps: PlayUnitProps
   scrollHistoryIntoView: (args: UnitForPlayer) => void
-  self: GamePlayerFragmentFragment
+  self: GamePlayerFragment
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const { checkAuth } = useUserContext()
-  const handCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, handCardSelected?.unit)
+  const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected?.unit)
   const rowsToHighlight = (handCardSelectedUnit && handCardSelectedUnit.combats) || []
   const rowsToBlock = []
   if (rowsToHighlight.length > 0) {

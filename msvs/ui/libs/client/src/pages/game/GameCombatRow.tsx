@@ -1,17 +1,17 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragmentFragmentDoc,
-  CardUnitFragmentFragment,
+  CardUnitFragmentDoc,
+  CardUnitFragment,
   Combat,
-  DeckUnitFragmentFragment,
+  DeckUnitFragment,
   useFragment,
-  GamePlayerFragmentFragment,
+  GamePlayerFragment,
   PlayerRoundFragmentDoc,
-  PlayerCombatRowFragmentFragmentDoc,
-  GameUnitFragmentFragment,
-  GameUnitFragmentFragmentDoc,
-  GameFragmentFragment,
+  PlayerCombatRowFragmentDoc,
+  GameUnitFragment,
+  GameUnitFragmentDoc,
+  GameFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -41,16 +41,16 @@ export default function GameCombatRow({
 }: {
   combat: Combat
   fullUnits: FullUnitCards | undefined
-  game: GameFragmentFragment
-  handCardSelectedUnit: CardUnitFragmentFragment | undefined
+  game: GameFragment
+  handCardSelectedUnit: CardUnitFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
   isSelf?: boolean
   isTurn?: boolean
-  player: GamePlayerFragmentFragment
+  player: GamePlayerFragment
   playUnitProps: PlayUnitProps
   scrollHistoryIntoView: (args: UnitForPlayer) => void
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const { checkAuth } = useUserContext()
@@ -85,7 +85,7 @@ export default function GameCombatRow({
   }
   const playerRound = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
   const playerRow = useFragment(
-    PlayerCombatRowFragmentFragmentDoc,
+    PlayerCombatRowFragmentDoc,
     combat === Combat.Close ? playerRound.close : combat === Combat.Ranged ? playerRound.ranged : playerRound.siege
   )
   const sortedUnits = sortObjectArray({
@@ -101,7 +101,7 @@ export default function GameCombatRow({
     id = isSelf ? HTML_IDS.GameCombatRowSiegeSelf : HTML_IDS.GameCombatRowSiegeOpponent
   }
   const fullUnitFragment = fullUnits && fullUnits.units[fullUnits.currentIndex]
-  const fullUnit = useFragment(CardUnitFragmentFragmentDoc, fullUnitFragment?.unitFragment.unit)
+  const fullUnit = useFragment(CardUnitFragmentDoc, fullUnitFragment?.unitFragment.unit)
 
   return (
     <div id={id} className="game-unit-board-combat-row">
@@ -180,24 +180,24 @@ function GameRowUnit({
   index,
   sortedUnits,
 }: {
-  fullUnit: CardUnitFragmentFragment | undefined
+  fullUnit: CardUnitFragment | undefined
   fullUnitFragment: UnitForPlayer | undefined
   combat: Combat
-  handCardSelectedUnit: CardUnitFragmentFragment | undefined
+  handCardSelectedUnit: CardUnitFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
   isTurn?: boolean
-  player: GamePlayerFragmentFragment
+  player: GamePlayerFragment
   scrollHistoryIntoView: (args: UnitForPlayer) => void
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
-  gameUnitFragment: FragmentType<GameUnitFragmentFragment>
+  gameUnitFragment: FragmentType<GameUnitFragment>
   index: number
-  sortedUnits: FragmentType<GameUnitFragmentFragment>[]
+  sortedUnits: FragmentType<GameUnitFragment>[]
 }) {
-  const gameUnit = useFragment(GameUnitFragmentFragmentDoc, gameUnitFragment)
-  const unit = useFragment(CardUnitFragmentFragmentDoc, gameUnit.unit)
-  const historyCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, historyCardSelected?.unitFragment.unit)
+  const gameUnit = useFragment(GameUnitFragmentDoc, gameUnitFragment)
+  const unit = useFragment(CardUnitFragmentDoc, gameUnit.unit)
+  const historyCardSelectedUnit = useFragment(CardUnitFragmentDoc, historyCardSelected?.unitFragment.unit)
   const selectedAsFullCard =
     fullUnitFragment && fullUnit && fullUnit.id === unit.id && fullUnitFragment.playerId === player.user.id
   const selectedInHistory =
@@ -244,7 +244,7 @@ function GameRowUnit({
             units: sortedUnits.map((deckUnit) => {
               return {
                 playerId: player.user.id,
-                unitFragment: useFragment(GameUnitFragmentFragmentDoc, deckUnit),
+                unitFragment: useFragment(GameUnitFragmentDoc, deckUnit),
               }
             }),
           })

@@ -1,4 +1,4 @@
-fragment CardUnitFragment on Unit {
+fragment CardUnit on Unit {
   combats
   deckable
   dlc {

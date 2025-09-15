@@ -2,14 +2,14 @@ import { CgArrowLongRight } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragmentFragment,
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
-  GameDeckFragmentFragment,
+  CardUnitFragment,
+  CardUnitFragmentDoc,
+  DeckUnitFragmentDoc,
+  DeckUnitFragment,
+  GameDeckFragment,
   useFragment,
-  GamePlayerFragmentFragment,
-  GameFragmentFragment,
+  GamePlayerFragment,
+  GameFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import Centered from '../../components/Centered'
 import CoinToss from '../../components/CoinToss'
@@ -39,17 +39,17 @@ export default function GameRedraw({
   setRedrawCardSelected,
 }: {
   coinTossVisible: boolean
-  game: GameFragmentFragment
-  gameDeck: GameDeckFragmentFragment | null | undefined
-  handCardSelected: DeckUnitFragmentFragment | undefined
+  game: GameFragment
+  gameDeck: GameDeckFragment | null | undefined
+  handCardSelected: DeckUnitFragment | undefined
   readyProps: ReadyProps
-  redrawCardSelected: DeckUnitFragmentFragment | undefined
+  redrawCardSelected: DeckUnitFragment | undefined
   redrawProps: RedrawProps
-  self: GamePlayerFragmentFragment
+  self: GamePlayerFragment
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
-  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
+  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
 }) {
   const { checkAuth } = useUserContext()
   const redrawsLeft = MAX_REDRAWS - (gameDeck?.redraws || []).length
@@ -64,8 +64,8 @@ export default function GameRedraw({
   const handUnitIds: string[] = []
   if (gameDeck?.hand) {
     for (const handUnitFragment of gameDeck.hand) {
-      const handUnit = useFragment(DeckUnitFragmentFragmentDoc, handUnitFragment)
-      const unit = useFragment(CardUnitFragmentFragmentDoc, handUnit.unit)
+      const handUnit = useFragment(DeckUnitFragmentDoc, handUnitFragment)
+      const unit = useFragment(CardUnitFragmentDoc, handUnit.unit)
       if (!handUnitIds.includes(unit.id)) {
         handUnitIds.push(unit.id)
       }
@@ -190,37 +190,37 @@ function RedrawCard({
   setRedrawCardSelected,
 }: {
   index: number
-  gameDeck: GameDeckFragmentFragment
-  game: GameFragmentFragment
-  handCardSelected: DeckUnitFragmentFragment | undefined
-  self: GamePlayerFragmentFragment
-  redrawCardSelected: DeckUnitFragmentFragment | undefined
+  gameDeck: GameDeckFragment
+  game: GameFragment
+  handCardSelected: DeckUnitFragment | undefined
+  self: GamePlayerFragment
+  redrawCardSelected: DeckUnitFragment | undefined
   redrawProps: RedrawProps
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
-  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
+  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
 }) {
   const { checkAuth } = useUserContext()
   const handUnitIds: string[] = []
   if (gameDeck?.hand) {
     for (const handUnitFragment of gameDeck.hand) {
-      const handUnit = useFragment(DeckUnitFragmentFragmentDoc, handUnitFragment)
-      const unit = useFragment(CardUnitFragmentFragmentDoc, handUnit.unit)
+      const handUnit = useFragment(DeckUnitFragmentDoc, handUnitFragment)
+      const unit = useFragment(CardUnitFragmentDoc, handUnit.unit)
       if (!handUnitIds.includes(unit.id)) {
         handUnitIds.push(unit.id)
       }
     }
   }
-  let fromCard: DeckUnitFragmentFragment | undefined = handCardSelected
+  let fromCard: DeckUnitFragment | undefined = handCardSelected
   if (index < gameDeck.redraws.length && gameDeck.redraws[index].from) {
-    fromCard = useFragment(DeckUnitFragmentFragmentDoc, gameDeck.redraws[index].from)
+    fromCard = useFragment(DeckUnitFragmentDoc, gameDeck.redraws[index].from)
   }
-  const fromCardUnit = useFragment(CardUnitFragmentFragmentDoc, fromCard?.unit)
-  let toCard: DeckUnitFragmentFragment | undefined = undefined
+  const fromCardUnit = useFragment(CardUnitFragmentDoc, fromCard?.unit)
+  let toCard: DeckUnitFragment | undefined = undefined
   if (gameDeck.redraws.length >= index + 1 && gameDeck.redraws[index].to) {
-    toCard = useFragment(DeckUnitFragmentFragmentDoc, gameDeck.redraws[index].to)
+    toCard = useFragment(DeckUnitFragmentDoc, gameDeck.redraws[index].to)
   }
-  const toCardUnit: CardUnitFragmentFragment | undefined = useFragment(CardUnitFragmentFragmentDoc, toCard?.unit)
+  const toCardUnit: CardUnitFragment | undefined = useFragment(CardUnitFragmentDoc, toCard?.unit)
   const units: UnitForPlayer[] = [fromCard, toCard]
     .filter((deckUnit) => !!deckUnit)
     .map((deckUnit) => {
@@ -229,8 +229,8 @@ function RedrawCard({
         unitFragment: deckUnit,
       }
     })
-  const redrawCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, redrawCardSelected?.unit)
-  const handCardSelectedUnit = useFragment(CardUnitFragmentFragmentDoc, handCardSelected?.unit)
+  const redrawCardSelectedUnit = useFragment(CardUnitFragmentDoc, redrawCardSelected?.unit)
+  const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected?.unit)
   const toCardSelected = toCardUnit && [redrawCardSelectedUnit?.id, handCardSelectedUnit?.id].includes(toCardUnit.id)
   const toCardDotted = toCardSelected && !handUnitIds.includes(toCardUnit.id)
   const fromCardSelected =

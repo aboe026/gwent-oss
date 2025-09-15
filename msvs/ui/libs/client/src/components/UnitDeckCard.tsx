@@ -2,8 +2,8 @@ import { CgChevronLeft, CgChevronRight, CgMaximizeAlt } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
+  CardUnitFragmentDoc,
+  DeckUnitFragment,
   EffectKey,
   UnitEffectFragmentDoc,
   useFragment,
@@ -33,17 +33,17 @@ export default function UnitDeckCard({
     event.preventDefault()
 
     if (!disabled) {
-      setSelectedUnits((previous: DeckUnitFragmentFragment[]) => {
+      setSelectedUnits((previous: DeckUnitFragment[]) => {
         const alreadySelected = previous.some(
           (selectedCard) =>
-            useFragment(CardUnitFragmentFragmentDoc, selectedCard.unit).id ===
-            useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id
+            useFragment(CardUnitFragmentDoc, selectedCard.unit).id ===
+            useFragment(CardUnitFragmentDoc, deckUnit.unit).id
         )
         if (alreadySelected) {
           return previous.filter(
             (selectedCard) =>
-              useFragment(CardUnitFragmentFragmentDoc, selectedCard.unit).id !==
-              useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id
+              useFragment(CardUnitFragmentDoc, selectedCard.unit).id !==
+              useFragment(CardUnitFragmentDoc, deckUnit.unit).id
           )
         }
         return [...previous, deckUnit]
@@ -54,11 +54,10 @@ export default function UnitDeckCard({
    * Changes alternative artwork. 1-based indexing
    */
   function changeArtStyle(change: number) {
-    setUnits((previous: DeckUnitFragmentFragment[]) =>
+    setUnits((previous: DeckUnitFragment[]) =>
       previous.map((newCard) => {
         if (
-          useFragment(CardUnitFragmentFragmentDoc, newCard.unit).id ===
-            useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id &&
+          useFragment(CardUnitFragmentDoc, newCard.unit).id === useFragment(CardUnitFragmentDoc, deckUnit.unit).id &&
           newCard.artStyle !== undefined &&
           newCard.artStyle !== null
         ) {
@@ -78,7 +77,7 @@ export default function UnitDeckCard({
     if (
       !disabled &&
       deckUnit.artStyle &&
-      deckUnit.artStyle < useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).images.length
+      deckUnit.artStyle < useFragment(CardUnitFragmentDoc, deckUnit.unit).images.length
     ) {
       changeArtStyle(1)
     }
@@ -110,7 +109,7 @@ export default function UnitDeckCard({
     event.stopPropagation()
   }
   const combatSymbol = getCombatImage(deckUnit)
-  const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
+  const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
   const combatTitle = unit.combats ? unit.combats.map((combat) => toTitleCase(combat)).join(' or ') : ''
   const effects = useFragment(UnitEffectFragmentDoc, unit.effects)
 
@@ -184,9 +183,9 @@ export default function UnitDeckCard({
 }
 
 interface UnitDeckCardProps {
-  deckUnit: DeckUnitFragmentFragment
+  deckUnit: DeckUnitFragment
   disabled: boolean
-  setFullUnit: Dispatch<SetStateAction<DeckUnitFragmentFragment | undefined>>
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
-  setUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
+  setFullUnit: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnitFragment[]>>
+  setUnits: Dispatch<SetStateAction<DeckUnitFragment[]>>
 }

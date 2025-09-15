@@ -1,5 +1,5 @@
 mutation Ready($game: ID!) {
   ready(game: $game) {
-    ...GameFragment
+    ...Game
   }
 }

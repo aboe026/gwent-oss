@@ -1,4 +1,4 @@
-fragment FactionFragment on Faction {
+fragment Faction on Faction {
   key
   id
   name

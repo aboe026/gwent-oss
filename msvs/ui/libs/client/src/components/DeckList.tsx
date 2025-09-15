@@ -8,12 +8,12 @@ import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
 import {
-  DeckFragmentFragment,
-  DeckFragmentFragmentDoc,
+  DeckFragment,
+  DeckFragmentDoc,
   DecksDocument,
   DecksQuery,
   Exact,
-  FactionFragmentFragmentDoc,
+  FactionFragmentDoc,
   FactionKey,
   FactionStatsDocument,
   FactionStatsQuery,
@@ -65,7 +65,7 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   })
   const filteredDecks = sortedDecks.filter((deck) =>
     isFilteredIn({
-      deck: useFragment(DeckFragmentFragmentDoc, deck),
+      deck: useFragment(DeckFragmentDoc, deck),
       fields: filterFields,
       name: nameFilter,
     })
@@ -373,16 +373,8 @@ function renderCreateDeckButton({
  * @param config.name The name that Decks should be filtered on, and substring matches.
  * @returns True if the Deck should be shown, false otherwise.
  */
-function isFilteredIn({
-  deck,
-  fields,
-  name,
-}: {
-  deck: DeckFragmentFragment
-  fields: FILTER_FIELD[]
-  name: string
-}): boolean {
-  const faction = useFragment(FactionFragmentFragmentDoc, deck.faction)
+function isFilteredIn({ deck, fields, name }: { deck: DeckFragment; fields: FILTER_FIELD[]; name: string }): boolean {
+  const faction = useFragment(FactionFragmentDoc, deck.faction)
   const filteredByFaction =
     fields.length === 0 ||
     (fields.includes(FILTER_FIELD.Monsters) && faction.key === FactionKey.Monsters) ||

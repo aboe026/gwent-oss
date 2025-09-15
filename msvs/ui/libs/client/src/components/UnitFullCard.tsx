@@ -3,14 +3,14 @@ import { FragmentType } from '@apollo/client'
 
 import CloseButton from './CloseButton'
 import {
-  CardUnitFragmentFragment,
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
+  CardUnitFragment,
+  CardUnitFragmentDoc,
+  DeckUnitFragment,
   EffectKey,
   FactionKey,
   GameUnitEffectFragment,
   GameUnitEffectFragmentDoc,
-  GameUnitFragmentFragment,
+  GameUnitFragment,
   UnitEffectFragment,
   UnitEffectFragmentDoc,
   useFragment,
@@ -43,7 +43,7 @@ export default function UnitFullCard({
   onSelect,
   userName,
 }: UnitFullCardProps) {
-  const unit = useFragment(CardUnitFragmentFragmentDoc, fullUnit?.unit)
+  const unit = useFragment(CardUnitFragmentDoc, fullUnit?.unit)
   useKeyDown([
     {
       key: Key.Left,
@@ -126,7 +126,7 @@ export default function UnitFullCard({
                       <div className={`${HTML_CLASSES.UnitFullCardInfoRow} unit-full-card-info-row-strength`}>
                         <div className={HTML_CLASSES.UnitFullCardInfoRow}>
                           <StrengthCircle
-                            unit={useFragment(CardUnitFragmentFragmentDoc, fullUnit.unit)}
+                            unit={useFragment(CardUnitFragmentDoc, fullUnit.unit)}
                             effectiveStrength={effectiveStrength}
                             size="50px"
                             ignoreHero={true}
@@ -279,7 +279,7 @@ function UnitEffect({
   unit,
 }: {
   effectFragment: FragmentType<UnitEffectFragment>
-  unit: CardUnitFragmentFragment
+  unit: CardUnitFragment
 }) {
   const effect = useFragment(UnitEffectFragmentDoc, effectFragment)
   return (
@@ -320,14 +320,14 @@ function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<GameU
 interface UnitFullCardProps {
   effectiveStrength?: number | null
   effects?: FragmentType<GameUnitEffectFragment>[] | null
-  fullUnit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined
+  fullUnit: DeckUnitFragment | GameUnitFragment | undefined
   hasNext: boolean
   hasPrevious: boolean
-  onArtDecrement?: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onArtIncrement?: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClose: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onNext: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onPrevious: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onSelect: (unit: DeckUnitFragmentFragment | GameUnitFragmentFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onArtDecrement?: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onArtIncrement?: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onNext: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onPrevious: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSelect: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
   userName?: string
 }

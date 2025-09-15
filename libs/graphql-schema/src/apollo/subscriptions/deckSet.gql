@@ -1,7 +1,7 @@
 subscription DeckSet {
   deckSet {
     deck {
-      ...GameDeckFragment
+      ...GameDeck
     }
     game {
       id

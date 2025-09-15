@@ -1,9 +1,4 @@
-import {
-  CardUnitFragmentFragment,
-  EffectKey,
-  UnitEffectFragmentDoc,
-  useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+import { CardUnitFragment, EffectKey, UnitEffectFragmentDoc, useFragment } from '@gwent/graphql-schema/apollo-typings'
 import getWeatherImage from '../util/get-weather-image'
 import { HTML_CLASSES } from '@gwent/constants'
 import './StrengthCircle.css'
@@ -73,5 +68,5 @@ interface StrengthCircleProps {
   size: string
   style?: React.CSSProperties
   textColor?: string
-  unit: CardUnitFragmentFragment
+  unit: CardUnitFragment
 }

@@ -1,17 +1,17 @@
 fragment PlayerRound on PlayerRound {
   close {
-    ...PlayerCombatRowFragment
+    ...PlayerCombatRow
   }
   moves {
     ...Move
   }
   passed
   ranged {
-    ...PlayerCombatRowFragment
+    ...PlayerCombatRow
   }
   result
   score
   siege {
-    ...PlayerCombatRowFragment
+    ...PlayerCombatRow
   }
 }

@@ -1,12 +1,7 @@
 import { CgChevronDoubleLeft, CgChevronDoubleRight, CgLock, CgLockUnlock } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import {
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
-  UnitStats,
-  useFragment,
-} from '@gwent/graphql-schema/apollo-typings'
+import { CardUnitFragmentDoc, DeckUnitFragment, UnitStats, useFragment } from '@gwent/graphql-schema/apollo-typings'
 import { DECK_MIN_UNITS, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
 import { GetUnitStats, toTitleCase } from '@gwent/utils'
@@ -57,7 +52,7 @@ export default function UnitsStats({
             title="Add All"
             onClick={() => {
               if (!disabled) {
-                setSelectedUnits((previous: DeckUnitFragmentFragment[]) => [...previous, ...filteredAvailableUnits])
+                setSelectedUnits((previous: DeckUnitFragment[]) => [...previous, ...filteredAvailableUnits])
               }
             }}
           >
@@ -94,13 +89,13 @@ export default function UnitsStats({
             title="Remove All"
             onClick={() => {
               if (!disabled) {
-                setSelectedUnits((previous: DeckUnitFragmentFragment[]) =>
+                setSelectedUnits((previous: DeckUnitFragment[]) =>
                   previous.filter(
                     (deckUnit) =>
                       !filteredSelectedUnits.some(
                         (selectedUnit) =>
-                          useFragment(CardUnitFragmentFragmentDoc, selectedUnit.unit).id ===
-                          useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit).id
+                          useFragment(CardUnitFragmentDoc, selectedUnit.unit).id ===
+                          useFragment(CardUnitFragmentDoc, deckUnit.unit).id
                       )
                   )
                 )
@@ -411,13 +406,13 @@ interface UnitsStatsProps {
   disabled: boolean
   effectsExpanded: boolean
   factionStats: UnitStats | undefined
-  filteredAvailableUnits: DeckUnitFragmentFragment[]
-  filteredSelectedUnits: DeckUnitFragmentFragment[]
-  selectedUnits: DeckUnitFragmentFragment[]
+  filteredAvailableUnits: DeckUnitFragment[]
+  filteredSelectedUnits: DeckUnitFragment[]
+  selectedUnits: DeckUnitFragment[]
   setAvailableFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setCombatsExpanded: Dispatch<SetStateAction<boolean>>
   setEffectsExpanded: Dispatch<SetStateAction<boolean>>
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnitFragmentFragment[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnitFragment[]>>
   setSelectedFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setSelectedFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setSelectedNameFilter: Dispatch<SetStateAction<string>>

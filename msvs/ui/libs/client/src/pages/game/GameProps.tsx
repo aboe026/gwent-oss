@@ -16,10 +16,10 @@ import {
   Combat,
   PlayUnitMutation,
   PlayPassMutation,
-  GameDeckFragmentFragment,
-  DeckUnitFragmentFragment,
-  GameUnitFragmentFragment,
-  GameFragmentFragment,
+  GameDeckFragment,
+  DeckUnitFragment,
+  GameUnitFragment,
+  GameFragment,
   MoveFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 
@@ -36,7 +36,7 @@ export interface AddGameProps {
 }
 
 export interface GameProps {
-  game: GameFragmentFragment | undefined
+  game: GameFragment | undefined
   error: unknown
   loading: boolean
   refetch: (
@@ -51,7 +51,7 @@ export interface GameProps {
 }
 
 export interface GameDeckProps {
-  deck: FragmentType<GameDeckFragmentFragment> | null | undefined
+  deck: FragmentType<GameDeckFragment> | null | undefined
   error: unknown
   loading: boolean
   refetch: (
@@ -143,7 +143,7 @@ export interface PlayPassProps {
 }
 
 export interface UnitForPlayer {
-  unitFragment: DeckUnitFragmentFragment | GameUnitFragmentFragment
+  unitFragment: DeckUnitFragment | GameUnitFragment
   playerId: string | undefined
 }
 

@@ -1,21 +1,17 @@
 import { FragmentType } from '@apollo/client'
 
 import {
-  CardUnitFragmentFragmentDoc,
-  DeckUnitFragmentFragment,
-  DeckUnitFragmentFragmentDoc,
-  GameDeckFragmentFragment,
+  CardUnitFragmentDoc,
+  DeckUnitFragment,
+  DeckUnitFragmentDoc,
+  GameDeckFragment,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 
-export default function getRedrawIds({
-  gameDeck,
-}: {
-  gameDeck: GameDeckFragmentFragment | null | undefined
-}): string[] {
+export default function getRedrawIds({ gameDeck }: { gameDeck: GameDeckFragment | null | undefined }): string[] {
   const redrawIds: string[] = []
 
-  const redrawUnits: FragmentType<DeckUnitFragmentFragment>[] = []
+  const redrawUnits: FragmentType<DeckUnitFragment>[] = []
   if (gameDeck) {
     for (const redraw of gameDeck.redraws) {
       redrawUnits.push(redraw.from)
@@ -23,8 +19,8 @@ export default function getRedrawIds({
     }
   }
   for (const redrawUnit of redrawUnits) {
-    const deckUnit = useFragment(DeckUnitFragmentFragmentDoc, redrawUnit)
-    const unit = useFragment(CardUnitFragmentFragmentDoc, deckUnit.unit)
+    const deckUnit = useFragment(DeckUnitFragmentDoc, redrawUnit)
+    const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
     if (!redrawIds.includes(unit.id)) {
       redrawIds.push(unit.id)
     }
