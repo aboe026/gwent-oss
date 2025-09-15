@@ -138,7 +138,7 @@ export default function GameRedraw({
               <div
                 id={HTML_IDS.GameReadyError}
                 className={HTML_CLASSES.ErrorText}
-              >{`Error marking self as ready: ${readyErrorMessages}`}</div>
+              >{`Error marking self ready: ${readyErrorMessages}`}</div>
             )}
           </div>
         </>

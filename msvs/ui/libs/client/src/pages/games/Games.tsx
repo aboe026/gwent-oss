@@ -6,7 +6,18 @@ import { useQuery } from '@apollo/client/react'
 
 import { Button } from '../../util/keyboard-listener'
 import Centered from '../../components/Centered'
-import { Exact, FactionKey, Game, GamesDocument, GamesQuery, GameStatus } from '@gwent/graphql-schema/apollo-typings'
+import {
+  Exact,
+  FactionKey,
+  GameFactionFragmentFragmentDoc,
+  GameFragmentFragment,
+  GameFragmentFragmentDoc,
+  GamePlayerFragmentFragmentDoc,
+  GamesDocument,
+  GamesQuery,
+  GameStatus,
+  useFragment,
+} from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FILTER_FIELD,
@@ -16,6 +27,7 @@ import {
   SORT_ORDER,
 } from '@gwent/graphql-schema/games-filter'
 import GameRow from './GameRow'
+import getEnumFromString from '../../util/get-faction-key-from-string'
 import { getErrorMessages } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
@@ -49,7 +61,7 @@ export default function GamesPage() {
 
   const filteredGames = sortedGames.filter((game) =>
     isFilteredIn({
-      game: game as Game,
+      game: useFragment(GameFragmentFragmentDoc, game),
       fields: filterFields,
       user: userFilter,
     })
@@ -221,7 +233,15 @@ function renderHeader({
               title="Sort Field"
               value={sortField}
               className="pointable"
-              onChange={(event) => setSortField(event.target.value as SORT_FIELD)}
+              onChange={(event) => {
+                const newSortField = getEnumFromString({
+                  enumerative: SORT_FIELD,
+                  value: event.target.value,
+                })
+                if (newSortField) {
+                  setSortField(newSortField)
+                }
+              }}
             >
               <option value={SORT_FIELD.Created}>Created</option>
               <option value={SORT_FIELD.Creator}>Owner</option>
@@ -307,7 +327,15 @@ function renderHeader({
  * @param config.user The Username that games should be filtered to, only matching if a game includes a player whose name is a substring.
  * @returns True if the game passes the current filters and should be visible, false otherwise.
  */
-function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Game; user: string }): boolean {
+function isFilteredIn({
+  fields,
+  game,
+  user,
+}: {
+  fields: FILTER_FIELD[]
+  game: GameFragmentFragment
+  user: string
+}): boolean {
   const filteringAnyFaction =
     fields.includes(FILTER_FIELD.Monsters) ||
     fields.includes(FILTER_FIELD.NilfgaardianEmpire) ||
@@ -324,15 +352,35 @@ function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Ga
     fields.length === 0 ||
     !filteringAnyFaction ||
     (fields.includes(FILTER_FIELD.Monsters) &&
-      game.players.find((player) => player.faction?.key === FactionKey.Monsters)) ||
+      game.players.find(
+        (player) =>
+          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
+            ?.key === FactionKey.Monsters
+      )) ||
     (fields.includes(FILTER_FIELD.NilfgaardianEmpire) &&
-      game.players.find((player) => player.faction?.key === FactionKey.NilfgaardianEmpire)) ||
+      game.players.find(
+        (player) =>
+          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
+            ?.key === FactionKey.NilfgaardianEmpire
+      )) ||
     (fields.includes(FILTER_FIELD.NorthernRealms) &&
-      game.players.find((player) => player.faction?.key === FactionKey.NorthernRealms)) ||
+      game.players.find(
+        (player) =>
+          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
+            ?.key === FactionKey.NorthernRealms
+      )) ||
     (fields.includes(FILTER_FIELD.ScoiaTael) &&
-      game.players.find((player) => player.faction?.key === FactionKey.ScoiaTael)) ||
+      game.players.find(
+        (player) =>
+          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
+            ?.key === FactionKey.ScoiaTael
+      )) ||
     (fields.includes(FILTER_FIELD.Skellige) &&
-      game.players.find((player) => player.faction?.key === FactionKey.Skellige))
+      game.players.find(
+        (player) =>
+          useFragment(GameFactionFragmentFragmentDoc, useFragment(GamePlayerFragmentFragmentDoc, player).faction)
+            ?.key === FactionKey.Skellige
+      ))
   const filteredByStatus =
     fields.length === 0 ||
     !filteringAnyStatus ||
@@ -344,7 +392,9 @@ function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Ga
   const filteredByUser =
     !user ||
     game.creator.name.toLowerCase().includes(user.toLowerCase()) ||
-    game.players.find((player) => player.user.name.toLowerCase().includes(user.toLowerCase())) ||
+    game.players.find((player) =>
+      useFragment(GamePlayerFragmentFragmentDoc, player).user.name.toLowerCase().includes(user.toLowerCase())
+    ) ||
     game.victors.find((victor) => victor.name.toLowerCase().includes(user.toLowerCase()))
   return !!filteredByFaction && !!filteredByStatus && !!filteredByUser
 }

@@ -10,6 +10,7 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/deck-filter'
+import getEnumFromString from '../util/get-faction-key-from-string'
 import './UnitsHeader.css'
 
 /**
@@ -142,12 +143,17 @@ export default function UnitsHeader({
               style={{ cursor: disabled || (!isAvailable && sortFilterLocked) ? 'not-allowed' : 'pointer' }}
               onChange={(event) => {
                 if (!disabled) {
-                  const newSortField = event.target.value as SORT_FIELD
-                  if (isAvailable) {
-                    setAvailableSortField(newSortField)
-                  }
-                  if (!isAvailable || sortFilterLocked) {
-                    setSelectedSortField(newSortField)
+                  const newSortField = getEnumFromString({
+                    enumerative: SORT_FIELD,
+                    value: event.target.value,
+                  })
+                  if (newSortField) {
+                    if (isAvailable) {
+                      setAvailableSortField(newSortField)
+                    }
+                    if (!isAvailable || sortFilterLocked) {
+                      setSelectedSortField(newSortField)
+                    }
                   }
                 }
               }}

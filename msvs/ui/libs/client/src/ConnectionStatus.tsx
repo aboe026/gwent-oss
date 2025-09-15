@@ -17,9 +17,12 @@ export enum CONNECTION_STATUS {
   Failed = 'Failed',
 }
 
-export const ConnectionStatusContext = createContext({
+export const ConnectionStatusContext = createContext<{
+  connectionStatus: CONNECTION_STATUS
+  setConnectionStatus: Dispatch<SetStateAction<CONNECTION_STATUS>> | undefined
+}>({
   connectionStatus: CONNECTION_STATUS.Connected,
-  setConnectionStatus: (() => {}) as Dispatch<SetStateAction<CONNECTION_STATUS>>,
+  setConnectionStatus: undefined,
 })
 
 /**
@@ -45,9 +48,9 @@ export default function ConnectionStatus({ children }: PropsWithChildren) {
   useEffect(() => {
     if (graphqlQsLink) {
       graphqlQsLink.client.on('connected', (connectedSocket) => {
-        if (!socketRef.current) {
+        if (!socketRef.current && connectedSocket instanceof WebSocket) {
           setConnectionStatus(CONNECTION_STATUS.Connected)
-          setSocket(connectedSocket as WebSocket)
+          setSocket(connectedSocket)
         }
       })
       graphqlQsLink.client.on('ping', (received) => {

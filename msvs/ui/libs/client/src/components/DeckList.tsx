@@ -22,6 +22,7 @@ import {
 } from '@gwent/graphql-schema/apollo-typings'
 import DeckRow, { Action } from './DeckRow'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
+import getEnumFromString from '../util/get-faction-key-from-string'
 import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -244,7 +245,15 @@ function renderHeader({
               title="Sort Field"
               value={sortField}
               className="pointable"
-              onChange={(event) => setSortField(event.target.value as SORT_FIELD)}
+              onChange={(event) => {
+                const sortField = getEnumFromString({
+                  enumerative: SORT_FIELD,
+                  value: event.target.value,
+                })
+                if (sortField) {
+                  setSortField(sortField)
+                }
+              }}
             >
               <option value={SORT_FIELD.Agile}>Agile</option>
               <option value={SORT_FIELD.Close}>Close</option>

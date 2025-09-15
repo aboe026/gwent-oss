@@ -72,12 +72,12 @@ export default function GameCombatRow({
     if (isSelf) {
       if (validRow) {
         if (isTurn) {
-          description = `Place here for ${handCardSelectedUnit.name} to fight as a ${titledCombat} unit`
+          description = `Place here for ${handCardSelectedUnit.name} to fight in ${titledCombat} combat`
         } else {
           description = 'It is not your turn to play'
         }
       } else if (invalidRow) {
-        description = `${handCardSelectedUnit.name} is not eligible to fight as a ${titledCombat} unit`
+        description = `${handCardSelectedUnit.name} is not eligible to fight in ${titledCombat} combat`
       }
     } else {
       description = `${handCardSelectedUnit.name} cannot fight for your opponent`

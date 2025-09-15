@@ -38,6 +38,7 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/deck-filter'
+import getEnumFromString from '../util/get-faction-key-from-string'
 import { getErrorMessages, retryCheckingAuth } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingBar from '../components/LoadingBar'
@@ -307,17 +308,23 @@ function renderNameAndFaction({
                 required
                 disabled={factionsLoading || disabledOverride}
                 value={faction === undefined ? '' : faction.key}
-                onChange={(event) =>
-                  changeFaction({
-                    factionsData,
-                    newFactionKey: event.target.value as FactionKey,
-                    setDeckUnits,
-                    setFaction,
-                    setLeaderId,
-                    setSelectedUnits,
-                    setFactionPickerOpen,
+                onChange={(event) => {
+                  const newFactionKey = getEnumFromString({
+                    enumerative: FactionKey,
+                    value: event.target.value,
                   })
-                }
+                  if (newFactionKey) {
+                    changeFaction({
+                      factionsData,
+                      newFactionKey,
+                      setDeckUnits,
+                      setFaction,
+                      setLeaderId,
+                      setSelectedUnits,
+                      setFactionPickerOpen,
+                    })
+                  }
+                }}
               >
                 <option disabled value="">
                   -- select a faction --
@@ -995,24 +1002,47 @@ function isFilteredIn(deckUnit: DeckUnitFragmentFragment, fields: FILTER_FIELD[]
   const otherFilters = selected.filter((field) => field.group === FILTER_GROUP.Other)
 
   const combatIncluded =
-    combatFilters.length === 0 || combatFilters.some((filter) => unit.combats?.includes(filter.value as any as Combat)) // eslint-disable-line @typescript-eslint/no-explicit-any
+    combatFilters.length === 0 ||
+    combatFilters.some((filter) => {
+      const combat = getEnumFromString({
+        enumerative: Combat,
+        value: filter.value,
+      })
+      return combat && unit.combats?.includes(combat)
+    })
   const dlcIncluded =
-    dlcFilters.length === 0 || dlcFilters.some((filter) => unit.dlc?.key === (filter.value as any as DlcKey)) // eslint-disable-line @typescript-eslint/no-explicit-any
+    dlcFilters.length === 0 ||
+    dlcFilters.some(
+      (filter) =>
+        unit.dlc?.key ===
+        getEnumFromString({
+          enumerative: DlcKey,
+          value: filter.value,
+        })
+    )
   const effectIncluded =
     effectFilters.length === 0 ||
-    effectFilters.some(
-      (filter) =>
-        unit.effects
-          ?.map((effect) => useFragment(UnitEffectFragmentDoc, effect).key)
-          .includes(filter.value as any as EffectKey) // eslint-disable-line @typescript-eslint/no-explicit-any
-    )
+    effectFilters.some((filter) => {
+      const effect = getEnumFromString({
+        enumerative: EffectKey,
+        value: filter.value,
+      })
+      return (
+        effect && unit.effects?.map((unitEffect) => useFragment(UnitEffectFragmentDoc, unitEffect).key).includes(effect)
+      )
+    })
   const factionIncluded =
     factionFilters.length === 0 ||
-    factionFilters.some(
-      (filter) =>
-        (unit.faction.key === FactionKey.Neutral && (filter.value as any as FactionKey) === FactionKey.Neutral) || // eslint-disable-line @typescript-eslint/no-explicit-any
-        (unit.faction.key !== FactionKey.Neutral && (filter.value as any as FactionKey) !== FactionKey.Neutral) // eslint-disable-line @typescript-eslint/no-explicit-any
-    )
+    factionFilters.some((filter) => {
+      const filterFaction = getEnumFromString({
+        enumerative: FactionKey,
+        value: filter.value,
+      })
+      return (
+        (unit.faction.key === FactionKey.Neutral && filterFaction === FactionKey.Neutral) ||
+        (unit.faction.key !== FactionKey.Neutral && filterFaction !== FactionKey.Neutral)
+      )
+    })
   const otherIncluded =
     otherFilters.length === 0 ||
     otherFilters.some(
