@@ -38,16 +38,7 @@ export default class GetUnitStats {
     )
   }
 
-  private static getUnitStats(
-    deckUnits: {
-      deckable: boolean
-      effects: (EffectKey | undefined)[] | undefined | null
-      combats: (Combat | undefined)[] | undefined | null
-      hero: boolean | undefined | null
-      special: boolean | undefined | null
-      strength: number | undefined | null
-    }[]
-  ): UnitStats {
+  private static getUnitStats(deckUnits: DeckUnitForValidation[]): UnitStats {
     let agile = 0
     let avenger = 0
     let berserker = 0
@@ -167,4 +158,13 @@ export default class GetUnitStats {
       weather,
     }
   }
+}
+
+export interface DeckUnitForValidation {
+  deckable: boolean
+  effects: (EffectKey | undefined)[] | undefined | null
+  combats: (Combat | undefined)[] | undefined | null
+  hero: boolean | undefined | null
+  special: boolean | undefined | null
+  strength: number | undefined | null
 }

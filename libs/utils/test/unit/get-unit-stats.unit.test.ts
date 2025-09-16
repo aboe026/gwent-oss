@@ -1,23 +1,8 @@
-import { Combat, EffectKey, FactionKey, Unit, UnitStats } from '@gwent/graphql-schema/resolver-typings'
-import GetUnitStats from '../../src/get-unit-stats'
+import { CardUnitFragment, DeckUnitFragment } from '@gwent/graphql-schema/apollo-typings'
+import { Combat, DeckUnit, EffectKey, Unit, UnitStats } from '@gwent/graphql-schema/resolver-typings'
+import GetUnitStats, { DeckUnitForValidation } from '../../src/get-unit-stats'
 
-describe('getUnitStats', () => {
-  const unit: Unit = {
-    created: new Date(),
-    deckable: true,
-    faction: {
-      created: new Date(),
-      id: 'faction-id',
-      image: 'image',
-      key: FactionKey.Monsters,
-      name: 'faction-name',
-      stats: {} as any,
-    },
-    id: 'id',
-    images: [],
-    name: 'name',
-    quote: 'quote',
-  }
+describe('GetUnitStats', () => {
   const zeroStats: UnitStats = {
     agile: 0,
     avenger: 0,
@@ -42,33 +27,116 @@ describe('getUnitStats', () => {
     units: 0,
     weather: 0,
   }
-  // TODO: test private method and with and without fragments
   describe('fromDeckUnits', () => {
+    it('calls to getUnitStats with normalized input', () => {
+      const getUnitStatsSpy = jest.spyOn(GetUnitStats as any, 'getUnitStats').mockReturnValue(zeroStats)
+
+      const deckUnits: DeckUnit[] = []
+      for (let i = 0; i < 22; i++) {
+        deckUnits.push({
+          artStyle: i,
+          unit: {
+            deckable: i % 2 ? true : false,
+            combats: i % 2 ? undefined : [Combat.Close],
+            effects:
+              i % 2
+                ? undefined
+                : [
+                    {
+                      key: EffectKey.Bond,
+                    },
+                  ],
+            hero: i % 2 ? true : false,
+            special: i % 2 ? true : false,
+          } as any as Unit,
+        })
+      }
+
+      expect(GetUnitStats.fromDeckUnits(deckUnits)).toEqual(zeroStats)
+
+      expect(getUnitStatsSpy.mock.calls).toEqual([
+        [
+          deckUnits.map((deckUnit) => {
+            return {
+              combats: deckUnit.unit.combats,
+              deckable: deckUnit.unit.deckable,
+              effects: deckUnit.unit.effects?.map((effect) => effect.key),
+              hero: deckUnit.unit.hero,
+              special: deckUnit.unit.special,
+              strength: deckUnit.unit.strength,
+            }
+          }),
+        ],
+      ])
+    })
+  })
+  describe('fromDeckUnitFragments', () => {
+    it('calls to getUnitStats with normalized input', () => {
+      const getUnitStatsSpy = jest.spyOn(GetUnitStats as any, 'getUnitStats').mockReturnValue(zeroStats)
+
+      const deckUnits: DeckUnitFragment[] = []
+      for (let i = 0; i < 22; i++) {
+        deckUnits.push({
+          artStyle: i,
+          unit: {
+            deckable: i % 2 ? true : false,
+            combats: i % 2 ? undefined : [Combat.Close],
+            effects:
+              i % 2
+                ? undefined
+                : [
+                    {
+                      key: EffectKey.Bond,
+                    },
+                  ],
+            hero: i % 2 ? true : false,
+            special: i % 2 ? true : false,
+          } as any as CardUnitFragment,
+        })
+      }
+
+      expect(GetUnitStats.fromDeckUnitFragments(deckUnits)).toEqual(zeroStats)
+
+      expect(getUnitStatsSpy.mock.calls).toEqual([
+        [
+          deckUnits.map((deckUnit: any) => {
+            return {
+              combats: deckUnit.unit.combats,
+              deckable: deckUnit.unit.deckable,
+              effects: deckUnit.unit.effects?.map((effect: any) => effect.key),
+              hero: deckUnit.unit.hero,
+              special: deckUnit.unit.special,
+              strength: deckUnit.unit.strength,
+            }
+          }),
+        ],
+      ])
+    })
+  })
+  describe('getUnitStats', () => {
+    const unit: DeckUnitForValidation = {
+      combats: undefined,
+      effects: undefined,
+      hero: false,
+      special: false,
+      strength: undefined,
+      deckable: true,
+    }
     it('returns all zeros if no units', () => {
-      expect(GetUnitStats.fromDeckUnits([])).toEqual(zeroStats)
+      expect(GetUnitStats['getUnitStats']([])).toEqual(zeroStats)
     })
     it('ignores units which are not deckable', () => {
       expect(
-        GetUnitStats.fromDeckUnits([
+        GetUnitStats['getUnitStats']([
           {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              deckable: false,
-            },
+            ...unit,
+            deckable: false,
           },
         ])
       ).toEqual(zeroStats)
     })
     it('returns 1 for units if unit without anything', () => {
-      expect(
-        GetUnitStats.fromDeckUnits([
-          {
-            artStyle: 1,
-            unit: unit,
-          },
-        ])
-      ).toEqual({
+      expect(GetUnitStats['getUnitStats']([unit])).toEqual({
         ...zeroStats,
         units: 1,
       })
@@ -76,22 +144,10 @@ describe('getUnitStats', () => {
     describe('effects', () => {
       it('returns 1 for agile if unit with agile', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Agile,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Agile],
             },
           ])
         ).toEqual({
@@ -102,22 +158,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for avenger if unit with avenger', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Avenger,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Avenger],
             },
           ])
         ).toEqual({
@@ -128,22 +172,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for berserker if unit with berserker', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Berserker,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Berserker],
             },
           ])
         ).toEqual({
@@ -154,22 +186,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for bond if unit with bond', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Bond,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Bond],
             },
           ])
         ).toEqual({
@@ -180,22 +200,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for decoy if unit with decoy', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Decoy,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Decoy],
             },
           ])
         ).toEqual({
@@ -206,22 +214,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for horn if unit with horn', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Horn,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Horn],
             },
           ])
         ).toEqual({
@@ -232,22 +228,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for mardroeme if unit with mardroeme', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Mardroeme,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Mardroeme],
             },
           ])
         ).toEqual({
@@ -258,22 +242,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for medic if unit with medic', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Medic,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Medic],
             },
           ])
         ).toEqual({
@@ -284,22 +256,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for morale if unit with morale', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Morale,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Morale],
             },
           ])
         ).toEqual({
@@ -310,22 +270,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for muster if unit with muster', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Muster,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Muster],
             },
           ])
         ).toEqual({
@@ -336,22 +284,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for scorch if unit with scorch', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Scorch,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Scorch],
             },
           ])
         ).toEqual({
@@ -362,22 +298,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for spy if unit with spy', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Spy,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Spy],
             },
           ])
         ).toEqual({
@@ -388,22 +312,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for weather if unit with weather', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: 'effect-id',
-                    image: 'effect-image',
-                    key: EffectKey.Weather,
-                    name: 'effect-name',
-                  },
-                ],
-              },
+              ...unit,
+              effects: [EffectKey.Weather],
             },
           ])
         ).toEqual({
@@ -414,36 +326,24 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for all if unit has all', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                effects: [
-                  EffectKey.Agile,
-                  EffectKey.Avenger,
-                  EffectKey.Berserker,
-                  EffectKey.Bond,
-                  EffectKey.Decoy,
-                  EffectKey.Horn,
-                  EffectKey.Mardroeme,
-                  EffectKey.Medic,
-                  EffectKey.Morale,
-                  EffectKey.Muster,
-                  EffectKey.Scorch,
-                  EffectKey.Spy,
-                  EffectKey.Weather,
-                ].map((key) => {
-                  return {
-                    ability: 'ability',
-                    created: new Date(),
-                    id: `effect-${key.toLocaleLowerCase()}-id`,
-                    image: 'effect-image',
-                    key,
-                    name: 'effect-name',
-                  }
-                }),
-              },
+              ...unit,
+              effects: [
+                EffectKey.Agile,
+                EffectKey.Avenger,
+                EffectKey.Berserker,
+                EffectKey.Bond,
+                EffectKey.Decoy,
+                EffectKey.Horn,
+                EffectKey.Mardroeme,
+                EffectKey.Medic,
+                EffectKey.Morale,
+                EffectKey.Muster,
+                EffectKey.Scorch,
+                EffectKey.Spy,
+                EffectKey.Weather,
+              ],
             },
           ])
         ).toEqual({
@@ -481,23 +381,11 @@ describe('getUnitStats', () => {
           EffectKey.Weather,
         ]
         expect(
-          GetUnitStats.fromDeckUnits(
+          GetUnitStats['getUnitStats'](
             allEffects.map((effectKey) => {
               return {
-                artStyle: 1,
-                unit: {
-                  ...unit,
-                  effects: [
-                    {
-                      ability: 'effect-ability',
-                      created: new Date(),
-                      id: `effect-${effectKey.toLocaleLowerCase()}-id`,
-                      image: 'effect-image',
-                      key: effectKey,
-                      name: 'effect-name',
-                    },
-                  ],
-                },
+                ...unit,
+                effects: [effectKey],
               }
             })
           )
@@ -523,13 +411,10 @@ describe('getUnitStats', () => {
     describe('combats', () => {
       it('returns 1 for close if unit with close', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                combats: [Combat.Close],
-              },
+              ...unit,
+              combats: [Combat.Close],
             },
           ])
         ).toEqual({
@@ -540,13 +425,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for ranged if unit with ranged', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                combats: [Combat.Ranged],
-              },
+              ...unit,
+              combats: [Combat.Ranged],
             },
           ])
         ).toEqual({
@@ -557,13 +439,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for siege if unit with siege', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                combats: [Combat.Siege],
-              },
+              ...unit,
+              combats: [Combat.Siege],
             },
           ])
         ).toEqual({
@@ -574,13 +453,10 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for all if unit with all', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                combats: [Combat.Close, Combat.Ranged, Combat.Siege],
-              },
+              ...unit,
+              combats: [Combat.Close, Combat.Ranged, Combat.Siege],
             },
           ])
         ).toEqual({
@@ -593,27 +469,18 @@ describe('getUnitStats', () => {
       })
       it('returns 1 for all if units with each', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                combats: [Combat.Close],
-              },
+              ...unit,
+              combats: [Combat.Close],
             },
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                combats: [Combat.Ranged],
-              },
+              ...unit,
+              combats: [Combat.Ranged],
             },
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                combats: [Combat.Siege],
-              },
+              ...unit,
+              combats: [Combat.Siege],
             },
           ])
         ).toEqual({
@@ -627,13 +494,10 @@ describe('getUnitStats', () => {
     })
     it('returns 1 for heroes if unit is hero', () => {
       expect(
-        GetUnitStats.fromDeckUnits([
+        GetUnitStats['getUnitStats']([
           {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              hero: true,
-            },
+            ...unit,
+            hero: true,
           },
         ])
       ).toEqual({
@@ -644,13 +508,10 @@ describe('getUnitStats', () => {
     })
     it('returns 1 for specials if unit is special', () => {
       expect(
-        GetUnitStats.fromDeckUnits([
+        GetUnitStats['getUnitStats']([
           {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              special: true,
-            },
+            ...unit,
+            special: true,
           },
         ])
       ).toEqual({
@@ -662,13 +523,10 @@ describe('getUnitStats', () => {
     describe('strength', () => {
       it('calculates strengths correctly for single unit with 1', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                strength: 1,
-              },
+              ...unit,
+              strength: 1,
             },
           ])
         ).toEqual({
@@ -681,13 +539,10 @@ describe('getUnitStats', () => {
       })
       it('calculates strengths correctly for single unit with 2', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                strength: 2,
-              },
+              ...unit,
+              strength: 2,
             },
           ])
         ).toEqual({
@@ -700,20 +555,14 @@ describe('getUnitStats', () => {
       })
       it('calculates strengths correctly for two units with 1', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                strength: 1,
-              },
+              ...unit,
+              strength: 1,
             },
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                strength: 1,
-              },
+              ...unit,
+              strength: 1,
             },
           ])
         ).toEqual({
@@ -726,20 +575,14 @@ describe('getUnitStats', () => {
       })
       it('calculates strengths correctly for two units with 2', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                strength: 2,
-              },
+              ...unit,
+              strength: 2,
             },
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                strength: 2,
-              },
+              ...unit,
+              strength: 2,
             },
           ])
         ).toEqual({
@@ -752,20 +595,14 @@ describe('getUnitStats', () => {
       })
       it('calculates strengths correctly for two units one with 1 and one with 2', () => {
         expect(
-          GetUnitStats.fromDeckUnits([
+          GetUnitStats['getUnitStats']([
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                strength: 1,
-              },
+              ...unit,
+              strength: 1,
             },
             {
-              artStyle: 1,
-              unit: {
-                ...unit,
-                strength: 2,
-              },
+              ...unit,
+              strength: 2,
             },
           ])
         ).toEqual({
