@@ -1,26 +1,15 @@
-import { Combat, Faction, Unit } from '@gwent/graphql-schema/resolver-typings'
-import getCombatImage from '../../src/get-combat-image'
+import { CardUnitFragmentDoc, Combat, Faction, FragmentType, Unit } from '@gwent/graphql-schema/apollo-typings'
+import getCombatImage from '../../src/util/get-combat-image'
 
 describe('getCombatImage', () => {
-  const unit: Unit = {
-    created: new Date(),
-    deckable: true,
-    faction: {} as Faction,
-    id: '66ce135b901dbe02acb6b02c',
-    images: ['unit-image'],
-    name: 'unit-name',
-    quote: 'unit-quote',
-    combats: [Combat.Close, Combat.Ranged],
-  }
   describe('DeckUnit', () => {
     it('returns undefined if special', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             special: true,
-          },
+          }),
         })
       ).toEqual(undefined)
     })
@@ -28,10 +17,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Close],
-          },
+          }),
         })
       ).toEqual('images/combats/close.png')
     })
@@ -39,10 +27,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Close, Combat.Ranged],
-          },
+          }),
         })
       ).toEqual('images/combats/agile.png')
     })
@@ -50,10 +37,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Close, Combat.Siege],
-          },
+          }),
         })
       ).toEqual(undefined)
     })
@@ -61,10 +47,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Ranged, Combat.Siege],
-          },
+          }),
         })
       ).toEqual(undefined)
     })
@@ -72,10 +57,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Close, Combat.Ranged, Combat.Siege],
-          },
+          }),
         })
       ).toEqual(undefined)
     })
@@ -85,10 +69,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             special: true,
-          },
+          }),
           effectiveStrength: 1,
           effects: [],
           row: Combat.Close,
@@ -99,10 +82,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Close],
-          },
+          }),
           effectiveStrength: 1,
           effects: [],
           row: Combat.Close,
@@ -113,10 +95,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Close, Combat.Ranged],
-          },
+          }),
           effectiveStrength: 1,
           effects: [],
           row: Combat.Close,
@@ -127,10 +108,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Close, Combat.Siege],
-          },
+          }),
           effectiveStrength: 1,
           effects: [],
           row: Combat.Close,
@@ -141,10 +121,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Ranged, Combat.Siege],
-          },
+          }),
           effectiveStrength: 1,
           effects: [],
           row: Combat.Close,
@@ -155,10 +134,9 @@ describe('getCombatImage', () => {
       expect(
         getCombatImage({
           artStyle: 1,
-          unit: {
-            ...unit,
+          unit: getUnitFragment({
             combats: [Combat.Close, Combat.Ranged, Combat.Siege],
-          },
+          }),
           effectiveStrength: 1,
           effects: [],
           row: Combat.Close,
@@ -167,3 +145,18 @@ describe('getCombatImage', () => {
     })
   })
 })
+
+function getUnitFragment(overrides: Partial<Unit>): FragmentType<typeof CardUnitFragmentDoc> {
+  const unit: Unit = {
+    created: new Date(),
+    deckable: true,
+    faction: {} as Faction,
+    id: '66ce135b901dbe02acb6b02c',
+    images: ['unit-image'],
+    name: 'unit-name',
+    quote: 'unit-quote',
+    combats: [Combat.Close, Combat.Ranged],
+    ...overrides,
+  }
+  return unit as any as FragmentType<typeof CardUnitFragmentDoc>
+}

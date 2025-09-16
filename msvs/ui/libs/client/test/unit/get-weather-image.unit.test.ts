@@ -1,4 +1,4 @@
-import getWeatherImage from '../../src/get-weather-image'
+import getWeatherImage from '../../src/util/get-weather-image'
 import { Unit } from '@gwent/graphql-schema/resolver-typings'
 
 describe('getWeatherImage', () => {
