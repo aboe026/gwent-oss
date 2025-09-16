@@ -17,6 +17,7 @@ import effects from '../../src/database/upgrades/resources/effects.json'
 import EffectStore, { AddEffectInput } from '../../src/database/stores/effect-store'
 import factions from '../../src/database/upgrades/resources/factions.json'
 import FactionStore, { AddFactionInput } from '../../src/database/stores/faction-store'
+import { GetUnitStats } from '@gwent/utils'
 import leaders from '../../src/database/upgrades/resources/leaders.json'
 import LeaderStore, { AddLeaderInput } from '../../src/database/stores/leader-store'
 import units from '../../src/database/upgrades/resources/units.json'
@@ -31,7 +32,6 @@ import Upgrade2, {
   LeaderJson,
   UnitJson,
 } from '../../src/database/upgrades/upgrade-2'
-import * as utils from '@gwent/utils'
 import * as validators from '@gwent/validators'
 import TestUtil from '../util/test-util'
 
@@ -88,7 +88,7 @@ describe('upgrade-2', () => {
       const createUnitsSpy = jest.spyOn(upgrade2, 'createUnits').mockResolvedValue(factionUnits)
       const editFactionSpy = jest.spyOn(FactionStore, 'edit').mockImplementation()
       const stats = TestUtil.getStats()
-      const getUnitStatsSpy = jest.spyOn(utils, 'getUnitStats').mockReturnValue(stats)
+      const getUnitStatsSpy = jest.spyOn(GetUnitStats, 'fromDeckUnits').mockReturnValue(stats)
 
       await expect(upgrade2.run()).resolves.toEqual(undefined)
 

@@ -1,5 +1,5 @@
 import { Combat, EffectKey, FactionKey, Unit, UnitStats } from '@gwent/graphql-schema/resolver-typings'
-import getUnitStats from '../../src/get-unit-stats'
+import GetUnitStats from '../../src/get-unit-stats'
 
 describe('getUnitStats', () => {
   const unit: Unit = {
@@ -42,736 +42,739 @@ describe('getUnitStats', () => {
     units: 0,
     weather: 0,
   }
-  it('returns all zeros if no units', () => {
-    expect(getUnitStats([])).toEqual(zeroStats)
-  })
-  it('ignores units which are not deckable', () => {
-    expect(
-      getUnitStats([
-        {
-          artStyle: 1,
-          unit: {
-            ...unit,
-            deckable: false,
-          },
-        },
-      ])
-    ).toEqual(zeroStats)
-  })
-  it('returns 1 for units if unit without anything', () => {
-    expect(
-      getUnitStats([
-        {
-          artStyle: 1,
-          unit: unit,
-        },
-      ])
-    ).toEqual({
-      ...zeroStats,
-      units: 1,
+  // TODO: test private method and with and without fragments
+  describe('fromDeckUnits', () => {
+    it('returns all zeros if no units', () => {
+      expect(GetUnitStats.fromDeckUnits([])).toEqual(zeroStats)
     })
-  })
-  describe('effects', () => {
-    it('returns 1 for agile if unit with agile', () => {
+    it('ignores units which are not deckable', () => {
       expect(
-        getUnitStats([
+        GetUnitStats.fromDeckUnits([
           {
             artStyle: 1,
             unit: {
               ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Agile,
-                  name: 'effect-name',
-                },
-              ],
+              deckable: false,
             },
           },
         ])
-      ).toEqual({
-        ...zeroStats,
-        agile: 1,
-        units: 1,
-      })
+      ).toEqual(zeroStats)
     })
-    it('returns 1 for avenger if unit with avenger', () => {
+    it('returns 1 for units if unit without anything', () => {
       expect(
-        getUnitStats([
+        GetUnitStats.fromDeckUnits([
           {
             artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Avenger,
-                  name: 'effect-name',
-                },
-              ],
-            },
+            unit: unit,
           },
         ])
       ).toEqual({
         ...zeroStats,
-        avenger: 1,
         units: 1,
       })
     })
-    it('returns 1 for berserker if unit with berserker', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Berserker,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        berserker: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for bond if unit with bond', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Bond,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        bond: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for decoy if unit with decoy', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Decoy,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        decoy: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for horn if unit with horn', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Horn,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        horn: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for mardroeme if unit with mardroeme', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Mardroeme,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        mardroeme: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for medic if unit with medic', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Medic,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        medic: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for morale if unit with morale', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Morale,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        morale: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for muster if unit with muster', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Muster,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        muster: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for scorch if unit with scorch', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Scorch,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        scorch: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for spy if unit with spy', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Spy,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        spy: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for weather if unit with weather', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: 'effect-id',
-                  image: 'effect-image',
-                  key: EffectKey.Weather,
-                  name: 'effect-name',
-                },
-              ],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        weather: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for all if unit has all', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              effects: [
-                EffectKey.Agile,
-                EffectKey.Avenger,
-                EffectKey.Berserker,
-                EffectKey.Bond,
-                EffectKey.Decoy,
-                EffectKey.Horn,
-                EffectKey.Mardroeme,
-                EffectKey.Medic,
-                EffectKey.Morale,
-                EffectKey.Muster,
-                EffectKey.Scorch,
-                EffectKey.Spy,
-                EffectKey.Weather,
-              ].map((key) => {
-                return {
-                  ability: 'ability',
-                  created: new Date(),
-                  id: `effect-${key.toLocaleLowerCase()}-id`,
-                  image: 'effect-image',
-                  key,
-                  name: 'effect-name',
-                }
-              }),
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        agile: 1,
-        avenger: 1,
-        berserker: 1,
-        bond: 1,
-        decoy: 1,
-        horn: 1,
-        mardroeme: 1,
-        medic: 1,
-        morale: 1,
-        muster: 1,
-        scorch: 1,
-        spy: 1,
-        weather: 1,
-        units: 1,
-      })
-    })
-    it('returns 1 for all if units with each', () => {
-      const allEffects = [
-        EffectKey.Agile,
-        EffectKey.Avenger,
-        EffectKey.Berserker,
-        EffectKey.Bond,
-        EffectKey.Decoy,
-        EffectKey.Horn,
-        EffectKey.Mardroeme,
-        EffectKey.Medic,
-        EffectKey.Morale,
-        EffectKey.Muster,
-        EffectKey.Scorch,
-        EffectKey.Spy,
-        EffectKey.Weather,
-      ]
-      expect(
-        getUnitStats(
-          allEffects.map((effectKey) => {
-            return {
+    describe('effects', () => {
+      it('returns 1 for agile if unit with agile', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
               artStyle: 1,
               unit: {
                 ...unit,
                 effects: [
                   {
-                    ability: 'effect-ability',
+                    ability: 'ability',
                     created: new Date(),
-                    id: `effect-${effectKey.toLocaleLowerCase()}-id`,
+                    id: 'effect-id',
                     image: 'effect-image',
-                    key: effectKey,
+                    key: EffectKey.Agile,
                     name: 'effect-name',
                   },
                 ],
               },
-            }
-          })
-        )
-      ).toEqual({
-        ...zeroStats,
-        agile: 1,
-        avenger: 1,
-        berserker: 1,
-        bond: 1,
-        decoy: 1,
-        horn: 1,
-        mardroeme: 1,
-        medic: 1,
-        morale: 1,
-        muster: 1,
-        scorch: 1,
-        spy: 1,
-        weather: 1,
-        units: allEffects.length,
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          agile: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for avenger if unit with avenger', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Avenger,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          avenger: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for berserker if unit with berserker', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Berserker,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          berserker: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for bond if unit with bond', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Bond,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          bond: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for decoy if unit with decoy', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Decoy,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          decoy: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for horn if unit with horn', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Horn,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          horn: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for mardroeme if unit with mardroeme', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Mardroeme,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          mardroeme: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for medic if unit with medic', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Medic,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          medic: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for morale if unit with morale', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Morale,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          morale: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for muster if unit with muster', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Muster,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          muster: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for scorch if unit with scorch', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Scorch,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          scorch: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for spy if unit with spy', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Spy,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          spy: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for weather if unit with weather', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: 'effect-id',
+                    image: 'effect-image',
+                    key: EffectKey.Weather,
+                    name: 'effect-name',
+                  },
+                ],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          weather: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for all if unit has all', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                effects: [
+                  EffectKey.Agile,
+                  EffectKey.Avenger,
+                  EffectKey.Berserker,
+                  EffectKey.Bond,
+                  EffectKey.Decoy,
+                  EffectKey.Horn,
+                  EffectKey.Mardroeme,
+                  EffectKey.Medic,
+                  EffectKey.Morale,
+                  EffectKey.Muster,
+                  EffectKey.Scorch,
+                  EffectKey.Spy,
+                  EffectKey.Weather,
+                ].map((key) => {
+                  return {
+                    ability: 'ability',
+                    created: new Date(),
+                    id: `effect-${key.toLocaleLowerCase()}-id`,
+                    image: 'effect-image',
+                    key,
+                    name: 'effect-name',
+                  }
+                }),
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          agile: 1,
+          avenger: 1,
+          berserker: 1,
+          bond: 1,
+          decoy: 1,
+          horn: 1,
+          mardroeme: 1,
+          medic: 1,
+          morale: 1,
+          muster: 1,
+          scorch: 1,
+          spy: 1,
+          weather: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for all if units with each', () => {
+        const allEffects = [
+          EffectKey.Agile,
+          EffectKey.Avenger,
+          EffectKey.Berserker,
+          EffectKey.Bond,
+          EffectKey.Decoy,
+          EffectKey.Horn,
+          EffectKey.Mardroeme,
+          EffectKey.Medic,
+          EffectKey.Morale,
+          EffectKey.Muster,
+          EffectKey.Scorch,
+          EffectKey.Spy,
+          EffectKey.Weather,
+        ]
+        expect(
+          GetUnitStats.fromDeckUnits(
+            allEffects.map((effectKey) => {
+              return {
+                artStyle: 1,
+                unit: {
+                  ...unit,
+                  effects: [
+                    {
+                      ability: 'effect-ability',
+                      created: new Date(),
+                      id: `effect-${effectKey.toLocaleLowerCase()}-id`,
+                      image: 'effect-image',
+                      key: effectKey,
+                      name: 'effect-name',
+                    },
+                  ],
+                },
+              }
+            })
+          )
+        ).toEqual({
+          ...zeroStats,
+          agile: 1,
+          avenger: 1,
+          berserker: 1,
+          bond: 1,
+          decoy: 1,
+          horn: 1,
+          mardroeme: 1,
+          medic: 1,
+          morale: 1,
+          muster: 1,
+          scorch: 1,
+          spy: 1,
+          weather: 1,
+          units: allEffects.length,
+        })
       })
     })
-  })
-  describe('combats', () => {
-    it('returns 1 for close if unit with close', () => {
+    describe('combats', () => {
+      it('returns 1 for close if unit with close', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                combats: [Combat.Close],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          close: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for ranged if unit with ranged', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                combats: [Combat.Ranged],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          ranged: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for siege if unit with siege', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                combats: [Combat.Siege],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          siege: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for all if unit with all', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                combats: [Combat.Close, Combat.Ranged, Combat.Siege],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          close: 1,
+          ranged: 1,
+          siege: 1,
+          units: 1,
+        })
+      })
+      it('returns 1 for all if units with each', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                combats: [Combat.Close],
+              },
+            },
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                combats: [Combat.Ranged],
+              },
+            },
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                combats: [Combat.Siege],
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          close: 1,
+          ranged: 1,
+          siege: 1,
+          units: 3,
+        })
+      })
+    })
+    it('returns 1 for heroes if unit is hero', () => {
       expect(
-        getUnitStats([
+        GetUnitStats.fromDeckUnits([
           {
             artStyle: 1,
             unit: {
               ...unit,
-              combats: [Combat.Close],
+              hero: true,
             },
           },
         ])
       ).toEqual({
         ...zeroStats,
-        close: 1,
+        heroes: 1,
         units: 1,
       })
     })
-    it('returns 1 for ranged if unit with ranged', () => {
+    it('returns 1 for specials if unit is special', () => {
       expect(
-        getUnitStats([
+        GetUnitStats.fromDeckUnits([
           {
             artStyle: 1,
             unit: {
               ...unit,
-              combats: [Combat.Ranged],
+              special: true,
             },
           },
         ])
       ).toEqual({
         ...zeroStats,
-        ranged: 1,
+        specials: 1,
         units: 1,
       })
     })
-    it('returns 1 for siege if unit with siege', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              combats: [Combat.Siege],
+    describe('strength', () => {
+      it('calculates strengths correctly for single unit with 1', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                strength: 1,
+              },
             },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        siege: 1,
-        units: 1,
+          ])
+        ).toEqual({
+          ...zeroStats,
+          strengths: 1,
+          strengthAverage: 1,
+          strengthTotal: 1,
+          units: 1,
+        })
       })
-    })
-    it('returns 1 for all if unit with all', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              combats: [Combat.Close, Combat.Ranged, Combat.Siege],
+      it('calculates strengths correctly for single unit with 2', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                strength: 2,
+              },
             },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        close: 1,
-        ranged: 1,
-        siege: 1,
-        units: 1,
+          ])
+        ).toEqual({
+          ...zeroStats,
+          strengths: 1,
+          strengthAverage: 2,
+          strengthTotal: 2,
+          units: 1,
+        })
       })
-    })
-    it('returns 1 for all if units with each', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              combats: [Combat.Close],
+      it('calculates strengths correctly for two units with 1', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                strength: 1,
+              },
             },
-          },
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              combats: [Combat.Ranged],
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                strength: 1,
+              },
             },
-          },
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              combats: [Combat.Siege],
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        close: 1,
-        ranged: 1,
-        siege: 1,
-        units: 3,
+          ])
+        ).toEqual({
+          ...zeroStats,
+          strengths: 2,
+          strengthAverage: 1,
+          strengthTotal: 2,
+          units: 2,
+        })
       })
-    })
-  })
-  it('returns 1 for heroes if unit is hero', () => {
-    expect(
-      getUnitStats([
-        {
-          artStyle: 1,
-          unit: {
-            ...unit,
-            hero: true,
-          },
-        },
-      ])
-    ).toEqual({
-      ...zeroStats,
-      heroes: 1,
-      units: 1,
-    })
-  })
-  it('returns 1 for specials if unit is special', () => {
-    expect(
-      getUnitStats([
-        {
-          artStyle: 1,
-          unit: {
-            ...unit,
-            special: true,
-          },
-        },
-      ])
-    ).toEqual({
-      ...zeroStats,
-      specials: 1,
-      units: 1,
-    })
-  })
-  describe('strength', () => {
-    it('calculates strengths correctly for single unit with 1', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              strength: 1,
+      it('calculates strengths correctly for two units with 2', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                strength: 2,
+              },
             },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        strengths: 1,
-        strengthAverage: 1,
-        strengthTotal: 1,
-        units: 1,
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                strength: 2,
+              },
+            },
+          ])
+        ).toEqual({
+          ...zeroStats,
+          strengths: 2,
+          strengthAverage: 2,
+          strengthTotal: 4,
+          units: 2,
+        })
       })
-    })
-    it('calculates strengths correctly for single unit with 2', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              strength: 2,
+      it('calculates strengths correctly for two units one with 1 and one with 2', () => {
+        expect(
+          GetUnitStats.fromDeckUnits([
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                strength: 1,
+              },
             },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        strengths: 1,
-        strengthAverage: 2,
-        strengthTotal: 2,
-        units: 1,
-      })
-    })
-    it('calculates strengths correctly for two units with 1', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              strength: 1,
+            {
+              artStyle: 1,
+              unit: {
+                ...unit,
+                strength: 2,
+              },
             },
-          },
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              strength: 1,
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        strengths: 2,
-        strengthAverage: 1,
-        strengthTotal: 2,
-        units: 2,
-      })
-    })
-    it('calculates strengths correctly for two units with 2', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              strength: 2,
-            },
-          },
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              strength: 2,
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        strengths: 2,
-        strengthAverage: 2,
-        strengthTotal: 4,
-        units: 2,
-      })
-    })
-    it('calculates strengths correctly for two units one with 1 and one with 2', () => {
-      expect(
-        getUnitStats([
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              strength: 1,
-            },
-          },
-          {
-            artStyle: 1,
-            unit: {
-              ...unit,
-              strength: 2,
-            },
-          },
-        ])
-      ).toEqual({
-        ...zeroStats,
-        strengths: 2,
-        strengthAverage: 1.5,
-        strengthTotal: 3,
-        units: 2,
+          ])
+        ).toEqual({
+          ...zeroStats,
+          strengths: 2,
+          strengthAverage: 1.5,
+          strengthTotal: 3,
+          units: 2,
+        })
       })
     })
   })

@@ -3,7 +3,18 @@ import { DeckUnit, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import { DECK_MAX_SPECIALS, DECK_MIN_UNITS } from '@gwent/constants'
 import validatePositiveInteger from './validate-positive-integer'
 
+/**
+ * A class to validate user-created Decks.
+ */
 export default class ValidateDeck {
+  /**
+   * Gets any errors in a user-created Deck with the given DeckUnits.
+   *
+   * @param config The configuration used to validate the deck.
+   * @param config.faction The Faction the deck is for.
+   * @param config.deckUnits The DeckUnits comprising the Deck.
+   * @returns An array of potential violations the deck might have.
+   */
   static fromDeckUnits({ faction, deckUnits }: { faction: FactionKey; deckUnits: DeckUnit[] }) {
     return ValidateDeck.validate({
       faction,
@@ -19,6 +30,14 @@ export default class ValidateDeck {
     })
   }
 
+  /**
+   * Gets any errors in a user-created Deck with the given DeckUnitFragments.
+   *
+   * @param config The configuration used to validate the deck.
+   * @param config.faction The Faction the deck is for.
+   * @param config.deckUnits The DeckUnitFragments comprising the Deck.
+   * @returns An array of potential violations the deck might have.
+   */
   static fromDeckUnitFragments({ faction, deckUnits }: { faction: FactionKey; deckUnits: DeckUnitFragment[] }) {
     return ValidateDeck.validate({
       faction,
@@ -35,18 +54,20 @@ export default class ValidateDeck {
     })
   }
 
+  /**
+   * Gets any errors in a user-created Deck.
+   *
+   * @param config The configuration used to validate the deck.
+   * @param config.faction The Faction the deck is for.
+   * @param config.deckUnits The Deck Units comprising the Deck.
+   * @returns An array of potential violations the deck might have.
+   */
   private static validate({
     faction,
     deckUnits,
   }: {
     faction: FactionKey
-    deckUnits: {
-      factionKey: FactionKey
-      id: string
-      special: boolean | undefined | null
-      artStyle: number | undefined | null
-      images: number
-    }[]
+    deckUnits: DeckUnitForValidation[]
   }): string[] {
     const errors: string[] = []
 
@@ -88,4 +109,12 @@ export default class ValidateDeck {
 
     return errors
   }
+}
+
+export interface DeckUnitForValidation {
+  factionKey: FactionKey
+  id: string
+  special: boolean | undefined | null
+  artStyle: number | undefined | null
+  images: number
 }
