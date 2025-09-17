@@ -176,8 +176,8 @@ function renderHeader({
   loading: boolean
   nameFilter: string
   navigate: NavigateFunction
-  onClose?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose?: () => void
+  onCreate?: () => void
   refetchDecks: (
     variables?:
       | Partial<
@@ -342,7 +342,7 @@ function renderCreateDeckButton({
 }: {
   id: string
   navigate: NavigateFunction
-  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onCreate?: () => void
 }) {
   const newDeckPath = ROUTES.Deck.path.replace(':deckId', 'new')
 
@@ -434,7 +434,7 @@ function renderFilterCheckboxes({
 interface DeckListProps {
   actions?: Action[]
   actionsDisabled?: boolean
-  onClose?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose?: () => void
+  onCreate?: () => void
   paddingBottom?: string
 }

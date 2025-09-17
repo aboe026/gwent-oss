@@ -1057,6 +1057,6 @@ function isFilteredIn(deckUnit: DeckUnitFragment, fields: FILTER_FIELD[], name: 
 
 interface DeckEditorProps extends PropsWithChildren {
   deck?: DeckFragment | undefined
-  onCancel: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onSave: (deck: DeckFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onCancel: () => void
+  onSave: (deck: DeckFragment) => void
 }

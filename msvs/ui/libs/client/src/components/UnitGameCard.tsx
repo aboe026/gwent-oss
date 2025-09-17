@@ -95,9 +95,8 @@ interface UnitGameCardProps {
   dotted?: boolean
   dottedTitle?: string
   iconSize?: string
-  // TODO: can these and other handlers change return type to void?
-  onFullscreen: (deckUnit: DeckUnitFragment | GameUnitFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClick?: (deckUnit: DeckUnitFragment | GameUnitFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onFullscreen: (deckUnit: DeckUnitFragment | GameUnitFragment) => void
+  onClick?: (deckUnit: DeckUnitFragment | GameUnitFragment) => void
   selected?: boolean
   title?: string
 }

@@ -283,5 +283,5 @@ export interface Action {
   title: string
   className: string
   icon: IconType
-  onClick: (deck: DeckFragment) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClick: (deck: DeckFragment) => void
 }

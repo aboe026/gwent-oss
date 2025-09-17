@@ -323,11 +323,11 @@ interface UnitFullCardProps {
   fullUnit: DeckUnitFragment | GameUnitFragment | undefined
   hasNext: boolean
   hasPrevious: boolean
-  onArtDecrement?: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onArtIncrement?: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClose: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onNext: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onPrevious: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onSelect: (unit: DeckUnitFragment | GameUnitFragment | undefined) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onArtDecrement?: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
+  onArtIncrement?: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
+  onClose: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
+  onNext: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
+  onPrevious: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
+  onSelect: (unit: DeckUnitFragment | GameUnitFragment | undefined) => void
   userName?: string
 }

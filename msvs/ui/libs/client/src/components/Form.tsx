@@ -144,7 +144,7 @@ interface FormProps {
   id?: string
   loading: boolean
   onClose?: (param: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
-  onSubmit: (variables: any) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onSubmit: (variables: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
   overlay?: boolean
   style?: React.CSSProperties
   submitLabel?: string
