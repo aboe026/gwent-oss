@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.3 - 2025-09-17
+
+### Fixed
+
+- Fragment masking ([#45](https://github.com/aboe026/gwent/pull/45)) (Adam Boe)
+
 ## 0.15.2 - 2025-09-01
 
 ### Fixed
