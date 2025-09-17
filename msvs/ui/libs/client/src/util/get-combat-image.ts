@@ -1,8 +1,8 @@
 import {
-  UnitFragmentDoc,
   Combat,
   DeckUnitFragment,
   GameUnitFragment,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 

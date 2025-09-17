@@ -1,12 +1,12 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  UnitFragmentDoc,
   Combat,
   DeckUnitFragment,
   GameFragment,
   GamePlayerFragment,
   PlayerRoundFragmentDoc,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'

@@ -1,11 +1,18 @@
 import {
-  UnitFragmentDoc,
   DeckUnitFragmentDoc,
   FragmentType,
   GameDeckFragment,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 
+/**
+ * Get the IDs of the units involved in redraws.
+ *
+ * @param config The configuration used to get the redraw unit IDs.
+ * @param config.gameDeck The GameDeckFragment containing the Redraw objects.
+ * @returns The IDs of the units involved in the redraws (both to and from).
+ */
 export default function getRedrawIds({ gameDeck }: { gameDeck: GameDeckFragment | null | undefined }): string[] {
   const redrawIds: string[] = []
 

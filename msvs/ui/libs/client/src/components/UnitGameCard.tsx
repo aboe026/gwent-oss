@@ -1,11 +1,11 @@
 import { CgMaximizeAlt } from 'react-icons/cg'
 
 import {
-  UnitFragmentDoc,
   DeckUnitFragment,
   EffectKey,
   GameUnitFragment,
   UnitEffectFragmentDoc,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'

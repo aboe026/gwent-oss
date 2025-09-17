@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react'
 
+import Centered from '../../components/Centered'
 import {
-  UnitFragmentDoc,
   DeckUnitFragment,
   DeckUnitFragmentDoc,
   GameDeckFragment,
@@ -9,9 +9,9 @@ import {
   GamePlayerFragment,
   GameStatus,
   FragmentType,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
-import Centered from '../../components/Centered'
 import { FullUnitCards, UnitForPlayer } from './GameProps'
 import getRedrawUnitIds from '../../util/get-redraw-ids'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -96,6 +96,9 @@ export default function GameHand({
   )
 }
 
+/**
+ * A unit in a players game hand.
+ */
 function GameHandUnit({
   deckUnit,
   gameDeck,

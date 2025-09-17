@@ -2,8 +2,6 @@ import { CgChevronLeft, CgChevronRight } from 'react-icons/cg'
 
 import CloseButton from './CloseButton'
 import {
-  UnitFragment,
-  UnitFragmentDoc,
   DeckUnitFragment,
   EffectKey,
   FactionKey,
@@ -11,6 +9,8 @@ import {
   GameUnitEffectFragmentDoc,
   GameUnitFragment,
   UnitEffectFragmentDoc,
+  UnitFragment,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'
@@ -272,6 +272,9 @@ export default function UnitFullCard({
   }
 }
 
+/**
+ * The effects the unit can have on the battlefield.
+ */
 function UnitEffect({
   effectFragment,
   unit,
@@ -294,6 +297,9 @@ function UnitEffect({
   )
 }
 
+/**
+ * The Effects altering a games base strength.
+ */
 function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<typeof GameUnitEffectFragmentDoc> }) {
   const effect = useFragment(GameUnitEffectFragmentDoc, effectFragment)
   let reason = ''

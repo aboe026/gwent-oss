@@ -2,10 +2,10 @@ import { CgChevronLeft, CgChevronRight, CgMaximizeAlt } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  UnitFragmentDoc,
   DeckUnitFragment,
   EffectKey,
   UnitEffectFragmentDoc,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../util/get-combat-image'

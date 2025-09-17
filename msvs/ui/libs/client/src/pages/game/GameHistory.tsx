@@ -4,8 +4,6 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
 import {
-  UnitFragment,
-  UnitFragmentDoc,
   DeckUnitFragment,
   EffectKey,
   GameFragment,
@@ -24,6 +22,8 @@ import {
   PlayerRoundFragmentDoc,
   UnitEffectFragment,
   UnitEffectFragmentDoc,
+  UnitFragment,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, MoveForRound, PlayerMove, PlayPassProps, PlayUnitProps, UnitForPlayer } from './GameProps'
@@ -126,6 +126,9 @@ export default function GameHistory({
   )
 }
 
+/**
+ * The historical movement a player made.
+ */
 function PlayerHistoryMove({
   playerMove,
   game,

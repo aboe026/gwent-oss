@@ -1,17 +1,17 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  UnitFragmentDoc,
-  UnitFragment,
   Combat,
   DeckUnitFragment,
   FragmentType,
-  useFragment,
-  GamePlayerFragment,
-  PlayerRoundFragmentDoc,
-  PlayerCombatRowFragmentDoc,
-  GameUnitFragmentDoc,
   GameFragment,
+  GamePlayerFragment,
+  GameUnitFragmentDoc,
+  PlayerCombatRowFragmentDoc,
+  PlayerRoundFragmentDoc,
+  UnitFragment,
+  UnitFragmentDoc,
+  useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -163,6 +163,9 @@ export default function GameCombatRow({
   )
 }
 
+/**
+ * A game unit on the battlefield.
+ */
 function GameRowUnit({
   fullUnit,
   fullUnitFragment,

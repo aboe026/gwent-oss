@@ -1,7 +1,7 @@
 import {
-  UnitFragmentDoc,
   DeckUnitFragment,
   UnitEffectFragmentDoc,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { GameDeckQuery as GameDeckQueryRaw } from '@gwent/graphql-schema/apollo-raw-typings'

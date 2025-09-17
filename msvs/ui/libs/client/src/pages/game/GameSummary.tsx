@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router'
 
 import {
+  FragmentType,
   GameFragment,
   GamePlayerFragmentDoc,
-  FragmentType,
   PlayerRoundFragmentDoc,
   RoundResult,
   useFragment,
@@ -51,6 +51,9 @@ export default function GameSummary({ game }: { game: GameFragment }) {
   )
 }
 
+/**
+ * The players summary for the game.
+ */
 function GameSummaryPlayer({
   index,
   playerFragment,
@@ -69,6 +72,9 @@ function GameSummaryPlayer({
   )
 }
 
+/**
+ * The summary of a game player for a specific round.
+ */
 function SummaryPlayerRound({
   playerRoundFragment,
   index,

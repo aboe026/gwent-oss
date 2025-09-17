@@ -3,13 +3,12 @@ import { useSubscription } from '@apollo/client/react'
 
 import addToCacheList from './util/add-to-cache-list'
 import {
-  UnitFragmentDoc,
   DeckAddedDocument,
   DeckFragment,
   DeckFragmentDoc,
   DecksDocument,
-  DeckSetDocument,
   DecksQuery,
+  DeckSetDocument,
   DeckUnitFragmentDoc,
   GameAddedDocument,
   GameDeckDocument,
@@ -29,6 +28,7 @@ import {
   UnitPlayedOnGameDocument,
   UnitRedrawnDocument,
   useFragment,
+  UnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 import {
   DecksQuery as DecksQueryRaw,

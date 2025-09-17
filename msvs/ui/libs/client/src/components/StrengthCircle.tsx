@@ -1,4 +1,4 @@
-import { UnitFragment, EffectKey, UnitEffectFragmentDoc, useFragment } from '@gwent/graphql-schema/apollo-typings'
+import { EffectKey, UnitEffectFragmentDoc, UnitFragment, useFragment } from '@gwent/graphql-schema/apollo-typings'
 import getWeatherImage from '../util/get-weather-image'
 import { HTML_CLASSES } from '@gwent/constants'
 import './StrengthCircle.css'

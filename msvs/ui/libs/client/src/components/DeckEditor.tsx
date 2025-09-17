@@ -3,7 +3,6 @@ import { useMutation, useQuery } from '@apollo/client/react'
 
 import {
   AddDeckDocument,
-  UnitFragmentDoc,
   Combat,
   DeckFragment,
   DeckFragmentDoc,
@@ -21,6 +20,7 @@ import {
   FragmentType,
   LeadersDocument,
   UnitEffectFragmentDoc,
+  UnitFragmentDoc,
   UnitsDocument,
   UnitStats,
   useFragment,
@@ -392,6 +392,9 @@ function renderNameAndFaction({
   )
 }
 
+/**
+ * The Text value of a faction to select for the Deck.
+ */
 function FactionTextOption({ factionFragment }: { factionFragment: FragmentType<typeof FactionFragmentDoc> }) {
   const faction = useFragment(FactionFragmentDoc, factionFragment)
   if (faction.key !== FactionKey.Neutral) {
@@ -403,6 +406,9 @@ function FactionTextOption({ factionFragment }: { factionFragment: FragmentType<
   }
 }
 
+/**
+ * A rich display of an available faction a deck can be created with.
+ */
 function FactionDetailedOption({
   factionFragment,
   factionsData,

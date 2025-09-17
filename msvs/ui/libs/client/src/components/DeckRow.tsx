@@ -1,4 +1,5 @@
 import { ErrorLike } from '@apollo/client'
+import { IconType } from 'react-icons'
 
 import Centered from './Centered'
 import {
@@ -12,12 +13,11 @@ import {
   FragmentType,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
+import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES } from '@gwent/constants'
 import LoadingSpinner from './LoadingSpinner'
 import ProgressBar from './ProgressBar'
 import './DeckRow.css'
-import { getErrorMessages } from '../util/error-util'
-import { IconType } from 'react-icons'
 
 /**
  * A Row representing a users created Deck

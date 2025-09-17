@@ -1,12 +1,21 @@
 import {
-  UnitFragmentDoc,
   DeckUnitFragment,
   UnitEffectFragmentDoc,
+  UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { Combat, DeckUnit, UnitStats, EffectKey } from '@gwent/graphql-schema/resolver-typings'
 
+/**
+ * A class used to calculate statistics for Units in a Deck.
+ */
 export default class GetUnitStats {
+  /**
+   * Get the statistics for the given DeckUnits.
+   *
+   * @param deckUnits The Units to calculate statistics for.
+   * @returns The statistics for a deck with the given units.
+   */
   static fromDeckUnits(deckUnits: DeckUnit[]): UnitStats {
     return GetUnitStats.getUnitStats(
       deckUnits.map((deckUnit) => {
@@ -22,6 +31,12 @@ export default class GetUnitStats {
     )
   }
 
+  /**
+   * Get the statistics for the given Deck Unit Fragments.
+   *
+   * @param deckUnits The fragments to calculate statistics for.
+   * @returns The statistics for a deck with the given units.
+   */
   static fromDeckUnitFragments(deckUnits: DeckUnitFragment[]): UnitStats {
     return GetUnitStats.getUnitStats(
       deckUnits.map((deckUnit) => {
@@ -38,6 +53,12 @@ export default class GetUnitStats {
     )
   }
 
+  /**
+   * Get the statistics for a deck with the given unit inputs.
+   *
+   * @param deckUnits The relevant information from units in the deck which effect the statistics.
+   * @returns The statistics for the deck comprised of the given units.
+   */
   private static getUnitStats(deckUnits: DeckUnitForValidation[]): UnitStats {
     let agile = 0
     let avenger = 0

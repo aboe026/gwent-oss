@@ -5,7 +5,6 @@ import { useMutation, useQuery } from '@apollo/client/react'
 
 import {
   AddGameDocument,
-  UnitFragmentDoc,
   DeckFragment,
   DeckUnitFragment,
   GameDeckDocument,
@@ -29,6 +28,7 @@ import {
   RedrawDocument,
   SetDeckDocument,
   SetOrderDocument,
+  UnitFragmentDoc,
   useFragment,
   User,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -422,7 +422,7 @@ function ExistingGame({
    *
    * @param config The configuration used to scroll the History entry into view.
    * @param config.playerId The ID of the player the Unit belongs to.
-   * @param config.unit The Unit whose entrance to the battlefield should be scrolled to in the History panel.
+   * @param config.unitFragment The Unit whose entrance to the battlefield should be scrolled to in the History panel.
    */
   function scrollHistoryIntoView({ playerId, unitFragment }: UnitForPlayer) {
     if (game && playerId) {

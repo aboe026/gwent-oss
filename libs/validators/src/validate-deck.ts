@@ -1,5 +1,5 @@
-import { UnitFragmentDoc, DeckUnitFragment, useFragment } from '@gwent/graphql-schema/apollo-typings'
 import { DeckUnit, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { DeckUnitFragment, useFragment, UnitFragmentDoc } from '@gwent/graphql-schema/apollo-typings'
 import { DECK_MAX_SPECIALS, DECK_MIN_UNITS } from '@gwent/constants'
 import validatePositiveInteger from './validate-positive-integer'
 

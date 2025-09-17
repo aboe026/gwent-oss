@@ -1,18 +1,18 @@
 import { CgArrowLongRight } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import {
-  UnitFragment,
-  UnitFragmentDoc,
-  DeckUnitFragmentDoc,
-  DeckUnitFragment,
-  GameDeckFragment,
-  useFragment,
-  GamePlayerFragment,
-  GameFragment,
-} from '@gwent/graphql-schema/apollo-typings'
 import Centered from '../../components/Centered'
 import CoinToss from '../../components/CoinToss'
+import {
+  DeckUnitFragment,
+  DeckUnitFragmentDoc,
+  GameDeckFragment,
+  GameFragment,
+  GamePlayerFragment,
+  UnitFragment,
+  UnitFragmentDoc,
+  useFragment,
+} from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, ReadyProps, RedrawProps, UnitForPlayer } from './GameProps'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent/constants'
 import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
@@ -177,6 +177,9 @@ function renderCoinToss({
   )
 }
 
+/**
+ * A possible redraw for a game.
+ */
 function RedrawCard({
   index,
   gameDeck,
