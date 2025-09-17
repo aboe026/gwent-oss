@@ -3,8 +3,8 @@ import { FragmentType } from '@apollo/client'
 
 import CloseButton from './CloseButton'
 import {
-  CardUnitFragment,
-  CardUnitFragmentDoc,
+  UnitFragment,
+  UnitFragmentDoc,
   DeckUnitFragment,
   EffectKey,
   FactionKey,
@@ -43,7 +43,7 @@ export default function UnitFullCard({
   onSelect,
   userName,
 }: UnitFullCardProps) {
-  const unit = useFragment(CardUnitFragmentDoc, fullUnit?.unit)
+  const unit = useFragment(UnitFragmentDoc, fullUnit?.unit)
   useKeyDown([
     {
       key: Key.Left,
@@ -126,7 +126,7 @@ export default function UnitFullCard({
                       <div className={`${HTML_CLASSES.UnitFullCardInfoRow} unit-full-card-info-row-strength`}>
                         <div className={HTML_CLASSES.UnitFullCardInfoRow}>
                           <StrengthCircle
-                            unit={useFragment(CardUnitFragmentDoc, fullUnit.unit)}
+                            unit={useFragment(UnitFragmentDoc, fullUnit.unit)}
                             effectiveStrength={effectiveStrength}
                             size="50px"
                             ignoreHero={true}
@@ -279,7 +279,7 @@ function UnitEffect({
   unit,
 }: {
   effectFragment: FragmentType<UnitEffectFragment>
-  unit: CardUnitFragment
+  unit: UnitFragment
 }) {
   const effect = useFragment(UnitEffectFragmentDoc, effectFragment)
   return (

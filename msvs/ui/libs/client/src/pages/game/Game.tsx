@@ -5,7 +5,7 @@ import { useMutation, useQuery } from '@apollo/client/react'
 
 import {
   AddGameDocument,
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   DeckFragment,
   DeckUnitFragment,
   GameDeckDocument,
@@ -223,7 +223,7 @@ export default function GamePage() {
           },
           (previous) => {
             if (previous?.gameDeck && game) {
-              const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected.unit)
+              const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected.unit)
               const battlefieldUnitIds: string[] = []
               const player = data.playUnit.players.find((player) => player.user.name === user.name)
               if (!player) {
@@ -376,7 +376,7 @@ function ExistingGame({
       game.players.find((player) => useFragment(GamePlayerFragmentDoc, player).user.name === user.name)
     )
   }
-  const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected?.unit)
+  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
 
   const battlefieldHighlighted =
     game?.status === GameStatus.Playing && handCardSelected && handCardSelectedUnit?.name === 'Scorch'
@@ -435,7 +435,7 @@ function ExistingGame({
    */
   function scrollHistoryIntoView({ playerId, unitFragment }: UnitForPlayer) {
     if (game && playerId) {
-      const unitSelected = useFragment(CardUnitFragmentDoc, unitFragment.unit)
+      const unitSelected = useFragment(UnitFragmentDoc, unitFragment.unit)
       const roundIndex = game.round - 1
       const playerIndex = game.players
         .map((player) => useFragment(GamePlayerFragmentDoc, player).user.id)
@@ -448,7 +448,7 @@ function ExistingGame({
         if (move.__typename === 'MoveUnit') {
           const moveUnit = useFragment(MoveUnitFragmentDoc, move)
           const gameUnit = useFragment(GameUnitFragmentDoc, moveUnit.unit)
-          const unit = useFragment(CardUnitFragmentDoc, gameUnit.unit)
+          const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
           if (unit.id === unitSelected.id) {
             moveIndex = i
           }
@@ -524,7 +524,7 @@ function ExistingGame({
             })
             const fullPlayerUnit = fullUnits.units[fullUnits.currentIndex - 1]
             const fullUnitFragment = fullPlayerUnit.unitFragment
-            const fullUnit = useFragment(CardUnitFragmentDoc, fullUnitFragment.unit)
+            const fullUnit = useFragment(UnitFragmentDoc, fullUnitFragment.unit)
             if (handCardSelected && !isGameUnit(fullUnitFragment)) {
               setHandCardSelected(fullUnitFragment)
             }
@@ -544,7 +544,7 @@ function ExistingGame({
             })
             const fullPlayerUnit = fullUnits.units[fullUnits.currentIndex + 1]
             const fullUnitFragment = fullPlayerUnit.unitFragment
-            const fullUnit = useFragment(CardUnitFragmentDoc, fullUnitFragment.unit)
+            const fullUnit = useFragment(UnitFragmentDoc, fullUnitFragment.unit)
             if (handCardSelected && !isGameUnit(fullUnitFragment)) {
               setHandCardSelected(fullUnitFragment)
             }

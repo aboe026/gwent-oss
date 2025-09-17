@@ -1,5 +1,5 @@
 import {
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   Combat,
   DeckUnitFragment,
   GameUnitFragment,
@@ -13,7 +13,7 @@ import {
  * @returns The path to the image representing the combat for the DeckUnit or GameUnit.
  */
 export default function getCombatImage(deckUnit: DeckUnitFragment | GameUnitFragment): string | undefined {
-  const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
+  const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
   if (!unit.special) {
     if (unit.combats?.length === 1) {
       return `images/combats/${unit.combats[0].toLowerCase()}.png`

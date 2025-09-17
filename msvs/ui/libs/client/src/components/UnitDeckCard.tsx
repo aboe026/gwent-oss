@@ -2,7 +2,7 @@ import { CgChevronLeft, CgChevronRight, CgMaximizeAlt } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   DeckUnitFragment,
   EffectKey,
   UnitEffectFragmentDoc,
@@ -36,14 +36,12 @@ export default function UnitDeckCard({
       setSelectedUnits((previous: DeckUnitFragment[]) => {
         const alreadySelected = previous.some(
           (selectedCard) =>
-            useFragment(CardUnitFragmentDoc, selectedCard.unit).id ===
-            useFragment(CardUnitFragmentDoc, deckUnit.unit).id
+            useFragment(UnitFragmentDoc, selectedCard.unit).id === useFragment(UnitFragmentDoc, deckUnit.unit).id
         )
         if (alreadySelected) {
           return previous.filter(
             (selectedCard) =>
-              useFragment(CardUnitFragmentDoc, selectedCard.unit).id !==
-              useFragment(CardUnitFragmentDoc, deckUnit.unit).id
+              useFragment(UnitFragmentDoc, selectedCard.unit).id !== useFragment(UnitFragmentDoc, deckUnit.unit).id
           )
         }
         return [...previous, deckUnit]
@@ -57,7 +55,7 @@ export default function UnitDeckCard({
     setUnits((previous: DeckUnitFragment[]) =>
       previous.map((newCard) => {
         if (
-          useFragment(CardUnitFragmentDoc, newCard.unit).id === useFragment(CardUnitFragmentDoc, deckUnit.unit).id &&
+          useFragment(UnitFragmentDoc, newCard.unit).id === useFragment(UnitFragmentDoc, deckUnit.unit).id &&
           newCard.artStyle !== undefined &&
           newCard.artStyle !== null
         ) {
@@ -77,7 +75,7 @@ export default function UnitDeckCard({
     if (
       !disabled &&
       deckUnit.artStyle &&
-      deckUnit.artStyle < useFragment(CardUnitFragmentDoc, deckUnit.unit).images.length
+      deckUnit.artStyle < useFragment(UnitFragmentDoc, deckUnit.unit).images.length
     ) {
       changeArtStyle(1)
     }
@@ -109,7 +107,7 @@ export default function UnitDeckCard({
     event.stopPropagation()
   }
   const combatSymbol = getCombatImage(deckUnit)
-  const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
+  const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
   const combatTitle = unit.combats ? unit.combats.map((combat) => toTitleCase(combat)).join(' or ') : ''
   const effects = useFragment(UnitEffectFragmentDoc, unit.effects)
 

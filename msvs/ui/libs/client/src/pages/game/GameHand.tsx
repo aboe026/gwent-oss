@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   DeckUnitFragment,
   DeckUnitFragmentDoc,
   GameDeckFragment,
@@ -129,9 +129,9 @@ function GameHandUnit({
   setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   sortedUnits: DeckUnitFragment[]
 }) {
-  const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
-  const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected?.unit)
-  const redrawCardSelectedUnit = useFragment(CardUnitFragmentDoc, redrawCardSelected?.unit)
+  const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
+  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
+  const redrawCardSelectedUnit = useFragment(UnitFragmentDoc, redrawCardSelected?.unit)
   const selected = [handCardSelectedUnit?.id, redrawCardSelectedUnit?.id].includes(unit.id)
   const notSelected = handCardSelectedUnit?.id && !selected
   const title = unit.name

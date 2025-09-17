@@ -1,4 +1,4 @@
-import { CardUnitFragment, DeckUnitFragment } from '@gwent/graphql-schema/apollo-typings'
+import { UnitFragment, DeckUnitFragment } from '@gwent/graphql-schema/apollo-typings'
 import { Combat, DeckUnit, EffectKey, Unit, UnitStats } from '@gwent/graphql-schema/resolver-typings'
 import GetUnitStats, { DeckUnitForValidation } from '../../src/get-unit-stats'
 
@@ -91,7 +91,7 @@ describe('GetUnitStats', () => {
                   ],
             hero: i % 2 ? true : false,
             special: i % 2 ? true : false,
-          } as any as CardUnitFragment,
+          } as any as UnitFragment,
         })
       }
 

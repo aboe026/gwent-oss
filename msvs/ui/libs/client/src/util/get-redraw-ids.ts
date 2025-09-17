@@ -1,7 +1,7 @@
 import { FragmentType } from '@apollo/client'
 
 import {
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   DeckUnitFragment,
   DeckUnitFragmentDoc,
   GameDeckFragment,
@@ -20,7 +20,7 @@ export default function getRedrawIds({ gameDeck }: { gameDeck: GameDeckFragment 
   }
   for (const redrawUnit of redrawUnits) {
     const deckUnit = useFragment(DeckUnitFragmentDoc, redrawUnit)
-    const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
+    const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
     if (!redrawIds.includes(unit.id)) {
       redrawIds.push(unit.id)
     }

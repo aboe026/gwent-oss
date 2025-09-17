@@ -3,7 +3,7 @@ import { useSubscription } from '@apollo/client/react'
 
 import addToCacheList from './util/add-to-cache-list'
 import {
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   DeckAddedDocument,
   DeckFragment,
   DeckFragmentDoc,
@@ -237,7 +237,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     onData: ({ data, client }) => {
       const game = data.data?.unitPlayedFromDeck.game
       const playedUnit = useFragment(
-        CardUnitFragmentDoc,
+        UnitFragmentDoc,
         useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedFromDeck.unit)?.unit
       )
       if (game && playedUnit) {

@@ -2,8 +2,8 @@ import { CgArrowLongRight } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragment,
-  CardUnitFragmentDoc,
+  UnitFragment,
+  UnitFragmentDoc,
   DeckUnitFragmentDoc,
   DeckUnitFragment,
   GameDeckFragment,
@@ -65,7 +65,7 @@ export default function GameRedraw({
   if (gameDeck?.hand) {
     for (const handUnitFragment of gameDeck.hand) {
       const handUnit = useFragment(DeckUnitFragmentDoc, handUnitFragment)
-      const unit = useFragment(CardUnitFragmentDoc, handUnit.unit)
+      const unit = useFragment(UnitFragmentDoc, handUnit.unit)
       if (!handUnitIds.includes(unit.id)) {
         handUnitIds.push(unit.id)
       }
@@ -205,7 +205,7 @@ function RedrawCard({
   if (gameDeck?.hand) {
     for (const handUnitFragment of gameDeck.hand) {
       const handUnit = useFragment(DeckUnitFragmentDoc, handUnitFragment)
-      const unit = useFragment(CardUnitFragmentDoc, handUnit.unit)
+      const unit = useFragment(UnitFragmentDoc, handUnit.unit)
       if (!handUnitIds.includes(unit.id)) {
         handUnitIds.push(unit.id)
       }
@@ -215,12 +215,12 @@ function RedrawCard({
   if (index < gameDeck.redraws.length && gameDeck.redraws[index].from) {
     fromCard = useFragment(DeckUnitFragmentDoc, gameDeck.redraws[index].from)
   }
-  const fromCardUnit = useFragment(CardUnitFragmentDoc, fromCard?.unit)
+  const fromCardUnit = useFragment(UnitFragmentDoc, fromCard?.unit)
   let toCard: DeckUnitFragment | undefined = undefined
   if (gameDeck.redraws.length >= index + 1 && gameDeck.redraws[index].to) {
     toCard = useFragment(DeckUnitFragmentDoc, gameDeck.redraws[index].to)
   }
-  const toCardUnit: CardUnitFragment | undefined = useFragment(CardUnitFragmentDoc, toCard?.unit)
+  const toCardUnit: UnitFragment | undefined = useFragment(UnitFragmentDoc, toCard?.unit)
   const units: UnitForPlayer[] = [fromCard, toCard]
     .filter((deckUnit) => !!deckUnit)
     .map((deckUnit) => {
@@ -229,8 +229,8 @@ function RedrawCard({
         unitFragment: deckUnit,
       }
     })
-  const redrawCardSelectedUnit = useFragment(CardUnitFragmentDoc, redrawCardSelected?.unit)
-  const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected?.unit)
+  const redrawCardSelectedUnit = useFragment(UnitFragmentDoc, redrawCardSelected?.unit)
+  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
   const toCardSelected = toCardUnit && [redrawCardSelectedUnit?.id, handCardSelectedUnit?.id].includes(toCardUnit.id)
   const toCardDotted = toCardSelected && !handUnitIds.includes(toCardUnit.id)
   const fromCardSelected =

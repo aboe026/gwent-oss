@@ -1,7 +1,7 @@
 import { CgMaximizeAlt } from 'react-icons/cg'
 
 import {
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   DeckUnitFragment,
   EffectKey,
   GameUnitFragment,
@@ -31,7 +31,7 @@ export default function UnitGameCard({
   selected,
   title,
 }: UnitGameCardProps) {
-  const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
+  const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
   const combatSymbol = getCombatImage(deckUnit)
   const combatTitle = unit.combats ? unit.combats.map((combat) => toTitleCase(combat)).join(' or ') : ''
   const unitTitle = title || unit.name

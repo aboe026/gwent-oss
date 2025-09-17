@@ -1,4 +1,4 @@
-import { CardUnitFragment } from '@gwent/graphql-schema/apollo-typings'
+import { UnitFragment } from '@gwent/graphql-schema/apollo-typings'
 
 /**
  * Get the path to the weather image for a Unit.
@@ -6,7 +6,7 @@ import { CardUnitFragment } from '@gwent/graphql-schema/apollo-typings'
  * @param unit The Unit to get the weather image for.
  * @returns The path to the image representing the weather for the Unit.
  */
-export default function getWeatherImage(unit: CardUnitFragment): string | undefined {
+export default function getWeatherImage(unit: UnitFragment): string | undefined {
   let image
   if (unit.name === 'Biting Frost') {
     image = 'frost.png'

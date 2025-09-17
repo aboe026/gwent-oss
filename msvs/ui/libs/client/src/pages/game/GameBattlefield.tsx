@@ -1,7 +1,7 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   Combat,
   DeckUnitFragment,
   GameFragment,
@@ -43,7 +43,7 @@ export default function GameBattlefield({
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const { checkAuth } = useUserContext()
-  const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected?.unit)
+  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
   const rowsToHighlight = (handCardSelectedUnit && handCardSelectedUnit.combats) || []
   const rowsToBlock = []
   if (rowsToHighlight.length > 0) {

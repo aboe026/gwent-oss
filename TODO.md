@@ -12,7 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- rename CardUnitFragment to just UnitFragment
+- remove raw export from libs/graphql-schema/generated/apollo/index.ts?
 - look into why FragmentType export from apollo-typings doesn't work
 - improve performance when typing name for deck
 - rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"

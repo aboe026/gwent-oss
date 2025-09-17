@@ -4,8 +4,8 @@ import { Dispatch, SetStateAction, useState } from 'react'
 import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
 import {
-  CardUnitFragment,
-  CardUnitFragmentDoc,
+  UnitFragment,
+  UnitFragmentDoc,
   DeckUnitFragment,
   EffectKey,
   GameFragment,
@@ -59,8 +59,8 @@ export default function GameHistory({
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
-  const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected?.unit)
-  const historyCardSelectedUnit = useFragment(CardUnitFragmentDoc, historyCardSelected?.unitFragment.unit)
+  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
+  const historyCardSelectedUnit = useFragment(UnitFragmentDoc, historyCardSelected?.unitFragment.unit)
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
     playUnitProps.loading ||
@@ -148,7 +148,7 @@ function PlayerHistoryMove({
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   unitMoves: PlayerMove[]
-  historyCardSelectedUnit: CardUnitFragment | undefined
+  historyCardSelectedUnit: UnitFragment | undefined
   index: number
 }) {
   const gamePlayer = game.players[playerMove.playerIndex]
@@ -181,13 +181,13 @@ function PlayerHistoryMove({
   } else if (playerMove.move.__typename === 'MoveUnit') {
     const unitMove = useFragment(MoveUnitFragmentDoc, playerMove.move)
     gameUnit = useFragment(GameUnitFragmentDoc, unitMove.unit)
-    const unit = useFragment(CardUnitFragmentDoc, gameUnit.unit)
+    const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
     impacts = useFragment(ImpactFragmentDoc, unitMove.impacts)
     unitMoveIndex = unitMoves.findIndex((unitMove) => {
       if (unitMove.move.__typename === 'MoveUnit') {
         const potentialUnitMove = useFragment(MoveUnitFragmentDoc, unitMove.move)
         const potentialUnit = useFragment(
-          CardUnitFragmentDoc,
+          UnitFragmentDoc,
           useFragment(GameUnitFragmentDoc, potentialUnitMove.unit).unit
         )
         if (potentialUnit.id === unit.id) {
@@ -229,7 +229,7 @@ function PlayerHistoryMove({
         ...useFragment(PlayerCombatRowFragmentDoc, playerRound.siege).units,
       ]
       for (let i = 0; i < units.length && !isOnBattlefield; i++) {
-        if (useFragment(CardUnitFragmentDoc, useFragment(GameUnitFragmentDoc, units[i]).unit).id === unit.id) {
+        if (useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, units[i]).unit).id === unit.id) {
           isOnBattlefield = true
         }
       }
@@ -250,7 +250,7 @@ function PlayerHistoryMove({
         onClick={() => {
           if (playerMove.move.__typename === 'MoveUnit') {
             const gameUnit = useFragment(GameUnitFragmentDoc, useFragment(MoveUnitFragmentDoc, playerMove.move).unit)
-            const unit = useFragment(CardUnitFragmentDoc, gameUnit.unit)
+            const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
             if (
               historyCardSelected &&
               historyCardSelectedUnit &&
@@ -449,7 +449,7 @@ function renderImpacts({
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
-  const historyCardSelectedUnit = useFragment(CardUnitFragmentDoc, historyCardSelected?.unitFragment.unit)
+  const historyCardSelectedUnit = useFragment(UnitFragmentDoc, historyCardSelected?.unitFragment.unit)
   const groups = groupBy({
     array: impacts,
     property: 'user.name',
@@ -491,7 +491,7 @@ function renderImpacts({
               origin: impactedUnit.source?.origin,
             })
             const gameUnitForImpact = useFragment(GameUnitFragmentDoc, impactedUnit.unit)
-            const unitForImpact = useFragment(CardUnitFragmentDoc, gameUnitForImpact.unit)
+            const unitForImpact = useFragment(UnitFragmentDoc, gameUnitForImpact.unit)
             const isSelected =
               historyCardSelected &&
               historyCardSelectedUnit &&
@@ -512,10 +512,7 @@ function renderImpacts({
                 ...(useFragment(PlayerCombatRowFragmentDoc, round?.siege)?.units || []),
               ]
               for (let i = 0; i < units.length && !isOnBattlefield; i++) {
-                const battlefieldUnit = useFragment(
-                  CardUnitFragmentDoc,
-                  useFragment(GameUnitFragmentDoc, units[i]).unit
-                )
+                const battlefieldUnit = useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, units[i]).unit)
                 if (battlefieldUnit.id === unitForImpact.id) {
                   isOnBattlefield = true
                 }
@@ -554,7 +551,7 @@ function renderImpacts({
                         currentIndex: units.findIndex(
                           (unit) =>
                             unit.playerId === impactedUnit.user.id &&
-                            useFragment(CardUnitFragmentDoc, unit.unitFragment.unit).id === unitForImpact.id
+                            useFragment(UnitFragmentDoc, unit.unitFragment.unit).id === unitForImpact.id
                         ),
                         units,
                       })
@@ -599,7 +596,7 @@ interface EffectForImpact {
  */
 function getEffectForImpact({ gameUnit }: { gameUnit: GameUnitFragment }): EffectForImpact {
   let error = ''
-  const unit = useFragment(CardUnitFragmentDoc, gameUnit.unit)
+  const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
   const effects =
     unit.effects &&
     unit.effects
@@ -633,7 +630,7 @@ function hasImpactableEffect({ gameUnit }: { gameUnit: GameUnitFragment }): bool
     EffectKey.Spy,
     EffectKey.Weather,
   ]
-  const unit = useFragment(CardUnitFragmentDoc, gameUnit.unit)
+  const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
   return (
     !!unit.effects &&
     unit.effects

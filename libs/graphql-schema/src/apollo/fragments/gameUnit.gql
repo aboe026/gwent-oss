@@ -6,6 +6,6 @@ fragment GameUnit on GameUnit {
   }
   row
   unit {
-    ...CardUnit
+    ...Unit
   }
 }

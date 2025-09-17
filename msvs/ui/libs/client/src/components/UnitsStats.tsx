@@ -1,7 +1,7 @@
 import { CgChevronDoubleLeft, CgChevronDoubleRight, CgLock, CgLockUnlock } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { CardUnitFragmentDoc, DeckUnitFragment, UnitStats, useFragment } from '@gwent/graphql-schema/apollo-typings'
+import { UnitFragmentDoc, DeckUnitFragment, UnitStats, useFragment } from '@gwent/graphql-schema/apollo-typings'
 import { DECK_MIN_UNITS, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
 import { GetUnitStats, toTitleCase } from '@gwent/utils'
@@ -94,8 +94,8 @@ export default function UnitsStats({
                     (deckUnit) =>
                       !filteredSelectedUnits.some(
                         (selectedUnit) =>
-                          useFragment(CardUnitFragmentDoc, selectedUnit.unit).id ===
-                          useFragment(CardUnitFragmentDoc, deckUnit.unit).id
+                          useFragment(UnitFragmentDoc, selectedUnit.unit).id ===
+                          useFragment(UnitFragmentDoc, deckUnit.unit).id
                       )
                   )
                 )

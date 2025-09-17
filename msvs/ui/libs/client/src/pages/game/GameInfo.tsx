@@ -8,7 +8,7 @@ import {
   RoundResult,
   DeckUnitFragment,
   useFragment,
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   GameDeckFragmentDoc,
   GameFactionFragmentDoc,
   GameFactionFragment,
@@ -276,7 +276,7 @@ function renderScore({
   playUnitLoading: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
-  const handCardSelectedUnit = useFragment(CardUnitFragmentDoc, handCardSelected?.unit)
+  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
   let playerRound: PlayerRoundFragment | undefined = undefined
   let winning = false
   let passTitle = ''

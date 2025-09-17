@@ -1,8 +1,8 @@
 import { Dispatch, SetStateAction } from 'react'
 
 import {
-  CardUnitFragmentDoc,
-  CardUnitFragment,
+  UnitFragmentDoc,
+  UnitFragment,
   Combat,
   DeckUnitFragment,
   useFragment,
@@ -42,7 +42,7 @@ export default function GameCombatRow({
   combat: Combat
   fullUnits: FullUnitCards | undefined
   game: GameFragment
-  handCardSelectedUnit: CardUnitFragment | undefined
+  handCardSelectedUnit: UnitFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
   isSelf?: boolean
   isTurn?: boolean
@@ -101,7 +101,7 @@ export default function GameCombatRow({
     id = isSelf ? HTML_IDS.GameCombatRowSiegeSelf : HTML_IDS.GameCombatRowSiegeOpponent
   }
   const fullUnitFragment = fullUnits && fullUnits.units[fullUnits.currentIndex]
-  const fullUnit = useFragment(CardUnitFragmentDoc, fullUnitFragment?.unitFragment.unit)
+  const fullUnit = useFragment(UnitFragmentDoc, fullUnitFragment?.unitFragment.unit)
 
   return (
     <div id={id} className="game-unit-board-combat-row">
@@ -180,10 +180,10 @@ function GameRowUnit({
   index,
   sortedUnits,
 }: {
-  fullUnit: CardUnitFragment | undefined
+  fullUnit: UnitFragment | undefined
   fullUnitFragment: UnitForPlayer | undefined
   combat: Combat
-  handCardSelectedUnit: CardUnitFragment | undefined
+  handCardSelectedUnit: UnitFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
   isTurn?: boolean
   player: GamePlayerFragment
@@ -196,8 +196,8 @@ function GameRowUnit({
   sortedUnits: FragmentType<GameUnitFragment>[]
 }) {
   const gameUnit = useFragment(GameUnitFragmentDoc, gameUnitFragment)
-  const unit = useFragment(CardUnitFragmentDoc, gameUnit.unit)
-  const historyCardSelectedUnit = useFragment(CardUnitFragmentDoc, historyCardSelected?.unitFragment.unit)
+  const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
+  const historyCardSelectedUnit = useFragment(UnitFragmentDoc, historyCardSelected?.unitFragment.unit)
   const selectedAsFullCard =
     fullUnitFragment && fullUnit && fullUnit.id === unit.id && fullUnitFragment.playerId === player.user.id
   const selectedInHistory =

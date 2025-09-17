@@ -1,5 +1,5 @@
 import {
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   DeckUnitFragment,
   UnitEffectFragmentDoc,
   useFragment,
@@ -25,7 +25,7 @@ export default class GetUnitStats {
   static fromDeckUnitFragments(deckUnits: DeckUnitFragment[]): UnitStats {
     return GetUnitStats.getUnitStats(
       deckUnits.map((deckUnit) => {
-        const unit = useFragment(CardUnitFragmentDoc, deckUnit.unit)
+        const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
         return {
           combats: unit.combats,
           deckable: unit.deckable,

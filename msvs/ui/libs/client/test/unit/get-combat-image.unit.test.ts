@@ -1,4 +1,4 @@
-import { CardUnitFragmentDoc, Combat, Faction, FragmentType, Unit } from '@gwent/graphql-schema/apollo-typings'
+import { UnitFragmentDoc, Combat, Faction, FragmentType, Unit } from '@gwent/graphql-schema/apollo-typings'
 import getCombatImage from '../../src/util/get-combat-image'
 
 describe('getCombatImage', () => {
@@ -146,7 +146,7 @@ describe('getCombatImage', () => {
   })
 })
 
-function getUnitFragment(overrides: Partial<Unit>): FragmentType<typeof CardUnitFragmentDoc> {
+function getUnitFragment(overrides: Partial<Unit>): FragmentType<typeof UnitFragmentDoc> {
   const unit: Unit = {
     created: new Date(),
     deckable: true,
@@ -158,5 +158,5 @@ function getUnitFragment(overrides: Partial<Unit>): FragmentType<typeof CardUnit
     combats: [Combat.Close, Combat.Ranged],
     ...overrides,
   }
-  return unit as any as FragmentType<typeof CardUnitFragmentDoc>
+  return unit as any as FragmentType<typeof UnitFragmentDoc>
 }

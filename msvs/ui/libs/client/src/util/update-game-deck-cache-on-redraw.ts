@@ -1,5 +1,5 @@
 import {
-  CardUnitFragmentDoc,
+  UnitFragmentDoc,
   DeckUnitFragment,
   UnitEffectFragmentDoc,
   useFragment,
@@ -24,8 +24,8 @@ export default function updateGameDeckCacheOnRedraw({
   from: DeckUnitFragment
   to: DeckUnitFragment
 }): GameDeckQueryRaw {
-  const fromUnit = useFragment(CardUnitFragmentDoc, from.unit)
-  const toUnit = useFragment(CardUnitFragmentDoc, to.unit)
+  const fromUnit = useFragment(UnitFragmentDoc, from.unit)
+  const toUnit = useFragment(UnitFragmentDoc, to.unit)
   return {
     ...previous,
     gameDeck: {
