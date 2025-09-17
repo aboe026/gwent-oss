@@ -153,7 +153,7 @@ function PlayerHistoryMove({
 }) {
   const gamePlayer = game.players[playerMove.playerIndex]
   const player = useFragment(GamePlayerFragmentDoc, gamePlayer)
-  const isSelf = useFragment(GamePlayerFragmentDoc, gamePlayer).user.name === self.user.name
+  const isSelf = player.user.name === self.user.name
   let isSelected = false
   let isOnBattlefield = false
   let textClass = `game-history-move-text ${isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'}`
@@ -499,11 +499,8 @@ function renderImpacts({
               historyCardSelectedUnit.id === unitForImpact.id
             let isOnBattlefield = false
             if (isSelected) {
-              const gamePlayer = useFragment(
-                GamePlayerFragmentDoc,
-                game.players.find(
-                  (player) => useFragment(GamePlayerFragmentDoc, player).user.id === impactedUnit.user.id
-                )
+              const gamePlayer = useFragment(GamePlayerFragmentDoc, game.players).find(
+                (player) => player.user.id === impactedUnit.user.id
               )
               const round = useFragment(PlayerRoundFragmentDoc, gamePlayer?.rounds[game.round - 1])
               const units = [
@@ -597,11 +594,10 @@ interface EffectForImpact {
 function getEffectForImpact({ gameUnit }: { gameUnit: GameUnitFragment }): EffectForImpact {
   let error = ''
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
+  const unitEffects = useFragment(UnitEffectFragmentDoc, unit.effects)
   const effects =
-    unit.effects &&
-    unit.effects
-      .map((effect) => useFragment(UnitEffectFragmentDoc, effect))
-      .filter((effect) => ![EffectKey.Agile, EffectKey.Avenger, EffectKey.Berserker].includes(effect.key))
+    unitEffects &&
+    unitEffects.filter((effect) => ![EffectKey.Agile, EffectKey.Avenger, EffectKey.Berserker].includes(effect.key))
   if (!effects) {
     error = 'Could not determine Effect for Impact'
   } else if (effects.length > 1) {
@@ -631,10 +627,6 @@ function hasImpactableEffect({ gameUnit }: { gameUnit: GameUnitFragment }): bool
     EffectKey.Weather,
   ]
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
-  return (
-    !!unit.effects &&
-    unit.effects
-      .map((effect) => useFragment(UnitEffectFragmentDoc, effect))
-      .filter((effect) => effectsWithImpact.includes(effect.key)).length > 0
-  )
+  const unitEffects = useFragment(UnitEffectFragmentDoc, unit.effects)
+  return !!unitEffects && unitEffects.filter((effect) => effectsWithImpact.includes(effect.key)).length > 0
 }

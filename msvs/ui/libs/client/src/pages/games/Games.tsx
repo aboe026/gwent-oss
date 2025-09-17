@@ -340,39 +340,24 @@ function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Ga
     fields.includes(FILTER_FIELD.Redrawing) ||
     fields.includes(FILTER_FIELD.Playing) ||
     fields.includes(FILTER_FIELD.Done)
+  const players = useFragment(GamePlayerFragmentDoc, game.players)
   const filteredByFaction =
     fields.length === 0 ||
     !filteringAnyFaction ||
     (fields.includes(FILTER_FIELD.Monsters) &&
-      game.players.find(
-        (player) =>
-          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
-          FactionKey.Monsters
-      )) ||
+      players.find((player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.Monsters)) ||
     (fields.includes(FILTER_FIELD.NilfgaardianEmpire) &&
-      game.players.find(
-        (player) =>
-          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
-          FactionKey.NilfgaardianEmpire
+      players.find(
+        (player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.NilfgaardianEmpire
       )) ||
     (fields.includes(FILTER_FIELD.NorthernRealms) &&
-      game.players.find(
-        (player) =>
-          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
-          FactionKey.NorthernRealms
+      players.find(
+        (player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.NorthernRealms
       )) ||
     (fields.includes(FILTER_FIELD.ScoiaTael) &&
-      game.players.find(
-        (player) =>
-          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
-          FactionKey.ScoiaTael
-      )) ||
+      players.find((player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.ScoiaTael)) ||
     (fields.includes(FILTER_FIELD.Skellige) &&
-      game.players.find(
-        (player) =>
-          useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
-          FactionKey.Skellige
-      ))
+      players.find((player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.Skellige))
   const filteredByStatus =
     fields.length === 0 ||
     !filteringAnyStatus ||
@@ -384,9 +369,7 @@ function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Ga
   const filteredByUser =
     !user ||
     game.creator.name.toLowerCase().includes(user.toLowerCase()) ||
-    game.players.find((player) =>
-      useFragment(GamePlayerFragmentDoc, player).user.name.toLowerCase().includes(user.toLowerCase())
-    ) ||
+    players.find((player) => player.user.name.toLowerCase().includes(user.toLowerCase())) ||
     game.victors.find((victor) => victor.name.toLowerCase().includes(user.toLowerCase()))
   return !!filteredByFaction && !!filteredByStatus && !!filteredByUser
 }

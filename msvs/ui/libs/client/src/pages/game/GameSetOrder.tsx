@@ -35,19 +35,15 @@ export default function GameSetOrder({
 }) {
   const { checkAuth } = useUserContext()
   const setOrderErrorMessages = getErrorMessages(setOrderProps.error)
-  const scoiaTaelDecks = game.players.filter(
-    (player) =>
-      useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
-      FactionKey.ScoiaTael
+  const players = useFragment(GamePlayerFragmentDoc, game.players)
+  const scoiaTaelDecks = players.filter(
+    (player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.ScoiaTael
   ).length
   const selfFaction = useFragment(GameFactionFragmentDoc, self.faction)
   const canSetOrder = scoiaTaelDecks !== 1 || selfFaction?.key === FactionKey.ScoiaTael
   const canChooseOrder =
-    game.players.filter(
-      (player) =>
-        useFragment(GameFactionFragmentDoc, useFragment(GamePlayerFragmentDoc, player).faction)?.key ===
-        FactionKey.ScoiaTael
-    ).length === 1 && selfFaction?.key === FactionKey.ScoiaTael
+    players.filter((player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.ScoiaTael)
+      .length === 1 && selfFaction?.key === FactionKey.ScoiaTael
 
   return (
     <div id={HTML_IDS.GameOrderContainer} className="game-section">

@@ -29,7 +29,7 @@ export default class GetUnitStats {
         return {
           combats: unit.combats,
           deckable: unit.deckable,
-          effects: unit.effects?.map((effect) => useFragment(UnitEffectFragmentDoc, effect).key),
+          effects: useFragment(UnitEffectFragmentDoc, unit.effects)?.map((effect) => effect.key),
           hero: unit.hero,
           special: unit.special,
           strength: unit.strength,

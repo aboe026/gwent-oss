@@ -364,17 +364,11 @@ function ExistingGame({
   let opponent: GamePlayerFragment | undefined = undefined
   let self: GamePlayerFragment | undefined = undefined
   if (game?.players && user?.name) {
-    opponent = useFragment(
-      GamePlayerFragmentDoc,
-      game.players.find((player) => useFragment(GamePlayerFragmentDoc, player).user.id !== user.id)
-    )
+    opponent = useFragment(GamePlayerFragmentDoc, game.players).find((player) => player.user.id !== user.id)
     // need to user "user.name" instead of "user.id" to get self
     // because "user.id" is set to "AUTH_TIMEOUT_ID" when session times out
     // and would cause self not to be found here when user presented with opportunity to re-authorize
-    self = useFragment(
-      GamePlayerFragmentDoc,
-      game.players.find((player) => useFragment(GamePlayerFragmentDoc, player).user.name === user.name)
-    )
+    self = useFragment(GamePlayerFragmentDoc, game.players).find((player) => player.user.name === user.name)
   }
   const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
 
@@ -384,10 +378,7 @@ function ExistingGame({
 
   const previousGame = usePrevious(game)
   useEffect(() => {
-    const self = useFragment(
-      GamePlayerFragmentDoc,
-      game?.players.find((player) => useFragment(GamePlayerFragmentDoc, player).user.name === user?.name)
-    )
+    const self = useFragment(GamePlayerFragmentDoc, game?.players)?.find((player) => player.user.name === user?.name)
     if (game?.status === GameStatus.Redrawing && previousGame?.status !== GameStatus.Redrawing && !self?.ready) {
       setCoinTossVisible(true)
       setTimeout(() => setCoinTossVisible(false), GAME_ORDER_COIN_FLIP_DURATION_SECONDS * 1000)
@@ -437,8 +428,8 @@ function ExistingGame({
     if (game && playerId) {
       const unitSelected = useFragment(UnitFragmentDoc, unitFragment.unit)
       const roundIndex = game.round - 1
-      const playerIndex = game.players
-        .map((player) => useFragment(GamePlayerFragmentDoc, player).user.id)
+      const playerIndex = useFragment(GamePlayerFragmentDoc, game.players)
+        .map((player) => player.user.id)
         .indexOf(playerId)
       let moveIndex: number | undefined = undefined
       const player = useFragment(GamePlayerFragmentDoc, game.players[playerIndex])
@@ -464,10 +455,10 @@ function ExistingGame({
   const fullGameUnit = fullUnit?.unitFragment
   let fullUnitUserName: string | undefined = undefined
   if (fullUnit) {
-    const fullUnitGamePlayerFragment = game?.players.find(
-      (player) => useFragment(GamePlayerFragmentDoc, player).user.id === fullUnit.playerId
+    const fullUnitGamePlayerFragment = useFragment(GamePlayerFragmentDoc, game?.players)?.find(
+      (player) => player.user.id === fullUnit.playerId
     )
-    fullUnitUserName = useFragment(GamePlayerFragmentDoc, fullUnitGamePlayerFragment)?.user.name
+    fullUnitUserName = fullUnitGamePlayerFragment?.user.name
   }
   const gameDeck = useFragment(GameDeckFragmentDoc, gameDeckProps.deck)
   const redrawIds = getRedrawIds({
