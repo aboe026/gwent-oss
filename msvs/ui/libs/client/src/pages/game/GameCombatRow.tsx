@@ -5,11 +5,11 @@ import {
   UnitFragment,
   Combat,
   DeckUnitFragment,
+  FragmentType,
   useFragment,
   GamePlayerFragment,
   PlayerRoundFragmentDoc,
   PlayerCombatRowFragmentDoc,
-  GameUnitFragment,
   GameUnitFragmentDoc,
   GameFragment,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -19,7 +19,6 @@ import { retryCheckingAuth } from '../../util/error-util'
 import { sortObjectArray, toTitleCase } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../UserContext'
-import { FragmentType } from '@apollo/client'
 
 /**
  * A row of combat for a Game player and the units that make up that row.
@@ -191,9 +190,9 @@ function GameRowUnit({
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
-  gameUnitFragment: FragmentType<GameUnitFragment>
+  gameUnitFragment: FragmentType<typeof GameUnitFragmentDoc>
   index: number
-  sortedUnits: FragmentType<GameUnitFragment>[]
+  sortedUnits: FragmentType<typeof GameUnitFragmentDoc>[]
 }) {
   const gameUnit = useFragment(GameUnitFragmentDoc, gameUnitFragment)
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)

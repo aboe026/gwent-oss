@@ -1,4 +1,4 @@
-import { ErrorLike, FragmentType } from '@apollo/client'
+import { ErrorLike } from '@apollo/client'
 
 import Centered from './Centered'
 import {
@@ -6,10 +6,10 @@ import {
   DeckFragmentDoc,
   DeckStatsFragment,
   DeckStatsFragmentDoc,
-  FactionFragment,
   FactionFragmentDoc,
   FactionKey,
   FactionStatsQuery,
+  FragmentType,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { HTML_CLASSES } from '@gwent/constants'
@@ -76,7 +76,7 @@ export default function DeckRow({ actions, actionsDisabled, deckFragment, neutra
 /**
  * The faction the deck was configured to use.
  */
-function DeckFaction({ factionFragment }: { factionFragment: FragmentType<FactionFragment> }) {
+function DeckFaction({ factionFragment }: { factionFragment: FragmentType<typeof FactionFragmentDoc> }) {
   const faction = useFragment(FactionFragmentDoc, factionFragment)
   return (
     <div className="deck-list-deck-sub-section deck-list-faction">
@@ -130,7 +130,7 @@ function renderDeckStatsGroups({
   neutralStatsFragment,
 }: {
   deck: DeckFragment
-  neutralStatsFragment: FragmentType<DeckStatsFragment>
+  neutralStatsFragment: FragmentType<typeof DeckStatsFragmentDoc>
 }) {
   const deckStats = useFragment(DeckStatsFragmentDoc, deck.stats)
   const neutralStats = useFragment(DeckStatsFragmentDoc, neutralStatsFragment)
@@ -269,7 +269,7 @@ function getStatNumber({
 interface DeckRowProps {
   actions?: Action[]
   actionsDisabled?: boolean
-  deckFragment: FragmentType<DeckFragment>
+  deckFragment: FragmentType<typeof DeckFragmentDoc>
   neutralFactionStats: FactionStatsProps
 }
 

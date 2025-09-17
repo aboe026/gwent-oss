@@ -2,15 +2,13 @@ import { useNavigate } from 'react-router'
 
 import {
   GameFragment,
-  GamePlayerFragment,
   GamePlayerFragmentDoc,
-  PlayerRoundFragment,
+  FragmentType,
   PlayerRoundFragmentDoc,
   RoundResult,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
-import { FragmentType } from '@apollo/client'
 
 /**
  * A breakdown of the results of a finished Game.
@@ -58,7 +56,7 @@ function GameSummaryPlayer({
   playerFragment,
 }: {
   index: number
-  playerFragment: FragmentType<GamePlayerFragment>
+  playerFragment: FragmentType<typeof GamePlayerFragmentDoc>
 }) {
   const player = useFragment(GamePlayerFragmentDoc, playerFragment)
   return (
@@ -75,7 +73,7 @@ function SummaryPlayerRound({
   playerRoundFragment,
   index,
 }: {
-  playerRoundFragment: FragmentType<PlayerRoundFragment>
+  playerRoundFragment: FragmentType<typeof PlayerRoundFragmentDoc>
   index: number
 }) {
   const round = useFragment(PlayerRoundFragmentDoc, playerRoundFragment)

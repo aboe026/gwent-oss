@@ -1,4 +1,4 @@
-import { ApolloCache, ApolloClient, FragmentType } from '@apollo/client'
+import { ApolloCache, ApolloClient } from '@apollo/client'
 import { RefObject } from 'react'
 import type { useMutation } from '@apollo/client/react'
 
@@ -14,13 +14,14 @@ import {
   SetOrderMutation,
   InputMaybe,
   Combat,
+  FragmentType,
   PlayUnitMutation,
   PlayPassMutation,
-  GameDeckFragment,
   DeckUnitFragment,
   GameUnitFragment,
   GameFragment,
   MoveFragment,
+  GameDeckFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
@@ -51,7 +52,7 @@ export interface GameProps {
 }
 
 export interface GameDeckProps {
-  deck: FragmentType<GameDeckFragment> | null | undefined
+  deck: FragmentType<typeof GameDeckFragmentDoc> | null | undefined
   error: unknown
   loading: boolean
   refetch: (

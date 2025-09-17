@@ -1,5 +1,4 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useEffect, useState } from 'react'
-import { FragmentType } from '@apollo/client'
 import { useMutation, useQuery } from '@apollo/client/react'
 
 import {
@@ -19,6 +18,7 @@ import {
   FactionKey,
   FactionsDocument,
   FactionsQuery,
+  FragmentType,
   LeadersDocument,
   UnitEffectFragmentDoc,
   UnitsDocument,
@@ -392,7 +392,7 @@ function renderNameAndFaction({
   )
 }
 
-function FactionTextOption({ factionFragment }: { factionFragment: FragmentType<FactionFragment> }) {
+function FactionTextOption({ factionFragment }: { factionFragment: FragmentType<typeof FactionFragmentDoc> }) {
   const faction = useFragment(FactionFragmentDoc, factionFragment)
   if (faction.key !== FactionKey.Neutral) {
     return (
@@ -412,7 +412,7 @@ function FactionDetailedOption({
   setSelectedUnits,
   setFactionPickerOpen,
 }: {
-  factionFragment: FragmentType<FactionFragment>
+  factionFragment: FragmentType<typeof FactionFragmentDoc>
   factionsData: FactionsQuery | undefined
   setDeckUnits: Dispatch<SetStateAction<DeckUnitFragment[]>>
   setFaction: Dispatch<SetStateAction<FactionFragment | undefined>>

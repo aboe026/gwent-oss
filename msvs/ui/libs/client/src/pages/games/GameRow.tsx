@@ -1,17 +1,15 @@
 import { useNavigate } from 'react-router'
 
 import {
+  FragmentType,
   GameFragmentDoc,
   GamePlayerFragmentDoc,
   GameFactionFragmentDoc,
-  GameFragment,
-  GamePlayerFragment,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import { HTML_CLASSES, ROUTES } from '@gwent/constants'
 import { humanizeDay, formatGameStatus, humanizeTime } from '@gwent/utils'
 import './GameRow.css'
-import { FragmentType } from '@apollo/client'
 
 /**
  * A row with information about a specific game
@@ -62,7 +60,7 @@ export default function GameRow({ gameFragment }: GameRowProps) {
 /**
  * A players name for a Game.
  */
-function PlayerName({ playerFragment }: { playerFragment: FragmentType<GamePlayerFragment> }) {
+function PlayerName({ playerFragment }: { playerFragment: FragmentType<typeof GamePlayerFragmentDoc> }) {
   const player = useFragment(GamePlayerFragmentDoc, playerFragment)
   return <span className={HTML_CLASSES.GameRowPlayer}>{player.user.name}</span>
 }
@@ -70,12 +68,12 @@ function PlayerName({ playerFragment }: { playerFragment: FragmentType<GamePlaye
 /**
  * A players chosen Faction for a Game.
  */
-function PlayerFaction({ playerFragment }: { playerFragment: FragmentType<GamePlayerFragment> }) {
+function PlayerFaction({ playerFragment }: { playerFragment: FragmentType<typeof GamePlayerFragmentDoc> }) {
   const gamePlayer = useFragment(GamePlayerFragmentDoc, playerFragment)
   const playerFaction = useFragment(GameFactionFragmentDoc, gamePlayer.faction)
   return <span className={HTML_CLASSES.GameRowFaction}>{playerFaction?.name}</span>
 }
 
 interface GameRowProps {
-  gameFragment: FragmentType<GameFragment>
+  gameFragment: FragmentType<typeof GameFragmentDoc>
 }

@@ -1,5 +1,4 @@
 import { CgChevronLeft, CgChevronRight } from 'react-icons/cg'
-import { FragmentType } from '@apollo/client'
 
 import CloseButton from './CloseButton'
 import {
@@ -8,10 +7,9 @@ import {
   DeckUnitFragment,
   EffectKey,
   FactionKey,
-  GameUnitEffectFragment,
+  FragmentType,
   GameUnitEffectFragmentDoc,
   GameUnitFragment,
-  UnitEffectFragment,
   UnitEffectFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
@@ -278,7 +276,7 @@ function UnitEffect({
   effectFragment,
   unit,
 }: {
-  effectFragment: FragmentType<UnitEffectFragment>
+  effectFragment: FragmentType<typeof UnitEffectFragmentDoc>
   unit: UnitFragment
 }) {
   const effect = useFragment(UnitEffectFragmentDoc, effectFragment)
@@ -296,7 +294,7 @@ function UnitEffect({
   )
 }
 
-function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<GameUnitEffectFragment> }) {
+function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<typeof GameUnitEffectFragmentDoc> }) {
   const effect = useFragment(GameUnitEffectFragmentDoc, effectFragment)
   let reason = ''
   if (effect.reason.__typename === 'EffectFromUnit') {
@@ -319,7 +317,7 @@ function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<GameU
 
 interface UnitFullCardProps {
   effectiveStrength?: number | null
-  effects?: FragmentType<GameUnitEffectFragment>[] | null
+  effects?: FragmentType<typeof GameUnitEffectFragmentDoc>[] | null
   fullUnit: DeckUnitFragment | GameUnitFragment | undefined
   hasNext: boolean
   hasPrevious: boolean

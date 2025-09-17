@@ -1,6 +1,5 @@
 import { CgSync } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
-import { FragmentType } from '@apollo/client'
 
 import Centered from '../../components/Centered'
 import {
@@ -9,6 +8,7 @@ import {
   DeckUnitFragment,
   useFragment,
   UnitFragmentDoc,
+  FragmentType,
   GameDeckFragmentDoc,
   GameFactionFragmentDoc,
   GameFactionFragment,
@@ -317,7 +317,7 @@ function renderScore({
     }
   }
   const sortedRounds: {
-    round: FragmentType<PlayerRoundFragment>
+    round: FragmentType<typeof PlayerRoundFragmentDoc>
     number: number
   }[] = []
   const livesRemaining =

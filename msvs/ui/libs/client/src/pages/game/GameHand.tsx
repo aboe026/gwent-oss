@@ -8,10 +8,10 @@ import {
   GameDeckFragmentDoc,
   GamePlayerFragment,
   GameStatus,
+  FragmentType,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
 import Centered from '../../components/Centered'
-import { FragmentType } from '@apollo/client'
 import { FullUnitCards, UnitForPlayer } from './GameProps'
 import getRedrawUnitIds from '../../util/get-redraw-ids'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -36,7 +36,7 @@ export default function GameHand({
   setRedrawCardSelected,
 }: {
   gameStatus: GameStatus
-  gameDeckFragment: FragmentType<GameDeckFragment> | null | undefined
+  gameDeckFragment: FragmentType<typeof GameDeckFragmentDoc> | null | undefined
   handCardSelected: DeckUnitFragment | undefined
   isTurn: boolean
   playUnitLoading: boolean
