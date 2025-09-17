@@ -10,7 +10,7 @@ import LeaderStore from '../../src/database/stores/leader-store'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
-import * as validators from '@gwent/validators'
+import { ValidateDeck } from '@gwent/validators'
 
 describe('add-deck-validation', () => {
   const user = TestUtil.getDbUser({})
@@ -286,7 +286,7 @@ async function testAddDeckValidation({
   if (deckUnits) {
     deckUnitsSpy.mockResolvedValue(deckUnits)
   }
-  const validateDeckSpy = jest.spyOn(validators, 'validateDeck').mockReturnValue(validateDeckResponse)
+  const validateDeckSpy = jest.spyOn(ValidateDeck, 'fromDeckUnits').mockReturnValue(validateDeckResponse)
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   AddDeckValidation['logger'] = {

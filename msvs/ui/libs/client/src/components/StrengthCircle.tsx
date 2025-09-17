@@ -1,5 +1,5 @@
-import { EffectKey, Unit } from '@gwent/graphql-schema/apollo-typings'
-import { getWeatherImage } from '@gwent/utils'
+import { EffectKey, UnitEffectFragmentDoc, UnitFragment, useFragment } from '@gwent/graphql-schema/apollo-typings'
+import getWeatherImage from '../util/get-weather-image'
 import { HTML_CLASSES } from '@gwent/constants'
 import './StrengthCircle.css'
 
@@ -16,7 +16,8 @@ export default function StrengthCircle({
   effectHighlight,
   effectiveStrength,
 }: StrengthCircleProps) {
-  const weatherEffect = unit.effects?.find((effect) => effect.key === EffectKey.Weather)
+  const effects = useFragment(UnitEffectFragmentDoc, unit.effects)
+  const weatherEffect = effects?.find((effect) => effect.key === EffectKey.Weather)
   const weatherTitle = weatherEffect?.ability || ''
   const weatherSymbol = getWeatherImage(unit)
 
@@ -67,5 +68,5 @@ interface StrengthCircleProps {
   size: string
   style?: React.CSSProperties
   textColor?: string
-  unit: Unit
+  unit: UnitFragment
 }

@@ -1,0 +1,21 @@
+fragment GamePlayer on GamePlayer {
+  counts {
+    discard
+    hand
+    undrawn
+  }
+  faction {
+    ...GameFaction
+  }
+  leader {
+    ...GameLeader
+  }
+  ready
+  rounds {
+    ...PlayerRound
+  }
+  user {
+    id
+    name
+  }
+}

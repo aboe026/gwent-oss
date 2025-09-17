@@ -1,7 +1,7 @@
 import { CgArrowDown, CgArrowUp, CgClose, CgEye, CgEyeAlt } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { Faction } from '@gwent/graphql-schema/apollo-typings'
+import { FactionFragment } from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FilterField,
@@ -10,6 +10,7 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/deck-filter'
+import getEnumFromString from '../util/get-faction-key-from-string'
 import './UnitsHeader.css'
 
 /**
@@ -142,12 +143,17 @@ export default function UnitsHeader({
               style={{ cursor: disabled || (!isAvailable && sortFilterLocked) ? 'not-allowed' : 'pointer' }}
               onChange={(event) => {
                 if (!disabled) {
-                  const newSortField = event.target.value as SORT_FIELD
-                  if (isAvailable) {
-                    setAvailableSortField(newSortField)
-                  }
-                  if (!isAvailable || sortFilterLocked) {
-                    setSelectedSortField(newSortField)
+                  const newSortField = getEnumFromString({
+                    enumerative: SORT_FIELD,
+                    value: event.target.value,
+                  })
+                  if (newSortField) {
+                    if (isAvailable) {
+                      setAvailableSortField(newSortField)
+                    }
+                    if (!isAvailable || sortFilterLocked) {
+                      setSelectedSortField(newSortField)
+                    }
                   }
                 }
               }}
@@ -291,7 +297,7 @@ interface UnitsHeaderProps {
   availableSortField: SORT_FIELD
   availableSortOrder: SORT_ORDER
   disabled: boolean
-  faction: Faction | undefined
+  faction: FactionFragment | undefined
   isAvailable: boolean
   selectedFilterFields: FILTER_FIELD[]
   selectedFiltersExpanded: boolean

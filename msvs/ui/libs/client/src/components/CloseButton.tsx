@@ -18,6 +18,6 @@ export default function CloseButton({ id, onClose, title = 'Close' }: CloseButto
 
 interface CloseButtonProps extends PropsWithChildren {
   id?: string
-  onClose: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose: () => void
   title?: string
 }

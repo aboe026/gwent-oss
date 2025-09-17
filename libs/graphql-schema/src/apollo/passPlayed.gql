@@ -1,5 +1,0 @@
-subscription PassPlayed {
-  passPlayed {
-    ...GameFragment
-  }
-}

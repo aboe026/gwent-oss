@@ -6,7 +6,18 @@ import { useQuery } from '@apollo/client/react'
 
 import { Button } from '../../util/keyboard-listener'
 import Centered from '../../components/Centered'
-import { Exact, FactionKey, Game, GamesDocument, GamesQuery, GameStatus } from '@gwent/graphql-schema/apollo-typings'
+import {
+  Exact,
+  FactionKey,
+  GameFactionFragmentDoc,
+  GameFragment,
+  GameFragmentDoc,
+  GamePlayerFragmentDoc,
+  GamesDocument,
+  GamesQuery,
+  GameStatus,
+  useFragment,
+} from '@gwent/graphql-schema/apollo-typings'
 import {
   FILTERS,
   FILTER_FIELD,
@@ -15,10 +26,12 @@ import {
   SORT_FIELD,
   SORT_ORDER,
 } from '@gwent/graphql-schema/games-filter'
-import { humanizeDay, formatGameStatus, humanizeTime, sortObjectArray } from '@gwent/utils'
+import GameRow from './GameRow'
+import getEnumFromString from '../../util/get-faction-key-from-string'
 import { getErrorMessages } from '../../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import { sortObjectArray } from '@gwent/utils'
 import { useAuthRetry } from '../../AuthRetry'
 import { useTitle } from '../../components/TabTitle'
 import './Games.css'
@@ -45,9 +58,10 @@ export default function GamesPage() {
     sortProperties: [sortField, 'id'],
     reverse: sortOrder === SORT_ORDER.Asc ? false : true,
   })
+
   const filteredGames = sortedGames.filter((game) =>
     isFilteredIn({
-      game: game as Game,
+      game: useFragment(GameFragmentDoc, game),
       fields: filterFields,
       user: userFilter,
     })
@@ -106,52 +120,9 @@ export default function GamesPage() {
         </Centered>
       ) : (
         <div id="gamesList">
-          {filteredGames.map((game) => {
-            const status = formatGameStatus(game.status)
-            const rowUrl = ROUTES.Game.path.replace(':gameId', game.id)
-
-            return (
-              <div key={game.id} className="game-list-row" onClick={() => navigate(rowUrl)}>
-                <div title={game.created} className="multi-row-cell">
-                  <span className={HTML_CLASSES.GameRowCreatedDay}>{humanizeDay(game.created)}</span>
-                  <span className={HTML_CLASSES.GameRowCreatedTime}>{humanizeTime(game.created)}</span>
-                </div>
-                <div title={game.updated} className="multi-row-cell">
-                  <span className={HTML_CLASSES.GameRowUpdatedDay}>{humanizeDay(game.updated)}</span>
-                  <span className={HTML_CLASSES.GameRowUpdatedTime}>{humanizeTime(game.updated)}</span>
-                </div>
-                <div className={HTML_CLASSES.GameRowCreator}>{game.creator.name}</div>
-                <div className="multi-row-cell">
-                  {game.players.map((player, index) => {
-                    return (
-                      <span className={HTML_CLASSES.GameRowPlayer} key={index}>
-                        {player.user.name}
-                      </span>
-                    )
-                  })}
-                </div>
-                <div className="multi-row-cell">
-                  {game.players.map((player, index) => {
-                    return (
-                      <span className={HTML_CLASSES.GameRowFaction} key={index}>
-                        {player.faction?.name}
-                      </span>
-                    )
-                  })}
-                </div>
-                <div className={HTML_CLASSES.GameRowStatus}>{status}</div>
-                <div className="multi-row-cell">
-                  {game.victors.map((victor, index) => {
-                    return (
-                      <span className={HTML_CLASSES.GameRowVictor} key={index}>
-                        {victor.name}
-                      </span>
-                    )
-                  })}
-                </div>
-              </div>
-            )
-          })}
+          {filteredGames.map((game, index) => (
+            <GameRow gameFragment={game} key={index} />
+          ))}
         </div>
       )}
     </div>
@@ -262,7 +233,15 @@ function renderHeader({
               title="Sort Field"
               value={sortField}
               className="pointable"
-              onChange={(event) => setSortField(event.target.value as SORT_FIELD)}
+              onChange={(event) => {
+                const newSortField = getEnumFromString({
+                  enumerative: SORT_FIELD,
+                  value: event.target.value,
+                })
+                if (newSortField) {
+                  setSortField(newSortField)
+                }
+              }}
             >
               <option value={SORT_FIELD.Created}>Created</option>
               <option value={SORT_FIELD.Creator}>Owner</option>
@@ -348,7 +327,7 @@ function renderHeader({
  * @param config.user The Username that games should be filtered to, only matching if a game includes a player whose name is a substring.
  * @returns True if the game passes the current filters and should be visible, false otherwise.
  */
-function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Game; user: string }): boolean {
+function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: GameFragment; user: string }): boolean {
   const filteringAnyFaction =
     fields.includes(FILTER_FIELD.Monsters) ||
     fields.includes(FILTER_FIELD.NilfgaardianEmpire) ||
@@ -361,19 +340,24 @@ function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Ga
     fields.includes(FILTER_FIELD.Redrawing) ||
     fields.includes(FILTER_FIELD.Playing) ||
     fields.includes(FILTER_FIELD.Done)
+  const players = useFragment(GamePlayerFragmentDoc, game.players)
   const filteredByFaction =
     fields.length === 0 ||
     !filteringAnyFaction ||
     (fields.includes(FILTER_FIELD.Monsters) &&
-      game.players.find((player) => player.faction?.key === FactionKey.Monsters)) ||
+      players.find((player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.Monsters)) ||
     (fields.includes(FILTER_FIELD.NilfgaardianEmpire) &&
-      game.players.find((player) => player.faction?.key === FactionKey.NilfgaardianEmpire)) ||
+      players.find(
+        (player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.NilfgaardianEmpire
+      )) ||
     (fields.includes(FILTER_FIELD.NorthernRealms) &&
-      game.players.find((player) => player.faction?.key === FactionKey.NorthernRealms)) ||
+      players.find(
+        (player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.NorthernRealms
+      )) ||
     (fields.includes(FILTER_FIELD.ScoiaTael) &&
-      game.players.find((player) => player.faction?.key === FactionKey.ScoiaTael)) ||
+      players.find((player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.ScoiaTael)) ||
     (fields.includes(FILTER_FIELD.Skellige) &&
-      game.players.find((player) => player.faction?.key === FactionKey.Skellige))
+      players.find((player) => useFragment(GameFactionFragmentDoc, player.faction)?.key === FactionKey.Skellige))
   const filteredByStatus =
     fields.length === 0 ||
     !filteringAnyStatus ||
@@ -385,7 +369,7 @@ function isFilteredIn({ fields, game, user }: { fields: FILTER_FIELD[]; game: Ga
   const filteredByUser =
     !user ||
     game.creator.name.toLowerCase().includes(user.toLowerCase()) ||
-    game.players.find((player) => player.user.name.toLowerCase().includes(user.toLowerCase())) ||
+    players.find((player) => player.user.name.toLowerCase().includes(user.toLowerCase())) ||
     game.victors.find((victor) => victor.name.toLowerCase().includes(user.toLowerCase()))
   return !!filteredByFaction && !!filteredByStatus && !!filteredByUser
 }

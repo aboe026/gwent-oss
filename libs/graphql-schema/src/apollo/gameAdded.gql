@@ -1,5 +1,0 @@
-subscription GameAdded {
-  gameAdded {
-    ...GameFragment
-  }
-}

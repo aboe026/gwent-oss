@@ -1,0 +1,5 @@
+mutation SetOrder($game: ID!, $users: [ID!]) {
+  setOrder(game: $game, users: $users) {
+    ...Game
+  }
+}

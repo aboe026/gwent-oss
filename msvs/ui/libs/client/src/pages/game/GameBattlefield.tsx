@@ -1,6 +1,14 @@
 import { Dispatch, SetStateAction } from 'react'
 
-import { DeckUnit, GamePlayer, Game, Combat } from '@gwent/graphql-schema/apollo-typings'
+import {
+  Combat,
+  DeckUnitFragment,
+  GameFragment,
+  GamePlayerFragment,
+  PlayerRoundFragmentDoc,
+  UnitFragmentDoc,
+  useFragment,
+} from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import GameCombatRow from './GameCombatRow'
 import { HTML_CLASSES } from '@gwent/constants'
@@ -23,19 +31,20 @@ export default function GameBattlefield({
   setHistoryCardSelected,
 }: {
   fullUnits: FullUnitCards | undefined
-  game: Game
-  handCardSelected: DeckUnit | undefined
+  game: GameFragment
+  handCardSelected: DeckUnitFragment | undefined
   historyCardSelected: UnitForPlayer | undefined
-  opponent: GamePlayer
+  opponent: GamePlayerFragment
   playUnitProps: PlayUnitProps
   scrollHistoryIntoView: (args: UnitForPlayer) => void
-  self: GamePlayer
+  self: GamePlayerFragment
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnit | undefined>>
+  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const { checkAuth } = useUserContext()
-  const rowsToHighlight = (handCardSelected && handCardSelected.unit.combats) || []
+  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
+  const rowsToHighlight = (handCardSelectedUnit && handCardSelectedUnit.combats) || []
   const rowsToBlock = []
   if (rowsToHighlight.length > 0) {
     if (!rowsToHighlight.includes(Combat.Close)) {
@@ -49,10 +58,10 @@ export default function GameBattlefield({
     }
   }
   const isTurn = game.turn?.user.name === self.user.name
-  const selfPassed = self.rounds[game.round - 1].passed
-  const opponentPassed = opponent.rounds[game.round - 1].passed
+  const selfPassed = useFragment(PlayerRoundFragmentDoc, self.rounds[game.round - 1]).passed
+  const opponentPassed = useFragment(PlayerRoundFragmentDoc, opponent.rounds[game.round - 1]).passed
   const sharedProps = {
-    handCardSelected,
+    handCardSelectedUnit,
     playUnitProps,
     fullUnits,
     checkAuth,

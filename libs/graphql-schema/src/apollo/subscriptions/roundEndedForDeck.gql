@@ -1,0 +1,10 @@
+subscription RoundEndedForDeck {
+  roundEndedForDeck {
+    game {
+      id
+    }
+    deck {
+      ...GameDeck
+    }
+  }
+}

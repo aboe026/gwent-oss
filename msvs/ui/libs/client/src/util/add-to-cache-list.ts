@@ -6,14 +6,12 @@
  * @param config.add The item to add to the cached list.
  * @returns A new list concatenating the previous list and new item, which the cache can be set to.
  */
-export default function addToCacheList<T>({ previous, add }: { previous?: T[]; add?: T }): T[] {
+export default function addToCacheList<T extends { id: string }>({ previous, add }: { previous?: T[]; add?: T }): T[] {
   const newItems = previous ? [...previous] : [] // cannot directly modify previous, need to create new object
 
   if (add) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const currentIds = newItems.map((item) => (item as any).id)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (!currentIds.includes((add as any).id)) {
+    const currentIds = newItems.map((item) => item.id)
+    if (!currentIds.includes(add.id)) {
       newItems.push(add)
     }
   }

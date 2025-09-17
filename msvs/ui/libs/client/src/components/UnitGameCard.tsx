@@ -1,8 +1,17 @@
 import { CgMaximizeAlt } from 'react-icons/cg'
-import { DeckUnit, EffectKey } from '@gwent/graphql-schema/apollo-typings'
-import { getCombatImage, toTitleCase } from '@gwent/utils'
+
+import {
+  DeckUnitFragment,
+  EffectKey,
+  GameUnitFragment,
+  UnitEffectFragmentDoc,
+  UnitFragmentDoc,
+  useFragment,
+} from '@gwent/graphql-schema/apollo-typings'
+import getCombatImage from '../util/get-combat-image'
 import { HTML_CLASSES } from '@gwent/constants'
 import StrengthCircle from './StrengthCircle'
+import { toTitleCase } from '@gwent/utils'
 import './UnitGameCard.css'
 
 /**
@@ -22,11 +31,12 @@ export default function UnitGameCard({
   selected,
   title,
 }: UnitGameCardProps) {
+  const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
   const combatSymbol = getCombatImage(deckUnit)
-  const combatTitle = deckUnit.unit.combats
-    ? deckUnit.unit.combats.map((combat) => toTitleCase(combat)).join(' or ')
-    : ''
-  const unitTitle = title || deckUnit.unit.name
+  const combatTitle = unit.combats ? unit.combats.map((combat) => toTitleCase(combat)).join(' or ') : ''
+  const unitTitle = title || unit.name
+  const effects = useFragment(UnitEffectFragmentDoc, unit.effects)
+
   return (
     <div
       className={`${HTML_CLASSES.UnitGameCardContainer} ${selected ? HTML_CLASSES.ItemHighlighted : ''}`}
@@ -37,9 +47,9 @@ export default function UnitGameCard({
       }}
       onClick={() => (onClick ? onClick(deckUnit) : {})}
     >
-      <img className="unit-game-card-image" title={unitTitle} src={deckUnit.unit.images[deckUnit.artStyle - 1]} />
+      <img className="unit-game-card-image" title={unitTitle} src={unit.images[deckUnit.artStyle - 1]} />
       <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>
-        <StrengthCircle size="100%" unit={deckUnit.unit} effectiveStrength={effectiveStrength} effectHighlight={true} />
+        <StrengthCircle size="100%" unit={unit} effectiveStrength={effectiveStrength} effectHighlight={true} />
       </div>
       <div
         className={`${HTML_CLASSES.UnitGameCardFullScreen} icon-container pointable`}
@@ -61,8 +71,8 @@ export default function UnitGameCard({
             title={combatTitle}
           />
         )}
-        {deckUnit.unit.effects &&
-          deckUnit.unit.effects
+        {effects &&
+          effects
             .filter((effect) => effect.key !== EffectKey.Weather)
             .map((effect, index) => (
               <img
@@ -80,13 +90,13 @@ export default function UnitGameCard({
 
 interface UnitGameCardProps {
   cursor?: string
-  deckUnit: DeckUnit
+  deckUnit: DeckUnitFragment | GameUnitFragment
   effectiveStrength?: number | null
   dotted?: boolean
   dottedTitle?: string
   iconSize?: string
-  onFullscreen: (deckUnit: DeckUnit) => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onClick?: (deckUnit: DeckUnit) => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onFullscreen: (deckUnit: DeckUnitFragment | GameUnitFragment) => void
+  onClick?: (deckUnit: DeckUnitFragment | GameUnitFragment) => void
   selected?: boolean
   title?: string
 }

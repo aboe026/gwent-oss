@@ -1,5 +1,0 @@
-mutation Redraw($game: ID!, $unit: ID!) {
-  redraw(game: $game, unit: $unit) {
-    ...DeckUnitFragment
-  }
-}

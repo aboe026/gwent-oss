@@ -1,0 +1,13 @@
+subscription UnitRedrawn {
+  unitRedrawn {
+    from {
+      ...DeckUnit
+    }
+    game {
+      id
+    }
+    to {
+      ...DeckUnit
+    }
+  }
+}

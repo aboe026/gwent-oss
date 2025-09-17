@@ -1,6 +1,6 @@
 {
   "name": "@gwent/graphql-schema",
-  "version": "0.15.2",
+  "version": "0.15.3",
   "author": "Adam Boe",
   "description": "Schema definitions for GraphQL API",
   "main": "build/src/index.js",
@@ -12,6 +12,12 @@
       ],
       "apollo-typings": [
         "build/generated/apollo/index.d.ts"
+      ],
+      "apollo-raw-typings": [
+        "build/generated/apollo/raw-types.d.ts"
+      ],
+      "apollo-possible-typings": [
+        "build/generated/apollo/fragment-types.d.ts"
       ],
       "*": [
         "build/generated/*",
@@ -25,17 +31,19 @@
     "./decks-filter": "./build/src/decks-filter.js",
     "./games-filter": "./build/src/games-filter.js",
     "./apollo-typings": "./build/generated/apollo/index.js",
+    "./apollo-raw-typings": "./build/generated/apollo/raw-types.js",
+    "./apollo-possible-typings": "./build/generated/apollo/fragment-types.js",
     "./database-typings": "./build/generated/database-typings.js",
     "./resolver-typings": "./build/generated/resolver-typings.js",
     "./context": "./build/src/context.js"
   },
   "scripts": {
+    "add-graphql-to-apollo": "yarn g:ts-node scripts/add-graphql-to-apollo.ts",
     "build": "yarn g:npm-run-all --sequential build-codegen build-node",
     "build-codegen": "graphql-codegen --config codegen.ts",
     "build-node": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "convert-eol": "yarn g:ts-node scripts/convert-eol.ts",
-    "add-graphql-to-apollo": "yarn g:ts-node scripts/add-graphql-to-apollo",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
@@ -45,7 +53,6 @@
     "watch-node": "yarn g:tsc --watch"
   },
   "dependencies": {
-    "@apollo/client": "4.0.3",
     "@graphql-typed-document-node/core": "3.2.0",
     "@gwent/constants": "workspace:*",
     "graphql": "16.11.0",
@@ -59,18 +66,18 @@
     "@graphql-codegen/add": "5.0.3",
     "@graphql-codegen/cli": "5.0.7",
     "@graphql-codegen/client-preset": "4.8.3",
+    "@graphql-codegen/fragment-matcher": "6.0.0",
     "@graphql-codegen/schema-ast": "4.1.0",
     "@graphql-codegen/typescript": "4.1.6",
     "@graphql-codegen/typescript-mongodb": "3.0.1",
+    "@graphql-codegen/typescript-operations": "4.6.1",
     "@graphql-codegen/typescript-resolvers": "4.5.2",
     "@graphql-tools/schema": "10.0.25",
     "@parcel/watcher": "2.5.1",
-    "@types/fs-extra": "11.0.4",
     "@types/jest": "30.0.0",
     "@types/node": "22.18.0",
     "@types/semver": "7.7.0",
     "eol": "0.10.0",
-    "fs-extra": "11.3.1",
     "jest-junit": "16.0.0",
     "ts-jest": "29.4.1"
   }

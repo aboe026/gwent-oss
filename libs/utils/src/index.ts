@@ -2,15 +2,13 @@ import addListsToMap from './add-lists-to-map'
 import combineUnitStats from './combine-unit-stats'
 import { humanizeDay, humanizeTime } from './humanize-date'
 import formatGameStatus from './format-game-status'
-import getCombatImage from './get-combat-image'
 import getDuplicateItems from './get-duplicate-items'
 import getImpactDescription from './get-impact-description'
 import getNestedProperty from './get-nested-property'
 import getNoImpactMessage from './get-no-impact-message'
 import getRandomSubset from './get-random-subset'
 import getUniqueItems from './get-unique-items'
-import getUnitStats from './get-unit-stats'
-import getWeatherImage from './get-weather-image'
+import GetUnitStats from './get-unit-stats'
 import groupBy from './group-by'
 import randomizeOrder from './randomize-order'
 import sleep from './sleep'
@@ -21,15 +19,13 @@ export {
   addListsToMap,
   combineUnitStats,
   formatGameStatus,
-  getCombatImage,
   getDuplicateItems,
   getImpactDescription,
   getNestedProperty,
   getNoImpactMessage,
   getRandomSubset,
   getUniqueItems,
-  getUnitStats,
-  getWeatherImage,
+  GetUnitStats,
   groupBy,
   humanizeDay,
   humanizeTime,

@@ -1,10 +1,10 @@
 import { CgChevronDoubleLeft, CgChevronDoubleRight, CgLock, CgLockUnlock } from 'react-icons/cg'
 import { Dispatch, SetStateAction } from 'react'
 
-import { DeckUnit, UnitStats } from '@gwent/graphql-schema/apollo-typings'
+import { DeckUnitFragment, UnitFragmentDoc, UnitStats, useFragment } from '@gwent/graphql-schema/apollo-typings'
 import { DECK_MIN_UNITS, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
-import { getUnitStats, toTitleCase } from '@gwent/utils'
+import { GetUnitStats, toTitleCase } from '@gwent/utils'
 import ProgressRing from '../components/ProgressRing'
 import './UnitsStats.css'
 
@@ -38,7 +38,7 @@ export default function UnitsStats({
   setSortFilterLocked,
   sortFilterLocked,
 }: UnitsStatsProps) {
-  const selectedStats = getUnitStats(selectedUnits)
+  const selectedStats = GetUnitStats.fromDeckUnitFragments(selectedUnits)
   const buttonColor = disabled ? 'gray' : 'black'
 
   return (
@@ -52,7 +52,7 @@ export default function UnitsStats({
             title="Add All"
             onClick={() => {
               if (!disabled) {
-                setSelectedUnits((previous: DeckUnit[]) => [...previous, ...filteredAvailableUnits])
+                setSelectedUnits((previous: DeckUnitFragment[]) => [...previous, ...filteredAvailableUnits])
               }
             }}
           >
@@ -89,10 +89,14 @@ export default function UnitsStats({
             title="Remove All"
             onClick={() => {
               if (!disabled) {
-                setSelectedUnits((previous: DeckUnit[]) =>
+                setSelectedUnits((previous: DeckUnitFragment[]) =>
                   previous.filter(
                     (deckUnit) =>
-                      !filteredSelectedUnits.some((selectedUnit) => selectedUnit.unit.id === deckUnit.unit.id)
+                      !filteredSelectedUnits.some(
+                        (selectedUnit) =>
+                          useFragment(UnitFragmentDoc, selectedUnit.unit).id ===
+                          useFragment(UnitFragmentDoc, deckUnit.unit).id
+                      )
                   )
                 )
               }
@@ -402,13 +406,13 @@ interface UnitsStatsProps {
   disabled: boolean
   effectsExpanded: boolean
   factionStats: UnitStats | undefined
-  filteredAvailableUnits: DeckUnit[]
-  filteredSelectedUnits: DeckUnit[]
-  selectedUnits: DeckUnit[]
+  filteredAvailableUnits: DeckUnitFragment[]
+  filteredSelectedUnits: DeckUnitFragment[]
+  selectedUnits: DeckUnitFragment[]
   setAvailableFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setCombatsExpanded: Dispatch<SetStateAction<boolean>>
   setEffectsExpanded: Dispatch<SetStateAction<boolean>>
-  setSelectedUnits: Dispatch<SetStateAction<DeckUnit[]>>
+  setSelectedUnits: Dispatch<SetStateAction<DeckUnitFragment[]>>
   setSelectedFilterFields: Dispatch<SetStateAction<FILTER_FIELD[]>>
   setSelectedFiltersExpanded: Dispatch<SetStateAction<boolean>>
   setSelectedNameFilter: Dispatch<SetStateAction<string>>

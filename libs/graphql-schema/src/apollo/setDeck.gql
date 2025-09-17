@@ -1,5 +1,0 @@
-mutation SetDeck($game: ID!, $deck: ID!) {
-  setDeck(game: $game, deck: $deck) {
-    ...GameDeckFragment
-  }
-}

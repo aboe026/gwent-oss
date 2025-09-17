@@ -1,5 +1,0 @@
-subscription OrderSet {
-  orderSet {
-    ...GameFragment
-  }
-}

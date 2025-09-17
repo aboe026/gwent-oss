@@ -1,0 +1,27 @@
+fragment Faction on Faction {
+  key
+  id
+  name
+  image
+  ability
+  dlc {
+    name
+    image
+  }
+  stats {
+    ...DeckStats
+    avenger
+    berserker
+    bond
+    decoy
+    horn
+    mardroeme
+    medic
+    morale
+    muster
+    scorch
+    spy
+    weather
+    strengths
+  }
+}

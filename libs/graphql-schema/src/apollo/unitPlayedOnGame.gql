@@ -1,7 +1,0 @@
-subscription UnitPlayedOnGame {
-  unitPlayedOnGame {
-    game {
-      ...GameFragment
-    }
-  }
-}

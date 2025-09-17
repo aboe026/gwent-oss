@@ -8,22 +8,24 @@ import { Button } from '../util/keyboard-listener'
 import Centered from '../components/Centered'
 import CloseButton from './CloseButton'
 import {
-  Deck,
+  DeckFragment,
+  DeckFragmentDoc,
   DecksDocument,
   DecksQuery,
   Exact,
+  FactionFragmentDoc,
   FactionKey,
   FactionStatsDocument,
   FactionStatsQuery,
   InputMaybe,
-  UnitStats,
+  useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
+import DeckRow, { Action } from './DeckRow'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/decks-filter'
+import getEnumFromString from '../util/get-faction-key-from-string'
 import { getErrorMessages } from '../util/error-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
-import { IconType } from 'react-icons'
 import LoadingSpinner from '../components/LoadingSpinner'
-import ProgressBar from '../components/ProgressBar'
 import { sortObjectArray } from '@gwent/utils'
 import { useAuthRetry } from '../AuthRetry'
 import './DeckList.css'
@@ -55,7 +57,6 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   useAuthRetry(neutralStatsError, neutralStatsRefetch)
   const navigate = useNavigate()
   const decksErrorMessages = getErrorMessages(decksError)
-  const meutralStatsErrorMessages = getErrorMessages(neutralStatsError)
 
   const sortedDecks = sortObjectArray({
     array: decksData?.decks,
@@ -64,14 +65,11 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
   })
   const filteredDecks = sortedDecks.filter((deck) =>
     isFilteredIn({
-      deck: deck as Deck,
+      deck: useFragment(DeckFragmentDoc, deck),
       fields: filterFields,
       name: nameFilter,
     })
   )
-  const neutralStats = neutralStatsData?.factions.find((faction) => faction.key === FactionKey.Neutral)?.stats as
-    | UnitStats
-    | undefined
 
   return (
     <div id={HTML_IDS.DeckListContainer}>
@@ -133,68 +131,19 @@ export default function DeckList({ actions, actionsDisabled, onClose, onCreate, 
         </Centered>
       ) : (
         <div id={HTML_IDS.DeckListContents} style={{ paddingBottom }}>
-          {filteredDecks.map((deck) => {
-            return (
-              <div key={deck.id} className={HTML_CLASSES.DeckListDeckContainer}>
-                <div className="deck-list-deck-section deck-list-deck-name-faction">
-                  <div className="deck-list-deck-sub-section deck-list-deck-name-created">
-                    <span className={HTML_CLASSES.DeckListDeckName}>{deck.name}</span>
-                    <span className={HTML_CLASSES.DeckListDeckCreated} title={deck.created}>
-                      {new Date(deck.created).toLocaleDateString('en-us', {
-                        month: 'long',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                  <div className="deck-list-deck-sub-section deck-list-faction">
-                    <img
-                      src={deck.faction.image}
-                      title={deck.faction.name}
-                      className={HTML_CLASSES.DeckListDeckFactionImage}
-                    />
-                    <div className="deck-list-deck-faction-name-ability">
-                      <span className={HTML_CLASSES.DeckListDeckFactionName}>{deck.faction.name}</span>
-                      <span className={HTML_CLASSES.DeckListDeckFactionAbility}>{deck.faction.ability}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="deck-list-deck-section">
-                  <div className="deck-list-deck-sub-section">
-                    <img
-                      src={deck.leader.image}
-                      title={deck.leader.name}
-                      className={HTML_CLASSES.DeckListDeckLeaderImage}
-                    />
-                    <div className="deck-list-deck-leader-name-ability">
-                      <span className={HTML_CLASSES.DeckListDeckLeaderName}>{deck.leader.name}</span>
-                      <span className={HTML_CLASSES.DeckListDeckLeaderAbility}>{deck.leader.ability}</span>
-                    </div>
-                  </div>
-                </div>
-                {renderDeckStats({
-                  deck: deck as Deck,
-                  neutralStats,
-                  neutralLoading: neutralStatsLoading,
-                  neutralError: meutralStatsErrorMessages,
-                })}
-                {actions && actions.length > 0 && (
-                  <div className="deck-list-deck-actions-container">
-                    {actions.map((action, index) => (
-                      <div
-                        key={index}
-                        onClick={() => !actionsDisabled && action.onClick(deck as Deck)}
-                        title={action.title}
-                        className={`deck-list-deck-action-button ${action.className}`}
-                      >
-                        <action.icon />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )
-          })}
+          {filteredDecks.map((deckFragment, index) => (
+            <DeckRow
+              actions={actions}
+              actionsDisabled={actionsDisabled}
+              deckFragment={deckFragment}
+              key={index}
+              neutralFactionStats={{
+                data: neutralStatsData,
+                error: neutralStatsError,
+                loading: neutralStatsLoading,
+              }}
+            />
+          ))}
         </div>
       )}
     </div>
@@ -227,8 +176,8 @@ function renderHeader({
   loading: boolean
   nameFilter: string
   navigate: NavigateFunction
-  onClose?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose?: () => void
+  onCreate?: () => void
   refetchDecks: (
     variables?:
       | Partial<
@@ -296,7 +245,15 @@ function renderHeader({
               title="Sort Field"
               value={sortField}
               className="pointable"
-              onChange={(event) => setSortField(event.target.value as SORT_FIELD)}
+              onChange={(event) => {
+                const sortField = getEnumFromString({
+                  enumerative: SORT_FIELD,
+                  value: event.target.value,
+                })
+                if (sortField) {
+                  setSortField(sortField)
+                }
+              }}
             >
               <option value={SORT_FIELD.Agile}>Agile</option>
               <option value={SORT_FIELD.Close}>Close</option>
@@ -385,7 +342,7 @@ function renderCreateDeckButton({
 }: {
   id: string
   navigate: NavigateFunction
-  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onCreate?: () => void
 }) {
   const newDeckPath = ROUTES.Deck.path.replace(':deckId', 'new')
 
@@ -416,14 +373,15 @@ function renderCreateDeckButton({
  * @param config.name The name that Decks should be filtered on, and substring matches.
  * @returns True if the Deck should be shown, false otherwise.
  */
-function isFilteredIn({ deck, fields, name }: { deck: Deck; fields: FILTER_FIELD[]; name: string }): boolean {
+function isFilteredIn({ deck, fields, name }: { deck: DeckFragment; fields: FILTER_FIELD[]; name: string }): boolean {
+  const faction = useFragment(FactionFragmentDoc, deck.faction)
   const filteredByFaction =
     fields.length === 0 ||
-    (fields.includes(FILTER_FIELD.Monsters) && deck.faction.key === FactionKey.Monsters) ||
-    (fields.includes(FILTER_FIELD.NilfgaardianEmpire) && deck.faction.key === FactionKey.NilfgaardianEmpire) ||
-    (fields.includes(FILTER_FIELD.NorthernRealms) && deck.faction.key === FactionKey.NorthernRealms) ||
-    (fields.includes(FILTER_FIELD.ScoiaTael) && deck.faction.key === FactionKey.ScoiaTael) ||
-    (fields.includes(FILTER_FIELD.Skellige) && deck.faction.key === FactionKey.Skellige)
+    (fields.includes(FILTER_FIELD.Monsters) && faction.key === FactionKey.Monsters) ||
+    (fields.includes(FILTER_FIELD.NilfgaardianEmpire) && faction.key === FactionKey.NilfgaardianEmpire) ||
+    (fields.includes(FILTER_FIELD.NorthernRealms) && faction.key === FactionKey.NorthernRealms) ||
+    (fields.includes(FILTER_FIELD.ScoiaTael) && faction.key === FactionKey.ScoiaTael) ||
+    (fields.includes(FILTER_FIELD.Skellige) && faction.key === FactionKey.Skellige)
   const filteredByName = !name || deck.name.toLowerCase().includes(name.toLowerCase())
   return filteredByFaction && filteredByName
 }
@@ -473,142 +431,10 @@ function renderFilterCheckboxes({
   )
 }
 
-/**
- * A group of all statistics for the Deck.
- */
-function renderDeckStats({
-  deck,
-  neutralLoading,
-  neutralStats,
-  neutralError,
-}: {
-  deck: Deck
-  neutralStats: UnitStats | undefined
-  neutralLoading: boolean
-  neutralError: string
-}) {
-  return (
-    <div className="deck-list-deck-section deck-list-deck-stats">
-      {neutralLoading ? (
-        <Centered>
-          <LoadingSpinner size="100px" />
-        </Centered>
-      ) : neutralError || !neutralStats ? (
-        <Centered>
-          <div className="error-text">{`Error getting Neutral faction stats: ${neutralError}`}</div>
-        </Centered>
-      ) : (
-        <>
-          <div className="deck-list-deck-stats-group">
-            {renderDeckStat({
-              deck,
-              neutralStats,
-              label: 'Units',
-              stat: 'units',
-            })}
-            {renderDeckStat({
-              deck,
-              neutralStats,
-              label: 'Specials',
-              stat: 'specials',
-            })}
-            {renderDeckStat({
-              deck,
-              neutralStats,
-              label: 'Heroes',
-              stat: 'heroes',
-            })}
-            {renderDeckStat({
-              deck,
-              neutralStats,
-              label: 'Strength',
-              stat: 'strengthTotal',
-            })}
-            <div>
-              <span>Strength Average:</span>
-              <span className="deck-stat-strengthAverage-value deck-stat-value">
-                {deck.stats.strengthAverage.toFixed(1)}
-              </span>
-            </div>
-          </div>
-          <div className="deck-list-deck-stats-group">
-            {renderDeckStat({
-              deck,
-              neutralStats,
-              label: 'Close',
-              stat: 'close',
-            })}
-            {renderDeckStat({
-              deck,
-              neutralStats,
-              label: 'Ranged',
-              stat: 'ranged',
-            })}
-            {renderDeckStat({
-              deck,
-              neutralStats,
-              label: 'Siege',
-              stat: 'siege',
-            })}
-            {renderDeckStat({
-              deck,
-              neutralStats,
-              label: 'Agile',
-              stat: 'agile',
-            })}
-          </div>
-        </>
-      )}
-    </div>
-  )
-}
-
-/**
- * A progress bar indicating how many of a certain statistic is present in the Deck.
- */
-function renderDeckStat({
-  deck,
-  label,
-  stat,
-  neutralStats,
-}: {
-  deck: Deck
-  label: string
-  stat: keyof UnitStats
-  neutralStats: UnitStats
-}) {
-  const available = (deck.faction.stats[stat] as number) + (neutralStats[stat] as number)
-  const chosen = deck.stats[stat]
-
-  return (
-    <div>
-      <div>
-        <span>{`${label}:`}</span>
-        <span className={`deck-stat-${stat}-value deck-stat-value`}>
-          {chosen}/{available}
-        </span>
-      </div>
-      <ProgressBar
-        completeColor="gray"
-        remainingColor="lightgray"
-        height="10px"
-        percent={((chosen as number) / (available as number)) * 100}
-      />
-    </div>
-  )
-}
-
 interface DeckListProps {
   actions?: Action[]
   actionsDisabled?: boolean
-  onClose?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
-  onCreate?: () => any // eslint-disable-line @typescript-eslint/no-explicit-any
+  onClose?: () => void
+  onCreate?: () => void
   paddingBottom?: string
-}
-
-interface Action {
-  title: string
-  className: string
-  icon: IconType
-  onClick: (deck: Deck) => any // eslint-disable-line @typescript-eslint/no-explicit-any
 }

@@ -1,5 +1,0 @@
-query GameDeck($game: ID!) {
-  gameDeck(game: $game) {
-    ...GameDeckFragment
-  }
-}

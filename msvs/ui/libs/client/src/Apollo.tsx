@@ -6,10 +6,12 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { HttpLink, ApolloClient, InMemoryCache, ApolloLink } from '@apollo/client'
 import urlJoin from 'url-join'
 
+import generatedIntrospection from '@gwent/graphql-schema/apollo-possible-typings'
+
 /**
  * Need to pass management of WebSocket status to a lower-order component
  * otherwise the state changes of the WebSocket status causes this component to re-render
- * and since it is so high in the component tree it would re-render child pages (such as DecksPage)
+ * and since it is so high in the component tree it would re-render child pages (like DecksPage)
  * which would then cause those pages to redo their useEffect (which would create another WebSocket unnecessarily)
  */
 export const WebSocketLinkContext = createContext<GraphQLWsLink | undefined>(undefined)
@@ -50,7 +52,9 @@ export default function Apollo({ children }: PropsWithChildren) {
       wsLink,
       httpLink
     ),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({
+      possibleTypes: generatedIntrospection.possibleTypes,
+    }),
     devtools: {
       // process.env.NODE_ENV overwritten/hard-coded at build time
       enabled: process.env.NODE_ENV === 'development' ? true : false,

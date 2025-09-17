@@ -839,7 +839,7 @@ test('Ready game after session expires', async (t) => {
   await t.wait(t.fixtureCtx.sessionTimeoutSeconds * 1000)
   await GamePage.ready()
   await E2eUtil.verifyCurrentUrl(GamePage.getUrl(game.id))
-  await GamePage.verifyReadyError(`Error marking self as ready: ${NOT_AUTHENTICATED_MESSAGE}`)
+  await GamePage.verifyReadyError(`Error marking self ready: ${NOT_AUTHENTICATED_MESSAGE}`)
   await reAuthenticate(username, t)
   selfPlayer.ready = true
   await GamePage.verify({

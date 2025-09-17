@@ -1,0 +1,11 @@
+fragment DeckStats on UnitStats {
+  units
+  specials
+  heroes
+  close
+  ranged
+  siege
+  agile
+  strengthTotal
+  strengthAverage
+}

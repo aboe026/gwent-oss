@@ -1,0 +1,16 @@
+fragment Deck on Deck {
+  id
+  created
+  name
+  faction {
+    ...Faction
+  }
+  leader {
+    name
+    ability
+    image
+  }
+  stats {
+    ...DeckStats
+  }
+}

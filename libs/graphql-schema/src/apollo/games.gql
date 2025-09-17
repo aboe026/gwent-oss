@@ -1,5 +1,0 @@
-query Games {
-  games {
-    ...GameFragment
-  }
-}

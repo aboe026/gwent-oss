@@ -1,0 +1,5 @@
+query Games {
+  games {
+    ...Game
+  }
+}

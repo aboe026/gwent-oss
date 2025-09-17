@@ -1,0 +1,20 @@
+fragment MoveUnit on MoveUnit {
+  created
+  unit {
+    ...GameUnit
+  }
+  impacts {
+    ...Impact
+  }
+  reason {
+    type
+    unit {
+      unit {
+        name
+      }
+    }
+  }
+  source {
+    origin
+  }
+}

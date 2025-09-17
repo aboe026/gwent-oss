@@ -1,0 +1,5 @@
+query Units($deckable: Boolean, $factions: [FactionKey!]) {
+  units(deckable: $deckable, factions: $factions) {
+    ...Unit
+  }
+}

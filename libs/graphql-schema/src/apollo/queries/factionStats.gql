@@ -1,0 +1,8 @@
+query FactionStats($keys: [FactionKey!]) {
+  factions(keys: $keys) {
+    key
+    stats {
+      ...DeckStats
+    }
+  }
+}

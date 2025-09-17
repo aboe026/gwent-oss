@@ -1,0 +1,27 @@
+fragment Game on Game {
+  config {
+    lives
+  }
+  created
+  creator {
+    id
+    name
+  }
+  id
+  players {
+    ...GamePlayer
+  }
+  round
+  status
+  turn {
+    user {
+      id
+      name
+    }
+  }
+  updated
+  victors {
+    id
+    name
+  }
+}

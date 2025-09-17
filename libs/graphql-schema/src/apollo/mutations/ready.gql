@@ -1,0 +1,5 @@
+mutation Ready($game: ID!) {
+  ready(game: $game) {
+    ...Game
+  }
+}

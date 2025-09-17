@@ -1,0 +1,11 @@
+fragment GameUnit on GameUnit {
+  artStyle
+  effectiveStrength
+  effects {
+    ...GameUnitEffect
+  }
+  row
+  unit {
+    ...Unit
+  }
+}

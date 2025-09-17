@@ -3,14 +3,22 @@ import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
 import {
-  DeckUnit,
-  GamePlayer,
-  Game,
+  DeckUnitFragment,
+  FragmentType,
+  GameDeckFragmentDoc,
+  GameFactionFragmentDoc,
+  GameFactionFragment,
+  GameFragment,
+  GameLeaderFragment,
+  GameLeaderFragmentDoc,
+  GamePlayerFragment,
+  GamePlayerFragmentDoc,
   GameStatus,
-  Faction,
-  Leader,
+  PlayerRoundFragment,
+  PlayerRoundFragmentDoc,
   RoundResult,
-  PlayerRound,
+  useFragment,
+  UnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 import { GameDeckProps, GameProps } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -33,53 +41,60 @@ export default function GameInfo({
   coinTossVisible: boolean
   gameDeckProps: GameDeckProps
   gameProps: GameProps
-  handCardSelected: DeckUnit | undefined
-  opponent: GamePlayer
+  handCardSelected: DeckUnitFragment | undefined
+  opponent: GamePlayerFragment
   playPassLoading: boolean
   playUnitLoading: boolean
-  self: GamePlayer
+  self: GamePlayerFragment
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
   const sharedProps = {
     handCardSelected,
-    game: gameProps.game as Game,
     coinTossVisible,
     setPassConfirmationOpen,
     playUnitLoading,
     playPassLoading,
   }
-  return (
-    <div id="gameInfoContainer" className="game-edge-container">
-      {renderPlayerInfo({
-        ...sharedProps,
-        id: HTML_IDS.GameInfoOpponentContainer,
-        player: opponent,
-        isSelf: false,
-        faction: opponent.faction,
-        discard: opponent.counts?.discard,
-        hand: opponent.counts?.hand,
-        undrawn: opponent.counts?.undrawn,
-        leader: opponent.leader,
-      })}
-      {renderSharedInfo({
-        gameProps,
-        gameDeckProps: gameDeckProps,
-      })}
-      {renderPlayerInfo({
-        ...sharedProps,
-        id: HTML_IDS.GameInfoSelfContainer,
-        player: self,
-        isSelf: true,
-        faction: gameDeckProps.deck?.from?.faction,
-        leader: gameDeckProps.deck?.from?.leader,
-        discard: self.counts?.discard !== undefined ? self.counts?.discard : gameDeckProps.deck?.discard.length,
-        hand: self.counts?.hand !== undefined ? self.counts?.hand : gameDeckProps.deck?.hand.length,
-        undrawn: self.counts?.undrawn !== undefined ? self.counts?.undrawn : gameDeckProps.deck?.undrawn.length,
-        deckName: gameDeckProps.deck?.from?.name,
-        deckUpdated: gameDeckProps.deck?.from?.created,
-      })}
-    </div>
-  )
+  const gameDeck = useFragment(GameDeckFragmentDoc, gameDeckProps.deck)
+  const faction = useFragment(GameFactionFragmentDoc, gameDeck?.from?.faction)
+  const leader = useFragment(GameLeaderFragmentDoc, gameDeck?.from?.leader)
+
+  if (gameProps.game) {
+    return (
+      <div id="gameInfoContainer" className="game-edge-container">
+        {renderPlayerInfo({
+          ...sharedProps,
+          game: gameProps.game,
+          id: HTML_IDS.GameInfoOpponentContainer,
+          player: opponent,
+          isSelf: false,
+          faction: useFragment(GameFactionFragmentDoc, opponent.faction),
+          discard: opponent.counts?.discard,
+          hand: opponent.counts?.hand,
+          undrawn: opponent.counts?.undrawn,
+          leader: useFragment(GameLeaderFragmentDoc, opponent.leader),
+        })}
+        {renderSharedInfo({
+          gameProps,
+          gameDeckProps: gameDeckProps,
+        })}
+        {renderPlayerInfo({
+          ...sharedProps,
+          game: gameProps.game,
+          id: HTML_IDS.GameInfoSelfContainer,
+          player: self,
+          isSelf: true,
+          faction,
+          leader,
+          discard: self.counts?.discard !== undefined ? self.counts?.discard : gameDeck?.discard.length,
+          hand: self.counts?.hand !== undefined ? self.counts?.hand : gameDeck?.hand.length,
+          undrawn: self.counts?.undrawn !== undefined ? self.counts?.undrawn : gameDeck?.undrawn.length,
+          deckName: gameDeck?.from?.name,
+          deckUpdated: gameDeck?.from?.created,
+        })}
+      </div>
+    )
+  }
 }
 
 /**
@@ -143,14 +158,14 @@ function renderPlayerInfo({
   deckName?: string
   deckUpdated?: Date
   discard?: number
-  faction?: Faction | null
-  game: Game
+  faction?: GameFactionFragment | null
+  game: GameFragment
   hand?: number
-  handCardSelected: DeckUnit | undefined
+  handCardSelected: DeckUnitFragment | undefined
   id: string
   isSelf: boolean
-  leader?: Leader | null
-  player: GamePlayer
+  leader?: GameLeaderFragment | null
+  player: GamePlayerFragment
   playPassLoading: boolean
   playUnitLoading: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
@@ -240,7 +255,7 @@ function renderPlayerInfo({
 }
 
 /**
- * Information about the score of the current round as well as losses for the Game.
+ * Information about the score of the current round and losses for the Game.
  */
 function renderScore({
   game,
@@ -252,24 +267,27 @@ function renderScore({
   playUnitLoading,
   setPassConfirmationOpen,
 }: {
-  game: Game
-  handCardSelected: DeckUnit | undefined
+  game: GameFragment
+  handCardSelected: DeckUnitFragment | undefined
   isSelf: boolean
   isTurn?: boolean | null | undefined
-  player: GamePlayer
+  player: GamePlayerFragment
   playPassLoading: boolean
   playUnitLoading: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
-  let playerRound: PlayerRound | undefined = undefined
+  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
+  let playerRound: PlayerRoundFragment | undefined = undefined
   let winning = false
   let passTitle = ''
   if (game.round > 0) {
-    playerRound = player.rounds[game.round - 1]
+    playerRound = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
     const playerScore = playerRound.score
-    const opponent = game.players.find((gamePlayer) => gamePlayer.user.name !== player.user.name)
+    const opponent = useFragment(GamePlayerFragmentDoc, game.players).find(
+      (gamePlayer) => gamePlayer.user.name !== player.user.name
+    )
     if (opponent) {
-      const opponentScore = opponent.rounds[game.round - 1].score
+      const opponentScore = useFragment(PlayerRoundFragmentDoc, opponent.rounds[game.round - 1]).score
       winning = playerScore > opponentScore
     }
     if (playPassLoading) {
@@ -277,7 +295,7 @@ function renderScore({
     } else {
       if (playUnitLoading) {
         passTitle = `Cannot pass while waiting for ${
-          handCardSelected?.unit.name || 'unit'
+          handCardSelectedUnit?.name || 'unit'
         } to be deployed to the battlefield`
       } else {
         if (playerRound.passed) {
@@ -299,16 +317,19 @@ function renderScore({
     }
   }
   const sortedRounds: {
-    round: PlayerRound
+    round: FragmentType<typeof PlayerRoundFragmentDoc>
     number: number
   }[] = []
   const livesRemaining =
     game.config.lives -
-    player.rounds.filter((round) => round.result === RoundResult.Lost || round.result === RoundResult.Drew).length
+    player.rounds.filter((roundFragment) => {
+      const round = useFragment(PlayerRoundFragmentDoc, roundFragment)
+      return round.result === RoundResult.Lost || round.result === RoundResult.Drew
+    }).length
   for (let i = 0; i < livesRemaining; i++) {
     sortedRounds.push({
       number: game.round + i + 1,
-      round: {} as any as PlayerRound, // eslint-disable-line @typescript-eslint/no-explicit-any
+      round: {},
     })
   }
   const roundToNumberMap = player.rounds.map((round, index) => {
@@ -317,9 +338,12 @@ function renderScore({
       number: index + 1,
     }
   })
-  const roundsPlayed = roundToNumberMap.filter((round) => round.round.result)
+  const roundsPlayed = roundToNumberMap.filter(
+    (roundAndNumber) => useFragment(PlayerRoundFragmentDoc, roundAndNumber.round).result
+  )
   for (const roundPlayed of roundsPlayed) {
-    if (roundPlayed.round.result !== RoundResult.Won) {
+    const round = useFragment(PlayerRoundFragmentDoc, roundPlayed.round)
+    if (round.result !== RoundResult.Won) {
       sortedRounds.push(roundPlayed)
     }
   }
@@ -340,18 +364,19 @@ function renderScore({
           <div className="game-player-rounds-container">
             <div className="game-player-rounds-score">
               <div className="game-player-rounds">
-                {sortedRounds.map((round, index) => {
+                {sortedRounds.map((roundAndNumber, index) => {
+                  const round = useFragment(PlayerRoundFragmentDoc, roundAndNumber.round)
                   let title = 'Life remaining'
-                  if (round.round.result === RoundResult.Drew) {
-                    title = `Life lost due to tie on round ${round.number}`
-                  } else if (round.round.result === RoundResult.Lost) {
-                    title = `Life lost due to loss on round ${round.number}`
+                  if (round.result === RoundResult.Drew) {
+                    title = `Life lost due to tie on round ${roundAndNumber.number}`
+                  } else if (round.result === RoundResult.Lost) {
+                    title = `Life lost due to loss on round ${roundAndNumber.number}`
                   }
                   return (
                     <div
                       key={index}
                       className={`game-round-token ${
-                        round.round.result === RoundResult.Lost || round.round.result === RoundResult.Drew
+                        round.result === RoundResult.Lost || round.result === RoundResult.Drew
                           ? HTML_CLASSES.GamePlayerRoundTokenLost
                           : HTML_CLASSES.GamePlayerRoundTokenWon
                       }`}
@@ -400,7 +425,7 @@ function renderScore({
 /**
  * Information about the Faction the Deck belongs to for the Game player.
  */
-function renderFaction({ faction }: { faction?: Faction | null }) {
+function renderFaction({ faction }: { faction?: GameFactionFragment | null }) {
   return (
     <div className="game-player-faction">
       {faction && (
@@ -418,7 +443,7 @@ function renderFaction({ faction }: { faction?: Faction | null }) {
 /**
  * Information about the Leader on the Deck for the Game player.
  */
-function renderLeader({ leader }: { leader?: Leader | null }) {
+function renderLeader({ leader }: { leader?: GameLeaderFragment | null }) {
   return (
     <div className="game-player-leader">
       {leader && (

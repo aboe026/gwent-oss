@@ -1,0 +1,22 @@
+fragment GameUnitEffect on GameUnitEffect {
+  operator
+  total
+  reason {
+    ... on EffectFromUnit {
+      effect {
+        id
+        name
+      }
+      unit {
+        id
+        name
+      }
+    }
+    ... on EffectFromLeader {
+      leader {
+        id
+        name
+      }
+    }
+  }
+}

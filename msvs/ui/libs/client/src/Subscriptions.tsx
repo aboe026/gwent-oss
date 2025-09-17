@@ -4,14 +4,18 @@ import { useSubscription } from '@apollo/client/react'
 import addToCacheList from './util/add-to-cache-list'
 import {
   DeckAddedDocument,
+  DeckFragment,
+  DeckFragmentDoc,
   DecksDocument,
-  DeckSetDocument,
   DecksQuery,
-  DeckUnit,
+  DeckSetDocument,
+  DeckUnitFragmentDoc,
   GameAddedDocument,
   GameDeckDocument,
   GameDeckQuery,
   GameDocument,
+  GameFragment,
+  GameFragmentDoc,
   GameQuery,
   GameReadyDocument,
   GamesDocument,
@@ -23,7 +27,15 @@ import {
   UnitPlayedFromDeckDocument,
   UnitPlayedOnGameDocument,
   UnitRedrawnDocument,
+  useFragment,
+  UnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
+import {
+  DecksQuery as DecksQueryRaw,
+  GameDeckQuery as GameDeckQueryRaw,
+  GameQuery as GameQueryRaw,
+  GamesQuery as GamesQueryRaw,
+} from '@gwent/graphql-schema/apollo-raw-typings'
 import updateGameDeckCacheOnRedraw from './util/update-game-deck-cache-on-redraw'
 import { useUserContext } from './UserContext'
 
@@ -50,10 +62,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.decks) {
               return {
                 decks: addToCacheList({
-                  add: data.data?.deckAdded,
-                  previous: previous?.decks,
+                  add: useFragment(DeckFragmentDoc, data.data?.deckAdded),
+                  previous: previous?.decks as DeckFragment[],
                 }),
-              }
+              } as DecksQueryRaw
             }
           }
         )
@@ -77,7 +89,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (!previous?.gameDeck) {
               return {
                 gameDeck,
-              }
+              } as GameDeckQueryRaw
             }
           }
         )
@@ -95,10 +107,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
           if (previous?.games) {
             return {
               games: addToCacheList({
-                add: data.data?.gameAdded,
-                previous: previous?.games,
+                add: useFragment(GameFragmentDoc, data.data?.gameAdded),
+                previous: previous?.games as GameFragment[],
               }),
-            }
+            } as GamesQueryRaw
           }
         }
       )
@@ -107,7 +119,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(GameReadyDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = data.data?.gameReady
+      const game = useFragment(GameFragmentDoc, data.data?.gameReady)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -120,7 +132,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              }
+              } as GameQueryRaw
             }
           }
         )
@@ -130,7 +142,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(GameSetDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = data.data?.gameSet
+      const game = useFragment(GameFragmentDoc, data.data?.gameSet)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -143,7 +155,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              }
+              } as GameQueryRaw
             }
           }
         )
@@ -153,7 +165,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(OrderSetDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = data.data?.orderSet
+      const game = useFragment(GameFragmentDoc, data.data?.orderSet)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -166,7 +178,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              }
+              } as GameQueryRaw
             }
           }
         )
@@ -190,7 +202,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.gameDeck) {
               return {
                 gameDeck,
-              }
+              } as GameDeckQueryRaw
             }
           }
         )
@@ -200,7 +212,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(PassPlayedDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = data.data?.passPlayed
+      const game = useFragment(GameFragmentDoc, data.data?.passPlayed)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -213,7 +225,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              }
+              } as GameQueryRaw
             }
           }
         )
@@ -224,7 +236,10 @@ export default function Subscriptions({ children }: PropsWithChildren) {
     skip: !user,
     onData: ({ data, client }) => {
       const game = data.data?.unitPlayedFromDeck.game
-      const playedUnit = data.data?.unitPlayedFromDeck.unit
+      const playedUnit = useFragment(
+        UnitFragmentDoc,
+        useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedFromDeck.unit)?.unit
+      )
       if (game && playedUnit) {
         client.cache.updateQuery<GameDeckQuery>(
           {
@@ -238,13 +253,13 @@ export default function Subscriptions({ children }: PropsWithChildren) {
               return {
                 gameDeck: {
                   ...previous.gameDeck,
-                  hand: previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.unit.id),
+                  hand: previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id),
                   discard:
-                    playedUnit.unit.name === 'Scorch'
+                    playedUnit.name === 'Scorch'
                       ? [...previous.gameDeck.discard, playedUnit]
                       : previous.gameDeck.discard,
                 },
-              }
+              } as GameDeckQueryRaw
             }
           }
         )
@@ -254,7 +269,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(UnitPlayedOnGameDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const game = data.data?.unitPlayedOnGame.game
+      const game = useFragment(GameFragmentDoc, data.data?.unitPlayedOnGame.game)
       if (game) {
         client.cache.updateQuery<GameQuery>(
           {
@@ -267,7 +282,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
             if (previous?.game) {
               return {
                 game,
-              }
+              } as GameQueryRaw
             }
           }
         )
@@ -277,8 +292,8 @@ export default function Subscriptions({ children }: PropsWithChildren) {
   useSubscription(UnitRedrawnDocument, {
     skip: !user,
     onData: ({ data, client }) => {
-      const from = data.data?.unitRedrawn.from
-      const to = data.data?.unitRedrawn.to
+      const from = useFragment(DeckUnitFragmentDoc, data.data?.unitRedrawn.from)
+      const to = useFragment(DeckUnitFragmentDoc, data.data?.unitRedrawn.to)
       const game = data.data?.unitRedrawn.game
       if (from && to && game) {
         client.cache.updateQuery<GameDeckQuery>(
@@ -288,12 +303,15 @@ export default function Subscriptions({ children }: PropsWithChildren) {
               game: game.id,
             },
           },
-          (previous) =>
-            updateGameDeckCacheOnRedraw({
-              from: from as DeckUnit,
-              previous,
-              to: to as DeckUnit,
-            })
+          (previous) => {
+            if (previous?.gameDeck) {
+              return updateGameDeckCacheOnRedraw({
+                from,
+                previous,
+                to,
+              })
+            }
+          }
         )
       }
     },

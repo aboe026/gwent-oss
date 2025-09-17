@@ -70,10 +70,23 @@ const config: CodegenConfig = {
     },
     // typings for use by Apollo/React in the frontend browser code
     './generated/apollo/': {
-      documents: ['./src/apollo/*.gql'],
+      documents: ['./src/apollo/**/*.gql'],
       preset: 'client',
-      presetConfig: {
-        fragmentMasking: false,
+    },
+    // typings for use by Apollo InMemoryCache for unions/interfaces
+    './generated/apollo/fragment-types.ts': {
+      plugins: ['fragment-matcher'],
+      config: {
+        apolloClientVersion: 3,
+        useExplicitTyping: true,
+      },
+    },
+    // typings needed by Apollo for direclty modifying the cache
+    './generated/apollo/raw-types.ts': {
+      documents: ['./src/apollo/**/*.gql'],
+      plugins: ['typescript', 'typescript-operations'],
+      config: {
+        documentMode: 'string',
       },
     },
   },

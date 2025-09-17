@@ -1,5 +1,0 @@
-subscription DeckAdded {
-  deckAdded {
-    ...DeckFragment
-  }
-}

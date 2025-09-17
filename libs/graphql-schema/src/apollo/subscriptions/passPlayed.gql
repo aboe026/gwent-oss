@@ -1,0 +1,5 @@
+subscription PassPlayed {
+  passPlayed {
+    ...Game
+  }
+}

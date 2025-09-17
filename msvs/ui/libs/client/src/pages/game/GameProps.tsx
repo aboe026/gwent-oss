@@ -4,12 +4,9 @@ import type { useMutation } from '@apollo/client/react'
 
 import {
   AddGameMutation,
-  DeckUnit,
   Exact,
   SetDeckMutation,
   RedrawMutation,
-  Game,
-  GameDeck,
   GameDeckQuery,
   ReadyMutation,
   Scalars,
@@ -17,10 +14,14 @@ import {
   SetOrderMutation,
   InputMaybe,
   Combat,
+  FragmentType,
   PlayUnitMutation,
   PlayPassMutation,
-  GameUnit,
-  Move,
+  DeckUnitFragment,
+  GameUnitFragment,
+  GameFragment,
+  MoveFragment,
+  GameDeckFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 
 export interface AddGameProps {
@@ -36,7 +37,7 @@ export interface AddGameProps {
 }
 
 export interface GameProps {
-  game: Game | undefined
+  game: GameFragment | undefined
   error: unknown
   loading: boolean
   refetch: (
@@ -51,7 +52,7 @@ export interface GameProps {
 }
 
 export interface GameDeckProps {
-  deck: GameDeck | undefined
+  deck: FragmentType<typeof GameDeckFragmentDoc> | null | undefined
   error: unknown
   loading: boolean
   refetch: (
@@ -143,7 +144,7 @@ export interface PlayPassProps {
 }
 
 export interface UnitForPlayer {
-  unit: DeckUnit | GameUnit
+  unitFragment: DeckUnitFragment | GameUnitFragment
   playerId: string | undefined
 }
 
@@ -153,7 +154,7 @@ export interface FullUnitCards {
 }
 
 export interface PlayerMove {
-  move: Move
+  move: MoveFragment
   playerIndex: number
   ref: RefObject<HTMLDivElement | null>
 }

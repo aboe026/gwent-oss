@@ -36,7 +36,7 @@ export default class Server {
   }
 
   /**
-   * Configures the server to serve the images directory as a static public route
+   * Configures the server to serve the images directory in a static public route
    */
   private static async configureImages() {
     const imagesDir = env().IMAGES_DIR

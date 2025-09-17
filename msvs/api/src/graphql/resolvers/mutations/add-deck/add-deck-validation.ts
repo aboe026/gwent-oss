@@ -11,7 +11,7 @@ import LeaderStore from '../../../../database/stores/leader-store'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
-import { validateDeck } from '@gwent/validators'
+import { ValidateDeck } from '@gwent/validators'
 
 /**
  * A class for validating the addDeck GraphQL Mutation.
@@ -113,7 +113,7 @@ export default class AddDeckValidation {
     if (AddDeckValidation.logger.isTraceEnabled()) {
       AddDeckValidation.logger.trace(`${logPrefix} deckUnits: "${JSON.stringify(deckUnits)}"`)
     }
-    errors = validateDeck({
+    errors = ValidateDeck.fromDeckUnits({
       deckUnits: deckUnits,
       faction: factionKey,
     })

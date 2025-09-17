@@ -2,8 +2,8 @@ import { ObjectId } from 'mongodb'
 
 import AddDeckImplementation from '../../src/graphql/resolvers/mutations/add-deck/add-deck-implementation'
 import DeckStore from '../../src/database/stores/deck-store'
+import { GetUnitStats } from '@gwent/utils'
 import TestUtil from '../util/test-util'
-import * as utils from '@gwent/utils'
 import { ValidatedAddDeck } from '../../src/graphql/resolvers/mutations/add-deck/add-deck-validation'
 
 describe('add-deck-implementation', () => {
@@ -101,7 +101,7 @@ async function testAddDeckImplementation({
   } else {
     addSpy.mockResolvedValue(deck)
   }
-  const statsSpy = jest.spyOn(utils, 'getUnitStats').mockReturnValue({} as any)
+  const statsSpy = jest.spyOn(GetUnitStats, 'fromDeckUnits').mockReturnValue({} as any)
   const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
   const traceSpy = jest.fn().mockImplementation()

@@ -1,4 +1,4 @@
-import fs from 'fs-extra'
+import fs from 'fs/promises'
 import path from 'path'
 
 /**
@@ -7,14 +7,20 @@ import path from 'path'
  */
 ;(async () => {
   const indexFilePath = path.join(__dirname, '..', 'generated', 'apollo', 'index.ts')
-  const contents = await fs.readFile(indexFilePath, {
-    encoding: 'utf-8',
+  await ensureLineInFile({
+    filePath: indexFilePath,
+    line: 'export * from "./graphql";',
   })
-  const exportCode = 'export * from "./graphql";'
-  if (!contents.includes(exportCode)) {
-    await fs.appendFile(indexFilePath, `\n${exportCode}`, {})
-  }
 })().catch((err) => {
   console.error(err)
   process.exitCode = 1
 })
+
+async function ensureLineInFile({ filePath, line }: { filePath: string; line: string }) {
+  const contents = await fs.readFile(filePath, {
+    encoding: 'utf-8',
+  })
+  if (!contents.includes(line)) {
+    await fs.appendFile(filePath, `\n${line}`, {})
+  }
+}

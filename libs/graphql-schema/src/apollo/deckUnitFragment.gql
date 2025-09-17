@@ -1,6 +1,0 @@
-fragment DeckUnitFragment on DeckUnit {
-  artStyle
-  unit {
-    ...CardUnitFragment
-  }
-}

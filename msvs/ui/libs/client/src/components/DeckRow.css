@@ -1,0 +1,96 @@
+.deck-list-deck-section {
+  display: flex;
+  flex: 1 1 0px;
+}
+
+.deck-list-deck-sub-section {
+  display: flex;
+  flex-grow: 1;
+  background-color: darkgray;
+  border-radius: 5px;
+  padding: 10px;
+  gap: 10px;
+}
+
+.deck-list-deck-name-faction {
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.deck-list-deck-name-created {
+  justify-content: space-between;
+}
+
+.deck-list-deck-section > .deck-list-deck-name-created {
+  flex-grow: 0;
+}
+
+.deck-list-deck-faction {
+  flex-grow: 1;
+  gap: 10px;
+}
+
+.deck-list-deck-faction-name-ability {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+  gap: 10px;
+}
+
+.deck-list-deck-faction-image {
+  max-height: 100px;
+  max-width: 50%;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.deck-list-deck-leader-image {
+  max-height: 200px;
+  max-width: 50%;
+  margin-top: auto;
+  margin-bottom: auto;
+  border-radius: 5px;
+}
+
+.deck-list-deck-leader-name-ability {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 20px;
+}
+
+.deck-list-deck-stats {
+  display: flex;
+  gap: 10px;
+  background-color: darkgray;
+  border-radius: 5px;
+  padding: 10px;
+  flex: 2 2 0px;
+}
+
+.deck-list-deck-stats-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 50%;
+}
+
+.deck-list-deck-actions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: center;
+}
+
+.deck-list-deck-action-button {
+  background-color: darkgray;
+  border-radius: 5px;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.deck-stat-value {
+  margin-left: 3px;
+}

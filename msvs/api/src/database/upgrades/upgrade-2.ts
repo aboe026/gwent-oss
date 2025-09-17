@@ -17,7 +17,7 @@ import effects from './resources/effects.json'
 import EffectStore, { AddEffectInput } from '../stores/effect-store'
 import factions from './resources/factions.json'
 import FactionStore, { AddFactionInput } from '../stores/faction-store'
-import { getUnitStats } from '@gwent/utils'
+import { GetUnitStats } from '@gwent/utils'
 import leaders from './resources/leaders.json'
 import LeaderStore, { AddLeaderInput } from '../stores/leader-store'
 import units from './resources/units.json'
@@ -64,7 +64,7 @@ export default class Upgrade2 extends Upgrade {
     for (const factionId of Object.keys(factionUnits)) {
       await FactionStore.edit({
         id: factionId,
-        stats: getUnitStats(
+        stats: GetUnitStats.fromDeckUnits(
           factionUnits[factionId].map((unit) => {
             unit.effects = unit.effects?.map((effectId) =>
               effectDocs.find((effectDoc) => effectDoc._id.toString() === effectId.toString())

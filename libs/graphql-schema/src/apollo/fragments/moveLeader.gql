@@ -1,0 +1,7 @@
+fragment MoveLeader on MoveLeader {
+  created
+  leader {
+    image
+    name
+  }
+}

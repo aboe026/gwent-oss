@@ -1,0 +1,17 @@
+fragment PlayerRound on PlayerRound {
+  close {
+    ...PlayerCombatRow
+  }
+  moves {
+    ...Move
+  }
+  passed
+  ranged {
+    ...PlayerCombatRow
+  }
+  result
+  score
+  siege {
+    ...PlayerCombatRow
+  }
+}

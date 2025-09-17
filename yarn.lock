@@ -3413,6 +3413,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graphql-codegen/fragment-matcher@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@graphql-codegen/fragment-matcher@npm:6.0.0"
+  dependencies:
+    "@graphql-codegen/plugin-helpers": "npm:^6.0.0"
+    tslib: "npm:~2.6.0"
+  peerDependencies:
+    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
+  checksum: 10/50895fc282d93bcce1e3391366f300b6dcc450c3e13834c0b52907abb63547b06ca02ec2b20c1e47e6fe16132e730a74f202d4618fd875846225e54bedc8deb4
+  languageName: node
+  linkType: hard
+
 "@graphql-codegen/gql-tag-operations@npm:4.0.17":
   version: 4.0.17
   resolution: "@graphql-codegen/gql-tag-operations@npm:4.0.17"
@@ -3492,6 +3504,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graphql-codegen/plugin-helpers@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "@graphql-codegen/plugin-helpers@npm:6.0.0"
+  dependencies:
+    "@graphql-tools/utils": "npm:^10.0.0"
+    change-case-all: "npm:1.0.15"
+    common-tags: "npm:1.8.2"
+    import-from: "npm:4.0.0"
+    lodash: "npm:~4.17.0"
+    tslib: "npm:~2.6.0"
+  peerDependencies:
+    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
+  checksum: 10/1b2da605e93ae7eb4c60a62b2d2b93c34597d6a77cf35a8522dc77bb73c0675142275d8a8c19e045aa1998fcf395d6b756d2b6b9d5242063d0ec98331d3d289f
+  languageName: node
+  linkType: hard
+
 "@graphql-codegen/schema-ast@npm:4.1.0":
   version: 4.1.0
   resolution: "@graphql-codegen/schema-ast@npm:4.1.0"
@@ -3564,7 +3592,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@graphql-codegen/typescript-operations@npm:^4.6.1":
+"@graphql-codegen/typescript-operations@npm:4.6.1, @graphql-codegen/typescript-operations@npm:^4.6.1":
   version: 4.6.1
   resolution: "@graphql-codegen/typescript-operations@npm:4.6.1"
   dependencies:
@@ -4381,24 +4409,23 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@gwent/graphql-schema@workspace:libs/graphql-schema"
   dependencies:
-    "@apollo/client": "npm:4.0.3"
     "@graphql-codegen/add": "npm:5.0.3"
     "@graphql-codegen/cli": "npm:5.0.7"
     "@graphql-codegen/client-preset": "npm:4.8.3"
+    "@graphql-codegen/fragment-matcher": "npm:6.0.0"
     "@graphql-codegen/schema-ast": "npm:4.1.0"
     "@graphql-codegen/typescript": "npm:4.1.6"
     "@graphql-codegen/typescript-mongodb": "npm:3.0.1"
+    "@graphql-codegen/typescript-operations": "npm:4.6.1"
     "@graphql-codegen/typescript-resolvers": "npm:4.5.2"
     "@graphql-tools/schema": "npm:10.0.25"
     "@graphql-typed-document-node/core": "npm:3.2.0"
     "@gwent/constants": "workspace:*"
     "@parcel/watcher": "npm:2.5.1"
-    "@types/fs-extra": "npm:11.0.4"
     "@types/jest": "npm:30.0.0"
     "@types/node": "npm:22.18.0"
     "@types/semver": "npm:7.7.0"
     eol: "npm:0.10.0"
-    fs-extra: "npm:11.3.1"
     graphql: "npm:16.11.0"
     graphql-tag: "npm:2.12.6"
     jest-junit: "npm:16.0.0"
