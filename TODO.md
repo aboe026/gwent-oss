@@ -12,6 +12,10 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- what combats can Mardroeme be deployed to? Just close and ranged? Right now has none :(
+- does mardroeme transform berserkers played after it?
+- include "to" for impact so know exactly which unit it transformed into?
+
 - improve performance when typing name for deck
 - rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
 - remove unnecessary dependencies

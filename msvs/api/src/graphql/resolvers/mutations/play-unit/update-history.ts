@@ -12,7 +12,7 @@ import {
 import GetBattlefieldUnit from './get-battlefield-unit'
 import { ImpactsByUnitId } from '../../resolver-util'
 import { MoveType } from '@gwent/graphql-schema'
-import { MusteredOrigins } from './muster-battlefield'
+import { MusteredOrigins } from './effect-muster'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -31,6 +31,7 @@ export default class UpdateHistory {
    * @param config.logPrefix What to prepend log statements with.
    * @param config.combat Which combat row the new unit is being deployed to on the battlefield.
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
+   * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
@@ -43,6 +44,7 @@ export default class UpdateHistory {
     logPrefix,
     combat,
     scorches,
+    mardroemes,
     musters,
     bonds,
     morales,
@@ -54,6 +56,7 @@ export default class UpdateHistory {
     logPrefix: string
     combat: Combat | null | undefined
     scorches: ImpactsByUnitId
+    mardroemes: ImpactsByUnitId
     musters: ImpactsByUnitId
     bonds: ImpactsByUnitId
     morales: ImpactsByUnitId
@@ -65,10 +68,11 @@ export default class UpdateHistory {
       userId: playerId,
     })
     const impacts =
-      scorches[deckUnit.unit.toString()] ||
-      musters[deckUnit.unit.toString()] ||
       bonds[deckUnit.unit.toString()] ||
-      morales[deckUnit.unit.toString()]
+      mardroemes[deckUnit.unit.toString()] ||
+      morales[deckUnit.unit.toString()] ||
+      musters[deckUnit.unit.toString()] ||
+      scorches[deckUnit.unit.toString()]
     const move: MoveUnitDbObject = {
       created: new Date(),
       unit: {

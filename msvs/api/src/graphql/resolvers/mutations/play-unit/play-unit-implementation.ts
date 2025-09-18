@@ -52,24 +52,29 @@ export default class PlayUnitImplementation {
       units: roundUnits,
     })
 
-    const { musters, musteredUnits, musteredOrigins, scorches } = await modifyBattlefieldWithNewUnit({
-      battlefieldUnits: roundUnits,
-      combat,
-      effects: unitEffects,
-      game,
-      logPrefix,
-      newDeckUnit: deckUnit,
-    })
+    const { mardroemes, transformedUnits, musters, musteredUnits, musteredOrigins, scorches } =
+      await modifyBattlefieldWithNewUnit({
+        battlefieldUnits: roundUnits,
+        combat,
+        effects: unitEffects,
+        game,
+        logPrefix,
+        newDeckUnit: deckUnit,
+      })
 
     const musterEffects = await getUnitEffects({
       units: musteredUnits,
       effects: unitEffects,
     })
+    const transformedEffects = await getUnitEffects({
+      units: transformedUnits,
+      effects: unitEffects,
+    })
 
     const { bonds, morales } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
-      units: [unit, ...roundUnits, ...musteredUnits],
-      effects: [...unitEffects, ...musterEffects],
+      units: [unit, ...roundUnits, ...musteredUnits, ...transformedUnits],
+      effects: [...unitEffects, ...musterEffects, ...transformedEffects],
       logPrefix,
       newDeckUnit: deckUnit,
       musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
@@ -88,6 +93,7 @@ export default class PlayUnitImplementation {
       scorches,
       bonds,
       morales,
+      mardroemes,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

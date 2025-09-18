@@ -1,8 +1,9 @@
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import { DeckUnitDbObject, EffectDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { ImpactsByUnitId } from '../../resolver-util'
-import MusterBattlefield, { MusteredOrigins } from './muster-battlefield'
-import ScorchBattlefield from './scorch-battlefield'
+import EffectMuster, { MusteredOrigins } from './effect-muster'
+import EffectScorch from './effect-scorch'
+import EffectMardroeme from './effect-mardroeme'
 
 /**
  * Modifies the battlefield of the current round in a game due to the deployment of a new unit. Other units on or off the battlefield may be impacted by unit effects.
@@ -41,15 +42,23 @@ export default async function modifyBattlefieldWithNewUnit({
     impacts: musterImpacts,
     musteredUnits,
     musteredOrigins,
-  } = await MusterBattlefield.musterBattlefield({
+  } = await EffectMuster.musterBattlefield({
     battlefieldUnits,
     effects,
     game,
     logPrefix,
     newDeckUnit,
   })
+  const { impacts: mardroemeImpacts, transformedUnits } = await EffectMardroeme.transformBerserkers({
+    battlefieldUnits,
+    effects,
+    game,
+    logPrefix,
+    newDeckUnit,
+    combat,
+  })
   return {
-    scorches: ScorchBattlefield.scorchBattlefield({
+    scorches: EffectScorch.scorchBattlefield({
       battlefieldUnits,
       effects,
       game,
@@ -59,6 +68,8 @@ export default async function modifyBattlefieldWithNewUnit({
     musters: musterImpacts,
     musteredUnits,
     musteredOrigins,
+    mardroemes: mardroemeImpacts,
+    transformedUnits,
   }
 }
 
@@ -99,4 +110,6 @@ interface ModificationImpacts {
   musters: ImpactsByUnitId
   musteredUnits: UnitDbObject[]
   musteredOrigins: MusteredOrigins
+  mardroemes: ImpactsByUnitId
+  transformedUnits: UnitDbObject[]
 }
