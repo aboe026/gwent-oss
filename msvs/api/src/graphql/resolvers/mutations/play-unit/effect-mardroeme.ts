@@ -40,6 +40,7 @@ export default class EffectMardroeme {
   }): Promise<Transformations> {
     const impacts: ImpactDbObject[] = []
     const transformedUnits: UnitDbObject[] = []
+    const transformedGameUnits: GameUnitDbObject[] = []
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
       const message = `Could not find unit for new deck unit "${newDeckUnit.unit}".`
@@ -109,8 +110,8 @@ export default class EffectMardroeme {
             unit: transformedPair.from,
             user: player.user,
           })
-          transformedUnits.push(transformedPair.to)
-          // TODO: treat vildkaarls as "musters" like in update-history.ts
+          transformedUnits.push(transformedPair.unit)
+          transformedGameUnits.push(transformedPair.to)
         }
       }
     }
@@ -123,6 +124,7 @@ export default class EffectMardroeme {
             }
           : {},
       transformedUnits,
+      transformedGameUnits,
     }
   }
 
@@ -198,7 +200,11 @@ export default class EffectMardroeme {
             ...gameUnit,
             unit: berserker._id,
           },
-          to: vildkaarl,
+          to: {
+            ...gameUnit,
+            unit: vildkaarl._id,
+          },
+          unit: vildkaarl,
         })
         if (young) {
           youngVildkaarlIndex++
@@ -215,10 +221,12 @@ export default class EffectMardroeme {
 
 export interface TransformPairs {
   from: GameUnitDbObject
-  to: UnitDbObject
+  to: GameUnitDbObject
+  unit: UnitDbObject
 }
 
 export interface Transformations {
   impacts: ImpactsByUnitId
   transformedUnits: UnitDbObject[]
+  transformedGameUnits: GameUnitDbObject[]
 }

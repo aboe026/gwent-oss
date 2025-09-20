@@ -1,5 +1,12 @@
 import ApiClient from './api-client'
-import { BondingExpected, E2eHelper, MoralingExpected, MusteringExpected, ScorchingExpected } from './e2e-helper'
+import {
+  BondingExpected,
+  E2eHelper,
+  MardroemingExpected,
+  MoralingExpected,
+  MusteringExpected,
+  ScorchingExpected,
+} from './e2e-helper'
 import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import E2eUtil from './e2e-util'
 import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
@@ -87,6 +94,7 @@ export class GameManager {
     scorching,
     moraling,
     horning,
+    mardroeming,
     mustering,
     bonding,
     impacts,
@@ -98,6 +106,7 @@ export class GameManager {
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
+    mardroeming?: MardroemingExpected[]
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     impacts?: number
@@ -135,6 +144,7 @@ export class GameManager {
       scorching,
       moraling,
       horning,
+      mardroeming,
       mustering,
       bonding,
       impacts,

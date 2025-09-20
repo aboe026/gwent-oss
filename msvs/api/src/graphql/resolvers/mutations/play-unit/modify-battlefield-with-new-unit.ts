@@ -1,5 +1,11 @@
-import { Combat } from '@gwent/graphql-schema/resolver-typings'
-import { DeckUnitDbObject, EffectDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  Combat,
+  DeckUnitDbObject,
+  EffectDbObject,
+  GameDbObject,
+  GameUnitDbObject,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
 import { ImpactsByUnitId } from '../../resolver-util'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
 import EffectScorch from './effect-scorch'
@@ -49,7 +55,11 @@ export default async function modifyBattlefieldWithNewUnit({
     logPrefix,
     newDeckUnit,
   })
-  const { impacts: mardroemeImpacts, transformedUnits } = await EffectMardroeme.transformBerserkers({
+  const {
+    impacts: mardroemeImpacts,
+    transformedUnits,
+    transformedGameUnits,
+  } = await EffectMardroeme.transformBerserkers({
     battlefieldUnits,
     effects,
     game,
@@ -70,6 +80,7 @@ export default async function modifyBattlefieldWithNewUnit({
     musteredOrigins,
     mardroemes: mardroemeImpacts,
     transformedUnits,
+    transformedGameUnits,
   }
 }
 
@@ -112,4 +123,5 @@ interface ModificationImpacts {
   musteredOrigins: MusteredOrigins
   mardroemes: ImpactsByUnitId
   transformedUnits: UnitDbObject[]
+  transformedGameUnits: GameUnitDbObject[]
 }

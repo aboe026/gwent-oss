@@ -52,7 +52,7 @@ export default class PlayUnitImplementation {
       units: roundUnits,
     })
 
-    const { mardroemes, transformedUnits, musters, musteredUnits, musteredOrigins, scorches } =
+    const { mardroemes, transformedUnits, transformedGameUnits, musters, musteredUnits, musteredOrigins, scorches } =
       await modifyBattlefieldWithNewUnit({
         battlefieldUnits: roundUnits,
         combat,
@@ -94,6 +94,7 @@ export default class PlayUnitImplementation {
       bonds,
       morales,
       mardroemes,
+      transformedGameUnits,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

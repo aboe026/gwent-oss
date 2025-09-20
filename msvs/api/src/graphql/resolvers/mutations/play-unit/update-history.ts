@@ -4,6 +4,7 @@ import {
   Combat,
   DeckUnitDbObject,
   GameDbObject,
+  GameUnitDbObject,
   MoveReasonType,
   GameUnitOrigin,
   MoveUnitDbObject,
@@ -32,6 +33,7 @@ export default class UpdateHistory {
    * @param config.combat Which combat row the new unit is being deployed to on the battlefield.
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
+   * @param config.transformedGameUnits Any potential new vilkcaarl
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
@@ -45,6 +47,7 @@ export default class UpdateHistory {
     combat,
     scorches,
     mardroemes,
+    transformedGameUnits,
     musters,
     bonds,
     morales,
@@ -57,6 +60,7 @@ export default class UpdateHistory {
     combat: Combat | null | undefined
     scorches: ImpactsByUnitId
     mardroemes: ImpactsByUnitId
+    transformedGameUnits: GameUnitDbObject[]
     musters: ImpactsByUnitId
     bonds: ImpactsByUnitId
     morales: ImpactsByUnitId
@@ -95,6 +99,44 @@ export default class UpdateHistory {
       game,
       move,
     })
+
+    if (transformedGameUnits) {
+      for (const transformedGameUnit of transformedGameUnits) {
+        // TODO: have this be helper method that can be called for mustered units as well?
+        const transformedBattlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
+          game,
+          unitId: transformedGameUnit.unit,
+          userId: playerId,
+        })
+        if (!transformedBattlefieldUnit) {
+          const message = `Could not find transformed unit "${transformedGameUnit.unit}" on battlefield`
+          UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
+          throw Error(`${message}.`)
+        }
+        const transformMove: MoveUnitDbObject = {
+          created: move.created,
+          reason: {
+            type: MoveReasonType.Transform,
+            unit: deckUnit,
+          },
+          type: MoveType.Unit,
+          unit: {
+            artStyle: transformedBattlefieldUnit.unit.artStyle,
+            unit: transformedBattlefieldUnit.unit.unit,
+            effectiveStrength: transformedBattlefieldUnit.unit.effectiveStrength,
+            effects: transformedBattlefieldUnit.unit.effects,
+            row: transformedBattlefieldUnit.row,
+          },
+          source: {
+            origin: GameUnitOrigin.Nondeck,
+          },
+        }
+        UpdateHistory.addMoveToCurrentPlayer({
+          game,
+          move: transformMove,
+        })
+      }
+    }
 
     if (musters[deckUnit.unit.toString()]) {
       if (!musteredOrigins) {

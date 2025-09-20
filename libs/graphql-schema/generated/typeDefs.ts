@@ -110,6 +110,8 @@ enum GameUnitOrigin {
   OPPONENT
   "Unit came from the users Draw pile."
   UNDRAWN
+  "Unit came from a non-deckable source."
+  NONDECK
 }
 
 enum RoundResult {

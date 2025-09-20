@@ -6,15 +6,18 @@ import { EffectKey, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typing
  * @param config The configuration to use to determine the description.
  * @param config.effectKey The Key of the Effect which caused the impact.
  * @param config.origin The Origin of the unit which caused the impact.
+ * @param config.name The name of the unit the mardroeme transformed the card into.
  * @returns The description of the impact on a unit from the effect.
  * @throws Error if Effect cannot have impact (Agile, Avenger, Berserker)
  */
 export default function getImpactDescription({
   effectKey,
   origin,
+  name,
 }: {
   effectKey: EffectKey
   origin?: GameUnitOrigin
+  name?: string
 }): string {
   if (effectKey === EffectKey.Bond) {
     return 'bonded in strength'
@@ -23,7 +26,10 @@ export default function getImpactDescription({
   } else if (effectKey === EffectKey.Horn) {
     return "strengthened by Commander's Horn"
   } else if (effectKey === EffectKey.Mardroeme) {
-    return 'transformed by Mardroeme'
+    if (!name) {
+      throw Error(`Must specify name for "${EffectKey.Mardroeme}" impact.`)
+    }
+    return `transformed by Mardroeme into ${name === 'Young Berserker' ? 'Transformed Young Vildkaarl' : 'Transformed Vildkaarl'}`
   } else if (effectKey === EffectKey.Medic) {
     return 'revived by Medic'
   } else if (effectKey === EffectKey.Morale) {

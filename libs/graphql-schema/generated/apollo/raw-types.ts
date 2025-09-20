@@ -263,6 +263,8 @@ export enum GameUnitOrigin {
   Discard = 'Discard',
   /** Unit came from the users Hand. */
   Hand = 'HAND',
+  /** Unit came from a non-deckable source. */
+  Nondeck = 'NONDECK',
   /** Unit came from an opponent placing it on their battlefield. */
   Opponent = 'OPPONENT',
   /** Unit came from the users Draw pile. */

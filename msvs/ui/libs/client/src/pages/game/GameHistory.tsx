@@ -202,6 +202,9 @@ function PlayerHistoryMove({
     primaryText = unit.name
     let placement = gameUnit.row ? `as ${toTitleCase(gameUnit.row)}` : 'to battlefield'
     if (unitMove.reason.unit?.unit.name) {
+      if (unitMove.reason.type === MoveReasonType.Transform) {
+        placement += ` from ${unit.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
+      }
       placement += ` by ${unitMove.reason.unit?.unit.name}`
     }
     let reason = 'deployed'
@@ -213,6 +216,8 @@ function PlayerHistoryMove({
       } else if (unitMove.source.origin === GameUnitOrigin.Undrawn) {
         source = ' from Draw pile'
       }
+    } else if (unitMove.reason.type === MoveReasonType.Transform) {
+      reason = 'transformed'
     }
     secondaryText = `${reason} ${placement}${source}`
     image = unit.images[gameUnit.artStyle - 1]
@@ -489,12 +494,13 @@ function renderImpacts({
             const infoClass = `move-impact-unit-info ${
               isSelf ? 'move-impact-unit-info-self' : 'move-impact-unit-info-opponent'
             }`
+            const gameUnitForImpact = useFragment(GameUnitFragmentDoc, impactedUnit.unit)
+            const unitForImpact = useFragment(UnitFragmentDoc, gameUnitForImpact.unit)
             const description = getImpactDescription({
               effectKey,
               origin: impactedUnit.source?.origin,
+              name: unitForImpact.name,
             })
-            const gameUnitForImpact = useFragment(GameUnitFragmentDoc, impactedUnit.unit)
-            const unitForImpact = useFragment(UnitFragmentDoc, gameUnitForImpact.unit)
             const isSelected =
               historyCardSelected &&
               historyCardSelectedUnit &&

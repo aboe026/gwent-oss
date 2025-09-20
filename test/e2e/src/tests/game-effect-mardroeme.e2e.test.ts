@@ -24,6 +24,14 @@ test.only('Mardroeme effects old berserker unit if played after', async (t) => {
   await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
+    mardroeming: [
+      {
+        name: 'Transformed Young Vildkaarl',
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        effectiveStrength: 8,
+      },
+    ],
   })
   await t.debug()
 })

@@ -325,6 +325,7 @@ export class E2eHelper {
     moves,
     switchTurnsWith,
     scorching,
+    mardroeming,
     moraling,
     horning,
     mustering,
@@ -339,6 +340,7 @@ export class E2eHelper {
     moves?: (HistoryMove | HistoryPass)[]
     switchTurnsWith?: GamePlayerExpected
     scorching?: ScorchingExpected[]
+    mardroeming?: MardroemingExpected[]
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mustering?: MusteringExpected[]
@@ -360,6 +362,27 @@ export class E2eHelper {
         row,
         strength,
       })
+    }
+    if (mardroeming) {
+      for (const mardroeme of mardroeming) {
+        const berserker = E2eHelper.getPlayerUnitInRow({
+          player: mardroeme.player,
+          row: mardroeme.row,
+          unitName: mardroeme.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker',
+        })
+        E2eHelper.removeUnitFromGamePlayer({
+          player: mardroeme.player,
+          row: mardroeme.row,
+          unitName: berserker.name,
+          strength: berserker.effectiveStrength || berserker.strength,
+        })
+        E2eHelper.addUnitToGamePlayer({
+          player: mardroeme.player,
+          unitName: mardroeme.name,
+          row: mardroeme.row,
+          strength: mardroeme.effectiveStrength,
+        })
+      }
     }
     if (mustering) {
       for (const muster of mustering) {
@@ -422,6 +445,8 @@ export class E2eHelper {
         effectKey = EffectKey.Morale
       } else if (horning) {
         effectKey = EffectKey.Horn
+      } else if (mardroeming) {
+        effectKey = EffectKey.Mardroeme
       } else if (mustering) {
         effectKey = EffectKey.Muster
       } else if (bonding) {
@@ -457,6 +482,26 @@ export class E2eHelper {
               }
             : undefined,
           origin: muster.hand ? GameUnitOrigin.Hand : GameUnitOrigin.Undrawn,
+        })
+      }
+    }
+    if (moves && mardroeming) {
+      for (const mardroeme of mardroeming) {
+        moves.push({
+          userName: mardroeme.player.name,
+          unitName: mardroeme.name,
+          combatRow: mardroeme.row,
+          reason: {
+            name: deckUnit.unit.name,
+            type: MoveReasonType.Muster,
+          },
+          impacts: mardroeme.impact
+            ? {
+                effectKey: mardroeme.impact.type || EffectKey.Mardroeme,
+                number: mardroeme.impact.instances || 0,
+              }
+            : undefined,
+          origin: GameUnitOrigin.Undrawn,
         })
       }
     }
@@ -791,6 +836,17 @@ export interface MusteringExpected {
     instances?: number
   }
   hand?: boolean
+}
+
+export interface MardroemingExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
+  impact?: {
+    type: EffectKey
+    instances?: number
+  }
 }
 
 export interface BondingExpected {
