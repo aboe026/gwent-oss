@@ -227,6 +227,7 @@ export class E2eHelper {
         units: [...(player.siege?.units || [])].filter((unit) => unit.name !== unitName),
       }
     }
+    player.score = (player.score || 0) - (strength || 0)
   }
 
   static getPlayerUnitInRow({
@@ -427,7 +428,6 @@ export class E2eHelper {
     if (scorching) {
       for (const scorch of scorching) {
         const scorchee = scorch.player
-        scorchee.score = (scorchee.score || 0) - (scorch.strength || 0)
         scorchee.discard = (scorchee.discard || 0) + 1
         E2eHelper.removeUnitFromGamePlayer({
           player: scorchee,
@@ -460,7 +460,10 @@ export class E2eHelper {
           effectKey && impacts !== -1
             ? {
                 effectKey,
-                number: impacts !== undefined ? impacts : (scorching || moraling || mustering || bonding)?.length || 0,
+                number:
+                  impacts !== undefined
+                    ? impacts
+                    : (scorching || mardroeming || moraling || mustering || bonding)?.length || 0,
               }
             : undefined,
       })
@@ -493,7 +496,7 @@ export class E2eHelper {
           combatRow: mardroeme.row,
           reason: {
             name: deckUnit.unit.name,
-            type: MoveReasonType.Muster,
+            type: MoveReasonType.Transform,
           },
           impacts: mardroeme.impact
             ? {

@@ -313,9 +313,14 @@ export default class GamePage {
               } else {
                 source = ' from Draw pile'
               }
+            } else if (move.reason?.type === MoveReasonType.Transform) {
+              action = 'transformed'
             }
             let description = `${move.userName}: ${move.unitName} ${action} ${row}`
             if (move.reason) {
+              if (move.reason.type === MoveReasonType.Transform) {
+                description += ` from ${move.unitName === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker'}`
+              }
               description += ` by ${move.reason.name}${source}`
             }
             const selected =

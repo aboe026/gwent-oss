@@ -1,4 +1,4 @@
-import { Combat, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, EffectKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
 
@@ -7,7 +7,7 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effect Mardroeme')
 
-test.only('Mardroeme effects old berserker unit if played after', async (t) => {
+test('Mardroeme effects old berserker unit if played after', async (t) => {
   const unitName1 = 'Young Berserker'
   const unitName2 = 'Ermion'
   const gameManager = await createGameManager({
@@ -30,8 +30,11 @@ test.only('Mardroeme effects old berserker unit if played after', async (t) => {
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
         effectiveStrength: 8,
+        impact: {
+          type: EffectKey.Bond,
+          instances: 0,
+        },
       },
     ],
   })
-  await t.debug()
 })

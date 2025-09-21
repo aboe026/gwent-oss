@@ -10,6 +10,8 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Impact')
 
+// TODO: Shows no eligibles text if Mardroeme but no impacts
+
 test('Shows no eligibles text if Morale but no impacts', async (t) => {
   const unitName = 'Milva'
   const gameManager = await createGameManager({
@@ -100,6 +102,8 @@ test('Shows no eligibles text if Scorch but no impacts', async (t) => {
     ],
   })
 })
+
+// TODO: Shows single entry if Mardroeme impacts single unit
 
 test('Shows single entry if Morale impacts single unit', async (t) => {
   const unitName1 = 'Toruviel'
@@ -346,6 +350,8 @@ test('Shows single entry if Scorch impacts single unit opponent', async (t) => {
   })
 })
 
+// TODO: Shows multiple entries if Mardroeme impacts multiple units
+
 test('Shows multiple entries if Morale impacts multiple units', async (t) => {
   const unitName1 = 'Toruviel'
   const unitName2 = 'Ida Emean aep Sivney'
@@ -406,7 +412,7 @@ test('Shows multiple entries if Morale impacts multiple units', async (t) => {
   })
 })
 
-test('Shows single entry if Muster impacts multiple units from hand and undrawn', async (t) => {
+test('Shows multiple entries if Muster impacts multiple units from hand and undrawn', async (t) => {
   const unitName = 'Dwarven Skirmisher'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
