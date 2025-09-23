@@ -67,17 +67,8 @@ export default class EffectMardroeme {
     if (EffectMardroeme.logger.isTraceEnabled()) {
       EffectMardroeme.logger.trace(`${logPrefix} berserkerEffect: "${JSON.stringify(berserkerEffect)}"`)
     }
-    const hasMardroemeEffect =
-      mardroemeEffect &&
-      newUnit.effects &&
-      newUnit.effects.map((id) => id.toString()).includes(mardroemeEffect._id.toString())
-    if (EffectMardroeme.logger.isTraceEnabled()) {
-      EffectMardroeme.logger.trace(`${logPrefix} hasMardroemeEffect: "${hasMardroemeEffect}"`)
-    }
-
     const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
-    if (hasMardroemeEffect && player && combat && berserkerEffect) {
-      EffectMardroeme.logger.debug(`${logPrefix} unit "${newUnit.name}" has mardroeme effect, applying it`)
+    if (player && mardroemeEffect && berserkerEffect) {
       const gameUnits = getGameUnits({
         combat,
         players: [player],
@@ -86,14 +77,27 @@ export default class EffectMardroeme {
       if (EffectMardroeme.logger.isTraceEnabled()) {
         EffectMardroeme.logger.trace(`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`)
       }
-
-      const berserkers = EffectMardroeme.getBerserkersToTransform({
+      const mardroemes = EffectMardroeme.getUnitsWithEffect({
+        gameUnits,
         battlefieldUnits,
-        berserkerEffect,
+        effect: mardroemeEffect,
+      })
+      if (EffectMardroeme.logger.isTraceEnabled()) {
+        EffectMardroeme.logger.trace(`${logPrefix} mardroemes: "${mardroemes}"`)
+      }
+      const berserkers = EffectMardroeme.getUnitsWithEffect({
+        battlefieldUnits,
+        effect: berserkerEffect,
         gameUnits,
       })
+      if (EffectMardroeme.logger.isTraceEnabled()) {
+        EffectMardroeme.logger.trace(`${logPrefix} berserkers: "${berserkers}"`)
+      }
 
-      if (berserkers.length > 0) {
+      if (mardroemes.length > 0 && berserkers.length > 0) {
+        EffectMardroeme.logger.debug(
+          `${logPrefix} "${mardroemes.length}" mardroeme(s) and "${berserkers.length}" berserker(s) after unit "${newUnit.name}" played, transforming berserkers to vildkaarls`
+        )
         const vildkaarls = await EffectMardroeme.getVildkaarlsForTransformation({
           berserkers,
         })
@@ -104,12 +108,17 @@ export default class EffectMardroeme {
           row: combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege,
           vildkaarls,
         })
+        const newUnitImpact = mardroemes
+          .map((mardroeme) => mardroeme._id.toString())
+          .includes(newDeckUnit.unit.toString())
 
         for (const transformedPair of transformedPairs) {
-          impacts.push({
-            unit: transformedPair.from,
-            user: player.user,
-          })
+          if (newUnitImpact) {
+            impacts.push({
+              unit: transformedPair.from,
+              user: player.user,
+            })
+          }
           transformedUnits.push(transformedPair.unit)
           transformedGameUnits.push(transformedPair.to)
         }
@@ -128,14 +137,14 @@ export default class EffectMardroeme {
     }
   }
 
-  private static getBerserkersToTransform({
+  private static getUnitsWithEffect({
     gameUnits,
     battlefieldUnits,
-    berserkerEffect,
+    effect,
   }: {
     gameUnits: GameUnitDbObject[]
     battlefieldUnits: UnitDbObject[]
-    berserkerEffect: EffectDbObject
+    effect: EffectDbObject
   }): UnitDbObject[] {
     const berserkers: UnitDbObject[] = []
 
@@ -146,7 +155,7 @@ export default class EffectMardroeme {
       if (!unit) {
         throw Error(`Could not find battlefield unit for game unit "${gameUnit.unit}"`)
       }
-      if (unit.effects && unit.effects.some((effect) => effect.toString() === berserkerEffect._id.toString())) {
+      if (unit.effects && unit.effects.some((unitEffect) => unitEffect.toString() === effect._id.toString())) {
         berserkers.push(unit)
       }
     }

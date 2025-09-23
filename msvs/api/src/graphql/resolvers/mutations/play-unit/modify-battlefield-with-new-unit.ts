@@ -44,6 +44,13 @@ export default async function modifyBattlefieldWithNewUnit({
     combat,
   })
 
+  const scorches = EffectScorch.scorchBattlefield({
+    battlefieldUnits,
+    effects,
+    game,
+    logPrefix,
+    newDeckUnit,
+  })
   const {
     impacts: musterImpacts,
     musteredUnits,
@@ -68,13 +75,7 @@ export default async function modifyBattlefieldWithNewUnit({
     combat,
   })
   return {
-    scorches: EffectScorch.scorchBattlefield({
-      battlefieldUnits,
-      effects,
-      game,
-      logPrefix,
-      newDeckUnit,
-    }),
+    scorches,
     musters: musterImpacts,
     musteredUnits,
     musteredOrigins,
