@@ -52,15 +52,23 @@ export default class PlayUnitImplementation {
       units: roundUnits,
     })
 
-    const { mardroemes, transformedUnits, transformedGameUnits, musters, musteredUnits, musteredOrigins, scorches } =
-      await modifyBattlefieldWithNewUnit({
-        battlefieldUnits: roundUnits,
-        combat,
-        effects: unitEffects,
-        game,
-        logPrefix,
-        newDeckUnit: deckUnit,
-      })
+    const {
+      mardroemes,
+      transformedUnits,
+      transformedGameUnits,
+      mardroemingGameUnit,
+      musters,
+      musteredUnits,
+      musteredOrigins,
+      scorches,
+    } = await modifyBattlefieldWithNewUnit({
+      battlefieldUnits: roundUnits,
+      combat,
+      effects: unitEffects,
+      game,
+      logPrefix,
+      newDeckUnit: deckUnit,
+    })
 
     const musterEffects = await getUnitEffects({
       units: musteredUnits,
@@ -95,6 +103,7 @@ export default class PlayUnitImplementation {
       morales,
       mardroemes,
       transformedGameUnits,
+      mardroemingGameUnit,
     })
 
     SetNextTurnForCurrentRound.setNextTurnForCurrentRound({

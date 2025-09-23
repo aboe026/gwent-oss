@@ -66,6 +66,7 @@ export default async function modifyBattlefieldWithNewUnit({
     impacts: mardroemeImpacts,
     transformedUnits,
     transformedGameUnits,
+    mardroemingGameUnit,
   } = await EffectMardroeme.transformBerserkers({
     battlefieldUnits,
     effects,
@@ -82,6 +83,7 @@ export default async function modifyBattlefieldWithNewUnit({
     mardroemes: mardroemeImpacts,
     transformedUnits,
     transformedGameUnits,
+    mardroemingGameUnit,
   }
 }
 
@@ -125,4 +127,5 @@ interface ModificationImpacts {
   mardroemes: ImpactsByUnitId
   transformedUnits: UnitDbObject[]
   transformedGameUnits: GameUnitDbObject[]
+  mardroemingGameUnit: GameUnitDbObject | undefined
 }

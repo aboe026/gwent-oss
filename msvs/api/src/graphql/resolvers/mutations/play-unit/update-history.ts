@@ -33,6 +33,7 @@ export default class UpdateHistory {
    * @param config.combat Which combat row the new unit is being deployed to on the battlefield.
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
+   * @param config.mardroemingGameUnit A potential GameUnit which caused the berserkers to transform.
    * @param config.transformedGameUnits Any potential new vilkcaarl
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
@@ -47,6 +48,7 @@ export default class UpdateHistory {
     combat,
     scorches,
     mardroemes,
+    mardroemingGameUnit,
     transformedGameUnits,
     musters,
     bonds,
@@ -61,6 +63,7 @@ export default class UpdateHistory {
     scorches: ImpactsByUnitId
     mardroemes: ImpactsByUnitId
     transformedGameUnits: GameUnitDbObject[]
+    mardroemingGameUnit?: GameUnitDbObject
     musters: ImpactsByUnitId
     bonds: ImpactsByUnitId
     morales: ImpactsByUnitId
@@ -117,7 +120,12 @@ export default class UpdateHistory {
           created: move.created,
           reason: {
             type: MoveReasonType.Transform,
-            unit: deckUnit,
+            unit: mardroemingGameUnit
+              ? {
+                  artStyle: mardroemingGameUnit.artStyle,
+                  unit: mardroemingGameUnit.unit,
+                }
+              : deckUnit,
           },
           type: MoveType.Unit,
           unit: {

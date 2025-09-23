@@ -495,7 +495,7 @@ export class E2eHelper {
           unitName: mardroeme.name,
           combatRow: mardroeme.row,
           reason: {
-            name: deckUnit.unit.name,
+            name: mardroeme.reason || deckUnit.unit.name,
             type: MoveReasonType.Transform,
           },
           impacts: mardroeme.impact
@@ -846,6 +846,7 @@ export interface MardroemingExpected {
   name: string
   row: Combat
   effectiveStrength: number
+  reason?: string
   impact?: {
     type: EffectKey
     instances?: number

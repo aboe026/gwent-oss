@@ -39,7 +39,7 @@ test('Mardroeme effects old berserker unit if played after', async (t) => {
   })
 })
 
-test.only('Mardroeme effects old berserker unit if played before', async (t) => {
+test('Mardroeme effects old berserker unit if played before', async (t) => {
   const unitName1 = 'Ermion'
   const unitName2 = 'Young Berserker'
   const gameManager = await createGameManager({
@@ -53,17 +53,17 @@ test.only('Mardroeme effects old berserker unit if played before', async (t) => 
   await gameManager.pass({})
   await gameManager.initialize({})
 
-  // TODO: fix history to show young berserker played (right now duplicates transformed young vildkaarl)
-  // TODO: update e2e logic to account for this
   await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
+    impacts: -1,
     mardroeming: [
       {
         name: 'Transformed Young Vildkaarl',
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
         effectiveStrength: 8,
+        reason: unitName1,
         impact: {
           type: EffectKey.Bond,
           instances: 0,
@@ -72,3 +72,9 @@ test.only('Mardroeme effects old berserker unit if played before', async (t) => 
     ],
   })
 })
+
+// TODO: test old berserker
+// TODO: test old berserker with morale
+// TODO: test young berserker with bond
+// TODO: test with Mardroeme
+// TODO: test with Mardroeme and Ermion

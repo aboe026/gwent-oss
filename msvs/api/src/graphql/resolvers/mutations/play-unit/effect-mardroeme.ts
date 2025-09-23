@@ -41,6 +41,7 @@ export default class EffectMardroeme {
     const impacts: ImpactDbObject[] = []
     const transformedUnits: UnitDbObject[] = []
     const transformedGameUnits: GameUnitDbObject[] = []
+    let mardroemingGameUnit: GameUnitDbObject | undefined = undefined
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
       const message = `Could not find unit for new deck unit "${newDeckUnit.unit}".`
@@ -98,6 +99,10 @@ export default class EffectMardroeme {
         EffectMardroeme.logger.debug(
           `${logPrefix} "${mardroemes.length}" mardroeme(s) and "${berserkers.length}" berserker(s) after unit "${newUnit.name}" played, transforming berserkers to vildkaarls`
         )
+        mardroemingGameUnit = EffectMardroeme.getMardroemingGameUnit({
+          gameUnits,
+          mardroemes,
+        })
         const vildkaarls = await EffectMardroeme.getVildkaarlsForTransformation({
           berserkers,
         })
@@ -134,6 +139,7 @@ export default class EffectMardroeme {
           : {},
       transformedUnits,
       transformedGameUnits,
+      mardroemingGameUnit,
     }
   }
 
@@ -161,6 +167,27 @@ export default class EffectMardroeme {
     }
 
     return berserkers
+  }
+
+  private static getMardroemingGameUnit({
+    gameUnits,
+    mardroemes,
+  }: {
+    gameUnits: GameUnitDbObject[]
+    mardroemes: UnitDbObject[]
+  }): GameUnitDbObject {
+    let mardroemingGameUnit: GameUnitDbObject | undefined = undefined
+    const mardroemeUnitIds = mardroemes.map((unit) => unit._id.toString())
+    for (let i = gameUnits.length - 1; i >= 0; i--) {
+      const gameUnit = gameUnits[i]
+      if (mardroemeUnitIds.includes(gameUnit.unit.toString())) {
+        mardroemingGameUnit = gameUnit
+      }
+    }
+    if (!mardroemingGameUnit) {
+      throw Error(`Could not find mardroeming game unit in "${JSON.stringify(gameUnits)}"`)
+    }
+    return mardroemingGameUnit
   }
 
   private static async getVildkaarlsForTransformation({
@@ -194,6 +221,7 @@ export default class EffectMardroeme {
 
     row.units = row.units.map((gameUnit) => {
       const berserker = berserkers.find((berserker) => berserker._id.toString() === gameUnit.unit.toString())
+      let unitId = gameUnit.unit
       if (berserker) {
         const young = berserker.name === 'Young Berserker'
         const index = young ? youngVildkaarlIndex : oldVildkaarlIndex
@@ -203,7 +231,7 @@ export default class EffectMardroeme {
             `Could not find instance "${index + 1}" of "${young ? 'Transformed Young Vildkaarl' : 'Transformed Vildkaarl'}" to transform berseker "${berserker._id}" into`
           )
         }
-        gameUnit.unit = vildkaarl._id
+        unitId = vildkaarl._id
         transformations.push({
           from: {
             ...gameUnit,
@@ -221,7 +249,10 @@ export default class EffectMardroeme {
           oldVildkaarlIndex++
         }
       }
-      return gameUnit
+      return {
+        ...gameUnit,
+        unit: unitId,
+      }
     })
 
     return transformations
@@ -238,4 +269,5 @@ export interface Transformations {
   impacts: ImpactsByUnitId
   transformedUnits: UnitDbObject[]
   transformedGameUnits: GameUnitDbObject[]
+  mardroemingGameUnit: GameUnitDbObject | undefined
 }
