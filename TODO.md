@@ -12,8 +12,13 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- what combats can Mardroeme be deployed to? Just close and ranged? Right now has none :(
-- does mardroeme transform berserkers played after it?
+- fix e2e tests
+- create new structure for battlefield rows
+  - "modifier"? Since there can only be one?
+  - can be either Commander's Horn or Mardroeme
+    - add "modifier" field to Unit to distinguish those
+- what combats can Mardroeme be deployed to?
+  - any
 - include "to" for impact so know exactly which unit it transformed into?
 
 - improve performance when typing name for deck

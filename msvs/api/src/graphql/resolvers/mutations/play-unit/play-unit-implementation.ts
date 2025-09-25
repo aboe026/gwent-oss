@@ -86,6 +86,7 @@ export default class PlayUnitImplementation {
       logPrefix,
       newDeckUnit: deckUnit,
       musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
+      transformedUnitIds: transformedUnits.map((unit) => unit._id.toString()),
     })
 
     setGameScores(game)

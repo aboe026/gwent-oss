@@ -103,8 +103,14 @@ export default class EffectMardroeme {
           gameUnits,
           mardroemes,
         })
+        const existingVildkaarlIds = EffectMardroeme.getExistingVildkaarlIds({
+          battlefieldUnits,
+          gameUnits,
+        })
         const vildkaarls = await EffectMardroeme.getVildkaarlsForTransformation({
           berserkers,
+          existingVildkaarlIds,
+          limit: berserkers.length,
         })
 
         const round = player.rounds[game.round - 1]
@@ -190,10 +196,36 @@ export default class EffectMardroeme {
     return mardroemingGameUnit
   }
 
+  private static getExistingVildkaarlIds({
+    gameUnits,
+    battlefieldUnits,
+  }: {
+    gameUnits: GameUnitDbObject[]
+    battlefieldUnits: UnitDbObject[]
+  }): string[] {
+    const ids: string[] = []
+
+    for (const gameUnit of gameUnits) {
+      const unit = battlefieldUnits.find((unit) => unit._id.toString() === gameUnit.unit.toString())
+      if (!unit) {
+        throw Error(`Could not find game unit "${gameUnit.unit}" on battlefield`)
+      }
+      if (['Transformed Vildkaarl', 'Transformed Young Vildkaarl'].includes(unit.name)) {
+        ids.push(unit._id.toString())
+      }
+    }
+
+    return ids
+  }
+
   private static async getVildkaarlsForTransformation({
     berserkers,
+    existingVildkaarlIds,
+    limit,
   }: {
     berserkers: UnitDbObject[]
+    existingVildkaarlIds: string[]
+    limit: number
   }): Promise<UnitDbObject[]> {
     return UnitStore.get({
       names: getUniqueItems(
@@ -201,6 +233,8 @@ export default class EffectMardroeme {
           berserker.name === 'Young Berserker' ? 'Transformed Young Vildkaarl' : 'Transformed Vildkaarl'
         )
       ),
+      ignoreIds: existingVildkaarlIds,
+      limit,
     })
   }
 

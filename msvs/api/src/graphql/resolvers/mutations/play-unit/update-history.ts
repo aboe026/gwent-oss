@@ -116,6 +116,11 @@ export default class UpdateHistory {
           UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
           throw Error(`${message}.`)
         }
+        const transformImpacts =
+          scorches[transformedGameUnit.unit.toString()] ||
+          musters[transformedGameUnit.unit.toString()] ||
+          bonds[transformedGameUnit.unit.toString()] ||
+          morales[transformedGameUnit.unit.toString()]
         const transformMove: MoveUnitDbObject = {
           created: move.created,
           reason: {
@@ -135,6 +140,7 @@ export default class UpdateHistory {
             effects: transformedBattlefieldUnit.unit.effects,
             row: transformedBattlefieldUnit.row,
           },
+          impacts: transformImpacts,
           source: {
             origin: GameUnitOrigin.Nondeck,
           },

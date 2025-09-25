@@ -81,6 +81,7 @@ export default class UnitStore extends Store {
    * @param options.ignoreIds List of ObjectIds to ignore in the database.
    * @param options.namePrefix Scope units to those whose name start with the given string.
    * @param options.names Scope units to those which have the exact names.
+   * @param options.limit The number of Units to limit results to.
    * @returns Units matching criteria.
    */
   static async get({
@@ -90,6 +91,7 @@ export default class UnitStore extends Store {
     namePrefix,
     names,
     ignoreIds,
+    limit,
   }: GetUnitsInput): Promise<UnitDbObject[]> {
     if (UnitStore.logger.isDebugEnabled()) {
       UnitStore.logger.debug(
@@ -135,6 +137,9 @@ export default class UnitStore extends Store {
         _id: 1,
       },
     }
+    if (limit) {
+      options.limit = limit
+    }
     if (UnitStore.logger.isTraceEnabled()) {
       UnitStore.logger.trace(`get filter: "${JSON.stringify(filter)}`)
       UnitStore.logger.trace(`get options: "${JSON.stringify(options)}`)
@@ -170,4 +175,5 @@ export interface GetUnitsInput {
   ignoreIds?: (string | ObjectId)[]
   namePrefix?: string
   names?: string[]
+  limit?: number
 }
