@@ -205,26 +205,47 @@ export class E2eHelper {
     unitName,
     strength,
     row,
+    instances = 1,
   }: {
     player: GamePlayerExpected
     unitName: string
     strength?: number
     row: Combat
+    instances?: number
   }): void {
+    let removed = 0
     if (row === Combat.Close) {
       player.close = {
         score: (player.close?.score || 0) - (strength || 0),
-        units: [...(player.close?.units || [])].filter((unit) => unit.name !== unitName),
+        units: [...(player.close?.units || [])].filter((unit) => {
+          if (unit.name === unitName && (removed < instances || instances === -1)) {
+            removed++
+            return false
+          }
+          return true
+        }),
       }
     } else if (row === Combat.Ranged) {
       player.ranged = {
         score: (player.ranged?.score || 0) - (strength || 0),
-        units: [...(player.ranged?.units || [])].filter((unit) => unit.name !== unitName),
+        units: [...(player.ranged?.units || [])].filter((unit) => {
+          if (unit.name === unitName && (removed < instances || instances === -1)) {
+            removed++
+            return false
+          }
+          return true
+        }),
       }
     } else if (row === Combat.Siege) {
       player.siege = {
         score: (player.siege?.score || 0) - (strength || 0),
-        units: [...(player.siege?.units || [])].filter((unit) => unit.name !== unitName),
+        units: [...(player.siege?.units || [])].filter((unit) => {
+          if (unit.name === unitName && (removed < instances || instances === -1)) {
+            removed++
+            return false
+          }
+          return true
+        }),
       }
     }
     player.score = (player.score || 0) - (strength || 0)
@@ -434,6 +455,7 @@ export class E2eHelper {
           row: scorch.row,
           unitName: scorch.name,
           strength: scorch.strength || 0,
+          instances: -1,
         })
       }
     }

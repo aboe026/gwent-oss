@@ -7,7 +7,42 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effect Mardroeme')
 
-test('Mardroeme effects young berserker unit if played after', async (t) => {
+test('Mardroeme effects young berserker if played before', async (t) => {
+  const unitName1 = 'Ermion'
+  const unitName2 = 'Young Berserker'
+  const unitName3 = 'Transformed Young Vildkaarl'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged, mardroeming: [] })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    impacts: -1,
+    mardroeming: [
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        effectiveStrength: 8,
+        reason: unitName1,
+        impact: {
+          type: EffectKey.Bond,
+          instances: 0,
+        },
+      },
+    ],
+  })
+})
+
+test('Mardroeme effects single young berserker if played after', async (t) => {
   const unitName1 = 'Young Berserker'
   const unitName2 = 'Ermion'
   const gameManager = await createGameManager({
@@ -39,64 +74,73 @@ test('Mardroeme effects young berserker unit if played after', async (t) => {
   })
 })
 
-test('Mardroeme effects young berserker unit if played before', async (t) => {
-  const unitName1 = 'Ermion'
-  const unitName2 = 'Young Berserker'
+test('Mardroeme effects multiple young berserkers if played after', async (t) => {
+  const unitName1 = 'Young Berserker'
+  const unitName2 = 'Ermion'
+  const unitName3 = 'Transformed Young Vildkaarl'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.Skellige,
-      handUnitNames: [unitName1, unitName2],
+      handUnitNames: [unitName1, unitName1, unitName2],
     },
   })
-  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged, mardroeming: [] })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
   await gameManager.pass({})
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
   await gameManager.initialize({})
 
   await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
-    impacts: -1,
     mardroeming: [
       {
-        name: 'Transformed Young Vildkaarl',
+        name: unitName3,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
-        effectiveStrength: 8,
-        reason: unitName1,
+        effectiveStrength: 16,
         impact: {
           type: EffectKey.Bond,
-          instances: 0,
+          instances: 1,
+        },
+      },
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        effectiveStrength: 16,
+        impact: {
+          type: EffectKey.Bond,
+          instances: 1,
         },
       },
     ],
   })
 })
 
-test('Young berserker transforms into Vildkaarl and bonds with existing one', async (t) => {
-  const unitName1 = 'Ermion'
-  const unitName2 = 'Young Berserker'
+test('Young berserker transforms into Vildkaarl and bonds with existing ones', async (t) => {
+  const unitName1 = 'Young Berserker'
+  const unitName2 = 'Ermion'
   const unitName3 = 'Transformed Young Vildkaarl'
   const gameManager = await createGameManager({
     label: `${getScenario(t)}-${t.ctx.start}`,
     self: {
       faction: FactionKey.Skellige,
-      handUnitNames: [unitName1, unitName2, unitName2],
+      handUnitNames: [unitName1, unitName1, unitName1, unitName2],
     },
   })
-  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged, mardroeming: [] })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
   await gameManager.pass({})
   await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
-    impacts: -1,
     mardroeming: [
       {
         name: unitName3,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
         effectiveStrength: 8,
-        reason: unitName1,
+        reason: unitName2,
         impact: {
           type: EffectKey.Bond,
           instances: 0,
@@ -104,10 +148,8 @@ test('Young berserker transforms into Vildkaarl and bonds with existing one', as
       },
     ],
   })
-
-  await gameManager.initialize({})
   await gameManager.deploy({
-    unitName: unitName2,
+    unitName: unitName1,
     combat: Combat.Ranged,
     impacts: -1,
     mardroeming: [
@@ -116,7 +158,7 @@ test('Young berserker transforms into Vildkaarl and bonds with existing one', as
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
         effectiveStrength: 16,
-        reason: unitName1,
+        reason: unitName2,
         impact: {
           type: EffectKey.Bond,
           instances: 1,
@@ -126,6 +168,40 @@ test('Young berserker transforms into Vildkaarl and bonds with existing one', as
     bonding: [
       {
         effectiveStrength: 16,
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+  })
+
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+    impacts: -1,
+    mardroeming: [
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        effectiveStrength: 32,
+        reason: unitName2,
+        impact: {
+          type: EffectKey.Bond,
+          instances: 2,
+        },
+      },
+    ],
+    bonding: [
+      {
+        effectiveStrength: 32,
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+      {
+        effectiveStrength: 32,
         name: unitName3,
         player: gameManager.self.gamePlayer,
         row: Combat.Ranged,
