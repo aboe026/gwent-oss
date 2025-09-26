@@ -7,6 +7,30 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effect Mardroeme')
 
+test('Mardroeme does not effect berserker in different row', async (t) => {
+  const unitName1 = 'Berserker'
+  const unitName2 = 'Mardroeme'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    modifier: true,
+    mardroeming: [],
+  })
+})
+
+// TODO: Mardroeme does not effect opponent berserker
+
 test('Ermion effects young berserker if played before', async (t) => {
   const unitName1 = 'Ermion'
   const unitName2 = 'Young Berserker'

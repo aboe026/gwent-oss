@@ -99,7 +99,7 @@ export default function GameCombatRow({
   })
 
   const modifier = useFragment(GameUnitFragmentDoc, playerRow.modifier)
-  let modifierTitle = `${titledCombat} combat modifier`
+  let modifierTitle = modifier ? useFragment(UnitFragmentDoc, modifier.unit).name : `${titledCombat} combat modifier`
   let modifierClass = ''
   const modifierStyle: CSSProperties = {}
   const validModifier = isSelf && !modifier && handCardSelectedUnit?.modifier

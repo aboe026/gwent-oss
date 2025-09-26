@@ -1058,9 +1058,10 @@ export default class GamePage {
             ? HTML_IDS.GameCombatRowRangedSelf
             : HTML_IDS.GameCombatRowSiegeSelf
       }`
-    ).find(`.${HTML_CLASSES.GameCombatRowCards}`)
+    )
+    const combatRowUnits = combatRow.find(`.${HTML_CLASSES.GameCombatRowCards}`)
     await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
-    await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
+    await t.expect(combatRowUnits.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
     await t.click(card)
     if (verify) {
       await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
@@ -1073,10 +1074,10 @@ export default class GamePage {
           )
           .ok()
       } else {
-        await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+        await t.expect(combatRowUnits.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
       }
     }
-    await t.click(modifier ? combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`) : combatRow)
+    await t.click(modifier ? combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`) : combatRowUnits)
   }
 
   static async summaryGoToGames() {
