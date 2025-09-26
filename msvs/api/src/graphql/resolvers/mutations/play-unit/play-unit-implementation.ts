@@ -68,6 +68,7 @@ export default class PlayUnitImplementation {
       game,
       logPrefix,
       newDeckUnit: deckUnit,
+      newUnit: unit,
     })
 
     const musterEffects = await getUnitEffects({

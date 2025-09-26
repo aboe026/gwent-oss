@@ -23,6 +23,7 @@ export default class UnitStore extends Store {
    * @param unit.faction The ID of the faction the Unit belongs to.
    * @param unit.hero Whether or not the Unit is a Hero.
    * @param unit.images Paths to images of the Unit.
+   * @param unit.modifier Whether or not the unit can be deployed as a row modifier.
    * @param unit.name The name of the Unit.
    * @param unit.quote The quote of the Unit.
    * @param unit.scorchMin The minimum strength the Unit can scorch.
@@ -40,6 +41,7 @@ export default class UnitStore extends Store {
     faction,
     hero,
     images,
+    modifier,
     name,
     quote,
     scorchMin,
@@ -58,6 +60,7 @@ export default class UnitStore extends Store {
       faction: new ObjectId(faction),
       hero,
       images,
+      modifier,
       name,
       quote,
       scorchMin,
@@ -160,6 +163,7 @@ export interface AddUnitInput {
   hero?: boolean
   images: string[]
   effectPrefix: string | null
+  modifier: boolean
   name: string
   quote: string
   scorchMin: number | null

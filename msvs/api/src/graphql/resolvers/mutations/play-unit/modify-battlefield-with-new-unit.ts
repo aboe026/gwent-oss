@@ -20,7 +20,8 @@ import EffectMardroeme from './effect-mardroeme'
  * @param config.effects The effects that any unit might have.
  * @param config.game The game whose battlefield should have the units deployment applied to it.
  * @param config.logPrefix What to prepend log statements with.
- * @param config.newDeckUnit The new unit being introduced to the battlefield.
+ * @param config.newDeckUnit The new DeckUnit being introduced to the battlefield.
+ * @param config.newUnit The new Unit being introduced to the battlefield.
  * @returns Any impacts the new unit has on the battlefield.
  */
 export default async function modifyBattlefieldWithNewUnit({
@@ -30,6 +31,7 @@ export default async function modifyBattlefieldWithNewUnit({
   game,
   logPrefix,
   newDeckUnit,
+  newUnit,
 }: {
   battlefieldUnits: UnitDbObject[]
   combat?: Combat | null
@@ -37,11 +39,13 @@ export default async function modifyBattlefieldWithNewUnit({
   game: GameDbObject
   logPrefix: string
   newDeckUnit: DeckUnitDbObject
+  newUnit: UnitDbObject
 }): Promise<ModificationImpacts> {
   addNewUnitToBattlefield({
     game,
     newDeckUnit,
     combat,
+    newUnit, // TODO: see if any other methods would benefit from using this
   })
 
   const scorches = EffectScorch.scorchBattlefield({
@@ -94,26 +98,41 @@ export default async function modifyBattlefieldWithNewUnit({
  * @param config.combat The row on the battlefield to add the DeckUnit to.
  * @param config.game The Game whose battlefield the DeckUnit should be added to.
  * @param config.newDeckUnit The DeckUnit to add to the battlefield.
+ * @param config.newUnit The new Unit being introduced to the battlefield.
  */
 export function addNewUnitToBattlefield({
   combat,
   game,
   newDeckUnit,
+  newUnit,
 }: {
   combat?: Combat | null
   game: GameDbObject
   newDeckUnit: DeckUnitDbObject
+  newUnit: UnitDbObject
 }) {
   for (const player of game.players) {
     if (player.user.toString() === game.turn?.toString()) {
       player.deck.hand = player.deck.hand.filter((handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString())
       const round = player.rounds[game.round - 1]
       if (combat === Combat.Close) {
-        round.close.units.push(newDeckUnit)
+        if (newUnit.modifier) {
+          round.close.modifier = newDeckUnit
+        } else {
+          round.close.units.push(newDeckUnit)
+        }
       } else if (combat === Combat.Ranged) {
-        round.ranged.units.push(newDeckUnit)
+        if (newUnit.modifier) {
+          round.ranged.modifier = newDeckUnit
+        } else {
+          round.ranged.units.push(newDeckUnit)
+        }
       } else if (combat === Combat.Siege) {
-        round.siege.units.push(newDeckUnit)
+        if (newUnit.modifier) {
+          round.siege.modifier = newDeckUnit
+        } else {
+          round.siege.units.push(newDeckUnit)
+        }
       }
     }
   }

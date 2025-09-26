@@ -322,6 +322,7 @@ type PlayerRound {
 type PlayerCombatRow {
   score: Int! 
   units: [GameUnit!]! 
+  modifier: GameUnit 
 }
 
 type Redraw {
@@ -347,6 +348,7 @@ type Unit {
   hero: Boolean 
   id: ID! 
   images: [String!]! 
+  modifier: Boolean! 
   name: String! 
   quote: String! 
   scorchMin: Int 

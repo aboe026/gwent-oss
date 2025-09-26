@@ -358,6 +358,7 @@ type Mutation {
 }
 
 type PlayerCombatRow @entity {
+  modifier: GameUnit @column(overrideType: "GameUnitDbObject")
   score: Int! @column
   units: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
 }
@@ -467,6 +468,7 @@ type Unit @entity {
   hero: Boolean @column
   id: ID! @id @map(path: "_id")
   images: [String!]! @column
+  modifier: Boolean! @column
   name: String! @column
   quote: String! @column
   scorchMin: Int @column

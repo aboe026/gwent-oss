@@ -387,10 +387,11 @@ th {
 .game-unit-board-combat-icon-score {
   display: flex;
   flex-direction: column;
-  width: 50px;
+  width: 40px;
   justify-content: center;
   align-items: center;
-  gap: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
 }
 
 .game-unit-combat-row-valid {
@@ -402,7 +403,18 @@ th {
 }
 
 .game-unit-combat-row-icon {
-  width: 100%;
+  width: 75%;
+}
+
+.game-combat-row-modifier {
+  display: flex;
+  flex-grow: 1;
+  background-color: darkgray;
+  border-radius: 5px;
+}
+
+.combat-row-modifier-available {
+  height: 100%;
 }
 
 .game-round-token {

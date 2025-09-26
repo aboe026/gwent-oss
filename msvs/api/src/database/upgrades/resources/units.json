@@ -343,6 +343,9 @@
     "Deckable": "Yes",
     "Faction": "Neutral",
     "Hero": "No",
+    "Combat 1": "Close",
+    "Combat 2": "Ranged",
+    "Combat 3": "Siege",
     "Effect 1": "Horn",
     "Art Styles": 1,
     "Quote": "\"Plus one to morale, minus three to hearing.\""
@@ -441,6 +444,9 @@
     "Deckable": "Yes",
     "Faction": "Neutral",
     "Hero": "No",
+    "Combat 1": "Close",
+    "Combat 2": "Ranged",
+    "Combat 3": "Siege",
     "Effect 1": "Decoy",
     "Art Styles": 1,
     "Quote": "\"When you run out of peasants, decoys also make decent arrow fodder.\""
@@ -1096,6 +1102,9 @@
     "Deckable": "Yes",
     "Faction": "Skellige",
     "Hero": "No",
+    "Combat 1": "Close",
+    "Combat 2": "Ranged",
+    "Combat 3": "Siege",
     "Effect 1": "Mardroeme",
     "DLC": "Blood and Wine",
     "Art Styles": 1,
@@ -1382,7 +1391,7 @@
     "Hero": "No",
     "Effect 1": "Scorch",
     "Art Styles": 1,
-    "Quote": "\"Pillars of flame turn the mightiest to ash. All others tremble in shock and awe.\""
+    "Quote": "\"Pillars of flame turn the mightiest to ash. All other tremble in shock and awe.\""
   },
   {
     "Name": "Sheldon Skaggs",
@@ -1598,7 +1607,7 @@
   },
   {
     "Name": "Transformed Young Vildkaarl",
-    "Occurrences": 3,
+    "Occurrences": 1,
     "Deckable": "No",
     "Faction": "Skellige",
     "Hero": "No",

@@ -7,7 +7,7 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Effect Mardroeme')
 
-test('Mardroeme effects young berserker if played before', async (t) => {
+test('Ermion effects young berserker if played before', async (t) => {
   const unitName1 = 'Ermion'
   const unitName2 = 'Young Berserker'
   const unitName3 = 'Transformed Young Vildkaarl'
@@ -42,7 +42,74 @@ test('Mardroeme effects young berserker if played before', async (t) => {
   })
 })
 
-test('Mardroeme effects single young berserker if played after', async (t) => {
+test('Mardroeme effects berserker if played before', async (t) => {
+  const unitName1 = 'Mardroeme'
+  const unitName2 = 'Berserker'
+  const unitName3 = 'Transformed Vildkaarl'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, modifier: true, mardroeming: [] })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    impacts: -1,
+    mardroeming: [
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        effectiveStrength: 14,
+        reason: unitName1,
+        impact: {
+          type: EffectKey.Morale,
+          instances: 0,
+        },
+      },
+    ],
+  })
+})
+
+test('Mardroeme effects berserker if played after', async (t) => {
+  const unitName1 = 'Berserker'
+  const unitName2 = 'Mardroeme'
+  const unitName3 = 'Transformed Vildkaarl'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, modifier: true })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    mardroeming: [
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        effectiveStrength: 14,
+        reason: unitName2,
+        impact: {
+          type: EffectKey.Morale,
+          instances: 0,
+        },
+      },
+    ],
+  })
+})
+
+test('Ermion effects single young berserker if played after', async (t) => {
   const unitName1 = 'Young Berserker'
   const unitName2 = 'Ermion'
   const gameManager = await createGameManager({
@@ -74,7 +141,7 @@ test('Mardroeme effects single young berserker if played after', async (t) => {
   })
 })
 
-test('Mardroeme effects multiple young berserkers if played after', async (t) => {
+test('Ermion effects multiple young berserkers if played after', async (t) => {
   const unitName1 = 'Young Berserker'
   const unitName2 = 'Ermion'
   const unitName3 = 'Transformed Young Vildkaarl'

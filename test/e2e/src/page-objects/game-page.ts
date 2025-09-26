@@ -426,10 +426,10 @@ export default class GamePage {
     await t.expect(rowSelector.exists).ok()
     await t.expect(rowSelector.visible).ok()
     const actualUnitNames: string[] = []
-    const rowCards = rowSelector.find(`.${HTML_CLASSES.GameCombatRowCards}`).child()
+    const rowCards = rowSelector.find(`.${HTML_CLASSES.UnitGameCardContainer}`)
     const rowCardsCount = await rowCards.count
     for (let i = 0; i < rowCardsCount; i++) {
-      const rowCard = rowCards.nth(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+      const rowCard = rowCards.nth(i)
       const unitName = (await rowCard.getAttribute('title')) || ''
       const highlighted = await rowCard.hasClass(HTML_CLASSES.ItemHighlighted)
       actualUnitNames.push(`${unitName}${highlighted ? ' selected' : ''}`)
@@ -1038,7 +1038,17 @@ export default class GamePage {
     )
   }
 
-  static async moveUnit({ unitName, row, verify = true }: { unitName: string; row: Combat; verify?: boolean }) {
+  static async moveUnit({
+    unitName,
+    row,
+    modifier,
+    verify = true,
+  }: {
+    unitName: string
+    row: Combat
+    modifier?: boolean
+    verify?: boolean
+  }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
     const combatRow = GamePage.elements.CenterContainer.find(
       `#${
@@ -1056,11 +1066,17 @@ export default class GamePage {
       await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
       if (unitName === 'Scorch') {
         await t.expect(GamePage.elements.CenterContainer.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      } else if (modifier) {
+        await t
+          .expect(
+            combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`).hasClass(HTML_CLASSES.ItemHighlighted)
+          )
+          .ok()
       } else {
         await t.expect(combatRow.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
       }
     }
-    await t.click(combatRow)
+    await t.click(modifier ? combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`) : combatRow)
   }
 
   static async summaryGoToGames() {

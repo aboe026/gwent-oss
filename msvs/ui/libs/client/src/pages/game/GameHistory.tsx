@@ -231,11 +231,15 @@ function PlayerHistoryMove({
     ) {
       isSelected = true
       const playerRound = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
-      const units = [
-        ...useFragment(PlayerCombatRowFragmentDoc, playerRound.close).units,
-        ...useFragment(PlayerCombatRowFragmentDoc, playerRound.ranged).units,
-        ...useFragment(PlayerCombatRowFragmentDoc, playerRound.siege).units,
-      ]
+      const closeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.close)
+      const rangedRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.ranged)
+      const siegeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.siege)
+      const units = [...closeRow.units, ...rangedRow.units, ...siegeRow.units]
+      for (const modifier of [closeRow.modifier, rangedRow.modifier, siegeRow.modifier]) {
+        if (modifier) {
+          units.push(useFragment(GameUnitFragmentDoc, modifier))
+        }
+      }
       for (let i = 0; i < units.length && !isOnBattlefield; i++) {
         if (useFragment(UnitFragmentDoc, useFragment(GameUnitFragmentDoc, units[i]).unit).id === unit.id) {
           isOnBattlefield = true

@@ -25,12 +25,21 @@ export default function getGameUnits({
     const roundUnits = []
     if (!combat || combat === Combat.Close) {
       roundUnits.push(...playerRound.close.units)
+      if (playerRound.close.modifier) {
+        roundUnits.push(playerRound.close.modifier)
+      }
     }
     if (!combat || combat === Combat.Ranged) {
       roundUnits.push(...playerRound.ranged.units)
+      if (playerRound.ranged.modifier) {
+        roundUnits.push(playerRound.ranged.modifier)
+      }
     }
     if (!combat || combat === Combat.Siege) {
       roundUnits.push(...playerRound.siege.units)
+      if (playerRound.siege.modifier) {
+        roundUnits.push(playerRound.siege.modifier)
+      }
     }
     for (const gameUnit of roundUnits) {
       gameUnits.push(gameUnit)

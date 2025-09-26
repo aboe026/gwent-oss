@@ -63,6 +63,8 @@ export const HTML_CLASSES = {
   GameUnitBoardSide: 'game-unit-board-side',
   GameUnitBoardSidePassed: 'game-unit-board-side-passed',
   GameUnitBoardCombatScore: 'game-unit-board-combat-score',
+  GameCombatRowModifierAvailable: 'combat-row-modifier-available',
+  GameCombatRowModifierContainer: 'game-combat-row-modifier',
   GameUnitCombatRowCards: 'game-unit-combat-row-cards',
   GameRowCreatedDay: 'game-row-created-day',
   GameRowCreatedTime: 'game-row-created-time',

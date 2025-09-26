@@ -40,6 +40,12 @@ export default class PlayerRoundResolver {
           gameUnits: round.close.units,
           units: resolvedUnits,
         }),
+        // TODO: make combat-row-resolver to avoid duplicate code
+        modifier: round.close.modifier
+          ? await GameUnitResolver.fromObject({
+              gameUnit: round.close.modifier,
+            })
+          : undefined,
       },
       ranged: {
         score: round.ranged.score,
@@ -47,6 +53,11 @@ export default class PlayerRoundResolver {
           gameUnits: round.ranged.units,
           units: resolvedUnits,
         }),
+        modifier: round.ranged.modifier
+          ? await GameUnitResolver.fromObject({
+              gameUnit: round.ranged.modifier,
+            })
+          : undefined,
       },
       siege: {
         score: round.siege.score,
@@ -54,6 +65,11 @@ export default class PlayerRoundResolver {
           gameUnits: round.siege.units,
           units: resolvedUnits,
         }),
+        modifier: round.siege.modifier
+          ? await GameUnitResolver.fromObject({
+              gameUnit: round.siege.modifier,
+            })
+          : undefined,
       },
       score: round.score,
       result: round.result ? (round.result as RoundResult) : undefined,

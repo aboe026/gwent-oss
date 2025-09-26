@@ -69,6 +69,7 @@ export default class UnitResolver {
       hero: unit.hero,
       id: unit._id.toString(),
       images: unit.images,
+      modifier: unit.modifier,
       name: unit.name,
       quote: unit.quote,
       scorchMin: unit.scorchMin,

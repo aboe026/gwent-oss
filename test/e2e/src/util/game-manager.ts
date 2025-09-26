@@ -98,6 +98,7 @@ export class GameManager {
     mustering,
     bonding,
     impacts,
+    modifier,
     verify,
   }: {
     unitName: string
@@ -110,6 +111,7 @@ export class GameManager {
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     impacts?: number
+    modifier?: boolean
     verify?: boolean
   }): Promise<DeckUnit> {
     const isSelfTurn = this.self.gamePlayer.turn === PlayerTurn.Current
@@ -125,6 +127,7 @@ export class GameManager {
       await GamePage.moveUnit({
         unitName: unitToMove.unit.name,
         row: combatRow,
+        modifier,
       })
     } else {
       await currentPlayer.client.playUnit({

@@ -438,6 +438,7 @@ export type MutationSetOrderArgs = {
 
 export type PlayerCombatRow = {
   __typename?: 'PlayerCombatRow';
+  modifier?: Maybe<GameUnit>;
   score: Scalars['Int']['output'];
   units: Array<GameUnit>;
 };
@@ -578,6 +579,7 @@ export type Unit = {
   hero?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   images: Array<Scalars['String']['output']>;
+  modifier: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   quote: Scalars['String']['output'];
   scorchMin?: Maybe<Scalars['Int']['output']>;
@@ -749,7 +751,7 @@ export type ResolversTypes = {
   MoveUnit: ResolverTypeWrapper<Omit<MoveUnit, 'impacts' | 'unit'> & { impacts?: Maybe<Array<ResolversTypes['Impact']>>, unit: ResolversTypes['GameUnit'] }>;
   MoveUnitReason: ResolverTypeWrapper<MoveUnitReason>;
   Mutation: ResolverTypeWrapper<{}>;
-  PlayerCombatRow: ResolverTypeWrapper<Omit<PlayerCombatRow, 'units'> & { units: Array<ResolversTypes['GameUnit']> }>;
+  PlayerCombatRow: ResolverTypeWrapper<Omit<PlayerCombatRow, 'modifier' | 'units'> & { modifier?: Maybe<ResolversTypes['GameUnit']>, units: Array<ResolversTypes['GameUnit']> }>;
   PlayerRound: ResolverTypeWrapper<Omit<PlayerRound, 'close' | 'moves' | 'ranged' | 'siege'> & { close: ResolversTypes['PlayerCombatRow'], moves: Array<ResolversTypes['Move']>, ranged: ResolversTypes['PlayerCombatRow'], siege: ResolversTypes['PlayerCombatRow'] }>;
   Query: ResolverTypeWrapper<{}>;
   Redraw: ResolverTypeWrapper<Redraw>;
@@ -803,7 +805,7 @@ export type ResolversParentTypes = {
   MoveUnit: Omit<MoveUnit, 'impacts' | 'unit'> & { impacts?: Maybe<Array<ResolversParentTypes['Impact']>>, unit: ResolversParentTypes['GameUnit'] };
   MoveUnitReason: MoveUnitReason;
   Mutation: {};
-  PlayerCombatRow: Omit<PlayerCombatRow, 'units'> & { units: Array<ResolversParentTypes['GameUnit']> };
+  PlayerCombatRow: Omit<PlayerCombatRow, 'modifier' | 'units'> & { modifier?: Maybe<ResolversParentTypes['GameUnit']>, units: Array<ResolversParentTypes['GameUnit']> };
   PlayerRound: Omit<PlayerRound, 'close' | 'moves' | 'ranged' | 'siege'> & { close: ResolversParentTypes['PlayerCombatRow'], moves: Array<ResolversParentTypes['Move']>, ranged: ResolversParentTypes['PlayerCombatRow'], siege: ResolversParentTypes['PlayerCombatRow'] };
   Query: {};
   Redraw: Redraw;
@@ -1040,6 +1042,7 @@ export type MutationResolvers<ContextType = Context, ParentType extends Resolver
 };
 
 export type PlayerCombatRowResolvers<ContextType = Context, ParentType extends ResolversParentTypes['PlayerCombatRow'] = ResolversParentTypes['PlayerCombatRow']> = {
+  modifier?: Resolver<Maybe<ResolversTypes['GameUnit']>, ParentType, ContextType>;
   score?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   units?: Resolver<Array<ResolversTypes['GameUnit']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -1118,6 +1121,7 @@ export type UnitResolvers<ContextType = Context, ParentType extends ResolversPar
   hero?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   images?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  modifier?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   quote?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   scorchMin?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
