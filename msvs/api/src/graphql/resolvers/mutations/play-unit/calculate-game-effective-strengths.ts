@@ -201,6 +201,7 @@ export default class CalculateGameEffectiveStrengths {
             units,
             userId,
             currentPlayerId,
+            transformedUnitIds,
           }),
         })
       }
