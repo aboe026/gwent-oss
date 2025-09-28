@@ -109,7 +109,7 @@ export default class PlayUnitValidation {
       const round = player.rounds[game.round - 1]
       const row = combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege
       if (row.modifier) {
-        const message = `Modifier for row "${combat}" already set as unit "${row.modifier.unit}"`
+        const message = `Modifier for row "${combat}" already set as unit "${row.modifier.unit}".`
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }

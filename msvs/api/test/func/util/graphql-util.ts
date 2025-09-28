@@ -192,12 +192,14 @@ export async function addDeck({
   leader,
   userId,
   unitIds,
+  unitNames,
 }: {
   name: string
   faction: FactionKey
   leader?: string
   userId?: string
   unitIds?: string[]
+  unitNames?: string[]
 }): Promise<Deck> {
   if (!userId) {
     userId = (await addUser(`addDeck-${Date.now()}`)).id
@@ -213,7 +215,7 @@ export async function addDeck({
           faction,
         })}",
         units: [${await getUnitsInput(
-          unitIds || (await getStrengthUnits({ faction })).map((deckUnit) => deckUnit.unit.id)
+          unitIds || (await getStrengthUnits({ faction, unitNames })).map((deckUnit) => deckUnit.unit.id)
         )}]
       ) {
         ${getDeckFragment()}
