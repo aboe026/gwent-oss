@@ -10,7 +10,35 @@ const test = getTestCtx<E2eCtx, E2eCtx>()
 
 fixture('Game Impact')
 
-// TODO: Shows no eligibles text if Mardroeme but no impacts
+test('Shows no eligibles text if Mardroeme but no impacts', async (t) => {
+  const unitName = 'Mardroeme'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName],
+    },
+  })
+  await gameManager.deploy({ unitName, mardroeming: [] })
+  await gameManager.initialize({})
+
+  await GamePage.toggleImpacts({
+    unitName,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Mardroeme,
+        unitName,
+        userName: gameManager.self.gamePlayer.name,
+        round: gameManager.round,
+        impacts: [],
+      },
+    ],
+  })
+})
 
 test('Shows no eligibles text if Morale but no impacts', async (t) => {
   const unitName = 'Milva'
@@ -103,7 +131,60 @@ test('Shows no eligibles text if Scorch but no impacts', async (t) => {
   })
 })
 
-// TODO: Shows single entry if Mardroeme impacts single unit
+test('Shows single entry if Mardroeme impacts single unit', async (t) => {
+  const unitName1 = 'Berserker'
+  const unitName2 = 'Mardroeme'
+  const unitName3 = 'Transformed Vildkaarl'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    modifier: true,
+    mardroeming: [
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        effectiveStrength: 14,
+        reason: unitName2,
+        impact: {
+          type: EffectKey.Morale,
+          instances: 0,
+        },
+      },
+    ],
+  })
+
+  await GamePage.toggleImpacts({
+    unitName: unitName2,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Mardroeme,
+        unitName: unitName2,
+        userName: gameManager.self.gamePlayer.name,
+        round: gameManager.round,
+        impacts: [
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName1,
+          },
+        ],
+      },
+    ],
+  })
+})
 
 test('Shows single entry if Morale impacts single unit', async (t) => {
   const unitName1 = 'Toruviel'
@@ -350,7 +431,77 @@ test('Shows single entry if Scorch impacts single unit opponent', async (t) => {
   })
 })
 
-// TODO: Shows multiple entries if Mardroeme impacts multiple units
+test('Shows multiple entries if Mardroeme impacts multiple units', async (t) => {
+  const unitName1 = 'Young Berserker'
+  const unitName2 = 'Mardroeme'
+  const unitName3 = 'Transformed Young Vildkaarl'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
+  await gameManager.pass({})
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
+  await gameManager.initialize({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    modifier: true,
+    mardroeming: [
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        effectiveStrength: 16,
+        reason: unitName2,
+        impact: {
+          type: EffectKey.Bond,
+          instances: 1,
+        },
+      },
+      {
+        name: unitName3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        effectiveStrength: 16,
+        reason: unitName2,
+        impact: {
+          type: EffectKey.Bond,
+          instances: 1,
+        },
+      },
+    ],
+  })
+
+  await GamePage.toggleImpacts({
+    unitName: unitName2,
+    userName: gameManager.self.gamePlayer.name,
+    round: gameManager.round,
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        effectKey: EffectKey.Mardroeme,
+        unitName: unitName2,
+        userName: gameManager.self.gamePlayer.name,
+        round: gameManager.round,
+        impacts: [
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName1,
+          },
+          {
+            username: gameManager.self.gamePlayer.name,
+            unitName: unitName1,
+          },
+        ],
+      },
+    ],
+  })
+})
 
 test('Shows multiple entries if Morale impacts multiple units', async (t) => {
   const unitName1 = 'Toruviel'

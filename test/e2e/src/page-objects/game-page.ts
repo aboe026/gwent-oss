@@ -702,6 +702,7 @@ export default class GamePage {
           const description = getImpactDescription({
             effectKey: move.effectKey,
             origin: impact.origin,
+            name: impact.unitName,
           })
           const selected = impact.highlighted ? ' selected' : ''
           const dotted = impact.dotted ? ' dotted' : ''

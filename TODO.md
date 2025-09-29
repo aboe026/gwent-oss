@@ -12,13 +12,9 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- fix e2e tests
-- create new structure for battlefield rows
-  - "modifier"? Since there can only be one?
-  - can be either Commander's Horn or Mardroeme
-    - add "modifier" field to Unit to distinguish those
-- what combats can Mardroeme be deployed to?
-  - any
+- E2E tests for how Mardroeme interacts with other effects
+  - Can scorch transformed Vildkaarls
+  - Morale gets moved to transformed Vildkaarls
 - include "to" for impact so know exactly which unit it transformed into?
 
 - improve performance when typing name for deck
