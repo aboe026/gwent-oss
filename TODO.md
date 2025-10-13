@@ -15,6 +15,9 @@ Existing problems in the codebase that need to be fixed.
 - fix modifier for small screens (1080p/laptop)
 - include "to" for impact so know exactly which unit it transformed into?
 
+- FullCard combat
+  - "Any" icon/text for units that can be played on any row
+  - "Modifier" icon/text for row modifiers (Commander's Horn/Mardroeme)
 - improve performance when typing name for deck
 - rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
 - remove unnecessary dependencies
