@@ -1,4 +1,5 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
 import {
   Combat,
@@ -9,6 +10,7 @@ import {
   GameUnitOrigin,
   MoveUnitDbObject,
   MoveDbObject,
+  MoveUnitReasonDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import GetBattlefieldUnit from './get-battlefield-unit'
 import { ImpactsByUnitId } from '../../resolver-util'
@@ -34,7 +36,7 @@ export default class UpdateHistory {
    * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
    * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
    * @param config.mardroemingGameUnit A potential GameUnit which caused the berserkers to transform.
-   * @param config.transformedGameUnits Any potential new vilkcaarl
+   * @param config.transformedGameUnits Any potential new vilkcaarls.
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
@@ -105,24 +107,16 @@ export default class UpdateHistory {
 
     if (transformedGameUnits) {
       for (const transformedGameUnit of transformedGameUnits) {
-        // TODO: have this be helper method that can be called for mustered units as well?
-        const transformedBattlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
-          game,
-          unitId: transformedGameUnit.unit,
-          userId: playerId,
-        })
-        if (!transformedBattlefieldUnit) {
-          const message = `Could not find transformed unit "${transformedGameUnit.unit}" on battlefield`
-          UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
-          throw Error(`${message}.`)
-        }
-        const transformImpacts =
-          scorches[transformedGameUnit.unit.toString()] ||
-          musters[transformedGameUnit.unit.toString()] ||
-          bonds[transformedGameUnit.unit.toString()] ||
-          morales[transformedGameUnit.unit.toString()]
-        const transformMove: MoveUnitDbObject = {
+        UpdateHistory.newUnitIndirect({
+          bonds,
           created: move.created,
+          game,
+          logPrefix,
+          mardroemes,
+          morales,
+          musters,
+          origin: GameUnitOrigin.Nondeck,
+          playerId,
           reason: {
             type: MoveReasonType.Transform,
             unit: mardroemingGameUnit
@@ -132,22 +126,8 @@ export default class UpdateHistory {
                 }
               : deckUnit,
           },
-          type: MoveType.Unit,
-          unit: {
-            artStyle: transformedBattlefieldUnit.unit.artStyle,
-            unit: transformedBattlefieldUnit.unit.unit,
-            effectiveStrength: transformedBattlefieldUnit.unit.effectiveStrength,
-            effects: transformedBattlefieldUnit.unit.effects,
-            row: transformedBattlefieldUnit.row,
-          },
-          impacts: transformImpacts,
-          source: {
-            origin: GameUnitOrigin.Nondeck,
-          },
-        }
-        UpdateHistory.addMoveToCurrentPlayer({
-          game,
-          move: transformMove,
+          scorches,
+          unitId: transformedGameUnit.unit,
         })
       }
     }
@@ -159,52 +139,113 @@ export default class UpdateHistory {
         throw Error(`${message}.`)
       }
       for (const muster of musters[deckUnit.unit.toString()]) {
-        const musteredBattlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
-          game,
-          unitId: muster.unit.unit,
-          userId: playerId,
-        })
-        if (!musteredBattlefieldUnit) {
-          const message = `Could not find mustered unit "${muster.unit.unit}" on battlefield`
-          UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
-          throw Error(`${message}.`)
-        }
         const origin = musteredOrigins[muster.unit.unit.toString()]
         if (!origin) {
           const message = `Could not find origin for mustered unit "${muster.unit.unit}"`
           UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
           throw Error(`${message}.`)
         }
-        const musterImpacts =
-          scorches[muster.unit.unit.toString()] ||
-          musters[muster.unit.unit.toString()] ||
-          bonds[muster.unit.unit.toString()] ||
-          morales[muster.unit.unit.toString()]
-        const musterMove: MoveUnitDbObject = {
+        UpdateHistory.newUnitIndirect({
+          bonds,
           created: move.created,
+          game,
+          logPrefix,
+          mardroemes,
+          morales,
+          musters,
+          origin,
+          playerId,
           reason: {
             type: MoveReasonType.Muster,
             unit: deckUnit,
           },
-          type: MoveType.Unit,
-          unit: {
-            artStyle: musteredBattlefieldUnit.unit.artStyle,
-            unit: musteredBattlefieldUnit.unit.unit,
-            effectiveStrength: musteredBattlefieldUnit.unit.effectiveStrength,
-            effects: musteredBattlefieldUnit.unit.effects,
-            row: musteredBattlefieldUnit.row,
-          },
-          impacts: musterImpacts,
-          source: {
-            origin,
-          },
-        }
-        UpdateHistory.addMoveToCurrentPlayer({
-          game,
-          move: musterMove,
+          scorches,
+          unitId: muster.unit.unit,
         })
       }
     }
+  }
+
+  /**
+   * Add Moves in a Game with due to a new unit being added to the battlefield indirectly by another unit.
+   *
+   * @param config The configuration used to add the new Move(s) to the Game.
+   * @param config.game The game whose current player should have the move(s) added to.
+   * @param config.unitId The new ID of the unit being indirectly added to the battlefield.
+   * @param config.created The Date the move was made to add the unit indirectly to the battlefield.
+   * @param config.playerId The ID of the game player who is deploying the new unit to the battlefield.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.scorches Any potential units the new battlefield unit scorched when deployed.
+   * @param config.mardroemes Any potential berserkers the new battlefield unit transformed into vildkaarls.
+   * @param config.musters Any potential units the new battlefield unit mustered when deployed.
+   * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
+   * @param config.morales Any potential units the new battlefield unit moraled when deployed.
+   * @param config.reason Why the new unit is indirectly being added to the battlefield.
+   * @param config.origin Where the new unit came from.
+   */
+  private static newUnitIndirect({
+    game,
+    unitId,
+    created,
+    playerId,
+    logPrefix,
+    origin,
+    scorches,
+    mardroemes,
+    musters,
+    bonds,
+    morales,
+    reason,
+  }: {
+    game: GameDbObject
+    unitId: ObjectId
+    created: Date
+    playerId: string
+    logPrefix: string
+    origin: GameUnitOrigin
+    scorches: ImpactsByUnitId
+    mardroemes: ImpactsByUnitId
+    musters: ImpactsByUnitId
+    bonds: ImpactsByUnitId
+    morales: ImpactsByUnitId
+    reason: MoveUnitReasonDbObject
+  }) {
+    const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
+      game,
+      unitId,
+      userId: playerId,
+    })
+    if (!battlefieldUnit) {
+      const message = `Could not find indirect unit "${unitId}" on battlefield`
+      UpdateHistory.logger.error(`${logPrefix} failed: ${message}`)
+      throw Error(`${message}.`)
+    }
+    const impacts =
+      scorches[unitId.toString()] ||
+      mardroemes[unitId.toString()] ||
+      musters[unitId.toString()] ||
+      bonds[unitId.toString()] ||
+      morales[unitId.toString()]
+    const move: MoveUnitDbObject = {
+      created,
+      reason,
+      type: MoveType.Unit,
+      unit: {
+        artStyle: battlefieldUnit.unit.artStyle,
+        unit: battlefieldUnit.unit.unit,
+        effectiveStrength: battlefieldUnit.unit.effectiveStrength,
+        effects: battlefieldUnit.unit.effects,
+        row: battlefieldUnit.row,
+      },
+      impacts,
+      source: {
+        origin,
+      },
+    }
+    UpdateHistory.addMoveToCurrentPlayer({
+      game,
+      move,
+    })
   }
 
   /**

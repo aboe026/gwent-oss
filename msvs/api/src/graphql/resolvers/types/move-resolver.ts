@@ -33,9 +33,9 @@ export default class MoveResolver {
    *
    * @param config The configuration used to resolve the Move.
    * @param config.move The database object to resolve to its GraphQL type.
-   * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the databae to resolve.
-   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
-   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
+   * @param config.leader An optional pre-resolved Leader. If not specified, will retreive the Leader from the database to resolve.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @returns The resolved Move object matching its GraphQL schema definition.
    * @throws Error if the move type is invalid.
    */
@@ -126,8 +126,8 @@ export default class MoveResolver {
    *
    * @param config The configuration used to convert the array.
    * @param config.moves The array of Move database objects to convert.
-   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
-   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @returns The resolved Move array matching the GraphQL schema definition.
    */
   static async fromArray({

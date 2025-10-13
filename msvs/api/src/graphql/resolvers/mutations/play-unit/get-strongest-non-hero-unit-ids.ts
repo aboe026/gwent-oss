@@ -11,7 +11,7 @@ export default class GetStrongestNonHeroUnitIds {
    * Retrieves the strongest non-hero units from a list of GameUnit database documents.
    *
    * @param config The configuration used to get the strongest non-hero units.
-   * @param config.gameUnits The list of GameUnit databaes documents to get the strongest non-hero units from.
+   * @param config.gameUnits The list of GameUnit databases documents to get the strongest non-hero units from.
    * @param config.logPrefix What to prepend to log output statements.
    * @param config.units The list of Unit database objects matching the GameUnit database objects to determine their strength.
    * @returns A list of the strongest units which are not heros.

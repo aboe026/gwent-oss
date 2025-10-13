@@ -21,8 +21,8 @@ export default class GamePlayerResolver {
    * @param config.faction The resolved Faction for the GamePlayer. If not provided, will be retrieved.
    * @param config.leader The resolved Leader for the GamePlayer. If not provided, will be retrieved.
    * @param config.player The GamePlayer to convert.
-   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
-   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @param config.gameStatus The current status of the Game.
    * @returns The resolved GamePlayer object matching its GraphQL schema definition.
    */
@@ -95,8 +95,8 @@ export default class GamePlayerResolver {
    *
    * @param config The configuration used to convert the array.
    * @param config.players The array of GamePlayer database objects to convert.
-   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
-   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @param config.gameStatus The current status of the Game.
    * @returns The resolved Deck array matching the GraphQL schema definition.
    */
