@@ -145,11 +145,6 @@ export default function GameCombatRow({
   return (
     <div id={id} className="game-unit-board-combat-row">
       <div className="game-unit-board-combat-icon-score">
-        <img
-          className="game-unit-combat-row-icon"
-          src={`images/combats/${combat.toLocaleLowerCase()}.png`}
-          title={titledCombat}
-        />
         <div className={HTML_CLASSES.GameUnitBoardCombatScore} title={`${titledCombat} combat score`}>
           {playerRow.score}
         </div>
@@ -205,52 +200,65 @@ export default function GameCombatRow({
           )}
         </ContainerFixedAspectRatio>
       </div>
-      <div
-        className={`game-sub-section ${HTML_CLASSES.GameCombatRowCards} ${
-          validRow ? `${HTML_CLASSES.ItemHighlighted} game-unit-combat-row-valid` : ''
-        } ${!isTurn || invalidRow ? 'game-unit-combat-row-invalid' : ''}`}
-        style={{
-          cursor: (validRow || scorchSelected) && isTurn ? 'pointer' : handCardSelectedUnit ? 'not-allowed' : 'default',
-          borderStyle: validRow ? (isTurn ? 'solid' : 'dotted') : 'none',
-        }}
-        title={description}
-        onClick={async () => {
-          if (isSelf && isTurn && handCardSelectedUnit && validRow && !playUnitProps.loading) {
-            await retryCheckingAuth({
-              checkAuth,
-              method: async () => {
-                await playUnitProps.playUnit({
-                  variables: {
-                    game: game.id,
-                    combat: combat,
-                    unit: handCardSelectedUnit.id,
-                  },
-                })
-                setHandCardSelected(undefined)
-              },
-            })
-          }
-        }}
-      >
-        {sortedUnits.map((gameUnitFragment, index) => (
-          <GameRowUnit
-            combat={combat}
-            fullUnit={fullUnit}
-            fullUnitFragment={fullUnitFragment}
-            gameUnitFragment={gameUnitFragment}
-            handCardSelectedUnit={handCardSelectedUnit}
-            historyCardSelected={historyCardSelected}
-            index={index}
-            player={player}
-            scrollHistoryIntoView={scrollHistoryIntoView}
-            setFullUnits={setFullUnits}
-            setHandCardSelected={setHandCardSelected}
-            setHistoryCardSelected={setHistoryCardSelected}
-            sortedUnits={sortedUnits}
-            isTurn={isTurn}
-            key={index}
-          />
-        ))}
+      <div className="game-sub-section game-combat-row-units">
+        <img
+          className="game-unit-combat-row-icon game-unit-combat-row-icon-start"
+          src={`images/combats/${combat.toLocaleLowerCase()}-icon.png`}
+          title={`${titledCombat} combat units`}
+        />
+        <div
+          className={`${HTML_CLASSES.GameCombatRowCards} ${
+            validRow ? `${HTML_CLASSES.ItemHighlighted} game-unit-combat-row-valid` : ''
+          } ${!isTurn || invalidRow ? 'game-unit-combat-row-invalid' : ''}`}
+          style={{
+            cursor:
+              (validRow || scorchSelected) && isTurn ? 'pointer' : handCardSelectedUnit ? 'not-allowed' : 'default',
+            borderStyle: validRow ? (isTurn ? 'solid' : 'dotted') : 'none',
+          }}
+          title={description}
+          onClick={async () => {
+            if (isSelf && isTurn && handCardSelectedUnit && validRow && !playUnitProps.loading) {
+              await retryCheckingAuth({
+                checkAuth,
+                method: async () => {
+                  await playUnitProps.playUnit({
+                    variables: {
+                      game: game.id,
+                      combat: combat,
+                      unit: handCardSelectedUnit.id,
+                    },
+                  })
+                  setHandCardSelected(undefined)
+                },
+              })
+            }
+          }}
+        >
+          {sortedUnits.map((gameUnitFragment, index) => (
+            <GameRowUnit
+              combat={combat}
+              fullUnit={fullUnit}
+              fullUnitFragment={fullUnitFragment}
+              gameUnitFragment={gameUnitFragment}
+              handCardSelectedUnit={handCardSelectedUnit}
+              historyCardSelected={historyCardSelected}
+              index={index}
+              player={player}
+              scrollHistoryIntoView={scrollHistoryIntoView}
+              setFullUnits={setFullUnits}
+              setHandCardSelected={setHandCardSelected}
+              setHistoryCardSelected={setHistoryCardSelected}
+              sortedUnits={sortedUnits}
+              isTurn={isTurn}
+              key={index}
+            />
+          ))}
+        </div>
+        <img
+          className="game-unit-combat-row-icon game-unit-combat-row-icon-end"
+          src={`images/combats/${combat.toLocaleLowerCase()}-icon.png`}
+          title={`${titledCombat} combat units`}
+        />
       </div>
     </div>
   )
