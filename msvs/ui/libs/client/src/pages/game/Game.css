@@ -396,7 +396,7 @@ th {
 .game-unit-board-combat-icon-score {
   display: flex;
   flex-direction: column;
-  width: 40px;
+  height: 90%;
   justify-content: center;
   align-items: center;
   padding-top: 5px;
@@ -430,7 +430,6 @@ th {
 
 .game-combat-row-modifier {
   display: flex;
-  flex-grow: 1;
   background-color: darkgray;
   border-radius: 5px;
 }

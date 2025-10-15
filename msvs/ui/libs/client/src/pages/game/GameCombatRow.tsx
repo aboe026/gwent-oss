@@ -150,7 +150,7 @@ export default function GameCombatRow({
         </div>
         <ContainerFixedAspectRatio
           aspectRatio="309 / 444"
-          width="100%"
+          height="75%"
           className={HTML_CLASSES.GameCombatRowModifierContainer}
           title={modifierTitle}
         >
