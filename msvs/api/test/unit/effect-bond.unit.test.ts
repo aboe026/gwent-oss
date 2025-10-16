@@ -165,7 +165,6 @@ describe('effect-bond', () => {
         }),
         currentPlayerId: userId,
         userId,
-        musteredUnitIds: [],
         newDeckUnit: TestUtil.getDbDeckUnit({}),
         rowGameUnit: TestUtil.getDbGameUnit({}),
         rowUnit: TestUtil.getDbUnit({}),
@@ -184,7 +183,6 @@ describe('effect-bond', () => {
         }),
         currentPlayerId: userId,
         userId,
-        musteredUnitIds: [],
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit._id,
         }),
@@ -212,7 +210,6 @@ describe('effect-bond', () => {
         bondEffect: undefined,
         currentPlayerId: userId,
         userId,
-        musteredUnitIds: [],
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
@@ -241,7 +238,6 @@ describe('effect-bond', () => {
         bondEffect,
         currentPlayerId: userId,
         userId,
-        musteredUnitIds: [],
         newDeckUnit: TestUtil.getDbDeckUnit({}),
         rowGameUnit: gameUnit,
         rowUnit: TestUtil.getDbUnit({
@@ -286,7 +282,6 @@ describe('effect-bond', () => {
         bondEffect,
         currentPlayerId: userId,
         userId,
-        musteredUnitIds: [],
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
@@ -339,7 +334,6 @@ describe('effect-bond', () => {
         bondEffect,
         currentPlayerId: userId,
         userId,
-        musteredUnitIds: [],
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
@@ -429,7 +423,59 @@ describe('effect-bond', () => {
         ],
       })
     })
-    it('applies bond and returns impact if multiple bonded', () => {
+    it('applies bond and returns impact if bonded by mardroeme', () => {
+      const userId = new ObjectId()
+      const unit1 = TestUtil.getDbUnit({}) // bond giver
+      const unit2 = TestUtil.getDbUnit({}) // bond receiver
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: unit2._id,
+        effectiveStrength: 4,
+      })
+      const bondEffect = TestUtil.getDbEffect({
+        key: EffectKey.Bond,
+      })
+      testApplyBonds({
+        logPrefix,
+        bondEffect,
+        currentPlayerId: userId,
+        userId,
+        transformedUnitIds: [unit1._id.toString()],
+        newDeckUnit: TestUtil.getDbDeckUnit({}),
+        rowGameUnit: gameUnit,
+        rowUnit: TestUtil.getDbUnit({
+          id: unit2._id,
+        }),
+        unitIdsWithBondInRow: [unit1._id.toString(), unit2._id.toString()],
+        units: [unit1, unit2],
+        expected: {
+          [unit1._id.toString()]: [
+            {
+              unit: gameUnit,
+              user: userId,
+            },
+          ],
+        },
+        updatedRowGameUnit: {
+          ...deepClone(gameUnit),
+          effectiveStrength: 8,
+          effects: [
+            {
+              operator: EFFECT_OPERATOR.Double,
+              reason: {
+                effect: bondEffect._id,
+                type: EffectReasonType.Unit,
+                unit: unit1._id,
+              },
+              total: 8,
+            },
+          ],
+        },
+        debugCalls: [
+          [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit1._id}" for an effectiveStrength of "8"`],
+        ],
+      })
+    })
+    it('applies bond and returns impact if multiple bonded by newDeckUnit', () => {
       const userId = new ObjectId()
       const unit1 = TestUtil.getDbUnit({}) // bond giver
       const unit2 = TestUtil.getDbUnit({}) // bond receiver
@@ -446,7 +492,6 @@ describe('effect-bond', () => {
         bondEffect,
         currentPlayerId: userId,
         userId,
-        musteredUnitIds: [],
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
@@ -458,6 +503,76 @@ describe('effect-bond', () => {
         units: [unit1, unit2, unit3],
         expected: {
           [unit1._id.toString()]: [
+            {
+              unit: gameUnit,
+              user: userId,
+            },
+          ],
+        },
+        updatedRowGameUnit: {
+          ...deepClone(gameUnit),
+          effectiveStrength: 16,
+          effects: [
+            {
+              operator: EFFECT_OPERATOR.Double,
+              reason: {
+                effect: bondEffect._id,
+                type: EffectReasonType.Unit,
+                unit: unit1._id,
+              },
+              total: 8,
+            },
+            {
+              operator: EFFECT_OPERATOR.Double,
+              reason: {
+                effect: bondEffect._id,
+                type: EffectReasonType.Unit,
+                unit: unit3._id,
+              },
+              total: 16,
+            },
+          ],
+        },
+        debugCalls: [
+          [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit1._id}" for an effectiveStrength of "8"`],
+          [`${logPrefix} adding bond boost to "${unit2._id}" from "${unit3._id}" for an effectiveStrength of "16"`],
+        ],
+      })
+    })
+    it('applies bond and returns impact if multiple bonded by muster and mardroeme', () => {
+      const userId = new ObjectId()
+      const unit1 = TestUtil.getDbUnit({}) // bond giver
+      const unit2 = TestUtil.getDbUnit({}) // bond receiver
+      const unit3 = TestUtil.getDbUnit({}) // bond receiver
+      const gameUnit = TestUtil.getDbGameUnit({
+        id: unit2._id,
+        effectiveStrength: 4,
+      })
+      const bondEffect = TestUtil.getDbEffect({
+        key: EffectKey.Bond,
+      })
+      testApplyBonds({
+        logPrefix,
+        bondEffect,
+        currentPlayerId: userId,
+        userId,
+        musteredUnitIds: [unit1._id.toString()],
+        transformedUnitIds: [unit3._id.toString()],
+        newDeckUnit: TestUtil.getDbDeckUnit({}),
+        rowGameUnit: gameUnit,
+        rowUnit: TestUtil.getDbUnit({
+          id: unit2._id,
+        }),
+        unitIdsWithBondInRow: [unit1._id.toString(), unit2._id.toString(), unit3._id.toString()],
+        units: [unit1, unit2, unit3],
+        expected: {
+          [unit1._id.toString()]: [
+            {
+              unit: gameUnit,
+              user: userId,
+            },
+          ],
+          [unit3._id.toString()]: [
             {
               unit: gameUnit,
               user: userId,
@@ -530,7 +645,6 @@ describe('effect-bond', () => {
         bondEffect,
         currentPlayerId: userId,
         userId,
-        musteredUnitIds: [],
         newDeckUnit: TestUtil.getDbDeckUnit({
           id: unit1._id,
         }),
@@ -606,7 +720,8 @@ function testApplyBonds({
   unitIdsWithBondInRow,
   bondEffect,
   newDeckUnit,
-  musteredUnitIds,
+  musteredUnitIds = [],
+  transformedUnitIds = [],
   rowGameUnit,
   rowUnit,
   units,
@@ -622,7 +737,8 @@ function testApplyBonds({
   unitIdsWithBondInRow: string[]
   bondEffect?: EffectDbObject | undefined
   newDeckUnit: DeckUnitDbObject
-  musteredUnitIds: string[]
+  musteredUnitIds?: string[]
+  transformedUnitIds?: string[]
   rowGameUnit: GameUnitDbObject
   rowUnit: UnitDbObject
   units: UnitDbObject[]
@@ -649,6 +765,7 @@ function testApplyBonds({
       currentPlayerId,
       logPrefix,
       musteredUnitIds,
+      transformedUnitIds,
       newDeckUnit,
       rowGameUnit,
       rowUnit,

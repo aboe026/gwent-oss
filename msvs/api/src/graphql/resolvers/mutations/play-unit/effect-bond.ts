@@ -150,8 +150,8 @@ export default class EffectBond {
         }
         rowGameUnit.effects.push(gameUnitEffect)
 
-        const impactables = [newDeckUnit.unit.toString, ...musteredUnitIds, ...transformedUnitIds]
-        if (impactables.includes(bondingUnit._id.toString) && userId.toString() === currentPlayerId?.toString()) {
+        const impactables = [newDeckUnit.unit.toString(), ...musteredUnitIds, ...transformedUnitIds]
+        if (impactables.includes(bondingUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
           const impact: ImpactDbObject = {
             unit: rowGameUnit,
             user: userId,

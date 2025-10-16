@@ -1117,6 +1117,7 @@ function testCalculateEffectiveStrengths({
   const moraleEffect = TestUtil.getDbEffect({})
   const bondEffect = TestUtil.getDbEffect({})
   const musteredUnitIds = [new ObjectId().toString()]
+  const transformedUnitIds = [new ObjectId().toString()]
   const getEffectWithKeySpy = jest
     .spyOn(GetEffectWithKey, 'getEffectWithKey')
     .mockReturnValueOnce(moraleEffect)
@@ -1205,6 +1206,7 @@ function testCalculateEffectiveStrengths({
       units,
       newDeckUnit,
       musteredUnitIds,
+      transformedUnitIds,
     })
   ).toEqual(expected)
 
@@ -1232,6 +1234,7 @@ function testCalculateEffectiveStrengths({
     bondEffect,
     currentPlayerId: game.turn,
     musteredUnitIds,
+    transformedUnitIds,
   }
   expect(calculateEffectiveStrengthsForRowSpy.mock.calls).toEqual([
     [
@@ -1314,6 +1317,7 @@ function testCalculateEffectiveStrengthsForRow({
   const bondIdsInRow = [bondEffect._id.toString()]
   const newDeckUnit = TestUtil.getDbDeckUnit({})
   const musteredUnitIds = [new ObjectId().toString()]
+  const transformedUnitIds = [new ObjectId().toString()]
 
   const getUnitsWithMoraleSpy = jest.spyOn(EffectMorale, 'getUnitsWithMorale').mockReturnValue(moraleIdsInRow)
   const getUnitsWithBondSpy = jest.spyOn(EffectBond, 'getUnitsWithBond').mockReturnValue(bondIdsInRow)
@@ -1345,6 +1349,7 @@ function testCalculateEffectiveStrengthsForRow({
         units,
         userId,
         musteredUnitIds,
+        transformedUnitIds,
         bondEffect,
       })
     ).toThrow(expected)
@@ -1359,6 +1364,7 @@ function testCalculateEffectiveStrengthsForRow({
         units,
         userId,
         musteredUnitIds,
+        transformedUnitIds,
         bondEffect,
       })
     ).toEqual(expected)
@@ -1405,6 +1411,7 @@ function testCalculateEffectiveStrengthsForRow({
             units,
             userId,
             currentPlayerId,
+            transformedUnitIds,
             unitIdsWithMoraleInRow: moraleIdsInRow,
           },
         ]
@@ -1421,6 +1428,7 @@ function testCalculateEffectiveStrengthsForRow({
             bondEffect,
             newDeckUnit,
             musteredUnitIds,
+            transformedUnitIds,
             units,
             userId,
             currentPlayerId,

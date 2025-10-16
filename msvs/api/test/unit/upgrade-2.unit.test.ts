@@ -671,6 +671,7 @@ describe('upgrade-2', () => {
       const faction = new ObjectId()
       const hero = false
       const images = ['image']
+      const modifier = false
       const scorchScope = null
       const special = false
       const strength = 1
@@ -693,6 +694,7 @@ describe('upgrade-2', () => {
       const normalizeImagesSpy = jest.spyOn(upgrade2, 'normalizeImages').mockReturnValue(images)
       const normalizeScorchScopeSpy = jest.spyOn(upgrade2, 'normalizeScorchScope').mockReturnValue(scorchScope)
       const normalizeSpecialSpy = jest.spyOn(upgrade2, 'normalizeSpecial').mockReturnValue(special)
+      const normalizeModifierSpy = jest.spyOn(upgrade2, 'normalizeModifier').mockReturnValue(modifier)
       const normalizeStrengthSpy = jest.spyOn(upgrade2, 'normalizeStrength').mockReturnValue(strength)
 
       expect(
@@ -712,6 +714,7 @@ describe('upgrade-2', () => {
         hero,
         images,
         name: unit.Name,
+        modifier,
         quote: unit.Quote,
         scorchMin: null,
         scorchScope,
@@ -728,6 +731,7 @@ describe('upgrade-2', () => {
       expect(normalizeImagesSpy.mock.calls).toEqual([[unit, ImageType.Unit]])
       expect(normalizeScorchScopeSpy.mock.calls).toEqual([[unit]])
       expect(normalizeSpecialSpy.mock.calls).toEqual([[unit]])
+      expect(normalizeModifierSpy.mock.calls).toEqual([[unit]])
       expect(normalizeStrengthSpy.mock.calls).toEqual([[unit]])
     })
     it('calls to other normalize functions if all fields', () => {
@@ -759,6 +763,7 @@ describe('upgrade-2', () => {
       const faction = new ObjectId()
       const hero = false
       const images = ['image']
+      const modifier = true
       const scorchScope = null
       const special = false
       const strength = 1
@@ -782,6 +787,7 @@ describe('upgrade-2', () => {
       const normalizeImagesSpy = jest.spyOn(upgrade2, 'normalizeImages').mockReturnValue(images)
       const normalizeScorchScopeSpy = jest.spyOn(upgrade2, 'normalizeScorchScope').mockReturnValue(scorchScope)
       const normalizeSpecialSpy = jest.spyOn(upgrade2, 'normalizeSpecial').mockReturnValue(special)
+      const normalizeModifierSpy = jest.spyOn(upgrade2, 'normalizeModifier').mockReturnValue(modifier)
       const normalizeStrengthSpy = jest.spyOn(upgrade2, 'normalizeStrength').mockReturnValue(strength)
 
       expect(
@@ -800,6 +806,7 @@ describe('upgrade-2', () => {
         faction,
         hero,
         images,
+        modifier,
         name: unit.Name,
         quote: unit.Quote,
         scorchMin: unit['Scorch Minimum Strength'],
@@ -817,6 +824,7 @@ describe('upgrade-2', () => {
       expect(normalizeImagesSpy.mock.calls).toEqual([[unit, ImageType.Unit]])
       expect(normalizeScorchScopeSpy.mock.calls).toEqual([[unit]])
       expect(normalizeSpecialSpy.mock.calls).toEqual([[unit]])
+      expect(normalizeModifierSpy.mock.calls).toEqual([[unit]])
       expect(normalizeStrengthSpy.mock.calls).toEqual([[unit]])
     })
   })
@@ -914,6 +922,28 @@ describe('upgrade-2', () => {
       ).toEqual([Combat.Close, Combat.Ranged])
 
       expect(normalizeCombatSpy.mock.calls).toEqual([[combat1], [combat2]])
+    })
+    it('returns triple array if three combats', () => {
+      const upgrade2 = new Upgrade2()
+      const combat1 = 'Close'
+      const combat2 = 'Ranged'
+      const combat3 = 'Siege'
+      const normalizeCombatSpy = jest
+        .spyOn(upgrade2, 'normalizeCombat')
+        .mockReturnValueOnce(Combat.Close)
+        .mockReturnValueOnce(Combat.Ranged)
+        .mockReturnValueOnce(Combat.Siege)
+
+      expect(
+        upgrade2.normalizeCombats({
+          ...unitRequired,
+          'Combat 1': combat1,
+          'Combat 2': combat2,
+          'Combat 3': combat3,
+        })
+      ).toEqual([Combat.Close, Combat.Ranged, Combat.Siege])
+
+      expect(normalizeCombatSpy.mock.calls).toEqual([[combat1], [combat2], [combat3]])
     })
   })
   describe('normalizeCombat', () => {
@@ -1322,6 +1352,32 @@ describe('upgrade-2', () => {
       ).toEqual(true)
     })
   })
+  describe('normalizeModifier', () => {
+    it('returns false if name is not modifier', () => {
+      expect(
+        new Upgrade2().normalizeModifier({
+          ...unitRequired,
+          Name: 'Ermion',
+        })
+      ).toEqual(false)
+    })
+    it("returns true if name is Commander's Horn", () => {
+      expect(
+        new Upgrade2().normalizeModifier({
+          ...unitRequired,
+          Name: "Commander's Horn",
+        })
+      ).toEqual(true)
+    })
+    it('returns true if name is Mardroeme', () => {
+      expect(
+        new Upgrade2().normalizeModifier({
+          ...unitRequired,
+          Name: 'Mardroeme',
+        })
+      ).toEqual(true)
+    })
+  })
   describe('normalizeStrength', () => {
     it('returns null if Strength is undefined', () => {
       expect(new Upgrade2().normalizeStrength(unitRequired)).toEqual(null)
@@ -1449,6 +1505,7 @@ async function testCreateUnits({
           effects: [],
           faction: factionMap[unit.Faction],
           images: [],
+          modifier: false,
           name: unit.Name,
           quote: unit.Quote,
           scorchMin: null,
@@ -1474,6 +1531,7 @@ async function testCreateUnits({
           effects: [],
           faction: factionMap[unit.Faction],
           images: [],
+          modifier: false,
           name: unit.Name,
           quote: unit.Quote,
           scorchMin: null,
