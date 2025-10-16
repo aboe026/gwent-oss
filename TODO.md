@@ -12,9 +12,7 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- fix modifier for small screens (1080p/laptop)
 - include "to" for impact so know exactly which unit it transformed into?
-
 - FullCard combat
   - "Any" icon/text for units that can be played on any row
   - "Modifier" icon/text for row modifiers (Commander's Horn/Mardroeme)

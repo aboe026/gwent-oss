@@ -14,11 +14,11 @@ import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/ge
 import MusterBattlefield, {
   MusterForPlayer,
   Musterings,
-} from '../../src/graphql/resolvers/mutations/play-unit/muster-battlefield'
+} from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
 
-describe('muster-battlefield', () => {
+describe('effect-muster', () => {
   describe('musterBattlefield', () => {
     const logPrefix = 'log-prefix'
     const game = TestUtil.getDbGame({})

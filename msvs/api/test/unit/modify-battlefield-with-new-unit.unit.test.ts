@@ -13,8 +13,8 @@ import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import modifyBattlefieldWithNewUnit, {
   addNewUnitToBattlefield,
 } from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
-import MusterBattlefield, { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/muster-battlefield'
-import ScorchBattlefield from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
+import MusterBattlefield, { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
+import ScorchBattlefield from '../../src/graphql/resolvers/mutations/play-unit/effect-scorch'
 import TestUtil from '../util/test-util'
 
 describe('modify-battlefield-with-new-unit', () => {

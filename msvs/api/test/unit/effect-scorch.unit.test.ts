@@ -17,10 +17,10 @@ import deepClone from '../util/deep-clone'
 import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import * as getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
 import GetStrongestNonHeroUnitIds from '../../src/graphql/resolvers/mutations/play-unit/get-strongest-non-hero-unit-ids'
-import ScorchBattelfield from '../../src/graphql/resolvers/mutations/play-unit/scorch-battlefield'
+import ScorchBattelfield from '../../src/graphql/resolvers/mutations/play-unit/effect-scorch'
 import TestUtil from '../util/test-util'
 
-describe('scorch-battlefield', () => {
+describe('effect-scorch', () => {
   describe('scorchBattlefield', () => {
     const logPrefix = 'log-prefix'
     const self = TestUtil.getDbGamePlayer({

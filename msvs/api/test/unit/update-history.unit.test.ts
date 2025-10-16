@@ -14,7 +14,7 @@ import GetBattlefieldUnit, {
 } from '../../src/graphql/resolvers/mutations/play-unit/get-battlefield-unit'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import { MoveType } from '@gwent/graphql-schema'
-import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/muster-battlefield'
+import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import TestUtil from '../util/test-util'
 import UpdateHistory from '../../src/graphql/resolvers/mutations/play-unit/update-history'
 

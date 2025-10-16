@@ -14,7 +14,7 @@ import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/
 import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import * as modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
-import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/muster-battlefield'
+import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import PlayUnitImplementation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-implementation'
 import * as setGameScores from '../../src/graphql/resolvers/mutations/play-unit/set-game-scores'
 import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/util/set-next-turn-for-current-round'
