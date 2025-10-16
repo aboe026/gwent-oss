@@ -846,3 +846,41 @@ test('Can muster units with bonding', async (t) => {
     ],
   })
 })
+
+test('Can muster with berserker and mardroeme present', async (t) => {
+  const unitName1 = 'Ermion'
+  const unitName2 = 'Berserker'
+  const unitName3 = 'Cerys'
+  const unitName4 = 'Clan Drummond Shield Maiden'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3, unitName4],
+      ignoreUnitNames: [unitName4, unitName4],
+    },
+    opponent: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged, mardroeming: [] })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName3,
+    mustering: [
+      {
+        name: unitName4,
+        effectiveStrength: 4,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impact: {
+          type: EffectKey.Bond,
+        },
+        hand: true,
+      },
+    ],
+  })
+})

@@ -72,7 +72,7 @@ export default async function modifyBattlefieldWithNewUnit({
     transformedGameUnits,
     mardroemingGameUnit,
   } = await EffectMardroeme.transformBerserkers({
-    battlefieldUnits,
+    battlefieldUnits: [...battlefieldUnits, ...musteredUnits],
     effects,
     game,
     logPrefix,
