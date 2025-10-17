@@ -42,15 +42,6 @@ export default class EffectMardroeme {
     const transformedUnits: UnitDbObject[] = []
     const transformedGameUnits: GameUnitDbObject[] = []
     let mardroemingGameUnit: GameUnitDbObject | undefined = undefined
-    const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
-    if (!newUnit) {
-      const message = `Could not find unit for new deck unit "${newDeckUnit.unit}".`
-      EffectMardroeme.logger.error(`${logPrefix} failed: ${message}`)
-      throw Error(message)
-    }
-    if (EffectMardroeme.logger.isTraceEnabled()) {
-      EffectMardroeme.logger.trace(`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`)
-    }
 
     const mardroemeEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Mardroeme,
@@ -79,12 +70,12 @@ export default class EffectMardroeme {
         EffectMardroeme.logger.trace(`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`)
       }
       const mardroemes = EffectMardroeme.getUnitsWithEffect({
-        gameUnits,
         battlefieldUnits,
         effect: mardroemeEffect,
+        gameUnits,
       })
       if (EffectMardroeme.logger.isTraceEnabled()) {
-        EffectMardroeme.logger.trace(`${logPrefix} mardroemes: "${mardroemes}"`)
+        EffectMardroeme.logger.trace(`${logPrefix} mardroemes: "${JSON.stringify(mardroemes)}"`)
       }
       const berserkers = EffectMardroeme.getUnitsWithEffect({
         battlefieldUnits,
@@ -92,13 +83,10 @@ export default class EffectMardroeme {
         gameUnits,
       })
       if (EffectMardroeme.logger.isTraceEnabled()) {
-        EffectMardroeme.logger.trace(`${logPrefix} berserkers: "${berserkers}"`)
+        EffectMardroeme.logger.trace(`${logPrefix} berserkers: "${JSON.stringify(berserkers)}"`)
       }
 
       if (mardroemes.length > 0 && berserkers.length > 0) {
-        EffectMardroeme.logger.debug(
-          `${logPrefix} "${mardroemes.length}" mardroeme(s) and "${berserkers.length}" berserker(s) after unit "${newUnit.name}" played, transforming berserkers to vildkaarls`
-        )
         mardroemingGameUnit = EffectMardroeme.getMardroemingGameUnit({
           gameUnits,
           mardroemes,
@@ -119,19 +107,25 @@ export default class EffectMardroeme {
           row: combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege,
           vildkaarls,
         })
-        const newUnitImpact = mardroemes
-          .map((mardroeme) => mardroeme._id.toString())
-          .includes(newDeckUnit.unit.toString())
+        if (transformedPairs.length > 0) {
+          EffectMardroeme.logger.debug(
+            `${logPrefix} transformed "${JSON.stringify(transformedPairs.map((pair) => pair.to.unit))}" berserkers into vildkaarls`
+          )
 
-        for (const transformedPair of transformedPairs) {
-          if (newUnitImpact) {
-            impacts.push({
-              unit: transformedPair.from,
-              user: player.user,
-            })
+          const newUnitImpact = mardroemes
+            .map((mardroeme) => mardroeme._id.toString())
+            .includes(newDeckUnit.unit.toString())
+
+          for (const transformedPair of transformedPairs) {
+            if (newUnitImpact) {
+              impacts.push({
+                unit: transformedPair.from,
+                user: player.user,
+              })
+            }
+            transformedUnits.push(transformedPair.unit)
+            transformedGameUnits.push(transformedPair.to)
           }
-          transformedUnits.push(transformedPair.unit)
-          transformedGameUnits.push(transformedPair.to)
         }
       }
     }
@@ -238,6 +232,15 @@ export default class EffectMardroeme {
     })
   }
 
+  /**
+   * Replace all the Berserkers in a battlefield row with their respective Vildkaarls.
+   *
+   * @param config The configuration used to replace the Berserkers with Vildkaarls.
+   * @param config.row The row in the battlefield to replace Berserkers with Vildkaarls.
+   * @param config.berserkers The UnitDbObject for each Berserker in the row, used to match to its respective Vildkaarl.
+   * @param config.vildkaarls The UnitDbObject for each Vildkaarl to replace in the row, used to match to its respective Berserker.
+   * @returns An array of Berserkers and their respective Vildkaarls they transformed into.
+   */
   private static replaceBerserkersWithVildkaarl({
     row,
     berserkers,
