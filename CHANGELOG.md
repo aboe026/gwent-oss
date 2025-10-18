@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.0 - 2025-10-18
+
+### Added
+
+- Mardroeme effect ([#46](https://github.com/aboe026/gwent/pull/46)) (Adam Boe)
+
 ## 0.15.3 - 2025-09-17
 
 ### Fixed
