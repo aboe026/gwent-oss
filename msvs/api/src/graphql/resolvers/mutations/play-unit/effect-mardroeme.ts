@@ -23,6 +23,18 @@ import { getUniqueItems } from '@gwent/utils'
 export default class EffectMardroeme {
   private static logger = getLogger('EffectMardroeme')
 
+  /**
+   * Transform any Berserkers into Vildkaarls if a Mardroeme effect is in their row.
+   *
+   * @param config The configuration used to determine the transformations to occur.
+   * @param config.battlefieldUnits The units on the battlefield.
+   * @param config.combat The Combat row the newDeckUnit is being deployed to.
+   * @param config.effects The Effect database objects for units on the battlefield.
+   * @param config.game The game the newDeckUnit is being deployed to.
+   * @param config.logPrefix What log statements should be prepended with.
+   * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
+   * @returns Any transformations from Berserker to Vildkaarl that occur.
+   */
   static async transformBerserkers({
     battlefieldUnits,
     combat,
@@ -86,7 +98,7 @@ export default class EffectMardroeme {
         EffectMardroeme.logger.trace(`${logPrefix} berserkers: "${JSON.stringify(berserkers)}"`)
       }
 
-      if (mardroemes.length > 0 && berserkers.length > 0) {
+      if (mardroemes.length > 0 && berserkers.length > 0 && combat) {
         mardroemingGameUnit = EffectMardroeme.getMardroemingGameUnit({
           gameUnits,
           mardroemes,
@@ -143,6 +155,15 @@ export default class EffectMardroeme {
     }
   }
 
+  /**
+   * Gets all units with the specified Effect.
+   *
+   * @param config The configuration used to get the units by Effect.
+   * @param config.gameUnits The GameUnits to filter by Effect.
+   * @param config.battlefieldUnits All the Units on the battlefield.
+   * @param config.effect The effect to filter gameUnits to.
+   * @returns All gameUnits which have the specified effect.
+   */
   private static getUnitsWithEffect({
     gameUnits,
     battlefieldUnits,
@@ -169,6 +190,14 @@ export default class EffectMardroeme {
     return berserkers
   }
 
+  /**
+   * Gets the GameUnit responsible for transforming any Berserkers. Gets most recent Mardroeming GameUnit played.
+   *
+   * @param config The configuration used to get the Mardroeming GameUnit.
+   * @param config.gameUnits The GameUnits in the Combat row, one of which should have the Mardroeme Effect.
+   * @param config.mardroemes All the units which have the Mardroeme Effect.
+   * @returns The GameUnit used to transform Berserkers, preferring most recent one added to the battlefield.
+   */
   private static getMardroemingGameUnit({
     gameUnits,
     mardroemes,
@@ -178,7 +207,7 @@ export default class EffectMardroeme {
   }): GameUnitDbObject {
     let mardroemingGameUnit: GameUnitDbObject | undefined = undefined
     const mardroemeUnitIds = mardroemes.map((unit) => unit._id.toString())
-    for (let i = gameUnits.length - 1; i >= 0; i--) {
+    for (let i = gameUnits.length - 1; i >= 0 && !mardroemingGameUnit; i--) {
       const gameUnit = gameUnits[i]
       if (mardroemeUnitIds.includes(gameUnit.unit.toString())) {
         mardroemingGameUnit = gameUnit
@@ -190,6 +219,14 @@ export default class EffectMardroeme {
     return mardroemingGameUnit
   }
 
+  /**
+   * Gets the Unit IDs of any Vildkaarls already on the battlefield.
+   *
+   * @param config The configuration used to get the existing Vildkaarl IDs.
+   * @param config.gameUnits The GameUnits in the combat row.
+   * @param config.battlefieldUnits The Units on the battlefield.
+   * @returns The IDs of any Vildkaarls already on the battlefield.
+   */
   private static getExistingVildkaarlIds({
     gameUnits,
     battlefieldUnits,
@@ -212,6 +249,15 @@ export default class EffectMardroeme {
     return ids
   }
 
+  /**
+   * Gets Vildkaarl units which can be used to replace Berserkers during their transformation.
+   *
+   * @param config The configuration used to get the Vildkaarls.
+   * @param config.berserkers The Berserker Unit database objects to transform.
+   * @param config.existingVildkaarlIds Any Vildkaarls already on the battlefield, to be excluded to avoid duplicates.
+   * @param config.limit The number of Vildkaarls to retrieve, to prevent retrieving unnecessary data.
+   * @returns
+   */
   private static async getVildkaarlsForTransformation({
     berserkers,
     existingVildkaarlIds,
