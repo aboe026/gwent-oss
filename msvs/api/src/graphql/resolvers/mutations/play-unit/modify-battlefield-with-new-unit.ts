@@ -45,7 +45,7 @@ export default async function modifyBattlefieldWithNewUnit({
     game,
     newDeckUnit,
     combat,
-    newUnit, // TODO: see if any other methods would benefit from using this
+    newUnit,
   })
 
   const scorches = EffectScorch.scorchBattlefield({

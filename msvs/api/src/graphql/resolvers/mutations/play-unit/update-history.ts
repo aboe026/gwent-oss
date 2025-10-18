@@ -64,7 +64,7 @@ export default class UpdateHistory {
     combat: Combat | null | undefined
     scorches: ImpactsByUnitId
     mardroemes: ImpactsByUnitId
-    transformedGameUnits: GameUnitDbObject[]
+    transformedGameUnits?: GameUnitDbObject[]
     mardroemingGameUnit?: GameUnitDbObject
     musters: ImpactsByUnitId
     bonds: ImpactsByUnitId

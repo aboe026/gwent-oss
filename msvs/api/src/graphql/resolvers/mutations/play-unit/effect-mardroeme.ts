@@ -256,7 +256,7 @@ export default class EffectMardroeme {
    * @param config.berserkers The Berserker Unit database objects to transform.
    * @param config.existingVildkaarlIds Any Vildkaarls already on the battlefield, to be excluded to avoid duplicates.
    * @param config.limit The number of Vildkaarls to retrieve, to prevent retrieving unnecessary data.
-   * @returns
+   * @returns The Vildkaarls Units to be used to replace the Berserkers.
    */
   private static async getVildkaarlsForTransformation({
     berserkers,

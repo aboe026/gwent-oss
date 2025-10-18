@@ -6,6 +6,7 @@ import {
   EffectKey,
   GameDbObject,
   GameDeckDbObject,
+  GameUnitDbObject,
   ImpactDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
@@ -140,6 +141,41 @@ describe('play-unit-implementation', () => {
       expectedGameDeck: player.deck,
     })
   })
+  it('passes mardroeme impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const mardroemeUnit = TestUtil.getDbUnit({})
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({
+          id: mardroemeUnit._id,
+        }),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      transformedUnits: [mardroemeUnit],
+      transformedGameUnits: [impacts[0].unit],
+      mardroemingGameUnit: TestUtil.getDbGameUnit({
+        id: mardroemeUnit._id,
+      }),
+      mardroemes: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
+      expectedGameDeck: player.deck,
+    })
+  })
   it('passes bond impacts to move', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
@@ -223,6 +259,10 @@ async function testPlayUnitImplementation({
   musters = {},
   musteredUnits = [],
   musteredOrigins = {},
+  mardroemes = {},
+  transformedUnits = [],
+  transformedGameUnits = [],
+  mardroemingGameUnit,
   bonds = {},
   morales = {},
   error,
@@ -238,6 +278,10 @@ async function testPlayUnitImplementation({
   musters?: ImpactsByUnitId
   musteredUnits?: UnitDbObject[]
   musteredOrigins?: MusteredOrigins
+  mardroemes?: ImpactsByUnitId
+  transformedUnits?: UnitDbObject[]
+  transformedGameUnits?: GameUnitDbObject[]
+  mardroemingGameUnit?: GameUnitDbObject
   bonds?: ImpactsByUnitId
   morales?: ImpactsByUnitId
   error?: Error
@@ -262,16 +306,24 @@ async function testPlayUnitImplementation({
   const musterEffect = TestUtil.getDbEffect({
     key: EffectKey.Bond,
   })
+  const mardroemeEffect = TestUtil.getDbEffect({
+    key: EffectKey.Mardroeme,
+  })
   const getRoundUnitsSpy = jest.spyOn(getRoundUnits, 'default').mockResolvedValue(units)
   const getUnitEffectsSpy = jest
     .spyOn(getUnitEffects, 'default')
     .mockResolvedValueOnce([unitEffect])
     .mockResolvedValueOnce([musterEffect])
+    .mockResolvedValueOnce([mardroemeEffect])
   const modifyBattlefieldWithNewUnitSpy = jest.spyOn(modifyBattlefieldWithNewUnit, 'default').mockResolvedValue({
     scorches,
     musters,
     musteredUnits,
     musteredOrigins,
+    mardroemes,
+    transformedUnits,
+    transformedGameUnits,
+    mardroemingGameUnit,
   })
   const calculateEffectiveStrengthsSpy = jest
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
@@ -334,6 +386,12 @@ async function testPlayUnitImplementation({
               effects: [unitEffect],
             },
           ],
+          [
+            {
+              units: transformedUnits,
+              effects: [unitEffect],
+            },
+          ],
         ]
   )
   expect(modifyBattlefieldWithNewUnitSpy.mock.calls).toEqual(
@@ -348,6 +406,7 @@ async function testPlayUnitImplementation({
               game,
               logPrefix,
               newDeckUnit: deckUnit,
+              newUnit: unit,
             },
           ],
         ]
@@ -359,11 +418,12 @@ async function testPlayUnitImplementation({
           [
             {
               game,
-              units: [unit, ...units, ...musteredUnits],
-              effects: [unitEffect, musterEffect],
+              units: [unit, ...units, ...musteredUnits, ...transformedUnits],
+              effects: [unitEffect, musterEffect, mardroemeEffect],
               logPrefix,
               newDeckUnit: deckUnit,
               musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
+              transformedUnitIds: transformedUnits.map((unit) => unit._id.toString()),
             },
           ],
         ]
@@ -385,6 +445,9 @@ async function testPlayUnitImplementation({
               scorches,
               bonds,
               morales,
+              mardroemes,
+              transformedGameUnits,
+              mardroemingGameUnit,
             },
           ],
         ]

@@ -9,14 +9,16 @@ describe('get-round-units', () => {
     close: TestUtil.getDbUnit({}),
     ranged: TestUtil.getDbUnit({}),
     siege: TestUtil.getDbUnit({}),
+    modifier: TestUtil.getDbUnit({}),
   }
   const unitsOpponent = {
     close: TestUtil.getDbUnit({}),
     ranged: TestUtil.getDbUnit({}),
     siege: TestUtil.getDbUnit({}),
+    modifier: TestUtil.getDbUnit({}),
   }
   describe('round 1', () => {
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat', async () => {
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat without modifiers', async () => {
       await testGetRoundUnits({
         game: TestUtil.getDbGame({
           round: 1,
@@ -55,7 +57,52 @@ describe('get-round-units', () => {
         otherUnits: [unitsSelf.close, unitsOpponent.close],
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat', async () => {
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat with modifiers', async () => {
+      await testGetRoundUnits({
+        game: TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsSelf.close._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsSelf.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsOpponent.close._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsOpponent.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+        unitBeingPlayed,
+        otherUnits: [unitsSelf.close, unitsSelf.modifier, unitsOpponent.close, unitsOpponent.modifier],
+      })
+    })
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat without modifiers', async () => {
       await testGetRoundUnits({
         game: TestUtil.getDbGame({
           round: 1,
@@ -94,7 +141,52 @@ describe('get-round-units', () => {
         otherUnits: [unitsSelf.ranged, unitsOpponent.ranged],
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat', async () => {
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat with modifiers', async () => {
+      await testGetRoundUnits({
+        game: TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsSelf.ranged._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsSelf.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsOpponent.ranged._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsOpponent.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+        unitBeingPlayed,
+        otherUnits: [unitsSelf.ranged, unitsSelf.modifier, unitsOpponent.ranged, unitsOpponent.modifier],
+      })
+    })
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat without modifiers', async () => {
       await testGetRoundUnits({
         game: TestUtil.getDbGame({
           round: 1,
@@ -131,6 +223,51 @@ describe('get-round-units', () => {
         }),
         unitBeingPlayed,
         otherUnits: [unitsSelf.siege, unitsOpponent.siege],
+      })
+    })
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat with modifiers', async () => {
+      await testGetRoundUnits({
+        game: TestUtil.getDbGame({
+          round: 1,
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsSelf.siege._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsSelf.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsOpponent.siege._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsOpponent.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+        unitBeingPlayed,
+        otherUnits: [unitsSelf.siege, unitsSelf.modifier, unitsOpponent.siege, unitsOpponent.modifier],
       })
     })
     it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in all combats', async () => {
@@ -284,7 +421,7 @@ describe('get-round-units', () => {
     })
   })
   describe('round 2', () => {
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat', async () => {
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat without modifiers', async () => {
       await testGetRoundUnits({
         game: TestUtil.getDbGame({
           round: 2,
@@ -325,7 +462,54 @@ describe('get-round-units', () => {
         otherUnits: [unitsSelf.close, unitsOpponent.close],
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat', async () => {
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat with modifiers', async () => {
+      await testGetRoundUnits({
+        game: TestUtil.getDbGame({
+          round: 2,
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsSelf.close._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsSelf.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsOpponent.close._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsOpponent.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+        unitBeingPlayed,
+        otherUnits: [unitsSelf.close, unitsSelf.modifier, unitsOpponent.close, unitsOpponent.modifier],
+      })
+    })
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat without modifiers', async () => {
       await testGetRoundUnits({
         game: TestUtil.getDbGame({
           round: 2,
@@ -366,7 +550,54 @@ describe('get-round-units', () => {
         otherUnits: [unitsSelf.ranged, unitsOpponent.ranged],
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat', async () => {
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat with modifiers', async () => {
+      await testGetRoundUnits({
+        game: TestUtil.getDbGame({
+          round: 2,
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  ranged: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsSelf.ranged._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsSelf.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  ranged: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsOpponent.ranged._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsOpponent.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+        unitBeingPlayed,
+        otherUnits: [unitsSelf.ranged, unitsSelf.modifier, unitsOpponent.ranged, unitsOpponent.modifier],
+      })
+    })
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat without modifiers', async () => {
       await testGetRoundUnits({
         game: TestUtil.getDbGame({
           round: 2,
@@ -405,6 +636,53 @@ describe('get-round-units', () => {
         }),
         unitBeingPlayed,
         otherUnits: [unitsSelf.siege, unitsOpponent.siege],
+      })
+    })
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat with modifiers', async () => {
+      await testGetRoundUnits({
+        game: TestUtil.getDbGame({
+          round: 2,
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  siege: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsSelf.siege._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsSelf.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  siege: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsOpponent.siege._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsOpponent.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+        unitBeingPlayed,
+        otherUnits: [unitsSelf.siege, unitsSelf.modifier, unitsOpponent.siege, unitsOpponent.modifier],
       })
     })
     it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in all combats', async () => {
@@ -562,7 +840,7 @@ describe('get-round-units', () => {
     })
   })
   describe('round 3', () => {
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat', async () => {
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat without modifier', async () => {
       await testGetRoundUnits({
         game: TestUtil.getDbGame({
           round: 3,
@@ -605,7 +883,56 @@ describe('get-round-units', () => {
         otherUnits: [unitsSelf.close, unitsOpponent.close],
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat', async () => {
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat without modifier', async () => {
+      await testGetRoundUnits({
+        game: TestUtil.getDbGame({
+          round: 3,
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsSelf.close._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsSelf.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsOpponent.close._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsOpponent.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+        unitBeingPlayed,
+        otherUnits: [unitsSelf.close, unitsSelf.modifier, unitsOpponent.close, unitsOpponent.modifier],
+      })
+    })
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat without modifier', async () => {
       await testGetRoundUnits({
         game: TestUtil.getDbGame({
           round: 3,
@@ -648,7 +975,56 @@ describe('get-round-units', () => {
         otherUnits: [unitsSelf.ranged, unitsOpponent.ranged],
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat', async () => {
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat with modifier', async () => {
+      await testGetRoundUnits({
+        game: TestUtil.getDbGame({
+          round: 3,
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  ranged: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsSelf.ranged._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsSelf.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  ranged: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsOpponent.ranged._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsOpponent.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+        unitBeingPlayed,
+        otherUnits: [unitsSelf.ranged, unitsSelf.modifier, unitsOpponent.ranged, unitsOpponent.modifier],
+      })
+    })
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat without modifier', async () => {
       await testGetRoundUnits({
         game: TestUtil.getDbGame({
           round: 3,
@@ -689,6 +1065,55 @@ describe('get-round-units', () => {
         }),
         unitBeingPlayed,
         otherUnits: [unitsSelf.siege, unitsOpponent.siege],
+      })
+    })
+    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat without modifier', async () => {
+      await testGetRoundUnits({
+        game: TestUtil.getDbGame({
+          round: 3,
+          players: [
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  siege: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsSelf.siege._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsSelf.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+            TestUtil.getDbGamePlayer({
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  siege: {
+                    score: 0,
+                    units: [
+                      TestUtil.getDbGameUnit({
+                        id: unitsOpponent.siege._id,
+                      }),
+                    ],
+                    modifier: TestUtil.getDbGameUnit({
+                      id: unitsOpponent.modifier._id,
+                    }),
+                  },
+                }),
+              ],
+            }),
+          ],
+        }),
+        unitBeingPlayed,
+        otherUnits: [unitsSelf.siege, unitsSelf.modifier, unitsOpponent.siege, unitsOpponent.modifier],
       })
     })
     it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in all combats', async () => {
