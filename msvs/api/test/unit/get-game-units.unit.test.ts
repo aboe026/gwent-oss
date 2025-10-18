@@ -3449,7 +3449,6 @@ describe('get-game-units', () => {
         })
       })
     })
-    // TODO: pick up there
     describe('ranged combat', () => {
       const combat = Combat.Ranged
       const opponent = TestUtil.getDbGamePlayer({
@@ -3510,6 +3509,38 @@ describe('get-game-units', () => {
                       ranged: {
                         score: 0,
                         units: [deckUnit],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+                opponent,
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
                       },
                       siege: {
                         score: 0,
@@ -3602,6 +3633,38 @@ describe('get-game-units', () => {
                       ranged: {
                         score: 0,
                         units: [deckUnit],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                opponent,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
                       },
                       siege: {
                         score: 0,
@@ -3711,6 +3774,58 @@ describe('get-game-units', () => {
                       ranged: {
                         score: 0,
                         units: [deckUnit2],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit1, deckUnit2])
+        })
+        it('returns single modifiers if present', () => {
+          const deckUnit1 = TestUtil.getDbDeckUnit({})
+          const deckUnit2 = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit1,
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit2,
                       },
                       siege: {
                         score: 0,
@@ -3854,6 +3969,38 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit])
         })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
+                      },
+                    }),
+                  ],
+                }),
+                opponent,
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
         it('returns multiple opponent items if present', () => {
           const deckUnit1 = TestUtil.getDbDeckUnit({})
           const deckUnit2 = TestUtil.getDbDeckUnit({})
@@ -3935,6 +4082,38 @@ describe('get-game-units', () => {
                       siege: {
                         score: 0,
                         units: [deckUnit],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                opponent,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
                       },
                     }),
                   ],
@@ -4044,6 +4223,58 @@ describe('get-game-units', () => {
                       siege: {
                         score: 0,
                         units: [deckUnit2],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit1, deckUnit2])
+        })
+        it('returns single modifiers if present', () => {
+          const deckUnit1 = TestUtil.getDbDeckUnit({})
+          const deckUnit2 = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit1,
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit2,
                       },
                     }),
                   ],
@@ -4167,6 +4398,32 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit])
         })
+        it('returns single modifier if present in close row', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
+                }),
+              ],
+              round,
+            })
+          ).toEqual([deckUnit])
+        })
         it('returns single item if present in ranged row', () => {
           const deckUnit = TestUtil.getDbDeckUnit({})
           expect(
@@ -4192,6 +4449,32 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit])
         })
+        it('returns single modifier if present in ranged row', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
+                }),
+              ],
+              round,
+            })
+          ).toEqual([deckUnit])
+        })
         it('returns single item if present in siege row', () => {
           const deckUnit = TestUtil.getDbDeckUnit({})
           expect(
@@ -4205,6 +4488,32 @@ describe('get-game-units', () => {
                       siege: {
                         score: 0,
                         units: [deckUnit],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
+                }),
+              ],
+              round,
+            })
+          ).toEqual([deckUnit])
+        })
+        it('returns single modifier if present in siege row', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
                       },
                     }),
                   ],
@@ -4385,7 +4694,7 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit1, deckUnit2])
         })
-        it('returns multiple items if present in all rows', () => {
+        it('returns multiple items if present in all rows without modifiers', () => {
           const deckUnit1 = TestUtil.getDbDeckUnit({})
           const deckUnit2 = TestUtil.getDbDeckUnit({})
           const deckUnit3 = TestUtil.getDbDeckUnit({})
@@ -4419,6 +4728,47 @@ describe('get-game-units', () => {
               round,
             })
           ).toEqual([deckUnit1, deckUnit2, deckUnit3])
+        })
+        it('returns multiple items if present in all rows with modifiers', () => {
+          const deckUnit1 = TestUtil.getDbDeckUnit({})
+          const deckUnit2 = TestUtil.getDbDeckUnit({})
+          const deckUnit3 = TestUtil.getDbDeckUnit({})
+          const deckUnit4 = TestUtil.getDbDeckUnit({})
+          const deckUnit5 = TestUtil.getDbDeckUnit({})
+          const deckUnit6 = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [deckUnit1],
+                        modifier: deckUnit2,
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [deckUnit3],
+                        modifier: deckUnit4,
+                      },
+                      siege: {
+                        score: 0,
+                        units: [deckUnit5],
+                        modifier: deckUnit6,
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
+                }),
+              ],
+              round,
+            })
+          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
         })
         it('returns multiple items if multiple present in all rows', () => {
           const deckUnit1 = TestUtil.getDbDeckUnit({})
@@ -4485,6 +4835,32 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit])
         })
+        it('returns single modifier if present in close row', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+            })
+          ).toEqual([deckUnit])
+        })
         it('returns single item if present in ranged row', () => {
           const deckUnit = TestUtil.getDbDeckUnit({})
           expect(
@@ -4510,6 +4886,32 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit])
         })
+        it('returns single modifier if present in ranged row', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+            })
+          ).toEqual([deckUnit])
+        })
         it('returns single item if present in siege row', () => {
           const deckUnit = TestUtil.getDbDeckUnit({})
           expect(
@@ -4526,6 +4928,32 @@ describe('get-game-units', () => {
                       siege: {
                         score: 0,
                         units: [deckUnit],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+            })
+          ).toEqual([deckUnit])
+        })
+        it('returns single modifier if present in siege row', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
                       },
                     }),
                   ],
@@ -4703,7 +5131,7 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit1, deckUnit2])
         })
-        it('returns multiple items if present in all rows', () => {
+        it('returns multiple items if present in all rows without modifiers', () => {
           const deckUnit1 = TestUtil.getDbDeckUnit({})
           const deckUnit2 = TestUtil.getDbDeckUnit({})
           const deckUnit3 = TestUtil.getDbDeckUnit({})
@@ -4737,6 +5165,47 @@ describe('get-game-units', () => {
               round,
             })
           ).toEqual([deckUnit1, deckUnit2, deckUnit3])
+        })
+        it('returns multiple items if present in all rows with modifiers', () => {
+          const deckUnit1 = TestUtil.getDbDeckUnit({})
+          const deckUnit2 = TestUtil.getDbDeckUnit({})
+          const deckUnit3 = TestUtil.getDbDeckUnit({})
+          const deckUnit4 = TestUtil.getDbDeckUnit({})
+          const deckUnit5 = TestUtil.getDbDeckUnit({})
+          const deckUnit6 = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [previousRound, previousRound, TestUtil.getDbPlayerRound({})],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [deckUnit1],
+                        modifier: deckUnit2,
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [deckUnit3],
+                        modifier: deckUnit4,
+                      },
+                      siege: {
+                        score: 0,
+                        units: [deckUnit5],
+                        modifier: deckUnit6,
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+            })
+          ).toEqual([deckUnit1, deckUnit2, deckUnit3, deckUnit4, deckUnit5, deckUnit6])
         })
         it('returns multiple items if multiple present in all rows', () => {
           const deckUnit1 = TestUtil.getDbDeckUnit({})
@@ -4856,6 +5325,39 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit])
         })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+                opponent,
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
         it('returns multiple opponent items if present', () => {
           const deckUnit1 = TestUtil.getDbDeckUnit({})
           const deckUnit2 = TestUtil.getDbDeckUnit({})
@@ -4932,6 +5434,39 @@ describe('get-game-units', () => {
                       close: {
                         score: 0,
                         units: [deckUnit],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                opponent,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
                       },
                       ranged: {
                         score: 0,
@@ -5044,6 +5579,60 @@ describe('get-game-units', () => {
                       close: {
                         score: 0,
                         units: [deckUnit2],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit1, deckUnit2])
+        })
+        it('returns single modifiers if present', () => {
+          const deckUnit1 = TestUtil.getDbDeckUnit({})
+          const deckUnit2 = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit1,
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit2,
                       },
                       ranged: {
                         score: 0,
@@ -5196,6 +5785,39 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit])
         })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+                opponent,
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
         it('returns multiple opponent items if present', () => {
           const deckUnit1 = TestUtil.getDbDeckUnit({})
           const deckUnit2 = TestUtil.getDbDeckUnit({})
@@ -5276,6 +5898,39 @@ describe('get-game-units', () => {
                       ranged: {
                         score: 0,
                         units: [deckUnit],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                opponent,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
                       },
                       siege: {
                         score: 0,
@@ -5388,6 +6043,60 @@ describe('get-game-units', () => {
                       ranged: {
                         score: 0,
                         units: [deckUnit2],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit1, deckUnit2])
+        })
+        it('returns single modifiers if present', () => {
+          const deckUnit1 = TestUtil.getDbDeckUnit({})
+          const deckUnit2 = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit1,
+                      },
+                      siege: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit2,
                       },
                       siege: {
                         score: 0,
@@ -5536,6 +6245,39 @@ describe('get-game-units', () => {
             })
           ).toEqual([deckUnit])
         })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
+                      },
+                    }),
+                  ],
+                }),
+                opponent,
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
         it('returns multiple opponent items if present', () => {
           const deckUnit1 = TestUtil.getDbDeckUnit({})
           const deckUnit2 = TestUtil.getDbDeckUnit({})
@@ -5620,6 +6362,39 @@ describe('get-game-units', () => {
                       siege: {
                         score: 0,
                         units: [deckUnit],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit])
+        })
+        it('returns single opponent modifier if present', () => {
+          const deckUnit = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                opponent,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit,
                       },
                     }),
                   ],
@@ -5732,6 +6507,60 @@ describe('get-game-units', () => {
                       siege: {
                         score: 0,
                         units: [deckUnit2],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+              round,
+              combat,
+            })
+          ).toEqual([deckUnit1, deckUnit2])
+        })
+        it('returns single modifiers if present', () => {
+          const deckUnit1 = TestUtil.getDbDeckUnit({})
+          const deckUnit2 = TestUtil.getDbDeckUnit({})
+          expect(
+            getGameUnits({
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit1,
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    previousRound,
+                    previousRound,
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      ranged: {
+                        score: 0,
+                        units: [TestUtil.getDbDeckUnit({})],
+                      },
+                      siege: {
+                        score: 0,
+                        units: [],
+                        modifier: deckUnit2,
                       },
                     }),
                   ],
