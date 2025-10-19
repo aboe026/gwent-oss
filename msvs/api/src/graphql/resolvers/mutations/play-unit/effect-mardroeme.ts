@@ -13,9 +13,9 @@ import {
 } from '@gwent/graphql-schema/database-typings'
 import GetEffectWithKey from './get-effect-with-key'
 import getGameUnits from './get-game-units'
+import { getUniqueItems } from '@gwent/utils'
 import { ImpactsByUnitId } from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
-import { getUniqueItems } from '@gwent/utils'
 
 /**
  * A class to transform Berserker units when Mardroeme is played.

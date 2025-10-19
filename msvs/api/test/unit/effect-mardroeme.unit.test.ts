@@ -10,11 +10,11 @@ import {
   PlayerCombatRowDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import deepClone from '../util/deep-clone'
 import EffectMardroeme, {
   Transformations,
   TransformPairs,
 } from '../../src/graphql/resolvers/mutations/play-unit/effect-mardroeme'
-import deepClone from '../util/deep-clone'
 import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import * as getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
 import TestUtil from '../util/test-util'

@@ -6,10 +6,10 @@ import {
   GameUnitDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import { ImpactsByUnitId } from '../../resolver-util'
+import EffectMardroeme from './effect-mardroeme'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
 import EffectScorch from './effect-scorch'
-import EffectMardroeme from './effect-mardroeme'
+import { ImpactsByUnitId } from '../../resolver-util'
 
 /**
  * Modifies the battlefield of the current round in a game due to the deployment of a new unit. Other units on or off the battlefield may be impacted by unit effects.
