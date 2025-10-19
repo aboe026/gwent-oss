@@ -672,6 +672,7 @@ export default class ApiClient {
       hero
       id
       images
+      modifier
       name
       quote
       scorchMin
