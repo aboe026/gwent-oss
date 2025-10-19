@@ -29,11 +29,11 @@
     "@gwent/test-utils": "workspace:*",
     "@gwent/utils": "workspace:*",
     "cookie": "1.0.2",
-    "cross-env": "10.0.0",
+    "cross-env": "10.1.0",
     "graphql": "16.11.0",
     "graphql-request": "6.1.0",
     "graphql-ws": "6.0.6",
-    "mongodb": "6.19.0",
+    "mongodb": "6.20.0",
     "testcafe": "3.7.2",
     "url-join": "4.0.1",
     "ws": "8.18.3"
