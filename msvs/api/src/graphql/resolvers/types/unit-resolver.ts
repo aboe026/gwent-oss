@@ -85,7 +85,7 @@ export default class UnitResolver {
    * @param config The configuration used to retrieve the Unit.
    * @param config.id The ObjectId of the Unit to convert.
    * @returns The resolved Unit object with the given ID.
-   * @throws Error if a Unit with the given ID does not exist.
+   * @throws {Error} if a Unit with the given ID does not exist.
    */
   static async fromId({ id }: { id: ObjectId | string }): Promise<Unit> {
     const units = await UnitResolver.fromIds({
@@ -101,7 +101,7 @@ export default class UnitResolver {
    * @param config.ids The ObjectIds of the Units to convert.
    * @param config.factions The pre-fetched Faction database objects for the Units.
    * @returns The resolved Units array for the given IDs.
-   * @throws Error if a Unit with the given IDs does not exist.
+   * @throws {Error} if a Unit with the given IDs does not exist.
    */
   static async fromIds({
     ids,

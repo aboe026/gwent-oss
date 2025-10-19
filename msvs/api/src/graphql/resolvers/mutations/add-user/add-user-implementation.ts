@@ -19,8 +19,8 @@ export default class AddUserImplementation {
    * @param config.name The name of the user being created.
    * @param config.password The password of the user being creating.
    * @returns The User that was added.
-   * @throws PresentableError if user with the name already exists.
-   * @throws Error if unforseen problem adding the user.
+   * @throws {PresentableError} if user with the name already exists.
+   * @throws {unknown} if unforseen problem adding the user.
    */
   static async addUserImplementation({ logPrefix, name, password }: ValidatedAddUser): Promise<UserDbObject> {
     let user: UserDbObject

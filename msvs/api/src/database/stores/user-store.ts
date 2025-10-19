@@ -18,7 +18,8 @@ export default class UserStore extends Store {
    * @param name The name of the user to add.
    * @param password The password of the user to add.
    * @returns The User database object with password omitted.
-   * @throws An Error if a User with the name already exists.
+   * @throws {Error} if a User with the name already exists.
+   * @throws {unknown} if unforseen problem adding the user.
    */
   static async add(name: string, password: string): Promise<UserDbObject> {
     UserStore.logger.debug(`Adding user with name "${name}"`)
@@ -52,7 +53,7 @@ export default class UserStore extends Store {
    *
    * @param id The ObjectId of the user to retrieve.
    * @returns The User database object if it exists, undefined otherwise.
-   * @throws Error if more than 1 user found.
+   * @throws {Error} if more than 1 user found.
    */
   static async getById(id: string | ObjectId): Promise<UserDbObject | undefined> {
     UserStore.logger.debug(`Getting user by id "${id}"`)
@@ -141,7 +142,7 @@ export default class UserStore extends Store {
    * @param name The name of the user to check.
    * @param password The password to check against the potentially existing user.
    * @returns The User if they exist with the correct password.
-   * @throws Error if the user does not exist, more than 1 user found with the name, or if the password is not correct.
+   * @throws {Error} if the user does not exist, more than 1 user found with the name, or if the password is not correct.
    */
   static async validate(name: string, password: string): Promise<UserDbObject> {
     UserStore.logger.debug(`Validating user with name "${name}"`)

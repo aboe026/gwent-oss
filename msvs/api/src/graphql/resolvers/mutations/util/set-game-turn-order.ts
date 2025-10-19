@@ -28,7 +28,7 @@ export default class SetGameTurnOrder {
    * @param config.logPrefix The prefix to put before logging statements. Overrides class-level logPrefix.
    * @param config.allowImplicit Whether or not the User is allowed to implicitly set game turn order (without explicitly setting "userIds" input).
    * @returns The updated Game if the user is allowed to set the game turn order.
-   * @throws PresentableError if problem setting the turn order on the game.
+   * @throws {PresentableError} if problem setting the turn order on the game.
    */
   static async setGameTurnOrder({
     game,

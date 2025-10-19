@@ -26,7 +26,7 @@ export default class AddDeckValidation {
    * @param context The session containing the user adding the deck.
    * @param info The information about the GraphQL request.
    * @returns The information needed to add the deck.
-   * @throws PresentableError if known problem adding deck.
+   * @throws {PresentableError} if known problem adding deck.
    */
   static async addDeckValidation(
     args: MutationAddDeckArgs,

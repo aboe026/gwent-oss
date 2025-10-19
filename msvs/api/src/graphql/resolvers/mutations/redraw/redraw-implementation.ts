@@ -21,7 +21,7 @@ export default class RedrawImplementation {
    * @param config.unitId The ID of the unit to redraw.
    * @param config.userId The ID of the user performing the redraw.
    * @returns The updated game with both the unit to redraw and the random unit that replaced it.
-   * @throws PresentableError if known problem redrawing unit.
+   * @throws {PresentableError} if known problem redrawing unit.
    */
   static async redrawImplementation({ game, logPrefix, unitId, userId }: ValidatedRedraw): Promise<ImplementedRedraw> {
     const { from, to } = RedrawUnit.redrawUnit({

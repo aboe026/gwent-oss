@@ -23,8 +23,8 @@ export default class AddDeckImplementation {
    * @param config.name The name the deck should have to identify it.
    * @param config.userId The ID of the User adding the deck.
    * @returns The Deck that was created.
-   * @throws PresentableError if deck with name already exists.
-   * @throws Error if unforseen problem adding deck.
+   * @throws {PresentableError} if deck with name already exists.
+   * @throws {unknown} if unforseen problem adding deck.
    */
   static async addDeckImplementation({
     deckUnits,

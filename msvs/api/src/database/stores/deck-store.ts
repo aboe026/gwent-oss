@@ -87,7 +87,7 @@ export default class DeckStore extends Store {
    * @param config.id The ObjectId of the Deck to retrieve.
    * @param config.options The options to use when retrieving the Deck.
    * @returns The decks of the given IDs.
-   * @throws Error if more than 1 deck found.
+   * @throws {Error} if more than 1 deck found.
    */
   static async getById({
     id,

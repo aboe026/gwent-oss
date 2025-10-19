@@ -37,7 +37,7 @@ export default class MoveResolver {
    * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @returns The resolved Move object matching its GraphQL schema definition.
-   * @throws Error if the move type is invalid.
+   * @throws {Error} if the move type is invalid.
    */
   static async fromObject({
     move,

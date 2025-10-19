@@ -20,7 +20,7 @@ export default class ReadyImplementation {
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.userId The ID of the User to mark as ready on the game.
    * @returns The Game that is now ready for the user.
-   * @throws PresentableError if known problem marking game as ready.
+   * @throws {PresentableError} if known problem marking game as ready.
    */
   static async readyImplementation({ logPrefix, game, userId }: ValidatedReady): Promise<GameDbObject> {
     MarkPlayerReady.markPlayerReady({

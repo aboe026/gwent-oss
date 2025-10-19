@@ -248,7 +248,7 @@ function renderDeckStat({
 /**
  * Gets the numeric value of a DeckStat
  *
- * @throws Error if the value is not a number
+ * @throws {Error} if the value is not a number
  */
 function getStatNumber({
   stats,

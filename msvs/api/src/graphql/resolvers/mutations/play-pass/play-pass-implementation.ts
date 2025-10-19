@@ -29,7 +29,7 @@ export default class PlayPassImplementation {
    * @param config.game The game to pass the rest of the round for the current user.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @returns The Game with the round passed for the user as well as if the round is over or not.
-   * @throws PresentableError if known problem playing pass.
+   * @throws {PresentableError} if known problem playing pass.
    */
   static async playPassImplementation({ game, logPrefix }: ValidatedPlayPass): Promise<ImplementedPlayPass> {
     passCurrentPlayer(game)

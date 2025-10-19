@@ -58,7 +58,6 @@ export function getErrorMessages(error: unknown): string {
  * @param config The configuration used when executing the method.
  * @param config.checkAuth The method used to check whether the error is an Authentication error.
  * @param config.method The method to execute, potentially twice if there is an Authentication error.
- * @throws Error if the method fails due to an error not related to Authentication.
  */
 export async function retryCheckingAuth({
   checkAuth,

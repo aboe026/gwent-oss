@@ -56,7 +56,7 @@ export default class ResolverUtil {
    * @param config.context The Context potentially containing the user.
    * @param config.label The label to use on log calls to more easily know where the call was made.
    * @returns The user on the context if they exist.
-   * @throws PresentableError if there is no user on the context.
+   * @throws {PresentableError} if there is no user on the context.
    */
   getContextUser({ context, label }: { context: Context; label: string }): UserDbObject {
     const user = context.session?.user
@@ -73,7 +73,7 @@ export default class ResolverUtil {
    * @param config The configuration to verify the ObjectIds.
    * @param config.ids The IDs to verify.
    * @param config.label The label to use on log calls to more easily know where the call was made.
-   * @throws PresentableError if there are any invalid MongoDB ObjectIds.
+   * @throws {PresentableError} if there are any invalid MongoDB ObjectIds.
    */
   verifyMongoIds({ ids, label }: { ids: string[]; label: string }) {
     for (const id of ids) {
@@ -129,7 +129,7 @@ export default class ResolverUtil {
    * @param config.turn Whether or not to enforce that the given game player should be the player with the current turn, otherwise return an error.
    * @param config.label The label to use when logging and returning errors.
    * @returns The game and player if they exist.
-   * @throws PresentableError if there is a problem getting the game or player.
+   * @throws {PresentableError} if there is a problem getting the game or player.
    */
   async getGamePlayer({
     gameId,

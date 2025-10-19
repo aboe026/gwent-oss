@@ -305,7 +305,7 @@ export default class Upgrade2 extends Upgrade {
    *
    * @param dlc The JSON representation of the DLC.
    * @returns The Key for the corresponding DLC.
-   * @throws Error if DLC JSON does not match valid keys.
+   * @throws {Error} if DLC JSON does not match valid keys.
    */
   normalizeDlcKey(dlc: DlcJson): DlcKey {
     if (dlc.Name === 'Blood and Wine') {
@@ -365,7 +365,7 @@ export default class Upgrade2 extends Upgrade {
    *
    * @param faction The JSON representation of the Faction.
    * @returns The Key for the corresponding faction.
-   * @throws Error if faction JSON does not match valid keys.
+   * @throws {Error} if faction JSON does not match valid keys.
    */
   normalizeFactionKey(faction: FactionJson): FactionKey {
     if (faction.Name === 'Monsters') {
@@ -464,7 +464,7 @@ export default class Upgrade2 extends Upgrade {
    * @param unitOrLeader The Unit or Leader to get the faction ID for.
    * @param factionMap The map of Faction keys to IDs.
    * @returns The ID of the Unit or Leader.
-   * @throws Error if faction not found in factionMap.
+   * @throws {Error} if faction not found in factionMap.
    */
   normalizeUnitFaction(unitOrLeader: UnitJson | LeaderJson, factionMap: KeyIdMap): ObjectId {
     const faction = factionMap[unitOrLeader.Faction]
@@ -521,7 +521,7 @@ export default class Upgrade2 extends Upgrade {
    *
    * @param combat The string representation of the combat.
    * @returns The Combat the string represents.
-   * @throws Error if the string does not have an equivalent Combat representation.
+   * @throws {Error} if the string does not have an equivalent Combat representation.
    */
   normalizeCombat(combat: string | undefined): Combat {
     if (combat === 'Close') {

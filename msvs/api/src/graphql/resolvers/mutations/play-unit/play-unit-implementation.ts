@@ -28,7 +28,8 @@ export default class PlayUnitImplementation {
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.unit The Unit being played.
    * @returns The Game and GameDeck with the unit played for the user.
-   * @throws PresentableError if known problem playing unit.
+   * @throws {PresentableError} if known problem playing unit.
+   * @throws {Error} if unforseen problem adding the user.
    */
   static async playUnitImplementation({
     combat,

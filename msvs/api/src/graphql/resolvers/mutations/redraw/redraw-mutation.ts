@@ -16,7 +16,6 @@ export default class RedrawMutation {
    * @param context The session containing the user redrawing the unit.
    * @param info The information about the GraphQL request.
    * @returns The random DeckUnit that replaces their redrawn Unit in their hand.
-   * @throws PresentableError if problem redrawing unit.
    */
   static async redrawMutation(args: MutationRedrawArgs, context: Context, info: GraphQLResolveInfo): Promise<DeckUnit> {
     const {

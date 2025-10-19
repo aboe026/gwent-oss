@@ -20,7 +20,7 @@ export default class PlayPassValidation {
    * @param context The session containing the user passing.
    * @param info The information about the GraphQL request.
    * @returns The information needed to pass in the game.
-   * @throws PresentableError if known problem playing pass.
+   * @throws {PresentableError} if known problem playing pass.
    */
   static async playPassValidation(
     args: MutationPlayPassArgs,

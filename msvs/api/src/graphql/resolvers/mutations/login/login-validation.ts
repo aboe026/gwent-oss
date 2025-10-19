@@ -19,7 +19,8 @@ export default class LoginValidation {
    * @param args The arguments for logging in a user.
    * @param info The information about the GraphQL request.
    * @returns The information needed to log in the user.
-   * @throws PresentableError if known problem authenticating user.
+   * @throws {PresentableError} if known problem authenticating user.
+   * @throws {unknown} if unforseen problem authenticating user.
    */
   static async loginValidation(
     args: MutationLoginArgs,

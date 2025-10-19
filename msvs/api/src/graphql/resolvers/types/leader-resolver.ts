@@ -55,7 +55,7 @@ export default class LeaderResolver {
    * @param config The configuration used to resolve the Leader.
    * @param config.id The ObjectId of the Leader to convert.
    * @returns The resolved Leader object with the given ID.
-   * @throws Error if a Leader with the given ID does not exist.
+   * @throws {Error} if a Leader with the given ID does not exist.
    */
   static async fromId({ id }: { id: string | ObjectId }): Promise<Leader> {
     const leaders = await LeaderResolver.fromIds({
@@ -72,7 +72,7 @@ export default class LeaderResolver {
    * @param config.factions The Factions for the Leaders. If not provided, will be retrieved.
    * @param config.resolvedFactions The resolved Factions for the Leaders. If not provided, will be retrieved.
    * @returns The resolved Leaders array for the given IDs.
-   * @throws Error if a Leader with the given IDs does not exist.
+   * @throws {Error} if a Leader with the given IDs does not exist.
    */
   static async fromIds({
     ids,

@@ -24,7 +24,7 @@ export default class AddGameValidation {
    * @param context The session containing the user adding the game.
    * @param info The information about the GraphQL request.
    * @returns The information needed to add the game.
-   * @throws PresentableError if known problem adding game.
+   * @throws {PresentableError} if known problem adding game.
    */
   static async addGameValidation(
     args: MutationAddGameArgs,

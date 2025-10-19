@@ -17,7 +17,7 @@ export default class SetNextTurnForCurrentRound {
    * @param config The configuration of used to determine who the next eligible player is on the game.
    * @param config.game The game to set the turn on for the current round.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
-   * @throws PresentableError if there is a problem getting the next player.
+   * @throws {PresentableError} if there is a problem getting the next player.
    */
   static setNextTurnForCurrentRound({ game, logPrefix }: { game: GameDbObject; logPrefix: string }) {
     const usersByOrder: GamePlayerDbObject[] = sortObjectArray({

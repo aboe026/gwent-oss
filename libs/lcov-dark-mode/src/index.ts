@@ -78,7 +78,7 @@ export async function addDarkMode({
  * @param config.filePath The path of the file to check for the existence of.
  * @param config.checkDurationMilliseconds How often (in milliseconds) to check whether or not the file exists.
  * @param config.timeoutMilliseconds The maximum amount of time (in milliseconds) to wait for the file to exist.
- * @throws Error if file does not exist after timeoutMilliseconds has elapsed.
+ * @throws {Error} if file does not exist after timeoutMilliseconds has elapsed.
  */
 async function waitForFileToExist({
   filePath,

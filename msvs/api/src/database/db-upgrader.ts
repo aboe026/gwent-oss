@@ -162,7 +162,7 @@ export default class DbUpgrader {
    * @param config.current The current upgrade version the database is on. Only upgrades greater than this version are run.
    * @param config.upgrades The upgrade scripts to run. Any before current are not run.
    * @param config.started The date the run was started. Used to ensure the lock updating does not conflict with future runs.
-   * @throws Error if a script throws an error or problems communicating with database while storing upgrade status.
+   * @throws {unknown} if a script throws an error or problems communicating with database while storing upgrade status.
    */
   private async execute({
     current,
@@ -214,7 +214,7 @@ export default class DbUpgrader {
    * Keep lock up to date. Ensures other processes do not run upgrades at the same time.
    *
    * @param started The date the run was started. Used to ensure the lock updating does not conflict with future runs.
-   * @throws Error if problem updating lock.
+   * @throws {unknown} if problem updating lock.
    */
   private async keepLockUpdated(started: Date): Promise<void> {
     let stillRunning = this.isStillRunning(started)
