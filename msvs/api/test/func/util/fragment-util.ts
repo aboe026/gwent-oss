@@ -115,6 +115,7 @@ export function getUnitFragment(): string {
     hero
     id
     images
+    modifier
     name
     quote
     scorchMin
