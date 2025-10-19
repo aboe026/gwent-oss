@@ -33,6 +33,7 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.logPrefix What to prepend log statements with.
    * @param config.newDeckUnit The new unit being introduced to the battlefield.
    * @param config.musteredUnitIds A list of any unit IDs that were mustered to the battlefield by the newDeckUnit. Used to apply potential impacts to those musters.
+   * @param config.transformedUnitIds A list of any unit IDs that were transformed on the battlefield by the newDeckUnit. Used to apply potential impacts to those Vildkaarls.
    * @returns Any impacts the new unit has on other units.
    */
   static calculateEffectiveStrengths({
@@ -42,6 +43,7 @@ export default class CalculateGameEffectiveStrengths {
     logPrefix,
     newDeckUnit,
     musteredUnitIds,
+    transformedUnitIds,
   }: {
     game: GameDbObject
     units: UnitDbObject[]
@@ -49,6 +51,7 @@ export default class CalculateGameEffectiveStrengths {
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
     musteredUnitIds: string[]
+    transformedUnitIds: string[]
   }): StrengthImpacts {
     const bonds: ImpactsByUnitId = {}
     const morales: ImpactsByUnitId = {}
@@ -76,6 +79,7 @@ export default class CalculateGameEffectiveStrengths {
             bondEffect,
             newDeckUnit,
             musteredUnitIds,
+            transformedUnitIds,
             userId: player.user,
             currentPlayerId: game.turn,
           })
@@ -107,6 +111,7 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.bondEffect The Effect database document for the Bond effect.
    * @param config.newDeckUnit The new unit being introduced to the battlefield.
    * @param config.musteredUnitIds A list of any unit IDs that were mustered to the battlefield by the newDeckUnit. Used to apply potential impacts to those musters.
+   * @param config.transformedUnitIds A list of any unit IDs that were transformed on the battlefield by the newDeckUnit. Used to apply potential impacts to those Vildkaarls.
    * @param config.userId The ID of the user for the combat row.
    * @param config.currentPlayerId The ID of the current game turn user.
    * @returns Any impacts the new unit has on other units.
@@ -119,6 +124,7 @@ export default class CalculateGameEffectiveStrengths {
     bondEffect,
     newDeckUnit,
     musteredUnitIds,
+    transformedUnitIds,
     userId,
     currentPlayerId,
   }: {
@@ -129,6 +135,7 @@ export default class CalculateGameEffectiveStrengths {
     bondEffect: EffectDbObject | undefined
     newDeckUnit: DeckUnitDbObject
     musteredUnitIds: string[]
+    transformedUnitIds: string[]
     userId: ObjectId
     currentPlayerId: ObjectId | undefined
   }): StrengthImpacts {
@@ -173,6 +180,7 @@ export default class CalculateGameEffectiveStrengths {
             unitIdsWithBondInRow: bondIdsInRow,
             newDeckUnit,
             musteredUnitIds,
+            transformedUnitIds,
             rowGameUnit,
             rowUnit,
             units,
@@ -193,6 +201,7 @@ export default class CalculateGameEffectiveStrengths {
             units,
             userId,
             currentPlayerId,
+            transformedUnitIds,
           }),
         })
       }

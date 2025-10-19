@@ -37,7 +37,7 @@ describe('unit-resolver', () => {
         ],
       })
     })
-    it('returns resolved unit if optional fields not provided provided', async () => {
+    it('returns resolved unit if optional fields not provided', async () => {
       const faction = TestUtil.getFaction({})
       const dlc = TestUtil.getDlc({})
       const effect = TestUtil.getEffect({})
@@ -70,6 +70,7 @@ describe('unit-resolver', () => {
           faction: faction._id,
           dlc: dlc._id,
           effects: [effect._id],
+          modifier: true,
         }),
         dlc,
         effects: [effect],
@@ -627,6 +628,7 @@ async function testResolveFromObject({
     hero: unit.hero,
     id: unit._id.toString(),
     images: unit.images,
+    modifier: unit.modifier,
     name: unit.name,
     quote: unit.quote,
     scorchMin: unit.scorchMin,

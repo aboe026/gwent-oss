@@ -5,10 +5,20 @@ import './ContainerFixedAspectRatio.css'
  * A Container with a fixed aspect ratio
  *
  */
-export default function ContainerFixedAspectRatio({ aspectRatio, width, children }: ContainerFixedAspectRatioProps) {
+export default function ContainerFixedAspectRatio({
+  aspectRatio,
+  className,
+  title,
+  width,
+  height,
+  children,
+}: ContainerFixedAspectRatioProps) {
   return (
-    <div className="container-fixed-aspect-ratio-outer" style={{ width }}>
-      <div className="container-fixed-aspect-ratio-inner" style={{ aspectRatio }}>
+    <div className={`container-fixed-aspect-ratio-outer ${className}`} title={title} style={{ height, width }}>
+      <div
+        className="container-fixed-aspect-ratio-inner"
+        style={{ aspectRatio, width: width ? '100%' : '', height: height ? '100%' : '' }}
+      >
         {children}
       </div>
     </div>
@@ -17,5 +27,8 @@ export default function ContainerFixedAspectRatio({ aspectRatio, width, children
 
 interface ContainerFixedAspectRatioProps extends PropsWithChildren {
   aspectRatio: string
-  width: string
+  width?: string
+  height?: string
+  className?: string
+  title?: string
 }

@@ -1,5 +1,12 @@
 import ApiClient from './api-client'
-import { BondingExpected, E2eHelper, MoralingExpected, MusteringExpected, ScorchingExpected } from './e2e-helper'
+import {
+  BondingExpected,
+  E2eHelper,
+  MardroemingExpected,
+  MoralingExpected,
+  MusteringExpected,
+  ScorchingExpected,
+} from './e2e-helper'
 import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/graphql-schema/resolver-typings'
 import E2eUtil from './e2e-util'
 import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
@@ -87,9 +94,11 @@ export class GameManager {
     scorching,
     moraling,
     horning,
+    mardroeming,
     mustering,
     bonding,
     impacts,
+    modifier,
     verify,
   }: {
     unitName: string
@@ -98,9 +107,11 @@ export class GameManager {
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
+    mardroeming?: MardroemingExpected[]
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     impacts?: number
+    modifier?: boolean
     verify?: boolean
   }): Promise<DeckUnit> {
     const isSelfTurn = this.self.gamePlayer.turn === PlayerTurn.Current
@@ -116,6 +127,7 @@ export class GameManager {
       await GamePage.moveUnit({
         unitName: unitToMove.unit.name,
         row: combatRow,
+        modifier,
       })
     } else {
       await currentPlayer.client.playUnit({
@@ -135,6 +147,7 @@ export class GameManager {
       scorching,
       moraling,
       horning,
+      mardroeming,
       mustering,
       bonding,
       impacts,

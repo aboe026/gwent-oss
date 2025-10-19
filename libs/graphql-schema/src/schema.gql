@@ -108,6 +108,8 @@ enum GameUnitOrigin {
   OPPONENT
   "Unit came from the users Draw pile."
   UNDRAWN
+  "Unit came from a non-deckable source."
+  NONDECK
 }
 
 enum RoundResult {
@@ -318,6 +320,7 @@ type PlayerRound @entity {
 type PlayerCombatRow @entity {
   score: Int! @column
   units: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
+  modifier: GameUnit @column(overrideType: "GameUnitDbObject")
 }
 
 type Redraw @entity {
@@ -343,6 +346,7 @@ type Unit @entity {
   hero: Boolean @column
   id: ID! @id @map(path: "_id")
   images: [String!]! @column
+  modifier: Boolean! @column
   name: String! @column
   quote: String! @column
   scorchMin: Int @column

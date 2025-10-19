@@ -130,6 +130,18 @@ describe('unit-store', () => {
         },
       })
     })
+    it('calls to read with limit if supplied', async () => {
+      const limit = 10
+      await testGet({
+        input: {
+          limit,
+        },
+        expectedFilter: {},
+        expectedOptions: {
+          limit,
+        },
+      })
+    })
     it('calls to read if all inputs specified', async () => {
       const id = new ObjectId()
       const faction = new ObjectId()
@@ -137,6 +149,7 @@ describe('unit-store', () => {
       const namePrefix = 'name-prefix'
       const name = 'name'
       const ignoreId = new ObjectId()
+      const limit = 20
       await testGet({
         input: {
           deckable,
@@ -145,6 +158,7 @@ describe('unit-store', () => {
           namePrefix,
           names: [name],
           ignoreIds: [ignoreId],
+          limit,
         },
         expectedFilter: {
           faction: {
@@ -161,6 +175,9 @@ describe('unit-store', () => {
           name: {
             $in: [name],
           },
+        },
+        expectedOptions: {
+          limit,
         },
       })
     })
@@ -222,6 +239,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
   const hero = false
   const images = ['image']
   const name = 'name'
+  const modifier = false
   const quote = 'quote'
   const scorchMin = 10
   const scorchScope = Combat.Ranged
@@ -239,6 +257,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
     _id: new ObjectId(),
     images,
     name,
+    modifier,
     quote,
     scorchMin,
     scorchScope,
@@ -266,6 +285,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
       hero,
       images,
       name,
+      modifier,
       quote,
       scorchMin,
       scorchScope,
@@ -286,6 +306,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
         faction,
         hero,
         images,
+        modifier,
         name,
         quote,
         scorchMin,
@@ -311,6 +332,7 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
               faction,
               hero,
               images,
+              modifier,
               name,
               quote,
               scorchMin,
@@ -326,11 +348,13 @@ async function testAdd({ traceEnabled }: { traceEnabled?: boolean }) {
 
 async function testGet({
   expectedFilter,
+  expectedOptions,
   input,
   debugEnabled,
   traceEnabled,
 }: {
   expectedFilter: any
+  expectedOptions?: any
   input: GetUnitsInput
   debugEnabled?: boolean
   traceEnabled?: boolean
@@ -352,6 +376,7 @@ async function testGet({
       name: 1,
       _id: 1,
     },
+    ...expectedOptions,
   }
 
   await expect(UnitStore.get(input)).resolves.toEqual([])

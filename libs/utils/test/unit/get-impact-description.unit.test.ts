@@ -23,6 +23,13 @@ describe('getImpactDescription', () => {
       })
     ).toThrow(`No impact description for effect "${EffectKey.Berserker}"`)
   })
+  it('throws error if Mardroeme and no name', () => {
+    expect(() =>
+      getImpactDescription({
+        effectKey: EffectKey.Mardroeme,
+      })
+    ).toThrow(`Must specify name for "${EffectKey.Mardroeme}" impact.`)
+  })
   it('returns correct text for Bond', () => {
     expect(
       getImpactDescription({
@@ -44,12 +51,21 @@ describe('getImpactDescription', () => {
       })
     ).toEqual("strengthened by Commander's Horn")
   })
-  it('returns correct text for Mardroeme', () => {
+  it('returns correct text for Mardroeme of Young Berserker', () => {
     expect(
       getImpactDescription({
         effectKey: EffectKey.Mardroeme,
+        name: 'Young Berserker',
       })
-    ).toEqual('transformed by Mardroeme')
+    ).toEqual('transformed by Mardroeme into Transformed Young Vildkaarl')
+  })
+  it('returns correct text for Mardroeme of Berserker', () => {
+    expect(
+      getImpactDescription({
+        effectKey: EffectKey.Mardroeme,
+        name: 'Berserker',
+      })
+    ).toEqual('transformed by Mardroeme into Transformed Vildkaarl')
   })
   it('returns correct text for Medic', () => {
     expect(

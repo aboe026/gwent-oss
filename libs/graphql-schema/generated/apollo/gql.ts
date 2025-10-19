@@ -14,7 +14,6 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "fragment Unit on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ...UnitEffect\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  name\n  quote\n  special\n  strength\n}": typeof types.UnitFragmentDoc,
     "fragment Deck on Deck {\n  id\n  created\n  name\n  faction {\n    ...Faction\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    ...DeckStats\n  }\n}": typeof types.DeckFragmentDoc,
     "fragment DeckStats on UnitStats {\n  units\n  specials\n  heroes\n  close\n  ranged\n  siege\n  agile\n  strengthTotal\n  strengthAverage\n}": typeof types.DeckStatsFragmentDoc,
     "fragment DeckUnit on DeckUnit {\n  artStyle\n  unit {\n    ...Unit\n  }\n}": typeof types.DeckUnitFragmentDoc,
@@ -30,8 +29,9 @@ type Documents = {
     "fragment Move on Move {\n  ... on MoveLeader {\n    ...MoveLeader\n  }\n  ... on MovePass {\n    created\n  }\n  ... on MoveUnit {\n    ...MoveUnit\n  }\n}": typeof types.MoveFragmentDoc,
     "fragment MoveLeader on MoveLeader {\n  created\n  leader {\n    image\n    name\n  }\n}": typeof types.MoveLeaderFragmentDoc,
     "fragment MoveUnit on MoveUnit {\n  created\n  unit {\n    ...GameUnit\n  }\n  impacts {\n    ...Impact\n  }\n  reason {\n    type\n    unit {\n      unit {\n        name\n      }\n    }\n  }\n  source {\n    origin\n  }\n}": typeof types.MoveUnitFragmentDoc,
-    "fragment PlayerCombatRow on PlayerCombatRow {\n  score\n  units {\n    ...GameUnit\n  }\n}": typeof types.PlayerCombatRowFragmentDoc,
+    "fragment PlayerCombatRow on PlayerCombatRow {\n  score\n  units {\n    ...GameUnit\n  }\n  modifier {\n    ...GameUnit\n  }\n}": typeof types.PlayerCombatRowFragmentDoc,
     "fragment PlayerRound on PlayerRound {\n  close {\n    ...PlayerCombatRow\n  }\n  moves {\n    ...Move\n  }\n  passed\n  ranged {\n    ...PlayerCombatRow\n  }\n  result\n  score\n  siege {\n    ...PlayerCombatRow\n  }\n}": typeof types.PlayerRoundFragmentDoc,
+    "fragment Unit on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ...UnitEffect\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  modifier\n  name\n  quote\n  special\n  strength\n}": typeof types.UnitFragmentDoc,
     "fragment UnitEffect on Effect {\n  ability\n  image\n  key\n  name\n}": typeof types.UnitEffectFragmentDoc,
     "mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckUnitInput!]!) {\n  addDeck(name: $name, faction: $faction, leader: $leader, units: $units) {\n    ...Deck\n  }\n}": typeof types.AddDeckDocument,
     "mutation AddGame($opponentNames: [String!]!) {\n  addGame(opponentNames: $opponentNames) {\n    ...Game\n  }\n}": typeof types.AddGameDocument,
@@ -67,7 +67,6 @@ type Documents = {
     "subscription UnitRedrawn {\n  unitRedrawn {\n    from {\n      ...DeckUnit\n    }\n    game {\n      id\n    }\n    to {\n      ...DeckUnit\n    }\n  }\n}": typeof types.UnitRedrawnDocument,
 };
 const documents: Documents = {
-    "fragment Unit on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ...UnitEffect\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  name\n  quote\n  special\n  strength\n}": types.UnitFragmentDoc,
     "fragment Deck on Deck {\n  id\n  created\n  name\n  faction {\n    ...Faction\n  }\n  leader {\n    name\n    ability\n    image\n  }\n  stats {\n    ...DeckStats\n  }\n}": types.DeckFragmentDoc,
     "fragment DeckStats on UnitStats {\n  units\n  specials\n  heroes\n  close\n  ranged\n  siege\n  agile\n  strengthTotal\n  strengthAverage\n}": types.DeckStatsFragmentDoc,
     "fragment DeckUnit on DeckUnit {\n  artStyle\n  unit {\n    ...Unit\n  }\n}": types.DeckUnitFragmentDoc,
@@ -83,8 +82,9 @@ const documents: Documents = {
     "fragment Move on Move {\n  ... on MoveLeader {\n    ...MoveLeader\n  }\n  ... on MovePass {\n    created\n  }\n  ... on MoveUnit {\n    ...MoveUnit\n  }\n}": types.MoveFragmentDoc,
     "fragment MoveLeader on MoveLeader {\n  created\n  leader {\n    image\n    name\n  }\n}": types.MoveLeaderFragmentDoc,
     "fragment MoveUnit on MoveUnit {\n  created\n  unit {\n    ...GameUnit\n  }\n  impacts {\n    ...Impact\n  }\n  reason {\n    type\n    unit {\n      unit {\n        name\n      }\n    }\n  }\n  source {\n    origin\n  }\n}": types.MoveUnitFragmentDoc,
-    "fragment PlayerCombatRow on PlayerCombatRow {\n  score\n  units {\n    ...GameUnit\n  }\n}": types.PlayerCombatRowFragmentDoc,
+    "fragment PlayerCombatRow on PlayerCombatRow {\n  score\n  units {\n    ...GameUnit\n  }\n  modifier {\n    ...GameUnit\n  }\n}": types.PlayerCombatRowFragmentDoc,
     "fragment PlayerRound on PlayerRound {\n  close {\n    ...PlayerCombatRow\n  }\n  moves {\n    ...Move\n  }\n  passed\n  ranged {\n    ...PlayerCombatRow\n  }\n  result\n  score\n  siege {\n    ...PlayerCombatRow\n  }\n}": types.PlayerRoundFragmentDoc,
+    "fragment Unit on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ...UnitEffect\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  modifier\n  name\n  quote\n  special\n  strength\n}": types.UnitFragmentDoc,
     "fragment UnitEffect on Effect {\n  ability\n  image\n  key\n  name\n}": types.UnitEffectFragmentDoc,
     "mutation AddDeck($name: String!, $faction: FactionKey!, $leader: ID!, $units: [DeckUnitInput!]!) {\n  addDeck(name: $name, faction: $faction, leader: $leader, units: $units) {\n    ...Deck\n  }\n}": types.AddDeckDocument,
     "mutation AddGame($opponentNames: [String!]!) {\n  addGame(opponentNames: $opponentNames) {\n    ...Game\n  }\n}": types.AddGameDocument,
@@ -134,10 +134,6 @@ const documents: Documents = {
  */
 export function graphql(source: string): unknown;
 
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "fragment Unit on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ...UnitEffect\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  name\n  quote\n  special\n  strength\n}"): (typeof documents)["fragment Unit on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ...UnitEffect\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  name\n  quote\n  special\n  strength\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
@@ -201,11 +197,15 @@ export function graphql(source: "fragment MoveUnit on MoveUnit {\n  created\n  u
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "fragment PlayerCombatRow on PlayerCombatRow {\n  score\n  units {\n    ...GameUnit\n  }\n}"): (typeof documents)["fragment PlayerCombatRow on PlayerCombatRow {\n  score\n  units {\n    ...GameUnit\n  }\n}"];
+export function graphql(source: "fragment PlayerCombatRow on PlayerCombatRow {\n  score\n  units {\n    ...GameUnit\n  }\n  modifier {\n    ...GameUnit\n  }\n}"): (typeof documents)["fragment PlayerCombatRow on PlayerCombatRow {\n  score\n  units {\n    ...GameUnit\n  }\n  modifier {\n    ...GameUnit\n  }\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function graphql(source: "fragment PlayerRound on PlayerRound {\n  close {\n    ...PlayerCombatRow\n  }\n  moves {\n    ...Move\n  }\n  passed\n  ranged {\n    ...PlayerCombatRow\n  }\n  result\n  score\n  siege {\n    ...PlayerCombatRow\n  }\n}"): (typeof documents)["fragment PlayerRound on PlayerRound {\n  close {\n    ...PlayerCombatRow\n  }\n  moves {\n    ...Move\n  }\n  passed\n  ranged {\n    ...PlayerCombatRow\n  }\n  result\n  score\n  siege {\n    ...PlayerCombatRow\n  }\n}"];
+/**
+ * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function graphql(source: "fragment Unit on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ...UnitEffect\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  modifier\n  name\n  quote\n  special\n  strength\n}"): (typeof documents)["fragment Unit on Unit {\n  combats\n  deckable\n  dlc {\n    name\n    image\n    key\n  }\n  effects {\n    ...UnitEffect\n  }\n  faction {\n    image\n    key\n    name\n  }\n  hero\n  id\n  images\n  modifier\n  name\n  quote\n  special\n  strength\n}"];
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

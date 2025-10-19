@@ -22,8 +22,8 @@ import { ImpactsByUnitId } from '../../resolver-util'
 /**
  * A class to modify the battlefield if a scorching unit is played.
  */
-export default class ScorchBattlefield {
-  private static logger = getLogger('ScorchBattlefield')
+export default class EffectScorch {
+  private static logger = getLogger('EffectScorch')
 
   /**
    * Potentially remove units from the battlefield if a scorching unit is played.
@@ -53,11 +53,11 @@ export default class ScorchBattlefield {
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
       const message = `Could not find unit for new deck unit "${newDeckUnit.unit}".`
-      ScorchBattlefield.logger.error(`${logPrefix} failed: ${message}`)
+      EffectScorch.logger.error(`${logPrefix} failed: ${message}`)
       throw Error(message)
     }
-    if (ScorchBattlefield.logger.isTraceEnabled()) {
-      ScorchBattlefield.logger.trace(`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`)
+    if (EffectScorch.logger.isTraceEnabled()) {
+      EffectScorch.logger.trace(`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`)
     }
 
     const scorchEffect = GetEffectWithKey.getEffectWithKey({
@@ -65,19 +65,19 @@ export default class ScorchBattlefield {
       effects,
       logPrefix,
     })
-    if (ScorchBattlefield.logger.isTraceEnabled()) {
-      ScorchBattlefield.logger.trace(`${logPrefix} scorchEffect: "${JSON.stringify(scorchEffect)}"`)
+    if (EffectScorch.logger.isTraceEnabled()) {
+      EffectScorch.logger.trace(`${logPrefix} scorchEffect: "${JSON.stringify(scorchEffect)}"`)
     }
     const hasScorchEffect =
       scorchEffect &&
       newUnit.effects &&
       newUnit.effects.map((id) => id.toString()).includes(scorchEffect._id.toString())
-    if (ScorchBattlefield.logger.isTraceEnabled()) {
-      ScorchBattlefield.logger.trace(`${logPrefix} hasScorchEffect: "${hasScorchEffect}"`)
+    if (EffectScorch.logger.isTraceEnabled()) {
+      EffectScorch.logger.trace(`${logPrefix} hasScorchEffect: "${hasScorchEffect}"`)
     }
 
     if (hasScorchEffect) {
-      ScorchBattlefield.logger.debug(`${logPrefix} unit "${newUnit.name}" has scorch effect, applying it`)
+      EffectScorch.logger.debug(`${logPrefix} unit "${newUnit.name}" has scorch effect, applying it`)
       const gameUnits = getGameUnits({
         combat: newUnit.scorchScope,
         players: newUnit.scorchScope
@@ -85,8 +85,8 @@ export default class ScorchBattlefield {
           : game.players,
         round: game.round,
       })
-      if (ScorchBattlefield.logger.isTraceEnabled()) {
-        ScorchBattlefield.logger.trace(`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`)
+      if (EffectScorch.logger.isTraceEnabled()) {
+        EffectScorch.logger.trace(`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`)
       }
 
       const strongestUnitIds = GetStrongestNonHeroUnitIds.getStrongestNonHeroUnitIds({
@@ -94,13 +94,13 @@ export default class ScorchBattlefield {
         logPrefix,
         units: battlefieldUnits,
       })
-      if (ScorchBattlefield.logger.isTraceEnabled()) {
-        ScorchBattlefield.logger.trace(`${logPrefix} strongestUnitIds: "${JSON.stringify(strongestUnitIds)}"`)
+      if (EffectScorch.logger.isTraceEnabled()) {
+        EffectScorch.logger.trace(`${logPrefix} strongestUnitIds: "${JSON.stringify(strongestUnitIds)}"`)
       }
 
       for (const player of game.players) {
         scorched.push(
-          ...ScorchBattlefield.scorchPlayer({
+          ...EffectScorch.scorchPlayer({
             battlefieldUnits,
             player,
             round: game.round,
@@ -156,7 +156,7 @@ export default class ScorchBattlefield {
     if (scorchingUnit.name === 'Scorch' && player.user.toString() === turn?.toString()) {
       // the named "Scorch" card does not stay on the battlefield
       player.deck.discard.push(scorchingDeckUnit)
-      ScorchBattlefield.logger.trace(
+      EffectScorch.logger.trace(
         `${logPrefix} newUnit "${scorchingUnit._id}" has name "Scorch" and current player, so discarding it`
       )
     }
@@ -164,10 +164,10 @@ export default class ScorchBattlefield {
     // if no scorch scope, anyone can be effected/scorched
     // if scorch scope, only opponents (players who are not the current game turn player) can be effected/scorched
     const scorchablePlayer = !scorchingUnit.scorchScope || player.user.toString() !== turn?.toString()
-    ScorchBattlefield.logger.trace(`${logPrefix} scorchablePlayer: "${scorchablePlayer}"`)
+    EffectScorch.logger.trace(`${logPrefix} scorchablePlayer: "${scorchablePlayer}"`)
 
     return scorchablePlayer
-      ? ScorchBattlefield.scorchUnitsForPlayer({
+      ? EffectScorch.scorchUnitsForPlayer({
           battlefieldUnits,
           logPrefix,
           player,
@@ -207,7 +207,7 @@ export default class ScorchBattlefield {
   }): ImpactDbObject[] {
     const unitsScorched: GameUnitDbObject[] = []
     const playerRound = player.rounds[round - 1]
-    const rows = ScorchBattlefield.getRowsToScorch({
+    const rows = EffectScorch.getRowsToScorch({
       logPrefix,
       playerRound,
       scorchingUnit,
@@ -215,7 +215,7 @@ export default class ScorchBattlefield {
     for (const roundRow of rows) {
       let unitIdsToScorch = strongestUnitIdsOnBattlefield
       if (scorchingUnit.scorchScope) {
-        ScorchBattlefield.logger.debug(
+        EffectScorch.logger.debug(
           `${logPrefix} scorchingUnit "${scorchingUnit.name}" has scorchScope of "${scorchingUnit.scorchScope}" so getting strongest units in just that row to scorch`
         )
         unitIdsToScorch = GetStrongestNonHeroUnitIds.getStrongestNonHeroUnitIds({
@@ -225,18 +225,18 @@ export default class ScorchBattlefield {
         })
       }
       unitsScorched.push(
-        ...ScorchBattlefield.scorchUnitsInRow({
+        ...EffectScorch.scorchUnitsInRow({
           row: roundRow,
           unitIdsToScorch,
         })
       )
     }
-    if (ScorchBattlefield.logger.isTraceEnabled()) {
-      ScorchBattlefield.logger.trace(`${logPrefix} unitsLost: "${JSON.stringify(unitsScorched)}"`)
+    if (EffectScorch.logger.isTraceEnabled()) {
+      EffectScorch.logger.trace(`${logPrefix} unitsLost: "${JSON.stringify(unitsScorched)}"`)
     }
 
     if (unitsScorched.length > 0) {
-      ScorchBattlefield.logger.debug(
+      EffectScorch.logger.debug(
         `${logPrefix} unit "${scorchingUnit.name}" scorched units "${JSON.stringify(
           unitsScorched.map((gameUnit) => gameUnit.unit)
         )}"`
@@ -272,21 +272,21 @@ export default class ScorchBattlefield {
   }): PlayerCombatRowDbObject[] {
     const rows: PlayerCombatRowDbObject[] = []
     if (scorchingUnit.scorchScope) {
-      ScorchBattlefield.addRowToScorchIfEligible({
+      EffectScorch.addRowToScorchIfEligible({
         combat: Combat.Close,
         logPrefix,
         playerCombatRow: playerRound.close,
         rows,
         scorchingUnit,
       })
-      ScorchBattlefield.addRowToScorchIfEligible({
+      EffectScorch.addRowToScorchIfEligible({
         combat: Combat.Ranged,
         logPrefix,
         playerCombatRow: playerRound.ranged,
         rows,
         scorchingUnit,
       })
-      ScorchBattlefield.addRowToScorchIfEligible({
+      EffectScorch.addRowToScorchIfEligible({
         combat: Combat.Siege,
         logPrefix,
         playerCombatRow: playerRound.siege,
@@ -294,7 +294,7 @@ export default class ScorchBattlefield {
         scorchingUnit,
       })
     } else {
-      ScorchBattlefield.logger.trace(
+      EffectScorch.logger.trace(
         `${logPrefix} no scorchScope for scorchingUnit "${scorchingUnit.name}", all combat rows eligible for scorching`
       )
       rows.push(playerRound.close, playerRound.ranged, playerRound.siege)
@@ -328,23 +328,23 @@ export default class ScorchBattlefield {
     if (scorchingUnit.scorchScope === combat) {
       if (scorchingUnit.scorchMin) {
         if (playerCombatRow.score >= scorchingUnit.scorchMin) {
-          ScorchBattlefield.logger.trace(
+          EffectScorch.logger.trace(
             `${logPrefix} including combat row "${combat}" as strength of "${playerCombatRow.score}" is greater than or equal to scorchMin of "${scorchingUnit.scorchMin}" for scorchingUnit "${scorchingUnit}"`
           )
           rows.push(playerCombatRow)
         } else {
-          ScorchBattlefield.logger.trace(
+          EffectScorch.logger.trace(
             `${logPrefix} not including combat row "${combat}" as strength of "${playerCombatRow.score}" is less than scorchMin of "${scorchingUnit.scorchMin}" for scorchingUnit "${scorchingUnit}"`
           )
         }
       } else {
-        ScorchBattlefield.logger.trace(
+        EffectScorch.logger.trace(
           `${logPrefix} including combat row "${combat}" as it matches scorchScope of "${scorchingUnit.scorchScope}" for scorchingUnit "${scorchingUnit.name}"`
         )
         rows.push(playerCombatRow)
       }
     } else {
-      ScorchBattlefield.logger.trace(
+      EffectScorch.logger.trace(
         `${logPrefix} not including combat row "${combat}" as it does not match scorchScope of "${scorchingUnit.scorchScope}" for scorchingUnit "${scorchingUnit.name}"`
       )
     }

@@ -84,6 +84,7 @@ export default class EffectBond {
    * @param config.bondEffect The Effect database document for the Bond effect.
    * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
    * @param config.musteredUnitIds A list of any unit IDs that were mustered to the battlefield by the newDeckUnit. Used to apply potential impacts to those musters.
+   * @param config.transformedUnitIds A list of any unit IDs that were transformed on the battlefield by the newDeckUnit. Used to apply potential impacts to those Vildkaarls.
    * @param config.rowGameUnit The GameUnit under consideration to be bonded.
    * @param config.rowUnit The Unit under consideration to be bonded.
    * @param config.units A list of all units on the battlefield.
@@ -97,6 +98,7 @@ export default class EffectBond {
     bondEffect,
     newDeckUnit,
     musteredUnitIds,
+    transformedUnitIds,
     rowGameUnit,
     rowUnit,
     units,
@@ -108,6 +110,7 @@ export default class EffectBond {
     bondEffect: EffectDbObject | undefined
     newDeckUnit: DeckUnitDbObject
     musteredUnitIds: string[]
+    transformedUnitIds: string[]
     rowGameUnit: GameUnitDbObject
     rowUnit: UnitDbObject
     units: UnitDbObject[]
@@ -147,11 +150,8 @@ export default class EffectBond {
         }
         rowGameUnit.effects.push(gameUnitEffect)
 
-        if (
-          (bondingUnit._id.toString() === newDeckUnit.unit.toString() ||
-            musteredUnitIds.includes(bondingUnit._id.toString())) &&
-          userId.toString() === currentPlayerId?.toString()
-        ) {
+        const impactables = [newDeckUnit.unit.toString(), ...musteredUnitIds, ...transformedUnitIds]
+        if (impactables.includes(bondingUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
           const impact: ImpactDbObject = {
             unit: rowGameUnit,
             user: userId,

@@ -448,6 +448,7 @@ export default class Upgrade2 extends Upgrade {
       faction: this.normalizeUnitFaction(unit, factionMap),
       hero: this.normalizeHero(unit),
       images: this.normalizeImages(unit, ImageType.Unit),
+      modifier: this.normalizeModifier(unit),
       name: unit.Name,
       quote: unit.Quote,
       scorchMin: unit['Scorch Minimum Strength'] || null,
@@ -502,14 +503,17 @@ export default class Upgrade2 extends Upgrade {
    * @returns The Combat rows the unit is eligible for.
    */
   normalizeCombats(unit: UnitJson): Combat[] {
-    const combat: Combat[] = []
+    const combats: Combat[] = []
     if (unit['Combat 1']) {
-      combat.push(this.normalizeCombat(unit['Combat 1']))
+      combats.push(this.normalizeCombat(unit['Combat 1']))
     }
     if (unit['Combat 2']) {
-      combat.push(this.normalizeCombat(unit['Combat 2']))
+      combats.push(this.normalizeCombat(unit['Combat 2']))
     }
-    return combat
+    if (unit['Combat 3']) {
+      combats.push(this.normalizeCombat(unit['Combat 3']))
+    }
+    return combats
   }
 
   /**
@@ -666,6 +670,16 @@ export default class Upgrade2 extends Upgrade {
   }
 
   /**
+   * Determine if a unit is a row modifier or not.
+   *
+   * @param unit The unit to determine if it is a modifier.
+   * @returns True if the unit is a row modifier, false if not.
+   */
+  normalizeModifier(unit: UnitJson): boolean {
+    return ["Commander's Horn", 'Mardroeme'].includes(unit.Name)
+  }
+
+  /**
    * Get the numeric strength of a unit if it has one.
    *
    * @param unit The unit to get the strength for.
@@ -727,6 +741,7 @@ export interface UnitJson {
   Hero: string
   'Combat 1'?: string
   'Combat 2'?: string
+  'Combat 3'?: string
   Strength?: number
   'Effect 1'?: string
   'Effect 2'?: string

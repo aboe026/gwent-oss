@@ -9,6 +9,7 @@ import {
   getGameDeck,
   getHandUnit,
   playPass,
+  playUnit,
   ready,
   setDeck,
   setOrder,
@@ -35,12 +36,13 @@ describe('play-unit-mutation', () => {
       opponentNames: [opponent.name],
     })
     deckSelf = await addDeck({
-      faction: FactionKey.ScoiaTael,
+      faction: FactionKey.Skellige,
       name: `play-unit-deck-self-${Date.now()}`,
       userId: self.id,
+      unitNames: ['Mardroeme'],
     })
     deckOpponent = await addDeck({
-      faction: FactionKey.NorthernRealms,
+      faction: FactionKey.ScoiaTael,
       name: `play-unit-deck-opponent-${Date.now()}`,
       userId: opponent.id,
     })
@@ -56,7 +58,7 @@ describe('play-unit-mutation', () => {
     })
     await setOrder({
       gameId: game.id,
-      userId: self.id,
+      userId: opponent.id,
       users: [self.id, opponent.id],
     })
     await ready({
@@ -189,7 +191,7 @@ describe('play-unit-mutation', () => {
         })
         await setOrder({
           gameId: game2.id,
-          userId: self.id,
+          userId: opponent.id,
           users: [self.id, opponent.id],
         })
         await expect(
@@ -236,7 +238,7 @@ describe('play-unit-mutation', () => {
         })
         await setOrder({
           gameId: game2.id,
-          userId: self.id,
+          userId: opponent.id,
           users: [self.id, opponent.id],
         })
         await ready({
@@ -340,7 +342,7 @@ describe('play-unit-mutation', () => {
         })
       })
       it('returns error if no combat specified on multi combat unit', async () => {
-        const unitName = 'Filavandrel aen Fidhail'
+        const unitName = 'Olgierd Von Everec'
         await ensureUnitsInHand({
           gameId: game.id,
           userId: self.id,
@@ -382,7 +384,7 @@ describe('play-unit-mutation', () => {
         })
       })
       it('returns error if combat does not match unit combat', async () => {
-        const unitName = 'Toruviel'
+        const unitName = 'Zoltan Chivay'
         await ensureUnitsInHand({
           gameId: game.id,
           mongoConnectionString: funcEnv.MONGO_URL,
@@ -395,7 +397,7 @@ describe('play-unit-mutation', () => {
           unitName,
           userId: self.id,
         })
-        const combat = Combat.Close
+        const combat = Combat.Ranged
         await expect(
           graphql({
             schema,
@@ -423,10 +425,63 @@ describe('play-unit-mutation', () => {
           ],
         })
       })
+      it('returns error if attepmting to set row modifier that has already been set', async () => {
+        const unitName = 'Mardroeme'
+        await ensureUnitsInHand({
+          gameId: game.id,
+          mongoConnectionString: funcEnv.MONGO_URL,
+          mongoDatabaseName: funcEnv.MONGO_DB,
+          unitNames: [unitName, unitName],
+          userId: self.id,
+        })
+        const deckUnit1 = await getHandUnit({
+          gameId: game.id,
+          unitName,
+          userId: self.id,
+        })
+        const combat = Combat.Close
+        await playUnit({
+          gameId: game.id,
+          userId: self.id,
+          unitId: deckUnit1.unit.id,
+          combat,
+        })
+        await playPass({
+          gameId: game.id,
+          userId: opponent.id,
+        })
+        const deckUnit3 = await getHandUnit({
+          gameId: game.id,
+          unitName,
+          userId: self.id,
+        })
+        await expect(
+          graphql({
+            schema,
+            source: `mutation {
+              playUnit(
+                game: "${game.id}"
+                combat: ${combat}
+                unit: "${deckUnit3.unit.id}"
+              ) {
+                ${getGameFragment()}
+              }
+            }`,
+            contextValue: {
+              session: {
+                user: TestUtil.getDbUserFromUser(self),
+              },
+            },
+          })
+        ).resolves.toEqual({
+          data: null,
+          errors: [new GraphQLError(`Modifier for row "${combat}" already set as unit "${deckUnit1.unit.id}".`)],
+        })
+      })
     })
     describe('valid', () => {
       it('play single combat unit without specifying combat', async () => {
-        const unitName = 'Dennis Cranmer'
+        const unitName = 'Zoltan Chivay'
         await ensureUnitsInHand({
           gameId: game.id,
           userId: self.id,
@@ -504,7 +559,7 @@ describe('play-unit-mutation', () => {
         })
       })
       it('play single combat unit specifying combat', async () => {
-        const unitName = 'Dennis Cranmer'
+        const unitName = 'Zoltan Chivay'
         await ensureUnitsInHand({
           gameId: game.id,
           userId: self.id,
@@ -512,7 +567,6 @@ describe('play-unit-mutation', () => {
           mongoConnectionString: funcEnv.MONGO_URL,
           mongoDatabaseName: funcEnv.MONGO_DB,
         })
-
         const gameDeck = await getGameDeck({
           gameId: game.id,
           userId: self.id,
@@ -521,7 +575,7 @@ describe('play-unit-mutation', () => {
         if (!singleCombatDeckUnit) {
           throw Error(`Could not find unit "${unitName}" in hand`)
         }
-        const combat = singleCombatDeckUnit.unit.combats ? singleCombatDeckUnit.unit.combats[0] : Combat.Close
+        const combat = Combat.Close
 
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== singleCombatDeckUnit.unit.id)
         const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer
@@ -584,7 +638,7 @@ describe('play-unit-mutation', () => {
         })
       })
       it('play multi combat unit specifying combat', async () => {
-        const unitName = 'Filavandrel aen Fidhail'
+        const unitName = 'Olgierd Von Everec'
         await ensureUnitsInHand({
           gameId: game.id,
           userId: self.id,
@@ -600,7 +654,7 @@ describe('play-unit-mutation', () => {
         if (!multiCombatDeckUnit) {
           throw Error(`Could not find unit "${unitName}" in hand`)
         }
-        const combat = multiCombatDeckUnit.unit.combats ? multiCombatDeckUnit.unit.combats[0] : Combat.Close
+        const combat = Combat.Close
 
         gameDeck.hand = gameDeck.hand.filter((handUnit) => handUnit.unit.id !== multiCombatDeckUnit.unit.id)
         const opponentGamePlayer = game.players.find((player) => player.user.id === opponent.id) as GamePlayer

@@ -110,6 +110,8 @@ enum GameUnitOrigin {
   OPPONENT
   "Unit came from the users Draw pile."
   UNDRAWN
+  "Unit came from a non-deckable source."
+  NONDECK
 }
 
 enum RoundResult {
@@ -320,6 +322,7 @@ type PlayerRound {
 type PlayerCombatRow {
   score: Int! 
   units: [GameUnit!]! 
+  modifier: GameUnit 
 }
 
 type Redraw {
@@ -345,6 +348,7 @@ type Unit {
   hero: Boolean 
   id: ID! 
   images: [String!]! 
+  modifier: Boolean! 
   name: String! 
   quote: String! 
   scorchMin: Int 

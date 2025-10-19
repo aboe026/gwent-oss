@@ -12,6 +12,10 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- include "to" for impact so know exactly which unit it transformed into?
+- FullCard combat
+  - "Any" icon/text for units that can be played on any row
+  - "Modifier" icon/text for row modifiers (Commander's Horn/Mardroeme)
 - improve performance when typing name for deck
 - rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
 - remove unnecessary dependencies
@@ -43,6 +47,8 @@ Existing problems in the codebase that need to be fixed.
   - min units?
 - split subscriptions into separate files (similar to resolvers)
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status, gamesList doesn't need all details that game page does)
+- potentially use `.disableConcurrency` for TestCafe fixtures?
+  - `Session Expiry`? To set `SESSION_TIMEOUT_SECONDS` account setting in database. But that would slow things down considerably.
 - use apollo data masking
   - ran into issue with returning empty objects (because some fragments not having ids ?)
 - enter key does not create game in UI?

@@ -3,4 +3,7 @@ fragment PlayerCombatRow on PlayerCombatRow {
   units {
     ...GameUnit
   }
+  modifier {
+    ...GameUnit
+  }
 }

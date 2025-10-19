@@ -17,6 +17,7 @@ fragment Unit on Unit {
   hero
   id
   images
+  modifier
   name
   quote
   special

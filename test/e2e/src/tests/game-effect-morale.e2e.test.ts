@@ -925,6 +925,74 @@ test('Morale effect for other units goes away after it gets scorched', async (t)
   })
 })
 
+test('Morale effect for berserker transfers to vildkaarl after mardroeme', async (t) => {
+  const unitName1 = 'Young Berserker'
+  const unitName2 = 'Olaf'
+  const unitName3 = 'Mardroeme'
+  const unitName4 = 'Transformed Young Vildkaarl'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2, unitName3],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    moraling: [
+      {
+        name: unitName1,
+        effectiveStrength: 3,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+      },
+    ],
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName3,
+    combat: Combat.Ranged,
+    modifier: true,
+    mardroeming: [
+      {
+        name: unitName4,
+        effectiveStrength: 9,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Ranged,
+        impact: {
+          type: EffectKey.Bond,
+        },
+        reason: unitName3,
+      },
+    ],
+  })
+
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName4,
+    row: Combat.Ranged,
+    self: true,
+  })
+  const unit = await gameManager.self.client.getUnit({
+    name: unitName4,
+  })
+  await FullCard.verify({
+    unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 9,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Plus,
+        strength: 9,
+        reason: `Morale from ${unitName2}`,
+      },
+    ],
+  })
+})
+
 test('Morale applied to bonded units after bonding applied if played after bonds', async (t) => {
   const unitName1 = 'Catapult'
   const unitName2 = 'Kaedweni Siege Expert'

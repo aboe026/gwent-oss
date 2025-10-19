@@ -19,8 +19,8 @@ export default class GameResolver {
    *
    * @param config The configuration used to convert the Game.
    * @param config.game The Game to convert.
-   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
-   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @returns The resolved Game object matching its GraphQL schema definition.
    */
   static async fromObject({

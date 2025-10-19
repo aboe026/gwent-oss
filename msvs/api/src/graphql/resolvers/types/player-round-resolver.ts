@@ -1,4 +1,4 @@
-import GameUnitResolver from './game-unit-resolver'
+import CombatRowResolver from './combat-row-resolver'
 import MoveResolver from './move-resolver'
 import { PlayerRound, RoundResult, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
@@ -13,8 +13,8 @@ export default class PlayerRoundResolver {
    *
    * @param config The configuration for resolving the PlayerRound.
    * @param config.round The database object to resolve to its GraphQL type.
-   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
-   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
+   * @param config.units An optional pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
+   * @param config.users An optional pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
    * @returns The resolved PlayerRound object matching its GraphQL schema definition.
    */
   static async fromObject({
@@ -34,27 +34,18 @@ export default class PlayerRoundResolver {
     })
 
     return {
-      close: {
-        score: round.close.score,
-        units: await GameUnitResolver.fromArray({
-          gameUnits: round.close.units,
-          units: resolvedUnits,
-        }),
-      },
-      ranged: {
-        score: round.ranged.score,
-        units: await GameUnitResolver.fromArray({
-          gameUnits: round.ranged.units,
-          units: resolvedUnits,
-        }),
-      },
-      siege: {
-        score: round.siege.score,
-        units: await GameUnitResolver.fromArray({
-          gameUnits: round.siege.units,
-          units: resolvedUnits,
-        }),
-      },
+      close: await CombatRowResolver.fromObject({
+        row: round.close,
+        units: resolvedUnits,
+      }),
+      ranged: await CombatRowResolver.fromObject({
+        row: round.ranged,
+        units: resolvedUnits,
+      }),
+      siege: await CombatRowResolver.fromObject({
+        row: round.siege,
+        units: resolvedUnits,
+      }),
       score: round.score,
       result: round.result ? (round.result as RoundResult) : undefined,
       moves: await MoveResolver.fromArray({
@@ -71,8 +62,8 @@ export default class PlayerRoundResolver {
    *
    * @param config The configuration used to resolve the PlayerRounds.
    * @param config.rounds The database objects to resolve to their GraphQL types.
-   * @param config.users An optional list of pre-resolved Users. If not specified, will retreive the Users from the databae to resolve.
-   * @param config.units An optional list of pre-resolved Units. If not specified, will retreive the Units from the databae to resolve.
+   * @param config.users An optional list of pre-resolved Users. If not specified, will retreive the Users from the database to resolve.
+   * @param config.units An optional list of pre-resolved Units. If not specified, will retreive the Units from the database to resolve.
    * @returns The resolved PlayerRound array matching the GraphQL schema definition.
    */
   static async fromArray({

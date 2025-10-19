@@ -184,6 +184,129 @@ describe('play-unit-validation', () => {
       warnCalls: [[`${logPrefix} failed: ${message}`]],
     })
   })
+  it('throws error if modifier already set for close', async () => {
+    const combat = Combat.Close
+    const deckUnit = TestUtil.getDbDeckUnit({})
+    const unit = TestUtil.getDbUnit({
+      id: deckUnit.unit,
+      combats: [combat],
+      modifier: true,
+    })
+    const existingModifier = TestUtil.getDbGameUnit({})
+    const game = TestUtil.getDbGame({
+      round: 1,
+      players: [
+        TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [deckUnit],
+          }),
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              close: {
+                score: 0,
+                units: [],
+                modifier: existingModifier,
+              },
+            }),
+          ],
+        }),
+      ],
+    })
+    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+    const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
+    await testPlayUnitValidation({
+      user,
+      game,
+      unitId: deckUnit.unit.toString(),
+      combat,
+      units: [unit],
+      logPrefix,
+      expectedError: Error(message),
+      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
+  it('throws error if modifier already set for ranged', async () => {
+    const combat = Combat.Ranged
+    const deckUnit = TestUtil.getDbDeckUnit({})
+    const unit = TestUtil.getDbUnit({
+      id: deckUnit.unit,
+      combats: [combat],
+      modifier: true,
+    })
+    const existingModifier = TestUtil.getDbGameUnit({})
+    const game = TestUtil.getDbGame({
+      round: 1,
+      players: [
+        TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [deckUnit],
+          }),
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              ranged: {
+                score: 0,
+                units: [],
+                modifier: existingModifier,
+              },
+            }),
+          ],
+        }),
+      ],
+    })
+    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+    const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
+    await testPlayUnitValidation({
+      user,
+      game,
+      unitId: deckUnit.unit.toString(),
+      combat,
+      units: [unit],
+      logPrefix,
+      expectedError: Error(message),
+      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
+  it('throws error if modifier already set for siege', async () => {
+    const combat = Combat.Siege
+    const deckUnit = TestUtil.getDbDeckUnit({})
+    const unit = TestUtil.getDbUnit({
+      id: deckUnit.unit,
+      combats: [combat],
+      modifier: true,
+    })
+    const existingModifier = TestUtil.getDbGameUnit({})
+    const game = TestUtil.getDbGame({
+      round: 1,
+      players: [
+        TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [deckUnit],
+          }),
+          rounds: [
+            TestUtil.getDbPlayerRound({
+              siege: {
+                score: 0,
+                units: [],
+                modifier: existingModifier,
+              },
+            }),
+          ],
+        }),
+      ],
+    })
+    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+    const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
+    await testPlayUnitValidation({
+      user,
+      game,
+      unitId: deckUnit.unit.toString(),
+      combat,
+      units: [unit],
+      logPrefix,
+      expectedError: Error(message),
+      warnCalls: [[`${logPrefix} failed: ${message}`]],
+    })
+  })
   it('returns objects if no errors and no combat specified for unit with no combat', async () => {
     const deckUnit = TestUtil.getDbDeckUnit({})
     const game = TestUtil.getDbGame({
@@ -248,6 +371,36 @@ describe('play-unit-validation', () => {
     const unit = TestUtil.getDbUnit({
       id: deckUnit.unit,
       combats: [Combat.Ranged, Combat.Siege],
+    })
+    const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
+    await testPlayUnitValidation({
+      user,
+      game,
+      unitId: deckUnit.unit.toString(),
+      combat: Combat.Siege,
+      units: [unit],
+      logPrefix,
+      expectedCombat: Combat.Siege,
+      expectedDeckUnit: deckUnit,
+    })
+  })
+  it('returns objects if no errors and combat specified for modifier with multiple combats', async () => {
+    const deckUnit = TestUtil.getDbDeckUnit({})
+    const game = TestUtil.getDbGame({
+      round: 1,
+      players: [
+        TestUtil.getDbGamePlayer({
+          deck: TestUtil.getDbGameDeck({
+            hand: [deckUnit],
+          }),
+          rounds: [TestUtil.getDbPlayerRound({})],
+        }),
+      ],
+    })
+    const unit = TestUtil.getDbUnit({
+      id: deckUnit.unit,
+      combats: [Combat.Close, Combat.Ranged, Combat.Siege],
+      modifier: true,
     })
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     await testPlayUnitValidation({

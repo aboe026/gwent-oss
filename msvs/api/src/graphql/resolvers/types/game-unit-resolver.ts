@@ -12,7 +12,7 @@ export default class GameUnitResolver {
    *
    * @param config The configuration to use when resolving the GameUnit object.
    * @param config.gameUnit The database object to resolve to its GraphQL type.
-   * @param config.unit An optional pre-resolved unit. If not specified, will retreive the Unit from the databae to resolve.
+   * @param config.unit An optional pre-resolved unit. If not specified, will retreive the Unit from the database to resolve.
    * @returns The resolved GameUnit object matching its GraphQL schema definition.
    */
   static async fromObject({ gameUnit, unit }: { gameUnit: GameUnitDbObject; unit?: Unit }): Promise<GameUnit> {

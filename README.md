@@ -6,7 +6,8 @@
 
 A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
 
-## Table of Contents
+<details>
+<summary><strong>Table of Contents</strong> (click to expand)</summary>
 
 - [Containerization](#containerization)
   - [Prereqs](#prereqs)
@@ -33,6 +34,8 @@ A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
   - [Upgrade Yarn](#upgrade-yarn)
   - [Changes](./CHANGELOG.md)
   - [To-Do](./TODO.md)
+
+</details>
 
 ## Containerization
 

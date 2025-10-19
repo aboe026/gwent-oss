@@ -351,8 +351,9 @@ function renderNameAndFaction({
                       <CloseButton onClose={() => setFactionPickerOpen(false)} />
                     </div>
                     <div id="deckEditorFactionPickerList">
-                      {factionsData?.factions.map((factionFragment) => (
+                      {factionsData?.factions.map((factionFragment, index) => (
                         <FactionDetailedOption
+                          key={index}
                           factionFragment={factionFragment}
                           factionsData={factionsData}
                           setDeckUnits={setDeckUnits}

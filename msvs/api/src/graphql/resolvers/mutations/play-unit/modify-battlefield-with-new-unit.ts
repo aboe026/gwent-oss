@@ -1,8 +1,15 @@
-import { Combat } from '@gwent/graphql-schema/resolver-typings'
-import { DeckUnitDbObject, EffectDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  Combat,
+  DeckUnitDbObject,
+  EffectDbObject,
+  GameDbObject,
+  GameUnitDbObject,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
+import EffectMardroeme from './effect-mardroeme'
+import EffectMuster, { MusteredOrigins } from './effect-muster'
+import EffectScorch from './effect-scorch'
 import { ImpactsByUnitId } from '../../resolver-util'
-import MusterBattlefield, { MusteredOrigins } from './muster-battlefield'
-import ScorchBattlefield from './scorch-battlefield'
 
 /**
  * Modifies the battlefield of the current round in a game due to the deployment of a new unit. Other units on or off the battlefield may be impacted by unit effects.
@@ -13,7 +20,8 @@ import ScorchBattlefield from './scorch-battlefield'
  * @param config.effects The effects that any unit might have.
  * @param config.game The game whose battlefield should have the units deployment applied to it.
  * @param config.logPrefix What to prepend log statements with.
- * @param config.newDeckUnit The new unit being introduced to the battlefield.
+ * @param config.newDeckUnit The new DeckUnit being introduced to the battlefield.
+ * @param config.newUnit The new Unit being introduced to the battlefield.
  * @returns Any impacts the new unit has on the battlefield.
  */
 export default async function modifyBattlefieldWithNewUnit({
@@ -23,6 +31,7 @@ export default async function modifyBattlefieldWithNewUnit({
   game,
   logPrefix,
   newDeckUnit,
+  newUnit,
 }: {
   battlefieldUnits: UnitDbObject[]
   combat?: Combat | null
@@ -30,35 +39,55 @@ export default async function modifyBattlefieldWithNewUnit({
   game: GameDbObject
   logPrefix: string
   newDeckUnit: DeckUnitDbObject
+  newUnit: UnitDbObject
 }): Promise<ModificationImpacts> {
   addNewUnitToBattlefield({
     game,
     newDeckUnit,
     combat,
+    newUnit,
   })
 
-  const {
-    impacts: musterImpacts,
-    musteredUnits,
-    musteredOrigins,
-  } = await MusterBattlefield.musterBattlefield({
+  const scorches = EffectScorch.scorchBattlefield({
     battlefieldUnits,
     effects,
     game,
     logPrefix,
     newDeckUnit,
   })
+  const {
+    impacts: musterImpacts,
+    musteredUnits,
+    musteredOrigins,
+  } = await EffectMuster.musterBattlefield({
+    battlefieldUnits,
+    effects,
+    game,
+    logPrefix,
+    newDeckUnit,
+  })
+  const {
+    impacts: mardroemeImpacts,
+    transformedUnits,
+    transformedGameUnits,
+    mardroemingGameUnit,
+  } = await EffectMardroeme.transformBerserkers({
+    battlefieldUnits: [...battlefieldUnits, ...musteredUnits],
+    effects,
+    game,
+    logPrefix,
+    newDeckUnit,
+    combat,
+  })
   return {
-    scorches: ScorchBattlefield.scorchBattlefield({
-      battlefieldUnits,
-      effects,
-      game,
-      logPrefix,
-      newDeckUnit,
-    }),
+    scorches,
     musters: musterImpacts,
     musteredUnits,
     musteredOrigins,
+    mardroemes: mardroemeImpacts,
+    transformedUnits,
+    transformedGameUnits,
+    mardroemingGameUnit,
   }
 }
 
@@ -69,26 +98,41 @@ export default async function modifyBattlefieldWithNewUnit({
  * @param config.combat The row on the battlefield to add the DeckUnit to.
  * @param config.game The Game whose battlefield the DeckUnit should be added to.
  * @param config.newDeckUnit The DeckUnit to add to the battlefield.
+ * @param config.newUnit The new Unit being introduced to the battlefield.
  */
 export function addNewUnitToBattlefield({
   combat,
   game,
   newDeckUnit,
+  newUnit,
 }: {
   combat?: Combat | null
   game: GameDbObject
   newDeckUnit: DeckUnitDbObject
+  newUnit: UnitDbObject
 }) {
   for (const player of game.players) {
     if (player.user.toString() === game.turn?.toString()) {
       player.deck.hand = player.deck.hand.filter((handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString())
       const round = player.rounds[game.round - 1]
       if (combat === Combat.Close) {
-        round.close.units.push(newDeckUnit)
+        if (newUnit.modifier) {
+          round.close.modifier = newDeckUnit
+        } else {
+          round.close.units.push(newDeckUnit)
+        }
       } else if (combat === Combat.Ranged) {
-        round.ranged.units.push(newDeckUnit)
+        if (newUnit.modifier) {
+          round.ranged.modifier = newDeckUnit
+        } else {
+          round.ranged.units.push(newDeckUnit)
+        }
       } else if (combat === Combat.Siege) {
-        round.siege.units.push(newDeckUnit)
+        if (newUnit.modifier) {
+          round.siege.modifier = newDeckUnit
+        } else {
+          round.siege.units.push(newDeckUnit)
+        }
       }
     }
   }
@@ -99,4 +143,8 @@ interface ModificationImpacts {
   musters: ImpactsByUnitId
   musteredUnits: UnitDbObject[]
   musteredOrigins: MusteredOrigins
+  mardroemes: ImpactsByUnitId
+  transformedUnits: UnitDbObject[]
+  transformedGameUnits: GameUnitDbObject[]
+  mardroemingGameUnit: GameUnitDbObject | undefined
 }

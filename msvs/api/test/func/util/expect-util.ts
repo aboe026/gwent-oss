@@ -172,6 +172,7 @@ export function expectizeUnits(): Unit[] {
         hero: new Upgrade2().normalizeHero(unit),
         id: expect.any(String),
         images: new Upgrade2().normalizeImages(unit, ImageType.Unit),
+        modifier: ["Commander's Horn", 'Mardroeme'].includes(unit.Name),
         name: unit.Name,
         quote: unit.Quote,
         scorchMin: unit['Scorch Minimum Strength'] || null,

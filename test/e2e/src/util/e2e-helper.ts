@@ -205,28 +205,50 @@ export class E2eHelper {
     unitName,
     strength,
     row,
+    instances = 1,
   }: {
     player: GamePlayerExpected
     unitName: string
     strength?: number
     row: Combat
+    instances?: number
   }): void {
+    let removed = 0
     if (row === Combat.Close) {
       player.close = {
         score: (player.close?.score || 0) - (strength || 0),
-        units: [...(player.close?.units || [])].filter((unit) => unit.name !== unitName),
+        units: [...(player.close?.units || [])].filter((unit) => {
+          if (unit.name === unitName && (removed < instances || instances === -1)) {
+            removed++
+            return false
+          }
+          return true
+        }),
       }
     } else if (row === Combat.Ranged) {
       player.ranged = {
         score: (player.ranged?.score || 0) - (strength || 0),
-        units: [...(player.ranged?.units || [])].filter((unit) => unit.name !== unitName),
+        units: [...(player.ranged?.units || [])].filter((unit) => {
+          if (unit.name === unitName && (removed < instances || instances === -1)) {
+            removed++
+            return false
+          }
+          return true
+        }),
       }
     } else if (row === Combat.Siege) {
       player.siege = {
         score: (player.siege?.score || 0) - (strength || 0),
-        units: [...(player.siege?.units || [])].filter((unit) => unit.name !== unitName),
+        units: [...(player.siege?.units || [])].filter((unit) => {
+          if (unit.name === unitName && (removed < instances || instances === -1)) {
+            removed++
+            return false
+          }
+          return true
+        }),
       }
     }
+    player.score = (player.score || 0) - (strength || 0)
   }
 
   static getPlayerUnitInRow({
@@ -325,6 +347,7 @@ export class E2eHelper {
     moves,
     switchTurnsWith,
     scorching,
+    mardroeming,
     moraling,
     horning,
     mustering,
@@ -339,6 +362,7 @@ export class E2eHelper {
     moves?: (HistoryMove | HistoryPass)[]
     switchTurnsWith?: GamePlayerExpected
     scorching?: ScorchingExpected[]
+    mardroeming?: MardroemingExpected[]
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mustering?: MusteringExpected[]
@@ -360,6 +384,27 @@ export class E2eHelper {
         row,
         strength,
       })
+    }
+    if (mardroeming) {
+      for (const mardroeme of mardroeming) {
+        const berserker = E2eHelper.getPlayerUnitInRow({
+          player: mardroeme.player,
+          row: mardroeme.row,
+          unitName: mardroeme.name === 'Transformed Young Vildkaarl' ? 'Young Berserker' : 'Berserker',
+        })
+        E2eHelper.removeUnitFromGamePlayer({
+          player: mardroeme.player,
+          row: mardroeme.row,
+          unitName: berserker.name,
+          strength: berserker.effectiveStrength || berserker.strength,
+        })
+        E2eHelper.addUnitToGamePlayer({
+          player: mardroeme.player,
+          unitName: mardroeme.name,
+          row: mardroeme.row,
+          strength: mardroeme.effectiveStrength,
+        })
+      }
     }
     if (mustering) {
       for (const muster of mustering) {
@@ -404,13 +449,13 @@ export class E2eHelper {
     if (scorching) {
       for (const scorch of scorching) {
         const scorchee = scorch.player
-        scorchee.score = (scorchee.score || 0) - (scorch.strength || 0)
         scorchee.discard = (scorchee.discard || 0) + 1
         E2eHelper.removeUnitFromGamePlayer({
           player: scorchee,
           row: scorch.row,
           unitName: scorch.name,
           strength: scorch.strength || 0,
+          instances: -1,
         })
       }
     }
@@ -422,6 +467,8 @@ export class E2eHelper {
         effectKey = EffectKey.Morale
       } else if (horning) {
         effectKey = EffectKey.Horn
+      } else if (mardroeming) {
+        effectKey = EffectKey.Mardroeme
       } else if (mustering) {
         effectKey = EffectKey.Muster
       } else if (bonding) {
@@ -435,7 +482,10 @@ export class E2eHelper {
           effectKey && impacts !== -1
             ? {
                 effectKey,
-                number: impacts !== undefined ? impacts : (scorching || moraling || mustering || bonding)?.length || 0,
+                number:
+                  impacts !== undefined
+                    ? impacts
+                    : (scorching || mardroeming || moraling || mustering || bonding)?.length || 0,
               }
             : undefined,
       })
@@ -457,6 +507,26 @@ export class E2eHelper {
               }
             : undefined,
           origin: muster.hand ? GameUnitOrigin.Hand : GameUnitOrigin.Undrawn,
+        })
+      }
+    }
+    if (moves && mardroeming) {
+      for (const mardroeme of mardroeming) {
+        moves.push({
+          userName: mardroeme.player.name,
+          unitName: mardroeme.name,
+          combatRow: mardroeme.row,
+          reason: {
+            name: mardroeme.reason || deckUnit.unit.name,
+            type: MoveReasonType.Transform,
+          },
+          impacts: mardroeme.impact
+            ? {
+                effectKey: mardroeme.impact.type || EffectKey.Mardroeme,
+                number: mardroeme.impact.instances || 0,
+              }
+            : undefined,
+          origin: GameUnitOrigin.Undrawn,
         })
       }
     }
@@ -791,6 +861,18 @@ export interface MusteringExpected {
     instances?: number
   }
   hand?: boolean
+}
+
+export interface MardroemingExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
+  reason?: string
+  impact?: {
+    type: EffectKey
+    instances?: number
+  }
 }
 
 export interface BondingExpected {

@@ -265,6 +265,8 @@ export enum GameUnitOrigin {
   Discard = 'Discard',
   /** Unit came from the users Hand. */
   Hand = 'HAND',
+  /** Unit came from a non-deckable source. */
+  Nondeck = 'NONDECK',
   /** Unit came from an opponent placing it on their battlefield. */
   Opponent = 'OPPONENT',
   /** Unit came from the users Draw pile. */
@@ -434,6 +436,7 @@ export type MutationSetOrderArgs = {
 
 export type PlayerCombatRow = {
   __typename?: 'PlayerCombatRow';
+  modifier?: Maybe<GameUnit>;
   score: Scalars['Int']['output'];
   units: Array<GameUnit>;
 };
@@ -574,6 +577,7 @@ export type Unit = {
   hero?: Maybe<Scalars['Boolean']['output']>;
   id: Scalars['ID']['output'];
   images: Array<Scalars['String']['output']>;
+  modifier: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];
   quote: Scalars['String']['output'];
   scorchMin?: Maybe<Scalars['Int']['output']>;
@@ -789,6 +793,7 @@ export type MoveUnitReasonDbObject = {
 };
 
 export type PlayerCombatRowDbObject = {
+  modifier?: GameUnitDbObject,
   score: number,
   units: Array<GameUnitDbObject>,
 };
@@ -819,6 +824,7 @@ export type UnitDbObject = {
   hero?: Maybe<boolean>,
   _id: ObjectId,
   images: Array<string>,
+  modifier: boolean,
   name: string,
   quote: string,
   scorchMin?: Maybe<number>,

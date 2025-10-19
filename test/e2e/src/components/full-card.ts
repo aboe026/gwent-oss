@@ -113,7 +113,7 @@ export default class FullCard {
 
   static async verifyCombat(unit: Unit) {
     const weatherEffect = unit.effects?.find((effect) => effect.key === EffectKey.Weather)
-    if (weatherEffect || !unit.combats || unit.combats?.length === 0) {
+    if (weatherEffect || !unit.combats || unit.combats?.length === 0 || unit.combats.length === 3) {
       await t.expect(FullCard.elements.Combat.exists).notOk()
     } else {
       await t.expect(FullCard.elements.Combat.exists).ok()

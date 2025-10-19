@@ -1,5 +1,5 @@
+import CombatRowResolver from '../../src/graphql/resolvers/types/combat-row-resolver'
 import { GameUnit, Move, MoveReasonType, PlayerRound, Unit, User } from '@gwent/graphql-schema/resolver-typings'
-import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import MoveResolver from '../../src/graphql/resolvers/types/move-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 import { PlayerRoundDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
@@ -61,7 +61,6 @@ describe('player-round-resolver', () => {
         round,
         resolvedUnits: units,
         resolvedUsers: [TestUtil.getUser({})],
-        gameUnitsFromArrays: gameUnits,
         expected: {
           moves: [],
           passed: false,
@@ -134,7 +133,6 @@ describe('player-round-resolver', () => {
         round,
         units,
         users: [TestUtil.getUser({})],
-        gameUnitsFromArrays: gameUnits,
         expected: {
           result: RoundResult.Won,
           moves: [],
@@ -323,7 +321,6 @@ async function testFromObject({
   users,
   resolvedUnits = [],
   resolvedUsers = [],
-  gameUnitsFromArrays = [[], [], []],
   movesFromArray = [],
   expected,
 }: {
@@ -332,7 +329,6 @@ async function testFromObject({
   users?: User[]
   resolvedUnits?: Unit[]
   resolvedUsers?: User[]
-  gameUnitsFromArrays?: GameUnit[][]
   movesFromArray?: Move[]
   expected: PlayerRound
 }) {
@@ -340,10 +336,11 @@ async function testFromObject({
     users: users || resolvedUsers,
     units: units || resolvedUnits,
   })
-  const gameUnitsFromArraySpy = jest.spyOn(GameUnitResolver, 'fromArray')
-  for (const gameUnitsFromArray of gameUnitsFromArrays) {
-    gameUnitsFromArraySpy.mockResolvedValueOnce(gameUnitsFromArray)
-  }
+  const combatRowFromObjectSpy = jest
+    .spyOn(CombatRowResolver, 'fromObject')
+    .mockResolvedValueOnce(expected.close)
+    .mockResolvedValueOnce(expected.ranged)
+    .mockResolvedValueOnce(expected.siege)
   const movesFromArraySpy = jest.spyOn(MoveResolver, 'fromArray').mockResolvedValue(movesFromArray)
 
   await expect(
@@ -364,22 +361,22 @@ async function testFromObject({
       },
     ],
   ])
-  expect(gameUnitsFromArraySpy.mock.calls).toEqual([
+  expect(combatRowFromObjectSpy.mock.calls).toEqual([
     [
       {
-        gameUnits: round.close.units,
+        row: round.close,
         units: units || resolvedUnits,
       },
     ],
     [
       {
-        gameUnits: round.ranged.units,
+        row: round.ranged,
         units: units || resolvedUnits,
       },
     ],
     [
       {
-        gameUnits: round.siege.units,
+        row: round.siege,
         units: units || resolvedUnits,
       },
     ],

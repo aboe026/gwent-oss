@@ -18,8 +18,8 @@ import UnitStore from '../../../../database/stores/unit-store'
 /**
  * A class to Muster units to the battlefield.
  */
-export default class MusterBattlefield {
-  private static logger = getLogger('MusterBattlefield')
+export default class EffectMuster {
+  private static logger = getLogger('EffectMuster')
 
   /**
    * Potentially muster Units to the battlefield due to a new unit deployment.
@@ -52,13 +52,13 @@ export default class MusterBattlefield {
     const newUnit = battlefieldUnits.find((unit) => unit._id.toString() === newDeckUnit.unit.toString())
     if (!newUnit) {
       const message = `Could not find unit for new deck unit "${newDeckUnit.unit}"`
-      MusterBattlefield.logger.error(
+      EffectMuster.logger.error(
         `${logPrefix} failed: ${message}, battlefieldUnits: "${JSON.stringify(battlefieldUnits)}"`
       )
       throw Error(`${message}.`)
     }
-    if (MusterBattlefield.logger.isTraceEnabled()) {
-      MusterBattlefield.logger.trace(`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`)
+    if (EffectMuster.logger.isTraceEnabled()) {
+      EffectMuster.logger.trace(`${logPrefix} newUnit: "${JSON.stringify(newUnit)}"`)
     }
 
     const musterEffect = GetEffectWithKey.getEffectWithKey({
@@ -66,19 +66,19 @@ export default class MusterBattlefield {
       effects,
       logPrefix,
     })
-    if (MusterBattlefield.logger.isTraceEnabled()) {
-      MusterBattlefield.logger.trace(`${logPrefix} musterEffect: "${JSON.stringify(musterEffect)}"`)
+    if (EffectMuster.logger.isTraceEnabled()) {
+      EffectMuster.logger.trace(`${logPrefix} musterEffect: "${JSON.stringify(musterEffect)}"`)
     }
     const hasMusterEffect =
       musterEffect &&
       newUnit.effects &&
       newUnit.effects.map((id) => id.toString()).includes(musterEffect._id.toString())
-    if (MusterBattlefield.logger.isTraceEnabled()) {
-      MusterBattlefield.logger.trace(`${logPrefix} hasMusterEffect: "${hasMusterEffect}"`)
+    if (EffectMuster.logger.isTraceEnabled()) {
+      EffectMuster.logger.trace(`${logPrefix} hasMusterEffect: "${hasMusterEffect}"`)
     }
 
     if (hasMusterEffect) {
-      MusterBattlefield.logger.debug(`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`)
+      EffectMuster.logger.debug(`${logPrefix} unit "${newUnit.name}" has muster effect, applying it`)
 
       const musterableUnits = await UnitStore.get({
         namePrefix: newUnit.effectPrefix ? `"${newUnit.effectPrefix}"` : undefined,
@@ -86,12 +86,12 @@ export default class MusterBattlefield {
         ignoreIds: [newUnit._id],
       })
 
-      if (MusterBattlefield.logger.isTraceEnabled()) {
-        MusterBattlefield.logger.trace(`${logPrefix} musterableUnits: "${JSON.stringify(musterableUnits)}"`)
+      if (EffectMuster.logger.isTraceEnabled()) {
+        EffectMuster.logger.trace(`${logPrefix} musterableUnits: "${JSON.stringify(musterableUnits)}"`)
       }
 
       for (const musterableUnit of musterableUnits) {
-        const { impact, origin } = MusterBattlefield.getMusterImpact({
+        const { impact, origin } = EffectMuster.getMusterImpact({
           game,
           logPrefix,
           potentialMuster: musterableUnit,
@@ -114,16 +114,16 @@ export default class MusterBattlefield {
       const unit = musteredUnits.find((musteredUnit) => musteredUnit._id.toString() === impact.unit.unit.toString())
       if (!unit) {
         const message = `Could not find unit "${impact.unit.unit}" from muster impact`
-        MusterBattlefield.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
+        EffectMuster.logger.error(`${logPrefix} ${message}, impact: "${JSON.stringify(impact)}"`)
         throw Error(`${message}.`)
       }
       const combat = unit.combats ? (unit.combats[0] as Combat) : undefined
       if (!combat) {
         const message = `Cannot muster unit "${unit._id}" without combat`
-        MusterBattlefield.logger.error(`${logPrefix} ${message}`)
+        EffectMuster.logger.error(`${logPrefix} ${message}`)
         throw Error(`${message}.`)
       }
-      MusterBattlefield.musterUnitToBattlefield({
+      EffectMuster.musterUnitToBattlefield({
         combat,
         game,
         muster: impact.unit,
@@ -173,21 +173,21 @@ export default class MusterBattlefield {
         )
         if (undrawnUnit && handUnit) {
           const message = `Unit "${potentialMuster._id}" found in both hand and undrawn`
-          MusterBattlefield.logger.error(`${logPrefix} failed: ${message}`)
+          EffectMuster.logger.error(`${logPrefix} failed: ${message}`)
           throw Error(`${message}.`)
         }
 
         const unitToMuster = undrawnUnit || handUnit
-        if (MusterBattlefield.logger.isTraceEnabled()) {
-          MusterBattlefield.logger.trace(`${logPrefix} unitToMuster: "${JSON.stringify(unitToMuster)}"`)
+        if (EffectMuster.logger.isTraceEnabled()) {
+          EffectMuster.logger.trace(`${logPrefix} unitToMuster: "${JSON.stringify(unitToMuster)}"`)
         }
 
         if (unitToMuster) {
           if (undrawnUnit) {
-            MusterBattlefield.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`)
+            EffectMuster.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in undrawn pile to muster`)
             origin = GameUnitOrigin.Undrawn
           } else {
-            MusterBattlefield.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`)
+            EffectMuster.logger.debug(`${logPrefix} found unit "${potentialMuster._id}" in hand to muster`)
             origin = GameUnitOrigin.Hand
           }
 

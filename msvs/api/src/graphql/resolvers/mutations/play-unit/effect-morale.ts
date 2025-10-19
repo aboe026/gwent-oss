@@ -83,6 +83,7 @@ export default class EffectMorale {
    * @param config.units A list of all units on the battlefield.
    * @param config.userId The ID of the user whose unit is under consideration to be moraled.
    * @param config.currentPlayerId The ID of the user who played the newDeckUnit.
+   * @param config.transformedUnitIds A list of any unit IDs that were transformed on the battlefield by the newDeckUnit. Used to apply potential impacts to those Vildkaarls.
    * @returns An array of morale impacts for the unit under consideration.
    */
   static applyMorales({
@@ -95,6 +96,7 @@ export default class EffectMorale {
     units,
     userId,
     currentPlayerId,
+    transformedUnitIds,
   }: {
     logPrefix: string
     unitIdsWithMoraleInRow: string[]
@@ -105,8 +107,9 @@ export default class EffectMorale {
     units: UnitDbObject[]
     userId: ObjectId
     currentPlayerId: ObjectId | undefined
+    transformedUnitIds: string[]
   }): ImpactsByUnitId {
-    const impacts: ImpactDbObject[] = []
+    const impacts: ImpactsByUnitId = {}
 
     if (EffectMorale.logger.isTraceEnabled()) {
       EffectMorale.logger.trace(`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`)
@@ -140,10 +143,8 @@ export default class EffectMorale {
           }
           rowGameUnit.effects.push(gameUnitEffect)
 
-          if (
-            moralingUnit._id.toString() === newDeckUnit.unit.toString() &&
-            userId.toString() === currentPlayerId?.toString()
-          ) {
+          const impactables = [newDeckUnit.unit.toString(), ...transformedUnitIds]
+          if (impactables.includes(moralingUnit._id.toString()) && userId.toString() === currentPlayerId?.toString()) {
             const impact: ImpactDbObject = {
               unit: rowGameUnit,
               user: userId,
@@ -151,7 +152,7 @@ export default class EffectMorale {
             if (EffectMorale.logger.isTraceEnabled()) {
               EffectMorale.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
             }
-            impacts.push(impact)
+            impacts[moralingUnit._id.toString()] = [impact]
           }
         }
       }
@@ -159,10 +160,6 @@ export default class EffectMorale {
       EffectMorale.logger.debug(`${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to morale effect.`)
     }
 
-    return impacts.length > 0
-      ? {
-          [newDeckUnit.unit.toString()]: impacts,
-        }
-      : {}
+    return impacts
   }
 }

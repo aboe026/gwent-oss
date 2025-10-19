@@ -66,6 +66,7 @@ export default class TestUtil {
     hero = false,
     id,
     images = ['unit-image'],
+    modifier = false,
     name = 'unit-name',
     scorchMin,
     scorchScope,
@@ -79,6 +80,7 @@ export default class TestUtil {
     hero?: boolean
     id?: ObjectId | string
     images?: string[]
+    modifier?: boolean
     name?: string
     scorchMin?: number
     scorchScope?: Combat
@@ -95,6 +97,7 @@ export default class TestUtil {
       faction: faction ? new ObjectId(faction) : new ObjectId(),
       hero,
       images,
+      modifier,
       name,
       quote: 'unit-quote',
       scorchMin,
@@ -112,6 +115,7 @@ export default class TestUtil {
       }),
       id: unit._id.toString(),
       images: unit.images,
+      modifier: unit.modifier,
       name: unit.name,
       quote: unit.quote,
       effects: unit.effects
@@ -152,6 +156,7 @@ export default class TestUtil {
         }),
       id: (id || new ObjectId()).toString(),
       images: ['unit-image'],
+      modifier: false,
       name: 'unit-name',
       quote: 'unit-quote',
       strength,

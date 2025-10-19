@@ -19,7 +19,13 @@ export default async function getRoundUnits({
   const unitIds: string[] = [unitBeingPlayed.toString()] // to be removed at end, used just for now to ignore potential duplicates
   for (const player of game.players) {
     const round = player.rounds[game.round - 1]
-    for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
+    const rowUnits = [...round.close.units, ...round.ranged.units, ...round.siege.units]
+    for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
+      if (modifier) {
+        rowUnits.push(modifier)
+      }
+    }
+    for (const rowUnit of rowUnits) {
       if (!unitIds.includes(rowUnit.unit.toString())) {
         unitIds.push(rowUnit.unit.toString())
       }
