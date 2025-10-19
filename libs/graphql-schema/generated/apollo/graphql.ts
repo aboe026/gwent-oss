@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
-export type InputMaybe<T> = Maybe<T>;
+export type InputMaybe<T> = T | null | undefined;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
@@ -703,7 +703,10 @@ export type GameUnitFragment = { __typename?: 'GameUnit', artStyle: number, effe
     & { ' $fragmentRefs'?: { 'UnitFragment': UnitFragment } }
   ) } & { ' $fragmentName'?: 'GameUnitFragment' };
 
-export type GameUnitEffectFragment = { __typename?: 'GameUnitEffect', operator: string, total: number, reason: { __typename?: 'EffectFromLeader', leader: { __typename?: 'Leader', id: string, name: string } } | { __typename?: 'EffectFromUnit', effect: { __typename?: 'Effect', id: string, name: string }, unit: { __typename?: 'Unit', id: string, name: string } } } & { ' $fragmentName'?: 'GameUnitEffectFragment' };
+export type GameUnitEffectFragment = { __typename?: 'GameUnitEffect', operator: string, total: number, reason:
+    | { __typename?: 'EffectFromLeader', leader: { __typename?: 'Leader', id: string, name: string } }
+    | { __typename?: 'EffectFromUnit', effect: { __typename?: 'Effect', id: string, name: string }, unit: { __typename?: 'Unit', id: string, name: string } }
+   } & { ' $fragmentName'?: 'GameUnitEffectFragment' };
 
 export type ImpactFragment = { __typename?: 'Impact', unit: (
     { __typename?: 'GameUnit' }
@@ -722,7 +725,11 @@ type Move_MoveUnit_Fragment = (
   & { ' $fragmentRefs'?: { 'MoveUnitFragment': MoveUnitFragment } }
 ) & { ' $fragmentName'?: 'Move_MoveUnit_Fragment' };
 
-export type MoveFragment = Move_MoveLeader_Fragment | Move_MovePass_Fragment | Move_MoveUnit_Fragment;
+export type MoveFragment =
+  | Move_MoveLeader_Fragment
+  | Move_MovePass_Fragment
+  | Move_MoveUnit_Fragment
+;
 
 export type MoveLeaderFragment = { __typename?: 'MoveLeader', created: any, leader: { __typename?: 'Leader', image: string, name: string } } & { ' $fragmentName'?: 'MoveLeaderFragment' };
 
@@ -745,16 +752,20 @@ export type PlayerCombatRowFragment = { __typename?: 'PlayerCombatRow', score: n
 export type PlayerRoundFragment = { __typename?: 'PlayerRound', passed: boolean, result?: RoundResult | null, score: number, close: (
     { __typename?: 'PlayerCombatRow' }
     & { ' $fragmentRefs'?: { 'PlayerCombatRowFragment': PlayerCombatRowFragment } }
-  ), moves: Array<(
-    { __typename?: 'MoveLeader' }
-    & { ' $fragmentRefs'?: { 'Move_MoveLeader_Fragment': Move_MoveLeader_Fragment } }
-  ) | (
-    { __typename?: 'MovePass' }
-    & { ' $fragmentRefs'?: { 'Move_MovePass_Fragment': Move_MovePass_Fragment } }
-  ) | (
-    { __typename?: 'MoveUnit' }
-    & { ' $fragmentRefs'?: { 'Move_MoveUnit_Fragment': Move_MoveUnit_Fragment } }
-  )>, ranged: (
+  ), moves: Array<
+    | (
+      { __typename?: 'MoveLeader' }
+      & { ' $fragmentRefs'?: { 'Move_MoveLeader_Fragment': Move_MoveLeader_Fragment } }
+    )
+    | (
+      { __typename?: 'MovePass' }
+      & { ' $fragmentRefs'?: { 'Move_MovePass_Fragment': Move_MovePass_Fragment } }
+    )
+    | (
+      { __typename?: 'MoveUnit' }
+      & { ' $fragmentRefs'?: { 'Move_MoveUnit_Fragment': Move_MoveUnit_Fragment } }
+    )
+  >, ranged: (
     { __typename?: 'PlayerCombatRow' }
     & { ' $fragmentRefs'?: { 'PlayerCombatRowFragment': PlayerCombatRowFragment } }
   ), siege: (
