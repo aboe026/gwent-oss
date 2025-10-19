@@ -73,7 +73,7 @@ export default abstract class Store {
    * @param config.options The options to use when updating the document.
    * @param config.verifyExistence Whether or not an Error should be thrown if no document updated.
    * @returns The updated document.
-   * @throws Error if the document do not exist and verifyExistence is true.
+   * @throws {Error} if the document do not exist and verifyExistence is true.
    */
   protected static async update<T extends WithId<Document>>({
     filter,
@@ -102,7 +102,7 @@ export default abstract class Store {
    *
    * @param _id The MongoDB ObjectId of the document to delete.
    * @returns The deleted document.
-   * @throws Error if the document does not exist.
+   * @throws {Error} if the document does not exist.
    */
   protected static async delete<T extends WithId<Document>>(_id: ObjectId): Promise<T> {
     const collection = await Store.getCollection<T>(this.COLLECTION_NAME)

@@ -8,7 +8,7 @@ import { EffectKey, GameUnitOrigin } from '@gwent/graphql-schema/resolver-typing
  * @param config.origin The Origin of the unit which caused the impact.
  * @param config.name The name of the unit the mardroeme transformed the card into.
  * @returns The description of the impact on a unit from the effect.
- * @throws Error if Effect cannot have impact (Agile, Avenger, Berserker)
+ * @throws {Error} if Effect cannot have impact (Agile, Avenger, Berserker)
  */
 export default function getImpactDescription({
   effectKey,

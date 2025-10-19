@@ -5,7 +5,7 @@
  * @param options The options to help determine if the candidate is a positive integer.
  * @param options.allowZero Whether or not 0 is a valid positive integer. Defaults to false.
  * @returns The integer Number if valid.
- * @throws Error if the candidate is not a valid positive integer.
+ * @throws {Error} if the candidate is not a valid positive integer.
  */
 export default function validatePositiveInteger(
   candidate: any, // eslint-disable-line @typescript-eslint/no-explicit-any

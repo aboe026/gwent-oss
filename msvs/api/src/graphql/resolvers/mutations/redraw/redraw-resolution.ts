@@ -26,7 +26,7 @@ export default class RedrawResolution {
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.to The deck unit that was randomly selected to replace the from unit.
    * @returns The random DeckUnit that replaces their redrawn Unit in their hand with fields resolved.
-   * @throws PresentableError if known problem resolving redrawn unit.
+   * @throws {PresentableError} if known problem resolving redrawn unit.
    */
   static async redrawResolution({
     from,

@@ -22,7 +22,7 @@ export default class SetDeckValidation {
    * @param context The session containing the user setting the deck.
    * @param info The information about the GraphQL request.
    * @returns The information needed to set the deck.
-   * @throws PresentableError if known problem setting deck.
+   * @throws {PresentableError} if known problem setting deck.
    */
   static async setDeckValidation(
     args: MutationSetDeckArgs,

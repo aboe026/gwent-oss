@@ -63,7 +63,7 @@ export default class GameStore extends Store {
    * @param config.id The ObjectId of the game to get.
    * @param config.options Any options to add to the query for the game.
    * @returns The game database document if it exists, undefined otherwise.
-   * @throws Error if more than 1 game found.
+   * @throws {Error} if more than 1 game found.
    */
   static async getById({
     id,

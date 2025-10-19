@@ -24,7 +24,7 @@ export default class SetDeckResolution {
    * @param config.gameDeck The GameDeck for the user after the deck was set on the game.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @returns The GameDeck that was set for the game with fields resolved.
-   * @throws PresentableError if known problem setting deck.
+   * @throws {PresentableError} if known problem setting deck.
    */
   static async setDeckResolution({
     game,

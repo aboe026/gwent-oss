@@ -34,7 +34,7 @@ export default class EffectResolver {
    *
    * @param ids The ObjectIds of the Effects to convert.
    * @returns The resolved Effects array for the given IDs.
-   * @throws Error if a Effect with the given IDs does not exist.
+   * @throws {Error} if a Effect with the given IDs does not exist.
    */
   static async fromIds(ids: (string | ObjectId)[]): Promise<Effect[]> {
     if (ids.length === 0) {
@@ -61,7 +61,7 @@ export default class EffectResolver {
    *
    * @param id The ObjectId of the Effect to convert.
    * @returns The resolved Effect object with the given ID.
-   * @throws Error if an Effect with the given ID does not exist.
+   * @throws {Error} if an Effect with the given ID does not exist.
    */
   static async fromId(id: string | ObjectId): Promise<Effect> {
     const effects = await EffectResolver.fromIds([id])

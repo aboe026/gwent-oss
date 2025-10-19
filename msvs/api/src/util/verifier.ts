@@ -14,7 +14,7 @@ export default class Verifier {
    * @param config.field The field on the objects to check the expected keys against.
    * @param config.logger The logger object to log an error to in case of violation.
    * @param config.label The label to use when logging violations.
-   * @throws Error if a key is missing or there is an extra key in the object array.
+   * @throws {Error} if a key is missing or there is an extra key in the object array.
    */
   static checkObjects({
     expectedKeys,

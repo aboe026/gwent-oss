@@ -30,7 +30,7 @@ export default class GameUnitEffectResolver {
    * @param config.effect The resolved Effect for the GameUnitEffect. If not provided, will be retrieved.
    * @param config.leader The resolved Leader for the GameUnitEffect. If not provided, will be retrieved.
    * @returns The resolved GameUnit object matching its GraphQL schema definition.
-   * @throws Error if the effect reason type is invalid.
+   * @throws {Error} if the effect reason type is invalid.
    */
   static async fromObject({
     gameUnitEffect,

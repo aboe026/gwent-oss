@@ -103,7 +103,7 @@ export default class FactionStore extends Store {
    * @param config.key The key corresponding to the faction to get.
    * @param config.logPrefix The prefix to prepend to log statements.
    * @returns The Faction database object with the given key.
-   * @throws PresentableError if there is a problem getting the faction.
+   * @throws {PresentableError} if there is a problem getting the faction.
    */
   static async getByKey({ key, logPrefix }: { key: FactionKey; logPrefix: string }): Promise<FactionDbObject> {
     const factions = await FactionStore.get({

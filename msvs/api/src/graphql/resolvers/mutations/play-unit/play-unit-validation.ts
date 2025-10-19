@@ -21,7 +21,7 @@ export default class PlayUnitValidation {
    * @param context The session containing the user playing the unit.
    * @param info The information about the GraphQL request.
    * @returns The information needed to play the unit in the game.
-   * @throws PresentableError if known problem playing unit.
+   * @throws {PresentableError} if known problem playing unit.
    */
   static async playUnitValidation(
     args: MutationPlayUnitArgs,

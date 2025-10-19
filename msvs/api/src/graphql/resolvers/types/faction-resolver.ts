@@ -41,7 +41,7 @@ export default class FactionResolver {
    * @param config The configuration used to resolve the Faction.
    * @param config.id The ObjectId of the Faction to convert.
    * @returns The resolved Faction object with the given ID.
-   * @throws Error if a Faction with the given ID does not exist.
+   * @throws {Error} if a Faction with the given ID does not exist.
    */
   static async fromId({ id }: { id: ObjectId | string }): Promise<Faction> {
     const factions = await FactionResolver.fromIds({
@@ -56,7 +56,7 @@ export default class FactionResolver {
    * @param config The configuration used to resolve the Factions.
    * @param config.ids The ObjectIds of the Factions to convert.
    * @returns The resolved Factions array for the given IDs.
-   * @throws Error if a Faction with the given IDs does not exist.
+   * @throws {Error} if a Faction with the given IDs does not exist.
    */
   static async fromIds({ ids }: { ids: (ObjectId | string)[] }): Promise<Faction[]> {
     if (ids.length === 0) {

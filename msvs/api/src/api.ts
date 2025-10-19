@@ -60,7 +60,11 @@ export default class Api {
    * print relevant startup information.
    */
   private static async printStartupInfo() {
-    Api.logger.info(`\n${figlet.textSync('Gwent', 'Tombstone')}`)
+    Api.logger.info(
+      `\n${figlet.textSync('Gwent', {
+        font: 'Tombstone',
+      })}`
+    )
     Api.logger.info(`Version: "${version}"`)
     Api.logger.debug(`Build: "${await AppInfo.getBuildNumber()}"`)
     Api.logger.trace(`NODE_ENV: "${env().NODE_ENV}"`)

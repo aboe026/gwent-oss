@@ -31,7 +31,7 @@ export default class UserResolver {
    *
    * @param id The ObjectId of the User to convert.
    * @returns The resolved User object with the given ID.
-   * @throws Error if a User with the given ID does not exist.
+   * @throws {Error} if a User with the given ID does not exist.
    */
   static async fromId(id: ObjectId | string): Promise<User> {
     const users = await UserResolver.fromIds([id])
@@ -43,7 +43,7 @@ export default class UserResolver {
    *
    * @param ids The ObjectIds of the Users to convert.
    * @returns The resolved Users array for the given IDs.
-   * @throws Error if a User with the given IDs does not exist.
+   * @throws {Error} if a User with the given IDs does not exist.
    */
   static async fromIds(ids: (ObjectId | string)[]): Promise<User[]> {
     if (ids.length === 0) {

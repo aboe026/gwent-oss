@@ -145,7 +145,14 @@ describe('Api', () => {
 
       await expect(Api['printStartupInfo']()).resolves.toEqual(undefined)
 
-      expect(textSyncSpy.mock.calls).toEqual([['Gwent', 'Tombstone']])
+      expect(textSyncSpy.mock.calls).toEqual([
+        [
+          'Gwent',
+          {
+            font: 'Tombstone',
+          },
+        ],
+      ])
       expect(getBuildNumberSpy.mock.calls).toEqual([[]])
       expect(envSpy.mock.calls).toEqual([[], []])
       expect(infoSpy.mock.calls).toEqual([[`\n${text}`], [`Version: "${version}"`], [`LOG_LEVEL: "${logLevel}"`]])
@@ -454,6 +461,8 @@ function testConfigureSession({
     use: useSpy,
     set: setSpy,
   } as any
+  const resolvedPromise = {}
+  const promiseResolveSpy = jest.spyOn(Promise, 'resolve').mockImplementation(() => resolvedPromise as any)
   const mongoStoreCreateSpy = jest.spyOn(MongoStore, 'create').mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   Api['logger'] = {
@@ -480,10 +489,11 @@ function testConfigureSession({
       },
     ],
   ])
+  expect(promiseResolveSpy.mock.calls).toEqual([[DbConnector.getClient()]])
   expect(mongoStoreCreateSpy.mock.calls).toEqual([
     [
       {
-        clientPromise: Promise.resolve(DbConnector.getClient()),
+        clientPromise: resolvedPromise,
         dbName: dbName,
       },
     ],

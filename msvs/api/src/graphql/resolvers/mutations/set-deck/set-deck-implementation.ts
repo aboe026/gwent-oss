@@ -21,7 +21,7 @@ export default class SetDeckImplementation {
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.userId The ID of the User who is setting their deck for the game.
    * @returns The game updated with new deck as well as that new deck.
-   * @throws PresentableError if known problem setting deck.
+   * @throws {PresentableError} if known problem setting deck.
    */
   static async setDeckImplementation({ deck, game, logPrefix, userId }: ValidatedSetDeck): Promise<ImplementedSetDeck> {
     SetGameDeck.setGameDeck({

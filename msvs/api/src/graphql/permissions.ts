@@ -18,14 +18,13 @@ export default class Permissions {
   private static logger = getLogger('Permissions')
 
   /**
-   * Throws error if rule is not defined for Query/Mutation. Prevents a Query/Mutation without an explicit rule.
+   * Returns error if rule is not defined for Query/Mutation. Prevents a Query/Mutation without an explicit rule.
    *
    * @param parent The parent of the request being made.
    * @param args The arguments supplied to the user for the request being made.
    * @param ctx The context for the request being made.
    * @param info Information about the request being made.
-   * @throws Error if no rule has been defined for the Query/Mutation.
-   * @returns true if a rule has been defined for the Query/Mutation, otherwise throw an Error.
+   * @returns true if a rule has been defined for the Query/Mutation, otherwise return an Error.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static fallback(parent: any, args: any, ctx: any, info: GraphQLResolveInfo) {
@@ -46,8 +45,7 @@ export default class Permissions {
    * @param args The arguments supplied to the user for the request being made.
    * @param ctx The context for the request being made.
    * @param info Information about the request being made.
-   * @throws Error if user is not authenticated.
-   * @returns true if the user is authenticated, otherwise throw an Error.
+   * @returns true if the user is authenticated, otherwise return an Error.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static isAuthenticated(parent: any, args: any, ctx: Context, info: GraphQLResolveInfo) {
@@ -69,8 +67,7 @@ export default class Permissions {
    * @param args The arguments supplied to the user for the request being made.
    * @param ctx The context for the request being made.
    * @param info Information about the request being made.
-   * @throws Error if user is not a player on the game.
-   * @returns true if the user is a player on the game, otherwise throw an Error.
+   * @returns true if the user is a player on the game, otherwise return an Error.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static async isPlayer(parent: any, args: any, ctx: Context, info: GraphQLResolveInfo) {
@@ -123,8 +120,7 @@ export default class Permissions {
    * @param args The arguments supplied to the user for the request being made.
    * @param ctx The context for the request being made.
    * @param info Information about the request being made.
-   * @throws Error if user does not own the Deck.
-   * @returns true if the user owns the deck, otherwise throw an Error.
+   * @returns true if the user owns the deck, otherwise return an Error.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private static async ownsDeck(parent: any, args: any, ctx: Context, info: GraphQLResolveInfo) {

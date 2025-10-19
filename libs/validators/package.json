@@ -1,6 +1,6 @@
 {
   "name": "@gwent/validators",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "author": "Adam Boe",
   "description": "Validator functions",
   "main": "build/src/index.js",
@@ -22,6 +22,6 @@
     "@types/jest": "30.0.0",
     "@types/node": "22.18.0",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.4.1"
+    "ts-jest": "29.4.5"
   }
 }

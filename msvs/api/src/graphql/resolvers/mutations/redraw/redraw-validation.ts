@@ -22,7 +22,7 @@ export default class RedrawValidation {
    * @param context The session containing the user redrawing the unit.
    * @param info The information about the GraphQL request.
    * @returns The information needed to redraw the unit.
-   * @throws PresentableError if known problem redrawing unit.
+   * @throws {PresentableError} if known problem redrawing unit.
    */
   static async redrawValidation(
     args: MutationRedrawArgs,

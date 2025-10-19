@@ -26,7 +26,7 @@ const scalars: {
      *
      * @param inputValue The value the user provided in a variable.
      * @returns The value if it is a valid SemVer.
-     * @throws Error if the value is not a string.
+     * @throws {Error} if the value is not a string.
      */
     parseValue: (inputValue) => {
       if (typeof inputValue === 'string') {
@@ -41,7 +41,7 @@ const scalars: {
      * @param valueNode The AST Node the user passed.
      * @param variables Any variables associated with the GraphQL call.
      * @returns The value if it is a valid SemVer.
-     * @throws Error if the AST Node is not a String.
+     * @throws {Error} if the AST Node is not a String.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     parseLiteral: (valueNode, variables) => {
@@ -69,7 +69,7 @@ const scalars: {
      *
      * @param inputValue The value the user provided in a variable.
      * @returns The value if it is a valid SemVer.
-     * @throws Error if the value is not a valid SemVer.
+     * @throws {Error} if the value is not a valid SemVer.
      */
     parseValue: (inputValue) => {
       if (typeof inputValue === 'string') {
@@ -88,7 +88,7 @@ const scalars: {
      * @param valueNode The AST Node the user passed.
      * @param variables Any variables associated with the GraphQL call.
      * @returns The value if it is a valid SemVer.
-     * @throws Error if the AST Node is not a String.
+     * @throws {Error} if the AST Node is not a String.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     parseLiteral: (valueNode, variables) => {
@@ -106,7 +106,7 @@ const scalars: {
  *
  * @param dateTime The string to turn into a Date if of the valid format.
  * @returns The Date representation of the dateTime string.
- * @throws Error if the string is not of the valid format "YYYY-MM-DDTHH:mm:ss.SSSZ".
+ * @throws {Error} if the string is not of the valid format "YYYY-MM-DDTHH:mm:ss.SSSZ".
  */
 export function validateDateTime(dateTime: string): Date {
   if (!moment(dateTime, DATE_TIME_FORMAT, true).isValid()) {
