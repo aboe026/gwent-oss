@@ -1,0 +1,6 @@
+query application {
+  application {
+    build
+    version
+  }
+}

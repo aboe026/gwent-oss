@@ -9,7 +9,7 @@ const config: CodegenConfig = {
   schema: './src/schema.gql',
   generates: {
     // emit complete SDL for tools (like VSCode extension GraphQL.vscode-graphql)
-    './generated/complete-schema.graphql': {
+    './generated/complete-schema.gql': {
       plugins: [
         'schema-ast',
         {
@@ -89,8 +89,10 @@ const config: CodegenConfig = {
         documentMode: 'string',
       },
     },
+    // typings for Node.js client
     './generated/node-sdk.ts': {
-      plugins: ['typescript', 'typescript-graphql-request'],
+      documents: ['./src/node-client/*.gql'],
+      plugins: ['typescript', 'typescript-operations', 'typescript-graphql-request'],
     },
   },
   hooks: {

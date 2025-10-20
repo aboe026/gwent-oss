@@ -1,0 +1,56 @@
+query leaders($factions: [FactionKey!]) {
+  leaders(factions: $factions) {
+    ability
+    created
+    dlc {
+      created
+      id
+      image
+      key 
+      name
+    }
+    faction {
+      ability
+      created
+      dlc {
+        created
+        id
+        image
+        key 
+        name
+      }
+      id
+      image
+      key 
+      name
+      stats {
+        agile
+        avenger
+        berserker
+        bond
+        close
+        decoy
+        heroes
+        horn
+        mardroeme
+        medic
+        morale
+        muster
+        ranged
+        scorch
+        siege
+        specials
+        spy
+        strengthAverage
+        strengthTotal
+        strengths
+        units
+        weather
+      }
+    }
+    id
+    image
+    name
+    quote
+  }
+}

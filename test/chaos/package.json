@@ -1,0 +1,22 @@
+{
+  "name": "@gwent/test-chaos",
+  "version": "0.16.1",
+  "author": "Adam Boe",
+  "description": "Non deterministic testing",
+  "scripts": {
+    "build": "yarn g:tsc --build",
+    "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
+    "lint": "yarn g:lint",
+    "lint:fix": "yarn g:lint-fix",
+    "random-games": "yarn g:ts-node src/random-games.ts",
+    "watch": "yarn build-tsc --watch"
+  },
+  "dependencies": {
+    "@gwent/env": "workspace:*",
+    "@gwent/graphql-schema": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "22.18.0",
+    "@types/url-join": "4.0.3"
+  }
+}

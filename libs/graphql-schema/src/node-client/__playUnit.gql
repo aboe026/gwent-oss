@@ -1,0 +1,4065 @@
+mutation playUnit($combat: Combat, $game: ID!, $unit: ID!) {
+  playUnit(combat: $combat, game: $game, unit: $unit) {
+    config {
+      lives
+    }
+    created
+    creator {
+      created
+      id
+      name
+    }
+    id
+    players {
+      counts {
+        discard
+        hand
+        undrawn
+      }
+      faction {
+        ability
+        created
+        dlc {
+          created
+          id
+          image
+          key 
+          name
+        }
+        id
+        image
+        key 
+        name
+        stats {
+          agile
+          avenger
+          berserker
+          bond
+          close
+          decoy
+          heroes
+          horn
+          mardroeme
+          medic
+          morale
+          muster
+          ranged
+          scorch
+          siege
+          specials
+          spy
+          strengthAverage
+          strengthTotal
+          strengths
+          units
+          weather
+        }
+      }
+      leader {
+        ability
+        created
+        dlc {
+          created
+          id
+          image
+          key 
+          name
+        }
+        faction {
+          ability
+          created
+          dlc {
+            created
+            id
+            image
+            key 
+            name
+          }
+          id
+          image
+          key 
+          name
+          stats {
+            agile
+            avenger
+            berserker
+            bond
+            close
+            decoy
+            heroes
+            horn
+            mardroeme
+            medic
+            morale
+            muster
+            ranged
+            scorch
+            siege
+            specials
+            spy
+            strengthAverage
+            strengthTotal
+            strengths
+            units
+            weather
+          }
+        }
+        id
+        image
+        name
+        quote
+      }
+      order
+      ready
+      rounds {
+        close {
+          modifier {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+          score
+          units {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+        }
+        moves {
+          ... on MoveLeader {
+            created
+            leader {
+              ability
+              created
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              id
+              image
+              name
+              quote
+            }
+          }
+          ... on MovePass {
+            created
+          }
+          ... on MoveUnit {
+            created
+            impacts {
+              source {
+                origin 
+                user {
+                  created
+                  id
+                  name
+                }
+              }
+              unit {
+                artStyle
+                effectiveStrength
+                effects {
+                  operator
+                  reason {
+                    ... on EffectFromLeader {
+                      leader {
+                        ability
+                        created
+                        dlc {
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        faction {
+                          ability
+                          created
+                          dlc {
+                            created
+                            id
+                            image
+                            key 
+                            name
+                          }
+                          id
+                          image
+                          key 
+                          name
+                          stats {
+                            agile
+                            avenger
+                            berserker
+                            bond
+                            close
+                            decoy
+                            heroes
+                            horn
+                            mardroeme
+                            medic
+                            morale
+                            muster
+                            ranged
+                            scorch
+                            siege
+                            specials
+                            spy
+                            strengthAverage
+                            strengthTotal
+                            strengths
+                            units
+                            weather
+                          }
+                        }
+                        id
+                        image
+                        name
+                        quote
+                      }
+                    }
+                    ... on EffectFromUnit {
+                      effect {
+                        ability
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      unit {
+                        combats 
+                        created
+                        deckable
+                        dlc {
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        effectPrefix
+                        effects {
+                          ability
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        faction {
+                          ability
+                          created
+                          dlc {
+                            created
+                            id
+                            image
+                            key 
+                            name
+                          }
+                          id
+                          image
+                          key 
+                          name
+                          stats {
+                            agile
+                            avenger
+                            berserker
+                            bond
+                            close
+                            decoy
+                            heroes
+                            horn
+                            mardroeme
+                            medic
+                            morale
+                            muster
+                            ranged
+                            scorch
+                            siege
+                            specials
+                            spy
+                            strengthAverage
+                            strengthTotal
+                            strengths
+                            units
+                            weather
+                          }
+                        }
+                        hero
+                        id
+                        images
+                        modifier
+                        name
+                        quote
+                        scorchMin
+                        scorchScope 
+                        special
+                        strength
+                      }
+                    }
+                  }
+                  total
+                }
+                row 
+                unit {
+                  combats 
+                  created
+                  deckable
+                  dlc {
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  effectPrefix
+                  effects {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  faction {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    id
+                    image
+                    key 
+                    name
+                    stats {
+                      agile
+                      avenger
+                      berserker
+                      bond
+                      close
+                      decoy
+                      heroes
+                      horn
+                      mardroeme
+                      medic
+                      morale
+                      muster
+                      ranged
+                      scorch
+                      siege
+                      specials
+                      spy
+                      strengthAverage
+                      strengthTotal
+                      strengths
+                      units
+                      weather
+                    }
+                  }
+                  hero
+                  id
+                  images
+                  modifier
+                  name
+                  quote
+                  scorchMin
+                  scorchScope 
+                  special
+                  strength
+                }
+              }
+              user {
+                created
+                id
+                name
+              }
+            }
+            reason {
+              type 
+              unit {
+                artStyle
+                unit {
+                  combats 
+                  created
+                  deckable
+                  dlc {
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  effectPrefix
+                  effects {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  faction {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    id
+                    image
+                    key 
+                    name
+                    stats {
+                      agile
+                      avenger
+                      berserker
+                      bond
+                      close
+                      decoy
+                      heroes
+                      horn
+                      mardroeme
+                      medic
+                      morale
+                      muster
+                      ranged
+                      scorch
+                      siege
+                      specials
+                      spy
+                      strengthAverage
+                      strengthTotal
+                      strengths
+                      units
+                      weather
+                    }
+                  }
+                  hero
+                  id
+                  images
+                  modifier
+                  name
+                  quote
+                  scorchMin
+                  scorchScope 
+                  special
+                  strength
+                }
+              }
+            }
+            source {
+              origin 
+              user {
+                created
+                id
+                name
+              }
+            }
+            unit {
+              artStyle
+              effectiveStrength
+              effects {
+                operator
+                reason {
+                  ... on EffectFromLeader {
+                    leader {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      faction {
+                        ability
+                        created
+                        dlc {
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        id
+                        image
+                        key 
+                        name
+                        stats {
+                          agile
+                          avenger
+                          berserker
+                          bond
+                          close
+                          decoy
+                          heroes
+                          horn
+                          mardroeme
+                          medic
+                          morale
+                          muster
+                          ranged
+                          scorch
+                          siege
+                          specials
+                          spy
+                          strengthAverage
+                          strengthTotal
+                          strengths
+                          units
+                          weather
+                        }
+                      }
+                      id
+                      image
+                      name
+                      quote
+                    }
+                  }
+                  ... on EffectFromUnit {
+                    effect {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    unit {
+                      combats 
+                      created
+                      deckable
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      effectPrefix
+                      effects {
+                        ability
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      faction {
+                        ability
+                        created
+                        dlc {
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        id
+                        image
+                        key 
+                        name
+                        stats {
+                          agile
+                          avenger
+                          berserker
+                          bond
+                          close
+                          decoy
+                          heroes
+                          horn
+                          mardroeme
+                          medic
+                          morale
+                          muster
+                          ranged
+                          scorch
+                          siege
+                          specials
+                          spy
+                          strengthAverage
+                          strengthTotal
+                          strengths
+                          units
+                          weather
+                        }
+                      }
+                      hero
+                      id
+                      images
+                      modifier
+                      name
+                      quote
+                      scorchMin
+                      scorchScope 
+                      special
+                      strength
+                    }
+                  }
+                }
+                total
+              }
+              row 
+              unit {
+                combats 
+                created
+                deckable
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                effectPrefix
+                effects {
+                  ability
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                faction {
+                  ability
+                  created
+                  dlc {
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  id
+                  image
+                  key 
+                  name
+                  stats {
+                    agile
+                    avenger
+                    berserker
+                    bond
+                    close
+                    decoy
+                    heroes
+                    horn
+                    mardroeme
+                    medic
+                    morale
+                    muster
+                    ranged
+                    scorch
+                    siege
+                    specials
+                    spy
+                    strengthAverage
+                    strengthTotal
+                    strengths
+                    units
+                    weather
+                  }
+                }
+                hero
+                id
+                images
+                modifier
+                name
+                quote
+                scorchMin
+                scorchScope 
+                special
+                strength
+              }
+            }
+          }
+        }
+        passed
+        ranged {
+          modifier {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+          score
+          units {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+        }
+        result 
+        score
+        siege {
+          modifier {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+          score
+          units {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+        }
+      }
+      user {
+        created
+        id
+        name
+      }
+    }
+    round
+    status 
+    turn {
+      counts {
+        discard
+        hand
+        undrawn
+      }
+      faction {
+        ability
+        created
+        dlc {
+          created
+          id
+          image
+          key 
+          name
+        }
+        id
+        image
+        key 
+        name
+        stats {
+          agile
+          avenger
+          berserker
+          bond
+          close
+          decoy
+          heroes
+          horn
+          mardroeme
+          medic
+          morale
+          muster
+          ranged
+          scorch
+          siege
+          specials
+          spy
+          strengthAverage
+          strengthTotal
+          strengths
+          units
+          weather
+        }
+      }
+      leader {
+        ability
+        created
+        dlc {
+          created
+          id
+          image
+          key 
+          name
+        }
+        faction {
+          ability
+          created
+          dlc {
+            created
+            id
+            image
+            key 
+            name
+          }
+          id
+          image
+          key 
+          name
+          stats {
+            agile
+            avenger
+            berserker
+            bond
+            close
+            decoy
+            heroes
+            horn
+            mardroeme
+            medic
+            morale
+            muster
+            ranged
+            scorch
+            siege
+            specials
+            spy
+            strengthAverage
+            strengthTotal
+            strengths
+            units
+            weather
+          }
+        }
+        id
+        image
+        name
+        quote
+      }
+      order
+      ready
+      rounds {
+        close {
+          modifier {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+          score
+          units {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+        }
+        moves {
+          ... on MoveLeader {
+            created
+            leader {
+              ability
+              created
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              id
+              image
+              name
+              quote
+            }
+          }
+          ... on MovePass {
+            created
+          }
+          ... on MoveUnit {
+            created
+            impacts {
+              source {
+                origin 
+                user {
+                  created
+                  id
+                  name
+                }
+              }
+              unit {
+                artStyle
+                effectiveStrength
+                effects {
+                  operator
+                  reason {
+                    ... on EffectFromLeader {
+                      leader {
+                        ability
+                        created
+                        dlc {
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        faction {
+                          ability
+                          created
+                          dlc {
+                            created
+                            id
+                            image
+                            key 
+                            name
+                          }
+                          id
+                          image
+                          key 
+                          name
+                          stats {
+                            agile
+                            avenger
+                            berserker
+                            bond
+                            close
+                            decoy
+                            heroes
+                            horn
+                            mardroeme
+                            medic
+                            morale
+                            muster
+                            ranged
+                            scorch
+                            siege
+                            specials
+                            spy
+                            strengthAverage
+                            strengthTotal
+                            strengths
+                            units
+                            weather
+                          }
+                        }
+                        id
+                        image
+                        name
+                        quote
+                      }
+                    }
+                    ... on EffectFromUnit {
+                      effect {
+                        ability
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      unit {
+                        combats 
+                        created
+                        deckable
+                        dlc {
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        effectPrefix
+                        effects {
+                          ability
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        faction {
+                          ability
+                          created
+                          dlc {
+                            created
+                            id
+                            image
+                            key 
+                            name
+                          }
+                          id
+                          image
+                          key 
+                          name
+                          stats {
+                            agile
+                            avenger
+                            berserker
+                            bond
+                            close
+                            decoy
+                            heroes
+                            horn
+                            mardroeme
+                            medic
+                            morale
+                            muster
+                            ranged
+                            scorch
+                            siege
+                            specials
+                            spy
+                            strengthAverage
+                            strengthTotal
+                            strengths
+                            units
+                            weather
+                          }
+                        }
+                        hero
+                        id
+                        images
+                        modifier
+                        name
+                        quote
+                        scorchMin
+                        scorchScope 
+                        special
+                        strength
+                      }
+                    }
+                  }
+                  total
+                }
+                row 
+                unit {
+                  combats 
+                  created
+                  deckable
+                  dlc {
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  effectPrefix
+                  effects {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  faction {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    id
+                    image
+                    key 
+                    name
+                    stats {
+                      agile
+                      avenger
+                      berserker
+                      bond
+                      close
+                      decoy
+                      heroes
+                      horn
+                      mardroeme
+                      medic
+                      morale
+                      muster
+                      ranged
+                      scorch
+                      siege
+                      specials
+                      spy
+                      strengthAverage
+                      strengthTotal
+                      strengths
+                      units
+                      weather
+                    }
+                  }
+                  hero
+                  id
+                  images
+                  modifier
+                  name
+                  quote
+                  scorchMin
+                  scorchScope 
+                  special
+                  strength
+                }
+              }
+              user {
+                created
+                id
+                name
+              }
+            }
+            reason {
+              type 
+              unit {
+                artStyle
+                unit {
+                  combats 
+                  created
+                  deckable
+                  dlc {
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  effectPrefix
+                  effects {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  faction {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    id
+                    image
+                    key 
+                    name
+                    stats {
+                      agile
+                      avenger
+                      berserker
+                      bond
+                      close
+                      decoy
+                      heroes
+                      horn
+                      mardroeme
+                      medic
+                      morale
+                      muster
+                      ranged
+                      scorch
+                      siege
+                      specials
+                      spy
+                      strengthAverage
+                      strengthTotal
+                      strengths
+                      units
+                      weather
+                    }
+                  }
+                  hero
+                  id
+                  images
+                  modifier
+                  name
+                  quote
+                  scorchMin
+                  scorchScope 
+                  special
+                  strength
+                }
+              }
+            }
+            source {
+              origin 
+              user {
+                created
+                id
+                name
+              }
+            }
+            unit {
+              artStyle
+              effectiveStrength
+              effects {
+                operator
+                reason {
+                  ... on EffectFromLeader {
+                    leader {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      faction {
+                        ability
+                        created
+                        dlc {
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        id
+                        image
+                        key 
+                        name
+                        stats {
+                          agile
+                          avenger
+                          berserker
+                          bond
+                          close
+                          decoy
+                          heroes
+                          horn
+                          mardroeme
+                          medic
+                          morale
+                          muster
+                          ranged
+                          scorch
+                          siege
+                          specials
+                          spy
+                          strengthAverage
+                          strengthTotal
+                          strengths
+                          units
+                          weather
+                        }
+                      }
+                      id
+                      image
+                      name
+                      quote
+                    }
+                  }
+                  ... on EffectFromUnit {
+                    effect {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    unit {
+                      combats 
+                      created
+                      deckable
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      effectPrefix
+                      effects {
+                        ability
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      faction {
+                        ability
+                        created
+                        dlc {
+                          created
+                          id
+                          image
+                          key 
+                          name
+                        }
+                        id
+                        image
+                        key 
+                        name
+                        stats {
+                          agile
+                          avenger
+                          berserker
+                          bond
+                          close
+                          decoy
+                          heroes
+                          horn
+                          mardroeme
+                          medic
+                          morale
+                          muster
+                          ranged
+                          scorch
+                          siege
+                          specials
+                          spy
+                          strengthAverage
+                          strengthTotal
+                          strengths
+                          units
+                          weather
+                        }
+                      }
+                      hero
+                      id
+                      images
+                      modifier
+                      name
+                      quote
+                      scorchMin
+                      scorchScope 
+                      special
+                      strength
+                    }
+                  }
+                }
+                total
+              }
+              row 
+              unit {
+                combats 
+                created
+                deckable
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                effectPrefix
+                effects {
+                  ability
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                faction {
+                  ability
+                  created
+                  dlc {
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  id
+                  image
+                  key 
+                  name
+                  stats {
+                    agile
+                    avenger
+                    berserker
+                    bond
+                    close
+                    decoy
+                    heroes
+                    horn
+                    mardroeme
+                    medic
+                    morale
+                    muster
+                    ranged
+                    scorch
+                    siege
+                    specials
+                    spy
+                    strengthAverage
+                    strengthTotal
+                    strengths
+                    units
+                    weather
+                  }
+                }
+                hero
+                id
+                images
+                modifier
+                name
+                quote
+                scorchMin
+                scorchScope 
+                special
+                strength
+              }
+            }
+          }
+        }
+        passed
+        ranged {
+          modifier {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+          score
+          units {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+        }
+        result 
+        score
+        siege {
+          modifier {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+          score
+          units {
+            artStyle
+            effectiveStrength
+            effects {
+              operator
+              reason {
+                ... on EffectFromLeader {
+                  leader {
+                    ability
+                    created
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    id
+                    image
+                    name
+                    quote
+                  }
+                }
+                ... on EffectFromUnit {
+                  effect {
+                    ability
+                    created
+                    id
+                    image
+                    key 
+                    name
+                  }
+                  unit {
+                    combats 
+                    created
+                    deckable
+                    dlc {
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    effectPrefix
+                    effects {
+                      ability
+                      created
+                      id
+                      image
+                      key 
+                      name
+                    }
+                    faction {
+                      ability
+                      created
+                      dlc {
+                        created
+                        id
+                        image
+                        key 
+                        name
+                      }
+                      id
+                      image
+                      key 
+                      name
+                      stats {
+                        agile
+                        avenger
+                        berserker
+                        bond
+                        close
+                        decoy
+                        heroes
+                        horn
+                        mardroeme
+                        medic
+                        morale
+                        muster
+                        ranged
+                        scorch
+                        siege
+                        specials
+                        spy
+                        strengthAverage
+                        strengthTotal
+                        strengths
+                        units
+                        weather
+                      }
+                    }
+                    hero
+                    id
+                    images
+                    modifier
+                    name
+                    quote
+                    scorchMin
+                    scorchScope 
+                    special
+                    strength
+                  }
+                }
+              }
+              total
+            }
+            row 
+            unit {
+              combats 
+              created
+              deckable
+              dlc {
+                created
+                id
+                image
+                key 
+                name
+              }
+              effectPrefix
+              effects {
+                ability
+                created
+                id
+                image
+                key 
+                name
+              }
+              faction {
+                ability
+                created
+                dlc {
+                  created
+                  id
+                  image
+                  key 
+                  name
+                }
+                id
+                image
+                key 
+                name
+                stats {
+                  agile
+                  avenger
+                  berserker
+                  bond
+                  close
+                  decoy
+                  heroes
+                  horn
+                  mardroeme
+                  medic
+                  morale
+                  muster
+                  ranged
+                  scorch
+                  siege
+                  specials
+                  spy
+                  strengthAverage
+                  strengthTotal
+                  strengths
+                  units
+                  weather
+                }
+              }
+              hero
+              id
+              images
+              modifier
+              name
+              quote
+              scorchMin
+              scorchScope 
+              special
+              strength
+            }
+          }
+        }
+      }
+      user {
+        created
+        id
+        name
+      }
+    }
+    updated
+    victors {
+      created
+      id
+      name
+    }
+    weather 
+  }
+}

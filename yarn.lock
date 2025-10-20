@@ -4446,6 +4446,17 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@gwent/test-chaos@workspace:test/chaos":
+  version: 0.0.0-use.local
+  resolution: "@gwent/test-chaos@workspace:test/chaos"
+  dependencies:
+    "@gwent/env": "workspace:*"
+    "@gwent/graphql-schema": "workspace:*"
+    "@types/node": "npm:22.18.0"
+    "@types/url-join": "npm:4.0.3"
+  languageName: unknown
+  linkType: soft
+
 "@gwent/test-e2e@workspace:test/e2e":
   version: 0.0.0-use.local
   resolution: "@gwent/test-e2e@workspace:test/e2e"

@@ -46,6 +46,7 @@
     "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "convert-eol": "yarn g:ts-node scripts/convert-eol.ts",
     "coverage-view": "yarn g:coverage-view",
+    "generate-node-client-docs": "yarn g:ts-node scripts/generate-node-client-docs.ts",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
     "test-unit": "yarn g:jest --test-type=unit",
