@@ -1,0 +1,35 @@
+{
+  "name": "@gwent/node-client",
+  "version": "0.16.1",
+  "author": "Adam Boe",
+  "description": "A Node.js client/SDK for the Gwent GraphQL API",
+  "main": "build/src/node-client.js",
+  "types": "build/src/node-client.d.ts",
+  "scripts": {
+    "build": "yarn g:npm-run-all --sequential build-codegen build-node",
+    "build-codegen": "yarn g:npm-run-all --sequential generate-docs codegen",
+    "build-node": "yarn g:tsc --build",
+    "clean": "yarn g:rimraf build coverage generated results tsconfig.tsbuildinfo",
+    "codegen": "graphql-codegen --config codegen.ts",
+    "generate-docs": "yarn g:ts-node scripts/generate-node-client-docs.ts",
+    "lint": "yarn g:lint",
+    "lint:fix": "yarn g:lint-fix",
+    "watch": "yarn g:npm-run-all --parallel watch-codegen watch-node",
+    "watch-codegen": "yarn g:nodemon --watch ../graphql-schema/generated/complete-schema.gql --exec 'yarn build-codegen'",
+    "watch-node": "yarn g:tsc --watch"
+  },
+  "dependencies": {
+    "@gwent/graphql-schema": "workspace:*",
+    "graphql": "16.11.0",
+    "graphql-request": "7.3.1",
+    "graphql-tag": "2.12.6"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "6.0.0",
+    "@graphql-codegen/typescript": "5.0.2",
+    "@graphql-codegen/typescript-graphql-request": "6.3.0",
+    "@graphql-codegen/typescript-operations": "5.0.2",
+    "@graphql-tools/schema": "10.0.25",
+    "@types/node": "22.18.0"
+  }
+}

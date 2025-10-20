@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "moduleResolution": "node"
+  },
+  "extends": "../../tsconfig",
+  "include": ["src/**/*"],
+  "references": [{ "path": "../../libs/env" }, { "path": "../../libs/node-client" }]
+}

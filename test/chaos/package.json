@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@gwent/env": "workspace:*",
-    "@gwent/graphql-schema": "workspace:*"
+    "@gwent/node-client": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.18.0",

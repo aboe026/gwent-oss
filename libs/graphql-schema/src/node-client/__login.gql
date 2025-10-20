@@ -1,7 +1,0 @@
-mutation login($name: String!, $password: String!) {
-  login(name: $name, password: $password) {
-    created
-    id
-    name
-  }
-}

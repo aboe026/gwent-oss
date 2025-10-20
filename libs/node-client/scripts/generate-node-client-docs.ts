@@ -13,10 +13,9 @@ import fs from 'fs/promises'
 import path from 'path'
 
 // TODO: add description
-// TODO: make sure it is auto-run in watch mode on changes to schema
 //
 ;(async () => {
-  const schemaContents = await fs.readFile(path.join(__dirname, '../generated/complete-schema.gql'), {
+  const schemaContents = await fs.readFile(path.join(__dirname, '../../graphql-schema/generated/complete-schema.gql'), {
     encoding: 'utf-8',
   })
   const schema = buildSchema(schemaContents)
@@ -28,11 +27,14 @@ import path from 'path'
     throw Error(`Failed to introspect schema: "${JSON.stringify(introspectionResult.errors)}"`)
   }
 
-  const docOutputDir = path.join(__dirname, '../src/node-client')
+  const docOutputDir = path.join(__dirname, '../generated/docs')
   await fs.rm(docOutputDir, {
     recursive: true,
+    force: true,
   })
-  await fs.mkdir(docOutputDir)
+  await fs.mkdir(docOutputDir, {
+    recursive: true,
+  })
 
   const queryType = schema.getQueryType()
   const mutationType = schema.getMutationType()
@@ -83,7 +85,7 @@ async function generateOperations({
 
     const operation = `${operationHeader} {\n  ${fieldCall} ${selection}\n}`
 
-    const filePath = path.join(outputDir, `__${field.name}.gql`)
+    const filePath = path.join(outputDir, `${field.name}.gql`)
     await fs.writeFile(filePath, operation)
   }
 }

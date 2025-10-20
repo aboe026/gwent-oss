@@ -1,8 +1,0 @@
-query settings {
-  settings {
-    key 
-    label
-    type 
-    value
-  }
-}

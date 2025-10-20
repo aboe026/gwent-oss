@@ -1,6 +1,6 @@
 import fs from 'fs/promises'
 
-import { createClient } from '@gwent/graphql-schema/node-client'
+import { createClient } from '@gwent/node-client'
 import env from './env'
 
 //
@@ -19,14 +19,15 @@ import env from './env'
     name: `rando-opponent-${Date.now()}`,
     password: 'password',
   })
-  await log(`Self username: "${self.addUser.name}"`)
-  await log(`Opponent username: "${opponent.addUser.name}"`)
+  await log(`Self username: "${self.name}"`)
+  await log(`Opponent username: "${opponent.name}"`)
 })().catch((err) => {
   console.error(err)
   process.exitCode = 1
 })
 
 async function log(text: string) {
+  console.log(text)
   await fs.appendFile(env.LOG_FILE, `${text}\n`, {
     encoding: 'utf-8',
   })

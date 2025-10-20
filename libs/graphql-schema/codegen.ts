@@ -89,11 +89,6 @@ const config: CodegenConfig = {
         documentMode: 'string',
       },
     },
-    // typings for Node.js client
-    './generated/node-sdk.ts': {
-      documents: ['./src/node-client/*.gql'],
-      plugins: ['typescript', 'typescript-operations', 'typescript-graphql-request'],
-    },
   },
   hooks: {
     afterAllFileWrite: ['yarn add-graphql-to-apollo', 'yarn convert-eol'],

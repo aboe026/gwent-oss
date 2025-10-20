@@ -108,10 +108,13 @@
     { "path": "libs/env" },
     { "path": "libs/graphql-schema" },
     { "path": "libs/lcov-dark-mode" },
+    { "path": "libs/node-client" },
     { "path": "libs/utils" },
     { "path": "libs/validators" },
     { "path": "msvs/api" },
     { "path": "msvs/ui" },
-    { "path": "msvs/ui/libs/client" }
+    { "path": "msvs/ui/libs/client" },
+    { "path": "test/e2e" },
+    { "path": "test/chaos" }
   ]
 }
