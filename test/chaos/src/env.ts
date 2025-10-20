@@ -1,6 +1,6 @@
 import path from 'path'
 
-import getEnv, { NODE_ENV, num, url } from '@gwent/env'
+import getEnv, { NODE_ENV, num, str, url } from '@gwent/env'
 
 export default getEnv({
   dotEnvFilePath: process.env.NODE_ENV === NODE_ENV.Dev ? path.join(__dirname, '..', '.env') : '',
@@ -12,6 +12,10 @@ export default getEnv({
     GAMES_TO_PLAY: num({
       desc: 'The number of games to play.',
       default: 1,
+    }),
+    LOG_FILE: str({
+      desc: 'The path to the file to store log output',
+      default: 'output.log',
     }),
   },
 })
