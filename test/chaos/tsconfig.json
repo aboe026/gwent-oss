@@ -5,5 +5,5 @@
   },
   "extends": "../../tsconfig",
   "include": ["src/**/*"],
-  "references": [{ "path": "../../libs/env" }, { "path": "../../libs/node-client" }]
+  "references": [{ "path": "../../libs/env" }, { "path": "../../libs/node-client" }, { "path": "../../libs/utils" }]
 }

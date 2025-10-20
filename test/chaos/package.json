@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@gwent/env": "workspace:*",
-    "@gwent/node-client": "workspace:*"
+    "@gwent/node-client": "workspace:*",
+    "@gwent/utils": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "22.18.0",

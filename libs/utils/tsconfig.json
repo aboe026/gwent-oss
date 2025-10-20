@@ -1,5 +1,5 @@
 {
   "extends": "../../tsconfig",
   "include": ["src/**/*"],
-  "references": [{ "path": "../graphql-schema" }]
+  "references": [{ "path": "../constants" }, { "path": "../graphql-schema" }]
 }

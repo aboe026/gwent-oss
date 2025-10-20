@@ -921,6 +921,7 @@ function renderUnits({
           </div>
           <div id="deckEditorUnitsContainerMiddle">
             <UnitsStats
+              allUnits={sortedUnits}
               availableFilterFields={availableFilterFields}
               availableFiltersExpanded={availableFiltersExpanded}
               availableNameFilter={availableNameFilter}

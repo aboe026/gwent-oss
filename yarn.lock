@@ -4469,6 +4469,7 @@ __metadata:
   dependencies:
     "@gwent/env": "workspace:*"
     "@gwent/node-client": "workspace:*"
+    "@gwent/utils": "workspace:*"
     "@types/node": "npm:22.18.0"
     "@types/url-join": "npm:4.0.3"
   languageName: unknown
@@ -4517,6 +4518,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@gwent/utils@workspace:libs/utils"
   dependencies:
+    "@gwent/constants": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
     "@types/jest": "npm:30.0.0"
     "@types/node": "npm:22.18.0"

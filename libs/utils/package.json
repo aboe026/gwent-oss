@@ -15,6 +15,7 @@
     "watch": "yarn g:tsc --watch"
   },
   "dependencies": {
+    "@gwent/constants": "workspace:*",
     "@gwent/graphql-schema": "workspace:*"
   },
   "devDependencies": {

@@ -250,7 +250,9 @@ export default class Api {
         origin: [env().CORS_ORIGIN],
         credentials: true,
       }),
-      json(),
+      json({
+        limit: '1mb',
+      }),
       expressMiddleware(Api.apolloServer, {
         context: Api.setContext,
       })

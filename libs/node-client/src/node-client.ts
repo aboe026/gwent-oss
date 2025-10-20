@@ -5,11 +5,13 @@ import { getSdk } from '../generated/node-sdk'
 
 type Sdk = ReturnType<typeof getSdk>
 
-type FlattenedSdk = {
+export type GwentClient = {
   [K in keyof Sdk]: Sdk[K] extends (vars: infer V) => Promise<infer R>
     ? (vars: V) => Promise<Exclude<R[keyof R], undefined | 'Mutation' | 'Query'>>
     : never
 }
+
+export * from '../generated/node-sdk'
 
 // TODO: change to function?
 // TODO: add jsdocs
@@ -58,5 +60,5 @@ export const createClient = ({
     ])
   )
 
-  return wrapped as FlattenedSdk
+  return wrapped as GwentClient
 }
