@@ -35,6 +35,8 @@ Existing problems in the codebase that need to be fixed.
   - use AI upscaler?
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - rename "undrawn" to "draw" (since its the draw pile?)
+- remove @gwent/graphql-schema dependency from @gwent/test-e2e once filters/sorting in schema
+- have node-client export class instead of function (attempted to but lost typings)
 - improve UX around game player info (username, score, rounds, passed)
 - centralize error handling in the UI
   - single place to watch for any error and automatially re-auths and re-calls failing operations

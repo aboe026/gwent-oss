@@ -12,8 +12,11 @@ import {
 import fs from 'fs/promises'
 import path from 'path'
 
-// TODO: add description
-//
+/**
+ * Dynamically parses GraphQL schema and outputs GraphQL documents
+ * for every query/mutation and their full/recursive response types
+ * for ingestion by the node-client so it automatically has everything
+ */
 ;(async () => {
   const schemaContents = await fs.readFile(path.join(__dirname, '../../graphql-schema/generated/complete-schema.gql'), {
     encoding: 'utf-8',

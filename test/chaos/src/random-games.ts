@@ -1,8 +1,7 @@
 import fs from 'fs/promises'
 
-import {
+import createGwentClient, {
   Combat,
-  createClient,
   Deck,
   DeckUnit,
   FactionKey,
@@ -22,19 +21,37 @@ const PASSWORD = 'password'
   await fs.rm(env.LOG_FILE, {
     force: true,
   })
-  const client = createClient({
+  const client = createGwentClient({
     graphqlUrl: env.API_URL,
   })
-  const self = await client.addUser({
-    name: `rando-self-${Date.now()}`,
-    password: PASSWORD,
-  })
-  const opponent = await client.addUser({
-    name: `rando-opponent-${Date.now()}`,
-    password: PASSWORD,
-  })
-  await log(`Self username: "${self.name}"`)
-  await log(`Opponent username: "${opponent.name}"`)
+  const selfName = `rando-self-${Date.now()}`
+  const oppName = `rando-opponent-${Date.now()}`
+  await log(`Self username: "${selfName}"`)
+  await log(`Opponent username: "${oppName}"`)
+
+  const self: Player = {
+    client: createGwentClient({
+      graphqlUrl: env.API_URL,
+      username: selfName,
+      password: PASSWORD,
+    }),
+    user: await client.addUser({
+      name: selfName,
+      password: PASSWORD,
+    }),
+  }
+  const opponent: Player = {
+    client: createGwentClient({
+      graphqlUrl: env.API_URL,
+      username: oppName,
+      password: PASSWORD,
+    }),
+    user: await client.addUser({
+      name: oppName,
+      password: PASSWORD,
+    }),
+  }
+
   for (let i = 0; i < env.GAMES_TO_PLAY; i++) {
     await createAndPlayGame({
       self,
@@ -54,29 +71,19 @@ async function log(text: string) {
   })
 }
 
-async function createAndPlayGame({ self, opponent, index }: { self: User; opponent: User; index: number }) {
-  await log(`********** Game ${index + 1}/${env.GAMES_TO_PLAY} **********`)
-  const selfClient = await createClient({
-    graphqlUrl: env.API_URL,
-    username: self.name,
-    password: PASSWORD,
-  })
-  const oppClient = await createClient({
-    graphqlUrl: env.API_URL,
-    username: opponent.name,
-    password: PASSWORD,
-  })
+async function createAndPlayGame({ self, opponent, index }: { self: Player; opponent: Player; index: number }) {
+  await log(`🚀 ********** Game ${index + 1}/${env.GAMES_TO_PLAY} **********`)
 
-  const game = await selfClient.addGame({
-    opponentNames: [opponent.name],
+  const game = await self.client.addGame({
+    opponentNames: [opponent.user.name],
   })
 
   const selfDeck = await createRandomDeck({
-    client: selfClient,
+    client: self.client,
     index,
   })
   const oppDeck = await createRandomDeck({
-    client: oppClient,
+    client: opponent.client,
     index,
   })
 
@@ -85,11 +92,11 @@ async function createAndPlayGame({ self, opponent, index }: { self: User; oppone
 
   await log(`Game ${index + 1}/${env.GAMES_TO_PLAY} ID: "${game.id}"`)
 
-  const selfGameDeck = await selfClient.setDeck({
+  const selfGameDeck = await self.client.setDeck({
     deck: selfDeck.id,
     game: game.id,
   })
-  const oppGameDeck = await oppClient.setDeck({
+  const oppGameDeck = await opponent.client.setDeck({
     deck: oppDeck.id,
     game: game.id,
   })
@@ -97,11 +104,11 @@ async function createAndPlayGame({ self, opponent, index }: { self: User; oppone
   const selfScoiatael = selfDeck.faction.key === FactionKey.ScoiaTael
   const oppScoiatael = oppDeck.faction.key === FactionKey.ScoiaTael
   if ((selfScoiatael || oppScoiatael) && !(selfScoiatael && oppScoiatael)) {
-    const order = randomizeOrder([self.id, opponent.id])
+    const order = randomizeOrder([self.user.id, opponent.user.id])
     await log(
-      `User "${selfScoiatael ? opponent.name : self.name}" has Scoia'Tael deck, setting order to "${JSON.stringify(order)}"`
+      `User "${selfScoiatael ? opponent.user : self.user.name}" has Scoia'Tael deck, setting order to "${JSON.stringify(order)}"`
     )
-    const client = selfScoiatael ? selfClient : oppClient
+    const client = selfScoiatael ? self.client : opponent.client
     await client.setOrder({
       game: game.id,
       users: order,
@@ -110,34 +117,28 @@ async function createAndPlayGame({ self, opponent, index }: { self: User; oppone
 
   await redrawRandomly({
     gameId: game.id,
-    client: selfClient,
+    client: self.client,
     gameDeck: selfGameDeck,
-    username: self.name,
+    username: self.user.name,
   })
   await redrawRandomly({
     gameId: game.id,
-    client: oppClient,
+    client: opponent.client,
     gameDeck: oppGameDeck,
-    username: opponent.name,
+    username: opponent.user.name,
   })
 
-  await selfClient.ready({
+  await self.client.ready({
     game: game.id,
   })
-  await oppClient.ready({
+  await opponent.client.ready({
     game: game.id,
   })
 
   await playGame({
     gameId: game.id,
-    self: {
-      client: selfClient,
-      user: self,
-    },
-    opponent: {
-      client: oppClient,
-      user: opponent,
-    },
+    self,
+    opponent,
   })
 
   await log('\n')
@@ -250,7 +251,7 @@ async function playGame({ gameId, self, opponent }: { gameId: string; self: Play
   for (const victor of game.victors) {
     const player = game.players.find((player) => player.user.id === victor.id)
     await log(
-      `Player "${victor.name} ${game.victors.length === 1 ? 'Won' : 'Tied'} game "${gameId}" with rounds "${JSON.stringify(player?.rounds.map((round) => round.result))}"`
+      `🏆 Player "${victor.name} ${game.victors.length === 1 ? 'Won' : 'Tied'} game "${gameId}" with rounds "${JSON.stringify(player?.rounds.map((round) => round.result))}"`
     )
   }
 }
@@ -287,7 +288,7 @@ async function playRound({
       game: gameId,
     })
     if (pass === 0 || gameDeck?.hand.length === 0) {
-      await log(`Playing pass for user "${name}"`)
+      await log(`🏳️  Playing pass for user "${name}"`)
       await client.playPass({
         game: gameId,
       })
@@ -307,7 +308,7 @@ async function playRound({
             items: unit.unit.combats,
           })
         }
-        await log(`Playing unit "${unit.unit.name}" (${unit.unit.id}) for user "${name}"`)
+        await log(`🎴 Playing unit "${unit.unit.name}" (${unit.unit.id}) for user "${name}"`)
         // TODO: prevent against playing modifier when already set?
         await client.playUnit({
           game: gameId,
