@@ -8,13 +8,12 @@
 logback.log
 
 build
+generated
 tsconfig.tsbuildinfo
 
 coverage
 perf
 results
-
-generated
 
 screenshots
 

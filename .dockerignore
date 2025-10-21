@@ -15,6 +15,7 @@
 logback.log
 
 **/build
+**/generated
 **/tsconfig.tsbuildinfo
 
 **/Dockerfile

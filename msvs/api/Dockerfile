@@ -13,12 +13,15 @@ ENV NODE_ENV=production
 
 COPY . ${APP_DIR}
 
-WORKDIR ${APP_DIR}/msvs/api
+WORKDIR ${APP_DIR}
 RUN corepack enable
 RUN yarn install
+WORKDIR ${APP_DIR}/libs/graphql-schema
+RUN yarn build-codegen
+WORKDIR ${APP_DIR}/msvs/api
 RUN yarn build
 RUN yarn cache clean --all
-RUN echo "{\"buildNumber\": ${BUILD}}" > app-info.json
+RUN echo "{\"buildNumber\": ${BUILD}}" > ${APP_DIR}/app-info.json
 
 ###########
 # RUNTIME #
