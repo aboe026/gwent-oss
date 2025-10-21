@@ -12,14 +12,11 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
-- exclude generated docs from source code in graphql-schema lib
-
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat
   - "Any" icon/text for units that can be played on any row
   - "Modifier" icon/text for row modifiers (Commander's Horn/Mardroeme)
 - improve performance when typing name for deck
-- rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
 - remove unnecessary dependencies
   - figlet: just have hard-coded banner text for startup
   - fs-extra: just use fs or fs/promises, maybe helper method for "exists"
@@ -105,8 +102,6 @@ New things that should be added to the codebase.
   - How to handle brought back for HistoryMove/Impact? unique per created?
 - Avenger
   - How to handle duplicates on battlefield? Use "created" field as differentiator?
-- Bond
-  - verify Cerys musters have bond applied
 - Better game summarization (graphs?)
   - points per round
   - time per round
@@ -119,7 +114,6 @@ New things that should be added to the codebase.
   - manual review?
 - rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
-- "Randomize" button for creating deck?
 - Units can be discarded instead of played (discardUnit mutation?)
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - game history improvements
