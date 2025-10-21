@@ -12,6 +12,7 @@
     "watch": "yarn build-tsc --watch"
   },
   "dependencies": {
+    "@gwent/constants": "workspace:*",
     "@gwent/env": "workspace:*",
     "@gwent/node-client": "workspace:*",
     "@gwent/utils": "workspace:*"

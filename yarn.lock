@@ -4467,6 +4467,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@gwent/test-chaos@workspace:test/chaos"
   dependencies:
+    "@gwent/constants": "workspace:*"
     "@gwent/env": "workspace:*"
     "@gwent/node-client": "workspace:*"
     "@gwent/utils": "workspace:*"
