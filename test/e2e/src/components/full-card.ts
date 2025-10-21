@@ -1,6 +1,6 @@
 import { Selector, t } from 'testcafe'
 
-import { EffectKey, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { EffectKey, FactionKey, Unit } from '@gwent/node-client'
 import { HTML_CLASSES, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { toTitleCase } from '@gwent/utils'
 

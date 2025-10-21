@@ -1,5 +1,5 @@
 import ApiClient from '../util/api-client'
-import { Combat, Faction, FactionKey, GameStatus, Leader, SettingKey } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Faction, FactionKey, GameStatus, Leader, SettingKey } from '@gwent/node-client'
 import createGameManager from '../util/game-manager'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'

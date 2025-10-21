@@ -1,6 +1,6 @@
 import { t } from 'testcafe'
 
-import { Deck, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, Faction, Leader } from '@gwent/node-client'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { humanizeDay, humanizeTime } from '@gwent/utils'
 

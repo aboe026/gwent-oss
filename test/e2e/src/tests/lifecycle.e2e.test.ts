@@ -1,6 +1,6 @@
 import ApiClient from '../util/api-client'
 import Banner from '../components/banner'
-import { Combat, FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, FactionKey, GameStatus } from '@gwent/node-client'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import DeckPage from '../page-objects/deck-page'

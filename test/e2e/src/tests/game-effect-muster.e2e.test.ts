@@ -1,4 +1,4 @@
-import { Combat, EffectKey, FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, EffectKey, FactionKey } from '@gwent/node-client'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
 import { EFFECT_OPERATOR } from '@gwent/constants'

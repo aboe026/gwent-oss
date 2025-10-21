@@ -10,6 +10,7 @@
     { "path": "../../libs/db-profiler" },
     { "path": "../../libs/env" },
     { "path": "../../libs/graphql-schema" },
+    { "path": "../../libs/node-client" },
     { "path": "../../libs/test-utils" },
     { "path": "../../libs/utils" }
   ]

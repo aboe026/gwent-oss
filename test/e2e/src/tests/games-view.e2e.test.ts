@@ -3,7 +3,7 @@ import Banner from '../components/banner'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import GamePage from '../page-objects/game-page'
 import GamesPage from '../page-objects/games-page'
-import { GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { GameStatus } from '@gwent/node-client'
 import LoginPage from '../page-objects/login-page'
 
 const fixture = getFixtureCtx<E2eCtx, E2eCtx>()

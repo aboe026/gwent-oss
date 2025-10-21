@@ -3,7 +3,7 @@ import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
 import GamesPage from '../page-objects/games-page'
-import { FactionKey, Game, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, Game, GameStatus, User } from '@gwent/node-client'
 import LoginPage from '../page-objects/login-page'
 
 interface GamesStatusTestCtx extends E2eCtx {

@@ -1,6 +1,6 @@
 import { Selector, t } from 'testcafe'
 
-import { Combat, EffectKey, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, EffectKey, Faction, Leader } from '@gwent/node-client'
 import E2eUtil from '../util/e2e-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'

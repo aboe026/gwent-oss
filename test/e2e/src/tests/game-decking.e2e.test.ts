@@ -1,5 +1,5 @@
 import ApiClient, { AddDeckInput } from '../util/api-client'
-import { Deck, FactionKey, Game, User } from '@gwent/graphql-schema/resolver-typings'
+import { Deck, FactionKey, Game, User } from '@gwent/node-client'
 import DeckEditor from '../components/deck-editor'
 import DeckList from '../components/deck-list'
 import { DECK_MIN_UNITS, STARTING_HAND_SIZE } from '@gwent/constants'

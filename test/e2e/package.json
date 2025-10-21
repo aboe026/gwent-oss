@@ -26,6 +26,7 @@
     "@gwent/db-profiler": "workspace:*",
     "@gwent/env": "workspace:*",
     "@gwent/graphql-schema": "workspace:*",
+    "@gwent/node-client": "workspace:*",
     "@gwent/test-utils": "workspace:*",
     "@gwent/utils": "workspace:*",
     "cookie": "1.0.2",

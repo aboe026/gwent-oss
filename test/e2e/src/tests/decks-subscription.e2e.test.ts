@@ -5,7 +5,7 @@ import DecksPage from '../page-objects/decks-page'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import { E2eHelper } from '../util/e2e-helper'
 import E2eUtil from '../util/e2e-util'
-import { FactionKey, User } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, User } from '@gwent/node-client'
 import HomePage from '../page-objects/home-page'
 import LoginPage from '../page-objects/login-page'
 

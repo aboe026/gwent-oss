@@ -1,6 +1,6 @@
 import ApiClient from '../util/api-client'
 import createGameManager from '../util/game-manager'
-import { Combat, FactionKey, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, FactionKey, User } from '@gwent/node-client'
 import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
