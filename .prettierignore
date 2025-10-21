@@ -1,20 +1,27 @@
-.env
-.vscode
-
+# Yarn
 .pnp.*
 .yarn
 .yarnrc.yml
 
-logback.log
-
+# TypeScript
 build
-generated
 tsconfig.tsbuildinfo
 
+# Codegen
+generated
+
+# Tests
 coverage
 perf
 results
-
 screenshots
 
+# Environment variable
+.env
+
+# Editor
+.vscode
+
+# Temp
+logback.log
 *@tmp*

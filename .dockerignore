@@ -1,6 +1,4 @@
-**/.env
-.vscode
-
+# Yarn
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -12,20 +10,34 @@
 #!.yarn/cache
 .pnp.*
 
-logback.log
-
+# TypeScript
 **/build
-**/generated
 **/tsconfig.tsbuildinfo
 
+# Codegen
+**/generated
+
+# Docker
 **/Dockerfile
 **/.dockerignore
+compose
 
+# Tests
 **/coverage
 **/perf
 **/test
 **/results
+**/screenshots
 
-compose
+# Dependencies
 node_modules
-scripts
+
+# Environment Variables
+**/.env
+
+# Editor
+.vscode
+
+# Temp
+*@tmp*
+logback.log
