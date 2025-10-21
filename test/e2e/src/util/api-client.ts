@@ -20,6 +20,8 @@ import {
 import env from './e2e-env'
 import { GraphQLClientRequestHeaders } from 'graphql-request/build/esm/types'
 
+// TODO: remove and replace with node-client
+
 export default class ApiClient {
   private _client = new GraphQLClient(urljoin(env.API_BASE_URL, 'graphql'))
 

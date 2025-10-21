@@ -308,6 +308,7 @@ async function playRound({
           })
         }
         await log(`Playing unit "${unit.unit.name}" (${unit.unit.id}) for user "${name}"`)
+        // TODO: prevent against playing modifier when already set?
         await client.playUnit({
           game: gameId,
           unit: unit.unit.id,
