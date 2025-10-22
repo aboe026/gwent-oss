@@ -492,3 +492,52 @@ test('Cancel brings user to decks list', async (t) => {
     decks: [],
   })
 })
+
+test('Create deck with random units', async (t) => {
+  const username = `deck-create-random-${t.ctx.start}`
+  const name = 'Create deck select all'
+  const factionKey = FactionKey.NorthernRealms
+  const leaderName = 'Foltest Son of Medell'
+
+  await new ApiClient({}).addUser({
+    name: username,
+  })
+  const client = new ApiClient({ username })
+  const faction = await client.getFaction({
+    key: factionKey,
+  })
+  const leader = await client.getLeader({
+    faction: factionKey,
+    name: leaderName,
+  })
+  await LoginPage.login({
+    username,
+  })
+  await DeckEditor.setName(name)
+  await DeckEditor.setFaction({
+    faction: faction,
+  })
+  await DeckEditor.setLeader({
+    leader,
+  })
+  await DeckEditor.randomizeUnits()
+
+  await DeckEditor.verifyValid(true)
+  await DeckEditor.save()
+  await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
+
+  const deck = (await client.client.decks({}))[0]
+
+  await DecksPage.verify({
+    decks: [
+      {
+        created: deck.created,
+        faction,
+        leader,
+        name: name,
+        stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
+      },
+    ],
+  })
+})

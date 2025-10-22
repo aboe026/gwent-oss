@@ -133,6 +133,7 @@ export const HTML_IDS = {
   DeckEditorSave: 'deckEditorSave',
   DeckEditorCancel: 'deckEditorCancel',
   DeckEditorUnitsContainer: 'deckEditorUnitsContainer',
+  DeckEditorUnitsRandomize: 'deckEditorUnitsRandomize',
   DeckUnitStatUnit: 'deckUnitStatUnit',
   DeckUnitStatSpecial: 'deckUnitStatSpecial',
   DeckUnitStatHero: 'deckUnitStatHero',

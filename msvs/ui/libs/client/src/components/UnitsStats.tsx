@@ -346,7 +346,10 @@ export default function UnitsStats({
           </div>
         </div>
         <button
-          onClick={() => {
+          id={HTML_IDS.DeckEditorUnitsRandomize}
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
             const randomUnits = RandomizeDeckUnits.fromDeckUnitFragments({
               units: allUnits,
             })
