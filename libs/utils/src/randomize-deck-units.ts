@@ -38,7 +38,6 @@ export default class RandomizeDeckUnits {
       units: units.map((deckUnit) => {
         const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
         return {
-          factionKey: unit.faction.key,
           id: unit.id,
           special: unit.special,
         }
