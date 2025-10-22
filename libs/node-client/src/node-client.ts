@@ -11,6 +11,29 @@ export type GwentClient = {
     : never
 }
 
+/**
+ * Configuration options for creating a GwentClient.
+ */
+export interface GwentClientOptions {
+  /**
+   * The URL to the GraphQL server for the Gwent instance.
+   * For example: https://gwent.com/graphql
+   */
+  graphqlUrl: string
+
+  /**
+   * An optional username for authenticating against the server.
+   * Required for some Queries/Mutations.
+   */
+  username?: string
+
+  /**
+   * An optional password for authenticating against the server.
+   * Required for some Queries/Mutations.
+   */
+  password?: string
+}
+
 export interface GwentClientOptions {
   graphqlUrl: string
   username?: string
@@ -20,7 +43,7 @@ export interface GwentClientOptions {
 export * from '../generated/node-sdk'
 
 /**
- * Creates and instance of a GwentClient, which can be used to interact with a Gwent GraphQL API.
+ * Creates an instance of a GwentClient, which can be used to interact with a Gwent GraphQL API.
  *
  * @param config The configuration used to create the GwentClient instance.
  * @param config.graphqlUrl The URL to the GraphQL server for the Gwent instance (for example: https://gwent.com/graphql).
