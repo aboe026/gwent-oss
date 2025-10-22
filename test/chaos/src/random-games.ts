@@ -18,6 +18,7 @@ const PASSWORD = 'password'
 
 //
 ;(async () => {
+  const start = Date.now()
   await fs.rm(env.LOG_FILE, {
     force: true,
   })
@@ -59,6 +60,7 @@ const PASSWORD = 'password'
       index: i,
     })
   }
+  await log(`Completed in "${((Date.now() - start) / (1000 * 60)).toFixed(2)}" minute(s)`)
 })().catch((err) => {
   console.error(err)
   process.exitCode = 1
@@ -215,6 +217,7 @@ async function redrawRandomly({
 }
 
 async function playGame({ gameId, self, opponent }: { gameId: string; self: Player; opponent: Player }) {
+  const start = Date.now()
   await log('--------- Round 1 ----------')
   await playRound({
     gameId,
@@ -244,10 +247,11 @@ async function playGame({ gameId, self, opponent }: { gameId: string; self: Play
   game = await self.client.game({
     id: gameId,
   })
+  await log('********** Game Summary **********')
+  await log(`Game "${game.id}" took "${((Date.now() - start) / 1000).toFixed(2)}" seconds to play`)
   for (const player of game.players) {
     await log(`Player "${player.user.name}" ended game with "${player.counts?.hand}" units in hand`)
   }
-  await log('---------- Game Summary ----------')
   for (const victor of game.victors) {
     const player = game.players.find((player) => player.user.id === victor.id)
     await log(
@@ -287,37 +291,69 @@ async function playRound({
     const gameDeck = await client.gameDeck({
       game: gameId,
     })
-    if (pass === 0 || gameDeck?.hand.length === 0) {
-      await log(`🏳️  Playing pass for user "${name}"`)
-      await client.playPass({
-        game: gameId,
-      })
-      if (isSelf) {
-        selfPassed = true
-      } else {
-        oppPassed = true
+    if (gameDeck?.hand) {
+      const player = game.players.find((player) => player.user.id === game.turn?.user.id)
+      const round = player?.rounds[game.round - 1]
+      const rowsAvailableToModify: Combat[] = []
+      if (!round?.close.modifier) {
+        rowsAvailableToModify.push(Combat.Close)
       }
-    } else {
-      if (gameDeck?.hand) {
+      if (!round?.ranged.modifier) {
+        rowsAvailableToModify.push(Combat.Ranged)
+      }
+      if (!round?.siege.modifier) {
+        rowsAvailableToModify.push(Combat.Siege)
+      }
+      let modifiersInHand = 0
+      const playableHand: DeckUnit[] = []
+      for (const deckUnit of gameDeck.hand) {
+        let playable = true
+        if (deckUnit.unit.modifier) {
+          if (modifiersInHand < rowsAvailableToModify.length) {
+            modifiersInHand++
+          } else {
+            playable = false
+          }
+        }
+        if (playable) {
+          playableHand.push(deckUnit)
+        }
+      }
+      if (pass === 0 || playableHand.length === 0) {
+        await log(`🏳️ Playing pass for user "${name}"`)
+        await client.playPass({
+          game: gameId,
+        })
+        if (isSelf) {
+          selfPassed = true
+        } else {
+          oppPassed = true
+        }
+      } else {
         const unit = getRandomItem({
-          items: gameDeck?.hand,
+          items: playableHand,
         })
         let combat: Combat | undefined = undefined
-        if (unit.unit.combats && unit.unit.combats.length > 0) {
+        if (unit.unit.modifier) {
+          const combatIndex = getRandomNumber({
+            min: 0,
+            max: rowsAvailableToModify.length - 1,
+          })
+          combat = rowsAvailableToModify.splice(combatIndex, 1)[0]
+        } else if (unit.unit.combats && unit.unit.combats.length > 0) {
           combat = getRandomItem({
             items: unit.unit.combats,
           })
         }
-        await log(`🎴 Playing unit "${unit.unit.name}" (${unit.unit.id}) for user "${name}"`)
-        // TODO: prevent against playing modifier when already set?
+        await log(`🪖 Playing unit "${unit.unit.name}" (${unit.unit.id}) as "${combat}" for user "${name}"`)
         await client.playUnit({
           game: gameId,
           unit: unit.unit.id,
           combat,
         })
-      } else {
-        throw Error(`Could not get game hande for "${name}"`)
       }
+    } else {
+      throw Error(`Could not get game hand for "${name}"`)
     }
   }
   const game = await self.client.game({
