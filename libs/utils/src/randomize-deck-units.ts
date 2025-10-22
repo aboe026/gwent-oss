@@ -5,16 +5,15 @@ import randomizeOrder from './randomize-order'
 import getRandomNumber from './get-random-number'
 
 /**
- * A class to validate user-created Decks.
+ * A class to generate a random set of units for a Deck.
  */
 export default class RandomizeDeckUnits {
   /**
-   * Gets any errors in a user-created Deck with the given DeckUnits.
+   * Generates an array of unit IDs for creating a Deck.
    *
-   * @param config The configuration used to validate the deck.
-   * @param config.faction The Faction the deck is for.
-   * @param config.units The DeckUnits comprising the Deck.
-   * @returns An array of potential violations the deck might have.
+   * @param config The configuration used to generate the random Deck Units.
+   * @param config.units The Units that can make up the Deck.
+   * @returns An array of Unit IDs which can be used to create a Deck.
    */
   static fromUnits({ units }: { units: Unit[] }) {
     return RandomizeDeckUnits.randomize({
@@ -28,12 +27,11 @@ export default class RandomizeDeckUnits {
   }
 
   /**
-   * Gets any errors in a user-created Deck with the given DeckUnitFragments.
+   * Generates an array of unit IDs for creating a Deck.
    *
-   * @param config The configuration used to validate the deck.
-   * @param config.faction The Faction the deck is for.
-   * @param config.deckUnits The DeckUnitFragments comprising the Deck.
-   * @returns An array of potential violations the deck might have.
+   * @param config The configuration used to generate the random Deck Units.
+   * @param config.units The Units that can make up the Deck.
+   * @returns An array of Unit IDs which can be used to create a Deck.
    */
   static fromDeckUnitFragments({ units }: { units: DeckUnitFragment[] }) {
     return RandomizeDeckUnits.randomize({
@@ -49,11 +47,11 @@ export default class RandomizeDeckUnits {
   }
 
   /**
-   * Gets any errors in a user-created Deck.
+   * Generates an array of unit IDs for creating a Deck.
    *
-   * @param config The configuration used to validate the deck.
-   * @param config.deckUnits The Deck Units comprising the Deck.
-   * @returns An array of potential violations the deck might have.
+   * @param config The configuration used to generate the random Deck Units.
+   * @param config.units The Units that can make up the Deck.
+   * @returns An array of Unit IDs which can be used to create a Deck.
    */
   private static randomize({ units }: { units: UnitForValidation[] }): string[] {
     const randomUnits = randomizeOrder(units)
