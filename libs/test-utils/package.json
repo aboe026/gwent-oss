@@ -7,6 +7,7 @@
   "types": "build/src/index.d.ts",
   "scripts": {
     "build": "yarn g:tsc --build",
+    "build-all": "yarn g:recurse @gwent/test-utils run build",
     "clean": "yarn g:rimraf build",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",

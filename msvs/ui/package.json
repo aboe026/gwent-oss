@@ -6,6 +6,7 @@
   "main": "src/index.ts",
   "scripts": {
     "build": "yarn g:npm-run-all --parallel build-tsc build-client",
+    "build-all": "yarn g:recurse @gwent/msv-ui run build",
     "build-tsc": "yarn g:tsc --build",
     "build-client": "yarn workspaces foreach --worktree --parallel --interlaced --topological-dev --exclude @gwent/msv-ui run build",
     "build-image": "docker build --tag=gwent-ui:${IMAGE_TAG:-latest} --progress=plain --file=Dockerfile --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0} ${BUILD_OPTIONS:-} ../../",

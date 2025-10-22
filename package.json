@@ -30,6 +30,7 @@
     "g:nodemon": "cd $INIT_CWD && nodemon",
     "g:npm-run-all": "cd $INIT_CWD && npm-run-all",
     "g:prettier": "cd $INIT_CWD && prettier --config $PROJECT_CWD/.prettierrc.json --ignore-path $PROJECT_CWD/.prettierignore",
+    "g:recurse": "yarn workspaces foreach --recursive --parallel --topological-dev --interlaced --from",
     "g:rimraf": "cd $INIT_CWD && rimraf",
     "g:ts-node": "cd $INIT_CWD && ts-node",
     "g:tsc": "cd $INIT_CWD && tsc",

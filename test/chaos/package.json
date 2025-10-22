@@ -5,6 +5,7 @@
   "description": "Non deterministic testing",
   "scripts": {
     "build": "yarn g:tsc --build",
+    "build-all": "yarn g:recurse @gwent/test-chaos run build",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",

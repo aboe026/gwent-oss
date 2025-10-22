@@ -5,6 +5,7 @@
   "description": "E2E browser testing for Gwent website",
   "scripts": {
     "build": "yarn g:npm-run-all --sequential build-tsc remove-context-overrides",
+    "build-all": "yarn g:recurse @gwent/test-e2e run build",
     "build-tsc": "yarn g:tsc --build",
     "build-image": "docker build --tag=testcafe/testcafe:${IMAGE_TAG:-yarn-pnp} --progress=plain ${BUILD_OPTIONS:-} .",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",

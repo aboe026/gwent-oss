@@ -40,6 +40,7 @@
   "scripts": {
     "add-graphql-to-apollo": "yarn g:ts-node scripts/add-graphql-to-apollo.ts",
     "build": "yarn g:npm-run-all --sequential build-codegen build-node",
+    "build-all": "yarn g:recurse @gwent/graphql-schema run build",
     "build-codegen": "graphql-codegen --config codegen.ts",
     "build-node": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build coverage generated results tsconfig.tsbuildinfo",

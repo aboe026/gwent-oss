@@ -8,6 +8,7 @@
   "scripts": {
     "analyze": "yarn g:ts-node scripts/analyze.ts",
     "build": "yarn g:tsc --build",
+    "build-all": "yarn g:recurse @gwent/db-profiler run build",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
