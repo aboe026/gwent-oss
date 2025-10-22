@@ -251,7 +251,7 @@ export default class Api {
         credentials: true,
       }),
       json({
-        limit: '1mb',
+        limit: env().JSON_UPLOAD_LIMIT,
       }),
       expressMiddleware(Api.apolloServer, {
         context: Api.setContext,
