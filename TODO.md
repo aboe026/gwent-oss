@@ -37,6 +37,9 @@ Existing problems in the codebase that need to be fixed.
 - rename "undrawn" to "draw" (since its the draw pile?)
 - remove @gwent/graphql-schema dependency from @gwent/test-e2e once filters/sorting in schema
 - have node-client export class instead of function (attempted to but lost typings)
+- eliminate need to manually run codegen in @gwent/graphql-schema to build @gwent/api
+  - the "build" command in @gwent/api relies on TypeScript to build dependent packages, but since codegen is outside of typescript, it does not get built
+  - write script to run command in dependant yarn packages recursively? Or use Lerna?
 - improve UX around game player info (username, score, rounds, passed)
 - centralize error handling in the UI
   - single place to watch for any error and automatially re-auths and re-calls failing operations

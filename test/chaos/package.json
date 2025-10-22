@@ -1,6 +1,6 @@
 {
   "name": "@gwent/test-chaos",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "author": "Adam Boe",
   "description": "Non deterministic testing",
   "scripts": {
