@@ -1,8 +1,8 @@
-import { Unit } from '@gwent/graphql-schema/resolver-typings'
-import { DeckUnitFragment, useFragment, UnitFragmentDoc } from '@gwent/graphql-schema/apollo-typings'
 import { DECK_MAX_SPECIALS, DECK_MIN_UNITS } from '@gwent/constants'
-import randomizeOrder from './randomize-order'
+import { DeckUnitFragment, useFragment, UnitFragmentDoc } from '@gwent/graphql-schema/apollo-typings'
 import getRandomNumber from './get-random-number'
+import randomizeOrder from './randomize-order'
+import { Unit } from '@gwent/graphql-schema/resolver-typings'
 
 /**
  * A class to generate a random set of units for a Deck.

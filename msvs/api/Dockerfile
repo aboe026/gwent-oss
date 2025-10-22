@@ -18,7 +18,7 @@ RUN corepack enable
 RUN yarn install
 RUN yarn build-all
 RUN yarn cache clean --all
-RUN echo "{\"buildNumber\": ${BUILD}}" > ${APP_DIR}/app-info.json
+RUN echo "{\"buildNumber\": ${BUILD}}" > app-info.json
 
 ###########
 # RUNTIME #
