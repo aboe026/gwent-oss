@@ -1,10 +1,11 @@
 {
   "name": "@gwent/test-e2e",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "author": "Adam Boe",
   "description": "E2E browser testing for Gwent website",
   "scripts": {
     "build": "yarn g:npm-run-all --sequential build-tsc remove-context-overrides",
+    "build-all": "yarn g:recurse @gwent/test-e2e run build",
     "build-tsc": "yarn g:tsc --build",
     "build-image": "docker build --tag=testcafe/testcafe:${IMAGE_TAG:-yarn-pnp} --progress=plain ${BUILD_OPTIONS:-} .",
     "clean": "yarn g:rimraf build tsconfig.tsbuildinfo",
@@ -26,6 +27,7 @@
     "@gwent/db-profiler": "workspace:*",
     "@gwent/env": "workspace:*",
     "@gwent/graphql-schema": "workspace:*",
+    "@gwent/node-client": "workspace:*",
     "@gwent/test-utils": "workspace:*",
     "@gwent/utils": "workspace:*",
     "cookie": "1.0.2",

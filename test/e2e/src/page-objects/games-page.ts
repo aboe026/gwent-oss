@@ -2,7 +2,7 @@ import { Selector, t } from 'testcafe'
 
 import E2eUtil from '../util/e2e-util'
 import { FILTER_FIELD, SORT_FIELD } from '@gwent/graphql-schema/games-filter'
-import { FactionKey, GameStatus } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey, GameStatus } from '@gwent/node-client'
 import { formatGameStatus, humanizeDay, humanizeTime } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 

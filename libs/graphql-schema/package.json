@@ -1,6 +1,6 @@
 {
   "name": "@gwent/graphql-schema",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "author": "Adam Boe",
   "description": "Schema definitions for GraphQL API",
   "main": "build/src/index.js",
@@ -40,10 +40,10 @@
   "scripts": {
     "add-graphql-to-apollo": "yarn g:ts-node scripts/add-graphql-to-apollo.ts",
     "build": "yarn g:npm-run-all --sequential build-codegen build-node",
+    "build-all": "yarn g:recurse @gwent/graphql-schema run build",
     "build-codegen": "graphql-codegen --config codegen.ts",
     "build-node": "yarn g:tsc --build",
-    "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
-    "convert-eol": "yarn g:ts-node scripts/convert-eol.ts",
+    "clean": "yarn g:rimraf build coverage generated results tsconfig.tsbuildinfo",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",

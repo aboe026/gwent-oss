@@ -1,12 +1,13 @@
 {
   "name": "@gwent/test-utils",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "author": "Adam Boe",
   "description": "Utility functions for tests",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
     "build": "yarn g:tsc --build",
+    "build-all": "yarn g:recurse @gwent/test-utils run build",
     "clean": "yarn g:rimraf build",
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",

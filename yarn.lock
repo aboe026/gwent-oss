@@ -3514,6 +3514,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@graphql-codegen/typescript-graphql-request@npm:6.3.0":
+  version: 6.3.0
+  resolution: "@graphql-codegen/typescript-graphql-request@npm:6.3.0"
+  dependencies:
+    "@graphql-codegen/plugin-helpers": "npm:^3.0.0"
+    "@graphql-codegen/visitor-plugin-common": "npm:2.13.8"
+    auto-bind: "npm:~4.0.0"
+    tslib: "npm:^2.8.1"
+  peerDependencies:
+    graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
+    graphql-request: ^6.0.0 || ^7.0.0
+    graphql-tag: ^2.0.0
+  checksum: 10/31096ec110fc1184829f5a58c904a8911514e11ac54ad7da474ebbf747272864ac4f290c563060c0ee59b93667945e28d8cf4727674c4a3a176921320dd2c10c
+  languageName: node
+  linkType: hard
+
 "@graphql-codegen/typescript-mongodb@npm:3.0.1":
   version: 3.0.1
   resolution: "@graphql-codegen/typescript-mongodb@npm:3.0.1"
@@ -4428,6 +4444,36 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@gwent/node-client@workspace:*, @gwent/node-client@workspace:libs/node-client":
+  version: 0.0.0-use.local
+  resolution: "@gwent/node-client@workspace:libs/node-client"
+  dependencies:
+    "@graphql-codegen/cli": "npm:6.0.0"
+    "@graphql-codegen/typescript": "npm:5.0.2"
+    "@graphql-codegen/typescript-graphql-request": "npm:6.3.0"
+    "@graphql-codegen/typescript-operations": "npm:5.0.2"
+    "@graphql-tools/schema": "npm:10.0.25"
+    "@gwent/graphql-schema": "workspace:*"
+    "@types/node": "npm:22.18.0"
+    graphql: "npm:16.11.0"
+    graphql-request: "npm:7.3.1"
+    graphql-tag: "npm:2.12.6"
+  languageName: unknown
+  linkType: soft
+
+"@gwent/test-chaos@workspace:test/chaos":
+  version: 0.0.0-use.local
+  resolution: "@gwent/test-chaos@workspace:test/chaos"
+  dependencies:
+    "@gwent/constants": "workspace:*"
+    "@gwent/env": "workspace:*"
+    "@gwent/node-client": "workspace:*"
+    "@gwent/utils": "workspace:*"
+    "@types/node": "npm:22.18.0"
+    "@types/url-join": "npm:4.0.3"
+  languageName: unknown
+  linkType: soft
+
 "@gwent/test-e2e@workspace:test/e2e":
   version: 0.0.0-use.local
   resolution: "@gwent/test-e2e@workspace:test/e2e"
@@ -4436,6 +4482,7 @@ __metadata:
     "@gwent/db-profiler": "workspace:*"
     "@gwent/env": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
+    "@gwent/node-client": "workspace:*"
     "@gwent/test-utils": "workspace:*"
     "@gwent/utils": "workspace:*"
     "@types/node": "npm:22.18.0"
@@ -4471,6 +4518,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@gwent/utils@workspace:libs/utils"
   dependencies:
+    "@gwent/constants": "workspace:*"
     "@gwent/graphql-schema": "workspace:*"
     "@types/jest": "npm:30.0.0"
     "@types/node": "npm:22.18.0"
@@ -10508,6 +10556,17 @@ __metadata:
   peerDependencies:
     graphql: 14 - 16
   checksum: 10/a9c6f2eeaad972cdecb91437c15c785a282263fd0ef36f6fc5648e0945da488cdc10ab4736891ee1fbb928c7bf6e0bc8e0284df514254adefe02cc406ba5fce5
+  languageName: node
+  linkType: hard
+
+"graphql-request@npm:7.3.1":
+  version: 7.3.1
+  resolution: "graphql-request@npm:7.3.1"
+  dependencies:
+    "@graphql-typed-document-node/core": "npm:^3.2.0"
+  peerDependencies:
+    graphql: 14 - 16
+  checksum: 10/aacf8efdb3a0cd9eed5c6e943de94ac98631712de9a79dc97ec0bb73507360fb81996526bc69df9eb072993288d0d1316dfa47ab5d37fa10d9b703b97fe12360
   languageName: node
   linkType: hard
 

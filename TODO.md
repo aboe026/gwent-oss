@@ -17,7 +17,6 @@ Existing problems in the codebase that need to be fixed.
   - "Any" icon/text for units that can be played on any row
   - "Modifier" icon/text for row modifiers (Commander's Horn/Mardroeme)
 - improve performance when typing name for deck
-- rename "scorchBattlefield.ts" to "effect-scorch.ts" and "muster-battlefield.ts" to "effect-muster.ts"
 - remove unnecessary dependencies
   - figlet: just have hard-coded banner text for startup
   - fs-extra: just use fs or fs/promises, maybe helper method for "exists"
@@ -36,6 +35,8 @@ Existing problems in the codebase that need to be fixed.
   - use AI upscaler?
 - "combats" and "effects" disappear from middle of deck editor after switching factions in chrome?
 - rename "undrawn" to "draw" (since its the draw pile?)
+- remove @gwent/graphql-schema dependency from @gwent/test-e2e once filters/sorting in schema
+- have node-client export class instead of function (attempted to but lost typings)
 - improve UX around game player info (username, score, rounds, passed)
 - centralize error handling in the UI
   - single place to watch for any error and automatially re-auths and re-calls failing operations
@@ -103,8 +104,6 @@ New things that should be added to the codebase.
   - How to handle brought back for HistoryMove/Impact? unique per created?
 - Avenger
   - How to handle duplicates on battlefield? Use "created" field as differentiator?
-- Bond
-  - verify Cerys musters have bond applied
 - Better game summarization (graphs?)
   - points per round
   - time per round
@@ -117,8 +116,8 @@ New things that should be added to the codebase.
   - manual review?
 - rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
-- "Randomize" button for creating deck?
 - Units can be discarded instead of played (discardUnit mutation?)
+  - Once "discard" logic in, remove filter logic in @gwent/test-chaos random-games and instead discard modifier if all modifiers already taken up
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - game history improvements
   - search bar (unit name?)

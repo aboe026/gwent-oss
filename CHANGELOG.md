@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.17.0 - 2025-10-22
+
+### Added
+
+- Random deck units ([#48](https://github.com/aboe026/gwent/pull/48)) (Adam Boe)
+- Node.js client ([#48](https://github.com/aboe026/gwent/pull/48)) (Adam Boe)
+
+### Fixed
+
+- Yarn recursive command ([#48](https://github.com/aboe026/gwent/pull/48)) (Adam Boe)
+
 ## 0.16.1 - 2025-10-19
 
 ### Fixed

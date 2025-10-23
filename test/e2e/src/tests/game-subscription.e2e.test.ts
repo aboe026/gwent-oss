@@ -1,6 +1,6 @@
 import ApiClient, { AddDeckInput } from '../util/api-client'
 import Banner from '../components/banner'
-import { Combat, Deck, FactionKey, Game, GameStatus, User } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, Deck, FactionKey, Game, GameStatus, User } from '@gwent/node-client'
 import { E2eCtx, getFixtureCtx, getScenario, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
 import GamePage from '../page-objects/game-page'

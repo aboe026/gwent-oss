@@ -1,11 +1,12 @@
 {
   "name": "@gwent/msv-api",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "author": "Adam Boe",
   "description": "GraphQL backend to play Gwent.",
   "main": "src/index.ts",
   "scripts": {
     "build": "yarn g:tsc --build",
+    "build-all": "yarn g:recurse @gwent/msv-api run build",
     "build-image": "docker build --tag=gwent-api:${IMAGE_TAG:-latest} --progress=plain --file=Dockerfile --build-arg VERSION=${IMAGE_VERSION:-dev} --build-arg BUILD=${IMAGE_BUILD:-0} ${BUILD_OPTIONS:-} ../../",
     "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "coverage-view": "yarn g:coverage-view",

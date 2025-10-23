@@ -4,7 +4,7 @@ import { Dispatch, SetStateAction } from 'react'
 import { DeckUnitFragment, UnitFragmentDoc, UnitStats, useFragment } from '@gwent/graphql-schema/apollo-typings'
 import { DECK_MIN_UNITS, HTML_IDS, DECK_MAX_SPECIALS } from '@gwent/constants'
 import { FILTER_FIELD, SORT_FIELD, SORT_ORDER } from '@gwent/graphql-schema/deck-filter'
-import { GetUnitStats, toTitleCase } from '@gwent/utils'
+import { GetUnitStats, RandomizeDeckUnits, toTitleCase } from '@gwent/utils'
 import ProgressRing from '../components/ProgressRing'
 import './UnitsStats.css'
 
@@ -14,6 +14,7 @@ import './UnitsStats.css'
  * @returns The statistics bar for units in a deck
  */
 export default function UnitsStats({
+  allUnits,
   availableFilterFields,
   availableFiltersExpanded,
   availableNameFilter,
@@ -106,242 +107,259 @@ export default function UnitsStats({
           </div>
         </div>
       </div>
-      <div id="unitsStatsContainer">
-        <div id="unitsStatsMains">
-          <div className="units-stats-section">
-            <ProgressRing
-              id={HTML_IDS.DeckUnitStatUnit}
-              completed={selectedStats.units}
-              total={DECK_MIN_UNITS}
-              remainingColor="darkgray"
-              completedColor={selectedStats.units < DECK_MIN_UNITS ? 'red' : 'green'}
-              label={<img src="images/stats/deck.png" title="Units" />}
-              title={`Minimum ${DECK_MIN_UNITS}`}
-              onClick={() => {
-                setAvailableFilterFields([])
-                setSelectedFilterFields([])
-              }}
-            />
-            <ProgressRing
-              id={HTML_IDS.DeckUnitStatSpecial}
-              completed={selectedStats.specials}
-              total={DECK_MAX_SPECIALS}
-              remainingColor="darkgray"
-              completedColor={selectedStats.specials > DECK_MAX_SPECIALS ? 'red' : 'green'}
-              label={<img src="images/stats/special.png" title="Special" />}
-              title={`Maximum ${DECK_MAX_SPECIALS}`}
-              onClick={() => {
-                setAvailableFilterFields([FILTER_FIELD.Special])
-                setSelectedFilterFields([FILTER_FIELD.Special])
-              }}
-            />
-            <ProgressRing
-              id={HTML_IDS.DeckUnitStatHero}
-              completed={selectedStats.heroes}
-              total={factionStats?.heroes || 0}
-              remainingColor="darkgray"
-              completedColor="#e9a018"
-              label={<img src="images/stats/hero.png" title="Heroes" />}
-              title="Heroes"
-              onClick={() => {
-                setAvailableFilterFields([FILTER_FIELD.Hero])
-                setSelectedFilterFields([FILTER_FIELD.Hero])
-              }}
-            />
-            <ProgressRing
-              id={HTML_IDS.DeckUnitStatStrength}
-              completed={selectedStats.strengthTotal}
-              total={factionStats?.strengthTotal || 0}
-              remainingColor="darkgray"
-              completedColor="black"
-              label={<img src="images/stats/strength.png" title="Strength" />}
-              title="Strength"
-              onClick={() => {
-                setAvailableFilterFields([FILTER_FIELD.Strength])
-                setSelectedFilterFields([FILTER_FIELD.Strength])
-              }}
-            />
-            <div className="units-stats-inline">
-              <img
-                src="images/stats/strength-average.png"
-                title="Average Strength"
-                className="units-stats-inline-icon"
+      <div id="unitsStatsWrapper">
+        <div id="unitsStatsContainer">
+          <div id="unitsStatsMains">
+            <div className="units-stats-section">
+              <ProgressRing
+                id={HTML_IDS.DeckUnitStatUnit}
+                completed={selectedStats.units}
+                total={DECK_MIN_UNITS}
+                remainingColor="darkgray"
+                completedColor={selectedStats.units < DECK_MIN_UNITS ? 'red' : 'green'}
+                label={<img src="images/stats/deck.png" title="Units" />}
+                title={`Minimum ${DECK_MIN_UNITS}`}
+                onClick={() => {
+                  setAvailableFilterFields([])
+                  setSelectedFilterFields([])
+                }}
               />
-              <span>{(selectedStats.strengthAverage || 0).toFixed(1)}</span>
+              <ProgressRing
+                id={HTML_IDS.DeckUnitStatSpecial}
+                completed={selectedStats.specials}
+                total={DECK_MAX_SPECIALS}
+                remainingColor="darkgray"
+                completedColor={selectedStats.specials > DECK_MAX_SPECIALS ? 'red' : 'green'}
+                label={<img src="images/stats/special.png" title="Special" />}
+                title={`Maximum ${DECK_MAX_SPECIALS}`}
+                onClick={() => {
+                  setAvailableFilterFields([FILTER_FIELD.Special])
+                  setSelectedFilterFields([FILTER_FIELD.Special])
+                }}
+              />
+              <ProgressRing
+                id={HTML_IDS.DeckUnitStatHero}
+                completed={selectedStats.heroes}
+                total={factionStats?.heroes || 0}
+                remainingColor="darkgray"
+                completedColor="#e9a018"
+                label={<img src="images/stats/hero.png" title="Heroes" />}
+                title="Heroes"
+                onClick={() => {
+                  setAvailableFilterFields([FILTER_FIELD.Hero])
+                  setSelectedFilterFields([FILTER_FIELD.Hero])
+                }}
+              />
+              <ProgressRing
+                id={HTML_IDS.DeckUnitStatStrength}
+                completed={selectedStats.strengthTotal}
+                total={factionStats?.strengthTotal || 0}
+                remainingColor="darkgray"
+                completedColor="black"
+                label={<img src="images/stats/strength.png" title="Strength" />}
+                title="Strength"
+                onClick={() => {
+                  setAvailableFilterFields([FILTER_FIELD.Strength])
+                  setSelectedFilterFields([FILTER_FIELD.Strength])
+                }}
+              />
+              <div className="units-stats-inline">
+                <img
+                  src="images/stats/strength-average.png"
+                  title="Average Strength"
+                  className="units-stats-inline-icon"
+                />
+                <span>{(selectedStats.strengthAverage || 0).toFixed(1)}</span>
+              </div>
             </div>
+          </div>
+          <div id="unitsStatsMinis">
+            <div className="units-stats-separator"></div>
+            <div
+              id={HTML_IDS.DeckUnitStatCombats}
+              className="units-stats-header"
+              onClick={() => setCombatsExpanded((previous) => !previous)}
+            >
+              Combats
+            </div>
+            {combatsExpanded && (
+              <div className="units-stats-section">
+                {renderSmallStat({
+                  completed: selectedStats.close,
+                  field: FILTER_FIELD.Close,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Close',
+                  total: factionStats?.close || 0,
+                  type: SmallStatType.Combat,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.ranged,
+                  field: FILTER_FIELD.Ranged,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Ranged',
+                  total: factionStats?.ranged || 0,
+                  type: SmallStatType.Combat,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.siege,
+                  field: FILTER_FIELD.Siege,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Siege',
+                  total: factionStats?.siege || 0,
+                  type: SmallStatType.Combat,
+                })}
+              </div>
+            )}
+            <div className="units-stats-separator"></div>
+            <div
+              id={HTML_IDS.DeckUnitStatEffects}
+              className="units-stats-header"
+              onClick={() => setEffectsExpanded((previous) => !previous)}
+            >
+              Effects
+            </div>
+            {effectsExpanded && (
+              <div className="units-stats-section">
+                {renderSmallStat({
+                  completed: selectedStats.agile,
+                  field: FILTER_FIELD.Agile,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Agile',
+                  total: factionStats?.agile || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.avenger,
+                  field: FILTER_FIELD.Avenger,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Avenger',
+                  total: factionStats?.avenger || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.berserker,
+                  field: FILTER_FIELD.Berserker,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Berserker',
+                  total: factionStats?.berserker || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.bond,
+                  field: FILTER_FIELD.Bond,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Bond',
+                  total: factionStats?.bond || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.decoy,
+                  field: FILTER_FIELD.Decoy,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Decoy',
+                  total: factionStats?.decoy || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.horn,
+                  field: FILTER_FIELD.Horn,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Horn',
+                  total: factionStats?.horn || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.mardroeme,
+                  field: FILTER_FIELD.Mardroeme,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Mardroeme',
+                  total: factionStats?.mardroeme || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.medic,
+                  field: FILTER_FIELD.Medic,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Medic',
+                  total: factionStats?.medic || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.morale,
+                  field: FILTER_FIELD.Morale,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Morale',
+                  total: factionStats?.morale || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.muster,
+                  field: FILTER_FIELD.Muster,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Muster',
+                  total: factionStats?.muster || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.scorch,
+                  field: FILTER_FIELD.Scorch,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Scorch',
+                  total: factionStats?.scorch || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.spy,
+                  field: FILTER_FIELD.Spy,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Spy',
+                  total: factionStats?.spy || 0,
+                  type: SmallStatType.Effect,
+                })}
+                {renderSmallStat({
+                  completed: selectedStats.weather,
+                  field: FILTER_FIELD.Weather,
+                  setAvailableFilterFields,
+                  setSelectedFilterFields,
+                  title: 'Weather',
+                  total: factionStats?.weather || 0,
+                  type: SmallStatType.Effect,
+                })}
+              </div>
+            )}
+            <div className="units-stats-separator"></div>
           </div>
         </div>
-        <div>
-          <div className="units-stats-separator"></div>
-          <div
-            id={HTML_IDS.DeckUnitStatCombats}
-            className="units-stats-header"
-            onClick={() => setCombatsExpanded((previous) => !previous)}
-          >
-            Combats
-          </div>
-          {combatsExpanded && (
-            <div className="units-stats-section">
-              {renderSmallStat({
-                completed: selectedStats.close,
-                field: FILTER_FIELD.Close,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Close',
-                total: factionStats?.close || 0,
-                type: SmallStatType.Combat,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.ranged,
-                field: FILTER_FIELD.Ranged,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Ranged',
-                total: factionStats?.ranged || 0,
-                type: SmallStatType.Combat,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.siege,
-                field: FILTER_FIELD.Siege,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Siege',
-                total: factionStats?.siege || 0,
-                type: SmallStatType.Combat,
-              })}
-            </div>
-          )}
-          <div className="units-stats-separator"></div>
-          <div
-            id={HTML_IDS.DeckUnitStatEffects}
-            className="units-stats-header"
-            onClick={() => setEffectsExpanded((previous) => !previous)}
-          >
-            Effects
-          </div>
-          {effectsExpanded && (
-            <div className="units-stats-section">
-              {renderSmallStat({
-                completed: selectedStats.agile,
-                field: FILTER_FIELD.Agile,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Agile',
-                total: factionStats?.agile || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.avenger,
-                field: FILTER_FIELD.Avenger,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Avenger',
-                total: factionStats?.avenger || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.berserker,
-                field: FILTER_FIELD.Berserker,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Berserker',
-                total: factionStats?.berserker || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.bond,
-                field: FILTER_FIELD.Bond,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Bond',
-                total: factionStats?.bond || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.decoy,
-                field: FILTER_FIELD.Decoy,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Decoy',
-                total: factionStats?.decoy || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.horn,
-                field: FILTER_FIELD.Horn,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Horn',
-                total: factionStats?.horn || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.mardroeme,
-                field: FILTER_FIELD.Mardroeme,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Mardroeme',
-                total: factionStats?.mardroeme || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.medic,
-                field: FILTER_FIELD.Medic,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Medic',
-                total: factionStats?.medic || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.morale,
-                field: FILTER_FIELD.Morale,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Morale',
-                total: factionStats?.morale || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.muster,
-                field: FILTER_FIELD.Muster,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Muster',
-                total: factionStats?.muster || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.scorch,
-                field: FILTER_FIELD.Scorch,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Scorch',
-                total: factionStats?.scorch || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.spy,
-                field: FILTER_FIELD.Spy,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Spy',
-                total: factionStats?.spy || 0,
-                type: SmallStatType.Effect,
-              })}
-              {renderSmallStat({
-                completed: selectedStats.weather,
-                field: FILTER_FIELD.Weather,
-                setAvailableFilterFields,
-                setSelectedFilterFields,
-                title: 'Weather',
-                total: factionStats?.weather || 0,
-                type: SmallStatType.Effect,
-              })}
-            </div>
-          )}
-          <div className="units-stats-separator"></div>
-        </div>
+        <button
+          id={HTML_IDS.DeckEditorUnitsRandomize}
+          onClick={(event) => {
+            event.preventDefault()
+            event.stopPropagation()
+            const randomUnits = RandomizeDeckUnits.fromDeckUnitFragments({
+              units: allUnits,
+            })
+            setSelectedUnits(
+              allUnits.filter((deckUnit) => randomUnits.includes(useFragment(UnitFragmentDoc, deckUnit.unit).id))
+            )
+          }}
+        >
+          Randomize
+        </button>
       </div>
     </>
   )
@@ -397,6 +415,7 @@ enum SmallStatType {
 }
 
 interface UnitsStatsProps {
+  allUnits: DeckUnitFragment[]
   availableFilterFields: FILTER_FIELD[]
   availableFiltersExpanded: boolean
   availableNameFilter: string

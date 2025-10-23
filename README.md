@@ -19,8 +19,9 @@ A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
 - [Running Locally](#running-locally)
   - [Prereqs](#prereqs-1)
   - [Install](#install)
-  - [Build](#build)
-  - [Start](#start)
+  - [Build](#build-1)
+  - [Clean](#clean)
+  - [Start](#start-1)
   - [Watch](#watch)
   - [Run](#run)
 - [Development](#development)
@@ -125,6 +126,22 @@ To build the source code into transpiled javascript, run
 ```sh
 yarn build
 ```
+
+This will only build the code in the specific package you are in
+
+- if you are in the root repository directory, it will build everything
+- TypeScript will build dependent packages
+- Any non-TypeScript building (such as Codegen) in dependent packages will not get run
+
+If you are in a specific/non-root package and want to build it and all its dependencies, run
+
+```sh
+yarn build-all
+```
+
+While this is a "safer" command (in that ensures everything (and not just TypeScript) gets built properly), it is much slower than just `yarn build`
+
+### Clean
 
 To remove any previously built code, run
 

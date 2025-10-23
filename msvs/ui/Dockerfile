@@ -16,7 +16,7 @@ COPY . ${APP_DIR}
 WORKDIR ${APP_DIR}/msvs/ui
 RUN corepack enable
 RUN yarn install
-RUN yarn build
+RUN yarn build-all
 RUN yarn cache clean --all
 
 ###########

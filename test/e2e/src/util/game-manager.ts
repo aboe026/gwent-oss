@@ -7,7 +7,7 @@ import {
   MusteringExpected,
   ScorchingExpected,
 } from './e2e-helper'
-import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/node-client'
 import E2eUtil from './e2e-util'
 import { ensureUnitsInHand, setTurnOrder } from '@gwent/test-utils'
 import env from './e2e-env'

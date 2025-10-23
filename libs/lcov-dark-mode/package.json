@@ -1,12 +1,13 @@
 {
   "name": "@gwent/lcov-dark-mode",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "author": "Adam Boe",
   "description": "Jest reporter to make locv HTML files dark mode/theme.",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
     "build": "npm-run-all --parallel build-tsc build-css",
+    "build-all": "yarn g:recurse @gwent/lcov-dark-mode run build",
     "build-css": "copyfiles src/dark-mode.css build",
     "build-tsc": "yarn g:tsc --build",
     "clean": "yarn g:rimraf build",

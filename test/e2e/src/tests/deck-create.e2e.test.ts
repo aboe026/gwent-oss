@@ -4,7 +4,7 @@ import DeckPage from '../page-objects/deck-page'
 import DecksPage from '../page-objects/decks-page'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'
 import E2eUtil from '../util/e2e-util'
-import { FactionKey } from '@gwent/graphql-schema/resolver-typings'
+import { FactionKey } from '@gwent/node-client'
 import LoginPage from '../page-objects/login-page'
 import { sortObjectArray } from '@gwent/utils'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
@@ -490,5 +490,54 @@ test('Cancel brings user to decks list', async (t) => {
 
   await DecksPage.verify({
     decks: [],
+  })
+})
+
+test('Create deck with random units', async (t) => {
+  const username = `deck-create-random-${t.ctx.start}`
+  const name = 'Create deck select all'
+  const factionKey = FactionKey.NorthernRealms
+  const leaderName = 'Foltest Son of Medell'
+
+  await new ApiClient({}).addUser({
+    name: username,
+  })
+  const client = new ApiClient({ username })
+  const faction = await client.getFaction({
+    key: factionKey,
+  })
+  const leader = await client.getLeader({
+    faction: factionKey,
+    name: leaderName,
+  })
+  await LoginPage.login({
+    username,
+  })
+  await DeckEditor.setName(name)
+  await DeckEditor.setFaction({
+    faction: faction,
+  })
+  await DeckEditor.setLeader({
+    leader,
+  })
+  await DeckEditor.randomizeUnits()
+
+  await DeckEditor.verifyValid(true)
+  await DeckEditor.save()
+  await E2eUtil.verifyCurrentUrl(DecksPage.getUrl())
+
+  const deck = (await client.client.decks({}))[0]
+
+  await DecksPage.verify({
+    decks: [
+      {
+        created: deck.created,
+        faction,
+        leader,
+        name: name,
+        stats: deck.stats,
+        neutralFaction: await client.getFaction({ key: FactionKey.Neutral }),
+      },
+    ],
   })
 })

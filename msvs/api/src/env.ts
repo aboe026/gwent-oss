@@ -23,6 +23,10 @@ export default function env() {
         desc: 'The URL path where the GraphQL server Queries and Mutations can be accessed.',
         default: 'graphql',
       }),
+      JSON_UPLOAD_LIMIT: str({
+        desc: 'The maximum size of JSON payload allowed for requests.',
+        default: '1mb',
+      }),
       LOG_LEVEL: str({
         desc: 'The minimum granularity level of log messages should be output. OFF < FATAL < ERROR < WARN < INFO < DEBUG < TRACE < ALL.',
         choices: ['OFF', 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', 'TRACE', 'ALL'],

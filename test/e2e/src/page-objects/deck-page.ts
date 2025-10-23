@@ -1,6 +1,6 @@
 import DeckEditor from '../components/deck-editor'
 import E2eUtil from '../util/e2e-util'
-import { Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
+import { Faction, Leader } from '@gwent/node-client'
 import { ROUTES } from '@gwent/constants'
 
 export default class DeckPage {

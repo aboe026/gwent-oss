@@ -9,7 +9,7 @@ const config: CodegenConfig = {
   schema: './src/schema.gql',
   generates: {
     // emit complete SDL for tools (like VSCode extension GraphQL.vscode-graphql)
-    './generated/complete-schema.graphql': {
+    './generated/complete-schema.gql': {
       plugins: [
         'schema-ast',
         {
@@ -91,7 +91,7 @@ const config: CodegenConfig = {
     },
   },
   hooks: {
-    afterAllFileWrite: ['yarn add-graphql-to-apollo', 'yarn convert-eol'],
+    afterAllFileWrite: ['yarn add-graphql-to-apollo'],
   },
 }
 

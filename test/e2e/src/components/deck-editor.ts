@@ -1,6 +1,6 @@
 import { Selector, t } from 'testcafe'
 
-import { Combat, EffectKey, Faction, Leader } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, EffectKey, Faction, Leader } from '@gwent/node-client'
 import E2eUtil from '../util/e2e-util'
 import { HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import { SORT_FIELD } from '@gwent/graphql-schema/deck-filter'
@@ -46,6 +46,7 @@ export default class DeckEditor {
     NameFilterSelected: container.find('#selectedNameFilter'),
     UnitsSelectAll: container.find(`#${HTML_IDS.DeckUnitSelectAll}`),
     UnitsRemoveAll: container.find(`#${HTML_IDS.DeckUnitRemoveAll}`),
+    UnitsRandomize: container.find(`#${HTML_IDS.DeckEditorUnitsRandomize}`),
   }
 
   static async verifyName(name: string) {
@@ -250,6 +251,10 @@ export default class DeckEditor {
         )
       )
     }
+  }
+
+  static async randomizeUnits() {
+    await t.click(DeckEditor.elements.UnitsRandomize)
   }
 
   static async removeUnits(names: string[]) {

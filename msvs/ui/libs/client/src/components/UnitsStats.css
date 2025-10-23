@@ -3,13 +3,21 @@
   justify-content: space-between;
 }
 
+#unitsStatsWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  gap: 10px;
+  padding-left: 10px;
+  padding-right: 10px;
+  overflow-y: hidden;
+}
+
 #unitsStatsContainer {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   height: 100%;
-  padding-left: 10px;
-  padding-right: 10px;
   overflow-y: auto;
 }
 

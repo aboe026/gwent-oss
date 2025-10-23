@@ -10,7 +10,7 @@ import {
   MoveReasonType,
   GameUnitOrigin,
   User,
-} from '@gwent/graphql-schema/resolver-typings'
+} from '@gwent/node-client'
 import GamePage, { CombatUnit, GamePlayerExpected, HistoryMove, HistoryPass } from '../page-objects/game-page'
 import LoginPage from '../page-objects/login-page'
 import { PlayerTurn } from '../components/game-player-info'

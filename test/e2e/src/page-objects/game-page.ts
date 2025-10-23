@@ -10,7 +10,7 @@ import {
   MoveReasonType,
   GameUnitOrigin,
   UnitStats,
-} from '@gwent/graphql-schema/resolver-typings'
+} from '@gwent/node-client'
 import Confirm from '../components/confirm'
 import DeckEditor from '../components/deck-editor'
 import DeckList, { DeckInfo } from '../components/deck-list'
@@ -19,7 +19,7 @@ import E2eUtil from '../util/e2e-util'
 import GamePlayerInfo, { PlayerTurn } from '../components/game-player-info'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, ROUTES } from '@gwent/constants'
 import { getImpactDescription, getNoImpactMessage, sortObjectArray, toTitleCase } from '@gwent/utils'
-import { Leader } from '@gwent/graphql-schema/resolver-typings'
+import { Leader } from '@gwent/node-client'
 import RedrawUnits, { RedrawPair } from '../components/redraw-units'
 
 const newGameContainer = Selector(`#${HTML_IDS.GameNewContainer}`)

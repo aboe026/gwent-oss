@@ -1,12 +1,13 @@
 {
   "name": "@gwent/validators",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "author": "Adam Boe",
   "description": "Validator functions",
   "main": "build/src/index.js",
   "types": "build/src/index.d.ts",
   "scripts": {
     "build": "yarn g:tsc --build",
+    "build-all": "yarn g:recurse @gwent/validators run build",
     "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",

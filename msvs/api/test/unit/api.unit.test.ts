@@ -364,11 +364,13 @@ describe('Api', () => {
       const subscriptionPath = 'subscribe'
       const corsOrigin = 'localhost'
       const port = 4000
+      const jsonUploadLimit = '1mb'
       const envSpy = jest.spyOn(env, 'default').mockReturnValue({
         GRAPHQL_PATH: graphqlPath,
         CORS_ORIGIN: corsOrigin,
         PORT: port,
         SUBSCRIPTION_PATH: subscriptionPath,
+        JSON_UPLOAD_LIMIT: jsonUploadLimit,
       } as any)
       const useSpy = jest.fn().mockImplementation()
       Api['app'] = {
@@ -396,8 +398,14 @@ describe('Api', () => {
       await expect(Api['serve']()).resolves.toEqual(undefined)
 
       expect(useSpy).toHaveBeenCalledTimes(1)
-      expect(envSpy.mock.calls).toEqual([[], [], [], [], [], [], [], [], [], [], []])
-      expect(jsonSpy.mock.calls).toEqual([[]])
+      expect(envSpy.mock.calls).toEqual([[], [], [], [], [], [], [], [], [], [], [], []])
+      expect(jsonSpy.mock.calls).toEqual([
+        [
+          {
+            limit: jsonUploadLimit,
+          },
+        ],
+      ])
       expect(listenSpy.mock.calls).toEqual([
         [
           {

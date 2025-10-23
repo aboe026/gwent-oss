@@ -37,4 +37,8 @@ export default class E2eUtil {
   static getUrl(path: string) {
     return path.startsWith(env.BASE_URL) ? path : urlJoin(env.BASE_URL, path)
   }
+
+  static getGraphqlUrl(): string {
+    return urlJoin(env.API_BASE_URL, 'graphql')
+  }
 }

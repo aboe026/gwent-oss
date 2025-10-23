@@ -1,5 +1,5 @@
 import ApiClient from '../util/api-client'
-import { Combat, DlcKey, EffectKey, FactionKey, Unit } from '@gwent/graphql-schema/resolver-typings'
+import { Combat, DlcKey, EffectKey, FactionKey, Unit } from '@gwent/node-client'
 import DeckEditor from '../components/deck-editor'
 import DeckPage from '../page-objects/deck-page'
 import { E2eCtx, getFixtureCtx, getTestCtx } from '../util/e2e-ctx'

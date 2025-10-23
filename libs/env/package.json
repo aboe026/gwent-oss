@@ -1,12 +1,13 @@
 {
   "name": "@gwent/env",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "author": "Adam Boe",
   "description": "Parse process.env",
   "main": "build/src/env.js",
   "types": "build/src/env.d.ts",
   "scripts": {
     "build": "yarn g:tsc --build",
+    "build-all": "yarn g:recurse @gwent/env run build",
     "clean": "yarn g:rimraf build coverage results tsconfig.tsbuildinfo",
     "coverage-view": "yarn g:coverage-view",
     "lint": "yarn g:lint",
