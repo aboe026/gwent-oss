@@ -81,7 +81,7 @@ export default class PlayUnitImplementation {
       effects: unitEffects,
     })
 
-    const { bonds, morales } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+    const { bonds, horns, morales } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits, ...musteredUnits, ...transformedUnits],
       effects: [...unitEffects, ...musterEffects, ...transformedEffects],
@@ -103,6 +103,7 @@ export default class PlayUnitImplementation {
       logPrefix,
       scorches,
       bonds,
+      horns,
       morales,
       mardroemes,
       transformedGameUnits,

@@ -54,6 +54,7 @@ export default class UpdateHistory {
     transformedGameUnits,
     musters,
     bonds,
+    horns,
     morales,
     musteredOrigins,
   }: {
@@ -68,6 +69,7 @@ export default class UpdateHistory {
     mardroemingGameUnit?: GameUnitDbObject
     musters: ImpactsByUnitId
     bonds: ImpactsByUnitId
+    horns: ImpactsByUnitId
     morales: ImpactsByUnitId
     musteredOrigins: MusteredOrigins | undefined
   }) {
@@ -78,6 +80,7 @@ export default class UpdateHistory {
     })
     const impacts =
       bonds[deckUnit.unit.toString()] ||
+      horns[deckUnit.unit.toString()] ||
       mardroemes[deckUnit.unit.toString()] ||
       morales[deckUnit.unit.toString()] ||
       musters[deckUnit.unit.toString()] ||

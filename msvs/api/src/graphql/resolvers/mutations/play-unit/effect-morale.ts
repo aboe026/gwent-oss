@@ -29,6 +29,7 @@ export default class EffectMorale {
    * @param config.units The list of units to check if they contain the Morale effect in their abilities.
    * @returns A list of IDs of units which have the Morale effect ability.
    */
+  // TODO: replace with getUnitIdsWithEffect
   static getUnitsWithMorale({
     logPrefix,
     moraleEffect,

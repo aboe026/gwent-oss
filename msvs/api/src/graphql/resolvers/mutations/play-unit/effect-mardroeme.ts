@@ -164,6 +164,7 @@ export default class EffectMardroeme {
    * @param config.effect The effect to filter gameUnits to.
    * @returns All gameUnits which have the specified effect.
    */
+  // TODO: replace with getUnitIdsWithEffect?
   private static getUnitsWithEffect({
     gameUnits,
     battlefieldUnits,

@@ -434,6 +434,17 @@ export class E2eHelper {
         })
       }
     }
+    if (horning) {
+      for (const horn of horning) {
+        E2eHelper.setEffectiveStrength({
+          effectiveStrength: horn.effectiveStrength,
+          player: horn.player,
+          row: horn.row,
+          unitName: horn.name,
+          instance: horn.instance,
+        })
+      }
+    }
     if (bonding) {
       for (let i = 0; i < bonding.length; i++) {
         const bond = bonding[i]
@@ -485,7 +496,7 @@ export class E2eHelper {
                 number:
                   impacts !== undefined
                     ? impacts
-                    : (scorching || mardroeming || moraling || mustering || bonding)?.length || 0,
+                    : (scorching || mardroeming || moraling || mustering || bonding || horning)?.length || 0,
               }
             : undefined,
       })
