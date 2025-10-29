@@ -116,8 +116,6 @@ New things that should be added to the codebase.
   - manual review?
 - rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
-- Units can be discarded instead of played (discardUnit mutation?)
-  - Once "discard" logic in, remove filter logic in @gwent/test-chaos random-games and instead discard modifier if all modifiers already taken up
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - game history improvements
   - search bar (unit name?)
