@@ -12,6 +12,8 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- break e2e effect files into single, double, triple, quadruple effects?
+
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat
   - "Any" icon/text for units that can be played on any row
@@ -38,6 +40,7 @@ Existing problems in the codebase that need to be fixed.
 - remove @gwent/graphql-schema dependency from @gwent/test-e2e once filters/sorting in schema
 - have node-client export class instead of function (attempted to but lost typings)
 - improve UX around game player info (username, score, rounds, passed)
+- message to clear filters in DeckEditor when filter shows none
 - centralize error handling in the UI
   - single place to watch for any error and automatially re-auths and re-calls failing operations
 - move all hard-coded config to GameConfig
@@ -80,6 +83,8 @@ Existing problems in the codebase that need to be fixed.
 - have log4js config be dynamic
   - target log level of specific classes/loggers
   - configure while running (need role/admin for that?)
+    - need role/admin for that
+      - if go with initialAdminPassword route, need editUser capability to change password
   - save config in database?
     - save config in memory as well to reduce database reads?
       - how to handle changes when multiple instances running?

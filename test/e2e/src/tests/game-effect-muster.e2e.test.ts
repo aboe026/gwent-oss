@@ -884,3 +884,45 @@ test('Can muster with berserker and mardroeme present', async (t) => {
     ],
   })
 })
+
+test('Mustered units effected by horn', async (t) => {
+  const unitName1 = 'Dandelion'
+  const unitName2 = 'Ghoul'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Monsters,
+      handUnitNames: [unitName1, unitName2, unitName2, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, horning: [] })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 2,
+    mustering: [
+      {
+        effectiveStrength: 2,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impact: {
+          type: EffectKey.Muster,
+        },
+        hand: true,
+      },
+      {
+        effectiveStrength: 2,
+        name: unitName2,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        impact: {
+          type: EffectKey.Muster,
+        },
+        hand: true,
+      },
+    ],
+  })
+})

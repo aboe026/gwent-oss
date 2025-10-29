@@ -474,12 +474,12 @@ export class E2eHelper {
       let effectKey: EffectKey | undefined = undefined
       if (scorching) {
         effectKey = EffectKey.Scorch
+      } else if (mardroeming) {
+        effectKey = EffectKey.Mardroeme
       } else if (moraling) {
         effectKey = EffectKey.Morale
       } else if (horning) {
         effectKey = EffectKey.Horn
-      } else if (mardroeming) {
-        effectKey = EffectKey.Mardroeme
       } else if (mustering) {
         effectKey = EffectKey.Muster
       } else if (bonding) {

@@ -453,6 +453,44 @@ test('Scorch takes into account mardroemes to determine strongest', async (t) =>
   })
 })
 
+test('Scorch takes into account horn to determine strongest', async (t) => {
+  const unitName1 = 'Dandelion'
+  const unitName2 = 'Dennis Cranmer'
+  const unitName3 = 'Clan Heymaey Skald'
+  const unitName4 = 'Scorch'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.ScoiaTael,
+      handUnitNames: [unitName2, unitName4],
+    },
+    opponent: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName3],
+    },
+    opponentFirst: true,
+  })
+  await gameManager.deploy({ unitName: unitName1, horning: [] })
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({
+    unitName: unitName3,
+    effectiveStrength: 8,
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName4,
+    scorching: [
+      {
+        name: unitName3,
+        row: Combat.Close,
+        strength: 8,
+        player: gameManager.opponent.gamePlayer,
+      },
+    ],
+  })
+})
+
 test('Scorch scoped to Close combat removes strongest Close combat card on opponents side over 10 effective strength', async (t) => {
   const unitName1 = 'Emiel Regis Rohellec Terzieff'
   const unitName2 = 'Yaevinn'
