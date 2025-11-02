@@ -120,7 +120,7 @@ test('Horn unit does not effect opponent unit', async (t) => {
   })
 })
 
-test('Horn effects regular unit if played before', async (t) => {
+test('Horn unit effects regular unit if played before', async (t) => {
   const unitName1 = 'Dandelion'
   const unitName2 = 'Blueboy Lugos'
   const gameManager = await createGameManager({
@@ -162,7 +162,44 @@ test('Horn effects regular unit if played before', async (t) => {
   })
 })
 
-test('Horn effects regular unit if played after', async (t) => {
+test('Horn modifier effects regular unit if played before', async (t) => {
+  const unitName1 = "Commander's Horn"
+  const unitName2 = 'Blueboy Lugos'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, modifier: true, horning: [] })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    effectiveStrength: 12,
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Close,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 12,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 12,
+        reason: `Horn from ${unitName1}`,
+      },
+    ],
+  })
+})
+
+test('Horn unit effects regular unit if played after', async (t) => {
   const unitName1 = 'Blueboy Lugos'
   const unitName2 = 'Dandelion'
   const gameManager = await createGameManager({
@@ -208,6 +245,147 @@ test('Horn effects regular unit if played after', async (t) => {
   await FullCard.verify({
     unit: deckUnit2.unit,
     username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Horn modifier effects regular unit if played after', async (t) => {
+  const unitName1 = 'Blueboy Lugos'
+  const unitName2 = "Commander's Horn"
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    modifier: true,
+    horning: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Close,
+        effectiveStrength: 12,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Close,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 12,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 12,
+        reason: `Horn from ${unitName2}`,
+      },
+    ],
+  })
+})
+
+test('Horn unit can effect unit in siege row', async (t) => {
+  const unitName1 = 'Holger Blackhand'
+  const unitName2 = 'Draig Bon-Dhu'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Siege,
+    horning: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
+        effectiveStrength: 8,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Siege,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 8,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 8,
+        reason: `Horn from ${unitName2}`,
+      },
+    ],
+  })
+  await FullCard.previous()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Horn modifier can effect unit in siege row', async (t) => {
+  const unitName1 = 'Holger Blackhand'
+  const unitName2 = "Commander's Horn"
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.Skellige,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Siege,
+    modifier: true,
+    horning: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        row: Combat.Siege,
+        effectiveStrength: 8,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Siege,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 8,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Double,
+        strength: 8,
+        reason: `Horn from ${unitName2}`,
+      },
+    ],
   })
 })
 
