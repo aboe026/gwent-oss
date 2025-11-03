@@ -126,6 +126,7 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.logPrefix What to prepend log statements with.
    * @param config.moraleEffect The Effect database document for the Morale effect.
    * @param config.bondEffect The Effect database document for the Bond effect.
+   * @param config.hornEffect The Effect database document for the Horn effect.
    * @param config.newDeckUnit The new unit being introduced to the battlefield.
    * @param config.musteredUnitIds A list of any unit IDs that were mustered to the battlefield by the newDeckUnit. Used to apply potential impacts to those musters.
    * @param config.transformedUnitIds A list of any unit IDs that were transformed on the battlefield by the newDeckUnit. Used to apply potential impacts to those Vildkaarls.
@@ -178,9 +179,8 @@ export default class CalculateGameEffectiveStrengths {
       }
     }
 
-    const moraleIdsInRow = EffectMorale.getUnitsWithMorale({
-      logPrefix,
-      moraleEffect,
+    const moraleIdsInRow = getUnitIdsWithEffect({
+      effect: moraleEffect,
       units: rowDbUnits,
     })
     const hornIdsInRow = getUnitIdsWithEffect({
