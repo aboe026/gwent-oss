@@ -142,6 +142,7 @@ New things that should be added to the codebase.
 - pagination
   - decks
   - games
+- Present vew features/upgrade notes to user after they login after upgrade?
 - help text on deck builder for effects
   - question mark next to effects on bottom
   - pops up full screen dialog with each effect icon, name and description
