@@ -125,6 +125,21 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
+    it('calls addMoveToCurrentPlayer once with horn impact', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testNewUnitDeployed({
+        deckUnit,
+        horns: {
+          [deckUnit.unit.toString()]: [impact],
+        },
+        logPrefix,
+        expectedImpacts: [impact],
+      })
+    })
     it('calls to addMoveToCurrentPlayer for single valid muster without own impact', () => {
       const musteredUnit: BattlefieldUnit = {
         row: Combat.Close,
@@ -460,6 +475,44 @@ describe('update-history', () => {
           unit: move.unit,
         },
         bonds: {
+          [move.unit.unit.toString()]: [impact],
+        },
+        move,
+      })
+    })
+    it('calls to addMoveToCurrentPlayer with horn impact', () => {
+      const combat = Combat.Close
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const move: MoveUnitDbObject = {
+        created: new Date(),
+        reason: {
+          type: MoveReasonType.Muster,
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+        },
+        type: MoveType.Unit,
+        unit: TestUtil.getDbGameUnit({
+          row: combat,
+        }),
+        impacts: [impact],
+      }
+      testNewUnitIndirect({
+        game: TestUtil.getDbGame({}),
+        unitId: move.unit.unit,
+        created: move.created,
+        logPrefix,
+        origin: move.source.origin as GameUnitOrigin,
+        playerId: new ObjectId().toString(),
+        reason: move.reason,
+        getBattlefieldUnitResponse: {
+          row: combat,
+          unit: move.unit,
+        },
+        horns: {
           [move.unit.unit.toString()]: [impact],
         },
         move,
@@ -1109,6 +1162,7 @@ function testNewUnitDeployed({
   morales = {},
   mardroemes = {},
   bonds = {},
+  horns = {},
   musteredOrigins,
   transformedGameUnits,
   mardroemingGameUnit,
@@ -1124,6 +1178,7 @@ function testNewUnitDeployed({
   morales?: ImpactsByUnitId
   mardroemes?: ImpactsByUnitId
   bonds?: ImpactsByUnitId
+  horns?: ImpactsByUnitId
   musteredOrigins?: MusteredOrigins | undefined
   transformedGameUnits?: GameUnitDbObject[]
   mardroemingGameUnit?: GameUnitDbObject
@@ -1172,6 +1227,7 @@ function testNewUnitDeployed({
             bonds,
             created: move.created,
             game,
+            horns,
             logPrefix,
             mardroemes,
             morales,
@@ -1196,6 +1252,7 @@ function testNewUnitDeployed({
           bonds,
           created: move.created,
           game,
+          horns,
           logPrefix,
           mardroemes,
           morales,
@@ -1236,6 +1293,7 @@ function testNewUnitDeployed({
         scorches,
         morales,
         bonds,
+        horns,
         mardroemes,
         transformedGameUnits,
         mardroemingGameUnit,
@@ -1254,6 +1312,7 @@ function testNewUnitDeployed({
         scorches,
         morales,
         bonds,
+        horns,
         mardroemes,
         transformedGameUnits,
         mardroemingGameUnit,
@@ -1294,6 +1353,7 @@ function testNewUnitIndirect({
   mardroemes = {},
   musters = {},
   bonds = {},
+  horns = {},
   morales = {},
   reason,
   getBattlefieldUnitResponse,
@@ -1311,6 +1371,7 @@ function testNewUnitIndirect({
   mardroemes?: ImpactsByUnitId
   musters?: ImpactsByUnitId
   bonds?: ImpactsByUnitId
+  horns?: ImpactsByUnitId
   morales?: ImpactsByUnitId
   reason: MoveUnitReasonDbObject
   getBattlefieldUnitResponse: BattlefieldUnit | undefined
@@ -1333,6 +1394,7 @@ function testNewUnitIndirect({
         bonds,
         created,
         game,
+        horns,
         logPrefix,
         mardroemes,
         morales,
@@ -1350,6 +1412,7 @@ function testNewUnitIndirect({
         bonds,
         created,
         game,
+        horns,
         logPrefix,
         mardroemes,
         morales,

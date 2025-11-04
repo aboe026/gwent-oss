@@ -1,5 +1,13 @@
 import { EffectDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 
+/**
+ * Gets the IDs of all units which contain the Effect.
+ *
+ * @param config The configuration used to determine which effect to retrieve units for.
+ * @param config.effect The Effect database doc to search Units for.
+ * @param config.units The Units whose IDs should be returned if they contain the Effect.
+ * @returns An array of Unit IDs which contain the Effect.
+ */
 export default function getUnitIdsWithEffect({
   effect,
   units,

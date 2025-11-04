@@ -14,9 +14,27 @@ import { EFFECT_OPERATOR } from '@gwent/constants'
 import { EffectReasonType } from '@gwent/graphql-schema'
 import { ImpactsByUnitId } from '../../resolver-util'
 
+/**
+ * A class for determining the impact the Horn effect has on units effectiveStrength.
+ */
 export default class EffectHorn {
   private static logger = getLogger('EffectHorn')
 
+  /**
+   * Applies Horn effect to eligible units, increasing their effectiveStrenth by a factor of 2 if any Horn effects them. Does not compound with multiple horns.
+   *
+   * @param config The configuration used to determine which units are eligible for Horn boost and how to change their effectiveStrength.
+   * @param config.logPrefix The prefix to prepend to log statements.
+   * @param config.unitIdsWithHornInRow A list of IDs of units which contain the Horn effect ability in the battlefield row under consideration.
+   * @param config.hornEffect The Effect database document for the Horn effect.
+   * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
+   * @param config.rowGameUnit The GameUnit under consideration to be horned.
+   * @param config.rowUnit The Unit under consideration to be horned.
+   * @param config.units A list of all units on the battlefield.
+   * @param config.userId The ID of the user whose unit is under consideration to be horned.
+   * @param config.currentPlayerId The ID of the user who played the newDeckUnit.
+   * @returns An array of horn impacts for the unit under consideration.
+   */
   static applyHorn({
     logPrefix,
     unitIdsWithHornInRow,
