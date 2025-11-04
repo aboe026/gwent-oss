@@ -203,6 +203,33 @@ describe('play-unit-implementation', () => {
       expectedGameDeck: player.deck,
     })
   })
+  it('passes horn impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      horns: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
+      expectedGameDeck: player.deck,
+    })
+  })
   it('passes morale impacts to move', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
@@ -264,6 +291,7 @@ async function testPlayUnitImplementation({
   transformedGameUnits = [],
   mardroemingGameUnit,
   bonds = {},
+  horns = {},
   morales = {},
   error,
   expectedGameDeck,
@@ -283,6 +311,7 @@ async function testPlayUnitImplementation({
   transformedGameUnits?: GameUnitDbObject[]
   mardroemingGameUnit?: GameUnitDbObject
   bonds?: ImpactsByUnitId
+  horns?: ImpactsByUnitId
   morales?: ImpactsByUnitId
   error?: Error
   expectedGameDeck?: GameDeckDbObject
@@ -329,6 +358,7 @@ async function testPlayUnitImplementation({
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
     .mockReturnValue({
       bonds,
+      horns,
       morales,
     })
   const setGameScoresSpy = jest.spyOn(setGameScores, 'default').mockImplementation()
@@ -444,6 +474,7 @@ async function testPlayUnitImplementation({
               logPrefix,
               scorches,
               bonds,
+              horns,
               morales,
               mardroemes,
               transformedGameUnits,
