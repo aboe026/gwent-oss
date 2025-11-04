@@ -14,7 +14,7 @@ import EffectBond from './effect-bond'
 import EffectHorn from './effect-horn'
 import EffectMorale from './effect-morale'
 import GetEffectWithKey from './get-effect-with-key'
-import getUnitIdsWithEffect from './get-units-with-effect'
+import getUnitIdsWithEffect from './get-unit-ids-with-effect'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
 

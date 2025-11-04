@@ -14,7 +14,7 @@ import {
 import GetEffectWithKey from './get-effect-with-key'
 import getGameUnits from './get-game-units'
 import { getUniqueItems } from '@gwent/utils'
-import getUnitIdsWithEffect from './get-units-with-effect'
+import getUnitIdsWithEffect from './get-unit-ids-with-effect'
 import { ImpactsByUnitId } from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
 
