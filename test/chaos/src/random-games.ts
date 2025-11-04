@@ -61,8 +61,8 @@ const PASSWORD = 'password'
     })
   }
   await log(`Completed in "${((Date.now() - start) / (1000 * 60)).toFixed(2)}" minute(s)`)
-})().catch((err) => {
-  console.error(err)
+})().catch(async (err) => {
+  await log(`❌ Error: "${JSON.stringify(err)}"`)
   process.exitCode = 1
 })
 

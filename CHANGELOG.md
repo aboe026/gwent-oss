@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.18.0 - 2025-11-04
+
+### Added
+
+- Horn effect ([#49](https://github.com/aboe026/gwent/pull/49)) (Adam Boe)
+
 ## 0.17.0 - 2025-10-22
 
 ### Added

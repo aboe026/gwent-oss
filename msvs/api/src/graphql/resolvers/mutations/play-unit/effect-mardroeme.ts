@@ -14,6 +14,7 @@ import {
 import GetEffectWithKey from './get-effect-with-key'
 import getGameUnits from './get-game-units'
 import { getUniqueItems } from '@gwent/utils'
+import getUnitIdsWithEffect from './get-unit-ids-with-effect'
 import { ImpactsByUnitId } from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
 
@@ -81,28 +82,31 @@ export default class EffectMardroeme {
       if (EffectMardroeme.logger.isTraceEnabled()) {
         EffectMardroeme.logger.trace(`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`)
       }
-      const mardroemes = EffectMardroeme.getUnitsWithEffect({
-        battlefieldUnits,
+      const gameUnitIds = gameUnits.map((gameUnit) => gameUnit.unit.toString())
+      const playerRowBattlefieldUnits = battlefieldUnits.filter((battlefieldUnit) =>
+        gameUnitIds.includes(battlefieldUnit._id.toString())
+      )
+      const mardroemeUnitIds = getUnitIdsWithEffect({
         effect: mardroemeEffect,
-        gameUnits,
+        units: playerRowBattlefieldUnits,
       })
       if (EffectMardroeme.logger.isTraceEnabled()) {
-        EffectMardroeme.logger.trace(`${logPrefix} mardroemes: "${JSON.stringify(mardroemes)}"`)
+        EffectMardroeme.logger.trace(`${logPrefix} mardroemeUnitIds: "${JSON.stringify(mardroemeUnitIds)}"`)
       }
-      const berserkers = EffectMardroeme.getUnitsWithEffect({
-        battlefieldUnits,
+      const berserkerUnitIds = getUnitIdsWithEffect({
         effect: berserkerEffect,
-        gameUnits,
+        units: playerRowBattlefieldUnits,
       })
       if (EffectMardroeme.logger.isTraceEnabled()) {
-        EffectMardroeme.logger.trace(`${logPrefix} berserkers: "${JSON.stringify(berserkers)}"`)
+        EffectMardroeme.logger.trace(`${logPrefix} berserkerUnitIds: "${JSON.stringify(berserkerUnitIds)}"`)
       }
 
-      if (mardroemes.length > 0 && berserkers.length > 0 && combat) {
+      if (mardroemeUnitIds.length > 0 && berserkerUnitIds.length > 0 && combat) {
         mardroemingGameUnit = EffectMardroeme.getMardroemingGameUnit({
           gameUnits,
-          mardroemes,
+          mardroemeUnitIds,
         })
+        const berserkers = playerRowBattlefieldUnits.filter((unit) => berserkerUnitIds.includes(unit._id.toString()))
         const existingVildkaarlIds = EffectMardroeme.getExistingVildkaarlIds({
           battlefieldUnits,
           gameUnits,
@@ -124,9 +128,7 @@ export default class EffectMardroeme {
             `${logPrefix} transformed "${JSON.stringify(transformedPairs.map((pair) => pair.to.unit))}" berserkers into vildkaarls`
           )
 
-          const newUnitImpact = mardroemes
-            .map((mardroeme) => mardroeme._id.toString())
-            .includes(newDeckUnit.unit.toString())
+          const newUnitImpact = mardroemeUnitIds.includes(newDeckUnit.unit.toString())
 
           for (const transformedPair of transformedPairs) {
             if (newUnitImpact) {
@@ -156,57 +158,21 @@ export default class EffectMardroeme {
   }
 
   /**
-   * Gets all units with the specified Effect.
-   *
-   * @param config The configuration used to get the units by Effect.
-   * @param config.gameUnits The GameUnits to filter by Effect.
-   * @param config.battlefieldUnits All the Units on the battlefield.
-   * @param config.effect The effect to filter gameUnits to.
-   * @returns All gameUnits which have the specified effect.
-   */
-  private static getUnitsWithEffect({
-    gameUnits,
-    battlefieldUnits,
-    effect,
-  }: {
-    gameUnits: GameUnitDbObject[]
-    battlefieldUnits: UnitDbObject[]
-    effect: EffectDbObject
-  }): UnitDbObject[] {
-    const berserkers: UnitDbObject[] = []
-
-    for (const gameUnit of gameUnits) {
-      const unit = battlefieldUnits.find(
-        (battlefieldUnit) => battlefieldUnit._id.toString() === gameUnit.unit.toString()
-      )
-      if (!unit) {
-        throw Error(`Could not find battlefield unit for game unit "${gameUnit.unit}"`)
-      }
-      if (unit.effects && unit.effects.some((unitEffect) => unitEffect.toString() === effect._id.toString())) {
-        berserkers.push(unit)
-      }
-    }
-
-    return berserkers
-  }
-
-  /**
    * Gets the GameUnit responsible for transforming any Berserkers. Gets most recent Mardroeming GameUnit played.
    *
    * @param config The configuration used to get the Mardroeming GameUnit.
    * @param config.gameUnits The GameUnits in the Combat row, one of which should have the Mardroeme Effect.
-   * @param config.mardroemes All the units which have the Mardroeme Effect.
+   * @param config.mardroemeUnitIds A list of unit IDs which have the Mardroeme Effect.
    * @returns The GameUnit used to transform Berserkers, preferring most recent one added to the battlefield.
    */
   private static getMardroemingGameUnit({
     gameUnits,
-    mardroemes,
+    mardroemeUnitIds,
   }: {
     gameUnits: GameUnitDbObject[]
-    mardroemes: UnitDbObject[]
+    mardroemeUnitIds: string[]
   }): GameUnitDbObject {
     let mardroemingGameUnit: GameUnitDbObject | undefined = undefined
-    const mardroemeUnitIds = mardroemes.map((unit) => unit._id.toString())
     for (let i = gameUnits.length - 1; i >= 0 && !mardroemingGameUnit; i--) {
       const gameUnit = gameUnits[i]
       if (mardroemeUnitIds.includes(gameUnit.unit.toString())) {
@@ -311,7 +277,7 @@ export default class EffectMardroeme {
         const vildkaarl = young ? youngVildkaarls[youngVildkaarlIndex] : oldVildkaarls[oldVildkaarlIndex]
         if (!vildkaarl) {
           throw Error(
-            `Could not find instance "${index + 1}" of "${young ? 'Transformed Young Vildkaarl' : 'Transformed Vildkaarl'}" to transform berseker "${berserker._id}" into`
+            `Could not find instance "${index + 1}" of "${young ? 'Transformed Young Vildkaarl' : 'Transformed Vildkaarl'}" to transform berserker "${berserker._id}" into`
           )
         }
         unitId = vildkaarl._id

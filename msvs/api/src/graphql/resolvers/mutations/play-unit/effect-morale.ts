@@ -21,56 +21,6 @@ export default class EffectMorale {
   private static logger = getLogger('EffectMorale')
 
   /**
-   * Gets a list of the IDs of the supplied units which have a Morale effect ability.
-   *
-   * @param config The configuration used to determine which units have the Morale ability.
-   * @param config.logPrefix The prefix to prepend to log statements.
-   * @param config.moraleEffect The Morale Effect database document used to check against units.
-   * @param config.units The list of units to check if they contain the Morale effect in their abilities.
-   * @returns A list of IDs of units which have the Morale effect ability.
-   */
-  static getUnitsWithMorale({
-    logPrefix,
-    moraleEffect,
-    units,
-  }: {
-    logPrefix: string
-    moraleEffect: EffectDbObject | undefined
-    units: UnitDbObject[]
-  }): string[] {
-    const unitIdsWithMorale: string[] = []
-
-    if (EffectMorale.logger.isTraceEnabled()) {
-      EffectMorale.logger.trace(`${logPrefix} moraleEffect: "${JSON.stringify(moraleEffect)}"`)
-      EffectMorale.logger.trace(`${logPrefix} units: "${JSON.stringify(units)}"`)
-    }
-
-    if (moraleEffect) {
-      for (const unit of units) {
-        if (unit.effects) {
-          let unitHasMorale = false
-          for (let i = 0; i < unit.effects.length && !unitHasMorale; i++) {
-            const effect = unit.effects[i]
-            if (effect.toString() === moraleEffect._id.toString()) {
-              EffectMorale.logger.debug(`${logPrefix} unit "${unit._id}" has morale effect "${moraleEffect._id}"`)
-              unitHasMorale = true
-            }
-          }
-          if (unitHasMorale) {
-            unitIdsWithMorale.push(unit._id.toString())
-          }
-        }
-      }
-    }
-
-    if (EffectMorale.logger.isTraceEnabled()) {
-      EffectMorale.logger.trace(`${logPrefix} unitIdsWithMorale: "${JSON.stringify(unitIdsWithMorale)}"`)
-    }
-
-    return unitIdsWithMorale
-  }
-
-  /**
    * Applies Morale effect to eligible units, increasing their effectiveStrenth by 1 for each Morale effecting them.
    *
    * @param config The configuration used to determine which units are eligible for Morale boost and how to change their effectiveStrength.

@@ -38,6 +38,7 @@ Existing problems in the codebase that need to be fixed.
 - remove @gwent/graphql-schema dependency from @gwent/test-e2e once filters/sorting in schema
 - have node-client export class instead of function (attempted to but lost typings)
 - improve UX around game player info (username, score, rounds, passed)
+- message to clear filters in DeckEditor when filter shows none
 - centralize error handling in the UI
   - single place to watch for any error and automatially re-auths and re-calls failing operations
 - move all hard-coded config to GameConfig
@@ -80,6 +81,8 @@ Existing problems in the codebase that need to be fixed.
 - have log4js config be dynamic
   - target log level of specific classes/loggers
   - configure while running (need role/admin for that?)
+    - need role/admin for that
+      - if go with initialAdminPassword route, need editUser capability to change password
   - save config in database?
     - save config in memory as well to reduce database reads?
       - how to handle changes when multiple instances running?
@@ -116,8 +119,6 @@ New things that should be added to the codebase.
   - manual review?
 - rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
-- Units can be discarded instead of played (discardUnit mutation?)
-  - Once "discard" logic in, remove filter logic in @gwent/test-chaos random-games and instead discard modifier if all modifiers already taken up
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
 - game history improvements
   - search bar (unit name?)
@@ -141,6 +142,7 @@ New things that should be added to the codebase.
 - pagination
   - decks
   - games
+- Present vew features/upgrade notes to user after they login after upgrade?
 - help text on deck builder for effects
   - question mark next to effects on bottom
   - pops up full screen dialog with each effect icon, name and description
@@ -150,6 +152,11 @@ New things that should be added to the codebase.
   - need query to get users
     - restrict to users "friends"?
   - change addGame mutation to accept ids instead of usernames
+- chaos randomize script parallel game play
+  - use "async" npm package to control how many get played at a time?
+  - use "cli-progress"
+  - use "humanize-duration" to print out how long games and overall takes?
+  - keep logs for each game in map, print them to logs when game is complete? Also dump any in-progress if error
 
 ## External Bugs
 
