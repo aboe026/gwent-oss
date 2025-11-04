@@ -277,7 +277,7 @@ export default class EffectMardroeme {
         const vildkaarl = young ? youngVildkaarls[youngVildkaarlIndex] : oldVildkaarls[oldVildkaarlIndex]
         if (!vildkaarl) {
           throw Error(
-            `Could not find instance "${index + 1}" of "${young ? 'Transformed Young Vildkaarl' : 'Transformed Vildkaarl'}" to transform berseker "${berserker._id}" into`
+            `Could not find instance "${index + 1}" of "${young ? 'Transformed Young Vildkaarl' : 'Transformed Vildkaarl'}" to transform berserker "${berserker._id}" into`
           )
         }
         unitId = vildkaarl._id

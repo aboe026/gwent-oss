@@ -17,6 +17,7 @@ import EffectMardroeme, {
 } from '../../src/graphql/resolvers/mutations/play-unit/effect-mardroeme'
 import GetEffectWithKey from '../../src/graphql/resolvers/mutations/play-unit/get-effect-with-key'
 import * as getGameUnits from '../../src/graphql/resolvers/mutations/play-unit/get-game-units'
+import * as getUnitIdsWithEffect from '../../src/graphql/resolvers/mutations/play-unit/get-unit-ids-with-effect'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
 
@@ -137,7 +138,7 @@ describe('effect-mardroeme', () => {
             id: unit._id,
           }),
         ],
-        getUnitsWithEffectResponses: [[], [unit]],
+        getUnitsIdsWithEffectResponses: [[], [unit._id.toString()]],
         expected: {
           impacts: {},
           mardroemingGameUnit: undefined,
@@ -178,7 +179,7 @@ describe('effect-mardroeme', () => {
             id: unit._id,
           }),
         ],
-        getUnitsWithEffectResponses: [[unit], []],
+        getUnitsIdsWithEffectResponses: [[unit._id.toString()], []],
         expected: {
           impacts: {},
           mardroemingGameUnit: undefined,
@@ -207,6 +208,8 @@ describe('effect-mardroeme', () => {
           TestUtil.getDbUnit({
             id: newDeckUnit.unit,
           }),
+          mardroemeUnit,
+          berserkerUnit,
         ],
         getEffectWithKeyResponses: [
           TestUtil.getDbEffect({
@@ -220,8 +223,11 @@ describe('effect-mardroeme', () => {
           TestUtil.getDbGameUnit({
             id: mardroemeUnit._id,
           }),
+          TestUtil.getDbGameUnit({
+            id: berserkerUnit._id,
+          }),
         ],
-        getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+        getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
         replaceBerserkersWithVildkaarlResponse: [],
         expected: {
           impacts: {},
@@ -259,6 +265,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -269,11 +277,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -322,6 +331,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -332,11 +343,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -389,6 +401,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -399,11 +413,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -461,6 +476,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -471,11 +488,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -540,6 +558,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -550,11 +570,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -603,6 +624,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -613,11 +636,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -670,6 +694,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -680,11 +706,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -742,6 +769,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -752,11 +781,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -821,6 +851,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -831,11 +863,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -884,6 +917,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -894,11 +929,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -951,6 +987,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -961,11 +999,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -1023,6 +1062,8 @@ describe('effect-mardroeme', () => {
             TestUtil.getDbUnit({
               id: newDeckUnit.unit,
             }),
+            mardroemeUnit,
+            berserkerUnit,
           ],
           getEffectWithKeyResponses: [
             TestUtil.getDbEffect({
@@ -1033,11 +1074,12 @@ describe('effect-mardroeme', () => {
             }),
           ],
           getGameUnitsResponse: [
+            mardroemingGameUnit,
             TestUtil.getDbGameUnit({
-              id: mardroemeUnit._id,
+              id: berserkerUnit._id,
             }),
           ],
-          getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+          getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
           getMardroemingGameUnitResponse: mardroemingGameUnit,
           replaceBerserkersWithVildkaarlResponse: [
             {
@@ -1100,6 +1142,8 @@ describe('effect-mardroeme', () => {
           TestUtil.getDbUnit({
             id: newDeckUnit.unit,
           }),
+          mardroemeUnit,
+          berserkerUnit,
         ],
         getEffectWithKeyResponses: [
           TestUtil.getDbEffect({
@@ -1110,11 +1154,12 @@ describe('effect-mardroeme', () => {
           }),
         ],
         getGameUnitsResponse: [
+          mardroemingGameUnit,
           TestUtil.getDbGameUnit({
-            id: mardroemeUnit._id,
+            id: berserkerUnit._id,
           }),
         ],
-        getUnitsWithEffectResponses: [[mardroemeUnit], [berserkerUnit]],
+        getUnitsIdsWithEffectResponses: [[mardroemeUnit._id.toString()], [berserkerUnit._id.toString()]],
         getMardroemingGameUnitResponse: mardroemingGameUnit,
         replaceBerserkersWithVildkaarlResponse: [
           {
@@ -1134,121 +1179,12 @@ describe('effect-mardroeme', () => {
       })
     })
   })
-  describe('getUnitsWithEffect', () => {
-    it('throws error if battlefield unit does not exist', () => {
-      const gameUnit = TestUtil.getDbGameUnit({})
-      testGetUnitsWithEffect({
-        battlefieldUnits: [],
-        effect: TestUtil.getDbEffect({
-          key: EffectKey.Berserker,
-        }),
-        gameUnits: [gameUnit],
-        expected: Error(`Could not find battlefield unit for game unit "${gameUnit.unit}"`),
-      })
-    })
-    it('returns empty array if no units have effect', () => {
-      const unit = TestUtil.getDbUnit({})
-      const gameUnit = TestUtil.getDbGameUnit({
-        id: unit._id,
-      })
-      testGetUnitsWithEffect({
-        battlefieldUnits: [unit],
-        effect: TestUtil.getDbEffect({
-          key: EffectKey.Berserker,
-        }),
-        gameUnits: [gameUnit],
-        expected: [],
-      })
-    })
-    it('returns single item if single match', () => {
-      const effect = TestUtil.getDbEffect({
-        key: EffectKey.Berserker,
-      })
-      const unit = TestUtil.getDbUnit({
-        effects: [effect._id],
-      })
-      const gameUnit = TestUtil.getDbGameUnit({
-        id: unit._id,
-      })
-      testGetUnitsWithEffect({
-        battlefieldUnits: [unit],
-        effect,
-        gameUnits: [gameUnit],
-        expected: [unit],
-      })
-    })
-    it('returns single item if first out of many match', () => {
-      const effect = TestUtil.getDbEffect({
-        key: EffectKey.Berserker,
-      })
-      const unit1 = TestUtil.getDbUnit({
-        effects: [effect._id],
-      })
-      const unit2 = TestUtil.getDbUnit({})
-      const gameUnit1 = TestUtil.getDbGameUnit({
-        id: unit1._id,
-      })
-      const gameUnit2 = TestUtil.getDbGameUnit({
-        id: unit2._id,
-      })
-      testGetUnitsWithEffect({
-        battlefieldUnits: [unit1, unit2],
-        effect,
-        gameUnits: [gameUnit1, gameUnit2],
-        expected: [unit1],
-      })
-    })
-    it('returns single item if last out of many match', () => {
-      const effect = TestUtil.getDbEffect({
-        key: EffectKey.Berserker,
-      })
-      const unit1 = TestUtil.getDbUnit({})
-      const unit2 = TestUtil.getDbUnit({
-        effects: [effect._id],
-      })
-      const gameUnit1 = TestUtil.getDbGameUnit({
-        id: unit1._id,
-      })
-      const gameUnit2 = TestUtil.getDbGameUnit({
-        id: unit2._id,
-      })
-      testGetUnitsWithEffect({
-        battlefieldUnits: [unit1, unit2],
-        effect,
-        gameUnits: [gameUnit1, gameUnit2],
-        expected: [unit2],
-      })
-    })
-    it('returns multiple items if many match', () => {
-      const effect = TestUtil.getDbEffect({
-        key: EffectKey.Berserker,
-      })
-      const unit1 = TestUtil.getDbUnit({
-        effects: [effect._id],
-      })
-      const unit2 = TestUtil.getDbUnit({
-        effects: [effect._id],
-      })
-      const gameUnit1 = TestUtil.getDbGameUnit({
-        id: unit1._id,
-      })
-      const gameUnit2 = TestUtil.getDbGameUnit({
-        id: unit2._id,
-      })
-      testGetUnitsWithEffect({
-        battlefieldUnits: [unit1, unit2],
-        effect,
-        gameUnits: [gameUnit1, gameUnit2],
-        expected: [unit1, unit2],
-      })
-    })
-  })
   describe('getMardroemingGameUnit', () => {
     it('throws error if mardroeming game unit not found', () => {
       const gameUnits: GameUnitDbObject[] = []
       testGetMardroemingGameUnit({
         gameUnits,
-        mardroemes: [],
+        mardroemeUnitIds: [],
         expected: Error(`Could not find mardroeming game unit in "${JSON.stringify(gameUnits)}"`),
       })
     })
@@ -1259,7 +1195,7 @@ describe('effect-mardroeme', () => {
       })
       testGetMardroemingGameUnit({
         gameUnits: [gameUnit],
-        mardroemes: [mardroeme],
+        mardroemeUnitIds: [mardroeme._id.toString()],
         expected: gameUnit,
       })
     })
@@ -1270,7 +1206,7 @@ describe('effect-mardroeme', () => {
       })
       testGetMardroemingGameUnit({
         gameUnits: [gameUnit1, TestUtil.getDbGameUnit({})],
-        mardroemes: [mardroeme],
+        mardroemeUnitIds: [mardroeme._id.toString()],
         expected: gameUnit1,
       })
     })
@@ -1281,7 +1217,7 @@ describe('effect-mardroeme', () => {
       })
       testGetMardroemingGameUnit({
         gameUnits: [TestUtil.getDbGameUnit({}), gameUnit1],
-        mardroemes: [mardroeme],
+        mardroemeUnitIds: [mardroeme._id.toString()],
         expected: gameUnit1,
       })
     })
@@ -1296,7 +1232,7 @@ describe('effect-mardroeme', () => {
       })
       testGetMardroemingGameUnit({
         gameUnits: [gameUnit1, gameUnit2],
-        mardroemes: [mardroeme1, mardroeme2],
+        mardroemeUnitIds: [mardroeme1._id.toString(), mardroeme2._id.toString()],
         expected: gameUnit2,
       })
     })
@@ -1495,7 +1431,7 @@ describe('effect-mardroeme', () => {
           ],
         },
         expected: Error(
-          `Could not find instance "1" of "Transformed Vildkaarl" to transform berseker "${berserker._id}" into`
+          `Could not find instance "1" of "Transformed Vildkaarl" to transform berserker "${berserker._id}" into`
         ),
       })
     })
@@ -1515,7 +1451,7 @@ describe('effect-mardroeme', () => {
           ],
         },
         expected: Error(
-          `Could not find instance "1" of "Transformed Young Vildkaarl" to transform berseker "${berserker._id}" into`
+          `Could not find instance "1" of "Transformed Young Vildkaarl" to transform berserker "${berserker._id}" into`
         ),
       })
     })
@@ -1829,7 +1765,7 @@ async function testTransformBerserkers({
   logPrefix,
   newDeckUnit,
   getEffectWithKeyResponses,
-  getUnitsWithEffectResponses,
+  getUnitsIdsWithEffectResponses,
   getGameUnitsResponse,
   getMardroemingGameUnitResponse,
   replaceBerserkersWithVildkaarlResponse,
@@ -1845,7 +1781,7 @@ async function testTransformBerserkers({
   logPrefix: string
   newDeckUnit: DeckUnitDbObject
   getEffectWithKeyResponses?: (EffectDbObject | undefined)[]
-  getUnitsWithEffectResponses?: UnitDbObject[][]
+  getUnitsIdsWithEffectResponses?: string[][]
   getGameUnitsResponse?: GameUnitDbObject[]
   getMardroemingGameUnitResponse?: GameUnitDbObject
   replaceBerserkersWithVildkaarlResponse?: TransformPairs[]
@@ -1866,10 +1802,11 @@ async function testTransformBerserkers({
   if (getGameUnitsResponse) {
     getGameUnitsSpy.mockReturnValue(getGameUnitsResponse)
   }
-  const getUnitsWithEffectSpy = jest.spyOn(EffectMardroeme as any, 'getUnitsWithEffect')
-  if (getUnitsWithEffectResponses) {
-    for (const getUnitsWithEffectResponse of getUnitsWithEffectResponses) {
-      getUnitsWithEffectSpy.mockReturnValueOnce(getUnitsWithEffectResponse)
+
+  const getUnitIdsWithEffectSpy = jest.spyOn(getUnitIdsWithEffect, 'default')
+  if (getUnitsIdsWithEffectResponses) {
+    for (const getUnitsWithEffectResponse of getUnitsIdsWithEffectResponses) {
+      getUnitIdsWithEffectSpy.mockReturnValueOnce(getUnitsWithEffectResponse)
     }
   }
   const getMardroemingGameUnitSpy = jest
@@ -1935,21 +1872,21 @@ async function testTransformBerserkers({
         ]
       : []
   )
-  expect(getUnitsWithEffectSpy.mock.calls).toEqual(
-    getUnitsWithEffectResponses
+  const gameUnitIds = getGameUnitsResponse?.map((gameUnit) => gameUnit.unit.toString())
+  const units = battlefieldUnits.filter((battlefieldUnit) => gameUnitIds?.includes(battlefieldUnit._id.toString()))
+  expect(getUnitIdsWithEffectSpy.mock.calls).toEqual(
+    getUnitsIdsWithEffectResponses
       ? [
           [
             {
-              gameUnits: getGameUnitsResponse,
-              battlefieldUnits,
               effect: getEffectWithKeyResponses ? getEffectWithKeyResponses[0] : undefined,
+              units,
             },
           ],
           [
             {
-              gameUnits: getGameUnitsResponse,
-              battlefieldUnits,
               effect: getEffectWithKeyResponses ? getEffectWithKeyResponses[1] : undefined,
+              units,
             },
           ],
         ]
@@ -1961,7 +1898,7 @@ async function testTransformBerserkers({
           [
             {
               gameUnits: getGameUnitsResponse,
-              mardroemes: getUnitsWithEffectResponses ? getUnitsWithEffectResponses[0] : undefined,
+              mardroemeUnitIds: getUnitsIdsWithEffectResponses ? getUnitsIdsWithEffectResponses[0] : undefined,
             },
           ],
         ]
@@ -1979,14 +1916,19 @@ async function testTransformBerserkers({
         ]
       : []
   )
+  const berserkers = getUnitsIdsWithEffectResponses
+    ? battlefieldUnits.filter((battlefieldUnit) =>
+        getUnitsIdsWithEffectResponses[1].includes(battlefieldUnit._id.toString())
+      )
+    : undefined
   expect(getVildkaarlsForTransformationSpy.mock.calls).toEqual(
     replaceBerserkersWithVildkaarlResponse
       ? [
           [
             {
-              berserkers: getUnitsWithEffectResponses ? getUnitsWithEffectResponses[1] : undefined,
+              berserkers,
               existingVildkaarlIds,
-              limit: getUnitsWithEffectResponses ? getUnitsWithEffectResponses[1].length : undefined,
+              limit: getUnitsIdsWithEffectResponses ? getUnitsIdsWithEffectResponses[1].length : undefined,
             },
           ],
         ]
@@ -1998,7 +1940,7 @@ async function testTransformBerserkers({
       ? [
           [
             {
-              berserkers: getUnitsWithEffectResponses ? getUnitsWithEffectResponses[1] : undefined,
+              berserkers,
               row: combat === Combat.Close ? round?.close : combat === Combat.Ranged ? round?.ranged : round?.siege,
               vildkaarls,
             },
@@ -2019,67 +1961,37 @@ async function testTransformBerserkers({
           ],
           [`${logPrefix} gameUnits: "${JSON.stringify(getGameUnitsResponse)}"`],
           [
-            `${logPrefix} mardroemes: "${JSON.stringify(getUnitsWithEffectResponses && getUnitsWithEffectResponses[0])}"`,
+            `${logPrefix} mardroemeUnitIds: "${JSON.stringify(getUnitsIdsWithEffectResponses && getUnitsIdsWithEffectResponses[0])}"`,
           ],
           [
-            `${logPrefix} berserkers: "${JSON.stringify(getUnitsWithEffectResponses && getUnitsWithEffectResponses[1])}"`,
+            `${logPrefix} berserkerUnitIds: "${JSON.stringify(getUnitsIdsWithEffectResponses && getUnitsIdsWithEffectResponses[1])}"`,
           ],
         ]
       : []
   )
 }
 
-function testGetUnitsWithEffect({
-  gameUnits,
-  battlefieldUnits,
-  effect,
-  expected,
-}: {
-  gameUnits: GameUnitDbObject[]
-  battlefieldUnits: UnitDbObject[]
-  effect: EffectDbObject
-  expected: UnitDbObject[] | Error
-}) {
-  if (expected instanceof Error) {
-    expect(() =>
-      EffectMardroeme['getUnitsWithEffect']({
-        battlefieldUnits,
-        effect,
-        gameUnits,
-      })
-    ).toThrow(expected)
-  } else {
-    expect(
-      EffectMardroeme['getUnitsWithEffect']({
-        battlefieldUnits,
-        effect,
-        gameUnits,
-      })
-    ).toEqual(expected)
-  }
-}
-
 function testGetMardroemingGameUnit({
   gameUnits,
-  mardroemes,
+  mardroemeUnitIds,
   expected,
 }: {
   gameUnits: GameUnitDbObject[]
-  mardroemes: UnitDbObject[]
+  mardroemeUnitIds: string[]
   expected: GameUnitDbObject | Error
 }) {
   if (expected instanceof Error) {
     expect(() =>
       EffectMardroeme['getMardroemingGameUnit']({
         gameUnits,
-        mardroemes,
+        mardroemeUnitIds,
       })
     ).toThrow(expected)
   } else {
     expect(
       EffectMardroeme['getMardroemingGameUnit']({
         gameUnits,
-        mardroemes,
+        mardroemeUnitIds,
       })
     ).toEqual(expected)
   }

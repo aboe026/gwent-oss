@@ -153,6 +153,11 @@ New things that should be added to the codebase.
   - need query to get users
     - restrict to users "friends"?
   - change addGame mutation to accept ids instead of usernames
+- chaos randomize script parallel game play
+  - use "async" npm package to control how many get played at a time?
+  - use "cli-progress"
+  - use "humanize-duration" to print out how long games and overall takes?
+  - keep logs for each game in map, print them to logs when game is complete? Also dump any in-progress if error
 
 ## External Bugs
 
