@@ -7,7 +7,7 @@ import org.aboe026.Xml
 node {
     def workDir = "${WORKSPACE}/${env.BRANCH_NAME}-${env.BUILD_ID}"
     def nodeImage
-    def composeVersion = '2.39.4'
+    def composeVersion = '2.40.3'
     def dockerRegistry = 'localhost:5000'
     def composeFileName = 'docker-compose.yaml'
     def e2eSuites = [

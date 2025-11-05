@@ -93,6 +93,7 @@ Existing problems in the codebase that need to be fixed.
 - change artStyle to 0 based indexing?
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
   - add functional tests which spy on database store "read" method to ensure requests "batched" properly
+- swap NginX for Caddy?
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
