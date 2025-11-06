@@ -6,6 +6,7 @@ import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings
 import { GraphQLResolveInfo } from 'graphql'
 import { MAX_REDRAWS } from '@gwent/constants'
 import { MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
+import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 
@@ -29,18 +30,22 @@ export default class RedrawValidation {
     context: Context,
     info: GraphQLResolveInfo
   ): Promise<ValidatedRedraw> {
-    const resolverUtil = new ResolverUtil({
-      logger: RedrawValidation.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'redraw mutation',
     })
-    const gameId = args.game
+    const { game, player } = await Permissions.isGamePlayer({
+      gameId: args.game,
+      userId,
+      label: 'redraw mutation',
+    })
     const unitId = args.unit
 
-    const logPrefix = `redraw by "${userId}" for unit "${unitId}" on game "${gameId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const logPrefix = `redraw by "${userId}" for unit "${unitId}" on game "${game._id}"`
+    const resolverUtil = new ResolverUtil({
+      logger: RedrawValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,
@@ -51,8 +56,8 @@ export default class RedrawValidation {
       label: 'Unit ID',
     })
 
-    const { game, player } = await resolverUtil.getGamePlayer({
-      gameId,
+    resolverUtil.validateGame({
+      game,
       userId,
       status: GameStatus.Redrawing,
       label: 'redraw',

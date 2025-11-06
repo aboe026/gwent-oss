@@ -8,6 +8,7 @@ import { FactionKey, MutationAddDeckArgs } from '@gwent/graphql-schema/resolver-
 import FactionStore from '../../../../database/stores/faction-store'
 import { GraphQLResolveInfo } from 'graphql'
 import LeaderStore from '../../../../database/stores/leader-store'
+import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
@@ -33,17 +34,16 @@ export default class AddDeckValidation {
     context: Context,
     info: GraphQLResolveInfo
   ): Promise<ValidatedAddDeck> {
-    const resolverUtil = new ResolverUtil({
-      logger: AddDeckValidation.logger,
-    })
-
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'addDeck mutation',
     })
 
     const logPrefix = `addDeck by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: AddDeckValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,

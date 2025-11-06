@@ -5,6 +5,7 @@ import { Game } from '@gwent/graphql-schema/resolver-typings'
 import GameResolver from '../types/game-resolver'
 import GameStore from '../../../database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
+import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'
 
 /**
@@ -21,16 +22,16 @@ export default class GamesQuery {
    * @returns The Games a user is apart of.
    */
   static async games(context: Context, info: GraphQLResolveInfo): Promise<Game[]> {
-    const resolverUtil = new ResolverUtil({
-      logger: GamesQuery.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'games query',
     })
 
     const logPrefix = `games by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: GamesQuery.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       info,
     })

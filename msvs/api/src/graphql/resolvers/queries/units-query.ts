@@ -5,6 +5,7 @@ import { FactionDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionStore from '../../../database/stores/faction-store'
 import { GraphQLResolveInfo } from 'graphql'
 import { QueryUnitsArgs, Unit } from '@gwent/graphql-schema/resolver-typings'
+import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'
 import UnitResolver from '../types/unit-resolver'
 import UnitStore from '../../../database/stores/unit-store'
@@ -24,16 +25,16 @@ export default class UnitsQuery {
    * @returns The Units a user can build a Deck with.
    */
   static async units(args: QueryUnitsArgs, context: Context, info: GraphQLResolveInfo): Promise<Unit[]> {
-    const resolverUtil = new ResolverUtil({
-      logger: UnitsQuery.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'units query',
     })
 
     const logPrefix = `units by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: UnitsQuery.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,

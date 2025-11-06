@@ -6,6 +6,7 @@ import { getDuplicateItems } from '@gwent/utils'
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationAddGameArgs, User } from '@gwent/graphql-schema/resolver-typings'
 import { PLAYER_COUNTS } from '@gwent/constants'
+import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 import UserResolver from '../../types/user-resolver'
@@ -31,16 +32,16 @@ export default class AddGameValidation {
     context: Context,
     info: GraphQLResolveInfo
   ): Promise<ValidatedAddGame> {
-    const resolverUtil = new ResolverUtil({
-      logger: AddGameValidation.logger,
-    })
-    const { _id: userId, name: creatorName } = resolverUtil.getContextUser({
+    const { _id: userId, name: creatorName } = Permissions.isAuthenticated({
       context,
       label: 'addGame mutation',
     })
 
     const logPrefix = `addGame by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: AddGameValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,

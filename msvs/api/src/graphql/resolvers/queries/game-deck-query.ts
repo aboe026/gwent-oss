@@ -4,6 +4,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import { GameDeck, QueryGameDeckArgs } from '@gwent/graphql-schema/resolver-typings'
 import GameDeckResolver from '../types/game-deck-resolver'
 import { GraphQLResolveInfo } from 'graphql'
+import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'
 
 /**
@@ -21,25 +22,28 @@ export default class GameDeckQuery {
    * @returns The GameDeck that has potentially been set for a Game.
    */
   static async gameDeck(args: QueryGameDeckArgs, context: Context, info: GraphQLResolveInfo): Promise<GameDeck | null> {
-    const resolverUtil = new ResolverUtil({
-      logger: GameDeckQuery.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'gameDeck query',
     })
+    const { game, player } = await Permissions.isGamePlayer({
+      gameId: args.game,
+      userId,
+      label: 'gameDeck query',
+    })
 
-    const logPrefix = `gameDeck by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const logPrefix = `gameDeck by "${userId}" for game "${game._id}"`
+    const resolverUtil = new ResolverUtil({
+      logger: GameDeckQuery.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,
     })
 
-    const gameId = args.game
-
-    const { player } = await resolverUtil.getGamePlayer({
-      gameId,
+    resolverUtil.validateGame({
+      game,
       userId,
     })
 

@@ -40,7 +40,7 @@ describe('add-deck-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Leader ID "${leaderId}" is not a valid MongoDB ObjectId.`)],
+          errors: [new GraphQLError(`Leader ID "${leaderId}" not a valid MongoDB ObjectId.`)],
         })
       })
       it('throws error if invalid unit ID', async () => {
@@ -72,7 +72,7 @@ describe('add-deck-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Unit ID "${unitId}" is not a valid MongoDB ObjectId.`)],
+          errors: [new GraphQLError(`Unit ID "${unitId}" not a valid MongoDB ObjectId.`)],
         })
       })
       it('throws error if faction is neutral', async () => {

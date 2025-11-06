@@ -116,7 +116,7 @@ describe('set-order-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`User ID "${userId}" is not a valid MongoDB ObjectId.`)],
+          errors: [new GraphQLError(`User ID "${userId}" not a valid MongoDB ObjectId.`)],
         })
       })
       it('throws error if game does not exist', async () => {

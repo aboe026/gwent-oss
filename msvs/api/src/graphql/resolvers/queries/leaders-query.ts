@@ -7,6 +7,7 @@ import { GraphQLResolveInfo } from 'graphql'
 import { Leader, QueryLeadersArgs } from '@gwent/graphql-schema/resolver-typings'
 import LeaderStore from '../../../database/stores/leader-store'
 import LeaderResolver from '../types/leader-resolver'
+import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'
 
 /**
@@ -24,16 +25,16 @@ export default class LeadersQuery {
    * @returns The Leaders available to build Decks with.
    */
   static async leaders(args: QueryLeadersArgs, context: Context, info: GraphQLResolveInfo): Promise<Leader[]> {
-    const resolverUtil = new ResolverUtil({
-      logger: LeadersQuery.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'leaders query',
     })
 
     const logPrefix = `leaders by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: LeadersQuery.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,

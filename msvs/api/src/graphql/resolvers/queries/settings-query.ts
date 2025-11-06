@@ -3,6 +3,7 @@ import { getLogger } from 'log4js'
 import { Context } from '@gwent/graphql-schema/context'
 import env from '../../../env'
 import { GraphQLResolveInfo } from 'graphql'
+import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'
 import { Setting, SettingKey, SettingType } from '@gwent/graphql-schema/resolver-typings'
 
@@ -20,16 +21,16 @@ export default class SettingsQuery {
    * @returns The settings configured for the application.
    */
   static settings(context: Context, info: GraphQLResolveInfo): Setting[] {
-    const resolverUtil = new ResolverUtil({
-      logger: SettingsQuery.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'settings query',
     })
 
     const logPrefix = `settings by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: SettingsQuery.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       info,
     })

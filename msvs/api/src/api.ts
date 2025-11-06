@@ -8,10 +8,12 @@ import express, { Express, Request, Response } from 'express'
 import { expressMiddleware } from '@as-integrations/express5'
 import figlet from 'figlet'
 import { getLogger } from 'log4js'
+import { GraphQLFormattedError } from 'graphql'
 import { json } from 'body-parser'
 import MongoStore from 'connect-mongo'
 import { printSchema } from 'graphql/utilities'
 import session, { CookieOptions } from 'express-session'
+import { unwrapResolverError } from '@apollo/server/errors'
 import { useServer } from 'graphql-ws/use/ws'
 import { WebSocketServer } from 'ws'
 
@@ -22,6 +24,7 @@ import DbConnector from './database/db-connector'
 import DbUpgrader from './database/db-upgrader'
 import env from './env'
 import { NODE_ENV } from '@gwent/env'
+import PresentableError from './util/presentable-error'
 import schema from './graphql/executable-schema'
 import { version } from '../package.json'
 import WebSocketAuth from './auth/websocket-auth'
@@ -200,9 +203,27 @@ export default class Api {
         Api.ensureWebsocketDisposed(subscriptionCleanup),
       ],
       introspection: true,
+      formatError: Api.maskError,
     })
     await Api.apolloServer.start()
     Api.logger.debug('ApolloServer started')
+  }
+
+  /**
+   * Mask unkown errors for security.
+   *
+   * @param formattedError The formatted GraphQL error.
+   * @param error The original error, wrapped in GraphQLError.
+   * @returns An error to send to the client.
+   */
+  private static maskError(formattedError: GraphQLFormattedError, error: unknown): GraphQLFormattedError {
+    const unwrappedError = unwrapResolverError(error)
+    if (unwrappedError instanceof PresentableError) {
+      return formattedError
+    }
+    return {
+      message: 'Internal Server Error.',
+    }
   }
 
   /**

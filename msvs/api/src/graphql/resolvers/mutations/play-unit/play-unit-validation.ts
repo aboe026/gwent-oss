@@ -4,6 +4,7 @@ import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typ
 import { Context } from '@gwent/graphql-schema/context'
 import { DeckUnitDbObject, GameDbObject, GameStatus, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
+import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 import UnitStore from '../../../../database/stores/unit-store'
@@ -28,20 +29,23 @@ export default class PlayUnitValidation {
     context: Context,
     info: GraphQLResolveInfo
   ): Promise<ValidatedPlayUnit> {
-    const resolverUtil = new ResolverUtil({
-      logger: PlayUnitValidation.logger,
-    })
-
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'playUnit mutation',
     })
-    const gameId = args.game
+    const { game, player } = await Permissions.isGamePlayer({
+      gameId: args.game,
+      userId,
+      label: 'playUnit mutation',
+    })
     const unitId = args.unit
     let combat = args.combat
 
-    const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${gameId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${game._id}"`
+    const resolverUtil = new ResolverUtil({
+      logger: PlayUnitValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,
@@ -52,8 +56,8 @@ export default class PlayUnitValidation {
       label: 'Unit ID',
     })
 
-    const { game, player } = await resolverUtil.getGamePlayer({
-      gameId,
+    resolverUtil.validateGame({
+      game,
       userId,
       status: GameStatus.Playing,
       turn: true,

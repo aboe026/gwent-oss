@@ -95,7 +95,7 @@ describe('resolver-util', () => {
     })
     it('throws error if single invalid id', () => {
       const id = 'invalid'
-      const message = `${label} "${id}" is not a valid MongoDB ObjectId.`
+      const message = `${label} "${id}" not a valid MongoDB ObjectId.`
       testVerifyMongoIds({
         ids: [id],
         label,
@@ -106,7 +106,7 @@ describe('resolver-util', () => {
     })
     it('throws error if multiple invalid ids', () => {
       const id = 'invalid'
-      const message = `${label} "${id}" is not a valid MongoDB ObjectId.`
+      const message = `${label} "${id}" not a valid MongoDB ObjectId.`
       testVerifyMongoIds({
         ids: [id, id],
         label,
@@ -117,7 +117,7 @@ describe('resolver-util', () => {
     })
     it('throws error if invalid id among valid', () => {
       const id = 'invalid'
-      const message = `${label} "${id}" is not a valid MongoDB ObjectId.`
+      const message = `${label} "${id}" not a valid MongoDB ObjectId.`
       testVerifyMongoIds({
         ids: [new ObjectId().toString(), id, new ObjectId().toString()],
         label,
@@ -243,7 +243,7 @@ describe('resolver-util', () => {
     const logPrefix = `playUnit by "${userId}"`
     it('returns error if gameId invalid', async () => {
       const gameId = 'invalid'
-      const message = `Game ID "${gameId}" is not a valid MongoDB ObjectId.`
+      const message = `Game ID "${gameId}" not a valid MongoDB ObjectId.`
       await testGetGamePlayer({
         gameId,
         userId,

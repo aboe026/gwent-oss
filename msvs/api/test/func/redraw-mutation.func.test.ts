@@ -119,7 +119,7 @@ describe('redraw-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Unit ID "${unitId}" is not a valid MongoDB ObjectId.`)],
+          errors: [new GraphQLError(`Unit ID "${unitId}" not a valid MongoDB ObjectId.`)],
         })
       })
       it('throws error if game does not exist', async () => {

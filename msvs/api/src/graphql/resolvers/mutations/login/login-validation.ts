@@ -29,15 +29,14 @@ export default class LoginValidation {
     logPrefix: string
     user: UserDbObject
   }> {
-    const resolverUtil = new ResolverUtil({
-      logger: LoginValidation.logger,
-    })
-
     const name = args.name
     const password = args.password
 
     const logPrefix = `login for user "${name}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: LoginValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,

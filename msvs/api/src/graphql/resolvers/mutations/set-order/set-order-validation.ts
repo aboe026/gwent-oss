@@ -4,6 +4,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject, GameDeckDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
+import Permissions from '../../../permissions'
 import ResolverUtil from '../../resolver-util'
 
 /**
@@ -30,27 +31,27 @@ export default class SetOrderValidation {
     logPrefix: string
     userIds?: string[] | null
   }> {
-    const resolverUtil = new ResolverUtil({
-      logger: SetOrderValidation.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'setOrder mutation',
     })
-    const gameId = args.game
+    const { game, player } = await Permissions.isGamePlayer({
+      gameId: args.game,
+      userId,
+      label: 'setOrder mutation',
+    })
     const userIds = args.users
 
-    const logPrefix = `setOrder by "${userId}" to users "${JSON.stringify(userIds)}" on game "${gameId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const logPrefix = `setOrder by "${userId}" to users "${JSON.stringify(userIds)}" on game "${game._id}"`
+    const resolverUtil = new ResolverUtil({
+      logger: SetOrderValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,
     })
 
-    resolverUtil.verifyMongoIds({
-      ids: [gameId],
-      label: 'Game ID',
-    })
     if (userIds) {
       resolverUtil.verifyMongoIds({
         ids: userIds,
@@ -58,8 +59,8 @@ export default class SetOrderValidation {
       })
     }
 
-    const { game, player } = await resolverUtil.getGamePlayer({
-      gameId,
+    resolverUtil.validateGame({
+      game,
       userId,
       label: 'set order',
       status: GameStatus.Ordering,
