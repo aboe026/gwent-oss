@@ -3,9 +3,9 @@ import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
 import { DeckDbObject, GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
-import DeckStore from '../../../../database/stores/deck-store'
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 
@@ -29,42 +29,33 @@ export default class SetDeckValidation {
     context: Context,
     info: GraphQLResolveInfo
   ): Promise<ValidatedSetDeck> {
-    const resolverUtil = new ResolverUtil({
-      logger: SetDeckValidation.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'setDeck mutation',
     })
-    const gameId = args.game
-    const deckId = args.deck
+    const { game, player } = await Permissions.isGamePlayer({
+      gameId: args.game,
+      userId,
+      label: 'setDeck mutation',
+    })
+    const deck = await Permissions.isDeckOwner({
+      deckId: args.deck,
+      userId,
+      label: 'setDeck mutation',
+    })
 
-    const logPrefix = `setDeck by "${userId}" for deck "${deckId}" on game "${gameId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const logPrefix = `setDeck by "${userId}" for deck "${deck._id}" on game "${game._id}"`
+    const resolverUtil = new ResolverUtil({
+      logger: SetDeckValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,
     })
 
-    resolverUtil.verifyMongoIds({
-      ids: [deckId],
-      label: 'Deck ID',
-    })
-
-    const deck = await DeckStore.getById({
-      id: deckId,
-    })
-    if (SetDeckValidation.logger.isTraceEnabled()) {
-      SetDeckValidation.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
-    }
-    if (!deck) {
-      const message = 'Deck does not exist.'
-      SetDeckValidation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-
-    const { game, player } = await resolverUtil.getGamePlayer({
-      gameId,
+    resolverUtil.validateGame({
+      game,
       userId,
       status: GameStatus.Decking,
       label: 'set deck',

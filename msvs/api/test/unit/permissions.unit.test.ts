@@ -1,530 +1,378 @@
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { DeckDbObject, GameDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckDbObject, GameDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
 import DeckStore from '../../src/database/stores/deck-store'
 import GameStore from '../../src/database/stores/game-store'
-import { GraphQLResolveInfo } from 'graphql'
-import Permissions, { NO_RULE_DEFINED } from '../../src/graphql/permissions'
 import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
-import TestUtil from '../util/test-util'
+import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import PresentableError from '../../src/util/presentable-error'
+import TestUtil from '../util/test-util'
 
 describe('permissions', () => {
-  describe('fallback', () => {
-    const fieldName = 'new'
-    it('returns false if parentType is Query', () => {
-      testFallback({
-        info: {
-          fieldName,
-          parentType: {
-            name: 'Query',
-          },
-        } as any as GraphQLResolveInfo,
-        expected: Error(NO_RULE_DEFINED),
-        errorCalls: [[`fallback hit because no rule defined for Query "${fieldName}"`]],
-      })
-    })
-    it('returns false if parentType is Mutation', () => {
-      testFallback({
-        info: {
-          fieldName,
-          parentType: {
-            name: 'Mutation',
-          },
-        } as any as GraphQLResolveInfo,
-        expected: Error(NO_RULE_DEFINED),
-        errorCalls: [[`fallback hit because no rule defined for Mutation "${fieldName}"`]],
-      })
-    })
-    it('returns true if parentType is neither Query or Mutation', () => {
-      testFallback({
-        info: {
-          fieldName,
-          parentType: {
-            name: 'User',
-          },
-        } as any as GraphQLResolveInfo,
-        expected: true,
-      })
-    })
-  })
   describe('isAuthenticated', () => {
-    const info = {
-      fieldName: 'currentUser',
-    } as any as GraphQLResolveInfo
-    const logPrefix = `isAuthenticated failed operation "${info.fieldName}":`
-    it('returns error if session undefined', () => {
+    const label = 'label'
+    it('throws error if context undefined', () => {
+      const context: Context = undefined as any as Context
       testIsAuthenticated({
-        context: {
-          session: undefined,
-        },
-        info,
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        warnCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
+        context,
+        label,
+        expected: new PresentableError(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for ${label}: "${JSON.stringify(context?.session)}".`]],
       })
     })
-    it('returns error if user undefined', () => {
+    it('throws error if session undefined', () => {
+      const context: Context = {}
       testIsAuthenticated({
-        context: {
-          session: {
-            user: undefined,
-          },
-        },
-        info,
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        warnCalls: [[`${logPrefix} No user on session: "${JSON.stringify(undefined)}"`]],
+        context,
+        label,
+        expected: new PresentableError(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for ${label}: "${JSON.stringify(context?.session)}".`]],
       })
     })
-    it('returns error if id undefined', () => {
+    it('throws error if user undefined', () => {
+      const context: Context = {
+        session: {},
+      }
       testIsAuthenticated({
-        context: {
-          session: {
-            user: {
-              _id: undefined,
-            },
-          },
-        },
-        info,
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        warnCalls: [[`${logPrefix} No user on session: "${JSON.stringify({})}"`]],
+        context,
+        label,
+        expected: new PresentableError(NOT_AUTHENTICATED_MESSAGE),
+        errorCalls: [[`No user on context for ${label}: "${JSON.stringify(context?.session)}".`]],
       })
     })
-    it('returns true if user defined on session', () => {
-      testIsAuthenticated({
-        context: {
-          session: {
-            user: {
-              _id: new ObjectId(),
-            },
-          },
+    it('returns user if defined', () => {
+      const user = TestUtil.getDbUser({})
+      const context: Context = {
+        session: {
+          user,
         },
-        info,
-        expected: true,
+      }
+      testIsAuthenticated({
+        context,
+        label,
+        expected: user,
       })
     })
   })
-  describe('isPlayer', () => {
-    const fieldName = 'gameDeck'
-    const logPrefix = `isPlayer check failed operation "${fieldName}":`
-    it('returns error if no user id on context', async () => {
-      await testIsPlayer({
-        fieldName,
-        userId: null,
-        error: NOT_AUTHORIZED_MESSAGE,
-        getByIdCalls: [],
-        warnCalls: [[`${logPrefix} Could not extract user ID from context: "${JSON.stringify(undefined)}"`]],
-      })
-    })
-    it('returns error if game id is not valid ObjectId', async () => {
+  describe('isGamePlayer', () => {
+    const label = 'label'
+    it('throws error if gameId invalid', async () => {
       const gameId = 'invalid'
-      await testIsPlayer({
-        fieldName,
+      const logPrefix = `isGamePlayer check failed operation "${label}":`
+      const message = `Game ID "${gameId}" not a valid MongoDB ObjectId.`
+      await testIsGamePlayer({
         gameId,
-        error: `Game ID "${gameId}" not a valid MongoDB ObjectId.`,
-        getByIdCalls: [],
-        warnCalls: [[`${logPrefix} Game ID "${gameId}" not a valid MongoDB ObjectId.`]],
+        label,
+        expected: new PresentableError(message),
+        warnCalls: [[`${logPrefix} ${message}`]],
+        gameByIdCalled: false,
       })
     })
-    it('returns error if error thrown getting game', async () => {
+    it('throws error if problem getting game from database', async () => {
       const gameId = new ObjectId().toString()
-      const error = 'network timeout'
-      await testIsPlayer({
-        fieldName,
+      const logPrefix = `isGamePlayer check failed operation "${label}":`
+      const error = Error('Connection lost')
+      await testIsGamePlayer({
         gameId,
-        gameError: error,
-        error: NOT_AUTHORIZED_MESSAGE,
-        errorCalls: [[`${logPrefix} Exception attempting to get game with ID "${gameId}": "${Error(error)}"`]],
+        label,
+        gameByIdResponse: error,
+        expected: new PresentableError(NOT_AUTHORIZED_MESSAGE),
+        errorCalls: [[`${logPrefix} Exception attempting to get Game with ID "${gameId}": "${error}"`]],
       })
     })
-    it('returns error if game does not exist', async () => {
+    it('throws error if game does not exist', async () => {
       const gameId = new ObjectId().toString()
-      await testIsPlayer({
-        fieldName,
+      const logPrefix = `isGamePlayer check failed operation "${label}":`
+      await testIsGamePlayer({
         gameId,
-        gameResponse: undefined,
-        error: NOT_AUTHORIZED_MESSAGE,
+        label,
+        gameByIdResponse: undefined,
+        expected: new PresentableError(NOT_AUTHORIZED_MESSAGE),
         warnCalls: [[`${logPrefix} Game with ID "${gameId}" does not exist.`]],
       })
     })
-    it('returns error if user is not a player on game', async () => {
-      const userId = new ObjectId()
+    it('throws error if user is not a player on the game', async () => {
       const gameId = new ObjectId().toString()
-      const player1 = new ObjectId()
-      const player2 = new ObjectId()
+      const userId = new ObjectId()
       const game = TestUtil.getDbGame({
         id: gameId,
-        creator: player1,
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: player1,
-          }),
-          TestUtil.getDbGamePlayer({
-            user: player2,
-          }),
-        ],
       })
-      await testIsPlayer({
-        fieldName,
-        userId,
+      const logPrefix = `isGamePlayer check failed operation "${label}":`
+      await testIsGamePlayer({
         gameId,
-        gameResponse: game,
-        error: NOT_AUTHORIZED_MESSAGE,
+        userId,
+        label,
+        gameByIdResponse: game,
+        expected: new PresentableError(NOT_AUTHORIZED_MESSAGE),
         warnCalls: [
-          [`${logPrefix} User "${userId}" not included in game "${gameId}" players: "["${player1}","${player2}"]".`],
+          [
+            `${logPrefix} User "${userId}" not included in game "${gameId}" players: "${JSON.stringify(game.players.map((player) => player.user))}".`,
+          ],
         ],
       })
     })
-    it('returns true if user is creator of game', async () => {
-      const userId = new ObjectId()
+    it('returns game and player if user is first player on game', async () => {
       const gameId = new ObjectId().toString()
+      const userId = new ObjectId()
+      const player = TestUtil.getDbGamePlayer({
+        user: userId,
+      })
       const game = TestUtil.getDbGame({
         id: gameId,
-        creator: userId,
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-          TestUtil.getDbGamePlayer({}),
-        ],
+        players: [player, TestUtil.getDbGamePlayer({})],
       })
-      await testIsPlayer({
-        fieldName,
-        userId,
+      await testIsGamePlayer({
         gameId,
-        gameResponse: game,
+        userId,
+        label,
+        gameByIdResponse: game,
+        expected: {
+          game,
+          player,
+        },
       })
     })
-    it('returns true if user is participant on game', async () => {
-      const userId = new ObjectId()
+    it('returns game and player if user is last player on game', async () => {
       const gameId = new ObjectId().toString()
+      const userId = new ObjectId()
+      const player = TestUtil.getDbGamePlayer({
+        user: userId,
+      })
       const game = TestUtil.getDbGame({
         id: gameId,
-        players: [
-          TestUtil.getDbGamePlayer({}),
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-        ],
+        players: [TestUtil.getDbGamePlayer({}), player],
       })
-      await testIsPlayer({
-        fieldName,
-        userId,
+      await testIsGamePlayer({
         gameId,
-        gameResponse: game,
+        userId,
+        label,
+        gameByIdResponse: game,
+        expected: {
+          game,
+          player,
+        },
       })
     })
   })
-  describe('ownsDeck', () => {
-    const fieldName = 'setDeck'
-    const logPrefix = `ownsDeck check failed operation "${fieldName}":`
-    it('returns error if no user on session', async () => {
-      await testOwnsDeck({
-        fieldName,
-        userId: null,
-        error: NOT_AUTHORIZED_MESSAGE,
-        getByIdsCalls: [],
-        warnCalls: [[`${logPrefix} Could not extract user ID from context: "${JSON.stringify(undefined)}"`]],
-      })
-    })
-    it('returns error if deck ID is not valid ObjectId', async () => {
+  describe('isDeckOwner', () => {
+    const label = 'label'
+    it('throws error if deckId invalid', async () => {
       const deckId = 'invalid'
-      await testOwnsDeck({
-        fieldName,
+      const logPrefix = `isDeckOwner check failed operation "${label}":`
+      const message = `Deck ID "${deckId}" not a valid MongoDB ObjectId.`
+      await testIsDeckOwner({
         deckId,
-        error: `Deck ID "${deckId}" not a valid MongoDB ObjectId.`,
-        getByIdsCalls: [],
-        warnCalls: [[`${logPrefix} Deck ID "${deckId}" not a valid MongoDB ObjectId.`]],
+        label,
+        expected: new PresentableError(message),
+        warnCalls: [[`${logPrefix} ${message}`]],
+        deckByIdCalled: false,
       })
     })
-    it('returns error if DeckStore getByIds throws error', async () => {
+    it('throws error if problem getting deck from database', async () => {
       const deckId = new ObjectId().toString()
-      const error = 'network timeout'
-      await testOwnsDeck({
-        fieldName,
+      const logPrefix = `isDeckOwner check failed operation "${label}":`
+      const error = Error('Connection lost')
+      await testIsDeckOwner({
         deckId,
-        decksError: error,
-        error: NOT_AUTHORIZED_MESSAGE,
-        errorCalls: [[`${logPrefix} Exception attempting to get deck with ID "${deckId}": "${Error(error)}"`]],
+        label,
+        deckByIdResponse: error,
+        expected: new PresentableError(NOT_AUTHORIZED_MESSAGE),
+        errorCalls: [[`${logPrefix} Exception attempting to get Deck with ID "${deckId}": "${error}"`]],
       })
     })
-    it('returns error if DeckStore getByIds returns undefined', async () => {
+    it('throws error if deck does not exist', async () => {
       const deckId = new ObjectId().toString()
-      await testOwnsDeck({
-        fieldName,
+      const logPrefix = `isDeckOwner check failed operation "${label}":`
+      await testIsDeckOwner({
         deckId,
-        deckResponse: undefined,
-        error: NOT_AUTHORIZED_MESSAGE,
+        label,
+        deckByIdResponse: undefined,
+        expected: new PresentableError(NOT_AUTHORIZED_MESSAGE),
         warnCalls: [[`${logPrefix} Deck with ID "${deckId}" does not exist.`]],
       })
     })
-    it('returns error if DeckStore getById returns undefined', async () => {
+    it('throws error if user is not deck owner', async () => {
       const deckId = new ObjectId().toString()
-      await testOwnsDeck({
-        fieldName,
-        deckId,
-        deckResponse: undefined,
-        error: NOT_AUTHORIZED_MESSAGE,
-        warnCalls: [[`${logPrefix} Deck with ID "${deckId}" does not exist.`]],
-      })
-    })
-    it('returns error if deck user does not match context user', async () => {
       const userId = new ObjectId()
-      const deckId = new ObjectId().toString()
       const deck = TestUtil.getDbDeck({
         id: deckId,
       })
-      await testOwnsDeck({
-        fieldName,
-        userId,
+      const logPrefix = `isDeckOwner check failed operation "${label}":`
+      await testIsDeckOwner({
         deckId,
-        deckResponse: deck,
-        error: NOT_AUTHORIZED_MESSAGE,
+        userId,
+        label,
+        deckByIdResponse: deck,
+        expected: new PresentableError(NOT_AUTHORIZED_MESSAGE),
         warnCalls: [[`${logPrefix} Deck with ID "${deckId}" not owned by user "${userId}".`]],
       })
     })
-    it('returns true if deck user matches context user', async () => {
-      const userId = new ObjectId()
+    it('returns deck if user is deck owner', async () => {
       const deckId = new ObjectId().toString()
+      const userId = new ObjectId()
       const deck = TestUtil.getDbDeck({
         id: deckId,
         user: userId,
       })
-      await testOwnsDeck({
-        fieldName,
-        userId,
+      await testIsDeckOwner({
         deckId,
-        deckResponse: deck,
+        userId,
+        label,
+        deckByIdResponse: deck,
+        expected: deck,
       })
-    })
-  })
-  describe('fallbackError', () => {
-    it('returns message if PresentableError', () => {
-      const error = new PresentableError('invalid')
-      testFallbackError({
-        error,
-        expected: Error('invalid'),
-      })
-    })
-    it('logs to error and returns generic Internal Server Error if not a PresentableError', () => {
-      const error = Error('i did not forsee this')
-      testFallbackError({
-        error,
-        expected: Error('Internal Server Error.'),
-        errorCalls: [[error]],
-      })
-    })
-  })
-  describe('shield', () => {
-    it('returns shield object', () => {
-      expect(Permissions.shield()).toEqual(expect.any(Object))
     })
   })
 })
 
 function testIsAuthenticated({
   context,
-  info,
+  label,
   expected,
-  warnCalls = [],
+  errorCalls = [],
 }: {
-  context: any
-  info: GraphQLResolveInfo
-  expected: Error | boolean
-  warnCalls?: any[][]
+  context: Context
+  label: string
+  expected: UserDbObject | PresentableError
+  errorCalls?: string[][]
 }) {
-  const warnSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
   Permissions['logger'] = {
-    warn: warnSpy,
+    error: errorSpy,
   } as any
 
-  expect(Permissions['isAuthenticated'](undefined, undefined, context, info)).toEqual(expected)
+  if (expected instanceof PresentableError) {
+    expect(() =>
+      Permissions.isAuthenticated({
+        context,
+        label,
+      })
+    ).toThrow(expected)
+  } else {
+    expect(
+      Permissions.isAuthenticated({
+        context,
+        label,
+      })
+    ).toEqual(expected)
+  }
 
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
 
-async function testIsPlayer({
-  userId,
+async function testIsGamePlayer({
   gameId,
-  fieldName,
-  gameError,
-  gameResponse,
-  error,
-  getByIdCalls,
+  userId = new ObjectId(),
+  label,
+  gameByIdResponse,
+  expected,
+  gameByIdCalled = true,
   warnCalls = [],
   errorCalls = [],
 }: {
-  userId?: ObjectId | null
-  gameId?: string
-  fieldName: string
-  gameError?: string
-  gameResponse?: GameDbObject
-  error?: string
-  getByIdCalls?: any[][]
-  warnCalls?: any[][]
-  errorCalls?: any[][]
+  gameId: string
+  userId?: ObjectId
+  label: string
+  gameByIdResponse?: GameDbObject | undefined | Error
+  expected: GameAndPlayer | PresentableError
+  gameByIdCalled?: boolean
+  warnCalls?: string[][]
+  errorCalls?: string[][]
 }) {
-  if (userId === undefined) {
-    userId = new ObjectId()
-  }
-  const context: Context = {
-    session: {},
-  }
-  if (userId && context.session) {
-    context.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
-  }
-  const args = {
-    game: gameId,
-  }
-  const info = {
-    fieldName,
-  }
-  const getByIdSpy = jest.spyOn(GameStore, 'getById')
-  if (gameError) {
-    getByIdSpy.mockRejectedValue(Error(gameError))
+  const gameByIdSpy = jest.spyOn(GameStore, 'getById')
+  if (gameByIdResponse instanceof Error) {
+    gameByIdSpy.mockRejectedValue(gameByIdResponse)
   } else {
-    getByIdSpy.mockResolvedValue(gameResponse as any)
+    gameByIdSpy.mockResolvedValue(gameByIdResponse)
   }
-  const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
   Permissions['logger'] = {
-    error: errorSpy,
     warn: warnSpy,
+    error: errorSpy,
   } as any
 
-  await expect(Permissions['isPlayer'](undefined, args, context, info as any)).resolves.toEqual(
-    error ? Error(error) : true
-  )
+  const promise = Permissions.isGamePlayer({
+    gameId,
+    userId,
+    label,
+  })
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
 
-  expect(getByIdSpy.mock.calls).toEqual(
-    getByIdCalls || [
-      [
-        {
-          id: gameId,
-          options: {
-            projection: {
-              _id: 0,
-              players: 1,
+  expect(gameByIdSpy.mock.calls).toEqual(
+    gameByIdCalled
+      ? [
+          [
+            {
+              id: gameId,
             },
-          },
-        },
-      ],
-    ]
+          ],
+        ]
+      : []
   )
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
+  expect(errorSpy.mock.calls).toEqual(errorCalls)
 }
 
-async function testOwnsDeck({
-  userId,
+async function testIsDeckOwner({
   deckId,
-  fieldName,
-  decksError,
-  deckResponse,
-  error,
-  getByIdsCalls,
+  userId = new ObjectId(),
+  label,
+  deckByIdResponse,
+  expected,
+  deckByIdCalled = true,
   warnCalls = [],
   errorCalls = [],
 }: {
-  userId?: ObjectId | null
-  deckId?: string
-  fieldName: string
-  decksError?: string
-  deckResponse?: DeckDbObject
-  error?: string
-  getByIdsCalls?: any[][]
-  warnCalls?: any[][]
-  errorCalls?: any[][]
+  deckId: string
+  userId?: ObjectId
+  label: string
+  deckByIdResponse?: DeckDbObject | undefined | Error
+  expected: DeckDbObject | PresentableError
+  deckByIdCalled?: boolean
+  warnCalls?: string[][]
+  errorCalls?: string[][]
 }) {
-  if (userId === undefined) {
-    userId = new ObjectId()
-  }
-  const context: Context = {
-    session: {},
-  }
-  if (userId && context.session) {
-    context.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
-  }
-  const args = {
-    deck: deckId,
-  }
-  const info = {
-    fieldName,
-  }
-  const getByIdSpy = jest.spyOn(DeckStore, 'getById')
-  if (decksError) {
-    getByIdSpy.mockRejectedValue(Error(decksError))
+  const deckByIdSpy = jest.spyOn(DeckStore, 'getById')
+  if (deckByIdResponse instanceof Error) {
+    deckByIdSpy.mockRejectedValue(deckByIdResponse)
   } else {
-    getByIdSpy.mockResolvedValue(deckResponse as any)
+    deckByIdSpy.mockResolvedValue(deckByIdResponse)
   }
-  const errorSpy = jest.fn().mockImplementation()
   const warnSpy = jest.fn().mockImplementation()
+  const errorSpy = jest.fn().mockImplementation()
   Permissions['logger'] = {
-    error: errorSpy,
     warn: warnSpy,
+    error: errorSpy,
   } as any
 
-  await expect(Permissions['ownsDeck'](undefined, args, context, info as any)).resolves.toEqual(
-    error ? Error(error) : true
-  )
+  const promise = Permissions.isDeckOwner({
+    deckId,
+    userId,
+    label,
+  })
+  if (expected instanceof PresentableError) {
+    await expect(promise).rejects.toThrow(expected)
+  } else {
+    await expect(promise).resolves.toEqual(expected)
+  }
 
-  expect(getByIdSpy.mock.calls).toEqual(
-    getByIdsCalls || [
-      [
-        {
-          id: deckId,
-          options: {
-            projection: {
-              _id: 0,
-              user: 1,
+  expect(deckByIdSpy.mock.calls).toEqual(
+    deckByIdCalled
+      ? [
+          [
+            {
+              id: deckId,
             },
-          },
-        },
-      ],
-    ]
+          ],
+        ]
+      : []
   )
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
-}
-
-function testFallback({
-  info,
-  expected,
-  errorCalls = [],
-}: {
-  info: GraphQLResolveInfo
-  expected: Error | boolean
-  errorCalls?: any[][]
-}) {
-  const errorSpy = jest.fn().mockImplementation()
-  Permissions['logger'] = {
-    error: errorSpy,
-  } as any
-
-  expect(Permissions['fallback'](undefined, undefined, undefined, info)).toEqual(expected)
-
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-}
-
-function testFallbackError({
-  error,
-  expected,
-  errorCalls = [],
-}: {
-  error: Error
-  expected: Error
-  errorCalls?: any[][]
-}) {
-  const errorSpy = jest.fn().mockImplementation()
-  Permissions['logger'] = {
-    error: errorSpy,
-  } as any
-
-  expect(Permissions['fallbackError'](error, {}, {}, null, {} as GraphQLResolveInfo)).toEqual(expected)
-
   expect(errorSpy.mock.calls).toEqual(errorCalls)
 }

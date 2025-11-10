@@ -4,78 +4,120 @@ import { Context } from '@gwent/graphql-schema/context'
 import GameQuery from '../../src/graphql/resolvers/queries/game-query'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
 import { QueryGameArgs } from '@gwent/graphql-schema/resolver-typings'
+import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import TestUtil from '../util/test-util'
+import { UserDbObject } from '@gwent/graphql-schema/database-typings'
 
 describe('game-query', () => {
   describe('game', () => {
-    const userId = new ObjectId()
-    it('returns resolved game if found', async () => {
+    const gameId = new ObjectId().toString()
+    it('throws error if isAuthenticated throws error', async () => {
       await testGame({
-        userId,
+        isAuthenticatedResponse: Error('isAuthenticated error'),
       })
     })
-    it('logs to trace if enabled', async () => {
+    it('throws error if isGamePlayer throws error', async () => {
       await testGame({
-        userId,
-        traceEnabled: true,
+        isAuthenticatedResponse: TestUtil.getDbUser({}),
+        isGamePlayerResponse: Error('isGamePlayer error'),
+      })
+    })
+    it('returns resolved game if found', async () => {
+      const game = TestUtil.getDbGame({
+        id: gameId,
+      })
+      await testGame({
+        gameId,
+        isAuthenticatedResponse: TestUtil.getDbUser({}),
+        isGamePlayerResponse: {
+          game,
+          player: game.players[0],
+        },
       })
     })
   })
 })
 
 async function testGame({
-  userId,
+  isAuthenticatedResponse,
+  isGamePlayerResponse: isGamePlayerResponse,
   gameId = new ObjectId().toString(),
-  error,
-  errorCalls = [],
-  warnCalls = [],
-  traceEnabled,
 }: {
-  userId?: ObjectId
+  isAuthenticatedResponse: UserDbObject | Error
+  isGamePlayerResponse?: GameAndPlayer | Error
   gameId?: string
-  error?: Error
-  errorCalls?: any[][]
-  warnCalls?: any[][]
-  traceEnabled?: boolean
 }) {
   const context: Context = {
-    session: {},
+    session: {
+      user: isAuthenticatedResponse instanceof Error ? undefined : isAuthenticatedResponse,
+    },
   }
-  if (userId && context.session) {
-    context.session.user = TestUtil.getDbUser({
-      id: userId,
-    })
-  }
-  const logPrefix = `game by "${context.session?.user?._id}"`
-  const game = TestUtil.getGame({
+  const resolvedGame = TestUtil.getGame({
     id: gameId,
   })
   const args: QueryGameArgs = {
     id: gameId,
   }
-  const fromIdSpy = jest.spyOn(GameResolver, 'fromId').mockResolvedValue(game)
-  const errorSpy = jest.fn().mockImplementation()
-  const warnSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
-  GameQuery['logger'] = {
-    error: errorSpy,
-    warn: warnSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
-    trace: traceSpy,
-  } as any
+  const isAuthenticatedSpy = jest.spyOn(Permissions, 'isAuthenticated').mockImplementation(() => {
+    if (isAuthenticatedResponse instanceof Error) {
+      throw isAuthenticatedResponse
+    } else {
+      return isAuthenticatedResponse
+    }
+  })
+  const isGamePlayerSpy = jest.spyOn(Permissions, 'isGamePlayer')
+  if (isGamePlayerResponse) {
+    if (isGamePlayerResponse instanceof Error) {
+      isGamePlayerSpy.mockRejectedValue(isGamePlayerResponse)
+    } else {
+      isGamePlayerSpy.mockResolvedValue(isGamePlayerResponse)
+    }
+  }
+  const fromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
 
-  await expect(GameQuery.game(args, context, null as any)).resolves.toEqual(error || game)
+  const promise = GameQuery.game(args, context, null as any)
+  const error =
+    isAuthenticatedResponse instanceof Error
+      ? isAuthenticatedResponse
+      : isGamePlayerResponse instanceof Error
+        ? isGamePlayerResponse
+        : undefined
+  if (error) {
+    await expect(promise).rejects.toThrow(error)
+  } else {
+    await expect(promise).resolves.toEqual(resolvedGame)
+  }
 
-  expect(fromIdSpy.mock.calls).toEqual(error ? [] : [[gameId]])
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-  expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [`${logPrefix} args: "${JSON.stringify({ id: gameId })}"`],
-          [`${logPrefix} requested fields: "[]"`],
-          [`${logPrefix} requested arguments: "[]"`],
+  expect(isAuthenticatedSpy.mock.calls).toEqual([
+    [
+      {
+        context,
+        label: 'game query',
+      },
+    ],
+  ])
+  expect(isGamePlayerSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error
+      ? []
+      : [
+          [
+            {
+              gameId,
+              userId: isAuthenticatedResponse instanceof Error ? '' : isAuthenticatedResponse._id,
+              label: 'game query',
+            },
+          ],
         ]
-      : []
+  )
+  expect(fromObjectSpy.mock.calls).toEqual(
+    error
+      ? []
+      : [
+          [
+            {
+              game: isGamePlayerResponse instanceof Error ? undefined : isGamePlayerResponse?.game,
+            },
+          ],
+        ]
   )
 }

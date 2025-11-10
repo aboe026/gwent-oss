@@ -18,15 +18,14 @@ export default class AddUserValidation {
    * @returns The information needed to add the user.
    */
   static async addUserValidation(args: MutationAddUserArgs, info: GraphQLResolveInfo): Promise<ValidatedAddUser> {
-    const resolverUtil = new ResolverUtil({
-      logger: AddUserValidation.logger,
-    })
-
     const name = args.name
     const password = args.password
 
     const logPrefix = `addUser for user "${name}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: AddUserValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,

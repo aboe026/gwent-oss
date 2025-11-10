@@ -19,13 +19,13 @@ export default class LogoutValidation {
    * @returns The information needed to remove the session for a user.
    */
   static logoutValidation(context: Context, info: GraphQLResolveInfo): ValidatedLogout {
-    const resolverUtil = new ResolverUtil({
-      logger: LogoutValidation.logger,
-    })
-    const userId = context.session?.user?._id
+    const userId = context?.session?.user?._id
 
     const logPrefix = `logout for user "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: LogoutValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       info,
     })

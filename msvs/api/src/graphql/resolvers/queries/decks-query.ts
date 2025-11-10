@@ -5,6 +5,7 @@ import DeckResolver from '../types/deck-resolver'
 import DeckStore from '../../../database/stores/deck-store'
 import { Deck } from '@gwent/graphql-schema/resolver-typings'
 import { GraphQLResolveInfo } from 'graphql'
+import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'
 
 /**
@@ -21,16 +22,16 @@ export default class DecksQuery {
    * @returns The Decks that a user has created.
    */
   static async decks(context: Context, info: GraphQLResolveInfo): Promise<Deck[]> {
-    const resolverUtil = new ResolverUtil({
-      logger: DecksQuery.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'decks query',
     })
 
     const logPrefix = `decks by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: DecksQuery.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       info,
     })

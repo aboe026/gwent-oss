@@ -21,13 +21,13 @@ export default class ApplicationQuery {
    * @returns The information about the running Application.
    */
   static async application(context: Context, info: GraphQLResolveInfo): Promise<Application> {
-    const resolverUtil = new ResolverUtil({
-      logger: ApplicationQuery.logger,
-    })
-    const userId = context.session?.user?._id
+    const userId = context?.session?.user?._id
 
     const logPrefix = `application by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: ApplicationQuery.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       info,
     })

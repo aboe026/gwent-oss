@@ -97,7 +97,7 @@ describe('play-unit-mutation', () => {
           })
         ).resolves.toEqual({
           data: null,
-          errors: [new GraphQLError(`Unit ID "invalid" is not a valid MongoDB ObjectId.`)],
+          errors: [new GraphQLError(`Unit ID "invalid" not a valid MongoDB ObjectId.`)],
         })
       })
       it('returns error if game is in DECKING status', async () => {

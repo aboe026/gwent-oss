@@ -1,54 +1,73 @@
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { DeckDbObject, GameDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import DeckStore from '../../src/database/stores/deck-store'
+import { DeckDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
 import { MutationSetDeckArgs } from '@gwent/graphql-schema/resolver-typings'
+import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
-import SetDeckValidation from '../../src/graphql/resolvers/mutations/set-deck/set-deck-validation'
+import SetDeckValidation, { ValidatedSetDeck } from '../../src/graphql/resolvers/mutations/set-deck/set-deck-validation'
 import TestUtil from '../util/test-util'
 
 describe('set-deck-validation', () => {
-  it('throws error if getContextUser throws error', async () => {
-    const error = Error('getContextUser error')
+  it('throws error if isAuthenticated throws error', async () => {
+    const error = Error('isAuthenticated error')
     await testSetDeckValidation({
-      args: {
-        deck: new ObjectId().toString(),
-        game: new ObjectId().toString(),
-      },
-      getContextUserError: error,
-      error,
+      isAuthenticatedResponse: error,
+      expected: error,
     })
   })
-  it('throws error if verifyMongoIds throws error', async () => {
-    const error = Error('verifyMongoIds error')
+  it('throws error if isGamePlayer throws error', async () => {
+    const error = Error('isGamePlayer error')
     await testSetDeckValidation({
-      args: {
-        deck: new ObjectId().toString(),
-        game: new ObjectId().toString(),
-      },
-      verifyMongoIdsError: error,
-      error,
+      isAuthenticatedResponse: TestUtil.getDbUser({}),
+      isGamePlayerResponse: error,
+      expected: error,
     })
   })
-  it('throws error if deck does not exist', async () => {
-    const message = 'Deck does not exist.'
+  it('throws error if isDeckOwner throws error', async () => {
     const user = TestUtil.getDbUser({})
-    const deck = TestUtil.getDbDeck({})
-    const game = TestUtil.getDbGame({})
-    const logPrefix = `setDeck by "${user._id}" for deck "${deck?._id}" on game "${game?._id}"`
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    const error = Error('isDeckOwner error')
     await testSetDeckValidation({
-      args: {
-        deck: deck._id.toString(),
-        game: game._id.toString(),
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
       },
-      user,
-      error: Error(message),
-      warnCalls: [[`${logPrefix} failed: ${message}`]],
+      isDeckOwnerResponse: error,
+      expected: error,
+    })
+  })
+  it('throws error if validateGame throws error', async () => {
+    const user = TestUtil.getDbUser({})
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    const error = Error('validateGame error')
+    await testSetDeckValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      isDeckOwnerResponse: TestUtil.getDbDeck({}),
+      validateGameError: error,
+      expected: error,
     })
   })
   it('throws error if deck already set', async () => {
-    const message = 'Deck already set.'
     const user = TestUtil.getDbUser({})
     const deck = TestUtil.getDbDeck({})
     const game = TestUtil.getDbGame({
@@ -59,18 +78,19 @@ describe('set-deck-validation', () => {
             from: deck,
           }),
         }),
+        TestUtil.getDbGamePlayer({}),
       ],
     })
-    const logPrefix = `setDeck by "${user._id}" for deck "${deck?._id}" on game "${game?._id}"`
+    const logPrefix = `setDeck by "${user._id}" for deck "${deck._id}" on game "${game._id}"`
+    const message = 'Deck already set.'
     await testSetDeckValidation({
-      args: {
-        deck: deck._id.toString(),
-        game: game._id.toString(),
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
       },
-      user,
-      deck,
-      game,
-      error: Error(message),
+      isDeckOwnerResponse: deck,
+      expected: Error(message),
       warnCalls: [[`${logPrefix} failed: ${message}`]],
     })
   })
@@ -82,114 +102,103 @@ describe('set-deck-validation', () => {
         TestUtil.getDbGamePlayer({
           user: user._id,
         }),
+        TestUtil.getDbGamePlayer({}),
       ],
     })
     await testSetDeckValidation({
-      args: {
-        deck: deck._id.toString(),
-        game: game._id.toString(),
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
       },
-      user,
-      deck,
-      game,
-    })
-  })
-  it('logs to trace if enabled', async () => {
-    const user = TestUtil.getDbUser({})
-    const deck = TestUtil.getDbDeck({})
-    const game = TestUtil.getDbGame({
-      players: [
-        TestUtil.getDbGamePlayer({
-          user: user._id,
-        }),
-      ],
-    })
-    await testSetDeckValidation({
-      args: {
-        deck: deck._id.toString(),
-        game: game._id.toString(),
+      isDeckOwnerResponse: deck,
+      expected: {
+        deck,
+        game,
+        logPrefix: `setDeck by "${user._id}" for deck "${deck._id}" on game "${game._id}"`,
+        userId: user._id,
       },
-      user,
-      deck,
-      game,
-      traceEnabled: true,
     })
   })
 })
 
 async function testSetDeckValidation({
-  user = TestUtil.getDbUser({}),
-  args,
-  deck,
-  game,
-  getContextUserError,
-  verifyMongoIdsError,
-  error,
+  isAuthenticatedResponse,
+  isGamePlayerResponse,
+  isDeckOwnerResponse,
+  validateGameError,
+  expected,
   warnCalls = [],
-  traceEnabled,
 }: {
-  user?: UserDbObject
-  args: MutationSetDeckArgs
-  deck?: DeckDbObject
-  game?: GameDbObject
-  getContextUserError?: Error
-  verifyMongoIdsError?: Error
-  error?: Error
+  isAuthenticatedResponse: UserDbObject | Error
+  isGamePlayerResponse?: GameAndPlayer | Error
+  isDeckOwnerResponse?: DeckDbObject | Error
+  validateGameError?: Error
+  expected: ValidatedSetDeck | Error
   warnCalls?: string[][]
-  traceEnabled?: boolean
 }) {
-  const logPrefix = `setDeck by "${user._id}" for deck "${deck?._id}" on game "${game?._id}"`
+  const userId = isAuthenticatedResponse instanceof Error ? '' : isAuthenticatedResponse._id.toString()
+  const gameId = isGamePlayerResponse
+    ? isGamePlayerResponse instanceof Error
+      ? ''
+      : isGamePlayerResponse.game._id.toString()
+    : ''
+  const deckId = isDeckOwnerResponse
+    ? isDeckOwnerResponse instanceof Error
+      ? ''
+      : isDeckOwnerResponse._id.toString()
+    : ''
+  const args: MutationSetDeckArgs = {
+    game: gameId,
+    deck: deckId,
+  }
   const context: Context = {
     session: {
-      user,
+      user: isAuthenticatedResponse instanceof Error ? undefined : isAuthenticatedResponse,
     },
   }
-  const getContextUserSpy = jest.spyOn(ResolverUtil.prototype, 'getContextUser')
-  if (getContextUserError) {
-    getContextUserSpy.mockImplementation(() => {
-      throw getContextUserError
-    })
-  } else {
-    getContextUserSpy.mockReturnValue(user)
+  const isAuthenticatedSpy = jest.spyOn(Permissions, 'isAuthenticated').mockImplementation(() => {
+    if (isAuthenticatedResponse instanceof Error) {
+      throw isAuthenticatedResponse
+    } else {
+      return isAuthenticatedResponse
+    }
+  })
+  const isGamePlayerSpy = jest.spyOn(Permissions, 'isGamePlayer')
+  if (isGamePlayerResponse) {
+    if (isGamePlayerResponse instanceof Error) {
+      isGamePlayerSpy.mockRejectedValue(isGamePlayerResponse)
+    } else {
+      isGamePlayerSpy.mockResolvedValue(isGamePlayerResponse)
+    }
+  }
+  const isDeckOwnerSpy = jest.spyOn(Permissions, 'isDeckOwner')
+  if (isDeckOwnerResponse) {
+    if (isDeckOwnerResponse instanceof Error) {
+      isDeckOwnerSpy.mockRejectedValue(isDeckOwnerResponse)
+    } else {
+      isDeckOwnerSpy.mockResolvedValue(isDeckOwnerResponse)
+    }
   }
   const logRequestInfoSpy = jest.spyOn(ResolverUtil.prototype, 'logRequestInfo').mockImplementation()
-  const verifyMongoIdsSpy = jest.spyOn(ResolverUtil.prototype, 'verifyMongoIds')
-  if (verifyMongoIdsError) {
-    verifyMongoIdsSpy.mockImplementation(() => {
-      throw verifyMongoIdsError
-    })
-  } else {
-    verifyMongoIdsSpy.mockImplementation()
-  }
-  const deckStoreGetByIdSpy = jest.spyOn(DeckStore, 'getById').mockResolvedValue(deck)
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (game) {
-    getGamePlayerSpy.mockResolvedValue({
-      game,
-      player: game?.players[0],
-    })
-  }
+  const validateGameSpy = jest.spyOn(ResolverUtil.prototype, 'validateGame').mockImplementation(() => {
+    if (validateGameError) {
+      throw validateGameError
+    }
+  })
   const warnSpy = jest.fn().mockImplementation()
-  const traceSpy = jest.fn().mockImplementation()
   SetDeckValidation['logger'] = {
     warn: warnSpy,
-    trace: traceSpy,
-    isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
   const promise = SetDeckValidation.setDeckValidation(args, context, null as any)
-  if (error) {
-    await expect(promise).rejects.toThrow(error)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
   } else {
-    await expect(promise).resolves.toEqual({
-      deck,
-      game,
-      logPrefix: `setDeck by "${user._id}" for deck "${args.deck}" on game "${args.game}"`,
-      userId: user._id,
-    })
+    await expect(promise).resolves.toEqual(expected)
   }
 
-  expect(getContextUserSpy.mock.calls).toEqual([
+  expect(isAuthenticatedSpy.mock.calls).toEqual([
     [
       {
         context,
@@ -197,8 +206,36 @@ async function testSetDeckValidation({
       },
     ],
   ])
+  expect(isGamePlayerSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error
+      ? []
+      : [
+          [
+            {
+              gameId,
+              userId: isAuthenticatedResponse?._id,
+              label: 'setDeck mutation',
+            },
+          ],
+        ]
+  )
+  expect(isDeckOwnerSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error
+      ? []
+      : [
+          [
+            {
+              deckId,
+              userId: new ObjectId(userId),
+              label: 'setDeck mutation',
+            },
+          ],
+        ]
+  )
   expect(logRequestInfoSpy.mock.calls).toEqual(
-    getContextUserError
+    isAuthenticatedResponse instanceof Error ||
+      isGamePlayerResponse instanceof Error ||
+      isDeckOwnerResponse instanceof Error
       ? []
       : [
           [
@@ -209,43 +246,21 @@ async function testSetDeckValidation({
           ],
         ]
   )
-  expect(verifyMongoIdsSpy.mock.calls).toEqual(
-    getContextUserError
+  expect(validateGameSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error ||
+      isGamePlayerResponse instanceof Error ||
+      isDeckOwnerResponse instanceof Error
       ? []
       : [
           [
             {
-              ids: [args.deck],
-              label: 'Deck ID',
-            },
-          ],
-        ]
-  )
-  expect(deckStoreGetByIdSpy.mock.calls).toEqual(
-    getContextUserError || verifyMongoIdsError
-      ? []
-      : [
-          [
-            {
-              id: args.deck,
-            },
-          ],
-        ]
-  )
-  expect(getGamePlayerSpy.mock.calls).toEqual(
-    game
-      ? [
-          [
-            {
-              gameId: args.game,
-              userId: user._id,
+              game: isGamePlayerResponse?.game,
+              userId: isAuthenticatedResponse._id,
               status: GameStatus.Decking,
               label: 'set deck',
             },
           ],
         ]
-      : []
   )
   expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(traceSpy.mock.calls).toEqual(traceEnabled ? [[`${logPrefix} deck: "${JSON.stringify(deck)}"`]] : [])
 }

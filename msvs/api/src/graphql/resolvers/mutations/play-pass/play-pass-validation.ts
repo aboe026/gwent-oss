@@ -4,6 +4,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationPlayPassArgs } from '@gwent/graphql-schema/resolver-typings'
+import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'
 import ResolverUtil from '../../resolver-util'
 
@@ -27,24 +28,29 @@ export default class PlayPassValidation {
     context: Context,
     info: GraphQLResolveInfo
   ): Promise<ValidatedPlayPass> {
-    const resolverUtil = new ResolverUtil({
-      logger: PlayPassValidation.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
+      label: 'playPass mutation',
+    })
+    const { game, player } = await Permissions.isGamePlayer({
+      gameId: args.game,
+      userId,
       label: 'playPass mutation',
     })
     const gameId = args.game
 
     const logPrefix = `playPass by "${userId}" on game "${gameId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: PlayPassValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,
     })
 
-    const { game, player } = await resolverUtil.getGamePlayer({
-      gameId,
+    resolverUtil.validateGame({
+      game,
       userId,
       status: GameStatus.Playing,
       turn: true,

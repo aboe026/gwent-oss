@@ -5,6 +5,7 @@ import { Faction, QueryFactionsArgs } from '@gwent/graphql-schema/resolver-typin
 import FactionResolver from '../types/faction-resolver'
 import FactionStore from '../../../database/stores/faction-store'
 import { GraphQLResolveInfo } from 'graphql'
+import Permissions from '../../permissions'
 import ResolverUtil from '../resolver-util'
 
 /**
@@ -22,16 +23,16 @@ export default class FactionsQuery {
    * @returns The Factions available.
    */
   static async factions(args: QueryFactionsArgs, context: Context, info: GraphQLResolveInfo): Promise<Faction[]> {
-    const resolverUtil = new ResolverUtil({
-      logger: FactionsQuery.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'factions query',
     })
 
     const logPrefix = `factions by "${userId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const resolverUtil = new ResolverUtil({
+      logger: FactionsQuery.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,

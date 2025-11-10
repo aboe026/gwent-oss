@@ -93,6 +93,7 @@ Existing problems in the codebase that need to be fixed.
 - change artStyle to 0 based indexing?
 - Cache "static" (non-user-modifiable) db resources (factions, effects, leaders, units) in-memory of app to reduce db pressure?
   - add functional tests which spy on database store "read" method to ensure requests "batched" properly
+- swap NginX for Caddy?
 - Get test coverage to account for all source files (seems to only pick up files that have a unit test written for them?)
 - Get unit test coverage working for .tsx files
 - Introspect GraphQL queries/mutations to determine which fields to project/return from DB
@@ -107,6 +108,10 @@ New things that should be added to the codebase.
   - How to handle brought back for HistoryMove/Impact? unique per created?
 - Avenger
   - How to handle duplicates on battlefield? Use "created" field as differentiator?
+    - Apparently there are no duplicates allowed with latest patch?
+- add "target" param to "playUnit" mutation:
+  - for decoys, it is required to know which unit to swap back into hand
+  - for spies, it is optional if only 1 other opponent, otherwise required
 - Better game summarization (graphs?)
   - points per round
   - time per round

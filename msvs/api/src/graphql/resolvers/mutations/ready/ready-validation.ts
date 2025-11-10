@@ -5,6 +5,7 @@ import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import { GraphQLResolveInfo } from 'graphql'
 import { MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
+import Permissions from '../../../permissions'
 import ResolverUtil from '../../resolver-util'
 
 /**
@@ -26,24 +27,28 @@ export default class ReadyValidation {
     context: Context,
     info: GraphQLResolveInfo
   ): Promise<ValidatedReady> {
-    const resolverUtil = new ResolverUtil({
-      logger: ReadyValidation.logger,
-    })
-    const { _id: userId } = resolverUtil.getContextUser({
+    const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'ready mutation',
     })
-    const gameId = args.game
+    const { game } = await Permissions.isGamePlayer({
+      gameId: args.game,
+      label: 'ready mutation',
+      userId,
+    })
 
-    const logPrefix = `ready by "${userId}" on game "${gameId}"`
-    resolverUtil.setLogPrefix(logPrefix)
+    const logPrefix = `ready by "${userId}" on game "${game._id}"`
+    const resolverUtil = new ResolverUtil({
+      logger: ReadyValidation.logger,
+      logPrefix,
+    })
     resolverUtil.logRequestInfo({
       args,
       info,
     })
 
-    const { game } = await resolverUtil.getGamePlayer({
-      gameId,
+    resolverUtil.validateGame({
+      game,
       userId,
       status: GameStatus.Redrawing,
       label: 'mark ready',

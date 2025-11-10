@@ -66,7 +66,7 @@ export default class LeaderStore extends Store {
         $in: ids.map((id) => new ObjectId(id)),
       }
     }
-    const options: FindOptions<Document> = {
+    const options: FindOptions = {
       collation: {
         locale: 'en', // allows for case-insensitivity
       },

@@ -7,6 +7,7 @@ import DeckUnitResolver from '../../src/graphql/resolvers/types/deck-unit-resolv
 import { FactionDbObject, LeaderDbObject, UnitDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
 import FactionStore from '../../src/database/stores/faction-store'
 import LeaderStore from '../../src/database/stores/leader-store'
+import Permissions from '../../src/graphql/permissions'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 import UnitStore from '../../src/database/stores/unit-store'
@@ -53,11 +54,11 @@ describe('add-deck-validation', () => {
       },
     ],
   }
-  it('throws error if getContextUser throws error', async () => {
+  it('throws error if isAuthenticated throws error', async () => {
     const error = 'context user error'
     await testAddDeckValidation({
       args,
-      getContextUserError: Error(error),
+      isAuthenticatedResponse: Error(error),
       error: Error(error),
     })
   })
@@ -65,6 +66,7 @@ describe('add-deck-validation', () => {
     const error = 'bad leader id'
     await testAddDeckValidation({
       args,
+      isAuthenticatedResponse: user,
       verifyMongoIdsLeaderError: Error(error),
       error: Error(error),
     })
@@ -73,6 +75,7 @@ describe('add-deck-validation', () => {
     const error = 'bad unit ids'
     await testAddDeckValidation({
       args,
+      isAuthenticatedResponse: user,
       verifyMongoIdsUnitError: Error(error),
       error: Error(error),
     })
@@ -80,11 +83,11 @@ describe('add-deck-validation', () => {
   it('throws error if faction is NEUTRAL', async () => {
     const message = `Faction "${FactionKey.Neutral}" not allowed.`
     await testAddDeckValidation({
-      user,
       args: {
         ...args,
         faction: FactionKey.Neutral,
       },
+      isAuthenticatedResponse: user,
       error: Error(message),
       warnCalls: [[`${logPrefix} failed: ${message}`]],
     })
@@ -92,8 +95,8 @@ describe('add-deck-validation', () => {
   it('throws error if FactionStore getByKey throws error', async () => {
     const message = 'error from FactionStore getByKey'
     await testAddDeckValidation({
-      user,
       args,
+      isAuthenticatedResponse: user,
       factionGetError: Error(message),
       error: Error(message),
     })
@@ -101,8 +104,8 @@ describe('add-deck-validation', () => {
   it('throws error if LeaderStore getById throws error', async () => {
     const message = 'error from LeaderStore getById'
     await testAddDeckValidation({
-      user,
       args,
+      isAuthenticatedResponse: user,
       faction,
       leaderGetError: Error(message),
       error: Error(message),
@@ -112,8 +115,8 @@ describe('add-deck-validation', () => {
     const invalidFactionId = new ObjectId()
     const message = `Faction ID "${invalidFactionId}" for leader "${leader._id}" does not match deck faction ID "${faction._id}".`
     await testAddDeckValidation({
-      user,
       args,
+      isAuthenticatedResponse: user,
       faction,
       leader: {
         ...leader,
@@ -126,8 +129,8 @@ describe('add-deck-validation', () => {
   it('throws error if first unit does not exist', async () => {
     const message = `Unit with ID "${units[0]._id}" does not exist.`
     await testAddDeckValidation({
-      user,
       args,
+      isAuthenticatedResponse: user,
       faction,
       leader,
       units: [units[1]],
@@ -138,8 +141,8 @@ describe('add-deck-validation', () => {
   it('throws error if last unit does not exist', async () => {
     const message = `Unit with ID "${units[1]._id}" does not exist.`
     await testAddDeckValidation({
-      user,
       args,
+      isAuthenticatedResponse: user,
       faction,
       leader,
       units: [units[0]],
@@ -150,8 +153,8 @@ describe('add-deck-validation', () => {
   it('throws error if no units exist', async () => {
     const message = `Unit with ID "${units[0]._id}" does not exist.\nUnit with ID "${units[1]._id}" does not exist.`
     await testAddDeckValidation({
-      user,
       args,
+      isAuthenticatedResponse: user,
       faction,
       leader,
       units: [],
@@ -162,8 +165,8 @@ describe('add-deck-validation', () => {
   it('throws error if validateDeck throws single error', async () => {
     const message = 'validateDeck single error'
     await testAddDeckValidation({
-      user,
       args,
+      isAuthenticatedResponse: user,
       faction,
       leader,
       units,
@@ -175,8 +178,8 @@ describe('add-deck-validation', () => {
   })
   it('returns objects if no errors', async () => {
     await testAddDeckValidation({
-      user,
       args,
+      isAuthenticatedResponse: user,
       faction,
       leader,
       units,
@@ -185,8 +188,8 @@ describe('add-deck-validation', () => {
   })
   it('logs to trace if enabled', async () => {
     await testAddDeckValidation({
-      user,
       args,
+      isAuthenticatedResponse: user,
       faction,
       leader,
       units,
@@ -201,13 +204,12 @@ describe('add-deck-validation', () => {
 })
 
 async function testAddDeckValidation({
-  user = TestUtil.getDbUser({}),
   args,
   faction,
   leader,
   units,
   deckUnits,
-  getContextUserError,
+  isAuthenticatedResponse = TestUtil.getDbUser({}),
   verifyMongoIdsLeaderError,
   verifyMongoIdsUnitError,
   factionGetError,
@@ -218,13 +220,12 @@ async function testAddDeckValidation({
   traceCalls = [],
   traceEnabled,
 }: {
-  user?: UserDbObject
   args: MutationAddDeckArgs
   faction?: FactionDbObject
   leader?: LeaderDbObject
   units?: UnitDbObject[]
   deckUnits?: DeckUnit[]
-  getContextUserError?: Error
+  isAuthenticatedResponse: UserDbObject | Error
   verifyMongoIdsLeaderError?: Error
   verifyMongoIdsUnitError?: Error
   factionGetError?: Error
@@ -235,21 +236,20 @@ async function testAddDeckValidation({
   traceCalls?: string[][]
   traceEnabled?: boolean
 }) {
-  const logPrefix = `addDeck by "${user._id}"`
+  const logPrefix = `addDeck by "${isAuthenticatedResponse instanceof Error ? '' : isAuthenticatedResponse._id}"`
   const name = 'deck-name'
   const context: Context = {
     session: {
-      user,
+      user: isAuthenticatedResponse instanceof Error ? undefined : isAuthenticatedResponse,
     },
   }
-  const getContextUserSpy = jest.spyOn(ResolverUtil.prototype, 'getContextUser')
-  if (getContextUserError) {
-    getContextUserSpy.mockImplementation(() => {
-      throw getContextUserError
-    })
-  } else {
-    getContextUserSpy.mockReturnValue(user)
-  }
+  const isAuthenticatedSpy = jest.spyOn(Permissions, 'isAuthenticated').mockImplementation(() => {
+    if (isAuthenticatedResponse instanceof Error) {
+      throw isAuthenticatedResponse
+    } else {
+      return isAuthenticatedResponse
+    }
+  })
   const logRequestInfoSpy = jest.spyOn(ResolverUtil.prototype, 'logRequestInfo').mockImplementation()
   const verifyMongoIdsSpy = jest.spyOn(ResolverUtil.prototype, 'verifyMongoIds')
   if (verifyMongoIdsLeaderError) {
@@ -305,11 +305,11 @@ async function testAddDeckValidation({
       leader,
       logPrefix,
       name,
-      userId: user._id,
+      userId: isAuthenticatedResponse instanceof Error ? '' : isAuthenticatedResponse._id,
     })
   }
 
-  expect(getContextUserSpy.mock.calls).toEqual([
+  expect(isAuthenticatedSpy.mock.calls).toEqual([
     [
       {
         context,
@@ -318,7 +318,7 @@ async function testAddDeckValidation({
     ],
   ])
   const verifyMongoIdsCalls: any[][] = []
-  if (!getContextUserError) {
+  if (!(isAuthenticatedResponse instanceof Error)) {
     verifyMongoIdsCalls.push([
       {
         ids: [args.leader],
@@ -335,7 +335,7 @@ async function testAddDeckValidation({
     }
   }
   expect(logRequestInfoSpy.mock.calls).toEqual(
-    getContextUserError
+    isAuthenticatedResponse instanceof Error
       ? []
       : [
           [
