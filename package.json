@@ -68,12 +68,12 @@
     "ts-jest": "29.4.5",
     "ts-node": "10.9.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.46.3"
+    "typescript-eslint": "8.46.4"
   },
   "workspaces": [
     "msvs/*",
     "libs/*",
     "test/*"
   ],
-  "packageManager": "yarn@4.10.3"
+  "packageManager": "yarn@4.11.0"
 }

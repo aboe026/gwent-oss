@@ -35,7 +35,7 @@
     "graphql": "16.12.0",
     "graphql-request": "6.1.0",
     "graphql-ws": "6.0.6",
-    "mongodb": "6.20.0",
+    "mongodb": "7.0.0",
     "testcafe": "3.7.2",
     "url-join": "4.0.1",
     "ws": "8.18.3"

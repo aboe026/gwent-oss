@@ -113,7 +113,7 @@ export default class UserStore extends Store {
    * @param options The options used when retrieving the Users.
    * @returns An array of user database documents found with the given names.
    */
-  static async getByNames(names: string[], options?: FindOptions<Document>): Promise<UserDbObject[]> {
+  static async getByNames(names: string[], options?: FindOptions): Promise<UserDbObject[]> {
     if (UserStore.logger.isDebugEnabled()) {
       UserStore.logger.debug(`Getting users with names "${JSON.stringify(names)}"`)
     }

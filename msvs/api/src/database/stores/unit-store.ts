@@ -131,7 +131,7 @@ export default class UnitStore extends Store {
       }
       ;(filter._id as FilterOperators<ObjectId>).$nin = ignoreIds.map((ignoreId) => new ObjectId(ignoreId))
     }
-    const options: FindOptions<Document> = {
+    const options: FindOptions = {
       collation: {
         locale: 'en', // allows for case-insensitivity
       },
