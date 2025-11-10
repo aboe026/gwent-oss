@@ -1,63 +1,100 @@
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
-import { GameDbObject, GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import { GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
 import { MAX_REDRAWS } from '@gwent/constants'
 import { MutationRedrawArgs } from '@gwent/graphql-schema/resolver-typings'
-import RedrawValidation from '../../src/graphql/resolvers/mutations/redraw/redraw-validation'
+import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
+import RedrawValidation, { ValidatedRedraw } from '../../src/graphql/resolvers/mutations/redraw/redraw-validation'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 
 describe('redraw-validation', () => {
   const user = TestUtil.getDbUser({})
   const unitId = new ObjectId()
-  it('throws erorr if getContextUser throws error', async () => {
-    const message = 'getContextUser error'
+  it('throws error if isAuthenticated throws error', async () => {
+    const error = Error('isAuthenticated error')
     await testRedrawValidation({
-      getContextUserError: Error(message),
-      error: Error(message),
+      isAuthenticatedResponse: error,
+      expected: error,
     })
   })
-  it('throws erorr if verifyMongoIds throws error', async () => {
-    const message = 'verifyMongoIds error'
+  it('throws error if isGamePlayer throws error', async () => {
+    const error = Error('isGamePlayer error')
     await testRedrawValidation({
-      user,
-      unitId,
-      verifyMongoIdsError: Error(message),
-      error: Error(message),
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: error,
+      expected: error,
     })
   })
-  it('throws erorr if getGamePlayer throws error', async () => {
-    const message = 'getGamePlayer error'
-    await testRedrawValidation({
-      user,
-      unitId,
-      getGamePlayerError: Error(message),
-      error: Error(message),
-    })
-  })
-  it('throws erorr if player marked as ready', async () => {
+  it('throws error if verifyMongoIds throws error', async () => {
     const game = TestUtil.getDbGame({
       players: [
         TestUtil.getDbGamePlayer({
-          ready: true,
+          user: user._id,
         }),
+        TestUtil.getDbGamePlayer({}),
       ],
     })
-    const logPrefix = `redraw by "${user?._id}" for unit "${unitId}" on game "${game._id}"`
+    const error = Error('verifyMongoIds error')
+    await testRedrawValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      verifyMongoIdsError: error,
+      expected: error,
+    })
+  })
+  it('throws error if validateGame throws error', async () => {
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    const error = Error('validateGame error')
+    await testRedrawValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      validateGameError: error,
+      expected: error,
+    })
+  })
+  it('throws error if player marked as ready', async () => {
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+          ready: true,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    const logPrefix = `redraw by "${user._id}" for unit "${unitId}" on game "${game._id}"`
     const message = 'Redraw not allowed after game marked as ready.'
     await testRedrawValidation({
-      game,
-      user,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId,
-      error: Error(message),
+      expected: Error(message),
       warnCalls: [[`${logPrefix} failed: ${message}`]],
     })
   })
-  it('throws erorr if max redraws exceeded', async () => {
+  it('throws error if max redraws exceeded', async () => {
     const game = TestUtil.getDbGame({
       players: [
         TestUtil.getDbGamePlayer({
+          user: user._id,
           deck: TestUtil.getDbGameDeck({
             redraws: [
               {
@@ -71,65 +108,93 @@ describe('redraw-validation', () => {
             ],
           }),
         }),
+        TestUtil.getDbGamePlayer({}),
       ],
     })
-    const logPrefix = `redraw by "${user?._id}" for unit "${unitId}" on game "${game._id}"`
+    const logPrefix = `redraw by "${user._id}" for unit "${unitId}" on game "${game._id}"`
     const message = `Cannot exceed maximum redraw limit of "${MAX_REDRAWS}".`
     await testRedrawValidation({
-      game,
-      user,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId,
-      error: Error(message),
+      expected: Error(message),
       warnCalls: [[`${logPrefix} failed: ${message}`]],
     })
   })
   it('returns objects if no errors', async () => {
     const game = TestUtil.getDbGame({
-      players: [TestUtil.getDbGamePlayer({})],
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
     })
     await testRedrawValidation({
-      game,
-      user,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId,
+      expected: {
+        game,
+        logPrefix: `redraw by "${user._id}" for unit "${unitId}" on game "${game._id}"`,
+        unitId: unitId.toString(),
+        userId: user._id,
+      },
     })
   })
 })
 
 async function testRedrawValidation({
-  user,
-  game,
-  unitId,
-  getContextUserError,
+  isAuthenticatedResponse,
+  isGamePlayerResponse,
   verifyMongoIdsError,
-  getGamePlayerError,
-  error,
+  validateGameError,
+  unitId = new ObjectId(),
+  expected,
   warnCalls = [],
 }: {
-  user?: UserDbObject
-  game?: GameDbObject
-  unitId?: ObjectId
-  getContextUserError?: Error
+  isAuthenticatedResponse: UserDbObject | Error
+  isGamePlayerResponse?: GameAndPlayer | Error
   verifyMongoIdsError?: Error
-  getGamePlayerError?: Error
-  error?: Error
+  validateGameError?: Error
+  unitId?: ObjectId
+  expected: ValidatedRedraw | Error
   warnCalls?: string[][]
 }) {
   const context: Context = {
     session: {
-      user,
+      user: isAuthenticatedResponse instanceof Error ? undefined : isAuthenticatedResponse,
     },
   }
+  const gameId = isGamePlayerResponse
+    ? isGamePlayerResponse instanceof Error
+      ? ''
+      : isGamePlayerResponse.game._id.toString()
+    : ''
   const args: MutationRedrawArgs = {
-    game: (game?._id || '').toString(),
+    game: gameId,
     unit: (unitId || '').toString(),
   }
-  const getContextUserSpy = jest.spyOn(ResolverUtil.prototype, 'getContextUser')
-  if (getContextUserError) {
-    getContextUserSpy.mockImplementation(() => {
-      throw getContextUserError
-    })
-  } else if (user) {
-    getContextUserSpy.mockReturnValue(user)
+  const isAuthenticatedSpy = jest.spyOn(Permissions, 'isAuthenticated').mockImplementation(() => {
+    if (isAuthenticatedResponse instanceof Error) {
+      throw isAuthenticatedResponse
+    } else {
+      return isAuthenticatedResponse
+    }
+  })
+  const isGamePlayerSpy = jest.spyOn(Permissions, 'isGamePlayer')
+  if (isGamePlayerResponse) {
+    if (isGamePlayerResponse instanceof Error) {
+      isGamePlayerSpy.mockRejectedValue(isGamePlayerResponse)
+    } else {
+      isGamePlayerSpy.mockResolvedValue(isGamePlayerResponse)
+    }
   }
   const logRequestInfoSpy = jest.spyOn(ResolverUtil.prototype, 'logRequestInfo').mockImplementation()
   const verifyMongoIdsSpy = jest.spyOn(ResolverUtil.prototype, 'verifyMongoIds')
@@ -138,33 +203,24 @@ async function testRedrawValidation({
       throw verifyMongoIdsError
     }
   })
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (getGamePlayerError) {
-    getGamePlayerSpy.mockRejectedValue(getGamePlayerError)
-  } else if (game) {
-    getGamePlayerSpy.mockResolvedValue({
-      game,
-      player: game.players[0],
-    })
-  }
+  const validateGameSpy = jest.spyOn(ResolverUtil.prototype, 'validateGame').mockImplementation(() => {
+    if (validateGameError) {
+      throw validateGameError
+    }
+  })
   const warnSpy = jest.fn().mockImplementation()
   RedrawValidation['logger'] = {
     warn: warnSpy,
   } as any
 
   const promise = RedrawValidation.redrawValidation(args, context, null as any)
-  if (error) {
-    await expect(promise).rejects.toThrow(error)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
   } else {
-    await expect(promise).resolves.toEqual({
-      game,
-      logPrefix: `redraw by "${user?._id}" for unit "${args.unit}" on game "${game?._id}"`,
-      unitId: args.unit,
-      userId: user?._id,
-    })
+    await expect(promise).resolves.toEqual(expected)
   }
 
-  expect(getContextUserSpy.mock.calls).toEqual([
+  expect(isAuthenticatedSpy.mock.calls).toEqual([
     [
       {
         context,
@@ -172,8 +228,21 @@ async function testRedrawValidation({
       },
     ],
   ])
+  expect(isGamePlayerSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error
+      ? []
+      : [
+          [
+            {
+              gameId,
+              userId: isAuthenticatedResponse?._id,
+              label: 'redraw mutation',
+            },
+          ],
+        ]
+  )
   expect(logRequestInfoSpy.mock.calls).toEqual(
-    getContextUserError
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error
       ? []
       : [
           [
@@ -185,7 +254,7 @@ async function testRedrawValidation({
         ]
   )
   expect(verifyMongoIdsSpy.mock.calls).toEqual(
-    getContextUserError
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error
       ? []
       : [
           [
@@ -196,14 +265,14 @@ async function testRedrawValidation({
           ],
         ]
   )
-  expect(getGamePlayerSpy.mock.calls).toEqual(
-    getContextUserError || verifyMongoIdsError
+  expect(validateGameSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error || verifyMongoIdsError
       ? []
       : [
           [
             {
-              gameId: args.game,
-              userId: user?._id,
+              game: isGamePlayerResponse?.game,
+              userId: isAuthenticatedResponse._id,
               status: GameStatus.Redrawing,
               label: 'redraw',
             },

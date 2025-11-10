@@ -1,81 +1,127 @@
 import { Context } from '@gwent/graphql-schema/context'
-import { GameStatus } from '@gwent/graphql-schema/database-typings'
+import { GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
 import { MutationReadyArgs } from '@gwent/graphql-schema/resolver-typings'
-import ReadyValidation from '../../src/graphql/resolvers/mutations/ready/ready-validation'
+import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
+import ReadyValidation, { ValidatedReady } from '../../src/graphql/resolvers/mutations/ready/ready-validation'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 
 describe('ready-validation', () => {
-  it('throws error if getContextUser throws error', async () => {
+  it('throws error if isAuthenticated throws error', async () => {
+    const error = Error('isAuthenticated error')
     await testReadyValidation({
-      getContextUserError: Error('getContextUser error'),
+      isAuthenticatedResponse: error,
+      expected: error,
     })
   })
-  it('throws error if getGamePlayer throws error', async () => {
+  it('throws error if isGamePlayer throws error', async () => {
+    const error = Error('isGamePlayer error')
     await testReadyValidation({
-      getGamePlayerError: Error('getGamePlayer error'),
+      isAuthenticatedResponse: TestUtil.getDbUser({}),
+      isGamePlayerResponse: error,
+      expected: error,
+    })
+  })
+  it('throws error if validateGame throws error', async () => {
+    const user = TestUtil.getDbUser({})
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    const error = Error('validateGame error')
+    await testReadyValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      validateGameError: error,
+      expected: error,
     })
   })
   it('returns objects if no error', async () => {
-    await testReadyValidation({})
+    const user = TestUtil.getDbUser({})
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    await testReadyValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      expected: {
+        game,
+        logPrefix: `ready by "${user._id}" on game "${game._id}"`,
+        userId: user._id,
+      },
+    })
   })
 })
 
 async function testReadyValidation({
-  getContextUserError,
-  getGamePlayerError,
+  isAuthenticatedResponse,
+  isGamePlayerResponse,
+  validateGameError,
+  expected,
 }: {
-  getContextUserError?: Error
-  getGamePlayerError?: Error
+  isAuthenticatedResponse: UserDbObject | Error
+  isGamePlayerResponse?: GameAndPlayer | Error
+  validateGameError?: Error
+  expected: ValidatedReady | Error
 }) {
-  const user = TestUtil.getDbUser({})
   const context: Context = {
     session: {
-      user,
+      user: isAuthenticatedResponse instanceof Error ? undefined : isAuthenticatedResponse,
     },
   }
-  const game = TestUtil.getDbGame({
-    players: [
-      TestUtil.getDbGamePlayer({
-        user: user._id,
-      }),
-    ],
-  })
+  const gameId = isGamePlayerResponse
+    ? isGamePlayerResponse instanceof Error
+      ? ''
+      : isGamePlayerResponse.game._id.toString()
+    : ''
   const args: MutationReadyArgs = {
-    game: game._id.toString(),
+    game: gameId,
   }
-  const getContextUserSpy = jest.spyOn(ResolverUtil.prototype, 'getContextUser')
-  if (getContextUserError) {
-    getContextUserSpy.mockImplementation(() => {
-      throw getContextUserError
-    })
-  } else {
-    getContextUserSpy.mockReturnValue(user)
+  const isAuthenticatedSpy = jest.spyOn(Permissions, 'isAuthenticated').mockImplementation(() => {
+    if (isAuthenticatedResponse instanceof Error) {
+      throw isAuthenticatedResponse
+    } else {
+      return isAuthenticatedResponse
+    }
+  })
+  const isGamePlayerSpy = jest.spyOn(Permissions, 'isGamePlayer')
+  if (isGamePlayerResponse) {
+    if (isGamePlayerResponse instanceof Error) {
+      isGamePlayerSpy.mockRejectedValue(isGamePlayerResponse)
+    } else {
+      isGamePlayerSpy.mockResolvedValue(isGamePlayerResponse)
+    }
   }
   const logRequestInfoSpy = jest.spyOn(ResolverUtil.prototype, 'logRequestInfo').mockImplementation()
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (getGamePlayerError) {
-    getGamePlayerSpy.mockRejectedValue(getGamePlayerError)
-  } else {
-    getGamePlayerSpy.mockResolvedValue({
-      game,
-      player: game.players[0],
-    })
-  }
+  const validateGameSpy = jest.spyOn(ResolverUtil.prototype, 'validateGame').mockImplementation(() => {
+    if (validateGameError) {
+      throw validateGameError
+    }
+  })
 
-  const error = getContextUserError || getGamePlayerError
   const promise = ReadyValidation.readyValidation(args, context, null as any)
-  if (error) {
-    await expect(promise).rejects.toThrow(error)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
   } else {
-    await expect(promise).resolves.toEqual({
-      logPrefix: `ready by "${user._id}" on game "${game._id}"`,
-      game,
-      userId: user._id,
-    })
+    await expect(promise).resolves.toEqual(expected)
   }
 
-  expect(getContextUserSpy.mock.calls).toEqual([
+  expect(isAuthenticatedSpy.mock.calls).toEqual([
     [
       {
         context,
@@ -83,8 +129,21 @@ async function testReadyValidation({
       },
     ],
   ])
+  expect(isGamePlayerSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error
+      ? []
+      : [
+          [
+            {
+              gameId,
+              userId: isAuthenticatedResponse?._id,
+              label: 'ready mutation',
+            },
+          ],
+        ]
+  )
   expect(logRequestInfoSpy.mock.calls).toEqual(
-    getContextUserError
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error
       ? []
       : [
           [
@@ -95,14 +154,14 @@ async function testReadyValidation({
           ],
         ]
   )
-  expect(getGamePlayerSpy.mock.calls).toEqual(
-    getContextUserError
+  expect(validateGameSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error
       ? []
       : [
           [
             {
-              gameId: game._id.toString(),
-              userId: user._id,
+              game: isGamePlayerResponse?.game,
+              userId: isAuthenticatedResponse._id,
               status: GameStatus.Redrawing,
               label: 'mark ready',
             },

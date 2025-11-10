@@ -2,19 +2,17 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import { Context } from '@gwent/graphql-schema/context'
+import { DeckDbObject, GameDbObject, GamePlayerDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import DeckStore from '../database/stores/deck-store'
+import GameStore from '../database/stores/game-store'
 import { NOT_AUTHENTICATED_MESSAGE, NOT_AUTHORIZED_MESSAGE } from '@gwent/constants'
 import PresentableError from '../util/presentable-error'
-import { DeckDbObject, GameDbObject, GamePlayerDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
-import GameStore from '../database/stores/game-store'
-import DeckStore from '../database/stores/deck-store'
 
 /**
  * A class to enforce permission requirements when performing GraphQL operations (Mutations/Queries).
  */
 export default class Permissions {
   private static logger = getLogger('Permissions')
-  // TODO: make instance class so can have label be in constructor?
-  // TODO: rename methods to not all start with "is"?
 
   /**
    * Check if a user is authenticated (has logged in).
@@ -44,10 +42,15 @@ export default class Permissions {
    * @returns The Game database object if a User is a Player on it.
    * @throws {PresentableError} If the User is not a Player on the Game.
    */
-  static async isGamePlayer({ gameId, userId, label }: { gameId: string; userId: ObjectId; label: string }): Promise<{
-    game: GameDbObject
-    player: GamePlayerDbObject
-  }> {
+  static async isGamePlayer({
+    gameId,
+    userId,
+    label,
+  }: {
+    gameId: string
+    userId: ObjectId
+    label: string
+  }): Promise<GameAndPlayer> {
     const logPrefix = `isGamePlayer check failed operation "${label}":`
     let game: GameDbObject | undefined = undefined
     let player: GamePlayerDbObject | undefined = undefined
@@ -77,9 +80,14 @@ export default class Permissions {
         }
       }
     } catch (error: unknown) {
-      Permissions.logger.error(`${logPrefix} Exception attempting to get game with ID "${gameId}": "${error}"`)
-      throw new PresentableError(NOT_AUTHORIZED_MESSAGE)
+      if (error instanceof PresentableError) {
+        throw error
+      } else {
+        Permissions.logger.error(`${logPrefix} Exception attempting to get Game with ID "${gameId}": "${error}"`)
+        throw new PresentableError(NOT_AUTHORIZED_MESSAGE)
+      }
     }
+
     return {
       game,
       player,
@@ -97,15 +105,15 @@ export default class Permissions {
    * @throws {PresentableError} If the User is not the owner of the Deck.
    */
   static async isDeckOwner({
-    userId,
     deckId,
+    userId,
     label,
   }: {
-    userId: ObjectId
     deckId: string
+    userId: ObjectId
     label: string
   }): Promise<DeckDbObject> {
-    const logPrefix = `ownsDeck check failed operation "${label}":`
+    const logPrefix = `isDeckOwner check failed operation "${label}":`
     let deck: DeckDbObject | undefined = undefined
 
     if (!ObjectId.isValid(deckId)) {
@@ -127,10 +135,19 @@ export default class Permissions {
         throw new PresentableError(NOT_AUTHORIZED_MESSAGE)
       }
     } catch (error: unknown) {
-      Permissions.logger.error(`${logPrefix} Exception attempting to get deck with ID "${deckId}": "${error}"`)
-      throw new PresentableError(NOT_AUTHORIZED_MESSAGE)
+      if (error instanceof PresentableError) {
+        throw error
+      } else {
+        Permissions.logger.error(`${logPrefix} Exception attempting to get Deck with ID "${deckId}": "${error}"`)
+        throw new PresentableError(NOT_AUTHORIZED_MESSAGE)
+      }
     }
 
     return deck
   }
+}
+
+export interface GameAndPlayer {
+  game: GameDbObject
+  player: GamePlayerDbObject
 }

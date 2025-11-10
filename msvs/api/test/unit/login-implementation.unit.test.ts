@@ -4,6 +4,13 @@ import TestUtil from '../util/test-util'
 
 describe('login-implementation', () => {
   const logPrefix = 'log-prefix'
+  it('sets user on context if context undefined', () => {
+    testLoginImplementation({
+      context: undefined as any as Context,
+      logPrefix,
+      traceCalls: [[`${logPrefix} context not set, defining.`]],
+    })
+  })
   it('sets user on context if context does not have session', () => {
     testLoginImplementation({
       context: {},
@@ -56,10 +63,12 @@ function testLoginImplementation({
     })
   ).toEqual(undefined)
 
-  expect(context).toEqual({
-    session: {
-      user,
-    },
-  })
+  if (context) {
+    expect(context).toEqual({
+      session: {
+        user,
+      },
+    })
+  }
   expect(traceSpy.mock.calls).toEqual(traceCalls)
 }

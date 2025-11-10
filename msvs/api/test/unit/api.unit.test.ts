@@ -1,9 +1,11 @@
+import * as apolloErrors from '@apollo/server/errors'
 import { ApolloServer } from '@apollo/server'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import { Disposable } from 'graphql-ws'
 import express from 'express'
 import figlet from 'figlet'
+import { GraphQLFormattedError } from 'graphql'
 import http from 'http'
 import MongoStore from 'connect-mongo'
 import session, { CookieOptions } from 'express-session'
@@ -18,6 +20,7 @@ import DbConnector from '../../src/database/db-connector'
 import DbUpgrader from '../../src/database/db-upgrader'
 import * as env from '../../src/env'
 import { NODE_ENV } from '@gwent/env'
+import PresentableError from '../../src/util/presentable-error'
 import schema from '../../src/graphql/executable-schema'
 import TestUtil from '../util/test-util'
 import { UserDbObject } from '@gwent/graphql-schema/database-typings'
@@ -312,6 +315,18 @@ describe('Api', () => {
       expect(ensureWebsocketDisposedSpy.mock.calls).toEqual([[subscriptionCleanup]])
       expect(startSpy.mock.calls).toEqual([[]])
       expect(debugSpy.mock.calls).toEqual([['starting ApolloServer'], ['ApolloServer started']])
+    })
+  })
+  describe('maskError', () => {
+    it('passes through error if PresentableError', () => {
+      testMaskError({
+        error: new PresentableError('presentable'),
+      })
+    })
+    it('obscures error if not PresentableError', () => {
+      testMaskError({
+        error: new Error('not-presentable'),
+      })
     })
   })
   describe('ensureWebsocketDisposed', () => {
@@ -620,4 +635,22 @@ async function testConfigureWebsocketServer({
   }
   expect(debugSpy.mock.calls).toEqual(debugCalls)
   expect(traceSpy.mock.calls).toEqual(traceEnabled ? traceCalls : [])
+}
+
+function testMaskError({ error }: { error: Error | PresentableError }) {
+  const unwrapResolverErrorSpy = jest.spyOn(apolloErrors, 'unwrapResolverError').mockReturnValue(error)
+
+  const formattedError: GraphQLFormattedError = {
+    message: 'formatted-error-message',
+  }
+
+  expect(Api['maskError'](formattedError, error)).toEqual(
+    error instanceof PresentableError
+      ? formattedError
+      : {
+          message: 'Internal Server Error.',
+        }
+  )
+
+  expect(unwrapResolverErrorSpy.mock.calls).toEqual([[error]])
 }

@@ -54,15 +54,6 @@ export default class SetDeckValidation {
       info,
     })
 
-    if (SetDeckValidation.logger.isTraceEnabled()) {
-      SetDeckValidation.logger.trace(`${logPrefix} deck: "${JSON.stringify(deck)}"`)
-    }
-    if (!deck) {
-      const message = 'Deck does not exist.'
-      SetDeckValidation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-
     resolverUtil.validateGame({
       game,
       userId,

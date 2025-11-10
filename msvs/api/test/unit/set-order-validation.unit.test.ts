@@ -1,107 +1,190 @@
-import { ObjectId } from 'mongodb'
-
 import { Context } from '@gwent/graphql-schema/context'
-import { GameStatus } from '@gwent/graphql-schema/database-typings'
+import { GameStatus, UserDbObject } from '@gwent/graphql-schema/database-typings'
 import { MutationSetOrderArgs } from '@gwent/graphql-schema/resolver-typings'
+import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
-import SetOrderValidation from '../../src/graphql/resolvers/mutations/set-order/set-order-validation'
+import SetOrderValidation, {
+  ValidatedSetOrder,
+} from '../../src/graphql/resolvers/mutations/set-order/set-order-validation'
 import TestUtil from '../util/test-util'
 
 describe('set-order-validation', () => {
-  it('throws error if getContextUser throws error', async () => {
+  it('throws error if isAuthenticated throws error', async () => {
+    const error = Error('isAuthenticated error')
     await testSetOrderValidation({
-      getContextUserError: Error('getContextUser error'),
+      isAuthenticatedResponse: error,
+      expected: error,
     })
   })
-  it('throws error if verifyMongoIds throws error for game id', async () => {
+  it('throws error if isGamePlayer throws error', async () => {
+    const error = Error('isGamePlayer error')
     await testSetOrderValidation({
-      verifyMongoIdsGameError: Error('verifyMongoIds game id error'),
+      isAuthenticatedResponse: TestUtil.getDbUser({}),
+      isGamePlayerResponse: error,
+      expected: error,
     })
   })
-  it('throws error if verifyMongoIds throws error for user ids', async () => {
+  it('throws error if verifyMongoIds throws error', async () => {
+    const user = TestUtil.getDbUser({})
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    const error = Error('verifyMongoIds error')
     await testSetOrderValidation({
-      userIds: [new ObjectId().toString()],
-      verifyMongoIdsUserError: Error('verifyMongoIds user ids error'),
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      userIds: [game.players[1].user.toString(), game.players[0].user.toString()],
+      verifyMongoIdsError: error,
+      expected: error,
+    })
+  })
+  it('throws error if validateGame throws error', async () => {
+    const user = TestUtil.getDbUser({})
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    const error = Error('validateGame error')
+    await testSetOrderValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      validateGameError: error,
+      expected: error,
     })
   })
   it('returns objects if no errors and no user ids', async () => {
-    await testSetOrderValidation({})
+    const user = TestUtil.getDbUser({})
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    await testSetOrderValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      expected: {
+        game,
+        gameDeck: game.players[0].deck,
+        logPrefix: `setOrder by "${user._id}" to users "undefined" on game "${game._id}"`,
+        userIds: undefined,
+      },
+    })
   })
   it('returns objects if no errors and user ids', async () => {
-    await testSetOrderValidation({})
+    const user = TestUtil.getDbUser({})
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    const userIds = [game.players[1].user.toString(), game.players[0].user.toString()]
+    await testSetOrderValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      userIds,
+      expected: {
+        game,
+        gameDeck: game.players[0].deck,
+        logPrefix: `setOrder by "${user._id}" to users "${JSON.stringify(userIds)}" on game "${game._id}"`,
+        userIds,
+      },
+    })
   })
 })
 
 async function testSetOrderValidation({
+  isAuthenticatedResponse,
+  isGamePlayerResponse,
+  verifyMongoIdsError,
+  validateGameError,
   userIds,
-  getContextUserError,
-  verifyMongoIdsGameError,
-  verifyMongoIdsUserError,
-  getGamePlayerError,
+  expected,
 }: {
+  isAuthenticatedResponse: UserDbObject | Error
+  isGamePlayerResponse?: GameAndPlayer | Error
+  verifyMongoIdsError?: Error
+  validateGameError?: Error
   userIds?: string[]
-  getContextUserError?: Error
-  verifyMongoIdsGameError?: Error
-  verifyMongoIdsUserError?: Error
-  getGamePlayerError?: Error
+  expected: ValidatedSetOrder | Error
 }) {
-  const user = TestUtil.getDbUser({})
-  const game = TestUtil.getDbGame({})
+  const gameId = isGamePlayerResponse
+    ? isGamePlayerResponse instanceof Error
+      ? ''
+      : isGamePlayerResponse.game._id.toString()
+    : ''
   const context: Context = {
     session: {
-      user,
+      user: isAuthenticatedResponse instanceof Error ? undefined : isAuthenticatedResponse,
     },
   }
   const args: MutationSetOrderArgs = {
-    game: game._id.toString(),
+    game: gameId,
   }
   if (userIds) {
     args.users = userIds
   }
-  const getContextUserSpy = jest.spyOn(ResolverUtil.prototype, 'getContextUser')
-  if (getContextUserError) {
-    getContextUserSpy.mockImplementation(() => {
-      throw getContextUserError
-    })
-  } else {
-    getContextUserSpy.mockReturnValue(user)
+  const isAuthenticatedSpy = jest.spyOn(Permissions, 'isAuthenticated').mockImplementation(() => {
+    if (isAuthenticatedResponse instanceof Error) {
+      throw isAuthenticatedResponse
+    } else {
+      return isAuthenticatedResponse
+    }
+  })
+  const isGamePlayerSpy = jest.spyOn(Permissions, 'isGamePlayer')
+  if (isGamePlayerResponse) {
+    if (isGamePlayerResponse instanceof Error) {
+      isGamePlayerSpy.mockRejectedValue(isGamePlayerResponse)
+    } else {
+      isGamePlayerSpy.mockResolvedValue(isGamePlayerResponse)
+    }
   }
   const logRequestInfoSpy = jest.spyOn(ResolverUtil.prototype, 'logRequestInfo').mockImplementation()
-  const verifyMongoIdsSpy = jest.spyOn(ResolverUtil.prototype, 'verifyMongoIds')
-  verifyMongoIdsSpy.mockImplementationOnce(() => {
-    if (verifyMongoIdsGameError) {
-      throw verifyMongoIdsGameError
+  const verifyMongoIdsSpy = jest.spyOn(ResolverUtil.prototype, 'verifyMongoIds').mockImplementation(() => {
+    if (verifyMongoIdsError) {
+      throw verifyMongoIdsError
     }
   })
-  verifyMongoIdsSpy.mockImplementationOnce(() => {
-    if (verifyMongoIdsUserError) {
-      throw verifyMongoIdsUserError
+  const validateGameSpy = jest.spyOn(ResolverUtil.prototype, 'validateGame').mockImplementation(() => {
+    if (validateGameError) {
+      throw validateGameError
     }
   })
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (getGamePlayerError) {
-    getGamePlayerSpy.mockRejectedValue(getGamePlayerError)
-  } else {
-    getGamePlayerSpy.mockResolvedValue({
-      game,
-      player: game.players[0],
-    })
-  }
 
   const promise = SetOrderValidation.setOrderValidation(args, context, null as any)
-  const error = getContextUserError || verifyMongoIdsGameError || verifyMongoIdsUserError || getGamePlayerError
-  if (error) {
-    await expect(promise).rejects.toThrow(error)
+  if (expected instanceof Error) {
+    await expect(promise).rejects.toThrow(expected)
   } else {
-    await expect(promise).resolves.toEqual({
-      game,
-      gameDeck: game.players[0].deck,
-      logPrefix: `setOrder by "${user._id}" to users "${JSON.stringify(userIds)}" on game "${game._id}"`,
-      userIds,
-    })
+    await expect(promise).resolves.toEqual(expected)
   }
 
-  expect(getContextUserSpy.mock.calls).toEqual([
+  expect(isAuthenticatedSpy.mock.calls).toEqual([
     [
       {
         context,
@@ -109,8 +192,21 @@ async function testSetOrderValidation({
       },
     ],
   ])
+  expect(isGamePlayerSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error
+      ? []
+      : [
+          [
+            {
+              gameId,
+              userId: isAuthenticatedResponse?._id,
+              label: 'setOrder mutation',
+            },
+          ],
+        ]
+  )
   expect(logRequestInfoSpy.mock.calls).toEqual(
-    getContextUserError
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error
       ? []
       : [
           [
@@ -121,34 +217,28 @@ async function testSetOrderValidation({
           ],
         ]
   )
-  const verifyMongoIdsCalls: any[][] = []
-  if (!getContextUserError) {
-    verifyMongoIdsCalls.push([
-      {
-        ids: [game._id.toString()],
-        label: 'Game ID',
-      },
-    ])
-    if (!verifyMongoIdsGameError && userIds) {
-      verifyMongoIdsCalls.push([
-        {
-          ids: userIds,
-          label: 'User ID',
-        },
-      ])
-    }
-  }
-  expect(verifyMongoIdsSpy.mock.calls).toEqual(verifyMongoIdsCalls)
-  expect(getGamePlayerSpy.mock.calls).toEqual(
-    getContextUserError || verifyMongoIdsGameError || verifyMongoIdsUserError
+  expect(verifyMongoIdsSpy.mock.calls).toEqual(
+    !userIds || isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error
       ? []
       : [
           [
             {
-              gameId: game._id.toString(),
-              userId: user._id,
-              label: 'set order',
+              ids: userIds,
+              label: 'User ID',
+            },
+          ],
+        ]
+  )
+  expect(validateGameSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error || verifyMongoIdsError
+      ? []
+      : [
+          [
+            {
+              game: isGamePlayerResponse?.game,
+              userId: isAuthenticatedResponse._id,
               status: GameStatus.Ordering,
+              label: 'set order',
             },
           ],
         ]

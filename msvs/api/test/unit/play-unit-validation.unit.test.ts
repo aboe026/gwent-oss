@@ -1,12 +1,7 @@
 import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
-import {
-  DeckUnitDbObject,
-  GameDbObject,
-  GameStatus,
-  UnitDbObject,
-  UserDbObject,
-} from '@gwent/graphql-schema/database-typings'
+import { DeckUnitDbObject, GameStatus, UnitDbObject, UserDbObject } from '@gwent/graphql-schema/database-typings'
+import Permissions, { GameAndPlayer } from '../../src/graphql/permissions'
 import PlayUnitValidation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-validation'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
@@ -14,27 +9,58 @@ import UnitStore from '../../src/database/stores/unit-store'
 
 describe('play-unit-validation', () => {
   const user = TestUtil.getDbUser({})
-  it('throws error if getContextUser throws error', async () => {
-    const error = Error('getContextUser error')
+  it('throws error if isAuthenticated throws error', async () => {
+    const error = Error('isAuthenticated error')
     await testPlayUnitValidation({
-      getContextUserError: error,
+      isAuthenticatedResponse: error,
+      expectedError: error,
+    })
+  })
+  it('throws error if isGamePlayer throws error', async () => {
+    const error = Error('isGamePlayer error')
+    await testPlayUnitValidation({
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: error,
       expectedError: error,
     })
   })
   it('throws error if verifyMongoIds throws error', async () => {
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
     const error = Error('verifyMongoIds error')
     await testPlayUnitValidation({
-      user,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       verifyMongoIdsError: error,
       expectedError: error,
     })
   })
-  it('throws error if getGamePlayer throws error', async () => {
-    const error = Error('getGamePlayer error')
+  it('throws error if validateGame throws error', async () => {
+    const game = TestUtil.getDbGame({
+      players: [
+        TestUtil.getDbGamePlayer({
+          user: user._id,
+        }),
+        TestUtil.getDbGamePlayer({}),
+      ],
+    })
+    const error = Error('validateGame error')
     await testPlayUnitValidation({
-      user,
-      game: TestUtil.getDbGame({}),
-      getGamePlayerError: error,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
+      validateGameError: error,
       expectedError: error,
     })
   })
@@ -50,8 +76,11 @@ describe('play-unit-validation', () => {
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     const message = 'Unit not in hand.'
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       logPrefix,
       expectedError: Error(message),
@@ -72,8 +101,11 @@ describe('play-unit-validation', () => {
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     const message = `Found more than 1 unit with ID "${deckUnit.unit}"`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       logPrefix,
       expectedError: Error(`${message}.`),
@@ -94,8 +126,11 @@ describe('play-unit-validation', () => {
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     const message = 'Unit does not exist.'
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       units: [],
       logPrefix,
@@ -120,8 +155,11 @@ describe('play-unit-validation', () => {
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     const message = `Found multiple units with ID "${deckUnit.unit}"`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       units: [unit, unit],
       logPrefix,
@@ -147,8 +185,11 @@ describe('play-unit-validation', () => {
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       units: [unit],
       logPrefix,
@@ -174,8 +215,11 @@ describe('play-unit-validation', () => {
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     const message = `Combat "${Combat.Siege}" does match unit combats of "${JSON.stringify(unit.combats)}".`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       combat: Combat.Siege,
       units: [unit],
@@ -215,8 +259,11 @@ describe('play-unit-validation', () => {
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       combat,
       units: [unit],
@@ -256,8 +303,11 @@ describe('play-unit-validation', () => {
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       combat,
       units: [unit],
@@ -297,8 +347,11 @@ describe('play-unit-validation', () => {
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     const message = `Modifier for row "${combat}" already set as unit "${existingModifier.unit}".`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       combat,
       units: [unit],
@@ -323,8 +376,11 @@ describe('play-unit-validation', () => {
     })
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       units: [unit],
       logPrefix,
@@ -348,8 +404,11 @@ describe('play-unit-validation', () => {
     })
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       units: [unit],
       logPrefix,
@@ -374,8 +433,11 @@ describe('play-unit-validation', () => {
     })
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       combat: Combat.Siege,
       units: [unit],
@@ -404,8 +466,11 @@ describe('play-unit-validation', () => {
     })
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       combat: Combat.Siege,
       units: [unit],
@@ -431,8 +496,11 @@ describe('play-unit-validation', () => {
     })
     const logPrefix = `playUnit by "${user._id}" for unit "${deckUnit.unit}" on game "${game._id}"`
     await testPlayUnitValidation({
-      user,
-      game,
+      isAuthenticatedResponse: user,
+      isGamePlayerResponse: {
+        game,
+        player: game.players[0],
+      },
       unitId: deckUnit.unit.toString(),
       units: [unit],
       logPrefix,
@@ -444,15 +512,14 @@ describe('play-unit-validation', () => {
 })
 
 async function testPlayUnitValidation({
-  user,
-  game,
+  isAuthenticatedResponse,
+  isGamePlayerResponse,
+  validateGameError,
   unitId = '',
   units,
   combat,
   logPrefix,
-  getContextUserError,
   verifyMongoIdsError,
-  getGamePlayerError,
   expectedError,
   expectedCombat,
   expectedDeckUnit,
@@ -460,15 +527,14 @@ async function testPlayUnitValidation({
   warnCalls = [],
   traceEnabled,
 }: {
-  user?: UserDbObject
-  game?: GameDbObject
+  isAuthenticatedResponse: UserDbObject | Error
+  isGamePlayerResponse?: GameAndPlayer | Error
+  validateGameError?: Error
   unitId?: string
   units?: UnitDbObject[]
   combat?: Combat
   logPrefix?: string
-  getContextUserError?: Error
   verifyMongoIdsError?: Error
-  getGamePlayerError?: Error
   expectedError?: Error
   expectedCombat?: Combat
   expectedDeckUnit?: DeckUnitDbObject
@@ -478,22 +544,39 @@ async function testPlayUnitValidation({
 }) {
   const context: Context = {
     session: {
-      user,
+      user: isAuthenticatedResponse instanceof Error ? undefined : isAuthenticatedResponse,
     },
   }
+  const gameId = isGamePlayerResponse
+    ? isGamePlayerResponse instanceof Error
+      ? ''
+      : isGamePlayerResponse.game._id.toString()
+    : ''
   const args: MutationPlayUnitArgs = {
-    game: (game?._id || '').toString(),
+    game: gameId,
     unit: unitId,
     combat,
   }
-  const getContextUserSpy = jest.spyOn(ResolverUtil.prototype, 'getContextUser')
-  if (getContextUserError) {
-    getContextUserSpy.mockImplementation(() => {
-      throw getContextUserError
-    })
-  } else if (user) {
-    getContextUserSpy.mockReturnValue(user)
+  const isAuthenticatedSpy = jest.spyOn(Permissions, 'isAuthenticated').mockImplementation(() => {
+    if (isAuthenticatedResponse instanceof Error) {
+      throw isAuthenticatedResponse
+    } else {
+      return isAuthenticatedResponse
+    }
+  })
+  const isGamePlayerSpy = jest.spyOn(Permissions, 'isGamePlayer')
+  if (isGamePlayerResponse) {
+    if (isGamePlayerResponse instanceof Error) {
+      isGamePlayerSpy.mockRejectedValue(isGamePlayerResponse)
+    } else {
+      isGamePlayerSpy.mockResolvedValue(isGamePlayerResponse)
+    }
   }
+  const validateGameSpy = jest.spyOn(ResolverUtil.prototype, 'validateGame').mockImplementation(() => {
+    if (validateGameError) {
+      throw validateGameError
+    }
+  })
 
   const logRequestInfoSpy = jest.spyOn(ResolverUtil.prototype, 'logRequestInfo').mockImplementation()
   const verifyMongoIdsSpy = jest.spyOn(ResolverUtil.prototype, 'verifyMongoIds')
@@ -502,15 +585,6 @@ async function testPlayUnitValidation({
       throw verifyMongoIdsError
     }
   })
-  const getGamePlayerSpy = jest.spyOn(ResolverUtil.prototype, 'getGamePlayer')
-  if (getGamePlayerError) {
-    getGamePlayerSpy.mockRejectedValue(getGamePlayerError)
-  } else if (game) {
-    getGamePlayerSpy.mockResolvedValue({
-      game,
-      player: game?.players[0],
-    })
-  }
   const unitStoreGetSpy = jest.spyOn(UnitStore, 'get')
   if (units) {
     unitStoreGetSpy.mockResolvedValue(units)
@@ -532,13 +606,13 @@ async function testPlayUnitValidation({
     await expect(promise).resolves.toEqual({
       combat: expectedCombat,
       deckUnit: expectedDeckUnit,
-      game,
+      game: isGamePlayerResponse && !(isGamePlayerResponse instanceof Error) ? isGamePlayerResponse.game : undefined,
       logPrefix,
       unit: units && units[0],
     })
   }
 
-  expect(getContextUserSpy.mock.calls).toEqual([
+  expect(isAuthenticatedSpy.mock.calls).toEqual([
     [
       {
         context,
@@ -546,8 +620,21 @@ async function testPlayUnitValidation({
       },
     ],
   ])
+  expect(isGamePlayerSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error
+      ? []
+      : [
+          [
+            {
+              gameId,
+              userId: isAuthenticatedResponse?._id,
+              label: 'playUnit mutation',
+            },
+          ],
+        ]
+  )
   expect(logRequestInfoSpy.mock.calls).toEqual(
-    getContextUserError
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error
       ? []
       : [
           [
@@ -559,7 +646,7 @@ async function testPlayUnitValidation({
         ]
   )
   expect(verifyMongoIdsSpy.mock.calls).toEqual(
-    getContextUserError
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error
       ? []
       : [
           [
@@ -570,20 +657,20 @@ async function testPlayUnitValidation({
           ],
         ]
   )
-  expect(getGamePlayerSpy.mock.calls).toEqual(
-    game || getGamePlayerError
-      ? [
+  expect(validateGameSpy.mock.calls).toEqual(
+    isAuthenticatedResponse instanceof Error || isGamePlayerResponse instanceof Error || verifyMongoIdsError
+      ? []
+      : [
           [
             {
-              gameId: game?._id.toString(),
-              userId: user?._id,
+              game: isGamePlayerResponse?.game,
+              userId: isAuthenticatedResponse._id,
               status: GameStatus.Playing,
               turn: true,
               label: 'play units',
             },
           ],
         ]
-      : []
   )
   expect(unitStoreGetSpy.mock.calls).toEqual(
     units

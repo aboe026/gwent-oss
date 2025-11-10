@@ -1,6 +1,7 @@
 import AddGameValidation from '../../src/graphql/resolvers/mutations/add-game/add-game-validation'
 import { Context } from '@gwent/graphql-schema/context'
 import { MutationAddGameArgs, User } from '@gwent/graphql-schema/resolver-typings'
+import Permissions from '../../src/graphql/permissions'
 import { PLAYER_COUNTS } from '@gwent/constants'
 import ResolverUtil from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
@@ -11,17 +12,17 @@ import UserStore from '../../src/database/stores/user-store'
 describe('add-game-validation', () => {
   const user = TestUtil.getDbUser({})
   const logPrefix = `addGame by "${user._id}"`
-  it('throws error if getContextUser throws error', async () => {
+  it('throws error if isAuthenticated throws error', async () => {
     const message = 'getContextUserSpy error'
     await testAddGameValidation({
-      getContextUserError: Error(message),
+      isAuthenticatedResponse: Error(message),
     })
   })
   it('throws error if duplicate opponentNames', async () => {
     const opponentNames = ['opponent-one', 'opponent-one']
     const message = `Opponent(s) ["${opponentNames[0]}"] are duplicates.`
     await testAddGameValidation({
-      user,
+      isAuthenticatedResponse: user,
       opponentNames,
       expectedError: Error(message),
       warnCalls: [[`${logPrefix} failed: ${message}`]],
@@ -31,7 +32,7 @@ describe('add-game-validation', () => {
     const opponentNames = [user.name]
     const message = 'Opponents cannot include self.'
     await testAddGameValidation({
-      user,
+      isAuthenticatedResponse: user,
       opponentNames,
       expectedError: Error(message),
       warnCalls: [[`${logPrefix} failed: ${message}`]],
@@ -41,7 +42,7 @@ describe('add-game-validation', () => {
     const opponentNames: string[] = []
     const message = `Not enough opponents at "0", minimum is "${PLAYER_COUNTS.Min - 1}".`
     await testAddGameValidation({
-      user,
+      isAuthenticatedResponse: user,
       opponentNames,
       expectedError: Error(message),
       warnCalls: [[`${logPrefix} failed: ${message}`]],
@@ -51,7 +52,7 @@ describe('add-game-validation', () => {
     const opponentNames = ['opponent-one', 'opponent-two']
     const message = `Excessive opponent count of "2", maximum is "${PLAYER_COUNTS.Max - 1}".`
     await testAddGameValidation({
-      user,
+      isAuthenticatedResponse: user,
       opponentNames,
       expectedError: Error(message),
       warnCalls: [[`${logPrefix} failed: ${message}`]],
@@ -61,7 +62,7 @@ describe('add-game-validation', () => {
     const opponentNames = ['opponent-one']
     const message = `User with name "${opponentNames[0]}" does not exist.`
     await testAddGameValidation({
-      user,
+      isAuthenticatedResponse: user,
       opponentNames,
       opponents: [TestUtil.getDbUser({})],
       expectedError: Error(message),
@@ -74,7 +75,7 @@ describe('add-game-validation', () => {
       name: opponentName,
     })
     await testAddGameValidation({
-      user,
+      isAuthenticatedResponse: user,
       opponentNames: [opponentName],
       opponents: [opponent],
       resolvedOpponents: [TestUtil.getUserFromDbUser(opponent)],
@@ -86,7 +87,7 @@ describe('add-game-validation', () => {
       name: opponentName,
     })
     await testAddGameValidation({
-      user,
+      isAuthenticatedResponse: user,
       opponentNames: [opponentName],
       opponents: [opponent],
       resolvedOpponents: [TestUtil.getUserFromDbUser(opponent)],
@@ -96,41 +97,38 @@ describe('add-game-validation', () => {
 })
 
 async function testAddGameValidation({
-  user,
+  isAuthenticatedResponse,
   opponentNames = [],
   opponents,
   resolvedOpponents,
-  getContextUserError,
   expectedError,
   warnCalls = [],
   traceEnabled,
 }: {
-  user?: UserDbObject
+  isAuthenticatedResponse: UserDbObject | Error
   opponentNames?: string[]
   opponents?: UserDbObject[]
   resolvedOpponents?: User[]
-  getContextUserError?: Error
   expectedError?: Error
   warnCalls?: string[][]
   traceEnabled?: boolean
 }) {
-  const logPrefix = `addGame by "${user?._id}"`
+  const logPrefix = `addGame by "${isAuthenticatedResponse instanceof Error ? '' : isAuthenticatedResponse._id}"`
   const args: MutationAddGameArgs = {
     opponentNames,
   }
   const context: Context = {
     session: {
-      user,
+      user: isAuthenticatedResponse instanceof Error ? undefined : isAuthenticatedResponse,
     },
   }
-  const getContextUserSpy = jest.spyOn(ResolverUtil.prototype, 'getContextUser')
-  if (getContextUserError) {
-    getContextUserSpy.mockImplementation(() => {
-      throw getContextUserError
-    })
-  } else if (user) {
-    getContextUserSpy.mockReturnValue(user)
-  }
+  const isAuthenticatedSpy = jest.spyOn(Permissions, 'isAuthenticated').mockImplementation(() => {
+    if (isAuthenticatedResponse instanceof Error) {
+      throw isAuthenticatedResponse
+    } else {
+      return isAuthenticatedResponse
+    }
+  })
   const logRequestInfoSpy = jest.spyOn(ResolverUtil.prototype, 'logRequestInfo').mockImplementation()
   const userStoreGetByNamesSpy = jest.spyOn(UserStore, 'getByNames')
   if (opponents) {
@@ -150,7 +148,10 @@ async function testAddGameValidation({
     isTraceEnabled: jest.fn().mockReturnValue(traceEnabled),
   } as any
 
-  const error = expectedError || getContextUserError
+  let error = expectedError
+  if (!error && isAuthenticatedResponse instanceof Error) {
+    error = isAuthenticatedResponse
+  }
   const promise = AddGameValidation.addGameValidation(args, context, null as any)
   if (error) {
     await expect(promise).rejects.toThrow(error)
@@ -158,11 +159,11 @@ async function testAddGameValidation({
     await expect(promise).resolves.toEqual({
       logPrefix,
       opponents: resolvedOpponents,
-      userId: user?._id,
+      userId: isAuthenticatedResponse instanceof Error ? '' : isAuthenticatedResponse?._id,
     })
   }
 
-  expect(getContextUserSpy.mock.calls).toEqual([
+  expect(isAuthenticatedSpy.mock.calls).toEqual([
     [
       {
         context,
@@ -171,7 +172,7 @@ async function testAddGameValidation({
     ],
   ])
   expect(logRequestInfoSpy.mock.calls).toEqual(
-    getContextUserError
+    isAuthenticatedResponse instanceof Error
       ? []
       : [
           [

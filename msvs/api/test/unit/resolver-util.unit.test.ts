@@ -1,7 +1,6 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Context } from '@gwent/graphql-schema/context'
 import {
   GameDbObject,
   GameStatus,
@@ -10,13 +9,11 @@ import {
   ImpactDbObject,
   MoveDbObject,
   MoveReasonType,
-  UserDbObject,
 } from '@gwent/graphql-schema/database-typings'
-import GameStore from '../../src/database/stores/game-store'
 import { GraphQLResolveInfo } from 'graphql'
 import { MoveType } from '@gwent/graphql-schema'
-import { NOT_AUTHENTICATED_MESSAGE, REDACTED } from '@gwent/constants'
 import PresentableError from '../../src/util/presentable-error'
+import { REDACTED } from '@gwent/constants'
 import ResolverUtil, { GamePlayerResponse, MoveUsersAndUnits } from '../../src/graphql/resolvers/resolver-util'
 import TestUtil from '../util/test-util'
 import { Unit, User } from '@gwent/graphql-schema/resolver-typings'
@@ -24,66 +21,6 @@ import UnitResolver from '../../src/graphql/resolvers/types/unit-resolver'
 import UserResolver from '../../src/graphql/resolvers/types/user-resolver'
 
 describe('resolver-util', () => {
-  describe('setLogPrefix', () => {
-    it('sets logPrefix when none provided to constructor', () => {
-      const resolverUtil = new ResolverUtil({
-        logger: getLogger('test'),
-      })
-      expect(resolverUtil['logPrefix']).toEqual('')
-
-      resolverUtil.setLogPrefix('first')
-
-      expect(resolverUtil['logPrefix']).toEqual('first')
-    })
-    it('changes the logPrefix set by constructor', () => {
-      const resolverUtil = new ResolverUtil({
-        logger: getLogger('test'),
-        logPrefix: 'first',
-      })
-      expect(resolverUtil['logPrefix']).toEqual('first')
-
-      resolverUtil.setLogPrefix('second')
-
-      expect(resolverUtil['logPrefix']).toEqual('second')
-    })
-  })
-  describe('getContextUser', () => {
-    const label = 'test'
-    it('returns NOT_AUTHENTICATED_MESSAGE if context session undefined', () => {
-      testGetContextUser({
-        context: {
-          session: undefined,
-        },
-        label,
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for ${label}: "undefined".`]],
-      })
-    })
-    it('returns NOT_AUTHENTICATED_MESSAGE if context user undefined', () => {
-      testGetContextUser({
-        context: {
-          session: {
-            user: undefined,
-          },
-        },
-        label,
-        expected: Error(NOT_AUTHENTICATED_MESSAGE),
-        errorCalls: [[`No user on context for ${label}: "{}".`]],
-      })
-    })
-    it('returns user if on context', () => {
-      const user = TestUtil.getDbUser({})
-      testGetContextUser({
-        context: {
-          session: {
-            user,
-          },
-        },
-        label,
-        expected: user,
-      })
-    })
-  })
   describe('verifyMongoIds', () => {
     const label = 'test'
     const logPrefix = 'prefix'
@@ -238,117 +175,51 @@ describe('resolver-util', () => {
       })
     })
   })
-  describe('getGamePlayer', () => {
+  describe('validateGame', () => {
     const userId = new ObjectId()
     const logPrefix = `playUnit by "${userId}"`
-    it('returns error if gameId invalid', async () => {
-      const gameId = 'invalid'
-      const message = `Game ID "${gameId}" not a valid MongoDB ObjectId.`
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} failed: ${message}`]],
-      })
-    })
-    it('returns error if no game found', async () => {
-      const gameId = new ObjectId().toString()
-      const message = 'Game does not exist.'
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
-      })
-    })
-    it('returns error if player not on game', async () => {
-      const gameId = new ObjectId().toString()
-      const message = 'Not a player on game.'
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: TestUtil.getDbGame({
-          id: gameId,
-        }),
-        expected: Error(message),
-        warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
-      })
-    })
-    it('returns error if more than 1 player with userId found', async () => {
-      const gameId = new ObjectId().toString()
-      const message = `Found more than 1 player with ID "${userId}".`
-      const game = TestUtil.getDbGame({
-        id: gameId,
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-        ],
-      })
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        getGameResponse: game,
-        expected: Error(`${message}.`),
-        errorCalls: [[`${logPrefix} getGamePlayer failed: ${message}: "${JSON.stringify(game.players)}"`]],
-      })
-    })
-    it('returns error if game is wrong status', async () => {
-      const gameId = new ObjectId().toString()
+    it('returns error if game is wrong status', () => {
       const label = 'do something'
       const requiredStatus = GameStatus.Playing
       const actualStatus = GameStatus.Decking
       const message = `Invalid game status "${actualStatus}": Can only ${label} for game with status "${requiredStatus}".`
       const game = TestUtil.getDbGame({
-        id: gameId,
         players: [
           TestUtil.getDbGamePlayer({
             user: userId,
           }),
         ],
       })
-      await testGetGamePlayer({
-        gameId,
+      testValidateGame({
+        game,
         userId,
         logPrefix,
         label,
         status: requiredStatus,
-        getGameResponse: game,
-        expected: Error(message),
-        statusCalls: [[game]],
+        expected: new PresentableError(message),
         warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
       })
     })
-    it('returns error if it is not users turn when required', async () => {
-      const gameId = new ObjectId().toString()
+    it('returns error if it is not users turn when required', () => {
       const label = 'do something'
       const message = `Cannot ${label} when it is not your turn.`
-      await testGetGamePlayer({
-        gameId,
-        userId,
-        logPrefix,
-        label,
-        turn: true,
-        getGameResponse: TestUtil.getDbGame({
-          id: gameId,
+      testValidateGame({
+        game: TestUtil.getDbGame({
           players: [
             TestUtil.getDbGamePlayer({
               user: userId,
             }),
           ],
         }),
-        expected: Error(message),
+        userId,
+        logPrefix,
+        label,
+        turn: true,
+        expected: new PresentableError(message),
         warnCalls: [[`${logPrefix} getGamePlayer failed: ${message}`]],
       })
     })
-    it('returns game and player if no errors and no status or turn specified', async () => {
+    it('does not throw error if no errors and no status or turn specified', () => {
       const game = TestUtil.getDbGame({
         players: [
           TestUtil.getDbGamePlayer({
@@ -356,18 +227,17 @@ describe('resolver-util', () => {
           }),
         ],
       })
-      await testGetGamePlayer({
-        gameId: game._id.toString(),
+      testValidateGame({
+        game,
         userId,
         logPrefix,
-        getGameResponse: game,
         expected: {
           game,
           player: game.players[0],
         },
       })
     })
-    it('returns game and player if no errors and status and turn specified', async () => {
+    it('does not throw error if no errors and status and turn specified', () => {
       const game = TestUtil.getDbGame({
         players: [
           TestUtil.getDbGamePlayer({
@@ -377,37 +247,16 @@ describe('resolver-util', () => {
         status: GameStatus.Playing,
         turn: userId,
       })
-      await testGetGamePlayer({
-        gameId: game._id.toString(),
+      testValidateGame({
+        game,
         userId,
         turn: true,
         status: GameStatus.Playing,
         logPrefix,
-        getGameResponse: game,
         expected: {
           game,
           player: game.players[0],
         },
-      })
-    })
-    it('logs to trace if enabled', async () => {
-      const game = TestUtil.getDbGame({
-        players: [
-          TestUtil.getDbGamePlayer({
-            user: userId,
-          }),
-        ],
-      })
-      await testGetGamePlayer({
-        gameId: game._id.toString(),
-        userId,
-        logPrefix,
-        getGameResponse: game,
-        expected: {
-          game,
-          player: game.players[0],
-        },
-        traceEnabled: true,
       })
     })
   })
@@ -697,42 +546,6 @@ describe('resolver-util', () => {
   })
 })
 
-function testGetContextUser({
-  context,
-  expected,
-  label,
-  errorCalls = [],
-}: {
-  context: Context
-  label: string
-  expected: Error | UserDbObject
-  errorCalls?: string[][]
-}) {
-  const logger = getLogger('test')
-  const errorSpy = jest.spyOn(logger, 'error').mockImplementation()
-  const resolverUtil = new ResolverUtil({
-    logger,
-  })
-
-  if (expected instanceof Error) {
-    expect(() =>
-      resolverUtil.getContextUser({
-        context,
-        label,
-      })
-    ).toThrow(expected)
-  } else {
-    expect(
-      resolverUtil.getContextUser({
-        context,
-        label,
-      })
-    ).toEqual(expected)
-  }
-
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
-}
-
 function testVerifyMongoIds({
   ids,
   label,
@@ -812,78 +625,56 @@ function testLogRequestInfo({
   )
 }
 
-async function testGetGamePlayer({
-  gameId,
+function testValidateGame({
+  game,
   userId,
   status,
   logPrefix,
   label,
   turn,
-  getGameResponse,
   expected,
-  errorCalls = [],
   warnCalls = [],
-  traceEnabled,
 }: {
-  gameId: string
+  game: GameDbObject
   userId: ObjectId
   logPrefix: string
   status?: GameStatus
   label?: string
   turn?: boolean
-  getGameResponse?: GameDbObject | undefined
   getStatusResponse?: GameStatus
-  expected: GamePlayerResponse | Error
-  statusCalls?: GameDbObject[][]
-  errorCalls?: string[][]
+  expected: GamePlayerResponse | PresentableError
   warnCalls?: string[][]
-  traceEnabled?: boolean
 }) {
-  const getGameSpy = jest.spyOn(GameStore, 'getById').mockResolvedValue(getGameResponse)
   const logger = getLogger('test')
-  const errorSpy = jest.spyOn(logger, 'error').mockImplementation()
   const warnSpy = jest.spyOn(logger, 'warn').mockImplementation()
-  const traceSpy = jest.spyOn(logger, 'trace').mockImplementation()
-  jest.spyOn(logger, 'isTraceEnabled').mockReturnValue(traceEnabled || false)
   const resolverUtil = new ResolverUtil({
     logger,
     logPrefix,
   })
 
-  const promise = resolverUtil.getGamePlayer({
-    gameId,
-    userId,
-    status,
-    label,
-    turn,
-  })
-  if (expected instanceof Error) {
-    await expect(promise).rejects.toThrow(expected)
+  if (expected instanceof PresentableError) {
+    expect(() =>
+      resolverUtil.validateGame({
+        game,
+        userId,
+        status,
+        label,
+        turn,
+      })
+    ).toThrow(expected)
   } else {
-    await expect(promise).resolves.toEqual(expected)
+    expect(
+      resolverUtil.validateGame({
+        game,
+        userId,
+        status,
+        label,
+        turn,
+      })
+    ).toEqual(undefined)
   }
 
-  expect(getGameSpy.mock.calls).toEqual(
-    ObjectId.isValid(gameId)
-      ? [
-          [
-            {
-              id: gameId,
-            },
-          ],
-        ]
-      : []
-  )
-  expect(errorSpy.mock.calls).toEqual(errorCalls)
   expect(warnSpy.mock.calls).toEqual(warnCalls)
-  expect(traceSpy.mock.calls).toEqual(
-    traceEnabled
-      ? [
-          [`${logPrefix} getGamePlayer game: "${JSON.stringify(getGameResponse)}"`],
-          [`${logPrefix} getGamePlayer players: "${JSON.stringify(getGameResponse?.players)}"`],
-        ]
-      : []
-  )
 }
 
 async function testresolveUsersAndUnits({

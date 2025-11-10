@@ -113,10 +113,6 @@ export default class ResolverUtil {
     turn?: boolean
     label?: string
   }) {
-    if (this.logger.isTraceEnabled()) {
-      this.logger.trace(`${this.logPrefix} getGamePlayer game: "${JSON.stringify(game)}"`)
-    }
-
     if (status) {
       if (game.status !== status) {
         const message = `Invalid game status "${game.status}": Can only ${label} for game with status "${status}".`

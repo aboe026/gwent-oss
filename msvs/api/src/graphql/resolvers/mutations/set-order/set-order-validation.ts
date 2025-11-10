@@ -25,12 +25,7 @@ export default class SetOrderValidation {
     args: MutationSetOrderArgs,
     context: Context,
     info: GraphQLResolveInfo
-  ): Promise<{
-    game: GameDbObject
-    gameDeck: GameDeckDbObject
-    logPrefix: string
-    userIds?: string[] | null
-  }> {
+  ): Promise<ValidatedSetOrder> {
     const { _id: userId } = Permissions.isAuthenticated({
       context,
       label: 'setOrder mutation',
@@ -73,4 +68,11 @@ export default class SetOrderValidation {
       userIds,
     }
   }
+}
+
+export interface ValidatedSetOrder {
+  game: GameDbObject
+  gameDeck: GameDeckDbObject
+  logPrefix: string
+  userIds?: string[] | null
 }
