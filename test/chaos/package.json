@@ -10,7 +10,7 @@
     "lint": "yarn g:lint",
     "lint:fix": "yarn g:lint-fix",
     "random-games": "yarn g:ts-node src/random-games.ts",
-    "watch": "yarn build-tsc --watch"
+    "watch": "yarn build --watch"
   },
   "dependencies": {
     "@gwent/constants": "workspace:*",
