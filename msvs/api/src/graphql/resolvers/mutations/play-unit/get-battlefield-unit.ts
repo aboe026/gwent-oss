@@ -21,10 +21,10 @@ export default class GetBattlefieldUnit {
     userId,
   }: {
     game: GameDbObject
-    unitId: ObjectId
-    userId: string
+    unitId: ObjectId | string
+    userId: ObjectId | string
   }): BattlefieldUnit | undefined {
-    const players = game.players.filter((player) => player.user.toString() === userId)
+    const players = game.players.filter((player) => player.user.toString() === userId.toString())
     if (players.length === 0) {
       throw Error(`Could not find player "${userId}" on game "${game._id}"`)
     } else if (players.length > 1) {
@@ -64,7 +64,7 @@ export default class GetBattlefieldUnit {
     units,
     row,
   }: {
-    unitId: ObjectId
+    unitId: ObjectId | string
     units: GameUnitDbObject[]
     row: Combat
   }): BattlefieldUnit | undefined {

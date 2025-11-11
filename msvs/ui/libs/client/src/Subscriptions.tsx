@@ -232,6 +232,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
+  // TODO: make this work if Game.tsx "update" function commented out
   useSubscription(UnitPlayedFromDeckDocument, {
     skip: !user,
     onData: ({ data, client }) => {

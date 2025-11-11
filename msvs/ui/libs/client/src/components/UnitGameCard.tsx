@@ -45,7 +45,13 @@ export default function UnitGameCard({
         cursor,
         borderStyle: selected ? (dotted ? 'dotted' : 'solid') : 'none',
       }}
-      onClick={() => (onClick ? onClick(deckUnit) : {})}
+      onClick={(event) => {
+        if (onClick) {
+          event.preventDefault()
+          event.stopPropagation()
+          onClick(deckUnit)
+        }
+      }}
     >
       <img className="unit-game-card-image" title={unitTitle} src={unit.images[deckUnit.artStyle - 1]} />
       <div className={HTML_CLASSES.UnitGameCardStrength} style={{ maxWidth: iconSize }}>

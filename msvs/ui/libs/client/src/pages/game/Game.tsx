@@ -7,6 +7,7 @@ import {
   AddGameDocument,
   DeckFragment,
   DeckUnitFragment,
+  EffectKey,
   GameDeckDocument,
   GameDeckFragmentDoc,
   GameDeckQuery,
@@ -18,9 +19,11 @@ import {
   GamesDocument,
   GamesQuery,
   GameStatus,
+  GameUnitFragment,
   GameUnitFragmentDoc,
   MoveFragmentDoc,
   MoveUnitFragmentDoc,
+  PlayerCombatRowFragmentDoc,
   PlayerRoundFragmentDoc,
   PlayPassDocument,
   PlayUnitDocument,
@@ -214,7 +217,7 @@ export default function GamePage() {
   const [ready, { loading: readyLoading, error: readyError }] = useMutation(ReadyDocument) // Apollo automatically handles cache changes on update
   const [playPass, { loading: playPassLoading, error: playPassError }] = useMutation(PlayPassDocument)
   const [playUnit, { loading: playUnitLoading, error: playUnitError }] = useMutation(PlayUnitDocument, {
-    update(cache, { data }) {
+    update(cache, { data }, options) {
       if (data?.playUnit && user && handCardSelected) {
         cache.updateQuery<GameDeckQuery>(
           {
@@ -239,13 +242,75 @@ export default function GamePage() {
               ]) {
                 battlefieldUnitIds.push(unit.unit.id)
               }
+              for (const row of [playerRound.close, playerRound.ranged, playerRound.siege]) {
+                if (row.modifier) {
+                  battlefieldUnitIds.push(row.modifier.unit.id)
+                }
+              }
+              const unitsAddedToHand: DeckUnitFragment[] = []
+              const unitPlayed = previous.gameDeck.hand.find((deckUnit) => {
+                return deckUnit.unit.id === options.variables?.unit
+              })
+              if (
+                unitPlayed?.unit.effects &&
+                unitPlayed.unit.effects.some((effect) => effect.key === EffectKey.Decoy)
+              ) {
+                const previousGame = useFragment(GameFragmentDoc, gameData?.game)
+                if (previousGame) {
+                  const previousPlayer = useFragment(GamePlayerFragmentDoc, previousGame.players).find(
+                    (player) => player.user.name === user.name
+                  )
+                  if (!previousPlayer) {
+                    throw Error(
+                      `Could not find previous player "${user.name}" among game players "${JSON.stringify(data.playUnit.players)}`
+                    )
+                  }
+                  const previousPlayerRound = useFragment(
+                    PlayerRoundFragmentDoc,
+                    previousPlayer.rounds[previousGame.round - 1]
+                  )
+                  const previousBattlefieldUnits: GameUnitFragment[] = [
+                    ...useFragment(
+                      GameUnitFragmentDoc,
+                      useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.close).units
+                    ),
+                    ...useFragment(
+                      GameUnitFragmentDoc,
+                      useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.ranged).units
+                    ),
+                    ...useFragment(
+                      GameUnitFragmentDoc,
+                      useFragment(PlayerCombatRowFragmentDoc, previousPlayerRound.siege).units
+                    ),
+                  ]
+                  let targetUnit: DeckUnitFragment | undefined = undefined
+                  for (let i = 0; i < previousBattlefieldUnits.length && !targetUnit; i++) {
+                    const previousBattlefieldGameUnit = previousBattlefieldUnits[i]
+                    const previousBattlefieldUnit = useFragment(UnitFragmentDoc, previousBattlefieldGameUnit.unit)
+                    if (previousBattlefieldUnit.id === options.variables?.target) {
+                      targetUnit = {
+                        __typename: 'DeckUnit',
+                        artStyle: previousBattlefieldGameUnit.artStyle,
+                        unit: previousBattlefieldUnit,
+                      }
+                    }
+                  }
+                  if (!targetUnit) {
+                    throw Error(`Could not find target unit "${options.variables?.target}" in previous game`)
+                  }
+                  unitsAddedToHand.push(targetUnit)
+                }
+              }
               return {
                 gameDeck: {
                   ...previous.gameDeck,
-                  hand: previous.gameDeck.hand.filter(
-                    (deckUnit) =>
-                      deckUnit.unit.id !== handCardSelectedUnit.id && !battlefieldUnitIds.includes(deckUnit.unit.id)
-                  ),
+                  hand: [
+                    ...previous.gameDeck.hand.filter(
+                      (deckUnit) =>
+                        deckUnit.unit.id !== handCardSelectedUnit.id && !battlefieldUnitIds.includes(deckUnit.unit.id)
+                    ),
+                    ...unitsAddedToHand,
+                  ],
                 },
               }
             }
@@ -688,6 +753,7 @@ function ExistingGame({
           setFullUnits={setFullUnits}
           setHandCardSelected={setHandCardSelected}
           setHistoryCardSelected={setHistoryCardSelected}
+          gameDeckFragment={gameDeckProps.deck}
         />
       </div>
       <div id="gameContainerLower">

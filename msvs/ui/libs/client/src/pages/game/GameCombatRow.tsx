@@ -3,12 +3,14 @@ import { CSSProperties, Dispatch, SetStateAction } from 'react'
 import {
   Combat,
   DeckUnitFragment,
+  EffectKey,
   FragmentType,
   GameFragment,
   GamePlayerFragment,
   GameUnitFragmentDoc,
   PlayerCombatRowFragmentDoc,
   PlayerRoundFragmentDoc,
+  UnitEffectFragmentDoc,
   UnitFragment,
   UnitFragmentDoc,
   useFragment,
@@ -16,7 +18,7 @@ import {
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import { retryCheckingAuth } from '../../util/error-util'
+import { CheckAuth, retryCheckingAuth } from '../../util/error-util'
 import { sortObjectArray, toTitleCase } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../UserContext'
@@ -56,13 +58,18 @@ export default function GameCombatRow({
   const { checkAuth } = useUserContext()
   const titledCombat = toTitleCase(combat)
   const scorchSelected = handCardSelectedUnit && handCardSelectedUnit.name === 'Scorch'
+  const decoySelected =
+    handCardSelectedUnit &&
+    handCardSelectedUnit.effects &&
+    handCardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Decoy)
   const validRow =
     isSelf &&
     handCardSelectedUnit &&
     handCardSelectedUnit.combats &&
     handCardSelectedUnit.combats.includes(combat) &&
     !handCardSelectedUnit.modifier &&
-    !scorchSelected
+    !scorchSelected &&
+    !decoySelected
   const invalidRow =
     handCardSelectedUnit &&
     handCardSelectedUnit.combats &&
@@ -251,6 +258,10 @@ export default function GameCombatRow({
               sortedUnits={sortedUnits}
               isTurn={isTurn}
               key={index}
+              isSelf={player.user.name === game.turn?.user.name}
+              playUnitProps={playUnitProps}
+              gameId={game.id}
+              checkAuth={checkAuth}
             />
           ))}
         </div>
@@ -285,6 +296,10 @@ function GameRowUnit({
   style,
   title,
   cursor,
+  isSelf,
+  playUnitProps,
+  checkAuth,
+  gameId,
 }: {
   fullUnit: UnitFragment | undefined
   fullUnitFragment: UnitForPlayer | undefined
@@ -303,6 +318,10 @@ function GameRowUnit({
   style?: CSSProperties
   title?: string
   cursor?: string
+  isSelf?: boolean
+  playUnitProps?: PlayUnitProps
+  checkAuth?: CheckAuth
+  gameId?: string
 }) {
   const gameUnit = useFragment(GameUnitFragmentDoc, gameUnitFragment)
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
@@ -318,6 +337,11 @@ function GameRowUnit({
     playerId: player.user.id,
     unitFragment: gameUnit,
   }
+  const decoySelected =
+    handCardSelectedUnit &&
+    handCardSelectedUnit.effects &&
+    handCardSelectedUnit.effects.some((effect) => useFragment(UnitEffectFragmentDoc, effect).key === EffectKey.Decoy)
+  const highlightedForDecoy = !!decoySelected && isSelf && !unit.hero && !unit.special
 
   return (
     <div
@@ -328,7 +352,8 @@ function GameRowUnit({
         const cardBeingPlayed =
           isTurn &&
           handCardSelectedUnit &&
-          (!handCardSelectedUnit.combats || handCardSelectedUnit.combats.includes(combat))
+          (!handCardSelectedUnit.combats || handCardSelectedUnit.combats.includes(combat)) &&
+          !highlightedForDecoy
         if (!cardBeingPlayed) {
           if (selectedInHistory) {
             setHistoryCardSelected(undefined)
@@ -345,10 +370,10 @@ function GameRowUnit({
           artStyle: gameUnit.artStyle,
           unit: gameUnit.unit,
         }}
-        title={title}
+        title={highlightedForDecoy ? 'Select to decoy unit back into hand' : title}
         cursor={cursor}
         effectiveStrength={gameUnit.effectiveStrength}
-        selected={selectedAsFullCard || selectedInHistory}
+        selected={selectedAsFullCard || selectedInHistory || highlightedForDecoy}
         dotted={!isTurn && !selectedInHistory}
         onFullscreen={() => {
           setFullUnits({
@@ -363,6 +388,25 @@ function GameRowUnit({
           setHistoryCardSelected(unitForPlayer)
           scrollHistoryIntoView(unitForPlayer)
           setHandCardSelected(undefined)
+        }}
+        onClick={async () => {
+          if (highlightedForDecoy && playUnitProps && !playUnitProps.loading && gameId && checkAuth) {
+            await retryCheckingAuth({
+              checkAuth,
+              method: async () => {
+                await playUnitProps.playUnit({
+                  variables: {
+                    game: gameId,
+                    combat: combat,
+                    unit: handCardSelectedUnit.id,
+                    target: unit.id,
+                  },
+                })
+                setHandCardSelected(undefined)
+                setHistoryCardSelected(undefined)
+              },
+            })
+          }
         }}
       />
     </div>

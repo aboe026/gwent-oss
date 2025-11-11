@@ -27,6 +27,7 @@ export default class PlayUnitImplementation {
    * @param config.game The game the unit is being played for.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.unit The Unit being played.
+   * @param config.targetId The Unit ID that a potential Decoy card should target.
    * @returns The Game and GameDeck with the unit played for the user.
    * @throws {PresentableError} if known problem playing unit.
    * @throws {Error} if unforseen problem adding the user.
@@ -37,6 +38,7 @@ export default class PlayUnitImplementation {
     game,
     logPrefix,
     unit,
+    targetId,
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const playerId = game.turn?.toString() // save current player before any modifications to game turn
     if (!playerId) {
@@ -62,6 +64,7 @@ export default class PlayUnitImplementation {
       musteredUnits,
       musteredOrigins,
       scorches,
+      decoys,
     } = await modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
       combat,
@@ -70,6 +73,7 @@ export default class PlayUnitImplementation {
       logPrefix,
       newDeckUnit: deckUnit,
       newUnit: unit,
+      targetId,
     })
 
     const musterEffects = await getUnitEffects({
@@ -97,6 +101,7 @@ export default class PlayUnitImplementation {
       combat,
       deckUnit,
       game,
+      decoys,
       musters,
       musteredOrigins,
       playerId,

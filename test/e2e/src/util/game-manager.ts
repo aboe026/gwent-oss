@@ -1,6 +1,7 @@
 import ApiClient from './api-client'
 import {
   BondingExpected,
+  DecoyingExpected,
   E2eHelper,
   MardroemingExpected,
   MoralingExpected,
@@ -91,6 +92,7 @@ export class GameManager {
     unitName,
     combat,
     effectiveStrength,
+    hero,
     scorching,
     moraling,
     horning,
@@ -98,18 +100,21 @@ export class GameManager {
     mustering,
     bonding,
     impacts,
+    decoying,
     modifier,
     verify,
   }: {
     unitName: string
     combat?: Combat
     effectiveStrength?: number
+    hero?: boolean
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mardroeming?: MardroemingExpected[]
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
+    decoying?: DecoyingExpected
     impacts?: number
     modifier?: boolean
     verify?: boolean
@@ -141,6 +146,7 @@ export class GameManager {
       gameDeck: currentPlayer.deck,
       deckUnit: unitToMove,
       row: combatRow,
+      hero,
       moves: this.moves[this.moves.length - 1],
       switchTurnsWith: otherPlayer.gamePlayer.passed ? currentPlayer.gamePlayer : otherPlayer.gamePlayer,
       effectiveStrength,
@@ -150,6 +156,7 @@ export class GameManager {
       mardroeming,
       mustering,
       bonding,
+      decoying,
       impacts,
     })
     if (this.shouldVerify || verify) {

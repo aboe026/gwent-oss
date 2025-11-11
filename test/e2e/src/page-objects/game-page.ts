@@ -417,7 +417,7 @@ export default class GamePage {
     isSelf: boolean
     userName: string
     rowName: Combat
-    score: number
+    score?: number
     units: CombatUnit[]
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHandCard?: HighlightedHandCard
@@ -439,12 +439,22 @@ export default class GamePage {
       sortProperties: [['effectiveStrength', 'strength'], 'name'],
     }).map((unit) => {
       let expectedUnitName = unit.name
-      if (
+      const highlightedByBattlefieldCard =
         highlightedBattlefieldCard &&
         highlightedBattlefieldCard.unitName === unit.name &&
         highlightedBattlefieldCard.row === rowName &&
         highlightedBattlefieldCard.userName === userName
-      ) {
+      const isWeather = [
+        'Biting Frost',
+        'Clear Weather',
+        'Impenetrable Fog',
+        'Skellige Storm',
+        'Torrential Rain',
+      ].includes(unit.name)
+      const isSpecial = ["Commander's Horn", 'Decoy', 'Mardroeme', 'Scorch'].includes(unit.name) || isWeather
+      const highlightedByDecoy =
+        highlightedHandCard && highlightedHandCard.unitName === 'Decoy' && !unit.hero && !isSpecial
+      if (highlightedByBattlefieldCard || highlightedByDecoy) {
         highlightedBattlefieldCardFound = true
         expectedUnitName += ' selected'
       }
@@ -452,9 +462,11 @@ export default class GamePage {
     })
     const message = `${rowName} row for ${isSelf ? 'self' : 'opponent'}`
     await t.expect(actualUnitNames).eql(expectedUnitNames, message)
-    await t
-      .expect(rowSelector.find(`.${HTML_CLASSES.GameUnitBoardCombatScore}`).innerText)
-      .eql(score.toString(), message)
+    if (score !== undefined) {
+      await t
+        .expect(rowSelector.find(`.${HTML_CLASSES.GameUnitBoardCombatScore}`).innerText)
+        .eql(score.toString(), message)
+    }
     const cardsContainer = rowSelector.find(`.${HTML_CLASSES.GameCombatRowCards}`)
     const expectedHighlighted =
       isSelf && highlightedHandCard && highlightedHandCard.rows && highlightedHandCard.rows.includes(rowName)
@@ -1068,6 +1080,8 @@ export default class GamePage {
       await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
       if (unitName === 'Scorch') {
         await t.expect(GamePage.elements.CenterContainer.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      } else if (unitName === 'Decoy') {
+        await this.verifyDecoyTargetsHighlighted()
       } else if (modifier) {
         await t
           .expect(
@@ -1075,10 +1089,85 @@ export default class GamePage {
           )
           .ok()
       } else {
+        // TODO: verify other combat rows not highlighted
         await t.expect(combatRowUnits.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
       }
     }
     await t.click(modifier ? combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`) : combatRowUnits)
+  }
+
+  static async verifyDecoyTargetsHighlighted() {
+    const players = [
+      {
+        name: await new GamePlayerInfo(GamePage.elements.InfoSelfContainer).getName(),
+        isSelf: true,
+        rows: [
+          {
+            name: Combat.Close,
+            selector: GamePage.elements.CombatRowCloseSelf,
+          },
+          {
+            name: Combat.Ranged,
+            selector: GamePage.elements.CombatRowRangedSelf,
+          },
+          {
+            name: Combat.Siege,
+            selector: GamePage.elements.CombatRowSiegeSelf,
+          },
+        ],
+      },
+      {
+        name: await new GamePlayerInfo(GamePage.elements.InfoOpponentContainer).getName(),
+        isSelf: false,
+        rows: [
+          {
+            name: Combat.Close,
+            selector: GamePage.elements.CombatRowCloseOpponent,
+          },
+          {
+            name: Combat.Ranged,
+            selector: GamePage.elements.CombatRowRangedOpponent,
+          },
+          {
+            name: Combat.Siege,
+            selector: GamePage.elements.CombatRowSiegeOpponent,
+          },
+        ],
+      },
+    ]
+    for (const player of players) {
+      for (const row of player.rows) {
+        await t.expect(row.selector.exists).ok()
+        await t.expect(row.selector.visible).ok()
+        const actualUnitNames: string[] = []
+        const expectedUnitNames: string[] = []
+        const rowCards = row.selector.find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+        const rowCardsCount = await rowCards.count
+        for (let i = 0; i < rowCardsCount; i++) {
+          const rowCard = rowCards.nth(i)
+          const unitName = (await rowCard.getAttribute('title')) || ''
+          const highlighted = await rowCard.hasClass(HTML_CLASSES.ItemHighlighted)
+          actualUnitNames.push(`${unitName}${highlighted ? ' highlighted' : ''}`)
+
+          const isWeather = [
+            'Biting Frost',
+            'Clear Weather',
+            'Impenetrable Fog',
+            'Skellige Storm',
+            'Torrential Rain',
+          ].includes(unitName)
+          const isSpecial = ["Commander's Horn", 'Decoy', 'Mardroeme', 'Scorch'].includes(unitName) || isWeather
+          const isHero = await rowCard
+            .find(`.${HTML_CLASSES.GameUnitStrengthCircleContainer}`)
+            .hasClass(HTML_CLASSES.GameUnitStrengthCircleHero)
+          expectedUnitNames.push(`${unitName}${!isSpecial && !isHero ? ' highlighted' : ''}`)
+        }
+
+        await t
+          .expect(actualUnitNames)
+          .eql(expectedUnitNames, `Decoy target highlights correct for player "${player.name}" row "${row.name}"`)
+      }
+    }
   }
 
   static async summaryGoToGames() {
@@ -1398,6 +1487,7 @@ export interface CombatUnit {
   name: string
   strength?: number
   effectiveStrength?: number
+  hero?: boolean
 }
 
 interface CombatRow {

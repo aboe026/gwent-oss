@@ -6,6 +6,7 @@ import {
   GameUnitDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import EffectDecoy from './effect-decoy'
 import EffectMardroeme from './effect-mardroeme'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
 import EffectScorch from './effect-scorch'
@@ -32,6 +33,7 @@ export default async function modifyBattlefieldWithNewUnit({
   logPrefix,
   newDeckUnit,
   newUnit,
+  targetId,
 }: {
   battlefieldUnits: UnitDbObject[]
   combat?: Combat | null
@@ -40,6 +42,7 @@ export default async function modifyBattlefieldWithNewUnit({
   logPrefix: string
   newDeckUnit: DeckUnitDbObject
   newUnit: UnitDbObject
+  targetId: string | undefined | null
 }): Promise<ModificationImpacts> {
   addNewUnitToBattlefield({
     game,
@@ -79,7 +82,16 @@ export default async function modifyBattlefieldWithNewUnit({
     newDeckUnit,
     combat,
   })
+  const decoys = EffectDecoy.decoyFromBattlefield({
+    battlefieldUnits,
+    effects,
+    game,
+    logPrefix,
+    newDeckUnit,
+    targetId,
+  })
   return {
+    decoys,
     scorches,
     musters: musterImpacts,
     musteredUnits,
@@ -139,6 +151,7 @@ export function addNewUnitToBattlefield({
 }
 
 interface ModificationImpacts {
+  decoys: ImpactsByUnitId
   scorches: ImpactsByUnitId
   musters: ImpactsByUnitId
   musteredUnits: UnitDbObject[]

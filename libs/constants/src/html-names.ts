@@ -66,6 +66,8 @@ export const HTML_CLASSES = {
   GameCombatRowModifierAvailable: 'combat-row-modifier-available',
   GameCombatRowModifierContainer: 'game-combat-row-modifier',
   GameUnitCombatRowCards: 'game-unit-combat-row-cards',
+  GameUnitStrengthCircleContainer: 'strength-circle-container',
+  GameUnitStrengthCircleHero: 'strength-circle-container-hero',
   GameRowCreatedDay: 'game-row-created-day',
   GameRowCreatedTime: 'game-row-created-time',
   GameRowUpdatedDay: 'game-row-updated-day',

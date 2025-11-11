@@ -2,7 +2,16 @@ import { getLogger } from 'log4js'
 
 import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
-import { DeckUnitDbObject, GameDbObject, GameStatus, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import {
+  DeckUnitDbObject,
+  EffectKey,
+  GameDbObject,
+  GameStatus,
+  UnitDbObject,
+} from '@gwent/graphql-schema/database-typings'
+import EffectStore from '../../../../database/stores/effect-store'
+import GetBattlefieldUnit from './get-battlefield-unit'
+import getRoundUnits from './get-round-units'
 import { GraphQLResolveInfo } from 'graphql'
 import Permissions from '../../../permissions'
 import PresentableError from '../../../../util/presentable-error'
@@ -40,6 +49,7 @@ export default class PlayUnitValidation {
     })
     const unitId = args.unit
     let combat = args.combat
+    const targetId = args.target
 
     const logPrefix = `playUnit by "${userId}" for unit "${unitId}" on game "${game._id}"`
     const resolverUtil = new ResolverUtil({
@@ -95,6 +105,7 @@ export default class PlayUnitValidation {
     }
     const unit = units[0]
 
+    // TODO: exclude Decoy from this check
     if (unit.combats && unit.combats.length > 1 && !combat) {
       const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
       PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
@@ -119,12 +130,58 @@ export default class PlayUnitValidation {
       }
     }
 
+    if (unit.effects) {
+      const effects = await EffectStore.get({
+        ids: unit.effects,
+      })
+
+      if (effects.some((effect) => effect.key === EffectKey.Decoy)) {
+        if (!targetId) {
+          throw new PresentableError(`Argument "target" required for units with "${EffectKey.Decoy}" effect.`)
+        }
+
+        resolverUtil.verifyMongoIds({
+          ids: [targetId],
+          label: 'Target ID',
+        })
+
+        const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
+          game,
+          unitId: targetId,
+          userId,
+        })
+
+        if (!battlefieldUnit) {
+          throw new PresentableError(`Target "${targetId}" does not exist on the battlefield for player "${userId}".`)
+        }
+
+        const roundUnits = await getRoundUnits({
+          game,
+          unitBeingPlayed: unit,
+        })
+        const target = roundUnits.find((unit) => unit._id.toString() === targetId)
+        if (!target) {
+          throw new PresentableError(`Could not find Unit for target "${targetId}".`)
+        }
+        if (target.hero) {
+          throw new PresentableError(`Invalid decoy target "${targetId}": Cannot be hero.`)
+        }
+        if (target.special) {
+          throw new PresentableError(`Invalid decoy target "${targetId}": Cannot be special.`)
+        }
+        // TODO: make sure row the target is in matches the row the target unit is in
+      }
+    }
+
+    // TODO: pass effects through?
+    // TODO: pass roundUnits through
     return {
       combat,
       deckUnit,
       game,
       logPrefix,
       unit,
+      targetId,
     }
   }
 }
@@ -135,4 +192,5 @@ export interface ValidatedPlayUnit {
   game: GameDbObject
   logPrefix: string
   unit: UnitDbObject
+  targetId: string | undefined | null
 }

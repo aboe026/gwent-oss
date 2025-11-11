@@ -5,7 +5,10 @@ import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
 import {
   DeckUnitFragment,
+  DeckUnitFragmentDoc,
   EffectKey,
+  FragmentType,
+  GameDeckFragmentDoc,
   GameFragment,
   GamePlayerFragment,
   GamePlayerFragmentDoc,
@@ -47,6 +50,7 @@ export default function GameHistory({
   setHandCardSelected,
   setHistoryCardSelected,
   setFullUnits,
+  gameDeckFragment,
 }: {
   game: GameFragment
   handCardSelected: DeckUnitFragment | undefined
@@ -58,6 +62,7 @@ export default function GameHistory({
   setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  gameDeckFragment: FragmentType<typeof GameDeckFragmentDoc> | null | undefined
 }) {
   const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
   const historyCardSelectedUnit = useFragment(UnitFragmentDoc, historyCardSelected?.unitFragment.unit)
@@ -115,6 +120,7 @@ export default function GameHistory({
                     setHistoryCardSelected={setHistoryCardSelected}
                     unitMoves={unitMoves}
                     key={`r${movesByRound.round}-i${index}`}
+                    gameDeckFragment={gameDeckFragment}
                   />
                 ))}
               </div>
@@ -141,6 +147,7 @@ function PlayerHistoryMove({
   unitMoves,
   historyCardSelectedUnit,
   index,
+  gameDeckFragment,
 }: {
   playerMove: PlayerMove
   game: GameFragment
@@ -153,6 +160,7 @@ function PlayerHistoryMove({
   unitMoves: PlayerMove[]
   historyCardSelectedUnit: UnitFragment | undefined
   index: number
+  gameDeckFragment: FragmentType<typeof GameDeckFragmentDoc> | null | undefined
 }) {
   const gamePlayer = game.players[playerMove.playerIndex]
   const player = useFragment(GamePlayerFragmentDoc, gamePlayer)
@@ -260,6 +268,7 @@ function PlayerHistoryMove({
         style={{ borderStyle: isSelected ? (isOnBattlefield ? 'solid' : 'dotted') : 'inherit' }}
         title={isSelected && !isOnBattlefield ? 'This unit is no longer on the battlefield' : ''}
         onClick={() => {
+          let newHandCardSelected: DeckUnitFragment | undefined = undefined
           if (playerMove.move.__typename === 'MoveUnit') {
             const gameUnit = useFragment(GameUnitFragmentDoc, useFragment(MoveUnitFragmentDoc, playerMove.move).unit)
             const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
@@ -275,8 +284,20 @@ function PlayerHistoryMove({
                 playerId: player.user.id,
                 unitFragment: gameUnit,
               })
+              if (isSelf) {
+                const handUnits = useFragment(
+                  DeckUnitFragmentDoc,
+                  useFragment(GameDeckFragmentDoc, gameDeckFragment)?.hand
+                )
+                const handUnit = handUnits?.find(
+                  (handUnit) => useFragment(UnitFragmentDoc, handUnit.unit).id === unit.id
+                )
+                if (handUnit) {
+                  newHandCardSelected = handUnit
+                }
+              }
             }
-            setHandCardSelected(undefined)
+            setHandCardSelected(newHandCardSelected)
           }
         }}
       >

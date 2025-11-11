@@ -49,6 +49,7 @@ export default class UpdateHistory {
     playerId,
     logPrefix,
     combat,
+    decoys,
     scorches,
     mardroemes,
     mardroemingGameUnit,
@@ -64,6 +65,7 @@ export default class UpdateHistory {
     playerId: string
     logPrefix: string
     combat: Combat | null | undefined
+    decoys: ImpactsByUnitId
     scorches: ImpactsByUnitId
     mardroemes: ImpactsByUnitId
     transformedGameUnits?: GameUnitDbObject[]
@@ -85,7 +87,8 @@ export default class UpdateHistory {
       mardroemes[deckUnit.unit.toString()] ||
       morales[deckUnit.unit.toString()] ||
       musters[deckUnit.unit.toString()] ||
-      scorches[deckUnit.unit.toString()]
+      scorches[deckUnit.unit.toString()] ||
+      decoys[deckUnit.unit.toString()]
     const move: MoveUnitDbObject = {
       created: new Date(),
       unit: {

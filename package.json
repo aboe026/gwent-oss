@@ -41,7 +41,7 @@
     "test-func": "yarn g:jest --test-type=func --runInBand --setupFilesAfterEnv=./msvs/api/test/func/util/setup.ts",
     "test-unit": "yarn g:jest --test-type=unit",
     "upgrade-dependencies": "yarn g:ts-node scripts/upgrade-dependencies",
-    "watch": "yarn workspaces foreach --worktree --parallel --interlaced run watch"
+    "watch": "yarn workspaces foreach --worktree --parallel --interlaced --jobs unlimited run watch"
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",

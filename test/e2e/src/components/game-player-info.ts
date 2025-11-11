@@ -29,6 +29,10 @@ export default class GamePlayerInfo {
     }
   }
 
+  async getName(): Promise<string> {
+    return this.elements.Name.innerText
+  }
+
   async verify({
     name,
     discards,
