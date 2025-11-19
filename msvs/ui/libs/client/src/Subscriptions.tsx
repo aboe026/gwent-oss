@@ -232,7 +232,7 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  // TODO: make this work if Game.tsx "update" function commented out
+  // TODO: create new "updatedGameDeck" subscription? have other places we're modifying GameDeckQuery use that too?
   useSubscription(UnitPlayedFromDeckDocument, {
     skip: !user,
     onData: ({ data, client }) => {

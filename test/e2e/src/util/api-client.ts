@@ -93,6 +93,56 @@ export default class ApiClient {
     return unit
   }
 
+  async getBattlefieldUnit({
+    gameId,
+    name,
+    combat,
+    instance = 1,
+  }: {
+    gameId: string | ObjectId
+    name: string
+    combat: Combat
+    instance?: number
+  }): Promise<Unit> {
+    const user = await this.client.currentUser({})
+    if (!user) {
+      throw Error('Could not determine user for client')
+    }
+    const game = await this.client.game({
+      id: gameId.toString(),
+    })
+
+    const player = game.players.find((player) => player.user.id === user.id)
+    if (!player) {
+      throw Error(`Current user "${user.id}" is not a player on game "${gameId}"`)
+    }
+
+    const round = player.rounds[game.round - 1]
+    const row = combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege
+    const units = row.units
+    if (row.modifier) {
+      units.push(row.modifier)
+    }
+    let unit: Unit | undefined = undefined
+    let occurrence = 0
+    for (let i = 0; i < units.length && !unit; i++) {
+      const gameUnit = units[i]
+      if (gameUnit.unit.name === name) {
+        if (occurrence + 1 === instance) {
+          unit = gameUnit.unit
+        } else {
+          occurrence++
+        }
+      }
+    }
+    if (!unit) {
+      throw Error(
+        `Could not find instance "${instance}" of unit "${name}" in combat "${combat}" for game "${gameId}" for user "${user.name}"`
+      )
+    }
+    return unit
+  }
+
   async addDeck({ faction, leaderName, name, unitNames }: AddDeckInput): Promise<Deck> {
     const leader = await this.getLeader({
       faction,
@@ -180,15 +230,18 @@ export default class ApiClient {
     gameId,
     unitId,
     combat,
+    target,
   }: {
     gameId: string | ObjectId
     unitId: string | ObjectId
     combat: Combat
+    target?: string | ObjectId
   }): Promise<Game> {
     return this.client.playUnit({
       game: gameId.toString(),
       unit: unitId.toString(),
       combat,
+      target: target ? target.toString() : undefined,
     })
   }
 

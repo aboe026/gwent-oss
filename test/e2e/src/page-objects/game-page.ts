@@ -1096,6 +1096,21 @@ export default class GamePage {
     await t.click(modifier ? combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`) : combatRowUnits)
   }
 
+  static async selectCombatRow({ combat, self = true }: { combat: Combat; self?: boolean }) {
+    const id = self
+      ? combat === Combat.Close
+        ? HTML_IDS.GameCombatRowCloseSelf
+        : combat === Combat.Ranged
+          ? HTML_IDS.GameCombatRowRangedSelf
+          : HTML_IDS.GameCombatRowSiegeSelf
+      : combat === Combat.Close
+        ? HTML_IDS.GameCombatRowCloseOpponent
+        : combat === Combat.Ranged
+          ? HTML_IDS.GameCombatRowRangedOpponent
+          : HTML_IDS.GameCombatRowSiegeOpponent
+    await t.click(GamePage.elements.CenterContainer.find(`#${id}`))
+  }
+
   static async verifyDecoyTargetsHighlighted() {
     const players = [
       {

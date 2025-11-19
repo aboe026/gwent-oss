@@ -135,10 +135,21 @@ export class GameManager {
         modifier,
       })
     } else {
+      let targetId: string | undefined = undefined
+      if (decoying) {
+        const target = await currentPlayer.client.getBattlefieldUnit({
+          gameId: this.gameId,
+          combat: decoying.row,
+          name: decoying.name,
+          instance: decoying.instance,
+        })
+        targetId = target.id
+      }
       await currentPlayer.client.playUnit({
         gameId: this.gameId,
         unitId: unitToMove.unit.id,
         combat: combatRow,
+        target: targetId,
       })
     }
     E2eHelper.playUnit({

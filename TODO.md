@@ -72,6 +72,7 @@ Existing problems in the codebase that need to be fixed.
       - image (for chosen art style)
       - effectiveStrength (for strength after all active effects applied)
   - need to store in database as { id: ObjectId, artStyle: Number}, but "combine" them in resolver
+- replace "effectiveStrength" with "score" for GameUnit
 - carry over username (and password?) when switching between log-in and sign-up
   - show sign up by default, unless they have visited page (or signed up?) before, then show login by default
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)

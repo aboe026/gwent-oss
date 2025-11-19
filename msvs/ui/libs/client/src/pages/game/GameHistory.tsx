@@ -285,6 +285,7 @@ function PlayerHistoryMove({
                 unitFragment: gameUnit,
               })
               if (isSelf) {
+                // TODO: repeat this logic for impacts as well
                 const handUnits = useFragment(
                   DeckUnitFragmentDoc,
                   useFragment(GameDeckFragmentDoc, gameDeckFragment)?.hand
