@@ -30,8 +30,9 @@ export default class EffectDecoy {
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
     targetId: string | undefined | null
-  }): ImpactsByUnitId {
+  }): PotentialDecoy {
     const impacts: ImpactDbObject[] = []
+    let deckUnitAddedToHand: DeckUnitDbObject | undefined = undefined
 
     if (targetId) {
       const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
@@ -54,10 +55,18 @@ export default class EffectDecoy {
       if (impacts.length === 0) {
         throw Error('') // TODO
       }
+      if (impacts.length > 1) {
+        throw Error('') // TODO
+      }
+
+      deckUnitAddedToHand = impacts[0].unit
     }
 
     return {
-      [newDeckUnit.unit.toString()]: impacts,
+      deckUnitAddedToHand,
+      impacts: {
+        [newDeckUnit.unit.toString()]: impacts,
+      },
     }
   }
 
@@ -87,4 +96,9 @@ export default class EffectDecoy {
 
     return impact
   }
+}
+
+interface PotentialDecoy {
+  deckUnitAddedToHand: DeckUnitDbObject | undefined
+  impacts: ImpactsByUnitId
 }

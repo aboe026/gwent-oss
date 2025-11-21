@@ -37,6 +37,8 @@ Existing problems in the codebase that need to be fixed.
 - rename "undrawn" to "draw" (since its the draw pile?)
 - remove @gwent/graphql-schema dependency from @gwent/test-e2e once filters/sorting in schema
 - have node-client export class instead of function (attempted to but lost typings)
+- restrict/filter subscriptions to just active game?
+- use single "gameUpdated" and "gameDeckUpdated" subscriptions instead of one per mutation?
 - improve UX around game player info (username, score, rounds, passed)
 - message to clear filters in DeckEditor when filter shows none
 - centralize error handling in the UI

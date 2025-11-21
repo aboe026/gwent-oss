@@ -326,6 +326,7 @@ export interface UnitPlayedFromDeckPayload {
   unitPlayedFromDeck: {
     deck: GameDeck
     game: Game
+    handed: DeckUnit[]
     unit: DeckUnit
   }
 }

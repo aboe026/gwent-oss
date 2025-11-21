@@ -3,6 +3,9 @@ subscription UnitPlayedFromDeck {
     game {
       id
     }
+    handed {
+      ...DeckUnit
+    }
     unit {
       ...DeckUnit
     }

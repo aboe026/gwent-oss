@@ -35,6 +35,7 @@ import {
   GameDeckQuery as GameDeckQueryRaw,
   GameQuery as GameQueryRaw,
   GamesQuery as GamesQueryRaw,
+  DeckUnit as DeckUnitRaw,
 } from '@gwent/graphql-schema/apollo-raw-typings'
 import updateGameDeckCacheOnRedraw from './util/update-game-deck-cache-on-redraw'
 import { useUserContext } from './UserContext'
@@ -232,11 +233,11 @@ export default function Subscriptions({ children }: PropsWithChildren) {
       }
     },
   })
-  // TODO: create new "updatedGameDeck" subscription? have other places we're modifying GameDeckQuery use that too?
   useSubscription(UnitPlayedFromDeckDocument, {
     skip: !user,
     onData: ({ data, client }) => {
       const game = data.data?.unitPlayedFromDeck.game
+      const handed = data.data?.unitPlayedFromDeck.handed
       const playedUnit = useFragment(
         UnitFragmentDoc,
         useFragment(DeckUnitFragmentDoc, data.data?.unitPlayedFromDeck.unit)?.unit
@@ -251,10 +252,20 @@ export default function Subscriptions({ children }: PropsWithChildren) {
           },
           (previous) => {
             if (previous?.gameDeck) {
+              const newHand = previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id)
+              const currentHandIds = newHand.map((handUnit) => handUnit.unit.id)
+              if (handed) {
+                for (const rehand of handed) {
+                  const deckUnit = useFragment(DeckUnitFragmentDoc, rehand)
+                  if (!currentHandIds.includes(useFragment(UnitFragmentDoc, deckUnit.unit).id)) {
+                    newHand.push(deckUnit as DeckUnitRaw)
+                  }
+                }
+              }
               return {
                 gameDeck: {
                   ...previous.gameDeck,
-                  hand: previous.gameDeck.hand.filter((deckUnit) => deckUnit.unit.id !== playedUnit.id),
+                  hand: newHand,
                   discard:
                     playedUnit.name === 'Scorch'
                       ? [...previous.gameDeck.discard, playedUnit]

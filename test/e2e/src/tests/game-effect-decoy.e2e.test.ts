@@ -149,6 +149,42 @@ test('Decoy close combat unit', async (t) => {
   })
 })
 
+test('Game and hand updated if decoy performed via API', async (t) => {
+  const unitName1 = 'Cahir Mawr Dyffryn aep Ceallach'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.initialize({
+    apiDriven: true,
+  })
+
+  const deckUnit = await gameManager.deploy({
+    unitName: unitName2,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 6,
+    },
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Close,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
 // TODO: decoy ranged
 // TODO: decoy siege
 // TODO: decoy via API

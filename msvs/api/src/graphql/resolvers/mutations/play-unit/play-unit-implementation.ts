@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
 import CalculateGameEffectiveStrengths from './calculate-game-effective-strengths'
-import { GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import getRoundUnits from './get-round-units'
 import getUnitEffects from './get-unit-effects'
@@ -65,6 +65,7 @@ export default class PlayUnitImplementation {
       musteredOrigins,
       scorches,
       decoys,
+      deckUnitsAddedToHand,
     } = await modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
       combat,
@@ -142,6 +143,7 @@ export default class PlayUnitImplementation {
     return {
       game: updatedGame,
       gameDeck: player.deck,
+      handDeckUnitsAdded: deckUnitsAddedToHand,
     }
   }
 }
@@ -149,4 +151,5 @@ export default class PlayUnitImplementation {
 interface ImplementedPlayUnit {
   game: GameDbObject
   gameDeck: GameDeckDbObject
+  handDeckUnitsAdded: DeckUnitDbObject[]
 }

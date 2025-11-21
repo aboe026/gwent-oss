@@ -23,17 +23,20 @@ export default class PlayUnitResolution {
    * @param config.game The game updated with the impact of having the unit played on it.
    * @param config.gameDeck The game deck after the unit has been played.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
+   * @param config.handDeckUnitsAdded Any potential DeckUnits added to the players game hand.
    * @returns The Game with the unit played for the user with fields resolved.
    */
   static async playUnitResolution({
     deckUnit,
     game,
     gameDeck,
+    handDeckUnitsAdded,
     logPrefix,
   }: {
     deckUnit: DeckUnitDbObject
     game: GameDbObject
     gameDeck: GameDeckDbObject
+    handDeckUnitsAdded: DeckUnitDbObject[]
     logPrefix: string
   }): Promise<Game> {
     const resolvedGame = await GameResolver.fromObject({
@@ -64,10 +67,17 @@ export default class PlayUnitResolution {
       },
     } as UnitPlayedOnGamePayload)
 
+    const handed = await DeckUnitResolver.fromArray({
+      deckUnits: handDeckUnitsAdded,
+    })
+    if (PlayUnitResolution.logger.isTraceEnabled()) {
+      PlayUnitResolution.logger.trace(`${logPrefix} handed: "${JSON.stringify(handed)}"`)
+    }
     EventManager.pubsub.publish(PubSubEvents.UnitPlayedFromDeck, {
       unitPlayedFromDeck: {
         deck: resolvedGameDeck,
         game: resolvedGame,
+        handed: handed,
         unit: resolvedUnit,
       },
     } as UnitPlayedFromDeckPayload)
