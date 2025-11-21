@@ -1055,11 +1055,13 @@ export default class GamePage {
     unitName,
     row,
     modifier,
+    decoyTarget,
     verify = true,
   }: {
     unitName: string
     row: Combat
     modifier?: boolean
+    decoyTarget?: string
     verify?: boolean
   }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
@@ -1093,7 +1095,19 @@ export default class GamePage {
         await t.expect(combatRowUnits.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
       }
     }
-    await t.click(modifier ? combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`) : combatRowUnits)
+    if (modifier) {
+      await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`))
+    } else if (decoyTarget) {
+      const target = await GamePage.getBattlefieldCard({
+        unitName: decoyTarget,
+        row,
+        self: true,
+        decoying: true,
+      })
+      await t.click(target)
+    } else {
+      await t.click(combatRowUnits)
+    }
   }
 
   static async selectCombatRow({ combat, self = true }: { combat: Combat; self?: boolean }) {
@@ -1175,7 +1189,7 @@ export default class GamePage {
           const isHero = await rowCard
             .find(`.${HTML_CLASSES.GameUnitStrengthCircleContainer}`)
             .hasClass(HTML_CLASSES.GameUnitStrengthCircleHero)
-          expectedUnitNames.push(`${unitName}${!isSpecial && !isHero ? ' highlighted' : ''}`)
+          expectedUnitNames.push(`${unitName}${player.isSelf && !isSpecial && !isHero ? ' highlighted' : ''}`)
         }
 
         await t
@@ -1233,11 +1247,13 @@ export default class GamePage {
     unitName,
     row,
     self,
+    decoying,
     instance = 1,
   }: {
     unitName: string
     row: Combat
     self: boolean
+    decoying?: boolean
     instance?: number
   }) {
     let rowSelector: Selector | undefined = undefined
@@ -1262,10 +1278,11 @@ export default class GamePage {
     const rowCardsCount = await rowCards.count
     let matchingCard: Selector | undefined
     let namedInstance = 1
+    const unitTitle = decoying ? `Select to decoy ${unitName} back into hand` : unitName
     for (let i = 0; i < rowCardsCount && !matchingCard; i++) {
       const rowCard = rowCards.nth(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
-      const cardName = (await rowCard.getAttribute('title')) || ''
-      if (cardName === unitName) {
+      const cardTitle = (await rowCard.getAttribute('title')) || ''
+      if (cardTitle === unitTitle) {
         if (namedInstance === instance) {
           matchingCard = rowCard
         } else {

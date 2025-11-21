@@ -149,6 +149,231 @@ test('Decoy close combat unit', async (t) => {
   })
 })
 
+test('Decoy ranged combat unit', async (t) => {
+  const unitName1 = 'Assire var Anahid'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  const deckUnit = await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Ranged,
+      effectiveStrength: 6,
+    },
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Decoy siege combat unit', async (t) => {
+  const unitName1 = 'Heavy Zerrikanian Fire Scorpion'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege })
+  await gameManager.pass({})
+  await gameManager.initialize({})
+
+  const deckUnit = await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Siege,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Siege,
+      effectiveStrength: 10,
+    },
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Siege,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Decoy one of many', async (t) => {
+  const unitName1 = 'Cahir Mawr Dyffryn aep Ceallach'
+  const unitName2 = 'Rainfarn'
+  const unitName3 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2, unitName3],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.initialize({})
+
+  const deckUnit = await gameManager.deploy({
+    unitName: unitName3,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 6,
+    },
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName3,
+    row: Combat.Close,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Decoy one of same name', async (t) => {
+  const unitName1 = 'Black Infantry Archer'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
+  await gameManager.pass({})
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
+  await gameManager.initialize({})
+
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    combat: Combat.Ranged,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Ranged,
+      effectiveStrength: 10,
+    },
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Ranged,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+  await FullCard.previous()
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Decoy unit when opponent has same deployed', async (t) => {
+  const unitName1 = 'Cahir Mawr Dyffryn aep Ceallach'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2],
+    },
+    opponent: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.initialize({})
+
+  const deckUnit = await gameManager.deploy({
+    unitName: unitName2,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 6,
+    },
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Close,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
+test('Can redeploy decoyed unit', async (t) => {
+  const unitName1 = 'Cahir Mawr Dyffryn aep Ceallach'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  const deckUnit2 = await gameManager.deploy({
+    unitName: unitName2,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 6,
+    },
+  })
+  await gameManager.initialize({})
+
+  await gameManager.deploy({ unitName: unitName1 })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName2,
+    row: Combat.Close,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit2.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+  await FullCard.next()
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+  })
+})
+
 test('Game and hand updated if decoy performed via API', async (t) => {
   const unitName1 = 'Cahir Mawr Dyffryn aep Ceallach'
   const unitName2 = 'Decoy'
@@ -185,10 +410,6 @@ test('Game and hand updated if decoy performed via API', async (t) => {
   })
 })
 
-// TODO: decoy ranged
-// TODO: decoy siege
-// TODO: decoy via API
-// TODO: can re-play decoyed unit
 // TODO: selecting hand unit after decoy highlights it, history and impact entry
 // TODO: selecting history unit highlights history, impact and hand unit
 // TODO: selecting history impact highlights impact, unit and hand unit

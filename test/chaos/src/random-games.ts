@@ -306,6 +306,7 @@ async function playRound({
       }
       let modifiersInHand = 0
       const playableHand: DeckUnit[] = []
+      // TODO: filter playableHand for decoys as well (can't play decoy if not other hands in unit)
       for (const deckUnit of gameDeck.hand) {
         let playable = true
         if (deckUnit.unit.modifier) {

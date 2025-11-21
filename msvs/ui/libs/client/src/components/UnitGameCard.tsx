@@ -1,4 +1,5 @@
 import { CgMaximizeAlt } from 'react-icons/cg'
+import { MouseEvent } from 'react'
 
 import {
   DeckUnitFragment,
@@ -47,9 +48,10 @@ export default function UnitGameCard({
       }}
       onClick={(event) => {
         if (onClick) {
-          event.preventDefault()
-          event.stopPropagation()
-          onClick(deckUnit)
+          onClick({
+            deckUnit,
+            event,
+          })
         }
       }}
     >
@@ -102,7 +104,7 @@ interface UnitGameCardProps {
   dottedTitle?: string
   iconSize?: string
   onFullscreen: (deckUnit: DeckUnitFragment | GameUnitFragment) => void
-  onClick?: (deckUnit: DeckUnitFragment | GameUnitFragment) => void
+  onClick?: (args: { deckUnit: DeckUnitFragment | GameUnitFragment; event: MouseEvent<HTMLDivElement> }) => void
   selected?: boolean
   title?: string
 }

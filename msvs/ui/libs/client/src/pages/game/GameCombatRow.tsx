@@ -370,7 +370,7 @@ function GameRowUnit({
           artStyle: gameUnit.artStyle,
           unit: gameUnit.unit,
         }}
-        title={highlightedForDecoy ? 'Select to decoy unit back into hand' : title}
+        title={highlightedForDecoy ? `Select to decoy ${unit.name} back into hand` : title}
         cursor={cursor}
         effectiveStrength={gameUnit.effectiveStrength}
         selected={selectedAsFullCard || selectedInHistory || highlightedForDecoy}
@@ -389,8 +389,10 @@ function GameRowUnit({
           scrollHistoryIntoView(unitForPlayer)
           setHandCardSelected(undefined)
         }}
-        onClick={async () => {
+        onClick={async ({ event }) => {
           if (highlightedForDecoy && playUnitProps && !playUnitProps.loading && gameId && checkAuth) {
+            event.preventDefault()
+            event.stopPropagation()
             await retryCheckingAuth({
               checkAuth,
               method: async () => {

@@ -133,6 +133,7 @@ export class GameManager {
         unitName: unitToMove.unit.name,
         row: combatRow,
         modifier,
+        decoyTarget: decoying?.name,
       })
     } else {
       let targetId: string | undefined = undefined
