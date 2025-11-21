@@ -12,6 +12,8 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- instead of single mixed effect e2e test file, have one for each effect (e.g. game-effect-mixed-decoy.e2e.test.ts)
+
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat
   - "Any" icon/text for units that can be played on any row

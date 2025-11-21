@@ -1,4 +1,4 @@
-import { Combat, FactionKey } from '@gwent/node-client'
+import { Combat, EffectKey, FactionKey } from '@gwent/node-client'
 import createGameManager from '../util/game-manager'
 import { E2eCtx, getFixtureCtx, getTestCtx, getScenario } from '../util/e2e-ctx'
 import FullCard from '../components/full-card'
@@ -410,6 +410,73 @@ test('Game and hand updated if decoy performed via API', async (t) => {
   })
 })
 
-// TODO: selecting hand unit after decoy highlights it, history and impact entry
-// TODO: selecting history unit highlights history, impact and hand unit
-// TODO: selecting history impact highlights impact, unit and hand unit
+test('Selecting history after Decoy highlights history, impact and hand unit', async (t) => {
+  const unitName1 = 'Cahir Mawr Dyffryn aep Ceallach'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 6,
+    },
+  })
+  await gameManager.initialize({})
+
+  await GamePage.toggleImpacts({
+    unitName: unitName2,
+    userName: gameManager.self.gamePlayer.name,
+    round: 1,
+  })
+  await GamePage.selectHistoryUnit({
+    playerName: gameManager.self.gamePlayer.name,
+    round: 1,
+    row: Combat.Close,
+    unitName: unitName1,
+    dotted: true,
+  })
+  await gameManager.verify({
+    highlightedHandCard: {
+      unitName: unitName1,
+      rows: [Combat.Close],
+    },
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: 1,
+      row: Combat.Close,
+      unitName: unitName1,
+      dotted: true,
+    },
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        unitName: unitName2,
+        round: 1,
+        userName: gameManager.self.gamePlayer.name,
+        effectKey: EffectKey.Decoy,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+            highlighted: true,
+            dotted: true,
+          },
+        ],
+      },
+    ],
+  })
+})
+
+// TODO: Selecting hand unit after Decoy highlights it, history and impact entry
+// TODO: selecting history impact after Decoy highlights impact, unit and hand unit
