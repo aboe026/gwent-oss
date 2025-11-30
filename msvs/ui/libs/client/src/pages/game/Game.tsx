@@ -217,7 +217,7 @@ export default function GamePage() {
   const [ready, { loading: readyLoading, error: readyError }] = useMutation(ReadyDocument) // Apollo automatically handles cache changes on update
   const [playPass, { loading: playPassLoading, error: playPassError }] = useMutation(PlayPassDocument)
   const [playUnit, { loading: playUnitLoading, error: playUnitError }] = useMutation(PlayUnitDocument, {
-    update(cache, { data }, options) {
+    update(cache, { data }, { variables }) {
       if (data?.playUnit && user && handCardSelected) {
         cache.updateQuery<GameDeckQuery>(
           {
@@ -249,7 +249,7 @@ export default function GamePage() {
               }
               const unitsAddedToHand: DeckUnitFragment[] = []
               const unitPlayed = previous.gameDeck.hand.find((deckUnit) => {
-                return deckUnit.unit.id === options.variables?.unit
+                return deckUnit.unit.id === variables?.unit
               })
               if (
                 unitPlayed?.unit.effects &&
@@ -287,7 +287,7 @@ export default function GamePage() {
                   for (let i = 0; i < previousBattlefieldUnits.length && !targetUnit; i++) {
                     const previousBattlefieldGameUnit = previousBattlefieldUnits[i]
                     const previousBattlefieldUnit = useFragment(UnitFragmentDoc, previousBattlefieldGameUnit.unit)
-                    if (previousBattlefieldUnit.id === options.variables?.target) {
+                    if (previousBattlefieldUnit.id === variables?.target) {
                       targetUnit = {
                         __typename: 'DeckUnit',
                         artStyle: previousBattlefieldGameUnit.artStyle,
@@ -296,7 +296,7 @@ export default function GamePage() {
                     }
                   }
                   if (!targetUnit) {
-                    throw Error(`Could not find target unit "${options.variables?.target}" in previous game`)
+                    throw Error(`Could not find target unit "${variables?.target}" in previous game`)
                   }
                   unitsAddedToHand.push(targetUnit)
                 }
@@ -309,7 +309,28 @@ export default function GamePage() {
                       (deckUnit) =>
                         deckUnit.unit.id !== handCardSelectedUnit.id && !battlefieldUnitIds.includes(deckUnit.unit.id)
                     ),
-                    ...unitsAddedToHand,
+                    ...(unitsAddedToHand as any), // eslint-disable-line @typescript-eslint/no-explicit-any
+                    // TODO: either get working "properly" or type as "raw" (e.g.  as GameDeckQueryRaw)
+                    // ...unitsAddedToHand.map((handUnit) => {
+                    //   const unit = useFragment(UnitFragmentDoc, handUnit.unit)
+                    //   return {
+                    //     artStyle: handUnit.artStyle,
+                    //     unit: {
+                    //       __typename: 'Unit',
+                    //       ...unit,
+                    //       // effects: useFragment(UnitEffectFragmentDoc, unit.effects),
+                    //       effects: unit.effects
+                    //         ? unit.effects.map((unitEffect) => {
+                    //             const effect = useFragment(UnitEffectFragmentDoc, unitEffect)
+                    //             return {
+                    //               ...effect,
+                    //               __typename: 'Effect',
+                    //             }
+                    //           })
+                    //         : undefined,
+                    //     },
+                    //   }
+                    // }),
                   ],
                 },
               }
