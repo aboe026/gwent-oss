@@ -4,7 +4,6 @@ import Centered from '../../components/Centered'
 import {
   DeckUnitFragment,
   DeckUnitFragmentDoc,
-  GameDeckFragment,
   GameDeckFragmentDoc,
   GamePlayerFragment,
   GameStatus,
@@ -12,9 +11,9 @@ import {
   UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
-import { FullUnitCards, UnitForPlayer } from './GameProps'
-import getRedrawUnitIds from '../../util/get-redraw-ids'
+import { FullUnitCards } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
+import { SelectedCard } from '../../util/selected-card'
 import { sortObjectArray } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
 
@@ -22,31 +21,27 @@ import UnitGameCard from '../../components/UnitGameCard'
  * The Users hand of unit cards for the Game.
  */
 export default function GameHand({
+  cardSelected,
   gameStatus,
   gameDeckFragment,
-  handCardSelected,
   isTurn,
   playUnitLoading,
-  redrawCardSelected,
   redrawsLeft,
+  selectedCardInHand,
   self,
+  setCardSelected,
   setFullUnits,
-  setHandCardSelected,
-  setHistoryCardSelected,
-  setRedrawCardSelected,
 }: {
+  cardSelected: SelectedCard | undefined
   gameStatus: GameStatus
   gameDeckFragment: FragmentType<typeof GameDeckFragmentDoc> | null | undefined
-  handCardSelected: DeckUnitFragment | undefined
   isTurn: boolean
   playUnitLoading: boolean
-  redrawCardSelected: DeckUnitFragment | undefined
   redrawsLeft: number
+  selectedCardInHand: boolean
   self: GamePlayerFragment
+  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
-  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
-  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
 }) {
   const gameDeck = useFragment(GameDeckFragmentDoc, gameDeckFragment)
   const hand = useFragment(DeckUnitFragmentDoc, gameDeck?.hand)
@@ -72,21 +67,18 @@ export default function GameHand({
         ) : (
           sortedUnits.map((deckUnit, index) => (
             <GameHandUnit
-              gameDeck={gameDeck}
+              cardSelected={cardSelected}
               deckUnit={deckUnit}
-              handCardSelected={handCardSelected}
-              redrawCardSelected={redrawCardSelected}
               gameStatus={gameStatus}
               playUnitLoading={playUnitLoading}
               redrawsLeft={redrawsLeft}
               isTurn={isTurn}
               key={index}
               index={index}
+              selectedCardInHand={selectedCardInHand}
               self={self}
+              setCardSelected={setCardSelected}
               setFullUnits={setFullUnits}
-              setHandCardSelected={setHandCardSelected}
-              setHistoryCardSelected={setHistoryCardSelected}
-              setRedrawCardSelected={setRedrawCardSelected}
               sortedUnits={sortedUnits}
             />
           ))
@@ -100,61 +92,51 @@ export default function GameHand({
  * A unit in a players game hand.
  */
 function GameHandUnit({
+  cardSelected,
   deckUnit,
-  gameDeck,
   gameStatus,
-  handCardSelected,
   isTurn,
   index,
   playUnitLoading,
-  redrawCardSelected,
   redrawsLeft,
+  selectedCardInHand,
   self,
+  setCardSelected,
   setFullUnits,
-  setHandCardSelected,
-  setHistoryCardSelected,
-  setRedrawCardSelected,
   sortedUnits,
 }: {
+  cardSelected: SelectedCard | undefined
   deckUnit: DeckUnitFragment
-  gameDeck: GameDeckFragment | null | undefined
   gameStatus: GameStatus
-  handCardSelected: DeckUnitFragment | undefined
   isTurn: boolean
   index: number
   playUnitLoading: boolean
-  redrawCardSelected: DeckUnitFragment | undefined
   redrawsLeft: number
+  selectedCardInHand: boolean
   self: GamePlayerFragment
+  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
-  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
-  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   sortedUnits: DeckUnitFragment[]
 }) {
   const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
-  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
-  const redrawCardSelectedUnit = useFragment(UnitFragmentDoc, redrawCardSelected?.unit)
-  const selected = [handCardSelectedUnit?.id, redrawCardSelectedUnit?.id].includes(unit.id)
-  const notSelected = handCardSelectedUnit?.id && !selected
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const selected = cardSelectedUnit?.id === unit.id && cardSelected?.playerId === self.user.id
+  const notSelected = cardSelectedUnit?.id && !selected && selectedCardInHand
   const title = unit.name
   let dottedTitle = ''
   let cursor = 'pointer'
-  const noMoreRedraws = gameStatus === GameStatus.Redrawing && redrawsLeft === 0 && !redrawCardSelectedUnit?.id
-  if (playUnitLoading && handCardSelectedUnit) {
-    if (handCardSelectedUnit?.id === unit.id) {
-      dottedTitle = `Waiting for ${handCardSelectedUnit.name} to be deployed to the battlefield`
+  const noMoreRedraws = gameStatus === GameStatus.Redrawing && redrawsLeft === 0
+  if (playUnitLoading && cardSelectedUnit) {
+    if (cardSelectedUnit?.id === unit.id) {
+      dottedTitle = `Waiting for ${cardSelectedUnit.name} to be deployed to the battlefield`
     } else {
-      dottedTitle = `Cannot select other units while waiting for ${handCardSelectedUnit.name} to be deployed`
+      dottedTitle = `Cannot select other units while waiting for ${cardSelectedUnit.name} to be deployed`
       cursor = 'not-allowed'
     }
   } else if (selected && noMoreRedraws) {
     dottedTitle = 'No more redraws left'
   }
   const dotted = (gameStatus === GameStatus.Playing && !isTurn) || noMoreRedraws
-  const redrawUnitIds = getRedrawUnitIds({
-    gameDeck,
-  })
 
   return (
     <div
@@ -162,13 +144,14 @@ function GameHandUnit({
       key={unit.id}
       onClick={() => {
         if (!playUnitLoading) {
-          setHandCardSelected(selected ? undefined : deckUnit)
-          if (redrawUnitIds.includes(unit.id)) {
-            setRedrawCardSelected(selected ? undefined : deckUnit)
-          } else {
-            setRedrawCardSelected(undefined)
-          }
-          setHistoryCardSelected(undefined)
+          setCardSelected(
+            selected
+              ? undefined
+              : {
+                  card: deckUnit,
+                  playerId: self.user.id,
+                }
+          )
         }
       }}
     >
@@ -189,13 +172,10 @@ function GameHandUnit({
               }
             }),
           })
-          setHandCardSelected(deckUnit)
-          if (redrawUnitIds.includes(unit.id)) {
-            setRedrawCardSelected(selected ? undefined : deckUnit)
-          } else {
-            setRedrawCardSelected(undefined)
-          }
-          setHistoryCardSelected(undefined)
+          setCardSelected({
+            card: deckUnit,
+            playerId: self.user.id,
+          })
         }}
       />
       {notSelected && <div title={title} className={HTML_CLASSES.GameHandCardWrapperNotSelected}></div>}

@@ -7,6 +7,7 @@ import {
   AddGameDocument,
   DeckFragment,
   DeckUnitFragment,
+  DeckUnitFragmentDoc,
   EffectKey,
   GameDeckDocument,
   GameDeckFragmentDoc,
@@ -55,7 +56,6 @@ import {
   RedrawProps,
   SetDeckProps,
   SetOrderProps,
-  UnitForPlayer,
 } from './GameProps'
 import GameHand from './GameHand'
 import GameHistory from './GameHistory'
@@ -72,10 +72,10 @@ import {
   NOT_AUTHORIZED_MESSAGE,
   ROUTES,
 } from '@gwent/constants'
-import getRedrawIds from '../../util/get-redraw-ids'
 import isGameUnit from '../../util/is-game-unit'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import NewGame from './NewGame'
+import { SelectedCard } from '../../util/selected-card'
 import { sortObjectArray } from '@gwent/utils'
 import UnitFullCard from '../../components/UnitFullCard'
 import updateGameDeckCacheOnRedraw from '../../util/update-game-deck-cache-on-redraw'
@@ -93,7 +93,7 @@ import './Game.css'
  */
 export default function GamePage() {
   useTitle('Game | Gwent')
-  const [handCardSelected, setHandCardSelected] = useState<DeckUnitFragment | undefined>()
+  const [cardSelected, setCardSelected] = useState<SelectedCard | undefined>()
   const [playerOrder, setPlayerOrder] = useState<GamePlayerFragment[]>([])
   const { checkAuth, user } = useUserContext()
   const { pathname } = useLocation()
@@ -195,7 +195,8 @@ export default function GamePage() {
     // need to manually update cache because the return type of "redraw" mutation (DeckUnit)
     // does not update underlying "game" query type (GameDeck) since they do not match
     update(cache, { data }) {
-      if (data?.redraw && user && handCardSelected) {
+      const from = cardSelected?.card
+      if (data?.redraw && user && from && !isGameUnit(from)) {
         cache.updateQuery<GameDeckQuery>(
           {
             query: GameDeckDocument,
@@ -204,7 +205,7 @@ export default function GamePage() {
           (previous) => {
             if (previous?.gameDeck) {
               return updateGameDeckCacheOnRedraw({
-                from: handCardSelected,
+                from,
                 previous,
                 to: data.redraw,
               })
@@ -218,7 +219,7 @@ export default function GamePage() {
   const [playPass, { loading: playPassLoading, error: playPassError }] = useMutation(PlayPassDocument)
   const [playUnit, { loading: playUnitLoading, error: playUnitError }] = useMutation(PlayUnitDocument, {
     update(cache, { data }, { variables }) {
-      if (data?.playUnit && user && handCardSelected) {
+      if (data?.playUnit && user && cardSelected) {
         cache.updateQuery<GameDeckQuery>(
           {
             query: GameDeckDocument,
@@ -226,7 +227,7 @@ export default function GamePage() {
           },
           (previous) => {
             if (previous?.gameDeck && game) {
-              const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected.unit)
+              const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected.card.unit)
               const battlefieldUnitIds: string[] = []
               const player = data.playUnit.players.find((player) => player.user.name === user.name)
               if (!player) {
@@ -307,7 +308,7 @@ export default function GamePage() {
                   hand: [
                     ...previous.gameDeck.hand.filter(
                       (deckUnit) =>
-                        deckUnit.unit.id !== handCardSelectedUnit.id && !battlefieldUnitIds.includes(deckUnit.unit.id)
+                        deckUnit.unit.id !== cardSelectedUnit.id && !battlefieldUnitIds.includes(deckUnit.unit.id)
                     ),
                     ...(unitsAddedToHand as any), // eslint-disable-line @typescript-eslint/no-explicit-any
                     // TODO: either get working "properly" or type as "raw" (e.g.  as GameDeckQueryRaw)
@@ -351,6 +352,7 @@ export default function GamePage() {
     />
   ) : (
     <ExistingGame
+      cardSelected={cardSelected}
       checkAuth={checkAuth}
       gameDeckProps={{
         deck: gameDeckData?.gameDeck,
@@ -364,7 +366,6 @@ export default function GamePage() {
         loading: gameLoading,
         refetch: gameRefetch,
       }}
-      handCardSelected={handCardSelected}
       playerOrder={playerOrder}
       playPassProps={{
         playPass,
@@ -386,12 +387,12 @@ export default function GamePage() {
         error: redrawError,
         loading: redrawLoading,
       }}
+      setCardSelected={setCardSelected}
       setDeckProps={{
         setDeck,
         error: setDeckError,
         loading: setDeckLoading,
       }}
-      setHandCardSelected={setHandCardSelected}
       setOrderProps={{
         setOrder,
         loading: setOrderLoading,
@@ -407,40 +408,38 @@ export default function GamePage() {
  * A Game which has been previously created.
  */
 function ExistingGame({
+  cardSelected,
   checkAuth,
   gameDeckProps,
   gameProps,
-  handCardSelected,
   playerOrder,
   playPassProps,
   playUnitProps,
   redrawProps,
   readyProps,
+  setCardSelected,
   setDeckProps,
-  setHandCardSelected,
   setOrderProps,
   setPlayerOrder,
   user,
 }: {
+  cardSelected: SelectedCard | undefined
   checkAuth: CheckAuth
   gameDeckProps: GameDeckProps
   gameProps: GameProps
-  handCardSelected: DeckUnitFragment | undefined
   playerOrder: GamePlayerFragment[]
   playPassProps: PlayPassProps
   playUnitProps: PlayUnitProps
   readyProps: ReadyProps
   redrawProps: RedrawProps
+  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
   setDeckProps: SetDeckProps
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
   setOrderProps: SetOrderProps
   setPlayerOrder: Dispatch<SetStateAction<GamePlayerFragment[]>>
   user: User | null | undefined
 }) {
   const [deckListOpen, setDeckListOpen] = useState(false)
   const [deckEditorOpen, setDeckEditorOpen] = useState(false)
-  const [historyCardSelected, setHistoryCardSelected] = useState<UnitForPlayer | undefined>()
-  const [redrawCardSelected, setRedrawCardSelected] = useState<DeckUnitFragment | undefined>()
   const [coinTossVisible, setCoinTossVisible] = useState(false)
   const [fullUnits, setFullUnits] = useState<FullUnitCards | undefined>()
   const [passConfirmationOpen, setPassConfirmationOpen] = useState(false)
@@ -456,10 +455,20 @@ function ExistingGame({
     // and would cause self not to be found here when user presented with opportunity to re-authorize
     self = useFragment(GamePlayerFragmentDoc, game.players).find((player) => player.user.name === user.name)
   }
-  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const handUnitIds =
+    useFragment(GameDeckFragmentDoc, gameDeckProps.deck)?.hand.map(
+      (handUnit) => useFragment(UnitFragmentDoc, useFragment(DeckUnitFragmentDoc, handUnit).unit).id
+    ) || []
+  const selectedCardInHand = !!(
+    self &&
+    self.user.id === cardSelected?.playerId &&
+    cardSelectedUnit &&
+    handUnitIds?.includes(cardSelectedUnit?.id)
+  )
 
   const battlefieldHighlighted =
-    game?.status === GameStatus.Playing && handCardSelected && handCardSelectedUnit?.name === 'Scorch'
+    game?.status === GameStatus.Playing && cardSelectedUnit && cardSelectedUnit?.name === 'Scorch' && selectedCardInHand
   const isTurn = game?.turn?.user.id === self?.user.id
 
   const previousGame = usePrevious(game)
@@ -510,13 +519,13 @@ function ExistingGame({
    * @param config.playerId The ID of the player the Unit belongs to.
    * @param config.unitFragment The Unit whose entrance to the battlefield should be scrolled to in the History panel.
    */
-  function scrollHistoryIntoView({ playerId, unitFragment }: UnitForPlayer) {
-    if (game && playerId) {
-      const unitSelected = useFragment(UnitFragmentDoc, unitFragment.unit)
+  function scrollHistoryIntoView(selected: SelectedCard) {
+    if (game && selected && selected.playerId) {
+      const unitSelected = useFragment(UnitFragmentDoc, selected.card.unit)
       const roundIndex = game.round - 1
       const playerIndex = useFragment(GamePlayerFragmentDoc, game.players)
         .map((player) => player.user.id)
-        .indexOf(playerId)
+        .indexOf(selected.playerId)
       let moveIndex: number | undefined = undefined
       const player = useFragment(GamePlayerFragmentDoc, game.players[playerIndex])
       const round = useFragment(PlayerRoundFragmentDoc, player.rounds[roundIndex])
@@ -547,9 +556,6 @@ function ExistingGame({
     fullUnitUserName = fullUnitGamePlayerFragment?.user.name
   }
   const gameDeck = useFragment(GameDeckFragmentDoc, gameDeckProps.deck)
-  const redrawIds = getRedrawIds({
-    gameDeck,
-  })
 
   return gameProps.loading || gameDeckProps.loading ? (
     <Centered>
@@ -601,16 +607,10 @@ function ExistingGame({
             })
             const fullPlayerUnit = fullUnits.units[fullUnits.currentIndex - 1]
             const fullUnitFragment = fullPlayerUnit.unitFragment
-            const fullUnit = useFragment(UnitFragmentDoc, fullUnitFragment.unit)
-            if (handCardSelected && !isGameUnit(fullUnitFragment)) {
-              setHandCardSelected(fullUnitFragment)
-            }
-            if (historyCardSelected) {
-              setHistoryCardSelected(fullPlayerUnit)
-            }
-            if ((redrawCardSelected || redrawIds.includes(fullUnit.id)) && !isGameUnit(fullUnitFragment)) {
-              setRedrawCardSelected(fullUnitFragment)
-            }
+            setCardSelected({
+              card: fullUnitFragment,
+              playerId: fullPlayerUnit.playerId,
+            })
           }
         }}
         onNext={() => {
@@ -621,16 +621,10 @@ function ExistingGame({
             })
             const fullPlayerUnit = fullUnits.units[fullUnits.currentIndex + 1]
             const fullUnitFragment = fullPlayerUnit.unitFragment
-            const fullUnit = useFragment(UnitFragmentDoc, fullUnitFragment.unit)
-            if (handCardSelected && !isGameUnit(fullUnitFragment)) {
-              setHandCardSelected(fullUnitFragment)
-            }
-            if (historyCardSelected) {
-              setHistoryCardSelected(fullPlayerUnit)
-            }
-            if ((redrawCardSelected || redrawIds.includes(fullUnit.id)) && !isGameUnit(fullUnitFragment)) {
-              setRedrawCardSelected(fullUnitFragment)
-            }
+            setCardSelected({
+              card: fullUnitFragment,
+              playerId: fullPlayerUnit.playerId,
+            })
           }
         }}
         onClose={() => {
@@ -664,10 +658,10 @@ function ExistingGame({
       />
       <div id="gameContainerUpper">
         <GameInfo
+          cardSelected={cardSelected}
           coinTossVisible={coinTossVisible}
           gameDeckProps={gameDeckProps}
           gameProps={gameProps}
-          handCardSelected={handCardSelected}
           opponent={opponent}
           playPassLoading={playPassProps.loading}
           playUnitLoading={playUnitProps.loading}
@@ -696,8 +690,8 @@ function ExistingGame({
           onClick={async () => {
             if (
               game.status === GameStatus.Playing &&
-              handCardSelectedUnit &&
-              handCardSelectedUnit.name === 'Scorch' &&
+              cardSelectedUnit &&
+              cardSelectedUnit.name === 'Scorch' &&
               game.turn?.user.id === self.user.id
             ) {
               await retryCheckingAuth({
@@ -706,10 +700,10 @@ function ExistingGame({
                   await playUnitProps.playUnit({
                     variables: {
                       game: game.id,
-                      unit: handCardSelectedUnit.id,
+                      unit: cardSelectedUnit.id,
                     },
                   })
-                  setHandCardSelected(undefined)
+                  setCardSelected(undefined)
                 },
               })
             }
@@ -732,65 +726,58 @@ function ExistingGame({
             />
           ) : game.status === GameStatus.Redrawing ? (
             <GameRedraw
+              cardSelected={cardSelected}
               coinTossVisible={coinTossVisible}
               game={game}
               gameDeck={gameDeck}
-              handCardSelected={handCardSelected}
               readyProps={readyProps}
-              redrawCardSelected={redrawCardSelected}
               redrawProps={redrawProps}
+              selectedCardInHand={selectedCardInHand}
               self={self}
+              setCardSelected={setCardSelected}
               setCoinTossVisible={setCoinTossVisible}
               setFullUnits={setFullUnits}
-              setHandCardSelected={setHandCardSelected}
-              setRedrawCardSelected={setRedrawCardSelected}
             />
           ) : game.status === GameStatus.Playing ? (
             <GameBattlefield
+              cardSelected={cardSelected}
               fullUnits={fullUnits}
               game={game}
-              handCardSelected={handCardSelected}
-              historyCardSelected={historyCardSelected}
               opponent={opponent}
               playUnitProps={playUnitProps}
+              selectedCardInHand={selectedCardInHand}
               scrollHistoryIntoView={scrollHistoryIntoView}
               self={self}
+              setCardSelected={setCardSelected}
               setFullUnits={setFullUnits}
-              setHandCardSelected={setHandCardSelected}
-              setHistoryCardSelected={setHistoryCardSelected}
             />
           ) : (
             <GameSummary game={game} />
           )}
         </div>
         <GameHistory
+          cardSelected={cardSelected}
           game={game}
-          handCardSelected={handCardSelected}
-          historyCardSelected={historyCardSelected}
           movesByRounds={movesByRounds}
           playPassProps={playPassProps}
           playUnitProps={playUnitProps}
           self={self}
+          setCardSelected={setCardSelected}
           setFullUnits={setFullUnits}
-          setHandCardSelected={setHandCardSelected}
-          setHistoryCardSelected={setHistoryCardSelected}
-          gameDeckFragment={gameDeckProps.deck}
         />
       </div>
       <div id="gameContainerLower">
         <GameHand
+          cardSelected={cardSelected}
           gameStatus={game.status}
           gameDeckFragment={gameDeckProps.deck}
-          handCardSelected={handCardSelected}
           isTurn={game.turn?.user.name === self.user.name}
           playUnitLoading={playUnitProps.loading}
-          redrawCardSelected={redrawCardSelected}
           redrawsLeft={MAX_REDRAWS - (gameDeck?.redraws || []).length}
+          selectedCardInHand={selectedCardInHand}
           self={self}
+          setCardSelected={setCardSelected}
           setFullUnits={setFullUnits}
-          setHandCardSelected={setHandCardSelected}
-          setHistoryCardSelected={setHistoryCardSelected}
-          setRedrawCardSelected={setRedrawCardSelected}
         />
       </div>
       {(deckListOpen || deckEditorOpen) && (

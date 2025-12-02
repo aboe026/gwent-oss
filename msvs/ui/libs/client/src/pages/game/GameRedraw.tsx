@@ -16,8 +16,10 @@ import {
 import { FullUnitCards, ReadyProps, RedrawProps, UnitForPlayer } from './GameProps'
 import { GAME_ORDER_COIN_FLIP_DURATION_SECONDS, HTML_CLASSES, HTML_IDS, MAX_REDRAWS } from '@gwent/constants'
 import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
+import isGameUnit from '../../util/is-game-unit'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
+import { SelectedCard } from '../../util/selected-card'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../UserContext'
 
@@ -25,31 +27,29 @@ import { useUserContext } from '../../UserContext'
  * Allows user to Redraw units for a Game.
  */
 export default function GameRedraw({
+  cardSelected,
   coinTossVisible,
   game,
   gameDeck,
-  handCardSelected,
   readyProps,
-  redrawCardSelected,
   redrawProps,
+  selectedCardInHand,
   self,
+  setCardSelected,
   setFullUnits,
   setCoinTossVisible,
-  setHandCardSelected,
-  setRedrawCardSelected,
 }: {
+  cardSelected: SelectedCard | undefined
   coinTossVisible: boolean
   game: GameFragment
   gameDeck: GameDeckFragment | null | undefined
-  handCardSelected: DeckUnitFragment | undefined
   readyProps: ReadyProps
-  redrawCardSelected: DeckUnitFragment | undefined
   redrawProps: RedrawProps
+  selectedCardInHand: boolean
   self: GamePlayerFragment
+  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
-  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
 }) {
   const { checkAuth } = useUserContext()
   const redrawsLeft = MAX_REDRAWS - (gameDeck?.redraws || []).length
@@ -89,17 +89,16 @@ export default function GameRedraw({
           <div className="game-deck-redraw-cards">
             {[...Array(MAX_REDRAWS)].map((_, index) => (
               <RedrawCard
+                cardSelected={cardSelected}
                 game={game}
                 gameDeck={gameDeck}
-                handCardSelected={handCardSelected}
                 index={index}
                 key={index}
-                redrawCardSelected={redrawCardSelected}
                 redrawProps={redrawProps}
+                selectedCardInHand={selectedCardInHand}
                 self={self}
+                setCardSelected={setCardSelected}
                 setFullUnits={setFullUnits}
-                setHandCardSelected={setHandCardSelected}
-                setRedrawCardSelected={setRedrawCardSelected}
               />
             ))}
           </div>
@@ -128,6 +127,9 @@ export default function GameRedraw({
                         game: game.id,
                       },
                     })
+                    if (cardSelected && !selectedCardInHand) {
+                      setCardSelected(undefined)
+                    }
                   },
                 })
               }}
@@ -181,27 +183,25 @@ function renderCoinToss({
  * A possible redraw for a game.
  */
 function RedrawCard({
+  cardSelected,
   index,
   gameDeck,
   game,
-  handCardSelected,
   self,
-  redrawCardSelected,
   redrawProps,
+  selectedCardInHand,
+  setCardSelected,
   setFullUnits,
-  setHandCardSelected,
-  setRedrawCardSelected,
 }: {
+  cardSelected: SelectedCard | undefined
   index: number
   gameDeck: GameDeckFragment
   game: GameFragment
-  handCardSelected: DeckUnitFragment | undefined
   self: GamePlayerFragment
-  redrawCardSelected: DeckUnitFragment | undefined
   redrawProps: RedrawProps
+  selectedCardInHand: boolean
+  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
-  setRedrawCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
 }) {
   const { checkAuth } = useUserContext()
   const handUnitIds: string[] = []
@@ -214,7 +214,8 @@ function RedrawCard({
       }
     }
   }
-  let fromCard: DeckUnitFragment | undefined = handCardSelected
+  let fromCard: DeckUnitFragment | undefined =
+    cardSelected && !isGameUnit(cardSelected.card) ? cardSelected.card : undefined
   if (index < gameDeck.redraws.length && gameDeck.redraws[index].from) {
     fromCard = useFragment(DeckUnitFragmentDoc, gameDeck.redraws[index].from)
   }
@@ -232,17 +233,29 @@ function RedrawCard({
         unitFragment: deckUnit,
       }
     })
-  const redrawCardSelectedUnit = useFragment(UnitFragmentDoc, redrawCardSelected?.unit)
-  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
-  const toCardSelected = toCardUnit && [redrawCardSelectedUnit?.id, handCardSelectedUnit?.id].includes(toCardUnit.id)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const toCardSelected = toCardUnit && toCardUnit.id === cardSelectedUnit?.id
   const toCardDotted = toCardSelected && !handUnitIds.includes(toCardUnit.id)
-  const fromCardSelected =
-    fromCardUnit && [redrawCardSelectedUnit?.id, handCardSelectedUnit?.id].includes(fromCardUnit.id)
+  const fromCardSelected = fromCardUnit && fromCardUnit.id === cardSelectedUnit?.id
   const fromCardDotted = fromCardSelected && !handUnitIds.includes(fromCardUnit.id)
+  const isPair = index < gameDeck.redraws.length || (index === gameDeck.redraws.length && redrawProps.loading)
+  const redrawAvailable = cardSelected && index === gameDeck.redraws.length && selectedCardInHand
+  let redrawTitle = ''
+  if (redrawAvailable) {
+    redrawTitle = 'Place here to redraw for a random unit from your Draw pile'
+  } else if (cardSelected) {
+    if (index >= gameDeck.redraws.length) {
+      redrawTitle = 'Not available to redraw until other redraws made above'
+    } else {
+      redrawTitle = 'Can only redraw cards that are in your hand'
+    }
+  } else {
+    redrawTitle = 'Select card from hand to redraw'
+  }
 
   return (
     <div className="game-deck-redraw-card-container" key={index}>
-      {index < gameDeck.redraws.length || (index === gameDeck.redraws.length && redrawProps.loading) ? (
+      {isPair ? (
         <div className={HTML_CLASSES.GameDeckRedrawPair}>
           {fromCard && (
             <UnitGameCard
@@ -251,24 +264,28 @@ function RedrawCard({
               dotted={fromCardDotted}
               dottedTitle={fromCardDotted ? 'This unit is no longer in your hand' : ''}
               onClick={() => {
-                setRedrawCardSelected(fromCardSelected ? undefined : fromCard)
-                if (fromCardUnit && handUnitIds.includes(fromCardUnit.id)) {
-                  setHandCardSelected(fromCardSelected ? undefined : fromCard)
-                } else {
-                  setHandCardSelected(undefined)
-                }
+                setCardSelected(
+                  fromCardSelected
+                    ? undefined
+                    : {
+                        card: fromCard,
+                        playerId: self.user.id,
+                      }
+                )
               }}
               onFullscreen={() => {
                 setFullUnits({
                   currentIndex: 0,
                   units,
                 })
-                setRedrawCardSelected(fromCard)
-                if (fromCardUnit && handUnitIds.includes(fromCardUnit.id)) {
-                  setHandCardSelected(fromCard)
-                } else {
-                  setHandCardSelected(undefined)
-                }
+                setCardSelected(
+                  fromCardSelected
+                    ? undefined
+                    : {
+                        card: fromCard,
+                        playerId: self.user.id,
+                      }
+                )
               }}
             />
           )}
@@ -280,24 +297,28 @@ function RedrawCard({
               dotted={toCardDotted}
               dottedTitle={toCardDotted ? 'This unit is no longer in your hand' : ''}
               onClick={() => {
-                setRedrawCardSelected(toCardSelected ? undefined : toCard)
-                if (toCardUnit && handUnitIds.includes(toCardUnit.id)) {
-                  setHandCardSelected(toCardSelected ? undefined : toCard)
-                } else {
-                  setHandCardSelected(undefined)
-                }
+                setCardSelected(
+                  toCardSelected
+                    ? undefined
+                    : {
+                        card: toCard,
+                        playerId: self.user.id,
+                      }
+                )
               }}
               onFullscreen={() => {
                 setFullUnits({
                   currentIndex: 1,
                   units,
                 })
-                setRedrawCardSelected(toCard)
-                if (toCardUnit && handUnitIds.includes(toCardUnit.id)) {
-                  setHandCardSelected(toCard)
-                } else {
-                  setHandCardSelected(undefined)
-                }
+                setCardSelected(
+                  toCardSelected
+                    ? undefined
+                    : {
+                        card: toCard,
+                        playerId: self.user.id,
+                      }
+                )
               }}
             />
           ) : (
@@ -311,29 +332,23 @@ function RedrawCard({
       ) : (
         <div
           className={`${HTML_CLASSES.GameDeckRedrawCard} ${
-            handCardSelected && index === gameDeck.redraws.length
+            redrawAvailable
               ? `${HTML_CLASSES.ItemHighlighted} game-deck-redraw-available`
               : 'game-deck-redraw-unavailable'
           }`}
-          title={
-            handCardSelected && index === gameDeck.redraws.length
-              ? 'Place here to redraw'
-              : !handCardSelected
-                ? 'Select card from hand to redraw'
-                : ''
-          }
+          title={redrawTitle}
           onClick={async () => {
-            if (handCardSelectedUnit && index === gameDeck.redraws.length) {
+            if (cardSelectedUnit && index === gameDeck.redraws.length) {
               await retryCheckingAuth({
                 checkAuth,
                 method: async () => {
                   await redrawProps.redraw({
                     variables: {
-                      unit: handCardSelectedUnit.id,
+                      unit: cardSelectedUnit.id,
                       game: game.id,
                     },
                   })
-                  setHandCardSelected(undefined)
+                  setCardSelected(undefined)
                 },
               })
             }

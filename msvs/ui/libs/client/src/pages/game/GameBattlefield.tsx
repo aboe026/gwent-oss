@@ -2,49 +2,47 @@ import { Dispatch, SetStateAction } from 'react'
 
 import {
   Combat,
-  DeckUnitFragment,
   GameFragment,
   GamePlayerFragment,
   PlayerRoundFragmentDoc,
   UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
-import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
+import { FullUnitCards, PlayUnitProps } from './GameProps'
 import GameCombatRow from './GameCombatRow'
 import { HTML_CLASSES } from '@gwent/constants'
+import { SelectedCard } from '../../util/selected-card'
 import { useUserContext } from '../../UserContext'
 
 /**
  * The active battlefield of a Game.
  */
 export default function GameBattlefield({
+  cardSelected,
   fullUnits,
   game,
-  handCardSelected,
-  historyCardSelected,
   opponent,
   playUnitProps,
+  selectedCardInHand,
   scrollHistoryIntoView,
   self,
+  setCardSelected,
   setFullUnits,
-  setHandCardSelected,
-  setHistoryCardSelected,
 }: {
+  cardSelected: SelectedCard | undefined
   fullUnits: FullUnitCards | undefined
   game: GameFragment
-  handCardSelected: DeckUnitFragment | undefined
-  historyCardSelected: UnitForPlayer | undefined
   opponent: GamePlayerFragment
   playUnitProps: PlayUnitProps
-  scrollHistoryIntoView: (args: UnitForPlayer) => void
+  selectedCardInHand: boolean
+  scrollHistoryIntoView: (selected: SelectedCard) => void
   self: GamePlayerFragment
+  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
-  setHandCardSelected: Dispatch<SetStateAction<DeckUnitFragment | undefined>>
-  setHistoryCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
 }) {
   const { checkAuth } = useUserContext()
-  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
-  const rowsToHighlight = (handCardSelectedUnit && handCardSelectedUnit.combats) || []
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const rowsToHighlight = (cardSelectedUnit && cardSelectedUnit.combats) || []
   const rowsToBlock = []
   if (rowsToHighlight.length > 0) {
     if (!rowsToHighlight.includes(Combat.Close)) {
@@ -61,16 +59,15 @@ export default function GameBattlefield({
   const selfPassed = useFragment(PlayerRoundFragmentDoc, self.rounds[game.round - 1]).passed
   const opponentPassed = useFragment(PlayerRoundFragmentDoc, opponent.rounds[game.round - 1]).passed
   const sharedProps = {
-    handCardSelectedUnit,
+    cardSelected,
     playUnitProps,
     fullUnits,
     checkAuth,
     game,
     isTurn,
+    selectedCardInHand,
+    setCardSelected,
     setFullUnits,
-    setHandCardSelected,
-    historyCardSelected,
-    setHistoryCardSelected,
     scrollHistoryIntoView,
   }
   return (

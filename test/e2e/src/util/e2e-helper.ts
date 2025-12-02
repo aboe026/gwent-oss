@@ -512,6 +512,16 @@ export class E2eHelper {
       } else if (decoying) {
         effectKey = EffectKey.Decoy
       }
+      let numImpacts = 0
+      if (impacts !== undefined) {
+        numImpacts = impacts
+      } else {
+        if (decoying) {
+          numImpacts = 1
+        } else {
+          numImpacts = (scorching || mardroeming || moraling || mustering || bonding || horning || [])?.length
+        }
+      }
       moves.push({
         userName: player.name,
         unitName: deckUnit.unit.name,
@@ -520,12 +530,7 @@ export class E2eHelper {
           effectKey && impacts !== -1
             ? {
                 effectKey,
-                number:
-                  impacts !== undefined
-                    ? impacts
-                    : (scorching || mardroeming || moraling || mustering || bonding || horning)?.length || decoying
-                      ? 1
-                      : 0,
+                number: numImpacts,
               }
             : undefined,
       })
