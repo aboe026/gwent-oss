@@ -4,6 +4,7 @@ import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typ
 import { Context } from '@gwent/graphql-schema/context'
 import {
   DeckUnitDbObject,
+  EffectDbObject,
   EffectKey,
   GameDbObject,
   GameStatus,
@@ -105,19 +106,29 @@ export default class PlayUnitValidation {
     }
     const unit = units[0]
 
-    // TODO: exclude Decoy from this check
-    if (unit.combats && unit.combats.length > 1 && !combat) {
-      const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
-      PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
+    const effects: EffectDbObject[] = []
+    if (unit.effects) {
+      effects.push(
+        ...(await EffectStore.get({
+          ids: unit.effects,
+        }))
+      )
     }
-    if (unit.combats && unit.combats.length > 0 && combat && !unit.combats.includes(combat)) {
-      const message = `Combat "${combat}" does match unit combats of "${JSON.stringify(unit.combats)}".`
-      PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
-      throw new PresentableError(message)
-    }
-    if (unit.combats && unit.combats.length === 1 && !combat) {
-      combat = unit.combats[0] as Combat
+
+    if (!effects.some((effect) => effect.key === EffectKey.Decoy)) {
+      if (unit.combats && unit.combats.length > 1 && !combat) {
+        const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (unit.combats && unit.combats.length > 0 && combat && !unit.combats.includes(combat)) {
+        const message = `Combat "${combat}" does match unit combats of "${JSON.stringify(unit.combats)}".`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (unit.combats && unit.combats.length === 1 && !combat) {
+        combat = unit.combats[0] as Combat
+      }
     }
 
     if (unit.modifier) {
@@ -131,10 +142,6 @@ export default class PlayUnitValidation {
     }
 
     if (unit.effects) {
-      const effects = await EffectStore.get({
-        ids: unit.effects,
-      })
-
       if (effects.some((effect) => effect.key === EffectKey.Decoy)) {
         if (!targetId) {
           throw new PresentableError(`Argument "target" required for units with "${EffectKey.Decoy}" effect.`)
@@ -169,7 +176,12 @@ export default class PlayUnitValidation {
         if (target.special) {
           throw new PresentableError(`Invalid decoy target "${targetId}": Cannot be special.`)
         }
-        // TODO: make sure row the target is in matches the row the target unit is in
+        if (combat && battlefieldUnit.row !== combat) {
+          throw new PresentableError(
+            `Invalid combat "${combat}": Target "${targetId}" is in row "${battlefieldUnit.row}".`
+          )
+        }
+        combat = battlefieldUnit.row
       }
     }
 
