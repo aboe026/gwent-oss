@@ -410,6 +410,70 @@ test('Game and hand updated if decoy performed via API', async (t) => {
   })
 })
 
+test('Selecting hand unit after Decoy highlights history, impact and hand unit', async (t) => {
+  const unitName1 = 'Cahir Mawr Dyffryn aep Ceallach'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 6,
+    },
+  })
+  await gameManager.initialize({})
+
+  await GamePage.toggleImpacts({
+    unitName: unitName2,
+    userName: gameManager.self.gamePlayer.name,
+    round: 1,
+  })
+  await GamePage.selectHandUnit({
+    unitName: unitName1,
+  })
+  await gameManager.verify({
+    highlightedHandCard: {
+      unitName: unitName1,
+      rows: [Combat.Close],
+    },
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: 1,
+      row: Combat.Close,
+      unitName: unitName1,
+      dotted: true,
+    },
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        unitName: unitName2,
+        round: 1,
+        userName: gameManager.self.gamePlayer.name,
+        effectKey: EffectKey.Decoy,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+            highlighted: true,
+            dotted: true,
+          },
+        ],
+      },
+    ],
+  })
+})
+
 test('Selecting history after Decoy highlights history, impact and hand unit', async (t) => {
   const unitName1 = 'Cahir Mawr Dyffryn aep Ceallach'
   const unitName2 = 'Decoy'
@@ -478,5 +542,74 @@ test('Selecting history after Decoy highlights history, impact and hand unit', a
   })
 })
 
-// TODO: Selecting hand unit after Decoy highlights it, history and impact entry
-// TODO: selecting history impact after Decoy highlights impact, unit and hand unit
+test('Selecting impact after Decoy highlights history, impact and hand unit', async (t) => {
+  const unitName1 = 'Cahir Mawr Dyffryn aep Ceallach'
+  const unitName2 = 'Decoy'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NilfgaardianEmpire,
+      handUnitNames: [unitName1, unitName2],
+    },
+  })
+  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    decoying: {
+      name: unitName1,
+      player: gameManager.self.gamePlayer,
+      row: Combat.Close,
+      effectiveStrength: 6,
+    },
+  })
+  await gameManager.initialize({})
+
+  await GamePage.toggleImpacts({
+    unitName: unitName2,
+    userName: gameManager.self.gamePlayer.name,
+    round: 1,
+  })
+  await GamePage.selectImpactCard({
+    move: {
+      round: gameManager.round,
+      unitName: unitName2,
+      userName: gameManager.self.gamePlayer.name,
+    },
+    impact: {
+      unitName: unitName1,
+      userName: gameManager.self.gamePlayer.name,
+    },
+  })
+  await gameManager.verify({
+    highlightedHandCard: {
+      unitName: unitName1,
+      rows: [Combat.Close],
+    },
+    highlightedHistory: {
+      playerName: gameManager.self.gamePlayer.name,
+      round: 1,
+      row: Combat.Close,
+      unitName: unitName1,
+      dotted: true,
+    },
+  })
+  await GamePage.verifyImpacts({
+    moves: [
+      {
+        unitName: unitName2,
+        round: 1,
+        userName: gameManager.self.gamePlayer.name,
+        effectKey: EffectKey.Decoy,
+        impacts: [
+          {
+            unitName: unitName1,
+            username: gameManager.self.gamePlayer.name,
+            highlighted: true,
+            dotted: true,
+          },
+        ],
+      },
+    ],
+  })
+})

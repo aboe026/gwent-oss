@@ -134,9 +134,6 @@ test('Selecting hand card without redraws toggles highlight of first available r
           highlighted: true,
         },
       },
-      {
-        from: {},
-      },
     ],
     highlightedHandCard: {
       unitName,
