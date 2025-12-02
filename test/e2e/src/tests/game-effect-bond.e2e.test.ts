@@ -21,8 +21,8 @@ test('Bond multiplies base strengths by 2 when single other bonded unit present'
   })
   const deckUnit1 = await gameManager.deploy({ unitName, bonding: [] })
   await gameManager.pass({})
-
   await gameManager.initialize({})
+
   const deckUnit2 = await gameManager.deploy({
     unitName,
     effectiveStrength: 8,
@@ -90,8 +90,8 @@ test('Bond multiplies base strengths by 4 when two other bonded units present', 
       },
     ],
   })
-
   await gameManager.initialize({})
+
   const deckUnit3 = await gameManager.deploy({
     unitName,
     effectiveStrength: 16,
@@ -211,8 +211,8 @@ test('Bond multiplies base strengths by 8 when three other bonded units present'
       },
     ],
   })
-
   await gameManager.initialize({})
+
   const deckUnit4 = await gameManager.deploy({
     unitName,
     effectiveStrength: 24,
@@ -390,8 +390,8 @@ test('Bond is separate for units with different names', async (t) => {
       },
     ],
   })
-
   await gameManager.initialize({})
+
   const deckUnit6 = await gameManager.deploy({
     unitName: unitName2,
     effectiveStrength: 4,
@@ -549,8 +549,8 @@ test('Bond is separate for units on different combat rows', async (t) => {
     ],
   })
   const deckUnit3 = await gameManager.deploy({ unitName: unitName2, combat: Combat.Ranged, bonding: [] })
-
   await gameManager.initialize({})
+
   const deckUnit4 = await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
@@ -655,8 +655,8 @@ test('Bond is separate for same unit as opponent', async (t) => {
       },
     ],
   })
-
   await gameManager.initialize({})
+
   const deckUnit2 = await gameManager.deploy({
     unitName: unitName,
     effectiveStrength: 8,
