@@ -19,7 +19,6 @@ import { getErrorMessages, retryCheckingAuth } from '../../util/error-util'
 import isGameUnit from '../../util/is-game-unit'
 import LoadingBar from '../../components/LoadingBar'
 import LoadingSpinner from '../../components/LoadingSpinner'
-import { SelectedCard } from '../../util/selected-card'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../UserContext'
 
@@ -39,7 +38,7 @@ export default function GameRedraw({
   setFullUnits,
   setCoinTossVisible,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   coinTossVisible: boolean
   game: GameFragment
   gameDeck: GameDeckFragment | null | undefined
@@ -47,7 +46,7 @@ export default function GameRedraw({
   redrawProps: RedrawProps
   selectedCardInHand: boolean
   self: GamePlayerFragment
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setCoinTossVisible: Dispatch<SetStateAction<boolean>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
@@ -193,14 +192,14 @@ function RedrawCard({
   setCardSelected,
   setFullUnits,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   index: number
   gameDeck: GameDeckFragment
   game: GameFragment
   self: GamePlayerFragment
   redrawProps: RedrawProps
   selectedCardInHand: boolean
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
   const { checkAuth } = useUserContext()
@@ -215,7 +214,7 @@ function RedrawCard({
     }
   }
   let fromCard: DeckUnitFragment | undefined =
-    cardSelected && !isGameUnit(cardSelected.card) ? cardSelected.card : undefined
+    cardSelected && !isGameUnit(cardSelected.unitFragment) ? cardSelected.unitFragment : undefined
   if (index < gameDeck.redraws.length && gameDeck.redraws[index].from) {
     fromCard = useFragment(DeckUnitFragmentDoc, gameDeck.redraws[index].from)
   }
@@ -233,7 +232,7 @@ function RedrawCard({
         unitFragment: deckUnit,
       }
     })
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   const toCardSelected = toCardUnit && toCardUnit.id === cardSelectedUnit?.id
   const toCardDotted = toCardSelected && !handUnitIds.includes(toCardUnit.id)
   const fromCardSelected = fromCardUnit && fromCardUnit.id === cardSelectedUnit?.id
@@ -268,7 +267,7 @@ function RedrawCard({
                   fromCardSelected
                     ? undefined
                     : {
-                        card: fromCard,
+                        unitFragment: fromCard,
                         playerId: self.user.id,
                       }
                 )
@@ -282,7 +281,7 @@ function RedrawCard({
                   fromCardSelected
                     ? undefined
                     : {
-                        card: fromCard,
+                        unitFragment: fromCard,
                         playerId: self.user.id,
                       }
                 )
@@ -301,7 +300,7 @@ function RedrawCard({
                   toCardSelected
                     ? undefined
                     : {
-                        card: toCard,
+                        unitFragment: toCard,
                         playerId: self.user.id,
                       }
                 )
@@ -315,7 +314,7 @@ function RedrawCard({
                   toCardSelected
                     ? undefined
                     : {
-                        card: toCard,
+                        unitFragment: toCard,
                         playerId: self.user.id,
                       }
                 )

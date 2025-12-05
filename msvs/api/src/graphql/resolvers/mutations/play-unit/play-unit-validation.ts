@@ -106,16 +106,16 @@ export default class PlayUnitValidation {
     }
     const unit = units[0]
 
-    const effects: EffectDbObject[] = []
+    let effects: EffectDbObject[] | undefined = undefined
     if (unit.effects) {
-      effects.push(
-        ...(await EffectStore.get({
-          ids: unit.effects,
-        }))
-      )
+      effects = await EffectStore.get({
+        ids: unit.effects,
+      })
     }
 
-    if (!effects.some((effect) => effect.key === EffectKey.Decoy)) {
+    let roundUnits: UnitDbObject[] | undefined = undefined
+
+    if (!effects || !effects.some((effect) => effect.key === EffectKey.Decoy)) {
       if (unit.combats && unit.combats.length > 1 && !combat) {
         const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
@@ -141,7 +141,7 @@ export default class PlayUnitValidation {
       }
     }
 
-    if (unit.effects) {
+    if (unit.effects && effects) {
       if (effects.some((effect) => effect.key === EffectKey.Decoy)) {
         if (!targetId) {
           throw new PresentableError(`Argument "target" required for units with "${EffectKey.Decoy}" effect.`)
@@ -162,7 +162,7 @@ export default class PlayUnitValidation {
           throw new PresentableError(`Target "${targetId}" does not exist on the battlefield for player "${userId}".`)
         }
 
-        const roundUnits = await getRoundUnits({
+        roundUnits = await getRoundUnits({
           game,
           unitBeingPlayed: unit,
         })
@@ -185,8 +185,6 @@ export default class PlayUnitValidation {
       }
     }
 
-    // TODO: pass effects through?
-    // TODO: pass roundUnits through
     return {
       combat,
       deckUnit,
@@ -194,6 +192,8 @@ export default class PlayUnitValidation {
       logPrefix,
       unit,
       targetId,
+      roundUnits,
+      effects,
     }
   }
 }
@@ -205,4 +205,6 @@ export interface ValidatedPlayUnit {
   logPrefix: string
   unit: UnitDbObject
   targetId: string | undefined | null
+  roundUnits?: UnitDbObject[]
+  effects?: EffectDbObject[]
 }

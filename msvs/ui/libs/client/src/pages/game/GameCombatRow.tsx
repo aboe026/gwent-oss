@@ -18,7 +18,6 @@ import {
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
 import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import { SelectedCard } from '../../util/selected-card'
 import { sortObjectArray, toTitleCase } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
 import { useUserContext } from '../../UserContext'
@@ -40,7 +39,7 @@ export default function GameCombatRow({
   setCardSelected,
   setFullUnits,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   combat: Combat
   fullUnits: FullUnitCards | undefined
   game: GameFragment
@@ -49,13 +48,13 @@ export default function GameCombatRow({
   player: GamePlayerFragment
   playUnitProps: PlayUnitProps
   selectedCardInHand: boolean
-  scrollHistoryIntoView: (selected: SelectedCard) => void
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  scrollHistoryIntoView: (selected: UnitForPlayer) => void
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
   const { checkAuth } = useUserContext()
   const titledCombat = toTitleCase(combat)
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   const scorchSelected = cardSelectedUnit?.name === 'Scorch'
   const decoySelected =
     cardSelectedUnit?.effects &&
@@ -290,15 +289,15 @@ function GameRowUnit({
   checkAuth,
   gameId,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   fullUnit: UnitFragment | undefined
   fullUnitFragment: UnitForPlayer | undefined
   combat: Combat
   isTurn?: boolean
   player: GamePlayerFragment
   selectedCardInHand: boolean
-  scrollHistoryIntoView: (selected: SelectedCard) => void
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  scrollHistoryIntoView: (selected: UnitForPlayer) => void
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   gameUnitFragment: FragmentType<typeof GameUnitFragmentDoc>
   index: number
@@ -313,7 +312,7 @@ function GameRowUnit({
 }) {
   const gameUnit = useFragment(GameUnitFragmentDoc, gameUnitFragment)
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   const selectedAsFullCard =
     fullUnitFragment && fullUnit && fullUnit.id === unit.id && fullUnitFragment.playerId === player.user.id
   const selected = cardSelectedUnit?.id === unit.id && cardSelected?.playerId === player.user.id
@@ -336,10 +335,10 @@ function GameRowUnit({
           (!cardSelectedUnit.combats || cardSelectedUnit.combats.includes(combat)) &&
           !highlightedForDecoy
         if (!cardBeingPlayed) {
-          const newCardSelected: SelectedCard | undefined = selected
+          const newCardSelected: UnitForPlayer | undefined = selected
             ? undefined
             : {
-                card: gameUnit,
+                unitFragment: gameUnit,
                 playerId: player.user.id,
               }
           setCardSelected(newCardSelected)
@@ -373,7 +372,7 @@ function GameRowUnit({
             selected
               ? undefined
               : {
-                  card: gameUnit,
+                  unitFragment: gameUnit,
                   playerId: player.user.id,
                 }
           )

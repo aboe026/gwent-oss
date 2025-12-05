@@ -54,6 +54,7 @@ import {
   PlayUnitProps,
   ReadyProps,
   RedrawProps,
+  UnitForPlayer,
   SetDeckProps,
   SetOrderProps,
 } from './GameProps'
@@ -75,7 +76,6 @@ import {
 import isGameUnit from '../../util/is-game-unit'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import NewGame from './NewGame'
-import { SelectedCard } from '../../util/selected-card'
 import { sortObjectArray } from '@gwent/utils'
 import UnitFullCard from '../../components/UnitFullCard'
 import updateGameDeckCacheOnRedraw from '../../util/update-game-deck-cache-on-redraw'
@@ -93,7 +93,7 @@ import './Game.css'
  */
 export default function GamePage() {
   useTitle('Game | Gwent')
-  const [cardSelected, setCardSelected] = useState<SelectedCard | undefined>()
+  const [cardSelected, setCardSelected] = useState<UnitForPlayer | undefined>()
   const [playerOrder, setPlayerOrder] = useState<GamePlayerFragment[]>([])
   const { checkAuth, user } = useUserContext()
   const { pathname } = useLocation()
@@ -195,7 +195,7 @@ export default function GamePage() {
     // need to manually update cache because the return type of "redraw" mutation (DeckUnit)
     // does not update underlying "game" query type (GameDeck) since they do not match
     update(cache, { data }) {
-      const from = cardSelected?.card
+      const from = cardSelected?.unitFragment
       if (data?.redraw && user && from && !isGameUnit(from)) {
         cache.updateQuery<GameDeckQuery>(
           {
@@ -227,7 +227,7 @@ export default function GamePage() {
           },
           (previous) => {
             if (previous?.gameDeck && game) {
-              const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected.card.unit)
+              const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected.unitFragment.unit)
               const battlefieldUnitIds: string[] = []
               const player = data.playUnit.players.find((player) => player.user.name === user.name)
               if (!player) {
@@ -423,7 +423,7 @@ function ExistingGame({
   setPlayerOrder,
   user,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   checkAuth: CheckAuth
   gameDeckProps: GameDeckProps
   gameProps: GameProps
@@ -432,7 +432,7 @@ function ExistingGame({
   playUnitProps: PlayUnitProps
   readyProps: ReadyProps
   redrawProps: RedrawProps
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setDeckProps: SetDeckProps
   setOrderProps: SetOrderProps
   setPlayerOrder: Dispatch<SetStateAction<GamePlayerFragment[]>>
@@ -455,7 +455,7 @@ function ExistingGame({
     // and would cause self not to be found here when user presented with opportunity to re-authorize
     self = useFragment(GamePlayerFragmentDoc, game.players).find((player) => player.user.name === user.name)
   }
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   const handUnitIds =
     useFragment(GameDeckFragmentDoc, gameDeckProps.deck)?.hand.map(
       (handUnit) => useFragment(UnitFragmentDoc, useFragment(DeckUnitFragmentDoc, handUnit).unit).id
@@ -519,9 +519,9 @@ function ExistingGame({
    * @param config.playerId The ID of the player the Unit belongs to.
    * @param config.unitFragment The Unit whose entrance to the battlefield should be scrolled to in the History panel.
    */
-  function scrollHistoryIntoView(selected: SelectedCard) {
+  function scrollHistoryIntoView(selected: UnitForPlayer) {
     if (game && selected && selected.playerId) {
-      const unitSelected = useFragment(UnitFragmentDoc, selected.card.unit)
+      const unitSelected = useFragment(UnitFragmentDoc, selected.unitFragment.unit)
       const roundIndex = game.round - 1
       const playerIndex = useFragment(GamePlayerFragmentDoc, game.players)
         .map((player) => player.user.id)
@@ -608,7 +608,7 @@ function ExistingGame({
             const fullPlayerUnit = fullUnits.units[fullUnits.currentIndex - 1]
             const fullUnitFragment = fullPlayerUnit.unitFragment
             setCardSelected({
-              card: fullUnitFragment,
+              unitFragment: fullUnitFragment,
               playerId: fullPlayerUnit.playerId,
             })
           }
@@ -622,7 +622,7 @@ function ExistingGame({
             const fullPlayerUnit = fullUnits.units[fullUnits.currentIndex + 1]
             const fullUnitFragment = fullPlayerUnit.unitFragment
             setCardSelected({
-              card: fullUnitFragment,
+              unitFragment: fullUnitFragment,
               playerId: fullPlayerUnit.playerId,
             })
           }

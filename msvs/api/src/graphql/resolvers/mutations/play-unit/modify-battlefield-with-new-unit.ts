@@ -85,8 +85,6 @@ export default async function modifyBattlefieldWithNewUnit({
     combat,
   })
   const { deckUnitAddedToHand, impacts: decoyImpacts } = EffectDecoy.decoyFromBattlefield({
-    battlefieldUnits,
-    effects,
     game,
     logPrefix,
     newDeckUnit,

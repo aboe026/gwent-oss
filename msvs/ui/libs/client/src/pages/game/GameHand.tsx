@@ -11,9 +11,8 @@ import {
   UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
-import { FullUnitCards } from './GameProps'
+import { FullUnitCards, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
-import { SelectedCard } from '../../util/selected-card'
 import { sortObjectArray } from '@gwent/utils'
 import UnitGameCard from '../../components/UnitGameCard'
 
@@ -32,7 +31,7 @@ export default function GameHand({
   setCardSelected,
   setFullUnits,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   gameStatus: GameStatus
   gameDeckFragment: FragmentType<typeof GameDeckFragmentDoc> | null | undefined
   isTurn: boolean
@@ -40,7 +39,7 @@ export default function GameHand({
   redrawsLeft: number
   selectedCardInHand: boolean
   self: GamePlayerFragment
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
   const gameDeck = useFragment(GameDeckFragmentDoc, gameDeckFragment)
@@ -105,7 +104,7 @@ function GameHandUnit({
   setFullUnits,
   sortedUnits,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   deckUnit: DeckUnitFragment
   gameStatus: GameStatus
   isTurn: boolean
@@ -114,12 +113,12 @@ function GameHandUnit({
   redrawsLeft: number
   selectedCardInHand: boolean
   self: GamePlayerFragment
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   sortedUnits: DeckUnitFragment[]
 }) {
   const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   const selected = cardSelectedUnit?.id === unit.id && cardSelected?.playerId === self.user.id
   const notSelected = cardSelectedUnit?.id && !selected && selectedCardInHand
   const title = unit.name
@@ -148,7 +147,7 @@ function GameHandUnit({
             selected
               ? undefined
               : {
-                  card: deckUnit,
+                  unitFragment: deckUnit,
                   playerId: self.user.id,
                 }
           )
@@ -173,7 +172,7 @@ function GameHandUnit({
             }),
           })
           setCardSelected({
-            card: deckUnit,
+            unitFragment: deckUnit,
             playerId: self.user.id,
           })
         }}

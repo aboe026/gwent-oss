@@ -8,10 +8,9 @@ import {
   UnitFragmentDoc,
   useFragment,
 } from '@gwent/graphql-schema/apollo-typings'
-import { FullUnitCards, PlayUnitProps } from './GameProps'
+import { FullUnitCards, PlayUnitProps, UnitForPlayer } from './GameProps'
 import GameCombatRow from './GameCombatRow'
 import { HTML_CLASSES } from '@gwent/constants'
-import { SelectedCard } from '../../util/selected-card'
 import { useUserContext } from '../../UserContext'
 
 /**
@@ -29,19 +28,19 @@ export default function GameBattlefield({
   setCardSelected,
   setFullUnits,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   fullUnits: FullUnitCards | undefined
   game: GameFragment
   opponent: GamePlayerFragment
   playUnitProps: PlayUnitProps
   selectedCardInHand: boolean
-  scrollHistoryIntoView: (selected: SelectedCard) => void
+  scrollHistoryIntoView: (selected: UnitForPlayer) => void
   self: GamePlayerFragment
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
   const { checkAuth } = useUserContext()
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   const rowsToHighlight = (cardSelectedUnit && cardSelectedUnit.combats) || []
   const rowsToBlock = []
   if (rowsToHighlight.length > 0) {

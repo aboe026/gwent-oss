@@ -19,10 +19,9 @@ import {
   useFragment,
   UnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
-import { GameDeckProps, GameProps } from './GameProps'
+import { GameDeckProps, GameProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { humanizeDay, humanizeTime } from '@gwent/utils'
-import { SelectedCard } from '../../util/selected-card'
 
 /**
  * Information about the Game and players in it.
@@ -41,7 +40,7 @@ export default function GameInfo({
   coinTossVisible: boolean
   gameDeckProps: GameDeckProps
   gameProps: GameProps
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   opponent: GamePlayerFragment
   playPassLoading: boolean
   playUnitLoading: boolean
@@ -154,7 +153,7 @@ function renderPlayerInfo({
   setPassConfirmationOpen,
   undrawn,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   coinTossVisible: boolean
   deckName?: string
   deckUpdated?: Date
@@ -268,7 +267,7 @@ function renderScore({
   setPassConfirmationOpen,
 }: {
   game: GameFragment
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   isSelf: boolean
   isTurn?: boolean | null | undefined
   player: GamePlayerFragment
@@ -276,7 +275,7 @@ function renderScore({
   playUnitLoading: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   let playerRound: PlayerRoundFragment | undefined = undefined
   let winning = false
   let passTitle = ''

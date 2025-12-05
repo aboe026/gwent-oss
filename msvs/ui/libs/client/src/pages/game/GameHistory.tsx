@@ -29,7 +29,6 @@ import { getErrorMessages } from '../../util/error-util'
 import { getImpactDescription, getNoImpactMessage, groupBy, sortObjectArray, toTitleCase } from '@gwent/utils'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import LoadingSpinner from '../../components/LoadingSpinner'
-import { SelectedCard } from '../../util/selected-card'
 import './GameHistory.css'
 
 /**
@@ -45,16 +44,16 @@ export default function GameHistory({
   setCardSelected,
   setFullUnits,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   game: GameFragment
   movesByRounds: MoveForRound[]
   playPassProps: PlayPassProps
   playUnitProps: PlayUnitProps
   self: GamePlayerFragment
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   const showLoading =
     (game.status === GameStatus.Playing && game.turn?.user.name !== self.user.name) ||
     playUnitProps.loading ||
@@ -132,12 +131,12 @@ function PlayerHistoryMove({
   unitMoves,
   index,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   playerMove: PlayerMove
   game: GameFragment
   movesByRound: MoveForRound
   self: GamePlayerFragment
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
   unitMoves: PlayerMove[]
   index: number
@@ -145,7 +144,7 @@ function PlayerHistoryMove({
   const gamePlayer = game.players[playerMove.playerIndex]
   const player = useFragment(GamePlayerFragmentDoc, gamePlayer)
   const isSelf = player.user.name === self.user.name
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   let isSelected = false
   let isOnBattlefield = false
   let textClass = `game-history-move-text ${isSelf ? 'game-history-move-text-self' : 'game-history-move-text-opponent'}`
@@ -251,7 +250,7 @@ function PlayerHistoryMove({
               cardSelectedUnit?.id === unit.id && cardSelected?.playerId === player.user.id
                 ? undefined
                 : {
-                    card: gameUnit,
+                    unitFragment: gameUnit,
                     playerId: player.user.id,
                   }
             )
@@ -288,7 +287,7 @@ function PlayerHistoryMove({
                       units,
                     })
                     setCardSelected({
-                      card: gameUnit,
+                      unitFragment: gameUnit,
                       playerId: player.user.id,
                     })
                   }
@@ -347,12 +346,12 @@ function MoveUnitImpact({
   setCardSelected,
   setFullUnits,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   gameUnit: GameUnitFragment
   game: GameFragment
   impacts: ImpactFragment[] | null | undefined
   self: GamePlayerFragment
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
   const [expanded, setExpanded] = useState(false)
@@ -424,15 +423,15 @@ function renderImpacts({
   setCardSelected,
   setFullUnits,
 }: {
-  cardSelected: SelectedCard | undefined
+  cardSelected: UnitForPlayer | undefined
   effectKey: EffectKey
   game: GameFragment
   impacts: ImpactFragment[]
   self: GamePlayerFragment
-  setCardSelected: Dispatch<SetStateAction<SelectedCard | undefined>>
+  setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
 }) {
-  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.card?.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment?.unit)
   const groups = groupBy({
     array: impacts,
     property: 'user.name',
@@ -510,7 +509,7 @@ function renderImpacts({
                     isSelected
                       ? undefined
                       : {
-                          card: gameUnitForImpact,
+                          unitFragment: gameUnitForImpact,
                           playerId: impactedUnit.user.id,
                         }
                   )
@@ -533,7 +532,7 @@ function renderImpacts({
                         units,
                       })
                       setCardSelected({
-                        card: gameUnitForImpact,
+                        unitFragment: gameUnitForImpact,
                         playerId: impactedUnit.user.id,
                       })
                     }}
