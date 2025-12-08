@@ -228,7 +228,7 @@ function RedrawCard({
     .filter((deckUnit) => !!deckUnit)
     .map((deckUnit) => {
       return {
-        playerId: self.user.id,
+        playerName: self.user.name,
         unitFragment: deckUnit,
       }
     })
@@ -268,7 +268,7 @@ function RedrawCard({
                     ? undefined
                     : {
                         unitFragment: fromCard,
-                        playerId: self.user.id,
+                        playerName: self.user.name,
                       }
                 )
               }}
@@ -282,7 +282,7 @@ function RedrawCard({
                     ? undefined
                     : {
                         unitFragment: fromCard,
-                        playerId: self.user.id,
+                        playerName: self.user.name,
                       }
                 )
               }}
@@ -301,7 +301,7 @@ function RedrawCard({
                     ? undefined
                     : {
                         unitFragment: toCard,
-                        playerId: self.user.id,
+                        playerName: self.user.name,
                       }
                 )
               }}
@@ -315,7 +315,7 @@ function RedrawCard({
                     ? undefined
                     : {
                         unitFragment: toCard,
-                        playerId: self.user.id,
+                        playerName: self.user.name,
                       }
                 )
               }}

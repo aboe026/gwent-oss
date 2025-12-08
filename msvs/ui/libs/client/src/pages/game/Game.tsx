@@ -42,8 +42,8 @@ import { CheckAuth, getErrorMessages, retryCheckingAuth } from '../../util/error
 import Confirm from '../../components/Confirm'
 import DeckEditor from '../../components/DeckEditor'
 import DeckList from '../../components/DeckList'
+import { DeckUnit as DeckUnitRaw } from '@gwent/graphql-schema/apollo-raw-typings'
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
-import GameBattlefield from './GameBattlefield'
 import {
   FullUnitCards,
   GameDeckProps,
@@ -58,6 +58,7 @@ import {
   SetDeckProps,
   SetOrderProps,
 } from './GameProps'
+import GameBattlefield from './GameBattlefield'
 import GameHand from './GameHand'
 import GameHistory from './GameHistory'
 import GameInfo from './GameInfo'
@@ -310,28 +311,7 @@ export default function GamePage() {
                       (deckUnit) =>
                         deckUnit.unit.id !== cardSelectedUnit.id && !battlefieldUnitIds.includes(deckUnit.unit.id)
                     ),
-                    ...(unitsAddedToHand as any), // eslint-disable-line @typescript-eslint/no-explicit-any
-                    // TODO: either get working "properly" or type as "raw" (e.g.  as GameDeckQueryRaw)
-                    // ...unitsAddedToHand.map((handUnit) => {
-                    //   const unit = useFragment(UnitFragmentDoc, handUnit.unit)
-                    //   return {
-                    //     artStyle: handUnit.artStyle,
-                    //     unit: {
-                    //       __typename: 'Unit',
-                    //       ...unit,
-                    //       // effects: useFragment(UnitEffectFragmentDoc, unit.effects),
-                    //       effects: unit.effects
-                    //         ? unit.effects.map((unitEffect) => {
-                    //             const effect = useFragment(UnitEffectFragmentDoc, unitEffect)
-                    //             return {
-                    //               ...effect,
-                    //               __typename: 'Effect',
-                    //             }
-                    //           })
-                    //         : undefined,
-                    //     },
-                    //   }
-                    // }),
+                    ...(unitsAddedToHand as DeckUnitRaw[]),
                   ],
                 },
               }
@@ -462,14 +442,14 @@ function ExistingGame({
     ) || []
   const selectedCardInHand = !!(
     self &&
-    self.user.id === cardSelected?.playerId &&
+    self.user.name === cardSelected?.playerName &&
     cardSelectedUnit &&
     handUnitIds?.includes(cardSelectedUnit?.id)
   )
 
   const battlefieldHighlighted =
     game?.status === GameStatus.Playing && cardSelectedUnit && cardSelectedUnit?.name === 'Scorch' && selectedCardInHand
-  const isTurn = game?.turn?.user.id === self?.user.id
+  const isTurn = game?.turn?.user.name === self?.user.name
 
   const previousGame = usePrevious(game)
   useEffect(() => {
@@ -520,12 +500,12 @@ function ExistingGame({
    * @param config.unitFragment The Unit whose entrance to the battlefield should be scrolled to in the History panel.
    */
   function scrollHistoryIntoView(selected: UnitForPlayer) {
-    if (game && selected && selected.playerId) {
+    if (game && selected && selected.playerName) {
       const unitSelected = useFragment(UnitFragmentDoc, selected.unitFragment.unit)
       const roundIndex = game.round - 1
       const playerIndex = useFragment(GamePlayerFragmentDoc, game.players)
-        .map((player) => player.user.id)
-        .indexOf(selected.playerId)
+        .map((player) => player.user.name)
+        .indexOf(selected.playerName)
       let moveIndex: number | undefined = undefined
       const player = useFragment(GamePlayerFragmentDoc, game.players[playerIndex])
       const round = useFragment(PlayerRoundFragmentDoc, player.rounds[roundIndex])
@@ -551,7 +531,7 @@ function ExistingGame({
   let fullUnitUserName: string | undefined = undefined
   if (fullUnit) {
     const fullUnitGamePlayerFragment = useFragment(GamePlayerFragmentDoc, game?.players)?.find(
-      (player) => player.user.id === fullUnit.playerId
+      (player) => player.user.name === fullUnit.playerName
     )
     fullUnitUserName = fullUnitGamePlayerFragment?.user.name
   }
@@ -609,7 +589,7 @@ function ExistingGame({
             const fullUnitFragment = fullPlayerUnit.unitFragment
             setCardSelected({
               unitFragment: fullUnitFragment,
-              playerId: fullPlayerUnit.playerId,
+              playerName: fullPlayerUnit.playerName,
             })
           }
         }}
@@ -623,7 +603,7 @@ function ExistingGame({
             const fullUnitFragment = fullPlayerUnit.unitFragment
             setCardSelected({
               unitFragment: fullUnitFragment,
-              playerId: fullPlayerUnit.playerId,
+              playerName: fullPlayerUnit.playerName,
             })
           }
         }}
@@ -692,7 +672,7 @@ function ExistingGame({
               game.status === GameStatus.Playing &&
               cardSelectedUnit &&
               cardSelectedUnit.name === 'Scorch' &&
-              game.turn?.user.id === self.user.id
+              game.turn?.user.name === self.user.name
             ) {
               await retryCheckingAuth({
                 checkAuth,

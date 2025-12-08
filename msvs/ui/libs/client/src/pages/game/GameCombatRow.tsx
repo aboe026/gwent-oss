@@ -314,8 +314,8 @@ function GameRowUnit({
   const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
   const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   const selectedAsFullCard =
-    fullUnitFragment && fullUnit && fullUnit.id === unit.id && fullUnitFragment.playerId === player.user.id
-  const selected = cardSelectedUnit?.id === unit.id && cardSelected?.playerId === player.user.id
+    fullUnitFragment && fullUnit && fullUnit.id === unit.id && fullUnitFragment.playerName === player.user.name
+  const selected = cardSelectedUnit?.id === unit.id && cardSelected?.playerName === player.user.name
   const decoySelected =
     cardSelectedUnit &&
     cardSelectedUnit.effects &&
@@ -339,7 +339,7 @@ function GameRowUnit({
             ? undefined
             : {
                 unitFragment: gameUnit,
-                playerId: player.user.id,
+                playerName: player.user.name,
               }
           setCardSelected(newCardSelected)
           if (newCardSelected) {
@@ -363,7 +363,7 @@ function GameRowUnit({
             currentIndex: index,
             units: sortedUnits.map((deckUnit) => {
               return {
-                playerId: player.user.id,
+                playerName: player.user.name,
                 unitFragment: useFragment(GameUnitFragmentDoc, deckUnit),
               }
             }),
@@ -373,7 +373,7 @@ function GameRowUnit({
               ? undefined
               : {
                   unitFragment: gameUnit,
-                  playerId: player.user.id,
+                  playerName: player.user.name,
                 }
           )
         }}

@@ -49,6 +49,9 @@ Existing problems in the codebase that need to be fixed.
   - STARTING_HAND_SIZE
   - MAX_SPECIALS
   - min units?
+- minimize size of node-client built files (node-sdk.js)
+  - have it use fragments for returned objects?
+  - just minimize with webpack or similar?
 - split subscriptions into separate files (similar to resolvers)
 - Cut down on return fragments (for mutations and subscriptions) (e.g. gameReady only needs player id, game id and status, gamesList doesn't need all details that game page does)
 - potentially use `.disableConcurrency` for TestCafe fixtures?
@@ -78,6 +81,7 @@ Existing problems in the codebase that need to be fixed.
 - carry over username (and password?) when switching between log-in and sign-up
   - show sign up by default, unless they have visited page (or signed up?) before, then show login by default
 - Replace AUTH_TIMEOUT_ID with something less "hacky" (state variable on app?)
+  - update places in UI code which check user/player by ".name" and switch them to ".id"
 - Have "DateTime" on resolver object map to javascript Date object?
 - Make Combat a type (because of image)
 - If ever want to increase MAX_REDRAWS to greater than 2, need to have different unique constraint than just from/to id. Probably need an id for the redraw object itself.
@@ -131,6 +135,10 @@ New things that should be added to the codebase.
 - rename to gwent-oss (gwent open source software?)
 - Animations of cards entering battlefield?
 - some cards (or some scenarios - like scorch?) cannot be revived with medic ability
+- allow for "undo" (opponent(s) have to approve?)
+- "practice" mode
+  - can choose exact hand (for self and opponent)
+  - can control opponent
 - game history improvements
   - search bar (unit name?)
   - expand/collapse all

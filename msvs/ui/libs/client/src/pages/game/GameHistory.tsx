@@ -211,7 +211,7 @@ function PlayerHistoryMove({
     image = unit.images[gameUnit.artStyle - 1]
     imageTitle = unit.name
 
-    if (cardSelectedUnit?.id === unit.id && cardSelected?.playerId === player.user.id) {
+    if (cardSelectedUnit?.id === unit.id && cardSelected?.playerName === player.user.name) {
       isSelected = true
       const playerRound = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
       const closeRow = useFragment(PlayerCombatRowFragmentDoc, playerRound.close)
@@ -247,11 +247,11 @@ function PlayerHistoryMove({
             const gameUnit = useFragment(GameUnitFragmentDoc, useFragment(MoveUnitFragmentDoc, playerMove.move).unit)
             const unit = useFragment(UnitFragmentDoc, gameUnit.unit)
             setCardSelected(
-              cardSelectedUnit?.id === unit.id && cardSelected?.playerId === player.user.id
+              cardSelectedUnit?.id === unit.id && cardSelected?.playerName === player.user.name
                 ? undefined
                 : {
                     unitFragment: gameUnit,
-                    playerId: player.user.id,
+                    playerName: player.user.name,
                   }
             )
           }
@@ -268,16 +268,13 @@ function PlayerHistoryMove({
                   if (gameUnit) {
                     event.preventDefault()
                     event.stopPropagation()
-                    const units: {
-                      playerId: string
-                      unitFragment: GameUnitFragment
-                    }[] = []
+                    const units: UnitForPlayer[] = []
                     for (const unitMove of unitMoves) {
                       if (unitMove.move.__typename === 'MoveUnit') {
                         const player = useFragment(GamePlayerFragmentDoc, game.players[unitMove.playerIndex])
                         const move = useFragment(MoveUnitFragmentDoc, unitMove.move)
                         units.push({
-                          playerId: player.user.id,
+                          playerName: player.user.name,
                           unitFragment: useFragment(GameUnitFragmentDoc, move.unit),
                         })
                       }
@@ -288,7 +285,7 @@ function PlayerHistoryMove({
                     })
                     setCardSelected({
                       unitFragment: gameUnit,
-                      playerId: player.user.id,
+                      playerName: player.user.name,
                     })
                   }
                 }}
@@ -444,7 +441,7 @@ function renderImpacts({
     })
     for (const impact of sortedImpacts) {
       units.push({
-        playerId: impact.user.id,
+        playerName: impact.user.name,
         unitFragment: useFragment(GameUnitFragmentDoc, impact.unit),
       })
     }
@@ -476,11 +473,11 @@ function renderImpacts({
               name: unitForImpact.name,
             })
             const isSelected =
-              cardSelectedUnit?.id === unitForImpact.id && cardSelected?.playerId === impactedUnit.user.id
+              cardSelectedUnit?.id === unitForImpact.id && cardSelected?.playerName === impactedUnit.user.name
             let isOnBattlefield = false
             if (isSelected) {
               const gamePlayer = useFragment(GamePlayerFragmentDoc, game.players).find(
-                (player) => player.user.id === impactedUnit.user.id
+                (player) => player.user.name === impactedUnit.user.name
               )
               const round = useFragment(PlayerRoundFragmentDoc, gamePlayer?.rounds[game.round - 1])
               const units = [
@@ -510,7 +507,7 @@ function renderImpacts({
                       ? undefined
                       : {
                           unitFragment: gameUnitForImpact,
-                          playerId: impactedUnit.user.id,
+                          playerName: impactedUnit.user.name,
                         }
                   )
                 }}
@@ -526,14 +523,14 @@ function renderImpacts({
                       setFullUnits({
                         currentIndex: units.findIndex(
                           (unit) =>
-                            unit.playerId === impactedUnit.user.id &&
+                            unit.playerName === impactedUnit.user.name &&
                             useFragment(UnitFragmentDoc, unit.unitFragment.unit).id === unitForImpact.id
                         ),
                         units,
                       })
                       setCardSelected({
                         unitFragment: gameUnitForImpact,
-                        playerId: impactedUnit.user.id,
+                        playerName: impactedUnit.user.name,
                       })
                     }}
                   />

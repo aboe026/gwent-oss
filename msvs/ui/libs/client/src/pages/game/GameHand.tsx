@@ -119,7 +119,7 @@ function GameHandUnit({
 }) {
   const unit = useFragment(UnitFragmentDoc, deckUnit.unit)
   const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
-  const selected = cardSelectedUnit?.id === unit.id && cardSelected?.playerId === self.user.id
+  const selected = cardSelectedUnit?.id === unit.id && cardSelected?.playerName === self.user.name
   const notSelected = cardSelectedUnit?.id && !selected && selectedCardInHand
   const title = unit.name
   let dottedTitle = ''
@@ -148,7 +148,7 @@ function GameHandUnit({
               ? undefined
               : {
                   unitFragment: deckUnit,
-                  playerId: self.user.id,
+                  playerName: self.user.name,
                 }
           )
         }
@@ -166,14 +166,14 @@ function GameHandUnit({
             currentIndex: index,
             units: sortedUnits.map((deckUnit) => {
               return {
-                playerId: self.user.id,
+                playerName: self.user.name,
                 unitFragment: deckUnit,
               }
             }),
           })
           setCardSelected({
             unitFragment: deckUnit,
-            playerId: self.user.id,
+            playerName: self.user.name,
           })
         }}
       />

@@ -146,7 +146,7 @@ export interface PlayPassProps {
 
 export interface UnitForPlayer {
   unitFragment: DeckUnitFragment | GameUnitFragment
-  playerId: string | undefined // TODO: Change to playerName instead? since ID changes on logout?
+  playerName: string | undefined
 }
 
 export interface FullUnitCards {
