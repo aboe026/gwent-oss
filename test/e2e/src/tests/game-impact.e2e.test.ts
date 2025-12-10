@@ -147,6 +147,7 @@ test('Shows single entry if Mardroeme impacts single unit', async (t) => {
   await gameManager.initialize({})
   await gameManager.deploy({
     unitName: unitName2,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     mardroeming: [
       {
@@ -449,6 +450,7 @@ test('Shows multiple entries if Mardroeme impacts multiple units', async (t) => 
   await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     mardroeming: [
       {

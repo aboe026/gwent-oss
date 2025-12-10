@@ -126,6 +126,7 @@ test('Morale effect for berserker transfers to vildkaarl after mardroeme', async
   await gameManager.deploy({
     unitName: unitName3,
     combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     mardroeming: [
       {

@@ -24,6 +24,7 @@ test('Mardroeme does not effect berserker in different row', async (t) => {
   await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     mardroeming: [],
   })
@@ -50,6 +51,7 @@ test('Mardroeme does not effect opponents berserker', async (t) => {
   await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     mardroeming: [],
   })
@@ -141,6 +143,7 @@ test('Mardroeme effects berserker if played after', async (t) => {
 
   await gameManager.deploy({
     unitName: unitName2,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     mardroeming: [
       {
@@ -176,6 +179,7 @@ test('Mardroeme effects young berserker if played after', async (t) => {
   await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     mardroeming: [
       {
@@ -336,7 +340,13 @@ test('Mardroeme has no effect if Ermion already played', async (t) => {
   })
 
   await gameManager.initialize({})
-  await gameManager.deploy({ unitName: unitName4, combat: Combat.Ranged, modifier: true, mardroeming: [] })
+  await gameManager.deploy({
+    unitName: unitName4,
+    combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
+    modifier: true,
+    mardroeming: [],
+  })
 })
 
 test('Ermion has no effect if Mardroeme already played', async (t) => {

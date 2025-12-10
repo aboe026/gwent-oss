@@ -17,7 +17,7 @@ test('Agile unit can be decoyed and played again as same combat', async (t) => {
       handUnitNames: [unitName1, unitName2],
     },
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, eligibleCombats: [Combat.Close, Combat.Ranged] })
   await gameManager.pass({})
   await gameManager.deploy({
     unitName: unitName2,
@@ -30,7 +30,7 @@ test('Agile unit can be decoyed and played again as same combat', async (t) => {
   })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, eligibleCombats: [Combat.Close, Combat.Ranged] })
 })
 
 test('Agile unit can be decoyed and played again as different combat', async (t) => {
@@ -43,7 +43,7 @@ test('Agile unit can be decoyed and played again as different combat', async (t)
       handUnitNames: [unitName1, unitName2],
     },
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, eligibleCombats: [Combat.Close, Combat.Ranged] })
   await gameManager.pass({})
   await gameManager.deploy({
     unitName: unitName2,
@@ -56,5 +56,9 @@ test('Agile unit can be decoyed and played again as different combat', async (t)
   })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName1, combat: Combat.Ranged })
+  await gameManager.deploy({
+    unitName: unitName1,
+    combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
+  })
 })

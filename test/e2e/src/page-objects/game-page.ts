@@ -1056,27 +1056,66 @@ export default class GamePage {
     row,
     modifier,
     decoyTarget,
+    eligibleRows,
     verify = true,
   }: {
     unitName: string
     row: Combat
     modifier?: boolean
+    eligibleRows?: Combat[]
     decoyTarget?: string
     verify?: boolean
   }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
-    const combatRow = GamePage.elements.CenterContainer.find(
-      `#${
-        row === Combat.Close
-          ? HTML_IDS.GameCombatRowCloseSelf
-          : row === Combat.Ranged
-            ? HTML_IDS.GameCombatRowRangedSelf
-            : HTML_IDS.GameCombatRowSiegeSelf
-      }`
-    )
-    const combatRowUnits = combatRow.find(`.${HTML_CLASSES.GameCombatRowCards}`)
+    const closeCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowCloseSelf}`)
+    const rangedCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowRangedSelf}`)
+    const siegeCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowSiegeSelf}`)
+    const nonCombatRows: CombatAndRow[] = [
+      {
+        combat: Combat.Close,
+        selector: closeCombatRow,
+      },
+      {
+        combat: Combat.Ranged,
+        selector: rangedCombatRow,
+      },
+      {
+        combat: Combat.Siege,
+        selector: siegeCombatRow,
+      },
+    ]
+    let combatRow: Selector | undefined = undefined
+    const eligibleCombatRows: CombatAndRow[] = []
+    if (!eligibleRows) {
+      eligibleRows = [row]
+    }
+    if (row === Combat.Close) {
+      combatRow = closeCombatRow
+    } else if (row === Combat.Ranged) {
+      combatRow = rangedCombatRow
+    } else {
+      combatRow = siegeCombatRow
+    }
+    if (eligibleRows.includes(Combat.Close)) {
+      const rowIndex = nonCombatRows.findIndex((nonCombatRow) => nonCombatRow.combat === Combat.Close)
+      eligibleCombatRows.push(nonCombatRows.splice(rowIndex, 1)[0])
+    }
+    if (eligibleRows.includes(Combat.Ranged)) {
+      const rowIndex = nonCombatRows.findIndex((nonCombatRow) => nonCombatRow.combat === Combat.Ranged)
+      eligibleCombatRows.push(nonCombatRows.splice(rowIndex, 1)[0])
+    }
+    if (eligibleRows.includes(Combat.Siege)) {
+      const rowIndex = nonCombatRows.findIndex((nonCombatRow) => nonCombatRow.combat === Combat.Siege)
+      eligibleCombatRows.push(nonCombatRows.splice(rowIndex, 1)[0])
+    }
+    for (const eligibleCombatRow of eligibleCombatRows) {
+      await t
+        .expect(
+          eligibleCombatRow.selector.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted)
+        )
+        .notOk(`Row "${eligibleCombatRow.combat}" is not highlighted`)
+    }
     await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
-    await t.expect(combatRowUnits.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
     await t.click(card)
     if (verify) {
       await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
@@ -1090,9 +1129,32 @@ export default class GamePage {
             combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`).hasClass(HTML_CLASSES.ItemHighlighted)
           )
           .ok()
+        for (const nonCombatRow of nonCombatRows) {
+          await t
+            .expect(
+              nonCombatRow.selector
+                .find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`)
+                .hasClass(HTML_CLASSES.ItemHighlighted)
+            )
+            .notOk(`Modifier for row "${nonCombatRow.combat}" is not highlighted`)
+        }
       } else {
-        // TODO: verify other combat rows not highlighted
-        await t.expect(combatRowUnits.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+        for (const eligibleCombatRow of eligibleCombatRows) {
+          await t
+            .expect(
+              eligibleCombatRow.selector
+                .find(`.${HTML_CLASSES.GameCombatRowCards}`)
+                .hasClass(HTML_CLASSES.ItemHighlighted)
+            )
+            .ok(`Row "${eligibleCombatRow.combat}" is highlighted`)
+        }
+      }
+      for (const nonCombatRow of nonCombatRows) {
+        await t
+          .expect(
+            nonCombatRow.selector.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted)
+          )
+          .notOk(`Row "${nonCombatRow.combat}" is not highlighted`)
       }
     }
     if (modifier) {
@@ -1106,7 +1168,7 @@ export default class GamePage {
       })
       await t.click(target)
     } else {
-      await t.click(combatRowUnits)
+      await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowCards}`))
     }
   }
 
@@ -1535,4 +1597,9 @@ interface CenterPlayer {
   close?: CombatRow
   ranged?: CombatRow
   siege?: CombatRow
+}
+
+interface CombatAndRow {
+  combat: Combat
+  selector: Selector
 }

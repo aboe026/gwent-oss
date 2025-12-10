@@ -80,6 +80,7 @@ test('Morale hero unit not effected by other morale', async (t) => {
 
   const deckUnit2 = await gameManager.deploy({
     unitName: unitName2,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
     moraling: [
       {
         effectiveStrength: 7,
@@ -468,6 +469,7 @@ test('Multiple morales effect each other', async (t) => {
   const deckUnit2 = await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
     moraling: [
       {
         effectiveStrength: 11,
@@ -553,6 +555,7 @@ test('Multiple morales effect themselves and multiple standard units in same row
   const deckUnit4 = await gameManager.deploy({
     unitName: unitName4,
     combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
     moraling: [
       {
         name: unitName1,

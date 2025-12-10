@@ -225,6 +225,7 @@ test('Horn for berserker transfers to vildkaarl after mardroeme', async (t) => {
 
   await gameManager.deploy({
     unitName: unitName3,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     mardroeming: [
       {

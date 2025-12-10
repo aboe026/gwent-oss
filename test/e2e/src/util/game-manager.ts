@@ -91,6 +91,7 @@ export class GameManager {
   async deploy({
     unitName,
     combat,
+    eligibleCombats,
     effectiveStrength,
     hero,
     scorching,
@@ -106,6 +107,7 @@ export class GameManager {
   }: {
     unitName: string
     combat?: Combat
+    eligibleCombats?: Combat[]
     effectiveStrength?: number
     hero?: boolean
     scorching?: ScorchingExpected[]
@@ -134,6 +136,7 @@ export class GameManager {
         row: combatRow,
         modifier,
         decoyTarget: decoying?.name,
+        eligibleRows: eligibleCombats,
       })
     } else {
       let targetId: string | undefined = undefined

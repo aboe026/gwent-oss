@@ -264,6 +264,7 @@ test('Horn modifier effects regular unit if played after', async (t) => {
 
   await gameManager.deploy({
     unitName: unitName2,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     horning: [
       {
@@ -360,6 +361,7 @@ test('Horn modifier can effect unit in siege row', async (t) => {
   await gameManager.deploy({
     unitName: unitName2,
     combat: Combat.Siege,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     horning: [
       {
@@ -400,7 +402,10 @@ test('Horn can only effect unit once', async (t) => {
       handUnitNames: [unitName1, unitName2, unitName3],
     },
   })
-  const deckUnit1 = await gameManager.deploy({ unitName: unitName1, horning: [] })
+  const deckUnit1 = await gameManager.deploy({
+    unitName: unitName1,
+    horning: [],
+  })
   await gameManager.pass({})
   await gameManager.initialize({})
 
@@ -410,6 +415,7 @@ test('Horn can only effect unit once', async (t) => {
   })
   await gameManager.deploy({
     unitName: unitName3,
+    eligibleCombats: [Combat.Close, Combat.Ranged, Combat.Siege],
     modifier: true,
     horning: [
       {

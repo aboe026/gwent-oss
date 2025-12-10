@@ -22,6 +22,7 @@ test('Agile unit can be deployed as Close combat', async (t) => {
   await gameManager.deploy({
     unitName,
     combat: Combat.Close,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
   })
 })
 
@@ -39,6 +40,7 @@ test('Agile unit can be deployed as Ranged combat', async (t) => {
   await gameManager.deploy({
     unitName,
     combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
   })
 })
 

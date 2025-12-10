@@ -179,6 +179,7 @@ test('Mustered units are moraleable', async (t) => {
   await gameManager.deploy({
     unitName: unitName3,
     combat: Combat.Close,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
     moraling: [
       {
         effectiveStrength: 4,
