@@ -111,9 +111,6 @@ Existing problems in the codebase that need to be fixed.
 
 New things that should be added to the codebase.
 
-- cannot play decoy as first unit
-- decoy requires target
-
 - Medic
   - How to handle brought back for HistoryMove/Impact? unique per created?
 - Avenger

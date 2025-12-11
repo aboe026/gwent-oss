@@ -483,11 +483,13 @@ export async function playUnit({
   userId,
   unitId,
   combat,
+  targetId = '',
 }: {
   gameId: string | ObjectId
   userId: string | ObjectId
   unitId: string | ObjectId
   combat: Combat
+  targetId?: string | ObjectId
 }): Promise<Game> {
   const response = await graphql({
     schema,
@@ -496,6 +498,7 @@ export async function playUnit({
         game: "${gameId}"
         unit: "${unitId}"
         combat: ${combat}
+        target: "${targetId}"
       ) {
         ${getGameFragment()}
       }

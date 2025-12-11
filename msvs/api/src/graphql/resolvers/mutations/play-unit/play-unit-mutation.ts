@@ -30,7 +30,7 @@ export default class PlayUnitMutation {
     const {
       game: updatedGame,
       gameDeck,
-      handDeckUnitsAdded, //
+      handDeckUnitsAdded,
     } = await PlayUnitImplementation.playUnitImplementation({
       combat,
       deckUnit,

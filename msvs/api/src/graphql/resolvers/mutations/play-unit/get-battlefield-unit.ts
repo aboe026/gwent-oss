@@ -36,16 +36,19 @@ export default class GetBattlefieldUnit {
         row: Combat.Close,
         unitId,
         units: playerRound.close.units,
+        modifier: playerRound.close.modifier,
       }) ||
       GetBattlefieldUnit.getRowUnit({
         row: Combat.Ranged,
         unitId,
         units: playerRound.ranged.units,
+        modifier: playerRound.ranged.modifier,
       }) ||
       GetBattlefieldUnit.getRowUnit({
         row: Combat.Siege,
         unitId,
         units: playerRound.siege.units,
+        modifier: playerRound.siege.modifier,
       })
     )
   }
@@ -57,18 +60,25 @@ export default class GetBattlefieldUnit {
    * @param config.unitId The ID of the unit to get from the battlefield.
    * @param config.units All of the units in a row on the battlefield.
    * @param config.row The row the battlefield units are in.
+   * @param config.modifier The modifier that has potentially been set for the row on the battlefield.
    * @returns The battlefield unit if it exists in the given row.
    */
   private static getRowUnit({
     unitId,
     units,
     row,
+    modifier,
   }: {
     unitId: ObjectId | string
     units: GameUnitDbObject[]
+    modifier?: GameUnitDbObject | undefined
     row: Combat
   }): BattlefieldUnit | undefined {
-    for (const unit of units) {
+    const allUnits = [...units]
+    if (modifier) {
+      allUnits.push(modifier)
+    }
+    for (const unit of allUnits) {
       if (unit.unit.toString() === unitId.toString()) {
         return {
           unit,

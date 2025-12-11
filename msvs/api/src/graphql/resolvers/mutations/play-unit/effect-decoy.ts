@@ -77,9 +77,12 @@ export default class EffectDecoy {
 
     return {
       deckUnitAddedToHand,
-      impacts: {
-        [newDeckUnit.unit.toString()]: impacts,
-      },
+      impacts:
+        impacts.length > 0
+          ? {
+              [newDeckUnit.unit.toString()]: impacts,
+            }
+          : {},
     }
   }
 
