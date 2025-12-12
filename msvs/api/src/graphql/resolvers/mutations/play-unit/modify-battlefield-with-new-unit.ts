@@ -88,6 +88,7 @@ export default async function modifyBattlefieldWithNewUnit({
     game,
     logPrefix,
     newDeckUnit,
+    combat,
     targetId,
   })
   if (deckUnitAddedToHand) {

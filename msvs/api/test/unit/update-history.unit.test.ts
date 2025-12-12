@@ -140,6 +140,21 @@ describe('update-history', () => {
         expectedImpacts: [impact],
       })
     })
+    it('calls addMoveToCurrentPlayer once with decoy impact', () => {
+      const deckUnit = TestUtil.getDbDeckUnit({})
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      testNewUnitDeployed({
+        deckUnit,
+        decoys: {
+          [deckUnit.unit.toString()]: [impact],
+        },
+        logPrefix,
+        expectedImpacts: [impact],
+      })
+    })
     it('calls to addMoveToCurrentPlayer for single valid muster without own impact', () => {
       const musteredUnit: BattlefieldUnit = {
         row: Combat.Close,
@@ -513,6 +528,44 @@ describe('update-history', () => {
           unit: move.unit,
         },
         horns: {
+          [move.unit.unit.toString()]: [impact],
+        },
+        move,
+      })
+    })
+    it('calls to addMoveToCurrentPlayer with decoy impact', () => {
+      const combat = Combat.Close
+      const impact: ImpactDbObject = {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      }
+      const move: MoveUnitDbObject = {
+        created: new Date(),
+        reason: {
+          type: MoveReasonType.Muster,
+        },
+        source: {
+          origin: GameUnitOrigin.Hand,
+        },
+        type: MoveType.Unit,
+        unit: TestUtil.getDbGameUnit({
+          row: combat,
+        }),
+        impacts: [impact],
+      }
+      testNewUnitIndirect({
+        game: TestUtil.getDbGame({}),
+        unitId: move.unit.unit,
+        created: move.created,
+        logPrefix,
+        origin: move.source.origin as GameUnitOrigin,
+        playerId: new ObjectId().toString(),
+        reason: move.reason,
+        getBattlefieldUnitResponse: {
+          row: combat,
+          unit: move.unit,
+        },
+        decoys: {
           [move.unit.unit.toString()]: [impact],
         },
         move,
@@ -1163,6 +1216,7 @@ function testNewUnitDeployed({
   mardroemes = {},
   bonds = {},
   horns = {},
+  decoys = {},
   musteredOrigins,
   transformedGameUnits,
   mardroemingGameUnit,
@@ -1179,6 +1233,7 @@ function testNewUnitDeployed({
   mardroemes?: ImpactsByUnitId
   bonds?: ImpactsByUnitId
   horns?: ImpactsByUnitId
+  decoys?: ImpactsByUnitId
   musteredOrigins?: MusteredOrigins | undefined
   transformedGameUnits?: GameUnitDbObject[]
   mardroemingGameUnit?: GameUnitDbObject
@@ -1228,6 +1283,7 @@ function testNewUnitDeployed({
             created: move.created,
             game,
             horns,
+            decoys,
             logPrefix,
             mardroemes,
             morales,
@@ -1253,6 +1309,7 @@ function testNewUnitDeployed({
           created: move.created,
           game,
           horns,
+          decoys,
           logPrefix,
           mardroemes,
           morales,
@@ -1286,6 +1343,7 @@ function testNewUnitDeployed({
         combat,
         deckUnit,
         game,
+        decoys,
         musteredOrigins,
         musters,
         playerId,
@@ -1308,6 +1366,7 @@ function testNewUnitDeployed({
         musteredOrigins,
         musters,
         playerId,
+        decoys,
         logPrefix,
         scorches,
         morales,
@@ -1355,6 +1414,7 @@ function testNewUnitIndirect({
   bonds = {},
   horns = {},
   morales = {},
+  decoys = {},
   reason,
   getBattlefieldUnitResponse,
   move,
@@ -1373,6 +1433,7 @@ function testNewUnitIndirect({
   bonds?: ImpactsByUnitId
   horns?: ImpactsByUnitId
   morales?: ImpactsByUnitId
+  decoys?: ImpactsByUnitId
   reason: MoveUnitReasonDbObject
   getBattlefieldUnitResponse: BattlefieldUnit | undefined
   move?: MoveUnitDbObject
@@ -1399,6 +1460,7 @@ function testNewUnitIndirect({
         mardroemes,
         morales,
         musters,
+        decoys,
         origin,
         playerId,
         reason,
@@ -1417,6 +1479,7 @@ function testNewUnitIndirect({
         mardroemes,
         morales,
         musters,
+        decoys,
         origin,
         playerId,
         reason,

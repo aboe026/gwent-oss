@@ -22,16 +22,19 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
   const game = TestUtil.getDbGame({})
   const deckUnit = TestUtil.getDbDeckUnit({})
   const gameDeck = TestUtil.getDbGameDeck({})
+  const handed = [TestUtil.getDbDeckUnit({})]
   const resolvedGame = TestUtil.getGameFromDbGame({
     game,
   })
   const resolvedDeckUnit = TestUtil.getDeckUnitFromDbDeckUnit({
     deckUnit,
   })
+  const resolvedHanded = [TestUtil.getDeckUnit({})]
   const resolvedGameDeck = TestUtil.getGameDeckFromDbGameDeck(gameDeck)
   const gameResolverFromObjectSpy = jest.spyOn(GameResolver, 'fromObject').mockResolvedValue(resolvedGame)
   const deckUnitResolverFromObjectSpy = jest.spyOn(DeckUnitResolver, 'fromObject').mockResolvedValue(resolvedDeckUnit)
   const gameDeckResolverFromObjectSpy = jest.spyOn(GameDeckResolver, 'fromObject').mockResolvedValue(resolvedGameDeck)
+  const deckUnitFromArraySpy = jest.spyOn(DeckUnitResolver, 'fromArray').mockResolvedValue(resolvedHanded)
   const publishSpy = jest.spyOn(EventManager.pubsub, 'publish').mockImplementation()
   const traceSpy = jest.fn().mockImplementation()
   PlayUnitResolution['logger'] = {
@@ -45,6 +48,7 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
       game,
       gameDeck,
       logPrefix,
+      handDeckUnitsAdded: handed,
     })
   ).resolves.toEqual(resolvedGame)
 
@@ -69,6 +73,13 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
       },
     ],
   ])
+  expect(deckUnitFromArraySpy.mock.calls).toEqual([
+    [
+      {
+        deckUnits: handed,
+      },
+    ],
+  ])
   expect(publishSpy.mock.calls).toEqual([
     [
       PubSubEvents.UnitPlayedOnGame,
@@ -86,6 +97,7 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
           deck: resolvedGameDeck,
           game: resolvedGame,
           unit: resolvedDeckUnit,
+          handed: resolvedHanded,
         },
       },
     ],
@@ -96,6 +108,7 @@ async function testPlayUnitResolution({ traceEnabled }: { traceEnabled?: boolean
           [`${logPrefix} resolvedGame: "${JSON.stringify(resolvedGame)}"`],
           [`${logPrefix} resolvedUnit: "${JSON.stringify(resolvedDeckUnit)}"`],
           [`${logPrefix} resolvedGameDeck: "${JSON.stringify(resolvedGameDeck)}"`],
+          [`${logPrefix} handed: "${JSON.stringify(resolvedHanded)}"`],
         ]
       : []
   )

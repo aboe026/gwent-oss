@@ -112,10 +112,11 @@ export default class PlayUnitValidation {
         ids: unit.effects,
       })
     }
+    const isDecoy = effects && effects.some((effect) => effect.key === EffectKey.Decoy)
 
     let roundUnits: UnitDbObject[] | undefined = undefined
 
-    if (!effects || !effects.some((effect) => effect.key === EffectKey.Decoy)) {
+    if (!isDecoy) {
       if (unit.combats && unit.combats.length > 1 && !combat) {
         const message = `Must specify combat: One of "${JSON.stringify(unit.combats)}".`
         PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
@@ -141,48 +142,56 @@ export default class PlayUnitValidation {
       }
     }
 
-    if (unit.effects && effects) {
-      if (effects.some((effect) => effect.key === EffectKey.Decoy)) {
-        if (!targetId) {
-          throw new PresentableError(`Argument "target" required for units with "${EffectKey.Decoy}" effect.`)
-        }
-
-        resolverUtil.verifyMongoIds({
-          ids: [targetId],
-          label: 'Target ID',
-        })
-
-        const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
-          game,
-          unitId: targetId,
-          userId,
-        })
-
-        if (!battlefieldUnit) {
-          throw new PresentableError(`Target "${targetId}" does not exist on the battlefield for player "${userId}".`)
-        }
-
-        roundUnits = await getRoundUnits({
-          game,
-          unitBeingPlayed: unit,
-        })
-        const target = roundUnits.find((unit) => unit._id.toString() === targetId)
-        if (!target) {
-          throw new PresentableError(`Could not find Unit for target "${targetId}".`)
-        }
-        if (target.hero) {
-          throw new PresentableError(`Invalid decoy target "${targetId}": Cannot be hero.`)
-        }
-        if (target.special) {
-          throw new PresentableError(`Invalid decoy target "${targetId}": Cannot be special.`)
-        }
-        if (combat && battlefieldUnit.row !== combat) {
-          throw new PresentableError(
-            `Invalid combat "${combat}": Target "${targetId}" is in row "${battlefieldUnit.row}".`
-          )
-        }
-        combat = battlefieldUnit.row
+    if (isDecoy) {
+      if (!targetId) {
+        const message = `Argument "target" required for units with "${EffectKey.Decoy}" effect.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
       }
+
+      resolverUtil.verifyMongoIds({
+        ids: [targetId],
+        label: 'Target ID',
+      })
+
+      const battlefieldUnit = GetBattlefieldUnit.getBattlefieldUnit({
+        game,
+        unitId: targetId,
+        userId,
+      })
+
+      if (!battlefieldUnit) {
+        const message = `Target "${targetId}" does not exist on the battlefield for player "${userId}".`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+
+      roundUnits = await getRoundUnits({
+        game,
+        unitBeingPlayed: unit,
+      })
+      const target = roundUnits.find((unit) => unit._id.toString() === targetId)
+      if (!target) {
+        const message = `Could not find Unit for target "${targetId}".`
+        PlayUnitValidation.logger.error(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (target.hero) {
+        const message = `Invalid decoy target "${targetId}": Cannot be hero.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (target.special) {
+        const message = `Invalid decoy target "${targetId}": Cannot be special.`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      if (combat && battlefieldUnit.row !== combat) {
+        const message = `Invalid combat "${combat}": Target "${targetId}" is in row "${battlefieldUnit.row}".`
+        PlayUnitValidation.logger.warn(`${logPrefix} failed: ${message}`)
+        throw new PresentableError(message)
+      }
+      combat = battlefieldUnit.row
     }
 
     return {

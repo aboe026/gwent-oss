@@ -1,6 +1,7 @@
 import { getLogger } from 'log4js'
 
 import {
+  Combat,
   DeckUnitDbObject,
   GameDbObject,
   GamePlayerDbObject,
@@ -23,6 +24,7 @@ export default class EffectDecoy {
    * @param config.game The game the decoy is being made on.
    * @param config.logPrefix What to prepend log statements with.
    * @param config.newDeckUnit The Decoy unit being played.
+   * @param config.combat The combat row the new unit, and in effect the target, are in.
    * @param config.targetId The ID of the battlefield unit to replace with the Decoy.
    * @throws {PresentableError} If problem decoying target.
    * @returns If the unit being played is a Decoy, the unit removed from the battlefield and its Impact, otherwise undefined.
@@ -31,17 +33,18 @@ export default class EffectDecoy {
     game,
     logPrefix,
     newDeckUnit,
+    combat,
     targetId,
   }: {
     game: GameDbObject
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
+    combat: Combat | null | undefined
     targetId: string | undefined | null
   }): PotentialDecoy {
-    const impacts: ImpactDbObject[] = []
-    let deckUnitAddedToHand: DeckUnitDbObject | undefined = undefined
+    let impact: ImpactDbObject | undefined = undefined
 
-    if (targetId) {
+    if (targetId && combat) {
       const player = game.players.find((player) => player.user.toString() === game.turn?.toString())
       if (!player) {
         const message = `Could not find player "${game.turn}" in game "${game._id}"`
@@ -49,40 +52,27 @@ export default class EffectDecoy {
         throw new PresentableError(message)
       }
       const round = player?.rounds[game.round - 1]
-      const rows = [round?.close, round?.ranged, round?.siege]
-      for (let i = 0; i < rows.length && impacts.length === 0; i++) {
-        const impact = EffectDecoy.decoyFromRow({
-          player,
-          row: rows[i],
-          targetId,
-        })
-        if (impact) {
-          impacts.push(impact)
-        }
-      }
+      const row = combat === Combat.Close ? round.close : combat === Combat.Ranged ? round.ranged : round.siege
+      impact = EffectDecoy.decoyFromRow({
+        player,
+        row,
+        targetId,
+      })
 
-      if (impacts.length === 0) {
+      if (!impact) {
         const message = `Decoy "${newDeckUnit.unit}" did not get applied for unit "${targetId}"`
         this.logger.error(`${logPrefix} failed: ${message}`)
         throw new PresentableError(message)
       }
-      if (impacts.length > 1) {
-        const message = `Decoy "${newDeckUnit.unit}" impacted more than "${targetId}"`
-        this.logger.error(`${logPrefix} failed: ${message}: "${JSON.stringify(impacts)}"`)
-        throw new PresentableError(message)
-      }
-
-      deckUnitAddedToHand = impacts[0].unit
     }
 
     return {
-      deckUnitAddedToHand,
-      impacts:
-        impacts.length > 0
-          ? {
-              [newDeckUnit.unit.toString()]: impacts,
-            }
-          : {},
+      deckUnitAddedToHand: impact?.unit,
+      impacts: impact
+        ? {
+            [newDeckUnit.unit.toString()]: [impact],
+          }
+        : {},
     }
   }
 
@@ -109,9 +99,7 @@ export default class EffectDecoy {
       const targetIndex = row.units.findIndex((rowUnit) => rowUnit.unit.toString() === targetId)
       if (targetIndex >= 0) {
         const target = row.units.splice(targetIndex, 1)[0]
-        if (player.deck.hand) {
-          player.deck.hand.push(target)
-        }
+        player.deck.hand.push(target)
         impact = {
           unit: target,
           user: player.user,
@@ -123,7 +111,7 @@ export default class EffectDecoy {
   }
 }
 
-interface PotentialDecoy {
+export interface PotentialDecoy {
   deckUnitAddedToHand: DeckUnitDbObject | undefined
   impacts: ImpactsByUnitId
 }
