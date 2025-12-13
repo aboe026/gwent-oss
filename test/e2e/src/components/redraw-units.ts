@@ -14,6 +14,7 @@ export default class RedrawUnits {
 
   static async verify({ redraws }: { redraws: RedrawPair[] }) {
     const expected: string[] = []
+    let highlighted = false
     for (const redraw of redraws) {
       let rowText = 'from: '
       if (redraw.from.unitName) {
@@ -21,10 +22,11 @@ export default class RedrawUnits {
       } else if (redraw.from.dotted) {
         rowText += 'This unit is no longer in your hand'
       } else if (redraw.from.highlighted) {
-        rowText += 'Place here to redraw'
+        rowText += 'Place here to redraw for a random unit from your Draw pile'
       }
       if (redraw.from.highlighted) {
         rowText += ' highlighted'
+        highlighted = true
       }
       if (redraw.from.dotted) {
         rowText += ' dotted'
@@ -33,6 +35,7 @@ export default class RedrawUnits {
         rowText += `, to: ${redraw.to.unitName || 'This unit is no longer in your hand'}`
         if (redraw.to.highlighted) {
           rowText += ' highlighted'
+          highlighted = true
         }
         if (redraw.to.dotted) {
           rowText += ' dotted'
@@ -41,7 +44,9 @@ export default class RedrawUnits {
       expected.push(rowText)
     }
     for (let i = expected.length; i < MAX_REDRAWS; i++) {
-      expected.push('from: Select card from hand to redraw')
+      expected.push(
+        `from: ${highlighted ? 'Not available to redraw until other redraws made above' : 'Select card from hand to redraw'}`
+      )
     }
 
     const actual: string[] = []

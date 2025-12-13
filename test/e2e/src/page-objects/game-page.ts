@@ -417,7 +417,7 @@ export default class GamePage {
     isSelf: boolean
     userName: string
     rowName: Combat
-    score: number
+    score?: number
     units: CombatUnit[]
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHandCard?: HighlightedHandCard
@@ -439,12 +439,22 @@ export default class GamePage {
       sortProperties: [['effectiveStrength', 'strength'], 'name'],
     }).map((unit) => {
       let expectedUnitName = unit.name
-      if (
+      const highlightedByBattlefieldCard =
         highlightedBattlefieldCard &&
         highlightedBattlefieldCard.unitName === unit.name &&
         highlightedBattlefieldCard.row === rowName &&
         highlightedBattlefieldCard.userName === userName
-      ) {
+      const isWeather = [
+        'Biting Frost',
+        'Clear Weather',
+        'Impenetrable Fog',
+        'Skellige Storm',
+        'Torrential Rain',
+      ].includes(unit.name)
+      const isSpecial = ["Commander's Horn", 'Decoy', 'Mardroeme', 'Scorch'].includes(unit.name) || isWeather
+      const highlightedByDecoy =
+        highlightedHandCard && highlightedHandCard.unitName === 'Decoy' && !unit.hero && !isSpecial
+      if (highlightedByBattlefieldCard || highlightedByDecoy) {
         highlightedBattlefieldCardFound = true
         expectedUnitName += ' selected'
       }
@@ -452,9 +462,11 @@ export default class GamePage {
     })
     const message = `${rowName} row for ${isSelf ? 'self' : 'opponent'}`
     await t.expect(actualUnitNames).eql(expectedUnitNames, message)
-    await t
-      .expect(rowSelector.find(`.${HTML_CLASSES.GameUnitBoardCombatScore}`).innerText)
-      .eql(score.toString(), message)
+    if (score !== undefined) {
+      await t
+        .expect(rowSelector.find(`.${HTML_CLASSES.GameUnitBoardCombatScore}`).innerText)
+        .eql(score.toString(), message)
+    }
     const cardsContainer = rowSelector.find(`.${HTML_CLASSES.GameCombatRowCards}`)
     const expectedHighlighted =
       isSelf && highlightedHandCard && highlightedHandCard.rows && highlightedHandCard.rows.includes(rowName)
@@ -1043,42 +1055,210 @@ export default class GamePage {
     unitName,
     row,
     modifier,
+    decoyTarget,
+    eligibleRows,
     verify = true,
   }: {
     unitName: string
     row: Combat
     modifier?: boolean
+    eligibleRows?: Combat[]
+    decoyTarget?: string
     verify?: boolean
   }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
-    const combatRow = GamePage.elements.CenterContainer.find(
-      `#${
-        row === Combat.Close
-          ? HTML_IDS.GameCombatRowCloseSelf
-          : row === Combat.Ranged
-            ? HTML_IDS.GameCombatRowRangedSelf
-            : HTML_IDS.GameCombatRowSiegeSelf
-      }`
-    )
-    const combatRowUnits = combatRow.find(`.${HTML_CLASSES.GameCombatRowCards}`)
+    const closeCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowCloseSelf}`)
+    const rangedCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowRangedSelf}`)
+    const siegeCombatRow = GamePage.elements.CenterContainer.find(`#${HTML_IDS.GameCombatRowSiegeSelf}`)
+    const nonCombatRows: CombatAndRow[] = [
+      {
+        combat: Combat.Close,
+        selector: closeCombatRow,
+      },
+      {
+        combat: Combat.Ranged,
+        selector: rangedCombatRow,
+      },
+      {
+        combat: Combat.Siege,
+        selector: siegeCombatRow,
+      },
+    ]
+    let combatRow: Selector | undefined = undefined
+    const eligibleCombatRows: CombatAndRow[] = []
+    if (!eligibleRows) {
+      eligibleRows = [row]
+    }
+    if (row === Combat.Close) {
+      combatRow = closeCombatRow
+    } else if (row === Combat.Ranged) {
+      combatRow = rangedCombatRow
+    } else {
+      combatRow = siegeCombatRow
+    }
+    if (eligibleRows.includes(Combat.Close)) {
+      const rowIndex = nonCombatRows.findIndex((nonCombatRow) => nonCombatRow.combat === Combat.Close)
+      eligibleCombatRows.push(nonCombatRows.splice(rowIndex, 1)[0])
+    }
+    if (eligibleRows.includes(Combat.Ranged)) {
+      const rowIndex = nonCombatRows.findIndex((nonCombatRow) => nonCombatRow.combat === Combat.Ranged)
+      eligibleCombatRows.push(nonCombatRows.splice(rowIndex, 1)[0])
+    }
+    if (eligibleRows.includes(Combat.Siege)) {
+      const rowIndex = nonCombatRows.findIndex((nonCombatRow) => nonCombatRow.combat === Combat.Siege)
+      eligibleCombatRows.push(nonCombatRows.splice(rowIndex, 1)[0])
+    }
+    for (const eligibleCombatRow of eligibleCombatRows) {
+      await t
+        .expect(
+          eligibleCombatRow.selector.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted)
+        )
+        .notOk(`Row "${eligibleCombatRow.combat}" is not highlighted`)
+    }
     await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
-    await t.expect(combatRowUnits.hasClass(HTML_CLASSES.ItemHighlighted)).notOk()
     await t.click(card)
     if (verify) {
       await t.expect(card.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
       if (unitName === 'Scorch') {
         await t.expect(GamePage.elements.CenterContainer.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+      } else if (unitName === 'Decoy') {
+        await this.verifyDecoyTargetsHighlighted()
       } else if (modifier) {
         await t
           .expect(
             combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`).hasClass(HTML_CLASSES.ItemHighlighted)
           )
           .ok()
+        for (const nonCombatRow of nonCombatRows) {
+          await t
+            .expect(
+              nonCombatRow.selector
+                .find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`)
+                .hasClass(HTML_CLASSES.ItemHighlighted)
+            )
+            .notOk(`Modifier for row "${nonCombatRow.combat}" is not highlighted`)
+        }
       } else {
-        await t.expect(combatRowUnits.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
+        for (const eligibleCombatRow of eligibleCombatRows) {
+          await t
+            .expect(
+              eligibleCombatRow.selector
+                .find(`.${HTML_CLASSES.GameCombatRowCards}`)
+                .hasClass(HTML_CLASSES.ItemHighlighted)
+            )
+            .ok(`Row "${eligibleCombatRow.combat}" is highlighted`)
+        }
+      }
+      for (const nonCombatRow of nonCombatRows) {
+        await t
+          .expect(
+            nonCombatRow.selector.find(`.${HTML_CLASSES.GameCombatRowCards}`).hasClass(HTML_CLASSES.ItemHighlighted)
+          )
+          .notOk(`Row "${nonCombatRow.combat}" is not highlighted`)
       }
     }
-    await t.click(modifier ? combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`) : combatRowUnits)
+    if (modifier) {
+      await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowModifierAvailable}`))
+    } else if (decoyTarget) {
+      const target = await GamePage.getBattlefieldCard({
+        unitName: decoyTarget,
+        row,
+        self: true,
+        decoying: true,
+      })
+      await t.click(target)
+    } else {
+      await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowCards}`))
+    }
+  }
+
+  static async selectCombatRow({ combat, self = true }: { combat: Combat; self?: boolean }) {
+    const id = self
+      ? combat === Combat.Close
+        ? HTML_IDS.GameCombatRowCloseSelf
+        : combat === Combat.Ranged
+          ? HTML_IDS.GameCombatRowRangedSelf
+          : HTML_IDS.GameCombatRowSiegeSelf
+      : combat === Combat.Close
+        ? HTML_IDS.GameCombatRowCloseOpponent
+        : combat === Combat.Ranged
+          ? HTML_IDS.GameCombatRowRangedOpponent
+          : HTML_IDS.GameCombatRowSiegeOpponent
+    await t.click(GamePage.elements.CenterContainer.find(`#${id}`))
+  }
+
+  static async verifyDecoyTargetsHighlighted() {
+    const players = [
+      {
+        name: await new GamePlayerInfo(GamePage.elements.InfoSelfContainer).getName(),
+        isSelf: true,
+        rows: [
+          {
+            name: Combat.Close,
+            selector: GamePage.elements.CombatRowCloseSelf,
+          },
+          {
+            name: Combat.Ranged,
+            selector: GamePage.elements.CombatRowRangedSelf,
+          },
+          {
+            name: Combat.Siege,
+            selector: GamePage.elements.CombatRowSiegeSelf,
+          },
+        ],
+      },
+      {
+        name: await new GamePlayerInfo(GamePage.elements.InfoOpponentContainer).getName(),
+        isSelf: false,
+        rows: [
+          {
+            name: Combat.Close,
+            selector: GamePage.elements.CombatRowCloseOpponent,
+          },
+          {
+            name: Combat.Ranged,
+            selector: GamePage.elements.CombatRowRangedOpponent,
+          },
+          {
+            name: Combat.Siege,
+            selector: GamePage.elements.CombatRowSiegeOpponent,
+          },
+        ],
+      },
+    ]
+    for (const player of players) {
+      for (const row of player.rows) {
+        await t.expect(row.selector.exists).ok()
+        await t.expect(row.selector.visible).ok()
+        const actualUnitNames: string[] = []
+        const expectedUnitNames: string[] = []
+        const rowCards = row.selector.find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+        const rowCardsCount = await rowCards.count
+        for (let i = 0; i < rowCardsCount; i++) {
+          const rowCard = rowCards.nth(i)
+          const unitName = (await rowCard.getAttribute('title')) || ''
+          const highlighted = await rowCard.hasClass(HTML_CLASSES.ItemHighlighted)
+          actualUnitNames.push(`${unitName}${highlighted ? ' highlighted' : ''}`)
+
+          const isWeather = [
+            'Biting Frost',
+            'Clear Weather',
+            'Impenetrable Fog',
+            'Skellige Storm',
+            'Torrential Rain',
+          ].includes(unitName)
+          const isSpecial = ["Commander's Horn", 'Decoy', 'Mardroeme', 'Scorch'].includes(unitName) || isWeather
+          const isHero = await rowCard
+            .find(`.${HTML_CLASSES.GameUnitStrengthCircleContainer}`)
+            .hasClass(HTML_CLASSES.GameUnitStrengthCircleHero)
+          expectedUnitNames.push(`${unitName}${player.isSelf && !isSpecial && !isHero ? ' highlighted' : ''}`)
+        }
+
+        await t
+          .expect(actualUnitNames)
+          .eql(expectedUnitNames, `Decoy target highlights correct for player "${player.name}" row "${row.name}"`)
+      }
+    }
   }
 
   static async summaryGoToGames() {
@@ -1129,11 +1309,13 @@ export default class GamePage {
     unitName,
     row,
     self,
+    decoying,
     instance = 1,
   }: {
     unitName: string
     row: Combat
     self: boolean
+    decoying?: boolean
     instance?: number
   }) {
     let rowSelector: Selector | undefined = undefined
@@ -1158,10 +1340,11 @@ export default class GamePage {
     const rowCardsCount = await rowCards.count
     let matchingCard: Selector | undefined
     let namedInstance = 1
+    const unitTitle = decoying ? `Select to decoy ${unitName} back into hand` : unitName
     for (let i = 0; i < rowCardsCount && !matchingCard; i++) {
       const rowCard = rowCards.nth(i).find(`.${HTML_CLASSES.UnitGameCardContainer}`)
-      const cardName = (await rowCard.getAttribute('title')) || ''
-      if (cardName === unitName) {
+      const cardTitle = (await rowCard.getAttribute('title')) || ''
+      if (cardTitle === unitTitle) {
         if (namedInstance === instance) {
           matchingCard = rowCard
         } else {
@@ -1398,6 +1581,7 @@ export interface CombatUnit {
   name: string
   strength?: number
   effectiveStrength?: number
+  hero?: boolean
 }
 
 interface CombatRow {
@@ -1413,4 +1597,9 @@ interface CenterPlayer {
   close?: CombatRow
   ranged?: CombatRow
   siege?: CombatRow
+}
+
+interface CombatAndRow {
+  combat: Combat
+  selector: Selector
 }

@@ -171,16 +171,19 @@ export class E2eHelper {
     unitName,
     strength,
     row,
+    hero,
   }: {
     player: GamePlayerExpected
     unitName: string
     strength?: number
     row: Combat
+    hero?: boolean
   }): void {
     player.score = (player.score || 0) + (strength || 0)
     const unit: CombatUnit = {
       name: unitName,
       strength,
+      hero,
     }
     if (row === Combat.Close) {
       player.close = {
@@ -343,6 +346,7 @@ export class E2eHelper {
     deckUnit,
     effectiveStrength,
     row,
+    hero,
     gameDeck,
     moves,
     switchTurnsWith,
@@ -352,12 +356,14 @@ export class E2eHelper {
     horning,
     mustering,
     bonding,
+    decoying,
     impacts,
   }: {
     player: GamePlayerExpected
     deckUnit: DeckUnit
     effectiveStrength?: number
     row?: Combat
+    hero?: boolean
     gameDeck: GameDeck
     moves?: (HistoryMove | HistoryPass)[]
     switchTurnsWith?: GamePlayerExpected
@@ -367,6 +373,7 @@ export class E2eHelper {
     horning?: MoralingExpected[]
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
+    decoying?: DecoyingExpected
     impacts?: number
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
@@ -383,6 +390,7 @@ export class E2eHelper {
         unitName: deckUnit.unit.name,
         row,
         strength,
+        hero,
       })
     }
     if (mardroeming) {
@@ -470,6 +478,23 @@ export class E2eHelper {
         })
       }
     }
+    if (decoying) {
+      E2eHelper.removeUnitFromGamePlayer({
+        player: decoying.player,
+        row: decoying.row,
+        unitName: decoying.name,
+        strength: decoying.effectiveStrength,
+        instances: decoying.instance,
+      })
+      decoying.player.hand = (decoying.player.hand || 0) + 1
+      gameDeck.hand.push({
+        artStyle: 1,
+        unit: {
+          name: decoying.name,
+          strength: decoying.effectiveStrength,
+        } as any,
+      })
+    }
     if (moves) {
       let effectKey: EffectKey | undefined = undefined
       if (scorching) {
@@ -484,6 +509,18 @@ export class E2eHelper {
         effectKey = EffectKey.Muster
       } else if (bonding) {
         effectKey = EffectKey.Bond
+      } else if (decoying) {
+        effectKey = EffectKey.Decoy
+      }
+      let numImpacts = 0
+      if (impacts !== undefined) {
+        numImpacts = impacts
+      } else {
+        if (decoying) {
+          numImpacts = 1
+        } else {
+          numImpacts = (scorching || mardroeming || moraling || mustering || bonding || horning || [])?.length
+        }
       }
       moves.push({
         userName: player.name,
@@ -493,10 +530,7 @@ export class E2eHelper {
           effectKey && impacts !== -1
             ? {
                 effectKey,
-                number:
-                  impacts !== undefined
-                    ? impacts
-                    : (scorching || mardroeming || moraling || mustering || bonding || horning)?.length || 0,
+                number: numImpacts,
               }
             : undefined,
       })
@@ -891,4 +925,12 @@ export interface BondingExpected {
   name: string
   row: Combat
   effectiveStrength: number
+}
+
+export interface DecoyingExpected {
+  player: GamePlayerExpected
+  name: string
+  row: Combat
+  effectiveStrength: number
+  instance?: number
 }

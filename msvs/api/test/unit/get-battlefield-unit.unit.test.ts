@@ -91,7 +91,7 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
-      it('returns unit if found in close', () => {
+      it('returns unit if found in close units', () => {
         const userId = new ObjectId().toString()
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -133,7 +133,51 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
-      it('returns unit if found in ranged', () => {
+      it('returns unit if found in close modifier', () => {
+        const userId = new ObjectId().toString()
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        const game = TestUtil.getDbGame({
+          round,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [],
+                    modifier: gameUnit,
+                  },
+                }),
+              ],
+            }),
+          ],
+        })
+        const battlefieldUnit: BattlefieldUnit = {
+          row: Combat.Close,
+          unit: gameUnit,
+        }
+        testGetBattlefieldUnit({
+          game,
+          unitId,
+          userId,
+          getRowUnitResponses: [battlefieldUnit, undefined, undefined],
+          expected: battlefieldUnit,
+          getRowUnitCalls: [
+            [
+              {
+                row: Combat.Close,
+                unitId,
+                units: [],
+                modifier: gameUnit,
+              },
+            ],
+          ],
+        })
+      })
+      it('returns unit if found in ranged units', () => {
         const userId = new ObjectId().toString()
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -182,7 +226,58 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
-      it('returns unit if found in siege', () => {
+      it('returns unit if found in ranged modifier', () => {
+        const userId = new ObjectId().toString()
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        const game = TestUtil.getDbGame({
+          round,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  ranged: {
+                    score: 0,
+                    units: [],
+                    modifier: gameUnit,
+                  },
+                }),
+              ],
+            }),
+          ],
+        })
+        const battlefieldUnit: BattlefieldUnit = {
+          row: Combat.Ranged,
+          unit: gameUnit,
+        }
+        testGetBattlefieldUnit({
+          game,
+          unitId,
+          userId,
+          getRowUnitResponses: [undefined, battlefieldUnit, undefined],
+          expected: battlefieldUnit,
+          getRowUnitCalls: [
+            [
+              {
+                row: Combat.Close,
+                unitId,
+                units: [],
+              },
+            ],
+            [
+              {
+                row: Combat.Ranged,
+                unitId,
+                units: [],
+                modifier: gameUnit,
+              },
+            ],
+          ],
+        })
+      })
+      it('returns unit if found in sieges units', () => {
         const userId = new ObjectId().toString()
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -233,6 +328,64 @@ describe('get-battlefield-unit', () => {
                 row: Combat.Siege,
                 unitId,
                 units: [gameUnit],
+              },
+            ],
+          ],
+        })
+      })
+      it('returns unit if found in sieges modifier', () => {
+        const userId = new ObjectId().toString()
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        const game = TestUtil.getDbGame({
+          round,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  siege: {
+                    score: 0,
+                    units: [],
+                    modifier: gameUnit,
+                  },
+                }),
+              ],
+            }),
+          ],
+        })
+        const battlefieldUnit: BattlefieldUnit = {
+          row: Combat.Siege,
+          unit: gameUnit,
+        }
+        testGetBattlefieldUnit({
+          game,
+          unitId,
+          userId,
+          getRowUnitResponses: [undefined, undefined, battlefieldUnit],
+          expected: battlefieldUnit,
+          getRowUnitCalls: [
+            [
+              {
+                row: Combat.Close,
+                unitId,
+                units: [],
+              },
+            ],
+            [
+              {
+                row: Combat.Ranged,
+                unitId,
+                units: [],
+              },
+            ],
+            [
+              {
+                row: Combat.Siege,
+                unitId,
+                units: [],
+                modifier: gameUnit,
               },
             ],
           ],
@@ -292,7 +445,7 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
-      it('returns unit if found in close', () => {
+      it('returns unit if found in close units', () => {
         const userId = new ObjectId().toString()
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -335,7 +488,52 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
-      it('returns unit if found in ranged', () => {
+      it('returns unit if found in close modifier', () => {
+        const userId = new ObjectId().toString()
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        const game = TestUtil.getDbGame({
+          round,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [],
+                    modifier: gameUnit,
+                  },
+                }),
+              ],
+            }),
+          ],
+        })
+        const battlefieldUnit: BattlefieldUnit = {
+          row: Combat.Close,
+          unit: gameUnit,
+        }
+        testGetBattlefieldUnit({
+          game,
+          unitId,
+          userId,
+          getRowUnitResponses: [battlefieldUnit, undefined, undefined],
+          expected: battlefieldUnit,
+          getRowUnitCalls: [
+            [
+              {
+                row: Combat.Close,
+                unitId,
+                units: [],
+                modifier: gameUnit,
+              },
+            ],
+          ],
+        })
+      })
+      it('returns unit if found in ranged units', () => {
         const userId = new ObjectId().toString()
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -385,7 +583,59 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
-      it('returns unit if found in siege', () => {
+      it('returns unit if found in ranged modifier', () => {
+        const userId = new ObjectId().toString()
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        const game = TestUtil.getDbGame({
+          round,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  ranged: {
+                    score: 0,
+                    units: [],
+                    modifier: gameUnit,
+                  },
+                }),
+              ],
+            }),
+          ],
+        })
+        const battlefieldUnit: BattlefieldUnit = {
+          row: Combat.Ranged,
+          unit: gameUnit,
+        }
+        testGetBattlefieldUnit({
+          game,
+          unitId,
+          userId,
+          getRowUnitResponses: [undefined, battlefieldUnit, undefined],
+          expected: battlefieldUnit,
+          getRowUnitCalls: [
+            [
+              {
+                row: Combat.Close,
+                unitId,
+                units: [],
+              },
+            ],
+            [
+              {
+                row: Combat.Ranged,
+                unitId,
+                units: [],
+                modifier: gameUnit,
+              },
+            ],
+          ],
+        })
+      })
+      it('returns unit if found in siege units', () => {
         const userId = new ObjectId().toString()
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -437,6 +687,65 @@ describe('get-battlefield-unit', () => {
                 row: Combat.Siege,
                 unitId,
                 units: [gameUnit],
+              },
+            ],
+          ],
+        })
+      })
+      it('returns unit if found in siege modifier', () => {
+        const userId = new ObjectId().toString()
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        const game = TestUtil.getDbGame({
+          round,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  siege: {
+                    score: 0,
+                    units: [],
+                    modifier: gameUnit,
+                  },
+                }),
+              ],
+            }),
+          ],
+        })
+        const battlefieldUnit: BattlefieldUnit = {
+          row: Combat.Siege,
+          unit: gameUnit,
+        }
+        testGetBattlefieldUnit({
+          game,
+          unitId,
+          userId,
+          getRowUnitResponses: [undefined, undefined, battlefieldUnit],
+          expected: battlefieldUnit,
+          getRowUnitCalls: [
+            [
+              {
+                row: Combat.Close,
+                unitId,
+                units: [],
+              },
+            ],
+            [
+              {
+                row: Combat.Ranged,
+                unitId,
+                units: [],
+              },
+            ],
+            [
+              {
+                row: Combat.Siege,
+                unitId,
+                units: [],
+                modifier: gameUnit,
               },
             ],
           ],
@@ -497,7 +806,7 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
-      it('returns unit if found in close', () => {
+      it('returns unit if found in close units', () => {
         const userId = new ObjectId().toString()
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -541,7 +850,53 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
-      it('returns unit if found in ranged', () => {
+      it('returns unit if found in close modifier', () => {
+        const userId = new ObjectId().toString()
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        const game = TestUtil.getDbGame({
+          round,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  close: {
+                    score: 0,
+                    units: [],
+                    modifier: gameUnit,
+                  },
+                }),
+              ],
+            }),
+          ],
+        })
+        const battlefieldUnit: BattlefieldUnit = {
+          row: Combat.Close,
+          unit: gameUnit,
+        }
+        testGetBattlefieldUnit({
+          game,
+          unitId,
+          userId,
+          getRowUnitResponses: [battlefieldUnit, undefined, undefined],
+          expected: battlefieldUnit,
+          getRowUnitCalls: [
+            [
+              {
+                row: Combat.Close,
+                unitId,
+                units: [],
+                modifier: gameUnit,
+              },
+            ],
+          ],
+        })
+      })
+      it('returns unit if found in ranged units', () => {
         const userId = new ObjectId().toString()
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -592,7 +947,60 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
-      it('returns unit if found in siege', () => {
+      it('returns unit if found in ranged modifier', () => {
+        const userId = new ObjectId().toString()
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        const game = TestUtil.getDbGame({
+          round,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  ranged: {
+                    score: 0,
+                    units: [],
+                    modifier: gameUnit,
+                  },
+                }),
+              ],
+            }),
+          ],
+        })
+        const battlefieldUnit: BattlefieldUnit = {
+          row: Combat.Ranged,
+          unit: gameUnit,
+        }
+        testGetBattlefieldUnit({
+          game,
+          unitId,
+          userId,
+          getRowUnitResponses: [undefined, battlefieldUnit, undefined],
+          expected: battlefieldUnit,
+          getRowUnitCalls: [
+            [
+              {
+                row: Combat.Close,
+                unitId,
+                units: [],
+              },
+            ],
+            [
+              {
+                row: Combat.Ranged,
+                unitId,
+                units: [],
+                modifier: gameUnit,
+              },
+            ],
+          ],
+        })
+      })
+      it('returns unit if found in siege units', () => {
         const userId = new ObjectId().toString()
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -650,6 +1058,66 @@ describe('get-battlefield-unit', () => {
           ],
         })
       })
+      it('returns unit if found in siege modifier', () => {
+        const userId = new ObjectId().toString()
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        const game = TestUtil.getDbGame({
+          round,
+          players: [
+            TestUtil.getDbGamePlayer({
+              user: userId,
+              rounds: [
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({}),
+                TestUtil.getDbPlayerRound({
+                  siege: {
+                    score: 0,
+                    units: [],
+                    modifier: gameUnit,
+                  },
+                }),
+              ],
+            }),
+          ],
+        })
+        const battlefieldUnit: BattlefieldUnit = {
+          row: Combat.Siege,
+          unit: gameUnit,
+        }
+        testGetBattlefieldUnit({
+          game,
+          unitId,
+          userId,
+          getRowUnitResponses: [undefined, undefined, battlefieldUnit],
+          expected: battlefieldUnit,
+          getRowUnitCalls: [
+            [
+              {
+                row: Combat.Close,
+                unitId,
+                units: [],
+              },
+            ],
+            [
+              {
+                row: Combat.Ranged,
+                unitId,
+                units: [],
+              },
+            ],
+            [
+              {
+                row: Combat.Siege,
+                unitId,
+                units: [],
+                modifier: gameUnit,
+              },
+            ],
+          ],
+        })
+      })
     })
   })
   describe('getRowUnit', () => {
@@ -680,6 +1148,21 @@ describe('get-battlefield-unit', () => {
     })
     describe('close', () => {
       const row = Combat.Close
+      it('returns BattlefieldUnit if modifier matches close', () => {
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        testGetRowUnit({
+          unitId,
+          units: [],
+          modifier: gameUnit,
+          row,
+          expected: {
+            row,
+            unit: gameUnit,
+          },
+        })
+      })
       it('returns BattlefieldUnit if single unit matches close', () => {
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
@@ -739,7 +1222,22 @@ describe('get-battlefield-unit', () => {
     })
     describe('ranged', () => {
       const row = Combat.Ranged
-      it('returns BattlefieldUnit if single unit matches close', () => {
+      it('returns BattlefieldUnit if modifier matches ranged', () => {
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        testGetRowUnit({
+          unitId,
+          units: [],
+          modifier: gameUnit,
+          row,
+          expected: {
+            row,
+            unit: gameUnit,
+          },
+        })
+      })
+      it('returns BattlefieldUnit if single unit matches ranged', () => {
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
         })
@@ -753,7 +1251,7 @@ describe('get-battlefield-unit', () => {
           },
         })
       })
-      it('returns BattlefieldUnit if first of many matches close', () => {
+      it('returns BattlefieldUnit if first of many matches ranged', () => {
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
         })
@@ -767,7 +1265,7 @@ describe('get-battlefield-unit', () => {
           },
         })
       })
-      it('returns BattlefieldUnit if middle of many matches close', () => {
+      it('returns BattlefieldUnit if middle of many matches ranged', () => {
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
         })
@@ -781,7 +1279,7 @@ describe('get-battlefield-unit', () => {
           },
         })
       })
-      it('returns BattlefieldUnit if last of many matches close', () => {
+      it('returns BattlefieldUnit if last of many matches ranged', () => {
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
         })
@@ -798,7 +1296,22 @@ describe('get-battlefield-unit', () => {
     })
     describe('siege', () => {
       const row = Combat.Siege
-      it('returns BattlefieldUnit if single unit matches close', () => {
+      it('returns BattlefieldUnit if modifier matches siege', () => {
+        const gameUnit = TestUtil.getDbGameUnit({
+          id: unitId,
+        })
+        testGetRowUnit({
+          unitId,
+          units: [],
+          modifier: gameUnit,
+          row,
+          expected: {
+            row,
+            unit: gameUnit,
+          },
+        })
+      })
+      it('returns BattlefieldUnit if single unit matches siege', () => {
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
         })
@@ -812,7 +1325,7 @@ describe('get-battlefield-unit', () => {
           },
         })
       })
-      it('returns BattlefieldUnit if first of many matches close', () => {
+      it('returns BattlefieldUnit if first of many matches siege', () => {
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
         })
@@ -826,7 +1339,7 @@ describe('get-battlefield-unit', () => {
           },
         })
       })
-      it('returns BattlefieldUnit if middle of many matches close', () => {
+      it('returns BattlefieldUnit if middle of many matches siege', () => {
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
         })
@@ -840,7 +1353,7 @@ describe('get-battlefield-unit', () => {
           },
         })
       })
-      it('returns BattlefieldUnit if last of many matches close', () => {
+      it('returns BattlefieldUnit if last of many matches siege', () => {
         const gameUnit = TestUtil.getDbGameUnit({
           id: unitId,
         })
@@ -902,11 +1415,13 @@ function testGetBattlefieldUnit({
 function testGetRowUnit({
   unitId,
   units,
+  modifier,
   row,
   expected,
 }: {
   unitId: ObjectId
   units: GameUnitDbObject[]
+  modifier?: GameUnitDbObject
   row: Combat
   expected: BattlefieldUnit | undefined
 }) {
@@ -915,6 +1430,7 @@ function testGetRowUnit({
       row,
       unitId,
       units,
+      modifier,
     })
   ).toEqual(expected)
 }

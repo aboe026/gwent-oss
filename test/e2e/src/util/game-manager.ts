@@ -1,6 +1,7 @@
 import ApiClient from './api-client'
 import {
   BondingExpected,
+  DecoyingExpected,
   E2eHelper,
   MardroemingExpected,
   MoralingExpected,
@@ -90,7 +91,9 @@ export class GameManager {
   async deploy({
     unitName,
     combat,
+    eligibleCombats,
     effectiveStrength,
+    hero,
     scorching,
     moraling,
     horning,
@@ -98,18 +101,22 @@ export class GameManager {
     mustering,
     bonding,
     impacts,
+    decoying,
     modifier,
     verify,
   }: {
     unitName: string
     combat?: Combat
+    eligibleCombats?: Combat[]
     effectiveStrength?: number
+    hero?: boolean
     scorching?: ScorchingExpected[]
     moraling?: MoralingExpected[]
     horning?: MoralingExpected[]
     mardroeming?: MardroemingExpected[]
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
+    decoying?: DecoyingExpected
     impacts?: number
     modifier?: boolean
     verify?: boolean
@@ -128,12 +135,25 @@ export class GameManager {
         unitName: unitToMove.unit.name,
         row: combatRow,
         modifier,
+        decoyTarget: decoying?.name,
+        eligibleRows: eligibleCombats,
       })
     } else {
+      let targetId: string | undefined = undefined
+      if (decoying) {
+        const target = await currentPlayer.client.getBattlefieldUnit({
+          gameId: this.gameId,
+          combat: decoying.row,
+          name: decoying.name,
+          instance: decoying.instance,
+        })
+        targetId = target.id
+      }
       await currentPlayer.client.playUnit({
         gameId: this.gameId,
         unitId: unitToMove.unit.id,
         combat: combatRow,
+        target: targetId,
       })
     }
     E2eHelper.playUnit({
@@ -141,6 +161,7 @@ export class GameManager {
       gameDeck: currentPlayer.deck,
       deckUnit: unitToMove,
       row: combatRow,
+      hero,
       moves: this.moves[this.moves.length - 1],
       switchTurnsWith: otherPlayer.gamePlayer.passed ? currentPlayer.gamePlayer : otherPlayer.gamePlayer,
       effectiveStrength,
@@ -150,6 +171,7 @@ export class GameManager {
       mardroeming,
       mustering,
       bonding,
+      decoying,
       impacts,
     })
     if (this.shouldVerify || verify) {

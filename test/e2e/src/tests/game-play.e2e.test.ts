@@ -68,7 +68,7 @@ test('Play a unit after opponent plays unit', async (t) => {
   await gameManager.deploy({ unitName: unitName1, combat: Combat.Siege })
 
   await gameManager.initialize({})
-  await gameManager.deploy({ unitName: unitName2 })
+  await gameManager.deploy({ unitName: unitName2, eligibleCombats: [Combat.Close, Combat.Ranged] })
 })
 
 test('Play unit after opponent plays pass', async (t) => {

@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 
 import CalculateGameEffectiveStrengths from './calculate-game-effective-strengths'
-import { GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
+import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'
 import getRoundUnits from './get-round-units'
 import getUnitEffects from './get-unit-effects'
@@ -27,6 +27,9 @@ export default class PlayUnitImplementation {
    * @param config.game The game the unit is being played for.
    * @param config.logPrefix The prefix which should be prefixed on log statements.
    * @param config.unit The Unit being played.
+   * @param config.targetId The Unit ID that a potential Decoy card should target.
+   * @param config.effects The Effects for the new DeckUnit that have been pre-fetched. If not provided, will be retrieved.
+   * @param config.roundUnits The Units for all players in the game round that have been pre-fetched. If not provided, will be retrieved.
    * @returns The Game and GameDeck with the unit played for the user.
    * @throws {PresentableError} if known problem playing unit.
    * @throws {Error} if unforseen problem adding the user.
@@ -37,6 +40,9 @@ export default class PlayUnitImplementation {
     game,
     logPrefix,
     unit,
+    targetId,
+    effects,
+    roundUnits,
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const playerId = game.turn?.toString() // save current player before any modifications to game turn
     if (!playerId) {
@@ -45,13 +51,17 @@ export default class PlayUnitImplementation {
       throw Error(message)
     }
 
-    const roundUnits = await getRoundUnits({
-      game,
-      unitBeingPlayed: unit,
-    })
-    const unitEffects = await getUnitEffects({
-      units: roundUnits,
-    })
+    roundUnits =
+      roundUnits ||
+      (await getRoundUnits({
+        game,
+        unitBeingPlayed: unit,
+      }))
+    effects =
+      effects ||
+      (await getUnitEffects({
+        units: roundUnits,
+      }))
 
     const {
       mardroemes,
@@ -62,29 +72,32 @@ export default class PlayUnitImplementation {
       musteredUnits,
       musteredOrigins,
       scorches,
+      decoys,
+      deckUnitsAddedToHand,
     } = await modifyBattlefieldWithNewUnit({
       battlefieldUnits: roundUnits,
       combat,
-      effects: unitEffects,
+      effects,
       game,
       logPrefix,
       newDeckUnit: deckUnit,
       newUnit: unit,
+      targetId,
     })
 
     const musterEffects = await getUnitEffects({
       units: musteredUnits,
-      effects: unitEffects,
+      effects,
     })
     const transformedEffects = await getUnitEffects({
       units: transformedUnits,
-      effects: unitEffects,
+      effects,
     })
 
     const { bonds, horns, morales } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
       units: [unit, ...roundUnits, ...musteredUnits, ...transformedUnits],
-      effects: [...unitEffects, ...musterEffects, ...transformedEffects],
+      effects: [...effects, ...musterEffects, ...transformedEffects],
       logPrefix,
       newDeckUnit: deckUnit,
       musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
@@ -97,6 +110,7 @@ export default class PlayUnitImplementation {
       combat,
       deckUnit,
       game,
+      decoys,
       musters,
       musteredOrigins,
       playerId,
@@ -137,6 +151,7 @@ export default class PlayUnitImplementation {
     return {
       game: updatedGame,
       gameDeck: player.deck,
+      handDeckUnitsAdded: deckUnitsAddedToHand,
     }
   }
 }
@@ -144,4 +159,5 @@ export default class PlayUnitImplementation {
 interface ImplementedPlayUnit {
   game: GameDbObject
   gameDeck: GameDeckDbObject
+  handDeckUnitsAdded: DeckUnitDbObject[]
 }

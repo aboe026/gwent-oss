@@ -1,3 +1,5 @@
+import { ObjectId } from 'mongodb'
+
 import { Combat, MutationPlayUnitArgs } from '@gwent/graphql-schema/resolver-typings'
 import { Context } from '@gwent/graphql-schema/context'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
@@ -50,9 +52,11 @@ async function testPlayUnitMutation({
   }
   const unit = TestUtil.getDbUnit({})
   const combat = Combat.Close
+  const targetId = new ObjectId().toString()
   const deckUnit = TestUtil.getDbDeckUnit({
     id: unit._id,
   })
+  const handDeckUnitAdded = TestUtil.getDbDeckUnit({})
   const gameDeck = TestUtil.getDbGameDeck({})
   const resolvedGame = TestUtil.getGameFromDbGame({
     game: updatedGame,
@@ -73,6 +77,7 @@ async function testPlayUnitMutation({
       game,
       logPrefix,
       unit,
+      targetId,
     })
   }
   const implementationSpy = jest.spyOn(PlayUnitImplementation, 'playUnitImplementation')
@@ -82,6 +87,7 @@ async function testPlayUnitMutation({
     implementationSpy.mockResolvedValue({
       game: updatedGame,
       gameDeck,
+      handDeckUnitsAdded: [handDeckUnitAdded],
     })
   }
   const resolutionSpy = jest.spyOn(PlayUnitResolution, 'playUnitResolution')
@@ -111,6 +117,7 @@ async function testPlayUnitMutation({
               game,
               logPrefix,
               unit,
+              targetId,
             },
           ],
         ]
@@ -125,6 +132,7 @@ async function testPlayUnitMutation({
               game: updatedGame,
               gameDeck,
               logPrefix,
+              handDeckUnitsAdded: [handDeckUnitAdded],
             },
           ],
         ]

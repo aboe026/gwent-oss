@@ -23,18 +23,21 @@ export default class PlayUnitMutation {
       deckUnit,
       game,
       logPrefix,
-      unit, //
+      unit,
+      targetId, //
     } = await PlayUnitValidation.playUnitValidation(args, context, info)
 
     const {
       game: updatedGame,
-      gameDeck, //
+      gameDeck,
+      handDeckUnitsAdded,
     } = await PlayUnitImplementation.playUnitImplementation({
       combat,
       deckUnit,
       game,
       logPrefix,
       unit,
+      targetId,
     })
 
     return PlayUnitResolution.playUnitResolution({
@@ -42,6 +45,7 @@ export default class PlayUnitMutation {
       game: updatedGame,
       gameDeck,
       logPrefix,
+      handDeckUnitsAdded,
     })
   }
 }

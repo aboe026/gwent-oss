@@ -3,6 +3,8 @@ import { ObjectId } from 'mongodb'
 import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import {
+  DeckUnitDbObject,
+  EffectDbObject,
   EffectKey,
   GameDbObject,
   GameDeckDbObject,
@@ -257,6 +259,35 @@ describe('play-unit-implementation', () => {
       expectedGameDeck: player.deck,
     })
   })
+  it('passes decoy impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      targetId: impacts[0].unit.unit.toString(),
+      logPrefix,
+      decoys: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
+      deckUnitsAddedToHand: [impacts[0].unit],
+      expectedGameDeck: player.deck,
+    })
+  })
   it('logs to trace if enabled', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
@@ -281,6 +312,8 @@ describe('play-unit-implementation', () => {
 async function testPlayUnitImplementation({
   game,
   updatedGame,
+  effects,
+  roundUnits,
   logPrefix,
   scorches = {},
   musters = {},
@@ -293,6 +326,9 @@ async function testPlayUnitImplementation({
   bonds = {},
   horns = {},
   morales = {},
+  decoys = {},
+  deckUnitsAddedToHand = [],
+  targetId,
   error,
   expectedGameDeck,
   getRoundUnitsCalls,
@@ -301,6 +337,8 @@ async function testPlayUnitImplementation({
 }: {
   game: GameDbObject
   updatedGame?: GameDbObject
+  effects?: EffectDbObject[]
+  roundUnits?: UnitDbObject[]
   logPrefix: string
   scorches?: ImpactsByUnitId
   musters?: ImpactsByUnitId
@@ -313,6 +351,9 @@ async function testPlayUnitImplementation({
   bonds?: ImpactsByUnitId
   horns?: ImpactsByUnitId
   morales?: ImpactsByUnitId
+  decoys?: ImpactsByUnitId
+  deckUnitsAddedToHand?: DeckUnitDbObject[]
+  targetId?: string
   error?: Error
   expectedGameDeck?: GameDeckDbObject
   getRoundUnitsCalls?: any[][]
@@ -353,6 +394,8 @@ async function testPlayUnitImplementation({
     transformedUnits,
     transformedGameUnits,
     mardroemingGameUnit,
+    decoys,
+    deckUnitsAddedToHand,
   })
   const calculateEffectiveStrengthsSpy = jest
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
@@ -381,6 +424,9 @@ async function testPlayUnitImplementation({
     game,
     logPrefix,
     unit,
+    effects,
+    roundUnits,
+    targetId,
   })
   if (error) {
     await expect(promise).rejects.toThrow(error)
@@ -388,6 +434,7 @@ async function testPlayUnitImplementation({
     await expect(promise).resolves.toEqual({
       game: updatedGame,
       gameDeck: expectedGameDeck,
+      handDeckUnitsAdded: deckUnitsAddedToHand,
     })
   }
 
@@ -437,6 +484,7 @@ async function testPlayUnitImplementation({
               logPrefix,
               newDeckUnit: deckUnit,
               newUnit: unit,
+              targetId,
             },
           ],
         ]
@@ -477,6 +525,7 @@ async function testPlayUnitImplementation({
               horns,
               morales,
               mardroemes,
+              decoys,
               transformedGameUnits,
               mardroemingGameUnit,
             },

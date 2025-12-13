@@ -6,7 +6,10 @@ import { DeckUnitFragment, GameUnitFragment } from '@gwent/graphql-schema/apollo
  * @param unit The unit to check whether or not it is a GameUnitFragment.
  * @returns True if the unit is a GameUnitFragment, false if it is a DeckUnitFragment.
  */
-export default function isGameUnit(unit: DeckUnitFragment | GameUnitFragment): unit is GameUnitFragment {
+export default function isGameUnit(unit: DeckUnitFragment | GameUnitFragment | undefined): unit is GameUnitFragment {
   const gameUnit = unit as GameUnitFragment
-  return gameUnit.effectiveStrength !== undefined || gameUnit.effects !== undefined || gameUnit.row !== undefined
+  return (
+    gameUnit &&
+    (gameUnit.effectiveStrength !== undefined || gameUnit.effects !== undefined || gameUnit.row !== undefined)
+  )
 }

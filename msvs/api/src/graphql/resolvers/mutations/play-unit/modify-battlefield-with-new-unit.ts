@@ -6,6 +6,7 @@ import {
   GameUnitDbObject,
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
+import EffectDecoy from './effect-decoy'
 import EffectMardroeme from './effect-mardroeme'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
 import EffectScorch from './effect-scorch'
@@ -22,6 +23,7 @@ import { ImpactsByUnitId } from '../../resolver-util'
  * @param config.logPrefix What to prepend log statements with.
  * @param config.newDeckUnit The new DeckUnit being introduced to the battlefield.
  * @param config.newUnit The new Unit being introduced to the battlefield.
+ * @param config.targetId The ID of a potential Unit being targeted by the new battlefield unit. Used for Decoy and Spies.
  * @returns Any impacts the new unit has on the battlefield.
  */
 export default async function modifyBattlefieldWithNewUnit({
@@ -32,6 +34,7 @@ export default async function modifyBattlefieldWithNewUnit({
   logPrefix,
   newDeckUnit,
   newUnit,
+  targetId,
 }: {
   battlefieldUnits: UnitDbObject[]
   combat?: Combat | null
@@ -40,7 +43,9 @@ export default async function modifyBattlefieldWithNewUnit({
   logPrefix: string
   newDeckUnit: DeckUnitDbObject
   newUnit: UnitDbObject
+  targetId: string | undefined | null
 }): Promise<ModificationImpacts> {
+  const deckUnitsAddedToHand: DeckUnitDbObject[] = []
   addNewUnitToBattlefield({
     game,
     newDeckUnit,
@@ -79,7 +84,19 @@ export default async function modifyBattlefieldWithNewUnit({
     newDeckUnit,
     combat,
   })
+  const { deckUnitAddedToHand, impacts: decoyImpacts } = EffectDecoy.decoyFromBattlefield({
+    game,
+    logPrefix,
+    newDeckUnit,
+    combat,
+    targetId,
+  })
+  if (deckUnitAddedToHand) {
+    deckUnitsAddedToHand.push(deckUnitAddedToHand)
+  }
   return {
+    decoys: decoyImpacts,
+    deckUnitsAddedToHand,
     scorches,
     musters: musterImpacts,
     musteredUnits,
@@ -139,6 +156,8 @@ export function addNewUnitToBattlefield({
 }
 
 interface ModificationImpacts {
+  decoys: ImpactsByUnitId
+  deckUnitsAddedToHand: DeckUnitDbObject[]
   scorches: ImpactsByUnitId
   musters: ImpactsByUnitId
   musteredUnits: UnitDbObject[]

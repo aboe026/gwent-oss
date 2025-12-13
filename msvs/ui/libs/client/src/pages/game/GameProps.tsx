@@ -124,6 +124,7 @@ export interface PlayUnitProps {
       game: Scalars['ID']['input']
       unit: Scalars['ID']['input']
       combat?: InputMaybe<Combat> | undefined
+      target?: InputMaybe<Scalars['ID']['input']>
     },
     ApolloCache
   >
@@ -145,7 +146,7 @@ export interface PlayPassProps {
 
 export interface UnitForPlayer {
   unitFragment: DeckUnitFragment | GameUnitFragment
-  playerId: string | undefined
+  playerName: string | undefined
 }
 
 export interface FullUnitCards {

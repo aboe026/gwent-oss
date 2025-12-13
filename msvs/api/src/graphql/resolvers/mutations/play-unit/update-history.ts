@@ -41,6 +41,7 @@ export default class UpdateHistory {
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
+   * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
    * @param config.musteredOrigins A map of where any potential mustered units came from.
    */
   static newUnitDeployed({
@@ -49,6 +50,7 @@ export default class UpdateHistory {
     playerId,
     logPrefix,
     combat,
+    decoys,
     scorches,
     mardroemes,
     mardroemingGameUnit,
@@ -64,6 +66,7 @@ export default class UpdateHistory {
     playerId: string
     logPrefix: string
     combat: Combat | null | undefined
+    decoys: ImpactsByUnitId
     scorches: ImpactsByUnitId
     mardroemes: ImpactsByUnitId
     transformedGameUnits?: GameUnitDbObject[]
@@ -85,7 +88,8 @@ export default class UpdateHistory {
       mardroemes[deckUnit.unit.toString()] ||
       morales[deckUnit.unit.toString()] ||
       musters[deckUnit.unit.toString()] ||
-      scorches[deckUnit.unit.toString()]
+      scorches[deckUnit.unit.toString()] ||
+      decoys[deckUnit.unit.toString()]
     const move: MoveUnitDbObject = {
       created: new Date(),
       unit: {
@@ -116,6 +120,7 @@ export default class UpdateHistory {
           created: move.created,
           game,
           horns,
+          decoys,
           logPrefix,
           mardroemes,
           morales,
@@ -155,6 +160,7 @@ export default class UpdateHistory {
           created: move.created,
           game,
           horns,
+          decoys,
           logPrefix,
           mardroemes,
           morales,
@@ -186,6 +192,7 @@ export default class UpdateHistory {
    * @param config.musters Any potential units the new battlefield unit mustered when deployed.
    * @param config.bonds Any potential units that were bonded due to the new battlefield unit being played.
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
+   * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
    * @param config.reason Why the new unit is indirectly being added to the battlefield.
    * @param config.origin Where the new unit came from.
@@ -202,6 +209,7 @@ export default class UpdateHistory {
     musters,
     bonds,
     horns,
+    decoys,
     morales,
     reason,
   }: {
@@ -216,6 +224,7 @@ export default class UpdateHistory {
     musters: ImpactsByUnitId
     bonds: ImpactsByUnitId
     horns: ImpactsByUnitId
+    decoys: ImpactsByUnitId
     morales: ImpactsByUnitId
     reason: MoveUnitReasonDbObject
   }) {
@@ -235,7 +244,8 @@ export default class UpdateHistory {
       musters[unitId.toString()] ||
       bonds[unitId.toString()] ||
       horns[unitId.toString()] ||
-      morales[unitId.toString()]
+      morales[unitId.toString()] ||
+      decoys[unitId.toString()]
     const move: MoveUnitDbObject = {
       created,
       reason,

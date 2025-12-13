@@ -24,7 +24,7 @@ export default function StrengthCircle({
   let strengthCircleContainerClassModifier = ''
   if (effectHighlight && effectiveStrength && unit.strength) {
     if (unit.hero) {
-      strengthCircleContainerClassModifier = 'strength-circle-container-hero'
+      strengthCircleContainerClassModifier = HTML_CLASSES.GameUnitStrengthCircleHero
     } else if (effectiveStrength !== unit.strength) {
       strengthCircleContainerClassModifier = `strength-circle-container-${
         effectiveStrength > unit.strength ? 'greater' : 'less'
@@ -36,7 +36,7 @@ export default function StrengthCircle({
       <div style={{ height: size, width: size, ...style }} className="strength-circle-container-background">
         <div
           style={{ height: size, width: size, ...style }}
-          className={`strength-circle-container ${strengthCircleContainerClassModifier}`}
+          className={`${HTML_CLASSES.GameUnitStrengthCircleContainer} ${strengthCircleContainerClassModifier}`}
         >
           {unit.strength !== null && (
             <>

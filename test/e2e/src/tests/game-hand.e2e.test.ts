@@ -213,17 +213,33 @@ test('Playing all units in hand shows message to user to pass or activate leader
       ],
     },
   })
-  await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.deploy({ unitName: unitName1, eligibleCombats: [Combat.Close, Combat.Ranged] })
   await gameManager.pass({})
   await gameManager.deploy({ unitName: unitName2 })
-  await gameManager.deploy({ unitName: unitName3, combat: Combat.Ranged })
+  await gameManager.deploy({
+    unitName: unitName3,
+    combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
+  })
   await gameManager.deploy({ unitName: unitName4 })
   await gameManager.deploy({ unitName: unitName5 })
-  await gameManager.deploy({ unitName: unitName6, combat: Combat.Ranged })
-  await gameManager.deploy({ unitName: unitName7, combat: Combat.Ranged })
+  await gameManager.deploy({
+    unitName: unitName6,
+    combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
+  })
+  await gameManager.deploy({
+    unitName: unitName7,
+    combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
+  })
   await gameManager.deploy({ unitName: unitName8, combat: Combat.Ranged })
-  await gameManager.deploy({ unitName: unitName9, combat: Combat.Ranged })
+  await gameManager.deploy({
+    unitName: unitName9,
+    combat: Combat.Ranged,
+    eligibleCombats: [Combat.Close, Combat.Ranged],
+  })
   await gameManager.initialize({})
 
-  await gameManager.deploy({ unitName: unitName10 })
+  await gameManager.deploy({ unitName: unitName10, eligibleCombats: [Combat.Close, Combat.Ranged] })
 })

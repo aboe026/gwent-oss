@@ -10,6 +10,7 @@ import {
   UnitDbObject,
 } from '@gwent/graphql-schema/database-typings'
 import deepClone from '../util/deep-clone'
+import EffectDecoy from '../../src/graphql/resolvers/mutations/play-unit/effect-decoy'
 import EffectMardroeme from '../../src/graphql/resolvers/mutations/play-unit/effect-mardroeme'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
 import modifyBattlefieldWithNewUnit, {
@@ -185,6 +186,23 @@ describe('modify-battlefield-with-new-unit', () => {
         mardroemingGameUnit: TestUtil.getDbGameUnit({
           id: newDeckUnit.unit,
         }),
+      })
+    })
+    it('returns single impact and deckUnitAddedToHand for decoy', () => {
+      const newDeckUnit = TestUtil.getDbDeckUnit({})
+      const impacts: ImpactDbObject[] = [
+        {
+          unit: TestUtil.getDbGameUnit({}),
+          user: new ObjectId(),
+        },
+      ]
+      testModifyBattlefieldWithNewUnit({
+        newDeckUnit,
+        newUnit: TestUtil.getDbUnit({}),
+        decoyImpacts: {
+          [newDeckUnit.unit.toString()]: impacts,
+        },
+        deckUnitAddedToHand: impacts[0].unit,
       })
     })
   })
@@ -2595,6 +2613,8 @@ async function testModifyBattlefieldWithNewUnit({
   mardroemeTransformedGameUnits = [],
   mardroemeTransformedUnits = [],
   mardroemingGameUnit,
+  decoyImpacts = {},
+  deckUnitAddedToHand,
 }: {
   newDeckUnit: DeckUnitDbObject
   newUnit: UnitDbObject
@@ -2606,9 +2626,12 @@ async function testModifyBattlefieldWithNewUnit({
   mardroemeTransformedUnits?: UnitDbObject[]
   mardroemeTransformedGameUnits?: GameUnitDbObject[]
   mardroemingGameUnit?: GameUnitDbObject
+  decoyImpacts?: ImpactsByUnitId
+  deckUnitAddedToHand?: DeckUnitDbObject
 }) {
   const battlefieldUnits = [TestUtil.getDbUnit({})]
   const combat = Combat.Close
+  const targetId = new ObjectId().toString()
   const effects = [TestUtil.getDbEffect({})]
   const game = TestUtil.getDbGame({})
   const logPrefix = 'log-prefix'
@@ -2625,6 +2648,10 @@ async function testModifyBattlefieldWithNewUnit({
     transformedGameUnits: mardroemeTransformedGameUnits,
     mardroemingGameUnit: mardroemingGameUnit,
   })
+  const decoyFromBattlefieldSpy = jest.spyOn(EffectDecoy, 'decoyFromBattlefield').mockReturnValue({
+    impacts: decoyImpacts,
+    deckUnitAddedToHand,
+  })
 
   await expect(
     modifyBattlefieldWithNewUnit({
@@ -2635,6 +2662,7 @@ async function testModifyBattlefieldWithNewUnit({
       newDeckUnit,
       newUnit,
       combat,
+      targetId,
     })
   ).resolves.toEqual({
     scorches: scorchImpacts,
@@ -2645,6 +2673,8 @@ async function testModifyBattlefieldWithNewUnit({
     transformedUnits: mardroemeTransformedUnits,
     transformedGameUnits: mardroemeTransformedGameUnits,
     mardroemingGameUnit: mardroemingGameUnit,
+    decoys: decoyImpacts,
+    deckUnitsAddedToHand: deckUnitAddedToHand ? [deckUnitAddedToHand] : [],
   })
 
   expect(musterBattlefieldSpy.mock.calls).toEqual([
@@ -2678,6 +2708,17 @@ async function testModifyBattlefieldWithNewUnit({
         logPrefix,
         newDeckUnit,
         combat,
+      },
+    ],
+  ])
+  expect(decoyFromBattlefieldSpy.mock.calls).toEqual([
+    [
+      {
+        game,
+        logPrefix,
+        newDeckUnit,
+        combat,
+        targetId,
       },
     ],
   ])

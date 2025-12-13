@@ -71,6 +71,7 @@ export default class TestUtil {
     scorchMin,
     scorchScope,
     strength,
+    special,
   }: {
     combats?: string[]
     dlc?: ObjectId | string
@@ -84,6 +85,7 @@ export default class TestUtil {
     name?: string
     scorchMin?: number
     scorchScope?: Combat
+    special?: boolean
     strength?: number
   }): UnitDbObject {
     return {
@@ -102,6 +104,7 @@ export default class TestUtil {
       quote: 'unit-quote',
       scorchMin,
       scorchScope,
+      special,
       strength,
     }
   }

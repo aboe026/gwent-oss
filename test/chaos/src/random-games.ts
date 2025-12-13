@@ -4,9 +4,11 @@ import createGwentClient, {
   Combat,
   Deck,
   DeckUnit,
+  EffectKey,
   FactionKey,
   GameDeck,
   GameStatus,
+  GameUnit,
   GwentClient,
   User,
 } from '@gwent/node-client'
@@ -306,8 +308,21 @@ async function playRound({
       }
       let modifiersInHand = 0
       const playableHand: DeckUnit[] = []
+
+      const playerBattlefieldUnits: GameUnit[] = []
+      for (const row of [round?.close, round?.ranged, round?.siege]) {
+        if (row?.units) {
+          playerBattlefieldUnits.push(...row.units)
+        }
+      }
+      const decoyableGameUnits: GameUnit[] = playerBattlefieldUnits.filter(
+        (battlefieldUnit) => !battlefieldUnit.unit.hero && !battlefieldUnit.unit.special
+      )
+
       for (const deckUnit of gameDeck.hand) {
         let playable = true
+
+        // modifiers
         if (deckUnit.unit.modifier) {
           if (modifiersInHand < rowsAvailableToModify.length) {
             modifiersInHand++
@@ -315,6 +330,12 @@ async function playRound({
             playable = false
           }
         }
+
+        // decoys
+        if (deckUnit.unit.effects?.some((effect) => effect.key === EffectKey.Decoy) && decoyableGameUnits.length <= 0) {
+          playable = false
+        }
+
         if (playable) {
           playableHand.push(deckUnit)
         }
@@ -334,6 +355,7 @@ async function playRound({
           items: playableHand,
         })
         let combat: Combat | undefined = undefined
+        let target: GameUnit | undefined = undefined
         if (unit.unit.modifier) {
           const combatIndex = getRandomNumber({
             min: 0,
@@ -345,11 +367,19 @@ async function playRound({
             items: unit.unit.combats,
           })
         }
-        await log(`🪖 Playing unit "${unit.unit.name}" (${unit.unit.id}) as "${combat}" for user "${name}"`)
+        if (unit.unit.effects?.some((effect) => effect.key === EffectKey.Decoy)) {
+          target = getRandomItem({
+            items: decoyableGameUnits,
+          })
+        }
+        await log(
+          `🪖 Playing unit "${unit.unit.name}" (${unit.unit.id}) as "${combat}" for user "${name}"${target ? ` on target "${target.unit.name}" (${target.unit.id})` : ''}`
+        )
         await client.playUnit({
           game: gameId,
           unit: unit.unit.id,
-          combat,
+          combat: target ? target.row : combat,
+          target: target?.unit.id,
         })
       }
     } else {

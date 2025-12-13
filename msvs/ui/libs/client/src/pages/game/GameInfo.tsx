@@ -3,7 +3,6 @@ import { Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
 import {
-  DeckUnitFragment,
   FragmentType,
   GameDeckFragmentDoc,
   GameFactionFragmentDoc,
@@ -20,7 +19,7 @@ import {
   useFragment,
   UnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
-import { GameDeckProps, GameProps } from './GameProps'
+import { GameDeckProps, GameProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
 import { humanizeDay, humanizeTime } from '@gwent/utils'
 
@@ -28,10 +27,10 @@ import { humanizeDay, humanizeTime } from '@gwent/utils'
  * Information about the Game and players in it.
  */
 export default function GameInfo({
+  cardSelected,
   coinTossVisible,
   gameProps,
   gameDeckProps,
-  handCardSelected,
   opponent,
   playPassLoading,
   playUnitLoading,
@@ -41,7 +40,7 @@ export default function GameInfo({
   coinTossVisible: boolean
   gameDeckProps: GameDeckProps
   gameProps: GameProps
-  handCardSelected: DeckUnitFragment | undefined
+  cardSelected: UnitForPlayer | undefined
   opponent: GamePlayerFragment
   playPassLoading: boolean
   playUnitLoading: boolean
@@ -49,7 +48,7 @@ export default function GameInfo({
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
   const sharedProps = {
-    handCardSelected,
+    cardSelected,
     coinTossVisible,
     setPassConfirmationOpen,
     playUnitLoading,
@@ -137,6 +136,7 @@ function renderSharedInfo({ gameDeckProps, gameProps }: { gameDeckProps: GameDec
  * Information about the player in the Game.
  */
 function renderPlayerInfo({
+  cardSelected,
   coinTossVisible,
   deckName,
   deckUpdated,
@@ -144,7 +144,6 @@ function renderPlayerInfo({
   faction,
   game,
   hand,
-  handCardSelected,
   id,
   isSelf,
   leader,
@@ -154,6 +153,7 @@ function renderPlayerInfo({
   setPassConfirmationOpen,
   undrawn,
 }: {
+  cardSelected: UnitForPlayer | undefined
   coinTossVisible: boolean
   deckName?: string
   deckUpdated?: Date
@@ -161,7 +161,6 @@ function renderPlayerInfo({
   faction?: GameFactionFragment | null
   game: GameFragment
   hand?: number
-  handCardSelected: DeckUnitFragment | undefined
   id: string
   isSelf: boolean
   leader?: GameLeaderFragment | null
@@ -207,7 +206,7 @@ function renderPlayerInfo({
     >
       <div className="game-sub-section game-info-section game-player-section">
         {renderScore({
-          handCardSelected,
+          cardSelected,
           game,
           player,
           isSelf,
@@ -258,8 +257,8 @@ function renderPlayerInfo({
  * Information about the score of the current round and losses for the Game.
  */
 function renderScore({
+  cardSelected,
   game,
-  handCardSelected,
   isSelf,
   isTurn,
   player,
@@ -268,7 +267,7 @@ function renderScore({
   setPassConfirmationOpen,
 }: {
   game: GameFragment
-  handCardSelected: DeckUnitFragment | undefined
+  cardSelected: UnitForPlayer | undefined
   isSelf: boolean
   isTurn?: boolean | null | undefined
   player: GamePlayerFragment
@@ -276,7 +275,7 @@ function renderScore({
   playUnitLoading: boolean
   setPassConfirmationOpen: Dispatch<SetStateAction<boolean>>
 }) {
-  const handCardSelectedUnit = useFragment(UnitFragmentDoc, handCardSelected?.unit)
+  const cardSelectedUnit = useFragment(UnitFragmentDoc, cardSelected?.unitFragment.unit)
   let playerRound: PlayerRoundFragment | undefined = undefined
   let winning = false
   let passTitle = ''
@@ -295,7 +294,7 @@ function renderScore({
     } else {
       if (playUnitLoading) {
         passTitle = `Cannot pass while waiting for ${
-          handCardSelectedUnit?.name || 'unit'
+          cardSelectedUnit?.name || 'unit'
         } to be deployed to the battlefield`
       } else {
         if (playerRound.passed) {
