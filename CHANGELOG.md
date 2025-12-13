@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.19.0 - 2025-12-12
+
+### Added
+
+- Decoy effect ([#51](https://github.com/aboe026/gwent/pull/51)) (Adam Boe)
+
 ## 0.18.1 - 2025-11-10
 
 ### Fixed
