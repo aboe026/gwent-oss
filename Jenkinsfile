@@ -35,7 +35,7 @@ node {
     def services = []
 
     try {
-        timeout(time: 45, unit: 'MINUTES') {
+        timeout(time: 60, unit: 'MINUTES') {
             ansiColor('xterm') {
                 dir(workDir) {
                     stage('Prep') {
