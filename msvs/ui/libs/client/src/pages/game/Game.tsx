@@ -495,9 +495,7 @@ function ExistingGame({
   /**
    * Force the browser to scroll a specific Units entrance to the battlefield in the History panel.
    *
-   * @param config The configuration used to scroll the History entry into view.
-   * @param config.playerId The ID of the player the Unit belongs to.
-   * @param config.unitFragment The Unit whose entrance to the battlefield should be scrolled to in the History panel.
+   * @param selected The card that is being selected
    */
   function scrollHistoryIntoView(selected: UnitForPlayer) {
     if (game && selected && selected.playerName) {
