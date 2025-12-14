@@ -1,6 +1,6 @@
 {
   "name": "@gwent/core",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "author": "Adam Boe",
   "description": "A recreation of the card game Gwent from The Witcher 3: Wild Hunt",
   "scripts": {
@@ -44,36 +44,36 @@
     "watch": "yarn workspaces foreach --worktree --parallel --interlaced --jobs unlimited run watch"
   },
   "devDependencies": {
-    "@eslint/js": "9.39.1",
+    "@eslint/js": "9.39.2",
     "@gwent/lcov-dark-mode": "workspace:*",
     "@types/fs-extra": "11.0.4",
     "@types/jest": "30.0.0",
     "@types/node": "22.18.0",
     "cross-env": "10.1.0",
-    "eslint": "9.39.1",
-    "eslint-plugin-jsdoc": "61.1.12",
+    "eslint": "9.39.2",
+    "eslint-plugin-jsdoc": "61.5.0",
     "fs-extra": "11.3.2",
     "jest": "30.2.0",
     "jest-environment-jsdom": "30.2.0",
     "jest-junit": "16.0.0",
     "jest-util": "30.2.0",
     "jiti": "2.6.1",
-    "nodemon": "3.1.10",
-    "npm-groovy-lint": "15.2.2",
+    "nodemon": "3.1.11",
+    "npm-groovy-lint": "16.0.1",
     "npm-run-all": "4.1.5",
     "open": "8.4.2",
-    "prettier": "3.6.2",
+    "prettier": "3.7.4",
     "replace-in-file": "7.2.0",
-    "rimraf": "6.1.0",
-    "ts-jest": "29.4.5",
+    "rimraf": "6.1.2",
+    "ts-jest": "29.4.6",
     "ts-node": "10.9.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.46.4"
+    "typescript-eslint": "8.49.0"
   },
   "workspaces": [
     "msvs/*",
     "libs/*",
     "test/*"
   ],
-  "packageManager": "yarn@4.11.0"
+  "packageManager": "yarn@4.12.0"
 }

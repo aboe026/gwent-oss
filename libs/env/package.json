@@ -1,6 +1,6 @@
 {
   "name": "@gwent/env",
-  "version": "0.19.0",
+  "version": "0.19.1",
   "author": "Adam Boe",
   "description": "Parse process.env",
   "main": "build/src/env.js",
@@ -22,6 +22,6 @@
   "devDependencies": {
     "@types/jest": "30.0.0",
     "jest-junit": "16.0.0",
-    "ts-jest": "29.4.5"
+    "ts-jest": "29.4.6"
   }
 }
