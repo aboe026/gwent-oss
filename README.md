@@ -31,8 +31,11 @@ A recreation of the card game Gwent from The Witcher 3: Wild Hunt.
     - [Unit](#unit)
     - [Functional](#functional)
     - [End to End](#end-to-end)
-  - [Upgrade Dependencies](#upgrade-dependencies)
-  - [Upgrade Yarn](#upgrade-yarn)
+  - [Upgrading](#upgrading)
+    - [Upgrade Nodejs](#upgrade-nodejs)
+    - [Upgrade Dependencies](#upgrade-dependencies)
+    - [Upgrade Yarn](#upgrade-yarn)
+    - [Upgrade Others](#upgrade-others)
   - [Changes](./CHANGELOG.md)
   - [To-Do](./TODO.md)
 
@@ -293,13 +296,17 @@ This will start Gwent for you. To only run the tests (without starting Gwent), g
 yarn test
 ```
 
-### Upgrade Node.js
+### Upgrading
+
+There are several things to check when upgrading dependencies for this project.
+
+#### Upgrade Nodejs
 
 To upgrade [NodeJS](https://nodejs.org/), edit the [.nvmrc](./.nvmrc) file as well as any `Dockerfile`.
 
 Also, change `package.json` references of `@types/node` to match the new version.
 
-### Upgrade Dependencies
+#### Upgrade Dependencies
 
 To upgrade dependencies, run
 
@@ -311,7 +318,7 @@ then run `yarn install` to apply package updates
 
 _Note_: Might need to [upgrade yarn](#upgrade-yarn) if upgrading TypeScript as it has some dependency on Yarn integrating with it.
 
-### Upgrade Yarn
+#### Upgrade Yarn
 
 To upgrade the version of yarn used in the project, run
 
@@ -320,3 +327,14 @@ yarn set version latest
 ```
 
 then [install](#install) to have the change picked up.
+
+#### Upgrade Others
+
+The following non-NodeJS related softwares should be monitored for upgrades:
+
+- [MongoDB](https://www.mongodb.com/)
+  - Change the docker image tag in the [compose yaml](./compose/docker-compose.yaml)
+- [NginX](https://nginx.org/)
+  - Change the docker image tag in the [nginx Dockerfile](./compose/nginx/Dockerfile)
+- [Docker Compose](https://docs.docker.com/compose/)
+  - Change the `composeVersion` variable in the [Jenkinsfile](./Jenkinsfile)
