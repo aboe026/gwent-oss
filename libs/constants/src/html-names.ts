@@ -40,6 +40,7 @@ export const HTML_CLASSES = {
   GamePlayerTurn: 'game-info-player-turn',
   GamePlayerFutureTurn: 'game-info-player-future-turn',
   GamePlayerPassed: 'game-player-passed',
+  GameBattlefieldInvalid: 'game-battlefield-invalid',
   GameDeckRedrawCard: 'game-deck-redraw-card',
   GameDeckRedrawPair: 'game-deck-redraw-pair',
   GameHistoryMoveContainer: 'game-history-move-container',

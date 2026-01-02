@@ -2,6 +2,7 @@ import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import {
+  DeckUnitDbObject,
   GameDbObject,
   GamePlayerDbObject,
   GameStatus,
@@ -138,6 +139,7 @@ export default class ResolverUtil {
    * @param config.impacts Potential Impact objects that are apart of the game.
    * @param config.userIds IDs of all the users on the game. If provided, will not look for users elsewhere (moves, impacts).
    * @param config.gameUnits The units currently on the battlefield of a game.
+   * @param config.deckUnits The weather units currently active on the battlefield of the game.
    * @param config.presolvedUsers All the users on the Game. If provided, will not attempt to resolve users.
    * @param config.presolvedUnits All the units on the Game. If provided, will not attempt to resolve any units.
    * @returns All the Users and Units on the game, resolved to their GraphQL types.
@@ -147,6 +149,7 @@ export default class ResolverUtil {
     impacts,
     userIds,
     gameUnits,
+    deckUnits,
     presolvedUsers,
     presolvedUnits,
   }: {
@@ -154,6 +157,7 @@ export default class ResolverUtil {
     impacts?: ImpactDbObject[]
     userIds?: (ObjectId | string)[]
     gameUnits?: GameUnitDbObject[]
+    deckUnits?: DeckUnitDbObject[]
     presolvedUsers?: User[]
     presolvedUnits?: Unit[]
   }): Promise<MoveUsersAndUnits> {
@@ -176,6 +180,14 @@ export default class ResolverUtil {
     if (gameUnits && !presolvedUnits) {
       for (const gameUnit of gameUnits) {
         const unitId = gameUnit.unit.toString()
+        if (!unitIdsToResolve.includes(unitId)) {
+          unitIdsToResolve.push(unitId)
+        }
+      }
+    }
+    if (deckUnits && !presolvedUnits) {
+      for (const deckUnit of deckUnits) {
+        const unitId = deckUnit.unit.toString()
         if (!unitIdsToResolve.includes(unitId)) {
           unitIdsToResolve.push(unitId)
         }

@@ -14,4 +14,7 @@ fragment PlayerRound on PlayerRound {
   siege {
     ...PlayerCombatRow
   }
+  weathers {
+    ...DeckUnit
+  }
 }

@@ -75,7 +75,7 @@ export default function GameBattlefield({
         className={`${HTML_CLASSES.GameUnitBoardSide} ${
           opponentPassed ? HTML_CLASSES.GameUnitBoardSidePassed : ''
         } game-section`}
-        title={opponentPassed ? 'Your oppponent has passed the rest of this round' : ''}
+        title={opponentPassed ? 'Your oppponent has passed the rest of this round' : undefined}
       >
         <GameCombatRow {...sharedProps} player={opponent} combat={Combat.Siege} />
         <GameCombatRow {...sharedProps} player={opponent} combat={Combat.Ranged} />
@@ -85,7 +85,7 @@ export default function GameBattlefield({
         className={`${HTML_CLASSES.GameUnitBoardSide} ${
           selfPassed ? HTML_CLASSES.GameUnitBoardSidePassed : ''
         } game-section`}
-        title={selfPassed ? 'You have passed the rest of this round' : ''}
+        title={selfPassed ? 'You have passed the rest of this round' : undefined}
       >
         <GameCombatRow {...sharedProps} player={self} isSelf={true} combat={Combat.Close} />
         <GameCombatRow {...sharedProps} player={self} isSelf={true} combat={Combat.Ranged} />

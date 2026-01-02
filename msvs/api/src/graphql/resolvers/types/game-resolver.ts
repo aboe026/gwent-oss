@@ -1,7 +1,7 @@
 import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
-import { Combat, Game, GamePlayer, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { Game, GamePlayer, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../../database/stores/game-store'
@@ -34,9 +34,15 @@ export default class GameResolver {
   }): Promise<Game> {
     const status = game.status as GameStatus
     const rounds = game.players.map((player) => player.rounds).flat()
+    const roundCombats = rounds.map((round) => [round.close, round.ranged, round.siege]).flat()
+    const gameUnits = roundCombats
+      .map((roundCombat) => [...roundCombat.units, ...(roundCombat.modifier ? [roundCombat.modifier] : [])])
+      .flat()
+    const deckUnits = rounds.map((round) => round.weathers).flat()
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
-      gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
+      gameUnits,
+      deckUnits,
       userIds: game.players.map((player) => player.user),
       presolvedUnits: units,
       presolvedUsers: users,
@@ -80,7 +86,6 @@ export default class GameResolver {
       turn,
       updated: game.updated,
       victors,
-      weather: game.weather.map((weather) => weather as Combat),
     }
   }
 

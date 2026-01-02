@@ -25,6 +25,7 @@ export default function initializeNewRound({ game }: { game: GameDbObject }) {
       siege: {
         ...startingCombatRow,
       },
+      weathers: [],
     })
   }
   game.round = game.round + 1

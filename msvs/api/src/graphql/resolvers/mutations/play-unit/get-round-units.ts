@@ -25,6 +25,9 @@ export default async function getRoundUnits({
         rowUnits.push(modifier)
       }
     }
+    for (const weather of round.weathers) {
+      rowUnits.push(weather)
+    }
     for (const rowUnit of rowUnits) {
       if (!unitIds.includes(rowUnit.unit.toString())) {
         unitIds.push(rowUnit.unit.toString())

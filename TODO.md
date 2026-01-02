@@ -12,6 +12,8 @@ A list of things to be done in the future.
 
 Existing problems in the codebase that need to be fixed.
 
+- make sure "Clear Weather" shows any weathers it cleared as impacts
+
 - include "to" for impact so know exactly which unit it transformed into?
 - FullCard combat
   - "Any" icon/text for units that can be played on any row
