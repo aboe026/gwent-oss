@@ -314,7 +314,7 @@ type PlayerRound @entity {
   result: RoundResult @column
   score: Int! @column
   siege: PlayerCombatRow! @column(overrideType: "PlayerCombatRowDbObject")
-  weathers: [DeckUnit!]! @column(overrideType: "Array<DeckUnitDbObject>")
+  weathers: [GameUnit!]! @column(overrideType: "Array<GameUnitDbObject>")
 }
 
 type PlayerCombatRow @entity {

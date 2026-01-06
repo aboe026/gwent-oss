@@ -5,7 +5,6 @@ import Centered from '../../components/Centered'
 import ContainerFixedAspectRatio from '../../components/ContainerFixedAspectRation'
 import {
   DeckUnitFragment,
-  DeckUnitFragmentDoc,
   EffectKey,
   GameFragment,
   GamePlayerFragment,
@@ -231,7 +230,7 @@ function PlayerHistoryMove({
         }
       }
       for (const weather of playerRound.weathers) {
-        unitFragments.push(useFragment(DeckUnitFragmentDoc, weather))
+        unitFragments.push(useFragment(GameUnitFragmentDoc, weather))
       }
       for (let i = 0; i < unitFragments.length && !isOnBattlefield; i++) {
         if (useFragment(UnitFragmentDoc, unitFragments[i].unit).id === unit.id) {

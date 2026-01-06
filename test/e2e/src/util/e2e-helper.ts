@@ -202,6 +202,13 @@ export class E2eHelper {
     }
   }
 
+  static addWeatherToGamePlayer({ player, unitName }: { player: GamePlayerExpected; unitName: string }) {
+    if (!player.weathering) {
+      player.weathering = []
+    }
+    player.weathering.push(unitName)
+  }
+
   static removeUnitFromGamePlayer({
     player,
     unitName,
@@ -251,6 +258,18 @@ export class E2eHelper {
       }
     }
     player.score = (player.score || 0) - (strength || 0)
+  }
+
+  static removeWeatherFromGamePlayer({ player, unitName }: { player: GamePlayerExpected; unitName: string }) {
+    const newWeathers: string[] = []
+    if (player.weathering) {
+      for (const weather of player.weathering) {
+        if (weather !== unitName) {
+          newWeathers.push(weather)
+        }
+      }
+    }
+    player.weathering = newWeathers
   }
 
   static getPlayerUnitInRow({
@@ -356,6 +375,7 @@ export class E2eHelper {
     mustering,
     bonding,
     decoying,
+    weathering,
     impacts,
   }: {
     player: GamePlayerExpected
@@ -373,6 +393,7 @@ export class E2eHelper {
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
+    weathering?: WeatheringExpected[]
     impacts?: number
   }) {
     const strength = effectiveStrength || deckUnit.unit.strength || 0
@@ -383,7 +404,13 @@ export class E2eHelper {
     gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
     if (deckUnit.unit.name === 'Scorch') {
       player.discard = (player.discard || 0) + 1
+    } else if (weathering) {
+      E2eHelper.addWeatherToGamePlayer({
+        player,
+        unitName: deckUnit.unit.name,
+      })
     } else {
+      // TODO: verify weathers
       E2eHelper.addUnitToGamePlayer({
         player,
         unitName: deckUnit.unit.name,
@@ -494,6 +521,24 @@ export class E2eHelper {
         } as any,
       })
     }
+    if (weathering) {
+      for (const weather of weathering) {
+        if (weather.effectiveStrength !== undefined && weather.row !== undefined) {
+          E2eHelper.setEffectiveStrength({
+            effectiveStrength: weather.effectiveStrength,
+            player: weather.player,
+            row: weather.row,
+            unitName: weather.name,
+            instance: weather.instance,
+          })
+        } else {
+          E2eHelper.removeWeatherFromGamePlayer({
+            player: weather.player,
+            unitName: weather.name,
+          })
+        }
+      }
+    }
     if (moves) {
       let effectKey: EffectKey | undefined = undefined
       if (scorching) {
@@ -510,6 +555,8 @@ export class E2eHelper {
         effectKey = EffectKey.Bond
       } else if (decoying) {
         effectKey = EffectKey.Decoy
+      } else if (weathering) {
+        effectKey = EffectKey.Weather
       }
       let numImpacts = 0
       if (impacts !== undefined) {
@@ -518,13 +565,14 @@ export class E2eHelper {
         if (decoying) {
           numImpacts = 1
         } else {
-          numImpacts = (scorching || mardroeming || moraling || mustering || bonding || horning || [])?.length
+          numImpacts = (scorching || mardroeming || moraling || mustering || bonding || horning || weathering || [])
+            ?.length
         }
       }
       moves.push({
         userName: player.name,
         unitName: deckUnit.unit.name,
-        combatRow: row,
+        combatRow: weathering ? undefined : row,
         impacts:
           effectKey && impacts !== -1
             ? {
@@ -680,6 +728,14 @@ export interface MoralingExpected {
   name: string
   row: Combat
   effectiveStrength: number
+  instance?: number
+}
+
+export interface WeatheringExpected {
+  player: GamePlayerExpected
+  name: string
+  row?: Combat
+  effectiveStrength?: number
   instance?: number
 }
 

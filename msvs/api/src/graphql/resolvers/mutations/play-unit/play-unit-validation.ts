@@ -195,6 +195,10 @@ export default class PlayUnitValidation {
       combat = battlefieldUnit.row
     }
 
+    if (isWeather) {
+      combat = undefined
+    }
+
     return {
       combat,
       deckUnit,

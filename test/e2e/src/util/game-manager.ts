@@ -7,6 +7,7 @@ import {
   MoralingExpected,
   MusteringExpected,
   ScorchingExpected,
+  WeatheringExpected,
 } from './e2e-helper'
 import { Combat, DeckUnit, FactionKey, GameDeck } from '@gwent/node-client'
 import E2eUtil from './e2e-util'
@@ -102,7 +103,9 @@ export class GameManager {
     bonding,
     impacts,
     decoying,
+    weathering,
     modifier,
+    weather,
     verify,
   }: {
     unitName: string
@@ -117,8 +120,10 @@ export class GameManager {
     mustering?: MusteringExpected[]
     bonding?: BondingExpected[]
     decoying?: DecoyingExpected
+    weathering?: WeatheringExpected[]
     impacts?: number
     modifier?: boolean
+    weather?: boolean
     verify?: boolean
   }): Promise<DeckUnit> {
     const isSelfTurn = this.self.gamePlayer.turn === PlayerTurn.Current
@@ -137,6 +142,7 @@ export class GameManager {
         modifier,
         decoyTarget: decoying?.name,
         eligibleRows: eligibleCombats,
+        weather,
       })
     } else {
       let targetId: string | undefined = undefined
@@ -172,6 +178,7 @@ export class GameManager {
       mustering,
       bonding,
       decoying,
+      weathering,
       impacts,
     })
     if (this.shouldVerify || verify) {

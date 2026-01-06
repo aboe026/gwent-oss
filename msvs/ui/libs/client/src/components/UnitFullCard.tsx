@@ -298,7 +298,7 @@ function UnitEffect({
 }
 
 /**
- * The Effects altering a games base strength.
+ * The Effects altering a game units base strength.
  */
 function GameUnitEffect({ effectFragment }: { effectFragment: FragmentType<typeof GameUnitEffectFragmentDoc> }) {
   const effect = useFragment(GameUnitEffectFragmentDoc, effectFragment)

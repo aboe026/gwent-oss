@@ -1,9 +1,9 @@
 import CombatRowResolver from './combat-row-resolver'
+import GameUnitResolver from './game-unit-resolver'
 import MoveResolver from './move-resolver'
 import { PlayerRound, RoundResult, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
 import ResolverUtil from '../resolver-util'
-import DeckUnitResolver from './deck-unit-resolver'
 
 /**
  * A class to convert PlayerRound database objects to their GraphQL equivalent.
@@ -55,8 +55,9 @@ export default class PlayerRoundResolver {
         users: resolvedUsers,
       }),
       passed: round.passed,
-      weathers: await DeckUnitResolver.fromArray({
-        deckUnits: round.weathers,
+      weathers: await GameUnitResolver.fromArray({
+        gameUnits: round.weathers,
+        // TODO: send pre-resolved units
       }),
     }
   }

@@ -208,6 +208,7 @@ export const HTML_IDS = {
   GameSummaryCongratulations: 'gameSummaryCongratulations',
   GameSummaryRoundBreakdown: 'gameSummaryRoundBreakdown',
   GameSummaryGames: 'gamesSummaryGames',
+  GameWeatherContainer: 'gameWeatherContainer',
   Games: 'games',
   GamesCreate: 'gamesCreate',
   GamesNoneCreate: 'gamesNoneCreate',

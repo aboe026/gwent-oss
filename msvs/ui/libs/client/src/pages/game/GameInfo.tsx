@@ -3,6 +3,7 @@ import { CSSProperties, Dispatch, SetStateAction } from 'react'
 
 import Centered from '../../components/Centered'
 import {
+  EffectKey,
   FragmentType,
   GameDeckFragmentDoc,
   GameFactionFragmentDoc,
@@ -13,14 +14,13 @@ import {
   GamePlayerFragment,
   GamePlayerFragmentDoc,
   GameStatus,
+  GameUnitFragmentDoc,
   PlayerRoundFragment,
   PlayerRoundFragmentDoc,
   RoundResult,
   useFragment,
   UnitFragmentDoc,
   UnitEffectFragmentDoc,
-  EffectKey,
-  DeckUnitFragmentDoc,
 } from '@gwent/graphql-schema/apollo-typings'
 import { FullUnitCards, GameDeckProps, GameProps, PlayUnitProps, UnitForPlayer } from './GameProps'
 import { HTML_CLASSES, HTML_IDS } from '@gwent/constants'
@@ -171,7 +171,7 @@ function renderSharedInfo({
     for (const player of useFragment(GamePlayerFragmentDoc, game.players)) {
       const round = useFragment(PlayerRoundFragmentDoc, player.rounds[game.round - 1])
       if (round) {
-        for (const weather of useFragment(DeckUnitFragmentDoc, round.weathers)) {
+        for (const weather of useFragment(GameUnitFragmentDoc, round.weathers)) {
           weathers.push({
             playerName: player.user.name,
             unitFragment: weather,
@@ -200,7 +200,7 @@ function renderSharedInfo({
         </div>
         {game.status === GameStatus.Playing && (
           <div
-            id="gameWeatherContainer"
+            id={HTML_IDS.GameWeatherContainer}
             className={`game-section${modifierClass ? ` ${modifierClass}` : ''}`}
             style={modifierStyle}
             title={title}
@@ -234,6 +234,8 @@ function renderSharedInfo({
                   cardSelected && cardSelected.playerName === weather.playerName && unitSelected?.id === weatherUnit.id
 
                 return (
+                  // TODO: make accordion like hand/combat rows
+                  // create separate component they can all use for this?
                   <UnitGameCard
                     deckUnit={weather.unitFragment}
                     title={weatherUnit.name}

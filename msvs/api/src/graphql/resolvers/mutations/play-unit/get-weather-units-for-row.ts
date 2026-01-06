@@ -1,6 +1,7 @@
 import { getLogger } from 'log4js'
+import { ObjectId } from 'mongodb'
 
-import { Combat, PlayerRoundDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, DeckUnitDbObject, GameDbObject, UnitDbObject } from '@gwent/graphql-schema/database-typings'
 import PresentableError from '../../../../util/presentable-error'
 
 /**
@@ -11,32 +12,57 @@ export default class GetWeatherUnitsForRow {
 
   static getWeatherUnitsForRow({
     logPrefix,
-    round,
     combat,
+    game,
     units,
   }: {
     logPrefix: string
-    round: PlayerRoundDbObject
+    game: GameDbObject
     combat: Combat | undefined
     units: UnitDbObject[]
-  }): UnitDbObject[] {
-    const weatherUnits: UnitDbObject[] = []
+  }): PlayerWeatherUnit[] {
+    const weatherUnits: PlayerWeatherUnit[] = []
 
     if (combat) {
-      for (const weather of round.weathers) {
-        const matchingUnit = units.find((unit) => unit._id.toString() === weather.unit.toString())
+      const weathers: {
+        player: ObjectId
+        deckUnit: DeckUnitDbObject
+      }[] = []
+
+      for (const player of game.players) {
+        const round = player.rounds[game.round - 1]
+        if (round) {
+          for (const weather of round.weathers) {
+            weathers.push({
+              player: player.user,
+              deckUnit: weather,
+            })
+          }
+        }
+      }
+
+      for (const weather of weathers) {
+        const matchingUnit = units.find((unit) => unit._id.toString() === weather.deckUnit.unit.toString())
         if (!matchingUnit) {
-          const message = `Could not find weather Unit with ID "${weather.unit}"`
+          const message = `Could not find weather Unit with ID "${weather.deckUnit.unit}"`
           GetWeatherUnitsForRow.logger.error(`${logPrefix} failed: ${message}`)
           throw new PresentableError(`${message}.`)
         }
 
         if (matchingUnit.combats && matchingUnit.combats.includes(combat)) {
-          weatherUnits.push(matchingUnit)
+          weatherUnits.push({
+            player: weather.player,
+            unit: matchingUnit,
+          })
         }
       }
     }
 
     return weatherUnits
   }
+}
+
+export interface PlayerWeatherUnit {
+  player: ObjectId
+  unit: UnitDbObject
 }

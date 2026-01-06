@@ -41,7 +41,7 @@ export default class PlayUnitImplementation {
     logPrefix,
     unit,
     targetId,
-    effects,
+    effects = [],
     roundUnits,
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const playerId = game.turn?.toString() // save current player before any modifications to game turn
@@ -51,17 +51,15 @@ export default class PlayUnitImplementation {
       throw Error(message)
     }
 
-    roundUnits =
-      roundUnits ||
-      (await getRoundUnits({
-        game,
-        unitBeingPlayed: unit,
-      }))
-    effects =
-      effects ||
-      (await getUnitEffects({
-        units: roundUnits,
-      }))
+    const existingRoundUnits = await getRoundUnits({
+      game,
+      unitBeingPlayed: unit,
+      units: roundUnits,
+    })
+    const unitEffects = await getUnitEffects({
+      units: [...existingRoundUnits, unit],
+      effects,
+    })
 
     const {
       mardroemes,
@@ -74,10 +72,11 @@ export default class PlayUnitImplementation {
       scorches,
       decoys,
       deckUnitsAddedToHand,
+      weathers: weatherBattlefieldImpacts,
     } = await BattlefieldUpdates.modifyBattlefieldWithNewUnit({
-      battlefieldUnits: roundUnits,
+      battlefieldUnits: [...existingRoundUnits, unit],
       combat,
-      effects,
+      effects: [...effects, ...unitEffects],
       game,
       logPrefix,
       newDeckUnit: deckUnit,
@@ -87,17 +86,22 @@ export default class PlayUnitImplementation {
 
     const musterEffects = await getUnitEffects({
       units: musteredUnits,
-      effects,
+      effects: [...effects, ...unitEffects],
     })
     const transformedEffects = await getUnitEffects({
       units: transformedUnits,
-      effects,
+      effects: [...effects, ...unitEffects],
     })
 
-    const { bonds, horns, morales } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
+    const {
+      bonds,
+      horns,
+      morales,
+      weathers: weatherScoreImpacts,
+    } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
-      units: [unit, ...roundUnits, ...musteredUnits, ...transformedUnits],
-      effects: [...effects, ...musterEffects, ...transformedEffects],
+      units: [unit, ...existingRoundUnits, ...musteredUnits, ...transformedUnits],
+      effects: [...effects, ...unitEffects, ...musterEffects, ...transformedEffects],
       logPrefix,
       newDeckUnit: deckUnit,
       musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
@@ -119,6 +123,7 @@ export default class PlayUnitImplementation {
       bonds,
       horns,
       morales,
+      weathers: Object.keys(weatherBattlefieldImpacts).length > 0 ? weatherBattlefieldImpacts : weatherScoreImpacts,
       mardroemes,
       transformedGameUnits,
       mardroemingGameUnit,

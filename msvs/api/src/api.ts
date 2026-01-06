@@ -221,6 +221,7 @@ export default class Api {
     if (unwrappedError instanceof PresentableError) {
       return formattedError
     }
+    Api.logger.error(formattedError)
     return {
       message: 'Internal Server Error.',
     }

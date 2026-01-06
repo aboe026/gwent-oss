@@ -74,6 +74,7 @@ export default class GamePage {
     CombatRowRangedOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowRangedOpponent}`),
     CombatRowSiegeOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowSiegeOpponent}`),
     HistoryError: historyContainer.find(`.${HTML_CLASSES.GameHistoryError}`),
+    WeatherContainer: existingGameContainer.find(`#${HTML_IDS.GameWeatherContainer}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -967,6 +968,15 @@ export default class GamePage {
     await t.click(card.find(`.${HTML_CLASSES.UnitGameCardFullScreen}`))
   }
 
+  static async fullscreenWeatherCard({ unitName, instance = 1 }: { unitName: string; instance?: number }) {
+    const card = await GamePage.getWeatherCard({
+      unitName,
+      instance,
+    })
+    await t.hover(card.find(`.${HTML_CLASSES.UnitGameCardStrength}`))
+    await t.click(card.find(`.${HTML_CLASSES.UnitGameCardFullScreen}`))
+  }
+
   static async verifyError(error: string) {
     await t.expect(GamePage.elements.Error.innerText).eql(error)
   }
@@ -1057,6 +1067,7 @@ export default class GamePage {
     modifier,
     decoyTarget,
     eligibleRows,
+    weather,
     verify = true,
   }: {
     unitName: string
@@ -1064,6 +1075,7 @@ export default class GamePage {
     modifier?: boolean
     eligibleRows?: Combat[]
     decoyTarget?: string
+    weather?: boolean
     verify?: boolean
   }) {
     const card = GamePage.elements.Hand.find(`.${HTML_CLASSES.UnitGameCardContainer}`).withAttribute('title', unitName)
@@ -1087,7 +1099,7 @@ export default class GamePage {
     let combatRow: Selector | undefined = undefined
     const eligibleCombatRows: CombatAndRow[] = []
     if (!eligibleRows) {
-      eligibleRows = [row]
+      eligibleRows = weather ? [] : [row]
     }
     if (row === Combat.Close) {
       combatRow = closeCombatRow
@@ -1138,6 +1150,8 @@ export default class GamePage {
             )
             .notOk(`Modifier for row "${nonCombatRow.combat}" is not highlighted`)
         }
+      } else if (weather) {
+        await t.expect(GamePage.elements.WeatherContainer.hasClass(HTML_CLASSES.ItemHighlighted)).ok()
       } else {
         for (const eligibleCombatRow of eligibleCombatRows) {
           await t
@@ -1167,6 +1181,8 @@ export default class GamePage {
         decoying: true,
       })
       await t.click(target)
+    } else if (weather) {
+      await t.click(GamePage.elements.WeatherContainer)
     } else {
       await t.click(combatRow.find(`.${HTML_CLASSES.GameCombatRowCards}`))
     }
@@ -1360,6 +1376,28 @@ export default class GamePage {
     return matchingCard
   }
 
+  static async getWeatherCard({ unitName, instance }: { unitName: string; instance?: number }) {
+    const weatherCards = await GamePage.elements.WeatherContainer.find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+    const weatherCardCounts = await weatherCards.count
+    let matchingCard: Selector | undefined
+    let namedInstance = 1
+    for (let i = 0; i < weatherCardCounts && !matchingCard; i++) {
+      const rowCard = weatherCards.nth(i)
+      const cardTitle = (await rowCard.getAttribute('title')) || ''
+      if (cardTitle === unitName) {
+        if (namedInstance === instance) {
+          matchingCard = rowCard
+        } else {
+          namedInstance++
+        }
+      }
+    }
+    if (!matchingCard) {
+      throw Error(`Could not find weather "${unitName}" instance "${instance}" to select`)
+    }
+    return matchingCard
+  }
+
   static async selectBattlefieldCard({ unitName, row, self }: { unitName: string; row: Combat; self: boolean }) {
     const card = await this.getBattlefieldCard({
       unitName,
@@ -1503,6 +1541,7 @@ export interface GamePlayerExpected {
   close?: CombatRow
   ranged?: CombatRow
   siege?: CombatRow
+  weathering?: string[]
 }
 
 interface ImpactSelection {

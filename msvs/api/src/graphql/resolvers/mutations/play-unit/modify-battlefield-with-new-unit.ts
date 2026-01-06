@@ -4,7 +4,6 @@ import {
   Combat,
   DeckUnitDbObject,
   EffectDbObject,
-  EffectKey,
   GameDbObject,
   GameUnitDbObject,
   UnitDbObject,
@@ -13,8 +12,8 @@ import EffectDecoy from './effect-decoy'
 import EffectMardroeme from './effect-mardroeme'
 import EffectMuster, { MusteredOrigins } from './effect-muster'
 import EffectScorch from './effect-scorch'
+import EffectWeather from './effect-weather'
 import { ImpactsByUnitId } from '../../resolver-util'
-import GetEffectWithKey from './get-effect-with-key'
 
 /**
  * A class for altering the units present on the battlefield due to a player move.
@@ -57,13 +56,20 @@ export default class BattlefieldUpdates {
   }): Promise<ModificationImpacts> {
     const deckUnitsAddedToHand: DeckUnitDbObject[] = []
 
-    BattlefieldUpdates.addNewUnitToBattlefield({
-      combat,
+    const { impacts: weatherImpacts, newUnitHasWeather } = EffectWeather.weatherBattlefield({
       effects,
       game,
       logPrefix,
       newDeckUnit,
       newUnit,
+    })
+
+    BattlefieldUpdates.addNewUnitToBattlefield({
+      combat,
+      game,
+      newDeckUnit,
+      newUnit,
+      newUnitHasWeather,
     })
 
     const scorches = EffectScorch.scorchBattlefield({
@@ -118,6 +124,7 @@ export default class BattlefieldUpdates {
       transformedUnits,
       transformedGameUnits,
       mardroemingGameUnit,
+      weathers: weatherImpacts,
     }
   }
 
@@ -126,61 +133,31 @@ export default class BattlefieldUpdates {
    *
    * @param config The configuration used to add the DeckUnit to the battlefield.
    * @param config.combat The row on the battlefield to add the DeckUnit to.
-   * @param config.effects The effects that any unit might have.
    * @param config.game The Game whose battlefield the DeckUnit should be added to.
-   * @param config.logPrefix What to prepend log statements with.
    * @param config.newDeckUnit The DeckUnit to add to the battlefield.
    * @param config.newUnit The new Unit being introduced to the battlefield.
+   * @param config.newUnitHasWeather Whether or not the new unit being added to the battlefield has the Weather effect.
    */
   static addNewUnitToBattlefield({
     combat,
-    effects,
     game,
-    logPrefix,
     newDeckUnit,
     newUnit,
+    newUnitHasWeather,
   }: {
     combat?: Combat | null
-    effects: EffectDbObject[]
     game: GameDbObject
-    logPrefix: string
     newDeckUnit: DeckUnitDbObject
     newUnit: UnitDbObject
+    newUnitHasWeather: boolean
   }) {
-    const weatherEffect = GetEffectWithKey.getEffectWithKey({
-      effectKey: EffectKey.Weather,
-      effects,
-      logPrefix,
-    })
-    if (BattlefieldUpdates.logger.isTraceEnabled()) {
-      BattlefieldUpdates.logger.trace(`${logPrefix} weatherEffect: "${JSON.stringify(weatherEffect)}"`)
-    }
-    const hasWeatherEffect =
-      weatherEffect &&
-      newUnit.effects &&
-      newUnit.effects.map((id) => id.toString()).includes(weatherEffect._id.toString())
-    if (BattlefieldUpdates.logger.isTraceEnabled()) {
-      BattlefieldUpdates.logger.trace(`${logPrefix} hasWeatherEffect: "${hasWeatherEffect}"`)
-    }
-
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
-      if (hasWeatherEffect) {
-        if (!newUnit.combats || newUnit.combats.length === 0) {
-          BattlefieldUpdates.logger.debug(
-            `${logPrefix} weather has no combats so clearing weathers for player "${player.user}`
-          )
-          round.weathers = []
-        } else if (player.user.toString() === game.turn?.toString()) {
-          BattlefieldUpdates.logger.debug(`${logPrefix} weather has combats so adding weathers`)
-          round.weathers.push(newDeckUnit)
-        }
-      }
       if (player.user.toString() === game.turn?.toString()) {
         player.deck.hand = player.deck.hand.filter(
           (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
         )
-        if (!hasWeatherEffect) {
+        if (!newUnitHasWeather) {
           if (combat === Combat.Close) {
             if (newUnit.modifier) {
               round.close.modifier = newDeckUnit
@@ -217,4 +194,5 @@ interface ModificationImpacts {
   transformedUnits: UnitDbObject[]
   transformedGameUnits: GameUnitDbObject[]
   mardroemingGameUnit: GameUnitDbObject | undefined
+  weathers: ImpactsByUnitId
 }
