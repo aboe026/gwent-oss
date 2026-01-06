@@ -223,7 +223,7 @@ function renderSharedInfo({
               }
             }}
           >
-            <div id="gameWeatherUnits" className="game-sub-section">
+            <div id={HTML_IDS.GameWeatherUnits} className="game-sub-section">
               <div id="gameWeatherIconContainer">
                 <img className="game-weather-icon" src="images/effects/weather-icon.png" title="Weather" />
                 <img className="game-weather-icon" src="images/effects/weather-icon.png" title="Weather" />

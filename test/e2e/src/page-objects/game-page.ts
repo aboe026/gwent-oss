@@ -75,6 +75,7 @@ export default class GamePage {
     CombatRowSiegeOpponent: centerContainer.find(`#${HTML_IDS.GameCombatRowSiegeOpponent}`),
     HistoryError: historyContainer.find(`.${HTML_CLASSES.GameHistoryError}`),
     WeatherContainer: existingGameContainer.find(`#${HTML_IDS.GameWeatherContainer}`),
+    WeatherUnits: existingGameContainer.find(`#${HTML_IDS.GameWeatherUnits}`),
   }
 
   static getUrl(gameId?: string): string {
@@ -144,12 +145,39 @@ export default class GamePage {
     await t.click(GamePage.elements.NewGameCreate)
   }
 
-  static async verifyMiddle({ round }: { round?: number }) {
+  static async verifyMiddle({ round, players }: { round?: number; players: GamePlayerExpected[] }) {
     await t.expect(GamePage.elements.Round.exists).eql(!!round)
     if (round) {
       await t.expect(GamePage.elements.Round.visible).ok()
       await t.expect(GamePage.elements.Round.innerText).eql(`Round: ${round}`)
+      await GamePage.verifyWeather({
+        players,
+      })
     }
+  }
+
+  static async verifyWeather({ players }: { players: GamePlayerExpected[] }) {
+    const expected: string[] = []
+    for (const player of players) {
+      if (player.weathering) {
+        for (const weather of player.weathering) {
+          expected.push(weather)
+        }
+      }
+    }
+    const actual: string[] = []
+
+    const units = await GamePage.elements.WeatherUnits.find(`.${HTML_CLASSES.UnitGameCardContainer}`)
+    const count = await units.count
+    for (let i = 0; i < count; i++) {
+      const card = units.nth(i)
+      const cardName = await card.getAttribute('title')
+      const isSelected = await card.hasClass(HTML_CLASSES.ItemHighlighted)
+      const isDotted = await E2eHelper.hasDottedBorder(card)
+      actual.push(`${cardName}${isSelected ? ' selected' : ''}${isDotted ? ' dotted' : ''}`)
+    }
+
+    await t.expect(actual).eql(expected)
   }
 
   static async verifySelf({
@@ -781,6 +809,7 @@ export default class GamePage {
     }
     await GamePage.verifyMiddle({
       round: !self.ready || !opponent.ready || victors ? undefined : round,
+      players: [self, opponent],
     })
     await GamePage.verifySelf({
       name: self.name,
