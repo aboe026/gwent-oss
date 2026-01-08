@@ -710,7 +710,7 @@ test('Clear weather removes all weather effects', async (t) => {
   })
   await gameManager.initialize({})
 
-  const deckUnit7 = await gameManager.deploy({
+  await gameManager.deploy({
     unitName: unitName7,
     weather: true,
     impacts: 3,
@@ -777,14 +777,6 @@ test('Clear weather removes all weather effects', async (t) => {
     username: gameManager.self.gamePlayer.name,
   })
   await FullCard.close()
-  await GamePage.fullscreenWeatherCard({
-    unitName: unitName7,
-  })
-  await FullCard.verify({
-    unit: deckUnit7.unit,
-    username: gameManager.self.gamePlayer.name,
-  })
-  await FullCard.close()
   await GamePage.toggleImpacts({
     userName: gameManager.self.gamePlayer.name,
     round: gameManager.round,
@@ -813,5 +805,64 @@ test('Clear weather removes all weather effects', async (t) => {
         ],
       },
     ],
+  })
+})
+
+test('Can play weather after Clear Weather', async (t) => {
+  const unitName1 = 'Ves'
+  const unitName2 = 'Clear Weather'
+  const unitName3 = 'Biting Frost'
+  const gameManager = await createGameManager({
+    label: `${getScenario(t)}-${t.ctx.start}`,
+    self: {
+      faction: FactionKey.NorthernRealms,
+      handUnitNames: [unitName1, unitName2, unitName3],
+    },
+  })
+  const deckUnit1 = await gameManager.deploy({ unitName: unitName1 })
+  await gameManager.pass({})
+  await gameManager.deploy({
+    unitName: unitName2,
+    weather: true,
+    weathering: [],
+  })
+  await gameManager.initialize({})
+
+  const deckUnit3 = await gameManager.deploy({
+    unitName: unitName3,
+    weather: true,
+    weathering: [
+      {
+        name: unitName1,
+        player: gameManager.self.gamePlayer,
+        effectiveStrength: 1,
+        row: Combat.Close,
+      },
+    ],
+  })
+  await GamePage.fullscreenCombatCard({
+    unitName: unitName1,
+    row: Combat.Close,
+    self: true,
+  })
+  await FullCard.verify({
+    unit: deckUnit1.unit,
+    username: gameManager.self.gamePlayer.name,
+    effectiveStrength: 1,
+    effects: [
+      {
+        operator: EFFECT_OPERATOR.Set,
+        strength: 1,
+        reason: `Weather from ${unitName3}`,
+      },
+    ],
+  })
+  await FullCard.close()
+  await GamePage.fullscreenWeatherCard({
+    unitName: unitName3,
+  })
+  await FullCard.verify({
+    unit: deckUnit3.unit,
+    username: gameManager.self.gamePlayer.name,
   })
 })

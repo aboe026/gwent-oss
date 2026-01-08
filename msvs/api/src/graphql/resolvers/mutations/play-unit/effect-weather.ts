@@ -73,8 +73,7 @@ export default class EffectWeather {
             })
           }
           round.weathers = []
-        }
-        if (isCurrentPlayer) {
+        } else if (isCurrentPlayer) {
           EffectWeather.logger.debug(`${logPrefix} adding weather "${newUnit._id}"`)
           round.weathers.push(newDeckUnit)
         }

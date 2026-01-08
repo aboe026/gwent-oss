@@ -404,7 +404,7 @@ export class E2eHelper {
     gameDeck.hand = gameDeck.hand.filter((card) => card.unit.id !== deckUnit.unit.id)
     if (deckUnit.unit.name === 'Scorch') {
       player.discard = (player.discard || 0) + 1
-    } else if (weathering) {
+    } else if (weathering && deckUnit.unit.name !== 'Clear Weather') {
       E2eHelper.addWeatherToGamePlayer({
         player,
         unitName: deckUnit.unit.name,
