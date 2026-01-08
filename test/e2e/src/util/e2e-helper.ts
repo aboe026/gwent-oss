@@ -517,7 +517,7 @@ export class E2eHelper {
         artStyle: 1,
         unit: {
           name: decoying.name,
-          strength: decoying.effectiveStrength,
+          strength: decoying.strength !== undefined ? decoying.strength : decoying.effectiveStrength,
         } as any,
       })
     }
@@ -774,6 +774,7 @@ export interface DecoyingExpected {
   player: GamePlayerExpected
   name: string
   row: Combat
+  strength?: number
   effectiveStrength: number
   instance?: number
 }

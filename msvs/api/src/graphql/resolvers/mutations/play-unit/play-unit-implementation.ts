@@ -42,7 +42,7 @@ export default class PlayUnitImplementation {
     unit,
     targetId,
     effects = [],
-    roundUnits,
+    roundUnits = [],
   }: ValidatedPlayUnit): Promise<ImplementedPlayUnit> {
     const playerId = game.turn?.toString() // save current player before any modifications to game turn
     if (!playerId) {
@@ -57,7 +57,7 @@ export default class PlayUnitImplementation {
       units: roundUnits,
     })
     const unitEffects = await getUnitEffects({
-      units: [...existingRoundUnits, unit],
+      units: [unit, ...roundUnits, ...existingRoundUnits],
       effects,
     })
 
@@ -74,7 +74,7 @@ export default class PlayUnitImplementation {
       deckUnitsAddedToHand,
       weathers: weatherBattlefieldImpacts,
     } = await BattlefieldUpdates.modifyBattlefieldWithNewUnit({
-      battlefieldUnits: [...existingRoundUnits, unit],
+      battlefieldUnits: [unit, ...roundUnits, ...existingRoundUnits],
       combat,
       effects: [...effects, ...unitEffects],
       game,
@@ -100,7 +100,7 @@ export default class PlayUnitImplementation {
       weathers: weatherScoreImpacts,
     } = CalculateGameEffectiveStrengths.calculateEffectiveStrengths({
       game,
-      units: [unit, ...existingRoundUnits, ...musteredUnits, ...transformedUnits],
+      units: [unit, ...roundUnits, ...existingRoundUnits, ...musteredUnits, ...transformedUnits],
       effects: [...effects, ...unitEffects, ...musterEffects, ...transformedEffects],
       logPrefix,
       newDeckUnit: deckUnit,
