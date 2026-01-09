@@ -410,7 +410,6 @@ export class E2eHelper {
         unitName: deckUnit.unit.name,
       })
     } else {
-      // TODO: verify weathers
       E2eHelper.addUnitToGamePlayer({
         player,
         unitName: deckUnit.unit.name,

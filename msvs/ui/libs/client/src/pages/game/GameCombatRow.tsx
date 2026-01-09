@@ -38,6 +38,7 @@ export default function GameCombatRow({
   scrollHistoryIntoView,
   setCardSelected,
   setFullUnits,
+  weather,
 }: {
   cardSelected: UnitForPlayer | undefined
   combat: Combat
@@ -51,6 +52,7 @@ export default function GameCombatRow({
   scrollHistoryIntoView: (selected: UnitForPlayer) => void
   setCardSelected: Dispatch<SetStateAction<UnitForPlayer | undefined>>
   setFullUnits: Dispatch<SetStateAction<FullUnitCards | undefined>>
+  weather?: boolean
 }) {
   const { checkAuth } = useUserContext()
   const titledCombat = toTitleCase(combat)
@@ -205,6 +207,7 @@ export default function GameCombatRow({
         </ContainerFixedAspectRatio>
       </div>
       <div className="game-sub-section game-combat-row-units">
+        {weather && <div className={HTML_CLASSES.GameCombatRowWeather}></div>}
         <img
           className="game-unit-combat-row-icon game-unit-combat-row-icon-start"
           src={`images/combats/${combat.toLocaleLowerCase()}-icon.png`}

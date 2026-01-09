@@ -441,6 +441,7 @@ export default class GamePage {
     userName,
     highlightedBattlefieldCard,
     highlightedHandCard,
+    weathered,
   }: {
     rowSelector: Selector
     isSelf: boolean
@@ -450,6 +451,7 @@ export default class GamePage {
     units: CombatUnit[]
     highlightedBattlefieldCard?: HighlightedBattlefieldCard
     highlightedHandCard?: HighlightedHandCard
+    weathered: boolean
   }): Promise<boolean> {
     let highlightedBattlefieldCardFound = false
     await t.expect(rowSelector.exists).ok()
@@ -503,6 +505,13 @@ export default class GamePage {
     const actualDotted = await E2eHelper.hasDottedBorder(cardsContainer)
     const expectedDotted = expectedHighlighted && highlightedHandCard.dotted
     await t.expect(actualDotted).eql(expectedDotted || false, message)
+
+    // weather
+    await t.expect(rowSelector.find(`.${HTML_CLASSES.GameCombatRowWeather}`).exists).eql(weathered, message)
+    if (weathered) {
+      await t.expect(rowSelector.find(`.${HTML_CLASSES.GameCombatRowWeather}`).visible).ok()
+    }
+
     return highlightedBattlefieldCardFound
   }
 
@@ -589,6 +598,15 @@ export default class GamePage {
       await t
         .expect(GamePage.elements.BattlefieldOpponent.hasClass(HTML_CLASSES.GameUnitBoardSidePassed))
         .eql(!!opponent.passed)
+      const weatheredClose = [...(self.weathering || []), ...(opponent.weathering || [])].some((weather) =>
+        ['Biting Frost'].includes(weather)
+      )
+      const weatheredRanged = [...(self.weathering || []), ...(opponent.weathering || [])].some((weather) =>
+        ['Impenetrable Fog', 'Skellige Storm'].includes(weather)
+      )
+      const weatheredSiege = [...(self.weathering || []), ...(opponent.weathering || [])].some((weather) =>
+        ['Torrential Rain', 'Skellige Storm'].includes(weather)
+      )
       const highlightedBattlefieldCardFoundCloseSelf = await GamePage.verifyCombatRow({
         rowName: Combat.Close,
         rowSelector: GamePage.elements.CombatRowCloseSelf,
@@ -598,6 +616,7 @@ export default class GamePage {
         userName: self.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredClose,
       })
       const highlightedBattlefieldCardFoundRangedSelf = await GamePage.verifyCombatRow({
         rowName: Combat.Ranged,
@@ -608,6 +627,7 @@ export default class GamePage {
         userName: self.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredRanged,
       })
       const highlightedBattlefieldCardFoundSiegeSelf = await GamePage.verifyCombatRow({
         rowName: Combat.Siege,
@@ -618,6 +638,7 @@ export default class GamePage {
         userName: self.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredSiege,
       })
       const highlightedBattlefieldCardFoundCloseOpponent = await GamePage.verifyCombatRow({
         rowName: Combat.Close,
@@ -628,6 +649,7 @@ export default class GamePage {
         userName: opponent.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredClose,
       })
       const highlightedBattlefieldCardFoundRangedOpponent = await GamePage.verifyCombatRow({
         rowName: Combat.Ranged,
@@ -638,6 +660,7 @@ export default class GamePage {
         userName: opponent.name || '',
         highlightedBattlefieldCard,
         highlightedHandCard,
+        weathered: weatheredRanged,
       })
       const highlightedBattlefieldCardFoundSiegeOpponent = await GamePage.verifyCombatRow({
         rowName: Combat.Siege,
@@ -648,6 +671,7 @@ export default class GamePage {
         highlightedBattlefieldCard,
         userName: opponent.name || '',
         highlightedHandCard,
+        weathered: weatheredSiege,
       })
       const highlightedBattlefieldCardFound =
         highlightedBattlefieldCardFoundCloseSelf ||
@@ -856,6 +880,7 @@ export default class GamePage {
         close: self.close,
         ranged: self.ranged,
         siege: self.siege,
+        weathering: self.weathering,
       },
       opponent: {
         name: opponent.name,
@@ -865,6 +890,7 @@ export default class GamePage {
         close: opponent.close,
         ranged: opponent.ranged,
         siege: opponent.siege,
+        weathering: opponent.weathering,
       },
       redraws,
       turnOrder,
@@ -1665,6 +1691,7 @@ interface CenterPlayer {
   close?: CombatRow
   ranged?: CombatRow
   siege?: CombatRow
+  weathering?: string[]
 }
 
 interface CombatAndRow {

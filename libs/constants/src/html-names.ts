@@ -66,6 +66,7 @@ export const HTML_CLASSES = {
   GameUnitBoardCombatScore: 'game-unit-board-combat-score',
   GameCombatRowModifierAvailable: 'combat-row-modifier-available',
   GameCombatRowModifierContainer: 'game-combat-row-modifier',
+  GameCombatRowWeather: 'game-combat-row-weather',
   GameUnitCombatRowCards: 'game-unit-combat-row-cards',
   GameUnitStrengthCircleContainer: 'strength-circle-container',
   GameUnitStrengthCircleHero: 'strength-circle-container-hero',
