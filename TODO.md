@@ -43,6 +43,8 @@ Existing problems in the codebase that need to be fixed.
 - use single "gameUpdated" and "gameDeckUpdated" subscriptions instead of one per mutation?
 - improve UX around game player info (username, score, rounds, passed)
 - message to clear filters in DeckEditor when filter shows none
+- shared component for card "accordion" container
+- Use bespoke weather effects (eg icicles for Biting Frost, haze for Impenetrable Fog, raindrops for Torrential Rain) on combat rows instead of generic red
 - centralize error handling in the UI
   - single place to watch for any error and automatially re-auths and re-calls failing operations
 - move all hard-coded config to GameConfig
@@ -128,6 +130,7 @@ New things that should be added to the codebase.
   - game duration
   - duration per player
 - Add link to GitHub repo in about page
+- Add loading animations in about page to show how nicely they look
 - Limit user creation
   - activation code?
   - manual review?

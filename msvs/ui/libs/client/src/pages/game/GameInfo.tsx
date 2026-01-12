@@ -234,33 +234,33 @@ function renderSharedInfo({
                   cardSelected && cardSelected.playerName === weather.playerName && unitSelected?.id === weatherUnit.id
 
                 return (
-                  // TODO: make accordion like hand/combat rows
-                  // create separate component they can all use for this?
-                  <UnitGameCard
-                    deckUnit={weather.unitFragment}
-                    title={weatherUnit.name}
-                    cursor={'pointer'}
-                    selected={selected}
-                    dotted={!isTurn && !selected}
-                    key={index}
-                    onFullscreen={() => {
-                      setFullUnits({
-                        currentIndex: index,
-                        units: weathers,
-                      })
-                      setCardSelected(selected ? undefined : weather)
-                    }}
-                    onClick={() => {
-                      const cardBeingPlayed = isTurn && selectedCardInHand
-                      if (!cardBeingPlayed) {
-                        const newCardSelected: UnitForPlayer | undefined = selected ? undefined : weather
-                        setCardSelected(newCardSelected)
-                        if (newCardSelected) {
-                          scrollHistoryIntoView(newCardSelected)
+                  <div className="weather-card-wrapper" key={index}>
+                    <UnitGameCard
+                      deckUnit={weather.unitFragment}
+                      title={weatherUnit.name}
+                      cursor={'pointer'}
+                      selected={selected}
+                      dotted={!isTurn && !selected}
+                      key={index}
+                      onFullscreen={() => {
+                        setFullUnits({
+                          currentIndex: index,
+                          units: weathers,
+                        })
+                        setCardSelected(selected ? undefined : weather)
+                      }}
+                      onClick={() => {
+                        const cardBeingPlayed = isTurn && selectedCardInHand
+                        if (!cardBeingPlayed) {
+                          const newCardSelected: UnitForPlayer | undefined = selected ? undefined : weather
+                          setCardSelected(newCardSelected)
+                          if (newCardSelected) {
+                            scrollHistoryIntoView(newCardSelected)
+                          }
                         }
-                      }
-                    }}
-                  />
+                      }}
+                    />
+                  </div>
                 )
               })}
             </div>

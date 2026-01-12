@@ -63,3 +63,22 @@
   margin-top: auto;
   margin-bottom: auto;
 }
+
+.weather-card-wrapper {
+  position: relative;
+  display: flex;
+  height: 100%;
+  min-width: 10px;
+  padding-right: 10px;
+  aspect-ratio: 309 / 444;
+}
+
+.weather-card-wrapper:last-child {
+  margin-right: -10px;
+}
+
+.weather-card-wrapper:last-child,
+.weather-card-wrapper:hover,
+.weather-card-wrapper-selected {
+  min-width: 40px;
+}
