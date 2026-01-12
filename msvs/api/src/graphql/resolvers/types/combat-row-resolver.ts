@@ -24,6 +24,7 @@ export default class CombatRowResolver {
       modifier: row.modifier
         ? await GameUnitResolver.fromObject({
             gameUnit: row.modifier,
+            unit: units.find((unit) => unit.id === row.modifier?.unit.toString()),
           })
         : undefined,
     }

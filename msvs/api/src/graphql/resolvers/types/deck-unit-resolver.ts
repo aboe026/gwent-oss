@@ -33,7 +33,6 @@ export default class DeckUnitResolver {
    * @returns The resolved DeckUnit array matching the GraphQL schema definition.
    */
   static async fromArray({ deckUnits }: { deckUnits: DeckUnitDbObject[] }): Promise<DeckUnit[]> {
-    // TODO: allow for passing Units in for "preloaded" weather
     if (deckUnits.length === 0) {
       return []
     }

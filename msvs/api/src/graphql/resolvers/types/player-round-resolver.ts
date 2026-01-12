@@ -1,8 +1,8 @@
 import CombatRowResolver from './combat-row-resolver'
+import { GameUnitDbObject, PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from './game-unit-resolver'
 import MoveResolver from './move-resolver'
 import { PlayerRound, RoundResult, Unit, User } from '@gwent/graphql-schema/resolver-typings'
-import { PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
 import ResolverUtil from '../resolver-util'
 
 /**
@@ -27,9 +27,18 @@ export default class PlayerRoundResolver {
     units?: Unit[]
     users?: User[]
   }): Promise<PlayerRound> {
+    const gameUnits: GameUnitDbObject[] = [...round.close.units, ...round.ranged.units, ...round.siege.units]
+    for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
+      if (modifier) {
+        gameUnits.push(modifier)
+      }
+    }
+    for (const weather of round.weathers) {
+      gameUnits.push(weather)
+    }
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: round.moves,
-      gameUnits: [...round.close.units, ...round.ranged.units, ...round.siege.units],
+      gameUnits,
       presolvedUnits: units,
       presolvedUsers: users,
     })
@@ -57,7 +66,7 @@ export default class PlayerRoundResolver {
       passed: round.passed,
       weathers: await GameUnitResolver.fromArray({
         gameUnits: round.weathers,
-        // TODO: send pre-resolved units
+        units: resolvedUnits,
       }),
     }
   }
