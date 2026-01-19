@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb'
 
+import BattlefieldUpdates from '../../src/graphql/resolvers/mutations/play-unit/battlefield-updates'
 import CalculateGameEffectiveStrengths from '../../src/graphql/resolvers/mutations/play-unit/calculate-game-effective-strengths'
 import { Combat } from '@gwent/graphql-schema/resolver-typings'
 import {
@@ -16,7 +17,6 @@ import GameStore from '../../src/database/stores/game-store'
 import * as getRoundUnits from '../../src/graphql/resolvers/mutations/play-unit/get-round-units'
 import * as getUnitEffects from '../../src/graphql/resolvers/mutations/play-unit/get-unit-effects'
 import { ImpactsByUnitId } from '../../src/graphql/resolvers/resolver-util'
-import * as modifyBattlefieldWithNewUnit from '../../src/graphql/resolvers/mutations/play-unit/modify-battlefield-with-new-unit'
 import { MusteredOrigins } from '../../src/graphql/resolvers/mutations/play-unit/effect-muster'
 import PlayUnitImplementation from '../../src/graphql/resolvers/mutations/play-unit/play-unit-implementation'
 import * as setGameScores from '../../src/graphql/resolvers/mutations/play-unit/set-game-scores'
@@ -288,6 +288,35 @@ describe('play-unit-implementation', () => {
       expectedGameDeck: player.deck,
     })
   })
+  it('passes weather battlefield impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      targetId: impacts[0].unit.unit.toString(),
+      logPrefix,
+      battlefieldWeathers: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
+      deckUnitsAddedToHand: [impacts[0].unit],
+      expectedGameDeck: player.deck,
+    })
+  })
   it('logs to trace if enabled', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
@@ -312,14 +341,16 @@ describe('play-unit-implementation', () => {
 async function testPlayUnitImplementation({
   game,
   updatedGame,
-  effects,
-  roundUnits,
+  effects = [],
+  roundUnits = [],
   logPrefix,
   scorches = {},
   musters = {},
   musteredUnits = [],
   musteredOrigins = {},
   mardroemes = {},
+  battlefieldWeathers = {},
+  scoreWeathers = {},
   transformedUnits = [],
   transformedGameUnits = [],
   mardroemingGameUnit,
@@ -345,6 +376,8 @@ async function testPlayUnitImplementation({
   musteredUnits?: UnitDbObject[]
   musteredOrigins?: MusteredOrigins
   mardroemes?: ImpactsByUnitId
+  battlefieldWeathers?: ImpactsByUnitId
+  scoreWeathers?: ImpactsByUnitId
   transformedUnits?: UnitDbObject[]
   transformedGameUnits?: GameUnitDbObject[]
   mardroemingGameUnit?: GameUnitDbObject
@@ -385,24 +418,28 @@ async function testPlayUnitImplementation({
     .mockResolvedValueOnce([unitEffect])
     .mockResolvedValueOnce([musterEffect])
     .mockResolvedValueOnce([mardroemeEffect])
-  const modifyBattlefieldWithNewUnitSpy = jest.spyOn(modifyBattlefieldWithNewUnit, 'default').mockResolvedValue({
-    scorches,
-    musters,
-    musteredUnits,
-    musteredOrigins,
-    mardroemes,
-    transformedUnits,
-    transformedGameUnits,
-    mardroemingGameUnit,
-    decoys,
-    deckUnitsAddedToHand,
-  })
+  const modifyBattlefieldWithNewUnitSpy = jest
+    .spyOn(BattlefieldUpdates, 'modifyBattlefieldWithNewUnit')
+    .mockResolvedValue({
+      scorches,
+      musters,
+      musteredUnits,
+      musteredOrigins,
+      mardroemes,
+      weathers: battlefieldWeathers,
+      transformedUnits,
+      transformedGameUnits,
+      mardroemingGameUnit,
+      decoys,
+      deckUnitsAddedToHand,
+    })
   const calculateEffectiveStrengthsSpy = jest
     .spyOn(CalculateGameEffectiveStrengths, 'calculateEffectiveStrengths')
     .mockReturnValue({
       bonds,
       horns,
       morales,
+      weathers: scoreWeathers,
     })
   const setGameScoresSpy = jest.spyOn(setGameScores, 'default').mockImplementation()
   const updateHistorySpy = jest.spyOn(UpdateHistory, 'newUnitDeployed').mockImplementation()
@@ -444,6 +481,7 @@ async function testPlayUnitImplementation({
         {
           game,
           unitBeingPlayed: unit,
+          units: roundUnits,
         },
       ],
     ]
@@ -454,7 +492,8 @@ async function testPlayUnitImplementation({
       : [
           [
             {
-              units,
+              effects,
+              units: [unit, ...roundUnits, ...units],
             },
           ],
           [
@@ -477,9 +516,9 @@ async function testPlayUnitImplementation({
       : [
           [
             {
-              battlefieldUnits: units,
+              battlefieldUnits: [unit, ...roundUnits, ...units],
               combat,
-              effects: [unitEffect],
+              effects: [unitEffect, musterEffect, mardroemeEffect],
               game,
               logPrefix,
               newDeckUnit: deckUnit,

@@ -1,6 +1,6 @@
 import { getLogger } from 'log4js'
 
-import BattlefieldUpdates from './modify-battlefield-with-new-unit'
+import BattlefieldUpdates from './battlefield-updates'
 import CalculateGameEffectiveStrengths from './calculate-game-effective-strengths'
 import { DeckUnitDbObject, GameDbObject, GameDeckDbObject } from '@gwent/graphql-schema/database-typings'
 import GameStore from '../../../../database/stores/game-store'

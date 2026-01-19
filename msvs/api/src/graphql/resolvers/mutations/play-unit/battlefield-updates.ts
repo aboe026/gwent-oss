@@ -69,7 +69,7 @@ export default class BattlefieldUpdates {
       game,
       newDeckUnit,
       newUnit,
-      newUnitHasWeather,
+      weather: newUnitHasWeather,
     })
 
     const scorches = EffectScorch.scorchBattlefield({
@@ -136,20 +136,20 @@ export default class BattlefieldUpdates {
    * @param config.game The Game whose battlefield the DeckUnit should be added to.
    * @param config.newDeckUnit The DeckUnit to add to the battlefield.
    * @param config.newUnit The new Unit being introduced to the battlefield.
-   * @param config.newUnitHasWeather Whether or not the new unit being added to the battlefield has the Weather effect.
+   * @param config.weather Whether or not the new unit being added to the battlefield has the Weather effect.
    */
   static addNewUnitToBattlefield({
     combat,
     game,
     newDeckUnit,
     newUnit,
-    newUnitHasWeather,
+    weather,
   }: {
     combat?: Combat | null
     game: GameDbObject
     newDeckUnit: DeckUnitDbObject
     newUnit: UnitDbObject
-    newUnitHasWeather: boolean
+    weather: boolean
   }) {
     for (const player of game.players) {
       const round = player.rounds[game.round - 1]
@@ -157,7 +157,7 @@ export default class BattlefieldUpdates {
         player.deck.hand = player.deck.hand.filter(
           (handUnit) => handUnit.unit.toString() !== newDeckUnit.unit.toString()
         )
-        if (!newUnitHasWeather) {
+        if (!weather) {
           if (combat === Combat.Close) {
             if (newUnit.modifier) {
               round.close.modifier = newDeckUnit
