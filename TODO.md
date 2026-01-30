@@ -141,6 +141,9 @@ New things that should be added to the codebase.
 - "practice" mode
   - can choose exact hand (for self and opponent)
   - can control opponent
+- "spectator" mode
+  - allow anyone or select users to view game
+  - hide Game Hands
 - game history improvements
   - search bar (unit name?)
   - expand/collapse all
