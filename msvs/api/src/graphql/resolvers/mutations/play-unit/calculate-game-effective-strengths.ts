@@ -175,7 +175,6 @@ export default class CalculateGameEffectiveStrengths {
    * @param config.row The combat row contianing the units to calculate effective strengths for.
    * @param config.units All the database Unit objects present in the round for the game.
    * @param config.logPrefix What to prepend log statements with.
-   * @param config.weathers Any potential weather active on the battlefield.
    * @param config.weatherUnits A list of Units for the weathers effecting the row the unit under consideration is apart of.
    * @param config.weatherEffect The Effect database document for the Weather effect.
    * @param config.moraleEffect The Effect database document for the Morale effect.

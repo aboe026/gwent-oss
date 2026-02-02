@@ -24,6 +24,17 @@ import { PlayerWeatherUnit } from './get-weather-units-for-row'
 export default class EffectWeather {
   private static logger = getLogger('EffectWeather')
 
+  /**
+   * Applies potential weathering unit to battlefield, adding it unless a Clear Weather which removes all weathers.
+   *
+   * @param config The configuration used to weather the battlefield.
+   * @param config.effects The Effect database documents containing Weather if any unit has that effect.
+   * @param config.game The Game the potential weather is for.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.newDeckUnit The new DeckUnit being added to the battlefield.
+   * @param config.newUnit The new Unit being added to the battlefield.
+   * @returns Any potential impacts the new unit has on the battlefield in terms of Weather, as well as if the new unit itself has the Weather effect.
+   */
   static weatherBattlefield({
     effects,
     game,

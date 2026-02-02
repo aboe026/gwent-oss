@@ -10,6 +10,16 @@ import PresentableError from '../../../../util/presentable-error'
 export default class GetWeatherUnitsForRow {
   private static logger = getLogger('GetWeatherUnitsForRow')
 
+  /**
+   * Gets all potential Weather units for all players in a Gaem for a particular combat row.
+   *
+   * @param config The configuration used to get the Weather units.
+   * @param config.logPrefix What to prepend log statements with.
+   * @param config.combat The Combat row to get all Weathers for.
+   * @param config.game The Game to get all Weathers in the specific combat row for.
+   * @param config.units The Unit objects apart of the Game.
+   * @returns All potential Weather units for all players in a Gaem for a particular combat row.
+   */
   static getWeatherUnitsForRow({
     logPrefix,
     combat,
