@@ -104,7 +104,6 @@ export default class EffectWeather {
    * @param config.newDeckUnit The new DeckUnit being deployed to the battlefield.
    * @param config.rowGameUnit The GameUnit under consideration to be weathered.
    * @param config.rowUnit The Unit under consideration to be weathered.
-   * @param config.units A list of all units on the battlefield.
    * @param config.userId The ID of the user whose unit is under consideration to be weathered.
    * @param config.currentPlayerId The ID of the user who played the newDeckUnit.
    * @returns An array of weathered impacts for the unit under consideration.
