@@ -47,10 +47,7 @@ export default class EffectWeather {
     logPrefix: string
     newDeckUnit: DeckUnitDbObject
     newUnit: UnitDbObject
-  }): {
-    impacts: ImpactsByUnitId
-    newUnitHasWeather: boolean
-  } {
+  }): WeatheredBattlefield {
     const impacts: ImpactDbObject[] = []
     const weatherEffect = GetEffectWithKey.getEffectWithKey({
       effectKey: EffectKey.Weather,
@@ -75,7 +72,7 @@ export default class EffectWeather {
         const isCurrentPlayer = player.user.toString() === game.turn?.toString()
         if (clearWeather) {
           EffectWeather.logger.debug(
-            `${logPrefix} weather has no combats so clearing weathers for player "${player.user}`
+            `${logPrefix} weather "${newUnit._id}" has no combats so clearing weathers for player "${player.user}"`
           )
           for (const weather of round.weathers) {
             impacts.push({
@@ -119,7 +116,6 @@ export default class EffectWeather {
     newDeckUnit,
     rowGameUnit,
     rowUnit,
-    units,
     userId,
     currentPlayerId,
   }: {
@@ -129,7 +125,6 @@ export default class EffectWeather {
     newDeckUnit: DeckUnitDbObject
     rowGameUnit: GameUnitDbObject
     rowUnit: UnitDbObject
-    units: UnitDbObject[]
     userId: ObjectId
     currentPlayerId: ObjectId | undefined
   }): ImpactsByUnitId {
@@ -144,7 +139,7 @@ export default class EffectWeather {
         .filter((weather) => weather.unit._id.toString() !== rowGameUnit.unit.toString())
         // put current turn player's weathers in the "back"
         // to prevent incorrectly showing a weather impact
-        // which was happened in a previous turn
+        // which happened in a previous turn
         .sort((a, b) => {
           if (currentPlayerId && a.player.toString() === currentPlayerId?.toString()) {
             return 1
@@ -160,23 +155,26 @@ export default class EffectWeather {
       let weathered = false
       for (let i = 0; i < weathersToApply.length && !weathered; i++) {
         const weather = weathersToApply[i]
-        const weatheringUnit = units.find((unit) => unit._id.toString() === weather.unit._id.toString())
-        if (weatherEffect && weatheringUnit && rowGameUnit.effects) {
+        if (weatherEffect && weather && rowGameUnit.effects) {
           weathered = true
-          rowGameUnit.effectiveStrength = 1
-          EffectWeather.logger.debug(
-            `${logPrefix} weathering unit "${rowUnit._id}" by "${weatheringUnit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}"`
-          )
+          // TODO: check this logic (eg Havekar Healer)
+          // TODO: should weather effect strength 0 and 1 units? See if in TW3 they turn red?
+          if (rowUnit.strength && rowUnit.strength > 0) {
+            rowGameUnit.effectiveStrength = 1
+            EffectWeather.logger.debug(
+              `${logPrefix} weathering unit "${rowUnit._id}" by "${weather.unit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}".`
+            )
+          }
           const reason: EffectFromUnitDbObject = {
             effect: weatherEffect._id,
             type: EffectReasonType.Unit,
-            unit: weatheringUnit._id,
+            unit: weather.unit._id,
           }
 
           const gameUnitEffect: GameUnitEffectDbObject = {
             operator: EFFECT_OPERATOR.Set,
             reason,
-            total: rowGameUnit.effectiveStrength,
+            total: rowGameUnit.effectiveStrength || rowUnit.strength || 0,
           }
           if (EffectWeather.logger.isTraceEnabled()) {
             EffectWeather.logger.trace(`${logPrefix} gameUnitEffect: "${JSON.stringify(gameUnitEffect)}"`)
@@ -185,7 +183,7 @@ export default class EffectWeather {
 
           const impactables = [newDeckUnit.unit.toString()]
           if (
-            impactables.includes(weatheringUnit._id.toString()) &&
+            impactables.includes(weather.unit._id.toString()) &&
             currentPlayerId &&
             weather.player.toString() === currentPlayerId.toString()
           ) {
@@ -196,7 +194,7 @@ export default class EffectWeather {
             if (EffectWeather.logger.isTraceEnabled()) {
               EffectWeather.logger.trace(`${logPrefix} impact: "${JSON.stringify(impact)}"`)
             }
-            impacts[weatheringUnit._id.toString()] = [impact]
+            impacts[weather.unit._id.toString()] = [impact]
           }
         }
       }
@@ -206,4 +204,9 @@ export default class EffectWeather {
 
     return impacts
   }
+}
+
+export interface WeatheredBattlefield {
+  impacts: ImpactsByUnitId
+  newUnitHasWeather: boolean
 }

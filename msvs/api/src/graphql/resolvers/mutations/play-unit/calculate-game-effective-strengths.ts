@@ -266,7 +266,6 @@ export default class CalculateGameEffectiveStrengths {
             rowGameUnit,
             rowUnit,
             weatherUnits,
-            units,
             userId,
             weatherEffect,
             currentPlayerId,

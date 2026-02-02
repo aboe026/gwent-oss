@@ -15,7 +15,7 @@ describe('combat-row-resolver', () => {
         units: [],
       })
     })
-    it('resolves row that does have modifier', async () => {
+    it('resolves row that does have modifier without presolved units', async () => {
       const modifier = TestUtil.getDbGameUnit({})
       await testFromObject({
         row: {
@@ -31,6 +31,26 @@ describe('combat-row-resolver', () => {
         }),
       })
     })
+    it('resolves row that does have modifier with presolved units', async () => {
+      const modifier = TestUtil.getDbGameUnit({})
+      const unit = TestUtil.getUnit({
+        id: modifier.unit,
+      })
+      await testFromObject({
+        row: {
+          score: 0,
+          units: [TestUtil.getDbGameUnit({})],
+          modifier,
+        },
+        units: [unit],
+        gameUnitFromObjectResponse: TestUtil.getGameUnit({
+          unit: TestUtil.getUnit({
+            id: modifier.unit,
+          }),
+        }),
+        fromObjectPresolvedUnit: unit,
+      })
+    })
   })
 })
 
@@ -38,10 +58,12 @@ async function testFromObject({
   row,
   units,
   gameUnitFromObjectResponse,
+  fromObjectPresolvedUnit,
 }: {
   row: PlayerCombatRowDbObject
   units: Unit[]
   gameUnitFromObjectResponse?: GameUnit
+  fromObjectPresolvedUnit?: Unit
 }) {
   const gameUnits = [
     TestUtil.getGameUnit({
@@ -79,6 +101,7 @@ async function testFromObject({
           [
             {
               gameUnit: row.modifier,
+              unit: fromObjectPresolvedUnit,
             },
           ],
         ]

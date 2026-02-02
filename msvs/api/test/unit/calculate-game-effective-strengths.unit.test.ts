@@ -2215,7 +2215,7 @@ function testCalculateEffectiveStrengthsForRow({
   applyMoralesResponses,
   applyBondsResponses,
   applyHornsResponses,
-  applyWeatherResponses,
+  applyWeatherResponses = [],
   modifiedRow,
   applyBondsCalls,
   applyMoralesCalls,
@@ -2287,10 +2287,12 @@ function testCalculateEffectiveStrengthsForRow({
     }
   }
   const applyWeathersSpy = jest.spyOn(EffectWeather, 'weatherScores')
-  if (applyWeatherResponses) {
+  if (applyWeatherResponses.length > 0) {
     for (const applyWeatherResponse of applyWeatherResponses) {
       applyWeathersSpy.mockReturnValueOnce(applyWeatherResponse)
     }
+  } else {
+    applyWeathersSpy.mockReturnValue({})
   }
   const errorSpy = jest.fn().mockImplementation()
   CalculateGameEffectiveStrengths['logger'] = {
@@ -2416,7 +2418,6 @@ function testCalculateEffectiveStrengthsForRow({
           rowUnit: units[index],
           logPrefix,
           newDeckUnit,
-          units,
           userId,
           currentPlayerId,
           weatherEffect,

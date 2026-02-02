@@ -2,6 +2,7 @@ import { getLogger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import {
+  DeckUnitDbObject,
   GameDbObject,
   GameStatus,
   GameUnitDbObject,
@@ -429,6 +430,14 @@ describe('resolver-util', () => {
             id: units[0]._id,
           }),
         ],
+        deckUnits: [
+          TestUtil.getDbGameUnit({
+            id: units[1]._id,
+          }),
+          TestUtil.getDbGameUnit({
+            id: units[1]._id,
+          }),
+        ],
         moves,
         resolvedUnits,
         resolvedUsers,
@@ -682,6 +691,7 @@ async function testresolveUsersAndUnits({
   impacts,
   userIds,
   gameUnits,
+  deckUnits,
   presolvedUsers,
   presolvedUnits,
   resolvedUnits,
@@ -694,6 +704,7 @@ async function testresolveUsersAndUnits({
   impacts?: ImpactDbObject[]
   userIds?: (ObjectId | string)[]
   gameUnits?: GameUnitDbObject[]
+  deckUnits?: DeckUnitDbObject[]
   presolvedUsers?: User[]
   presolvedUnits?: Unit[]
   resolvedUsers?: User[]
@@ -714,6 +725,7 @@ async function testresolveUsersAndUnits({
   await expect(
     ResolverUtil.resolveUsersAndUnits({
       gameUnits,
+      deckUnits,
       impacts,
       moves,
       presolvedUnits,
