@@ -1,5 +1,6 @@
 import CombatRowResolver from '../../src/graphql/resolvers/types/combat-row-resolver'
 import { GameUnit, Move, MoveReasonType, PlayerRound, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import GameUnitResolver from '../../src/graphql/resolvers/types/game-unit-resolver'
 import MoveResolver from '../../src/graphql/resolvers/types/move-resolver'
 import { MoveType } from '@gwent/graphql-schema'
 import { PlayerRoundDbObject, RoundResult } from '@gwent/graphql-schema/database-typings'
@@ -25,6 +26,7 @@ describe('player-round-resolver', () => {
           score: 3,
           units: [TestUtil.getDbGameUnit({})],
         },
+        weathers: [TestUtil.getDbGameUnit({})],
       })
       const units = [
         TestUtil.getUnit({
@@ -35,6 +37,9 @@ describe('player-round-resolver', () => {
         }),
         TestUtil.getUnit({
           id: round.siege.units[0].unit,
+        }),
+        TestUtil.getUnit({
+          id: round.weathers[0].unit,
         }),
       ]
       const gameUnits: GameUnit[][] = [
@@ -54,6 +59,12 @@ describe('player-round-resolver', () => {
           TestUtil.getGameUnitFromDbGameUnit({
             gameUnit: round.siege.units[0],
             unit: units[2],
+          }),
+        ],
+        [
+          TestUtil.getGameUnitFromDbGameUnit({
+            gameUnit: round.siege.units[0],
+            unit: units[3],
           }),
         ],
       ]
@@ -77,6 +88,7 @@ describe('player-round-resolver', () => {
             score: 3,
             units: gameUnits[2],
           },
+          weathers: gameUnits[3],
         },
       })
     })
@@ -97,6 +109,7 @@ describe('player-round-resolver', () => {
           score: 3,
           units: [TestUtil.getDbGameUnit({})],
         },
+        weathers: [TestUtil.getDbGameUnit({})],
       })
       const units = [
         TestUtil.getUnit({
@@ -107,6 +120,9 @@ describe('player-round-resolver', () => {
         }),
         TestUtil.getUnit({
           id: round.siege.units[0].unit,
+        }),
+        TestUtil.getUnit({
+          id: round.weathers[0].unit,
         }),
       ]
       const gameUnits: GameUnit[][] = [
@@ -126,6 +142,12 @@ describe('player-round-resolver', () => {
           TestUtil.getGameUnitFromDbGameUnit({
             gameUnit: round.siege.units[0],
             unit: units[2],
+          }),
+        ],
+        [
+          TestUtil.getGameUnitFromDbGameUnit({
+            gameUnit: round.weathers[0],
+            unit: units[3],
           }),
         ],
       ]
@@ -150,6 +172,7 @@ describe('player-round-resolver', () => {
             score: 3,
             units: gameUnits[2],
           },
+          weathers: gameUnits[3],
         },
       })
     })
@@ -313,6 +336,344 @@ describe('player-round-resolver', () => {
       })
     })
   })
+  describe('getGameUnits', () => {
+    it('returns empty array if rounds empty', () => {
+      expect(
+        PlayerRoundResolver.getGameUnits({
+          rounds: [],
+        })
+      ).toEqual([])
+    })
+    describe('single', () => {
+      it('returns empty array if no units', () => {
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [TestUtil.getDbPlayerRound({})],
+          })
+        ).toEqual([])
+      })
+      it('returns single unit if single close unit', () => {
+        const units = [TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [units[0]],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns single unit if single ranged unit', () => {
+        const units = [TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  units: [units[0]],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns single unit if single siege unit', () => {
+        const units = [TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                siege: TestUtil.getDbPlayerCombatRow({
+                  units: [units[0]],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns single unit if single close modifier', () => {
+        const units = [TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  modifier: units[0],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns single unit if single ranged modifier', () => {
+        const units = [TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  modifier: units[0],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns single unit if single siege modifier', () => {
+        const units = [TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                siege: TestUtil.getDbPlayerCombatRow({
+                  modifier: units[0],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns single unit if single weather', () => {
+        const units = [TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                weathers: [units[0]],
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns multiple units if one of each', () => {
+        const units = [
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+        ]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [units[0]],
+                  modifier: units[3],
+                }),
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  units: [units[1]],
+                  modifier: units[4],
+                }),
+                siege: TestUtil.getDbPlayerCombatRow({
+                  units: [units[2]],
+                  modifier: units[5],
+                }),
+                weathers: [units[6]],
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+    })
+    describe('multiple', () => {
+      it('returns empty array if no units', () => {
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [TestUtil.getDbPlayerRound({}), TestUtil.getDbPlayerRound({})],
+          })
+        ).toEqual([])
+      })
+      it('returns units if single close units', () => {
+        const units = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [units[0]],
+                }),
+              }),
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [units[1]],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns units if single ranged units', () => {
+        const units = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  units: [units[0]],
+                }),
+              }),
+              TestUtil.getDbPlayerRound({
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  units: [units[1]],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns units if single siege units', () => {
+        const units = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                siege: TestUtil.getDbPlayerCombatRow({
+                  units: [units[0]],
+                }),
+              }),
+              TestUtil.getDbPlayerRound({
+                siege: TestUtil.getDbPlayerCombatRow({
+                  units: [units[1]],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns units if single close modifiers', () => {
+        const units = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  modifier: units[0],
+                }),
+              }),
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  modifier: units[1],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns units if single ranged modifiers', () => {
+        const units = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  modifier: units[0],
+                }),
+              }),
+              TestUtil.getDbPlayerRound({
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  modifier: units[1],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns units if single siege modifiers', () => {
+        const units = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                siege: TestUtil.getDbPlayerCombatRow({
+                  modifier: units[0],
+                }),
+              }),
+              TestUtil.getDbPlayerRound({
+                siege: TestUtil.getDbPlayerCombatRow({
+                  modifier: units[1],
+                }),
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns units if single siege weathers', () => {
+        const units = [TestUtil.getDbGameUnit({}), TestUtil.getDbGameUnit({})]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                weathers: [units[0]],
+              }),
+              TestUtil.getDbPlayerRound({
+                weathers: [units[1]],
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+      it('returns multiple units if one of each', () => {
+        const units = [
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+          TestUtil.getDbGameUnit({}),
+        ]
+        expect(
+          PlayerRoundResolver.getGameUnits({
+            rounds: [
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [units[0]],
+                  modifier: units[3],
+                }),
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  units: [units[1]],
+                  modifier: units[4],
+                }),
+                siege: TestUtil.getDbPlayerCombatRow({
+                  units: [units[2]],
+                  modifier: units[5],
+                }),
+                weathers: [units[6]],
+              }),
+              TestUtil.getDbPlayerRound({
+                close: TestUtil.getDbPlayerCombatRow({
+                  units: [units[7]],
+                  modifier: units[10],
+                }),
+                ranged: TestUtil.getDbPlayerCombatRow({
+                  units: [units[8]],
+                  modifier: units[11],
+                }),
+                siege: TestUtil.getDbPlayerCombatRow({
+                  units: [units[9]],
+                  modifier: units[12],
+                }),
+                weathers: [units[13]],
+              }),
+            ],
+          })
+        ).toEqual(units)
+      })
+    })
+  })
 })
 
 async function testFromObject({
@@ -336,12 +697,18 @@ async function testFromObject({
     users: users || resolvedUsers,
     units: units || resolvedUnits,
   })
+  const resolvedWeathers = [
+    TestUtil.getGameUnit({
+      unit: (units || resolvedUnits)[3],
+    }),
+  ]
   const combatRowFromObjectSpy = jest
     .spyOn(CombatRowResolver, 'fromObject')
     .mockResolvedValueOnce(expected.close)
     .mockResolvedValueOnce(expected.ranged)
     .mockResolvedValueOnce(expected.siege)
   const movesFromArraySpy = jest.spyOn(MoveResolver, 'fromArray').mockResolvedValue(movesFromArray)
+  const gameUnitFromArraySpy = jest.spyOn(GameUnitResolver, 'fromArray').mockResolvedValue(resolvedWeathers)
 
   await expect(
     PlayerRoundResolver.fromObject({
@@ -355,7 +722,7 @@ async function testFromObject({
     [
       {
         moves: round.moves,
-        gameUnits: [...round.close.units, ...round.ranged.units, ...round.siege.units],
+        gameUnits: [...round.close.units, ...round.ranged.units, ...round.siege.units, ...round.weathers],
         presolvedUnits: units,
         presolvedUsers: users,
       },
@@ -387,6 +754,14 @@ async function testFromObject({
         moves: round.moves,
         units: units || resolvedUnits,
         users: users || resolvedUsers,
+      },
+    ],
+  ])
+  expect(gameUnitFromArraySpy.mock.calls).toEqual([
+    [
+      {
+        gameUnits: round.weathers,
+        units: units || resolvedUnits,
       },
     ],
   ])
@@ -429,6 +804,7 @@ async function testFromArray({
       moves: [],
       passed: false,
       score: round.score,
+      weathers: [],
     }
     playerRoundFromObjectSpy.mockResolvedValueOnce(resolvedRound)
     resolvedRounds.push(resolvedRound)

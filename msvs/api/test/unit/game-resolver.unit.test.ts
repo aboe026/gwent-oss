@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 
-import { Combat, Game, GamePlayer, GameStatus, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { Game, GamePlayer, GameStatus, Unit, User } from '@gwent/graphql-schema/resolver-typings'
 import { GameDbObject } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from '../../src/graphql/resolvers/types/game-player-resolver'
 import GameResolver from '../../src/graphql/resolvers/types/game-resolver'
@@ -194,7 +194,6 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
@@ -228,13 +227,12 @@ describe('game-resolver', () => {
           turn: players[1],
           updated: game.updated,
           victors: [],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
       })
     })
-    it('returns game with weather', async () => {
+    it('returns game with modifiers', async () => {
       const users = [
         TestUtil.getUser({
           id: game.creator,
@@ -244,7 +242,18 @@ describe('game-resolver', () => {
       await testFromObject({
         game: {
           ...game,
-          weather: [Combat.Ranged],
+          players: game.players.map((player) => {
+            return {
+              ...player,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  close: TestUtil.getDbPlayerCombatRow({
+                    modifier: TestUtil.getDbGameUnit({}),
+                  }),
+                }),
+              ],
+            }
+          }),
         },
         expected: {
           config: game.config,
@@ -257,7 +266,43 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [],
-          weather: [Combat.Ranged],
+        },
+        players,
+        resolvedUsers: users,
+      })
+    })
+    it('returns game with weathers', async () => {
+      const users = [
+        TestUtil.getUser({
+          id: game.creator,
+        }),
+      ]
+      const players = [TestUtil.getGamePlayer({}), TestUtil.getGamePlayer({})]
+      await testFromObject({
+        game: {
+          ...game,
+          players: game.players.map((player) => {
+            return {
+              ...player,
+              rounds: [
+                TestUtil.getDbPlayerRound({
+                  weathers: [TestUtil.getDbGameUnit({})],
+                }),
+              ],
+            }
+          }),
+        },
+        expected: {
+          config: game.config,
+          created: game.created,
+          creator: users[0],
+          id: game._id.toString(),
+          players,
+          round: game.round,
+          status: game.status as GameStatus,
+          turn: undefined,
+          updated: game.updated,
+          victors: [],
         },
         players,
         resolvedUsers: users,
@@ -289,7 +334,6 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [users[0]],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
@@ -321,7 +365,6 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [users[1]],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
@@ -353,7 +396,6 @@ describe('game-resolver', () => {
           turn: undefined,
           updated: game.updated,
           victors: [users[0], users[1]],
-          weather: game.weather.map((weather) => weather as Combat),
         },
         players,
         resolvedUsers: users,
@@ -626,7 +668,17 @@ async function testFromObject({
         gameUnits: game.players
           .map((player) => player.rounds)
           .flat()
-          .map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units])
+          .map((round) => {
+            const roundCombats = [round.close, round.ranged, round.siege].flat()
+            return roundCombats
+              .map((roundCombat) => [...roundCombat.units, ...(roundCombat.modifier ? [roundCombat.modifier] : [])])
+              .flat()
+          })
+          .flat(),
+        deckUnits: game.players
+          .map((player) => player.rounds)
+          .flat()
+          .map((round) => round.weathers)
           .flat(),
         userIds: game.players.map((player) => player.user),
         presolvedUnits: units,

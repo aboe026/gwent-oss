@@ -24,7 +24,6 @@ import SetNextTurnForCurrentRound from '../../src/graphql/resolvers/mutations/ut
 import TestUtil from '../util/test-util'
 import UpdateHistory from '../../src/graphql/resolvers/mutations/play-unit/update-history'
 
-// TODO: fix
 describe('play-unit-implementation', () => {
   const logPrefix = 'log-prefix'
   it('throws error if no turn on game', async () => {
@@ -68,7 +67,7 @@ describe('play-unit-implementation', () => {
       errorCalls: [[`${logPrefix} failed: ${message}`]],
     })
   })
-  it('returns objects if no error', async () => {
+  it('returns objects if no error with required only', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
     })
@@ -77,6 +76,26 @@ describe('play-unit-implementation', () => {
       turn: player.user,
     })
     await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      logPrefix,
+      expectedGameDeck: player.deck,
+    })
+  })
+  it('returns objects if no error with optional', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    await testPlayUnitImplementation({
+      effects: [],
+      roundUnits: [],
       game,
       updatedGame: {
         ...game,
@@ -318,6 +337,35 @@ describe('play-unit-implementation', () => {
       expectedGameDeck: player.deck,
     })
   })
+  it('passes weather score impacts to move', async () => {
+    const player = TestUtil.getDbGamePlayer({
+      deck: TestUtil.getDbGameDeck({}),
+    })
+    const game = TestUtil.getDbGame({
+      players: [player],
+      turn: player.user,
+    })
+    const impacts: ImpactDbObject[] = [
+      {
+        unit: TestUtil.getDbGameUnit({}),
+        user: new ObjectId(),
+      },
+    ]
+    await testPlayUnitImplementation({
+      game,
+      updatedGame: {
+        ...game,
+        updated: new Date(),
+      },
+      targetId: impacts[0].unit.unit.toString(),
+      logPrefix,
+      scoreWeathers: {
+        [impacts[0].unit.unit.toString()]: impacts,
+      },
+      deckUnitsAddedToHand: [impacts[0].unit],
+      expectedGameDeck: player.deck,
+    })
+  })
   it('logs to trace if enabled', async () => {
     const player = TestUtil.getDbGamePlayer({
       deck: TestUtil.getDbGameDeck({}),
@@ -342,8 +390,8 @@ describe('play-unit-implementation', () => {
 async function testPlayUnitImplementation({
   game,
   updatedGame,
-  effects = [],
-  roundUnits = [],
+  effects,
+  roundUnits,
   logPrefix,
   scorches = {},
   musters = {},
@@ -405,10 +453,10 @@ async function testPlayUnitImplementation({
     }),
   ]
   const unitEffect = TestUtil.getDbEffect({
-    key: EffectKey.Muster,
+    key: EffectKey.Bond,
   })
   const musterEffect = TestUtil.getDbEffect({
-    key: EffectKey.Bond,
+    key: EffectKey.Muster,
   })
   const mardroemeEffect = TestUtil.getDbEffect({
     key: EffectKey.Mardroeme,
@@ -482,7 +530,7 @@ async function testPlayUnitImplementation({
         {
           game,
           unitBeingPlayed: unit,
-          units: roundUnits,
+          units: roundUnits || [],
         },
       ],
     ]
@@ -493,20 +541,20 @@ async function testPlayUnitImplementation({
       : [
           [
             {
-              effects,
-              units: [unit, ...roundUnits, ...units],
+              effects: effects || [],
+              units: [unit, ...(roundUnits || []), ...units],
             },
           ],
           [
             {
               units: musteredUnits,
-              effects: [unitEffect],
+              effects: [...(effects || []), unitEffect],
             },
           ],
           [
             {
               units: transformedUnits,
-              effects: [unitEffect],
+              effects: [...(effects || []), unitEffect],
             },
           ],
         ]
@@ -517,9 +565,9 @@ async function testPlayUnitImplementation({
       : [
           [
             {
-              battlefieldUnits: [unit, ...roundUnits, ...units],
+              battlefieldUnits: [unit, ...(roundUnits || []), ...units],
               combat,
-              effects: [unitEffect, musterEffect, mardroemeEffect],
+              effects: [...(effects || []), unitEffect],
               game,
               logPrefix,
               newDeckUnit: deckUnit,
@@ -537,7 +585,7 @@ async function testPlayUnitImplementation({
             {
               game,
               units: [unit, ...units, ...musteredUnits, ...transformedUnits],
-              effects: [unitEffect, musterEffect, mardroemeEffect],
+              effects: [...(effects || []), unitEffect, musterEffect, mardroemeEffect],
               logPrefix,
               newDeckUnit: deckUnit,
               musteredUnitIds: musteredUnits.map((unit) => unit._id.toString()),
@@ -568,6 +616,7 @@ async function testPlayUnitImplementation({
               decoys,
               transformedGameUnits,
               mardroemingGameUnit,
+              weathers: Object.keys(battlefieldWeathers).length > 0 ? battlefieldWeathers : scoreWeathers,
             },
           ],
         ]

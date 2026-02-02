@@ -63,6 +63,6 @@ export default class GetWeatherUnitsForRow {
 }
 
 export interface PlayerWeatherUnit {
-  player: ObjectId
+  player: ObjectId // TODO: change to userId?
   unit: UnitDbObject
 }

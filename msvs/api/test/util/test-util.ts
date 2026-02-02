@@ -203,9 +203,9 @@ export default class TestUtil {
         TestUtil.getUnit({
           id: gameUnit.unit,
         }),
-      effectiveStrength: gameUnit.effectiveStrength,
+      effectiveStrength: gameUnit.effectiveStrength !== undefined ? gameUnit.effectiveStrength : null,
       effects: [],
-      row: gameUnit.row ? (gameUnit.row as Combat) : undefined,
+      row: gameUnit.row ? (gameUnit.row as Combat) : null,
     }
   }
 
@@ -510,7 +510,6 @@ export default class TestUtil {
     updated = new Date(),
     round = 0,
     status = GameStatus.Decking,
-    weather = [],
   }: {
     id?: ObjectId | string
     created?: Date
@@ -521,7 +520,6 @@ export default class TestUtil {
     updated?: Date
     round?: number
     status?: GameStatus
-    weather?: Combat[]
   }): GameDbObject {
     return {
       config: {
@@ -559,7 +557,6 @@ export default class TestUtil {
       turn: turn ? new ObjectId(turn) : undefined,
       updated,
       victors: victors.map((victor) => new ObjectId(victor)),
-      weather,
     }
   }
 
@@ -597,7 +594,6 @@ export default class TestUtil {
           id: victorId,
         })
       ),
-      weather: game.weather.map((weather) => weather as Combat),
     }
   }
 
@@ -630,7 +626,6 @@ export default class TestUtil {
       status: GameStatus.Decking,
       updated: new Date(),
       victors: [],
-      weather: [],
     }
   }
 
@@ -765,6 +760,22 @@ export default class TestUtil {
     }
   }
 
+  static getDbPlayerCombatRow({
+    score = 0,
+    units = [],
+    modifier,
+  }: {
+    score?: number
+    units?: GameUnitDbObject[]
+    modifier?: GameUnitDbObject
+  }): PlayerCombatRowDbObject {
+    return {
+      score,
+      units,
+      modifier,
+    }
+  }
+
   static getDbPlayerRound({
     close,
     ranged,
@@ -773,31 +784,37 @@ export default class TestUtil {
     score = 0,
     passed = false,
     result,
+    weathers = [],
   }: {
-    close?: PlayerCombatRowDbObject
-    ranged?: PlayerCombatRowDbObject
-    siege?: PlayerCombatRowDbObject
+    close?: PlayerCombatRowDbObjectWithDefaults
+    ranged?: PlayerCombatRowDbObjectWithDefaults
+    siege?: PlayerCombatRowDbObjectWithDefaults
     moves?: MoveDbObject[]
     score?: number
     passed?: boolean
     result?: RoundResult
+    weathers?: GameUnitDbObject[]
   }): PlayerRoundDbObject {
     const round: PlayerRoundDbObject = {
-      close: close || {
-        score: 0,
-        units: [],
-      },
+      close: TestUtil.getDbPlayerCombatRow({
+        modifier: close?.modifier,
+        score: close?.score,
+        units: close?.units,
+      }),
       moves,
-      ranged: ranged || {
-        score: 0,
-        units: [],
-      },
-      siege: siege || {
-        score: 0,
-        units: [],
-      },
+      ranged: TestUtil.getDbPlayerCombatRow({
+        modifier: ranged?.modifier,
+        score: ranged?.score,
+        units: ranged?.units,
+      }),
+      siege: TestUtil.getDbPlayerCombatRow({
+        modifier: siege?.modifier,
+        score: siege?.score,
+        units: siege?.units,
+      }),
       score,
       passed,
+      weathers,
     }
     if (result) {
       round.result = result
@@ -984,4 +1001,10 @@ export default class TestUtil {
       user,
     }
   }
+}
+
+interface PlayerCombatRowDbObjectWithDefaults {
+  modifier?: GameUnitDbObject
+  score?: number
+  units?: Array<GameUnitDbObject>
 }

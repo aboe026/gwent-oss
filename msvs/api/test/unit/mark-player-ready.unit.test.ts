@@ -284,6 +284,7 @@ function testMarkPlayerReady({
                     score: 0,
                     units: [],
                   },
+                  weathers: [],
                 },
               ]
             : player.rounds,

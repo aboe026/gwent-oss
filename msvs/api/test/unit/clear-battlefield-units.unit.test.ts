@@ -251,6 +251,7 @@ describe('clear-battlefield-units', () => {
         rounds: [
           TestUtil.getDbPlayerRound({
             close: {
+              // TODO: remove where no longer necessary
               score: 0,
               units: [TestUtil.getDbGameUnit({})],
             },

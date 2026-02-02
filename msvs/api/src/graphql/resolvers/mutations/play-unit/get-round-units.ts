@@ -13,7 +13,7 @@ import UnitStore from '../../../../database/stores/unit-store'
 export default async function getRoundUnits({
   game,
   unitBeingPlayed,
-  units = [],
+  units,
 }: {
   game: GameDbObject
   unitBeingPlayed: UnitDbObject
@@ -28,9 +28,9 @@ export default async function getRoundUnits({
 
   for (const player of game.players) {
     const round = player.rounds[game.round - 1]
-    for (const weather of round.weathers) {
-      if (!unitIds.includes(weather.unit.toString()) && !existingUnitIds.includes(weather.unit.toString())) {
-        unitIds.push(weather.unit.toString())
+    for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
+      if (!unitIds.includes(rowUnit.unit.toString()) && !existingUnitIds.includes(rowUnit.unit.toString())) {
+        unitIds.push(rowUnit.unit.toString())
       }
     }
     for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
@@ -42,14 +42,16 @@ export default async function getRoundUnits({
         unitIds.push(modifier.unit.toString())
       }
     }
-    for (const rowUnit of [...round.close.units, ...round.ranged.units, ...round.siege.units]) {
-      if (!unitIds.includes(rowUnit.unit.toString()) && !existingUnitIds.includes(rowUnit.unit.toString())) {
-        unitIds.push(rowUnit.unit.toString())
+    for (const weather of round.weathers) {
+      if (!unitIds.includes(weather.unit.toString()) && !existingUnitIds.includes(weather.unit.toString())) {
+        unitIds.push(weather.unit.toString())
       }
     }
   }
 
-  return UnitStore.get({
-    ids: unitIds,
-  })
+  return unitIds.length > 0
+    ? UnitStore.get({
+        ids: unitIds,
+      })
+    : []
 }

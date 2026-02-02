@@ -10,1267 +10,7179 @@ describe('get-round-units', () => {
     ranged: TestUtil.getDbUnit({}),
     siege: TestUtil.getDbUnit({}),
     modifier: TestUtil.getDbUnit({}),
+    weather: TestUtil.getDbUnit({}),
   }
   const unitsOpponent = {
     close: TestUtil.getDbUnit({}),
     ranged: TestUtil.getDbUnit({}),
     siege: TestUtil.getDbUnit({}),
     modifier: TestUtil.getDbUnit({}),
+    weather: TestUtil.getDbUnit({}),
   }
   describe('round 1', () => {
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat without modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.close._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.close, unitsOpponent.close],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat with modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsSelf.modifier._id,
+    const round = 1
+    describe('close combat', () => {
+      describe('unit', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.close._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsOpponent.modifier._id,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.close, unitsSelf.modifier, unitsOpponent.close, unitsOpponent.modifier],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat without modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.ranged._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.ranged, unitsOpponent.ranged],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat with modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsSelf.modifier._id,
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.close, unitsOpponent.close],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.ranged._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsOpponent.modifier._id,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.ranged, unitsSelf.modifier, unitsOpponent.ranged, unitsOpponent.modifier],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat without modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.siege._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.siege, unitsOpponent.siege],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat with modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsSelf.modifier._id,
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.close._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.close],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.siege._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsOpponent.modifier._id,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.siege, unitsSelf.modifier, unitsOpponent.siege, unitsOpponent.modifier],
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.close],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitBeingPlayed._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.close],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.close._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.close._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('modifier', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier, unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('weather', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather, unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('all', () => {
+        it('calls to UnitStore for all if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [
+              unitsSelf.close,
+              unitsSelf.modifier,
+              unitsSelf.weather,
+              unitsOpponent.close,
+              unitsOpponent.modifier,
+              unitsOpponent.weather,
+            ],
+          })
+        })
+        it('does not call to UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.close._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.close._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in all combats', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
+    describe('ranged combat', () => {
+      describe('unit', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
             }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.siege._id,
-                      }),
-                    ],
-                  },
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.ranged, unitsOpponent.ranged],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [
-          unitsSelf.close,
-          unitsSelf.ranged,
-          unitsSelf.siege,
-          unitsOpponent.close,
-          unitsOpponent.ranged,
-          unitsOpponent.siege,
-        ],
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.ranged._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.ranged],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.ranged],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitBeingPlayed._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.ranged],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.ranged._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.ranged._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('modifier', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier, unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('weather', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather, unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('all', () => {
+        it('calls to UnitStore for all if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [
+              unitsSelf.ranged,
+              unitsSelf.modifier,
+              unitsSelf.weather,
+              unitsOpponent.ranged,
+              unitsOpponent.modifier,
+              unitsOpponent.weather,
+            ],
+          })
+        })
+        it('does not call to UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.ranged._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.ranged._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units that are same across players', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 1,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
+    describe('siege combat', () => {
+      describe('unit', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
             }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.siege, unitsOpponent.siege],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.siege._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.siege],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.siege],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitBeingPlayed._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.siege],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.siege._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.siege._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('modifier', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier, unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('weather', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather, unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('all', () => {
+        it('calls to UnitStore for all if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [
+              unitsSelf.siege,
+              unitsSelf.modifier,
+              unitsSelf.weather,
+              unitsOpponent.siege,
+              unitsOpponent.modifier,
+              unitsOpponent.weather,
+            ],
+          })
+        })
+        it('does not call to UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.siege._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.siege._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+    })
+    describe('all combats', () => {
+      it('calls to UnitStore to get multiple if none presolved', async () => {
+        await testGetRoundUnits({
+          game: TestUtil.getDbGame({
+            round,
+            players: [
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+            ],
+          }),
+          unitBeingPlayed,
+          unitsGetResponse: [
+            unitsSelf.close,
+            unitsSelf.ranged,
+            unitsSelf.siege,
+            unitsOpponent.close,
+            unitsOpponent.ranged,
+            unitsOpponent.siege,
+          ],
+        })
+      })
+      it('does not call to UnitStore if all presolved', async () => {
+        await testGetRoundUnits({
+          game: TestUtil.getDbGame({
+            round,
+            players: [
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+            ],
+          }),
+          unitBeingPlayed,
+          units: [
+            TestUtil.getDbUnit({
+              id: unitsSelf.close._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsSelf.ranged._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsSelf.siege._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsOpponent.close._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsOpponent.ranged._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsOpponent.siege._id,
             }),
           ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.close, unitsSelf.ranged, unitsSelf.siege],
+          unitsGetResponse: [],
+        })
       })
     })
   })
   describe('round 2', () => {
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat without modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 2,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.close._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.close, unitsOpponent.close],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat with modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 2,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsSelf.modifier._id,
+    const round = 2
+    describe('close combat', () => {
+      describe('unit', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.close._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsOpponent.modifier._id,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.close, unitsSelf.modifier, unitsOpponent.close, unitsOpponent.modifier],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat without modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 2,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.ranged._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.ranged, unitsOpponent.ranged],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat with modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 2,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsSelf.modifier._id,
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.close, unitsOpponent.close],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.ranged._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsOpponent.modifier._id,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.ranged, unitsSelf.modifier, unitsOpponent.ranged, unitsOpponent.modifier],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat without modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 2,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.siege._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.siege, unitsOpponent.siege],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat with modifiers', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 2,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsSelf.modifier._id,
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.close._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.close],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.siege._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsOpponent.modifier._id,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.siege, unitsSelf.modifier, unitsOpponent.siege, unitsOpponent.modifier],
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.close],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitBeingPlayed._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.close],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.close._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.close._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('modifier', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier, unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('weather', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather, unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('all', () => {
+        it('calls to UnitStore for all if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [
+              unitsSelf.close,
+              unitsSelf.modifier,
+              unitsSelf.weather,
+              unitsOpponent.close,
+              unitsOpponent.modifier,
+              unitsOpponent.weather,
+            ],
+          })
+        })
+        it('does not call to UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.close._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.close._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in all combats', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 2,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
+    describe('ranged combat', () => {
+      describe('unit', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
             }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.siege._id,
-                      }),
-                    ],
-                  },
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.ranged, unitsOpponent.ranged],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [
-          unitsSelf.close,
-          unitsSelf.ranged,
-          unitsSelf.siege,
-          unitsOpponent.close,
-          unitsOpponent.ranged,
-          unitsOpponent.siege,
-        ],
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.ranged._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.ranged],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.ranged],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitBeingPlayed._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.ranged],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.ranged._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.ranged._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('modifier', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier, unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('weather', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather, unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('all', () => {
+        it('calls to UnitStore for all if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [
+              unitsSelf.ranged,
+              unitsSelf.modifier,
+              unitsSelf.weather,
+              unitsOpponent.ranged,
+              unitsOpponent.modifier,
+              unitsOpponent.weather,
+            ],
+          })
+        })
+        it('does not call to UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.ranged._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.ranged._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units that are same across players', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 2,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
+    describe('siege combat', () => {
+      describe('unit', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
             }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.siege, unitsOpponent.siege],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.siege._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.siege],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.siege],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitBeingPlayed._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.siege],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.siege._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.siege._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('modifier', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier, unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('weather', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather, unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('all', () => {
+        it('calls to UnitStore for all if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [
+              unitsSelf.siege,
+              unitsSelf.modifier,
+              unitsSelf.weather,
+              unitsOpponent.siege,
+              unitsOpponent.modifier,
+              unitsOpponent.weather,
+            ],
+          })
+        })
+        it('does not call to UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.siege._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.siege._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+    })
+    describe('all combats', () => {
+      it('calls to UnitStore to get multiple if none presolved', async () => {
+        await testGetRoundUnits({
+          game: TestUtil.getDbGame({
+            round,
+            players: [
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+            ],
+          }),
+          unitBeingPlayed,
+          unitsGetResponse: [
+            unitsSelf.close,
+            unitsSelf.ranged,
+            unitsSelf.siege,
+            unitsOpponent.close,
+            unitsOpponent.ranged,
+            unitsOpponent.siege,
+          ],
+        })
+      })
+      it('does not call to UnitStore if all presolved', async () => {
+        await testGetRoundUnits({
+          game: TestUtil.getDbGame({
+            round,
+            players: [
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+            ],
+          }),
+          unitBeingPlayed,
+          units: [
+            TestUtil.getDbUnit({
+              id: unitsSelf.close._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsSelf.ranged._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsSelf.siege._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsOpponent.close._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsOpponent.ranged._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsOpponent.siege._id,
             }),
           ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.close, unitsSelf.ranged, unitsSelf.siege],
+          unitsGetResponse: [],
+        })
       })
     })
   })
   describe('round 3', () => {
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat without modifier', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 3,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.close._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.close, unitsOpponent.close],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in close combat without modifier', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 3,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsSelf.modifier._id,
+    const round = 3
+    describe('close combat', () => {
+      describe('unit', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.close._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsOpponent.modifier._id,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.close, unitsSelf.modifier, unitsOpponent.close, unitsOpponent.modifier],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat without modifier', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 3,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.ranged._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.ranged, unitsOpponent.ranged],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in ranged combat with modifier', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 3,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsSelf.modifier._id,
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.close, unitsOpponent.close],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.ranged._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsOpponent.modifier._id,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.ranged, unitsSelf.modifier, unitsOpponent.ranged, unitsOpponent.modifier],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat without modifier', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 3,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.siege._id,
-                      }),
-                    ],
-                  },
-                }),
-              ],
-            }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.siege, unitsOpponent.siege],
-      })
-    })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in siege combat without modifier', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 3,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsSelf.modifier._id,
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.close._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.close],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
-              ],
-            }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.siege._id,
-                      }),
-                    ],
-                    modifier: TestUtil.getDbGameUnit({
-                      id: unitsOpponent.modifier._id,
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
                     }),
-                  },
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.siege, unitsSelf.modifier, unitsOpponent.siege, unitsOpponent.modifier],
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.close],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitBeingPlayed._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.close],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.close._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.close._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('modifier', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier, unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('weather', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather, unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('all', () => {
+        it('calls to UnitStore for all if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [
+              unitsSelf.close,
+              unitsSelf.modifier,
+              unitsSelf.weather,
+              unitsOpponent.close,
+              unitsOpponent.modifier,
+              unitsOpponent.weather,
+            ],
+          })
+        })
+        it('does not call to UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      close: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.close._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.close._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.close._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units in all combats', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 3,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
+    describe('ranged combat', () => {
+      describe('unit', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
             }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsOpponent.siege._id,
-                      }),
-                    ],
-                  },
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.ranged, unitsOpponent.ranged],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
             }),
-          ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [
-          unitsSelf.close,
-          unitsSelf.ranged,
-          unitsSelf.siege,
-          unitsOpponent.close,
-          unitsOpponent.ranged,
-          unitsOpponent.siege,
-        ],
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.ranged._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.ranged],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.ranged],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitBeingPlayed._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.ranged],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.ranged._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.ranged._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('modifier', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier, unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('weather', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather, unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('all', () => {
+        it('calls to UnitStore for all if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [
+              unitsSelf.ranged,
+              unitsSelf.modifier,
+              unitsSelf.weather,
+              unitsOpponent.ranged,
+              unitsOpponent.modifier,
+              unitsOpponent.weather,
+            ],
+          })
+        })
+        it('does not call to UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      ranged: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.ranged._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.ranged._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.ranged._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
       })
     })
-    it('calls to UnitStore to get all units ignoring unitBeingPlayed for units that are same across players', async () => {
-      await testGetRoundUnits({
-        game: TestUtil.getDbGame({
-          round: 3,
-          players: [
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
+    describe('siege combat', () => {
+      describe('unit', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
             }),
-            TestUtil.getDbGamePlayer({
-              rounds: [
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({}),
-                TestUtil.getDbPlayerRound({
-                  close: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.close._id,
-                      }),
-                    ],
-                  },
-                  ranged: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.ranged._id,
-                      }),
-                    ],
-                  },
-                  siege: {
-                    score: 0,
-                    units: [
-                      TestUtil.getDbGameUnit({
-                        id: unitsSelf.siege._id,
-                      }),
-                    ],
-                  },
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.siege, unitsOpponent.siege],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
                 }),
               ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.siege._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.siege],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.siege],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitBeingPlayed._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.siege],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        score: 0,
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.siege._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.siege._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('modifier', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier, unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.modifier],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('weather', () => {
+        it('calls to UnitStore to get multiple if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather, unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+            ],
+            unitsGetResponse: [unitsOpponent.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring duplicate from opponent', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('calls to UnitStore to get single ignoring unitBeingPlayed if in opponents hand', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitBeingPlayed._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [unitsSelf.weather],
+          })
+        })
+        it('does not call UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+      describe('all', () => {
+        it('calls to UnitStore for all if none presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            unitsGetResponse: [
+              unitsSelf.siege,
+              unitsSelf.modifier,
+              unitsSelf.weather,
+              unitsOpponent.siege,
+              unitsOpponent.modifier,
+              unitsOpponent.weather,
+            ],
+          })
+        })
+        it('does not call to UnitStore if all presolved', async () => {
+          await testGetRoundUnits({
+            game: TestUtil.getDbGame({
+              round,
+              players: [
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsSelf.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsSelf.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+                TestUtil.getDbGamePlayer({
+                  rounds: [
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({}),
+                    TestUtil.getDbPlayerRound({
+                      siege: {
+                        units: [
+                          TestUtil.getDbGameUnit({
+                            id: unitsOpponent.siege._id,
+                          }),
+                        ],
+                        modifier: TestUtil.getDbGameUnit({
+                          id: unitsOpponent.modifier._id,
+                        }),
+                      },
+                      weathers: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.weather._id,
+                        }),
+                      ],
+                    }),
+                  ],
+                }),
+              ],
+            }),
+            unitBeingPlayed,
+            units: [
+              TestUtil.getDbUnit({
+                id: unitsSelf.siege._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsSelf.weather._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.siege._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.modifier._id,
+              }),
+              TestUtil.getDbUnit({
+                id: unitsOpponent.weather._id,
+              }),
+            ],
+            unitsGetResponse: [],
+          })
+        })
+      })
+    })
+    describe('all combats', () => {
+      it('calls to UnitStore to get multiple if none presolved', async () => {
+        await testGetRoundUnits({
+          game: TestUtil.getDbGame({
+            round,
+            players: [
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+            ],
+          }),
+          unitBeingPlayed,
+          unitsGetResponse: [
+            unitsSelf.close,
+            unitsSelf.ranged,
+            unitsSelf.siege,
+            unitsOpponent.close,
+            unitsOpponent.ranged,
+            unitsOpponent.siege,
+          ],
+        })
+      })
+      it('does not call to UnitStore if all presolved', async () => {
+        await testGetRoundUnits({
+          game: TestUtil.getDbGame({
+            round,
+            players: [
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsSelf.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+              TestUtil.getDbGamePlayer({
+                rounds: [
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({}),
+                  TestUtil.getDbPlayerRound({
+                    close: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.close._id,
+                        }),
+                      ],
+                    },
+                    ranged: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.ranged._id,
+                        }),
+                      ],
+                    },
+                    siege: {
+                      units: [
+                        TestUtil.getDbGameUnit({
+                          id: unitsOpponent.siege._id,
+                        }),
+                      ],
+                    },
+                  }),
+                ],
+              }),
+            ],
+          }),
+          unitBeingPlayed,
+          units: [
+            TestUtil.getDbUnit({
+              id: unitsSelf.close._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsSelf.ranged._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsSelf.siege._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsOpponent.close._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsOpponent.ranged._id,
+            }),
+            TestUtil.getDbUnit({
+              id: unitsOpponent.siege._id,
             }),
           ],
-        }),
-        unitBeingPlayed,
-        otherUnits: [unitsSelf.close, unitsSelf.ranged, unitsSelf.siege],
+          unitsGetResponse: [],
+        })
       })
     })
   })
@@ -1279,26 +7191,33 @@ describe('get-round-units', () => {
 async function testGetRoundUnits({
   game,
   unitBeingPlayed,
-  otherUnits,
+  units,
+  unitsGetResponse,
 }: {
   game: GameDbObject
   unitBeingPlayed: UnitDbObject
-  otherUnits: UnitDbObject[]
+  units?: UnitDbObject[]
+  unitsGetResponse: UnitDbObject[]
 }) {
-  const unitStoreGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(otherUnits)
+  const unitStoreGetSpy = jest.spyOn(UnitStore, 'get').mockResolvedValue(unitsGetResponse)
 
   await expect(
     getRoundUnits({
       game,
       unitBeingPlayed,
+      units,
     })
-  ).resolves.toEqual([...otherUnits, unitBeingPlayed])
+  ).resolves.toEqual(unitsGetResponse)
 
-  expect(unitStoreGetSpy.mock.calls).toEqual([
-    [
-      {
-        ids: otherUnits.map((unit) => unit._id.toString()),
-      },
-    ],
-  ])
+  expect(unitStoreGetSpy.mock.calls).toEqual(
+    unitsGetResponse.length > 0
+      ? [
+          [
+            {
+              ids: unitsGetResponse.map((unit) => unit._id.toString()),
+            },
+          ],
+        ]
+      : []
+  )
 }

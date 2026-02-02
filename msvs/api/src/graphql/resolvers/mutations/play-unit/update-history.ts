@@ -42,6 +42,7 @@ export default class UpdateHistory {
    * @param config.horns Any potential units that were horned due to the new battlefield unit being played.
    * @param config.morales Any potential units the new battlefield unit moraled when deployed.
    * @param config.decoys Any potential units that were decoyed by the new battlefield unit being played.
+   * @param config.weathers Any potential weather units that were deployed by the new battlefield unit being played.
    * @param config.musteredOrigins A map of where any potential mustered units came from.
    */
   static newUnitDeployed({
