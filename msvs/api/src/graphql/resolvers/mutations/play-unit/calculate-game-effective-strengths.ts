@@ -14,12 +14,12 @@ import {
 import EffectBond from './effect-bond'
 import EffectHorn from './effect-horn'
 import EffectMorale from './effect-morale'
+import EffectWeather from './effect-weather'
 import GetEffectWithKey from './get-effect-with-key'
 import getUnitIdsWithEffect from './get-unit-ids-with-effect'
+import GetWeatherUnitsForRow, { PlayerWeatherUnit } from './get-weather-units-for-row'
 import { ImpactsByUnitId } from '../../resolver-util'
 import PresentableError from '../../../../util/presentable-error'
-import GetWeatherUnitsForRow, { PlayerWeatherUnit } from './get-weather-units-for-row'
-import EffectWeather from './effect-weather'
 
 /**
  * A class for calculating the effective strength for units in the current round of a game.

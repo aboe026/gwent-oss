@@ -1,8 +1,9 @@
 import CombatRowResolver from './combat-row-resolver'
-import { GameUnitDbObject, PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
 import GameUnitResolver from './game-unit-resolver'
+import getGameUnits from '../mutations/play-unit/get-game-units'
 import MoveResolver from './move-resolver'
 import { PlayerRound, RoundResult, Unit, User } from '@gwent/graphql-schema/resolver-typings'
+import { PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
 import ResolverUtil from '../resolver-util'
 
 /**
@@ -29,7 +30,7 @@ export default class PlayerRoundResolver {
   }): Promise<PlayerRound> {
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: round.moves,
-      gameUnits: PlayerRoundResolver.getGameUnits({
+      gameUnits: getGameUnits({
         rounds: [round],
       }),
       presolvedUnits: units,
@@ -88,7 +89,7 @@ export default class PlayerRoundResolver {
 
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
-      gameUnits: PlayerRoundResolver.getGameUnits({
+      gameUnits: getGameUnits({
         rounds,
       }),
       presolvedUsers: users,
@@ -106,32 +107,5 @@ export default class PlayerRoundResolver {
       )
     }
     return resolvedPlayerRounds
-  }
-
-  /**
-   * Gets all the game unit database objects that are apart of the rounds.
-   *
-   * @param config The configuration used to get the GameUnits on the Rounds.
-   * @param config.rounds The rounds containing all the GameUnits to find.
-   * @returns All the GameUnit database objects apart of the rounds.
-   */
-  static getGameUnits({ rounds }: { rounds: PlayerRoundDbObject[] }): GameUnitDbObject[] {
-    const gameUnits: GameUnitDbObject[] = []
-
-    for (const round of rounds) {
-      gameUnits.push(...round.close.units)
-      gameUnits.push(...round.ranged.units)
-      gameUnits.push(...round.siege.units)
-      for (const modifier of [round.close.modifier, round.ranged.modifier, round.siege.modifier]) {
-        if (modifier) {
-          gameUnits.push(modifier)
-        }
-      }
-      for (const weather of round.weathers) {
-        gameUnits.push(weather)
-      }
-    }
-
-    return gameUnits
   }
 }

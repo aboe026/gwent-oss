@@ -78,12 +78,12 @@ export default class EffectScorch {
 
     if (hasScorchEffect) {
       EffectScorch.logger.debug(`${logPrefix} unit "${newUnit.name}" has scorch effect, applying it`)
+      const scorchedPlayers = newUnit.scorchScope
+        ? game.players.filter((player) => player.user.toString() !== game.turn?.toString())
+        : game.players
       const gameUnits = getGameUnits({
         combat: newUnit.scorchScope,
-        players: newUnit.scorchScope
-          ? game.players.filter((player) => player.user.toString() !== game.turn?.toString())
-          : game.players,
-        round: game.round,
+        rounds: scorchedPlayers.map((player) => player.rounds[game.round - 1]).flat(),
       })
       if (EffectScorch.logger.isTraceEnabled()) {
         EffectScorch.logger.trace(`${logPrefix} gameUnits: "${JSON.stringify(gameUnits)}"`)

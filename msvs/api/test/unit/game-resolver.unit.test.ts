@@ -665,7 +665,7 @@ async function testFromObject({
           .flat()
           .map((round) => round.moves)
           .flat(),
-        gameUnits: game.players
+        gameUnits: game.players // TODO: use getGameUnits?
           .map((player) => player.rounds)
           .flat()
           .map((round) => {
@@ -674,11 +674,6 @@ async function testFromObject({
               .map((roundCombat) => [...roundCombat.units, ...(roundCombat.modifier ? [roundCombat.modifier] : [])])
               .flat()
           })
-          .flat(),
-        deckUnits: game.players
-          .map((player) => player.rounds)
-          .flat()
-          .map((round) => round.weathers)
           .flat(),
         userIds: game.players.map((player) => player.user),
         presolvedUnits: units,

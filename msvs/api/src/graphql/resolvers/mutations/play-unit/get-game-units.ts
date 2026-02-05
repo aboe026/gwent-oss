@@ -1,4 +1,4 @@
-import { Combat, GamePlayerDbObject, GameUnitDbObject } from '@gwent/graphql-schema/database-typings'
+import { Combat, GameUnitDbObject, PlayerRoundDbObject } from '@gwent/graphql-schema/database-typings'
 
 /**
  * Retrieve all the GameUnit database documents that are currently on the battlefield from the given players in a game.
@@ -6,43 +6,41 @@ import { Combat, GamePlayerDbObject, GameUnitDbObject } from '@gwent/graphql-sch
  * @param config The configuration used to get all GameUnit database documents.
  * @param config.combat An optional combat type to limit results to.
  * @param config.players The players in the game to get GameUnits for.
- * @param config.round The current round of the game.
+ * @param config.rounds The Rounds of Game Players to get GameUnits for.
  * @returns A list of all GameUnit database objects which are currently on the battlefield for the given players in a game.
  */
 export default function getGameUnits({
   combat,
-  players,
-  round,
+  rounds,
 }: {
   combat?: string | null
-  players: GamePlayerDbObject[]
-  round: number
+  rounds: PlayerRoundDbObject[]
 }): GameUnitDbObject[] {
   const gameUnits: GameUnitDbObject[] = []
 
-  for (const player of players) {
-    const playerRound = player.rounds[round - 1]
-    const roundUnits = []
+  for (const round of rounds) {
     if (!combat || combat === Combat.Close) {
-      roundUnits.push(...playerRound.close.units)
-      if (playerRound.close.modifier) {
-        roundUnits.push(playerRound.close.modifier)
+      gameUnits.push(...round.close.units)
+      if (round.close.modifier) {
+        gameUnits.push(round.close.modifier)
       }
     }
     if (!combat || combat === Combat.Ranged) {
-      roundUnits.push(...playerRound.ranged.units)
-      if (playerRound.ranged.modifier) {
-        roundUnits.push(playerRound.ranged.modifier)
+      gameUnits.push(...round.ranged.units)
+      if (round.ranged.modifier) {
+        gameUnits.push(round.ranged.modifier)
       }
     }
     if (!combat || combat === Combat.Siege) {
-      roundUnits.push(...playerRound.siege.units)
-      if (playerRound.siege.modifier) {
-        roundUnits.push(playerRound.siege.modifier)
+      gameUnits.push(...round.siege.units)
+      if (round.siege.modifier) {
+        gameUnits.push(round.siege.modifier)
       }
     }
-    for (const gameUnit of roundUnits) {
-      gameUnits.push(gameUnit)
+    if (!combat) {
+      for (const weather of round.weathers) {
+        gameUnits.push(weather)
+      }
     }
   }
 

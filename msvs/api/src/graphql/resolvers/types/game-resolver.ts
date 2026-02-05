@@ -5,6 +5,7 @@ import { Game, GamePlayer, Unit, User } from '@gwent/graphql-schema/resolver-typ
 import { GameDbObject, GameStatus } from '@gwent/graphql-schema/database-typings'
 import GamePlayerResolver from './game-player-resolver'
 import GameStore from '../../../database/stores/game-store'
+import getGameUnits from '../mutations/play-unit/get-game-units'
 import ResolverUtil from '../resolver-util'
 import Verifier from '../../../util/verifier'
 
@@ -34,15 +35,11 @@ export default class GameResolver {
   }): Promise<Game> {
     const status = game.status as GameStatus
     const rounds = game.players.map((player) => player.rounds).flat()
-    const roundCombats = rounds.map((round) => [round.close, round.ranged, round.siege]).flat()
-    const gameUnits = roundCombats
-      .map((roundCombat) => [...roundCombat.units, ...(roundCombat.modifier ? [roundCombat.modifier] : [])])
-      .flat()
-    const deckUnits = rounds.map((round) => round.weathers).flat()
     const { units: resolvedUnits, users: resolvedUsers } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
-      gameUnits,
-      deckUnits,
+      gameUnits: getGameUnits({
+        rounds,
+      }),
       userIds: game.players.map((player) => player.user),
       presolvedUnits: units,
       presolvedUsers: users,
@@ -107,7 +104,9 @@ export default class GameResolver {
       .flat()
     const { units, users } = await ResolverUtil.resolveUsersAndUnits({
       moves: rounds.map((round) => round.moves).flat(),
-      gameUnits: rounds.map((round) => [...round.close.units, ...round.ranged.units, ...round.siege.units]).flat(),
+      gameUnits: getGameUnits({
+        rounds,
+      }),
       userIds: games
         .map((game) => game.players)
         .flat()

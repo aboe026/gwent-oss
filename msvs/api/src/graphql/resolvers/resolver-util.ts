@@ -2,7 +2,6 @@ import { Logger } from 'log4js'
 import { ObjectId } from 'mongodb'
 
 import {
-  DeckUnitDbObject,
   GameDbObject,
   GamePlayerDbObject,
   GameStatus,
@@ -149,7 +148,6 @@ export default class ResolverUtil {
     impacts,
     userIds,
     gameUnits,
-    deckUnits,
     presolvedUsers,
     presolvedUnits,
   }: {
@@ -157,7 +155,6 @@ export default class ResolverUtil {
     impacts?: ImpactDbObject[]
     userIds?: (ObjectId | string)[]
     gameUnits?: GameUnitDbObject[]
-    deckUnits?: DeckUnitDbObject[]
     presolvedUsers?: User[]
     presolvedUnits?: Unit[]
   }): Promise<MoveUsersAndUnits> {
@@ -180,14 +177,6 @@ export default class ResolverUtil {
     if (gameUnits && !presolvedUnits) {
       for (const gameUnit of gameUnits) {
         const unitId = gameUnit.unit.toString()
-        if (!unitIdsToResolve.includes(unitId)) {
-          unitIdsToResolve.push(unitId)
-        }
-      }
-    }
-    if (deckUnits && !presolvedUnits) {
-      for (const deckUnit of deckUnits) {
-        const unitId = deckUnit.unit.toString()
         if (!unitIdsToResolve.includes(unitId)) {
           unitIdsToResolve.push(unitId)
         }
