@@ -65,9 +65,9 @@ export default class EffectWeather {
       EffectWeather.logger.trace(`${logPrefix} newUnitHasWeather: "${newUnitHasWeather}"`)
     }
 
-    for (const player of game.players) {
-      const round = player.rounds[game.round - 1]
-      if (newUnitHasWeather) {
+    if (newUnitHasWeather) {
+      for (const player of game.players) {
+        const round = player.rounds[game.round - 1]
         const clearWeather = !newUnit.combats || newUnit.combats.length === 0
         const isCurrentPlayer = player.user.toString() === game.turn?.toString()
         if (clearWeather) {
@@ -133,7 +133,7 @@ export default class EffectWeather {
       EffectWeather.logger.trace(`${logPrefix} rowUnit: "${JSON.stringify(rowUnit)}"`)
     }
 
-    if (!rowUnit.hero) {
+    if (!rowUnit.hero && rowUnit.strength && rowUnit.strength > 1) {
       const weathersToApply = weatherUnits
         .filter((weather) => weather.unit._id.toString() !== rowGameUnit.unit.toString())
         // put current turn player's weathers in the "back"
@@ -156,14 +156,10 @@ export default class EffectWeather {
         const weather = weathersToApply[i]
         if (weatherEffect && weather && rowGameUnit.effects) {
           weathered = true
-          // TODO: check this logic (eg Havekar Healer)
-          // TODO: should weather effect strength 0 and 1 units? See if in TW3 they turn red?
-          if (rowUnit.strength && rowUnit.strength > 0) {
-            rowGameUnit.effectiveStrength = 1
-            EffectWeather.logger.debug(
-              `${logPrefix} weathering unit "${rowUnit._id}" by "${weather.unit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}".`
-            )
-          }
+          rowGameUnit.effectiveStrength = 1
+          EffectWeather.logger.debug(
+            `${logPrefix} weathering unit "${rowUnit._id}" by "${weather.unit._id}" for an effectiveStrength of "${rowGameUnit.effectiveStrength}".`
+          )
           const reason: EffectFromUnitDbObject = {
             effect: weatherEffect._id,
             type: EffectReasonType.Unit,
@@ -198,7 +194,15 @@ export default class EffectWeather {
         }
       }
     } else {
-      EffectWeather.logger.debug(`${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to weather effect.`)
+      if (rowUnit.hero) {
+        EffectWeather.logger.debug(
+          `${logPrefix} rowUnit "${rowUnit._id}" is hero so not susceptible to weather effect.`
+        )
+      } else {
+        EffectWeather.logger.debug(
+          `${logPrefix} rowUnit "${rowUnit._id}" strength "${rowUnit.strength}" is less than "2" so not susceptible to weather effect.`
+        )
+      }
     }
 
     return impacts
